@@ -219,7 +219,7 @@ char *owl_util_makepath(char *in)
 	user[b]='\0';
 	pw=getpwnam(user);
 	if (!pw) {
-	  out[x]==in[i];
+	  out[x]=in[i];
 	} else {
 	  out[x]='\0';
 	  strcat(out, pw->pw_dir);
