@@ -243,7 +243,7 @@ int main(int argc, char **argv, char **env) {
 
   /* welcome message */
   strcpy(startupmsg, "-------------------------------------------------------------------------\n");
-  sprintf(buff,      "Welcome to owl version %s.  Press 'h' for on line help. \n", OWL_VERSION_STRING);
+  sprintf(buff,      "Welcome to Owl version %s.  Press 'h' for on line help. \n", OWL_VERSION_STRING);
   strcat(startupmsg, buff);
   strcat(startupmsg, "                                                                         \n");
   strcat(startupmsg, "If you would like to receive release announcments about owl you can join \n");
