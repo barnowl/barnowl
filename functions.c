@@ -81,40 +81,19 @@ void owl_function_adminmsg(char *header, char *body) {
   owl_global_set_needrefresh(&g);
 }
 
-void owl_function_make_outgoing_zephyr(char *header, char *body, char *zwriteline, char *zsig) {
+void owl_function_make_outgoing_zephyr(char *body, char *zwriteline, char *zsig) {
   owl_message *m;
   int followlast;
   owl_zwrite z;
-  char *tobuff, *recip;
   
   followlast=owl_global_should_followlast(&g);
 
   /* create a zwrite for the purpose of filling in other message fields */
   owl_zwrite_create_from_line(&z, zwriteline);
 
-  /* in 'tobuff' place the "Message sent to foo" string.
-   * Right now this only works for one recipient */
-  tobuff=owl_malloc(strlen(owl_zwrite_get_recip_n(&z, 0))+100);
-  sprintf(tobuff, "Zephyr sent to %s  (Zsig: %s)", owl_zwrite_get_recip_n(&z, 0), zsig);
-
   /* create the message */
   m=owl_malloc(sizeof(owl_message));
-  owl_message_create(m,  tobuff, body);
-  owl_message_set_direction_out(m);
-  owl_message_set_type_zephyr(m);
-
-  /* set zwriteline */
-  owl_message_set_zwriteline(m, zwriteline);
-
-  owl_message_set_class(m, owl_zwrite_get_class(&z));
-  owl_message_set_instance(m, owl_zwrite_get_instance(&z));
-  owl_message_set_opcode(m, owl_zwrite_get_opcode(&z));
-  owl_message_set_realm(m, owl_zwrite_get_realm(&z));
-  owl_message_set_sender(m, ZGetSender());
-  /* this only gets the first recipient for now, must fix */
-  recip=long_zuser(owl_zwrite_get_recip_n(&z, 0));
-  owl_message_set_recipient(m, recip);
-  owl_free(recip);
+  owl_message_create_from_zwriteline(m, zwriteline, body, zsig);
 
   /* add it to the global list */
   owl_messagelist_append_element(owl_global_get_msglist(&g), m);
@@ -129,7 +108,6 @@ void owl_function_make_outgoing_zephyr(char *header, char *body, char *zwritelin
   
   wnoutrefresh(owl_global_get_curs_recwin(&g));
   owl_global_set_needrefresh(&g);
-  owl_free(tobuff);
   owl_zwrite_free(&z);
 }
 
@@ -175,7 +153,7 @@ void owl_function_zwrite_setup(char *line) {
 }
 
 void owl_function_zwrite(char *line) {
-  char *tmpbuff, buff[1024];
+  char buff[1024];
   owl_zwrite z;
   int i, j;
 
@@ -187,9 +165,7 @@ void owl_function_zwrite(char *line) {
   /* display the message as an outgoing message in the receive window */
   if (owl_global_is_displayoutgoing(&g) && owl_zwrite_is_personal(&z)) {
     owl_zwrite_get_recipstr(&z, buff);
-    tmpbuff = owl_sprintf("Message sent to %s", buff);
-    owl_function_make_outgoing_zephyr(tmpbuff, owl_editwin_get_text(owl_global_get_typwin(&g)), line, owl_zwrite_get_zsig(&z));
-    owl_free(tmpbuff);
+    owl_function_make_outgoing_zephyr(owl_editwin_get_text(owl_global_get_typwin(&g)), line, owl_zwrite_get_zsig(&z));
   }
 
   /* log it if we have logging turned on */
@@ -952,6 +928,7 @@ void owl_function_refresh() {
 void owl_function_beep() {
   if (owl_global_is_bell(&g)) {
     beep();
+    owl_global_set_needrefresh(&g); /* do we really need this? */
   }
 }
 

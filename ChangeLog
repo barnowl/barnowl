@@ -1,5 +1,8 @@
 $Id$
 
+1.2.7
+	Outgoing messages now go through the config for formatting
+	
 1.2.6
 	Started adding code for newmsgproc.  It doesn't fully work yet!
 	  Don't use it.

@@ -31,14 +31,11 @@ int main(int argc, char **argv, char **env) {
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
   owl_editwin *tw;
   owl_popwin *pw;
-  int j, ret, initialsubs, debug, newzephyrs, argcsave, followlast;
+  int j, ret, initialsubs, debug, newzephyrs, argcsave, followlast, nexttimediff;
   struct sigaction sigact;
-  char *configfile, *tty, *perlout;
-  char buff[LINE], startupmsg[LINE];
-  char **argvsave;
+  char *configfile, *tty, *perlout, **argvsave, buff[LINE], startupmsg[LINE];
   owl_filter *f;
   time_t nexttime;
-  int nexttimediff;
 
   argcsave=argc;
   argvsave=argv;
@@ -138,7 +135,7 @@ int main(int argc, char **argv, char **env) {
 
   /* setup the default filters */
   f=malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "personal", "class ^message$ and instance ^personal$ and ( recipient ^%me%$ or sender ^%me%$ )"); /* fix to use admintype */
+  owl_filter_init_fromstring(f, "personal", "class ^message$ and instance ^personal$ and ( recipient ^%me%$ or sender ^%me%$ )");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   f=malloc(sizeof(owl_filter));
@@ -188,7 +185,6 @@ int main(int argc, char **argv, char **env) {
   recwin=owl_global_get_curs_recwin(&g);
   sepwin=owl_global_get_curs_sepwin(&g);
   typwin=owl_global_get_curs_typwin(&g);
-
   tw=owl_global_get_typwin(&g);
 
   wrefresh(sepwin);
@@ -278,7 +274,7 @@ int main(int argc, char **argv, char **env) {
 
       /* create the new message */
       m=owl_malloc(sizeof(owl_message));
-      owl_message_create_from_zephyr(m, &notice);
+      owl_message_create_from_znotice(m, &notice);
       
       /* if it's on the puntlist then, nuke it and continue */
       if (owl_global_message_is_puntable(&g, m)) {
@@ -304,7 +300,6 @@ int main(int argc, char **argv, char **env) {
       /* ring the bell if it's a personal */
       if (owl_global_is_personalbell(&g) && owl_message_is_personal(m)) {
 	owl_function_beep();
-	owl_global_set_needrefresh(&g);
       }
 
       /* check for burning ears message */

@@ -11,8 +11,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         1.2.6
-#define OWL_VERSION_STRING "1.2.6"
+#define OWL_VERSION         1.2.7
+#define OWL_VERSION_STRING "1.2.7"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
@@ -241,6 +241,7 @@ typedef struct _owl_message {
   char *realm;
   char *body;
   char *zwriteline;
+  char *zsig;
 } owl_message;
 
 typedef struct _owl_mainwin {

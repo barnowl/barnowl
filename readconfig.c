@@ -61,6 +61,8 @@ int owl_readconfig(char *file) {
 
   /* create variables */
   perl_get_sv("owl::id", TRUE);
+  perl_get_sv("owl::type", TRUE);
+  perl_get_sv("owl::direction", TRUE);
   perl_get_sv("owl::class", TRUE);
   perl_get_sv("owl::instance", TRUE);
   perl_get_sv("owl::recipient", TRUE);
@@ -126,13 +128,12 @@ char *owl_config_getmsg(owl_message *m, int mode) {
 
   int i, j, len;
   char *ptr, *ptr2;
-  ZNotice_t *n;
 
   if (!owl_global_have_config(&g)) return("");
 
   /* set owl::msg */
-  n=owl_message_get_notice(m);
-  ptr=owl_zephyr_get_message(n, &len);
+  ptr=owl_message_get_body(m);
+  len=strlen(ptr);
   ptr2=owl_malloc(len+20);
   memcpy(ptr2, ptr, len);
   ptr2[len]='\0';
@@ -143,7 +144,8 @@ char *owl_config_getmsg(owl_message *m, int mode) {
   owl_free(ptr2);
 
   /* set owl::zsig */
-  ptr=owl_zephyr_get_zsig(n, &len);
+  ptr=owl_message_get_zsig(m);
+  len=strlen(ptr);
   if (len>0) {
     ptr2=owl_malloc(len+20);
     memcpy(ptr2, ptr, len);
@@ -164,6 +166,17 @@ char *owl_config_getmsg(owl_message *m, int mode) {
     sv_setpv(perl_get_sv("owl::type", TRUE), "admin");
   } else {
     sv_setpv(perl_get_sv("owl::type", TRUE), "unknown");
+  }
+
+  /* set owl::direction */
+  if (owl_message_is_direction_in(m)) {
+    sv_setpv(perl_get_sv("owl::direction", TRUE), "in");
+  } else if (owl_message_is_direction_out(m)) {
+    sv_setpv(perl_get_sv("owl::direction", TRUE), "out");
+  } else if (owl_message_is_direction_none(m)) {
+    sv_setpv(perl_get_sv("owl::direction", TRUE), "none");
+  } else {
+    sv_setpv(perl_get_sv("owl::direction", TRUE), "unknown");
   }
 
   /* set everything else */
@@ -188,27 +201,31 @@ char *owl_config_getmsg(owl_message *m, int mode) {
   */
 
   /* set owl::fields */
-  av_clear(perl_get_av("owl::fields", TRUE));
-  j=owl_zephyr_get_num_fields(n);
-  for (i=0; i<j; i++) {
-    ptr=owl_zephyr_get_field(n, i+1, &len);
-    ptr2=owl_malloc(len+10);
-    memcpy(ptr2, ptr, len);
-    ptr2[len]='\0';
-    av_push(perl_get_av("owl::fields", TRUE), newSVpvn(ptr2, len));
-    owl_free(ptr2);
+  if (owl_message_is_type_zephyr(m) && owl_message_is_direction_in(m)) {
+    av_clear(perl_get_av("owl::fields", TRUE));
+    j=owl_zephyr_get_num_fields(owl_message_get_notice(m));
+    for (i=0; i<j; i++) {
+      ptr=owl_zephyr_get_field(owl_message_get_notice(m), i+1, &len);
+      ptr2=owl_malloc(len+10);
+      memcpy(ptr2, ptr, len);
+      ptr2[len]='\0';
+      av_push(perl_get_av("owl::fields", TRUE), newSVpvn(ptr2, len));
+      owl_free(ptr2);
+    }
   }
 
   /* for backwards compatibilty, because I'm an idiot */
-  av_clear(perl_get_av("fields", TRUE));
-  j=owl_zephyr_get_num_fields(n);
-  for (i=0; i<j; i++) {
-    ptr=owl_zephyr_get_field(n, i+1, &len);
-    ptr2=owl_malloc(len+10);
-    memcpy(ptr2, ptr, len);
-    ptr2[len]='\0';
-    av_push(perl_get_av("fields", TRUE), newSVpvn(ptr2, len));
-    owl_free(ptr2);
+  if (owl_message_is_type_zephyr(m) && owl_message_is_direction_in(m)) {
+    av_clear(perl_get_av("fields", TRUE));
+    j=owl_zephyr_get_num_fields(owl_message_get_notice(m));
+    for (i=0; i<j; i++) {
+      ptr=owl_zephyr_get_field(owl_message_get_notice(m), i+1, &len);
+      ptr2=owl_malloc(len+10);
+      memcpy(ptr2, ptr, len);
+      ptr2[len]='\0';
+      av_push(perl_get_av("fields", TRUE), newSVpvn(ptr2, len));
+      owl_free(ptr2);
+    }
   }
 
   /* run the procedure corresponding to the mode */

@@ -1,5 +1,6 @@
 #include <zephyr/zephyr.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -25,6 +26,7 @@ void owl_message_init_raw(owl_message *m) {
   m->recip=owl_strdup("");
   m->opcode=owl_strdup("");
   m->realm=owl_strdup("");
+  m->zsig=owl_strdup("");
   strcpy(m->hostname, "");
   m->zwriteline=strdup("");
 
@@ -64,6 +66,15 @@ void owl_message_set_sender(owl_message *m, char *sender) {
 
 char *owl_message_get_sender(owl_message *m) {
   return(m->sender);
+}
+
+void owl_message_set_zsig(owl_message *m, char *zsig) {
+  if (m->zsig) owl_free(m->zsig);
+  m->zsig=owl_strdup(zsig);
+}
+
+char *owl_message_get_zsig(owl_message *m) {
+  return(m->zsig);
 }
 
 void owl_message_set_recipient(owl_message *m, char *recip) {
@@ -346,7 +357,7 @@ void owl_message_create_admin(owl_message *m, char *header, char *text) {
   owl_free(indent);
 }
 
-void owl_message_create_from_zephyr(owl_message *m, ZNotice_t *n) {
+void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
   struct hostent *hent;
   int k;
   char *ptr;
@@ -373,6 +384,7 @@ void owl_message_create_from_zephyr(owl_message *m, ZNotice_t *n) {
   } else {
     n->z_opcode=owl_strdup("");
   }
+  m->zsig=owl_strdup(n->z_message);
 
   if ((ptr=strchr(n->z_recipient, '@'))!=NULL) {
     m->realm=owl_strdup(ptr+1);
@@ -382,6 +394,7 @@ void owl_message_create_from_zephyr(owl_message *m, ZNotice_t *n) {
 
   m->zwriteline=strdup("");
 
+  /* set the body */
   ptr=owl_zephyr_get_message(n, &k);
   m->body=owl_malloc(k+10);
   memcpy(m->body, ptr, k);
@@ -411,6 +424,46 @@ void owl_message_create_from_zephyr(owl_message *m, ZNotice_t *n) {
 
 }
 
+void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, char *zsig) {
+  owl_zwrite z;
+  int ret;
+  
+  owl_message_init_raw(m);
+
+  /* create a zwrite for the purpose of filling in other message fields */
+  owl_zwrite_create_from_line(&z, line);
+
+  /* set things */
+  owl_message_set_direction_out(m);
+  owl_message_set_type_zephyr(m);
+  m->sender=owl_strdup(ZGetSender());
+  m->class=owl_strdup(owl_zwrite_get_class(&z));
+  m->inst=owl_strdup(owl_zwrite_get_instance(&z));
+  m->recip=long_zuser(owl_zwrite_get_recip_n(&z, 0)); /* only gets the first user, must fix */
+  owl_zwrite_get_recipstr(&z, m->recip);
+  m->opcode=owl_strdup(owl_zwrite_get_opcode(&z));
+  m->realm=owl_strdup(owl_zwrite_get_realm(&z)); /* also a hack, but not here */
+  m->zwriteline=owl_strdup(line);
+  m->body=owl_strdup(body);
+  m->zsig=owl_strdup(zsig);
+  
+  /* save the hostname */
+  ret=gethostname(m->hostname, MAXHOSTNAMELEN);
+  if (ret) {
+    strcpy(m->hostname, "localhost");
+  }
+
+  /* create the formatted message */
+  if (owl_global_is_config_format(&g)) {
+    _owl_message_make_text_from_config(m);
+  } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
+    _owl_message_make_text_from_zwriteline_standard(m);
+  } else {
+    _owl_message_make_text_from_zwriteline_simple(m);
+  }
+
+  owl_zwrite_free(&z);
+}
 
 void _owl_message_make_text_from_config(owl_message *m) {
   char *body, *indent;
@@ -431,10 +484,40 @@ void _owl_message_make_text_from_config(owl_message *m) {
   owl_free(body);
 }
 
+void _owl_message_make_text_from_zwriteline_standard(owl_message *m) {
+  char *indent, *text, *zsigbuff;
+
+  text=owl_message_get_body(m);
+
+  indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
+  owl_text_indent(indent, text, OWL_MSGTAB);
+  owl_fmtext_init_null(&(m->fmtext));
+  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
+  owl_fmtext_append_normal(&(m->fmtext), "Zephyr sent to ");
+  owl_fmtext_append_normal(&(m->fmtext), owl_message_get_recipient(m));
+  owl_fmtext_append_normal(&(m->fmtext), "  (Zsig: ");
+
+  zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m)));
+  owl_message_pretty_zsig(m, zsigbuff);
+  owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
+  owl_free(zsigbuff);
+  
+  owl_fmtext_append_normal(&(m->fmtext), ")");
+  owl_fmtext_append_normal(&(m->fmtext), "\n");
+  owl_fmtext_append_ztext(&(m->fmtext), indent);
+  if (text[strlen(text)-1]!='\n') {
+    owl_fmtext_append_normal(&(m->fmtext), "\n");
+  }
+
+  owl_free(indent);
+}
+
+void _owl_message_make_text_from_zwriteline_simple(owl_message *m) {
+  _owl_message_make_text_from_zwriteline_standard(m);
+}
+
 void _owl_message_make_text_from_notice_standard(owl_message *m) {
-  char *body, *indent, *ptr;
-  char frombuff[1024];
-  char zsigbuff[LINE];
+  char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
   ZNotice_t *n;
   int len;
 
@@ -513,13 +596,15 @@ void _owl_message_make_text_from_notice_standard(owl_message *m) {
     }
 
     /* stick on the zsig */
-    _owl_message_get_zsig(m, zsigbuff, LINE);
-    if (zsigbuff[0]!='\0') {
-      owl_fmtext_append_normal(&(m->fmtext), "    (");
-      owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
-      owl_fmtext_append_normal(&(m->fmtext), ")");
-    }
+    zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m)));
+    owl_message_pretty_zsig(m, zsigbuff);
+    owl_fmtext_append_normal(&(m->fmtext), "    (");
+    owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
+    owl_fmtext_append_normal(&(m->fmtext), ")");
     owl_fmtext_append_normal(&(m->fmtext), "\n");
+    owl_free(zsigbuff);
+
+    /* then the indented message */
     owl_fmtext_append_ztext(&(m->fmtext), indent);
 
     /* make personal messages bold for smaat users */
@@ -535,9 +620,7 @@ void _owl_message_make_text_from_notice_standard(owl_message *m) {
 }
 
 void _owl_message_make_text_from_notice_simple(owl_message *m) {
-  char *body, *indent, *ptr;
-  char frombuff[1024];
-  char zsigbuff[LINE];
+  char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
   ZNotice_t *n;
   int len;
 
@@ -615,13 +698,15 @@ void _owl_message_make_text_from_notice_simple(owl_message *m) {
     }
 
     /* stick on the zsig */
-    _owl_message_get_zsig(m, zsigbuff, LINE);
-    if (zsigbuff[0]!='\0') {
-      owl_fmtext_append_normal(&(m->fmtext), "    (");
-      owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
-      owl_fmtext_append_normal(&(m->fmtext), ")");
-    }
+    zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m)));
+    owl_message_pretty_zsig(m, zsigbuff);
+    owl_fmtext_append_normal(&(m->fmtext), "    (");
+    owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
+    owl_fmtext_append_normal(&(m->fmtext), ")");
     owl_fmtext_append_normal(&(m->fmtext), "\n");
+    owl_free(zsigbuff);
+
+    /* then the indented message */
     owl_fmtext_append_ztext(&(m->fmtext), indent);
 
     /* make personal messages bold for smaat users */
@@ -636,38 +721,14 @@ void _owl_message_make_text_from_notice_simple(owl_message *m) {
   owl_free(indent);
 }
 
-void _owl_message_get_zsig(owl_message *m, char *buff, int size) {
+void owl_message_pretty_zsig(owl_message *m, char *buff) {
+  /* stick a one line version of the zsig in buff */
   char *ptr;
-  ZNotice_t n;
-  int len;
-  /* just a hackish thing for now.  We'll only present the first line
-     or the first 'size'. characters.  If the message is not
-     appropriate for having a zsig we'll return an empty string */
-  n=m->notice;
 
-
-  /* bail if it shouldn't have a zsig */
-  buff[0]='\0';
-  if (!strcasecmp(n.z_opcode, "ping")) {
-    return;
-  }
-
-  /* find the right length to copy */
-  len=strlen(n.z_message);
-  if (size < len) {
-    len=size;
-  }
-  if ((ptr=strchr(n.z_message, '\n'))!=NULL) {
-    if ((ptr-n.z_message) < len) {
-      len=ptr-n.z_message;
-    }
-  }
-
-  /* copy */
-  strncpy(buff, n.z_message, len);
-  buff[len]='\0';
+  strcpy(buff, m->zsig);
+  ptr=strchr(buff, '\n');
+  if (ptr) ptr[0]='\0';
 }
-
 
 void owl_message_free(owl_message *m) {
   if (owl_message_is_type_zephyr(m) && owl_message_is_direction_in(m)) {
