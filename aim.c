@@ -207,10 +207,14 @@ static void oscar_login(GaimAccount *account)
 /* stuff to run once login has been successful */
 void owl_aim_successful_login(char *screenname)
 {
+  char *buff;
   owl_function_debugmsg("doing owl_aim_successful_login");
   owl_global_set_aimloggedin(&g, screenname);
   owl_global_set_doaimevents(&g); /* this should already be on */
   owl_function_makemsg("%s logged in", screenname);
+  buff=owl_sprintf("Logged in to AIM as %s", screenname);
+  owl_function_adminmsg("", buff);
+  owl_free(buff);
 
   owl_function_debugmsg("Successful AIM login for %s", screenname);
 
@@ -225,6 +229,9 @@ void owl_aim_logout(void)
 {
   /* need to check if it's connected first, I think */
   logout(owl_global_get_aimsess(&g));
+
+  owl_function_adminmsg("", "Logged out of AIM");
+
   owl_global_set_aimnologgedin(&g);
   owl_global_set_no_doaimevents(&g);
 }

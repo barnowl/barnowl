@@ -1,6 +1,8 @@
 $Id$
 
 2.0.12-pre-2
+	Set aim_ignorelogin_timer to 15 by default
+	Admin message on login/logout of AIM
 	Fixed double quoting in smartzpunt
 	Added timestamp to login/logout messages
 	Turned history duplicates off, it's not exactly what we want

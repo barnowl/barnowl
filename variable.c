@@ -249,13 +249,12 @@ static owl_variable variables_to_init[] = {
 		 "It is recommended that outgoing messages be no wider\n"
 		 "than 60 columns, as a courtesy to recipients.\n"),
 
-  OWLVAR_INT( "aim_ignorelogin_timer" /* %OwlVarStub */, 0,
+  OWLVAR_INT( "aim_ignorelogin_timer" /* %OwlVarStub */, 15,
 	      "number of seconds after AIM login to ignore login messages",
 	      "This specifies the number of seconds to wait after an\n"
 	      "AIM login before allowing the recipt of AIM login notifications.\n"
-	      "By default this is set to 0 and all login notifications are\n"
-	      "viewed immediately.  If you dislike this behavior try setting\n"
-	      "the value to 20 instead.\n"),
+	      "By default this is set to 15.  If you would like to view login\n"
+	      "notifications of buddies as soon as you login, set it to 0 instead."),
 
 	      
   OWLVAR_INT_FULL( "typewinsize" /* %OwlVarStub:typwin_lines */, 
