@@ -17,6 +17,8 @@ static const char fileIdent[] = "$Id$";
 #include <sys/wait.h>
 #include "owl.h"
 
+#ifdef OWL_HAVE_DES
+
 #define BASE_CODE 70
 #define LAST_CODE (BASE_CODE + 15)
 #define OUTPUT_BLOCK_SIZE 16
@@ -690,3 +692,5 @@ int do_decrypt(char *keystring) {
   }
   return(0);
 }
+
+#endif

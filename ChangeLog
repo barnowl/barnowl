@@ -67,6 +67,7 @@ $Id$
 	CTRL and META are now OWL_CTRL and OWL_META.  OWL_CTRL moved to
 	  keypress.c
 	do_encrypt declaired static
+	if we don't have des functions, do not try to build in zcrypt
 	
 1.2.8
 	Class pings are displayed differently now

@@ -427,7 +427,7 @@ void owl_message_create_admin(owl_message *m, char *header, char *text) {
 
 void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
   struct hostent *hent;
-  int k, ret;
+  int k;
   char *ptr, *tmp, *tmp2;
 
   owl_message_init(m);
@@ -477,9 +477,11 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
   }
   owl_free(tmp);
 
+#ifdef OWL_HAVE_DES  
   /* if zcrypt is enabled try to decrypt the message */
   if (owl_global_is_zcrypt(&g) && !strcasecmp(n->z_opcode, "crypt")) {
     char *out;
+    int ret;
 
     out=owl_malloc(strlen(owl_message_get_body(m))*16+20);
     ret=zcrypt_decrypt(out, owl_message_get_body(m), owl_message_get_class(m), owl_message_get_instance(m));
@@ -489,6 +491,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
       owl_free(out);
     }
   }
+#endif  
 
   /* save the hostname */
   owl_function_debugmsg("About to do gethostbyaddr");

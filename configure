@@ -1379,7 +1379,7 @@ else
 fi
 
 
-for ac_func in use_default_colors
+for ac_func in use_default_colors des_string_to_key des_key_sched des_ecb_encrypt
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1386: checking for $ac_func" >&5
@@ -1435,11 +1435,10 @@ fi
 done
 
 
-
 echo $ac_n "checking for des_ecb_encrypt prototype""... $ac_c" 1>&6
-echo "configure:1441: checking for des_ecb_encrypt prototype" >&5
+echo "configure:1440: checking for des_ecb_encrypt prototype" >&5
 cat > conftest.$ac_ext <<EOF
-#line 1443 "configure"
+#line 1442 "configure"
 #include "confdefs.h"
 #include <des.h>
 int des_ecb_encrypt(char foo[], char bar[], des_key_schedule baz, int qux);
@@ -1447,7 +1446,7 @@ int main() {
 int foo = des_ecb_encrypt(0,0,0,0);
 ; return 0; }
 EOF
-if { (eval echo configure:1451: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1450: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_des_ecb_encrypt_proto=no
 else
@@ -1464,6 +1463,7 @@ if test "$ac_cv_des_ecb_encrypt_proto" = yes; then
 EOF
 
 fi
+
 
 echo $ac_n "checking how to run the C preprocessor""... $ac_c" 1>&6
 echo "configure:1470: checking how to run the C preprocessor" >&5
@@ -1807,7 +1807,6 @@ fi
 
 
 
-
 ac_aux_dir=
 for ac_dir in $srcdir $srcdir/.. $srcdir/../..; do
   if test -f $ac_dir/install-sh; then
@@ -1839,7 +1838,7 @@ ac_configure=$ac_aux_dir/configure # This should be Cygnus configure.
 # SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
 # ./install, which can be erroneously created by make from ./install.sh.
 echo $ac_n "checking for a BSD compatible install""... $ac_c" 1>&6
-echo "configure:1843: checking for a BSD compatible install" >&5
+echo "configure:1842: checking for a BSD compatible install" >&5
 if test -z "$INSTALL"; then
 if eval "test \"`echo '$''{'ac_cv_path_install'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
