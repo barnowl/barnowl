@@ -71,8 +71,6 @@ void owl_buddylist_offgoing(owl_buddylist *bl, char *screenname)
 {
   owl_message *m;
 
-  owl_buddylist_remove_aim_buddy(bl, screenname);
-
   if (owl_buddylist_is_aim_buddy_loggedin(bl, screenname)) {
     m=owl_malloc(sizeof(owl_message));
     owl_message_create_aim(m,
@@ -83,6 +81,8 @@ void owl_buddylist_offgoing(owl_buddylist *bl, char *screenname)
 			   -1);
     owl_global_messagequeue_addmsg(&g, m);
   }
+
+  owl_buddylist_remove_aim_buddy(bl, screenname);
 }
 
 /* return the number of logged in buddies */

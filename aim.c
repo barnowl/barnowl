@@ -247,15 +247,15 @@ int owl_aim_send_im(char *to, char *msg)
   return(0);
 }
 
-void owl_aim_addbuddy(char *screenname)
+void owl_aim_addbuddy(char *name)
 {
-  aim_ssi_addbuddy(owl_global_get_aimsess(&g), screenname, "Buddies", NULL, NULL, NULL, 0);
+  aim_ssi_addbuddy(owl_global_get_aimsess(&g), name, "Buddies", NULL, NULL, NULL, 0);
 }
 
-void owl_aim_delbuddy(char *screenname)
+void owl_aim_delbuddy(char *name)
 {
-  aim_ssi_delbuddy(owl_global_get_aimsess(&g), screenname, "Buddies");
-  owl_buddylist_offgoing(owl_global_get_buddylist(&g), screenname);
+  aim_ssi_delbuddy(owl_global_get_aimsess(&g), name, "Buddies");
+  owl_buddylist_offgoing(owl_global_get_buddylist(&g), name);
 }
 
 #if 0
@@ -269,7 +269,6 @@ void owl_aim_get_idle(char *screenname)
   */
 }
 #endif
-
 
 void owl_aim_chat_join(char *chatroom)
 {
