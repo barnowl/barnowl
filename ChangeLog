@@ -52,6 +52,7 @@ $Id$
 	         creates a "type-admin" autofilter.
 		 This was done mostly so that M-C-n and M-C-p do something
 		 sane on admin messages.
+	Added opera to the allowed options to the webbrowser variable.
 	
 1.2.1-pre-1
 	Added RCS Id strings to all files.
