@@ -221,6 +221,8 @@ void owl_function_zwrite_setup(char *line)
 
   /* make it active */
   owl_global_set_typwin_active(&g);
+
+  owl_global_set_buffercommand(&g, line);
 }
 
 void owl_function_aimwrite_setup(char *line)
@@ -249,6 +251,8 @@ void owl_function_aimwrite_setup(char *line)
 
   /* make it active */
   owl_global_set_typwin_active(&g);
+
+  owl_global_set_buffercommand(&g, line);
 }
 
 
@@ -299,6 +303,8 @@ void owl_function_zcrypt_setup(char *line)
 
   /* make it active */
   owl_global_set_typwin_active(&g);
+
+  owl_global_set_buffercommand(&g, line);
 }
 
 /* send, log and display an outgoing zephyr.  If 'msg' is NULL
@@ -1077,13 +1083,19 @@ void owl_function_resize()
 
 void owl_function_run_buffercommand()
 {
-  char *buff;
+  char *buff, *ptr;
+
+  owl_function_debugmsg("Got: %s", buff);
 
   buff=owl_global_get_buffercommand(&g);
   if (!strncmp(buff, "zwrite ", 7)) {
     owl_function_zwrite(buff, owl_editwin_get_text(owl_global_get_typwin(&g)));
   } else if (!strncmp(buff, "aimwrite ", 9)) {
     owl_function_aimwrite(buff+9);
+  } else if (!strncmp(buff, "aimlogin ", 9)) {
+    ptr=owl_sprintf("%s %s", buff, owl_global_get_response(&g));
+    owl_function_command(ptr);
+    owl_free(ptr);
   }
 }
 
@@ -1934,6 +1946,24 @@ void owl_function_start_question(char *line)
   tw=owl_global_get_typwin(&g);
   owl_global_set_typwin_active(&g);
   owl_editwin_new_style(tw, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
+
+  owl_editwin_set_locktext(tw, line);
+  owl_global_set_needrefresh(&g);
+
+  owl_editwin_redisplay(tw, 0);
+
+  owl_context_set_editresponse(owl_global_get_context(&g), tw);
+  owl_function_activate_keymap("editresponse");
+}
+
+void owl_function_start_password(char *line)
+{
+  owl_editwin *tw;
+
+  tw=owl_global_get_typwin(&g);
+  owl_global_set_typwin_active(&g);
+  owl_editwin_new_style(tw, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
+  owl_editwin_set_echochar(tw, '*');
 
   owl_editwin_set_locktext(tw, line);
   owl_global_set_needrefresh(&g);

@@ -82,6 +82,11 @@ owl_cmd commands_to_init[]
 	      "start-command <question>",
 	      ""),
 
+  OWLCMD_ARGS("start-password", owl_command_start_password, OWL_CTX_INTERACTIVE,
+	      "prompts the user to enter a password",
+	      "start-password <question>",
+	      ""),
+
   OWLCMD_ARGS("alias", owl_command_alias, OWL_CTX_ANY,
 	      "creates a command alias",
 	      "alias <new_command> <old_command>",
@@ -117,7 +122,7 @@ owl_cmd commands_to_init[]
 	      "      Send to the specified opcode\n"),
 
   OWLCMD_ARGS("aimwrite", owl_command_aimwrite, OWL_CTX_INTERACTIVE,
-	      "send a zephyr",
+	      "send an AIM message",
 	      "aimzwrite <user>",
 	      "Send an aim message to a user.\n"),
 
@@ -639,7 +644,7 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("aimlogin", owl_command_aimlogin, OWL_CTX_ANY,
 	      "login to an AIM account",
-	      "aimlogin <screenname> <password>\n",
+	      "aimlogin <screenname> [<password>]\n",
 	      ""),
 
   OWLCMD_ARGS("aimlogout", owl_command_aimlogout, OWL_CTX_ANY,
@@ -1223,6 +1228,13 @@ char *owl_command_start_question(int argc, char **argv, char *buff)
   return(NULL);
 }
 
+char *owl_command_start_password(int argc, char **argv, char *buff)
+{
+  buff = skiptokens(buff, 1);
+  owl_function_start_password(buff);
+  return(NULL);
+}
+
 char *owl_command_zaway(int argc, char **argv, char *buff)
 {
   if ((argc==1) ||
@@ -1609,7 +1621,6 @@ char *owl_command_zwrite(int argc, char **argv, char *buff)
     owl_function_makemsg("Not enough arguments to the zwrite command.");
   } else {
     owl_function_zwrite_setup(buff);
-    owl_global_set_buffercommand(&g, buff);
   }
   return(NULL);
 }
@@ -1638,7 +1649,6 @@ char *owl_command_aimwrite(int argc, char **argv, char *buff)
   }
     
   owl_function_aimwrite_setup(newbuff);
-  owl_global_set_buffercommand(&g, newbuff);
   owl_free(newbuff);
   return(NULL);
 }
@@ -1660,7 +1670,6 @@ char *owl_command_zcrypt(int argc, char **argv, char *buff)
     owl_function_makemsg("Not enough arguments to the zcrypt command.");
   } else {
     owl_function_zwrite_setup(buff);
-    owl_global_set_buffercommand(&g, buff);
   }
   return(NULL);
 }
@@ -2094,8 +2103,15 @@ char *owl_command_aimlogin(int argc, char **argv, char *buff)
 {
   int ret;
   
-  if (argc!=3) {
+  if ((argc<2) || (argc>3)) {
     owl_function_makemsg("Wrong number of arguments to aimlogin command");
+    return(NULL);
+  }
+
+  /* if we get two arguments, ask for the password */
+  if (argc==2) {
+    owl_global_set_buffercommand(&g, buff);
+    owl_function_start_password("Password: ");
     return(NULL);
   }
 
@@ -2229,7 +2245,7 @@ void owl_command_editresponse_done(owl_editwin *e)
   wnoutrefresh(owl_editwin_get_curswin(e));
   owl_global_set_needrefresh(&g);
 
-  owl_function_makemsg("Thank you");
+  owl_function_run_buffercommand();
 }
 
 
