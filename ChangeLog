@@ -1,17 +1,17 @@
 $Id$
 
-2.0.7-pre-2
-	Don't allow zwrite if zephyr isn't present
+2.0.7
+	Idletimes now appear in the buddylisting
+	Failed AIM logins are now correctly reported
+	Owl will build now without zephyr, enabling it to act as a
+	  standalone AIM client.
 	There is now a zcrypt command
 	Replies to zcrypted messages now work
-	Failed AIM logins are now correctly reported
-	
-2.0.7-pre-1
-	Owl should build now without zephyr, enabling it to act as a
-	  standalone AIM client.
+	Don't allow zwrite if zephyr isn't present
 	Cleaned up some warnings from linux gcc.
 	Fixed bug that can cause response stuff to crash
-	Idletimes now appear in the buddylisting
+	Improved status command
+	Fixed bug in buddy stuff
 	
 2.0.6
 	aimlogin will now accept the screenname without a password and ask

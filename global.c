@@ -99,6 +99,7 @@ void owl_global_init(owl_global *g) {
   g->response=NULL;
   g->havezephyr=0;
   g->haveaim=0;
+  owl_global_set_no_doaimevents(g);
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -673,7 +674,10 @@ int owl_global_is_aimloggedin(owl_global *g)
 
 char *owl_global_get_aim_screenname(owl_global *g)
 {
-  return (g->aim_screenname);
+  if (owl_global_is_aimloggedin(g)) {
+    return (g->aim_screenname);
+  }
+  return("");
 }
 
 void owl_global_set_aimloggedin(owl_global *g, char *screenname)
@@ -687,6 +691,23 @@ void owl_global_set_aimnologgedin(owl_global *g)
 {
   g->aim_loggedin=0;
 }
+
+int owl_global_is_doaimevents(owl_global *g)
+{
+  if (g->aim_doprocessing) return(1);
+  return(0);
+}
+
+void owl_global_set_doaimevents(owl_global *g)
+{
+  g->aim_doprocessing=1;
+}
+
+void owl_global_set_no_doaimevents(owl_global *g)
+{
+  g->aim_doprocessing=0;
+}
+
 
 aim_session_t *owl_global_get_aimsess(owl_global *g)
 {

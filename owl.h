@@ -20,8 +20,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.7-pre-2
-#define OWL_VERSION_STRING "2.0.7-pre-2"
+#define OWL_VERSION         2.0.7
+#define OWL_VERSION_STRING "2.0.7"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
@@ -446,6 +446,7 @@ typedef struct _owl_global {
   owl_timer aim_ignorelogin_timer;
   owl_timer aim_buddyinfo_timer;
   int aim_loggedin;         /* true if currently logged into AIM */
+  int aim_doprocessing;     /* true if we should process AIM events (like pending login) */
   char *aim_screenname;     /* currently logged in AIM screen name */
   owl_buddylist buddylist;  /* list of logged in AIM buddies */
   owl_list messagequeue;    /* for queueing up aim and other messages */

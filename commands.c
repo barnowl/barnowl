@@ -2129,15 +2129,9 @@ char *owl_command_aimlogin(int argc, char **argv, char *buff)
 
   /* try to login */
   ret=owl_aim_login(argv[1], argv[2]);
-  if (!ret) {
-    /* start the ingorelogin timer */
-    owl_timer_reset_newstart(owl_global_get_aim_login_timer(&g),
-			     owl_global_get_aim_ignorelogin_timer(&g));
-    
-    return(NULL);
-  }
-  
-  owl_function_makemsg("Warning: login for %s failed.\n");
+  if (ret) owl_function_makemsg("Warning: login for %s failed.\n");
+
+  /* this is a test */
   return(NULL);
 }
 

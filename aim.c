@@ -146,18 +146,31 @@ int owl_aim_login(char *screenname, char *password)
   priv->password = owl_strdup(password);
   priv->server = "login.oscar.aol.com";
   owl_global_get_aimsess(&g)->aux_data = priv;
-
   
   /* login */
   ret=login(owl_global_get_aimsess(&g), priv->screenname, priv->password);
   if (ret) {
     owl_global_set_aimnologgedin(&g);
-    /* printf("login returned %i\n"); */
+    owl_global_set_no_doaimevents(&g);
     return(-1);
   }
-  owl_global_set_aimloggedin(&g, screenname);
-
+  owl_global_set_doaimevents(&g);
   return(0);
+}
+
+/* stuff to run once login has been successful */
+void owl_aim_successful_login(char *screenname)
+{
+  owl_global_set_aimloggedin(&g, screenname);
+  owl_global_set_doaimevents(&g); /* this should already be on */
+  owl_function_makemsg("%s logged in", screenname);
+
+  owl_function_debugmsg("Successful AIM login for %s", screenname);
+
+  /* start the ingorelogin timer */
+  owl_timer_reset_newstart(owl_global_get_aim_login_timer(&g),
+			   owl_global_get_aim_ignorelogin_timer(&g));
+
 }
 
 void owl_aim_logout(void)
@@ -165,13 +178,19 @@ void owl_aim_logout(void)
   /* need to check if it's connected first, I think */
   logout(owl_global_get_aimsess(&g));
   owl_global_set_aimnologgedin(&g);
+  owl_global_set_no_doaimevents(&g);
 }
 
-void owl_aim_login_error(void)
+void owl_aim_login_error(char *message)
 {
-  owl_function_makemsg("Authentication error on login");
+  if (message) {
+    owl_function_makemsg(message);
+  } else {
+    owl_function_makemsg("Authentication error on login");
+  }
   owl_function_beep();
   owl_global_set_aimnologgedin(&g);
+  owl_global_set_no_doaimevents(&g);
 }
 
 int owl_aim_send_im(char *to, char *msg)
@@ -364,6 +383,7 @@ static int faimtest_parse_authresp(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
 
   /* printf("Screen name: %s\n", info->sn); */
+  owl_function_debugmsg("Here with %s", info->sn);
 
   /*
    * Check for error.
@@ -373,8 +393,25 @@ static int faimtest_parse_authresp(aim_session_t *sess, aim_frame_t *fr, ...)
     printf("Login Error Code 0x%04x\n", info->errorcode);
     printf("Error URL: %s\n", info->errorurl);
     */
-    owl_aim_login_error();
-    /* aim_conn_kill(sess, &fr->conn); */
+    if (info->errorcode==0x05) {
+      /* Incorrect nick/password */
+      owl_aim_login_error("Incorrect nickname or password.");
+    } else if (info->errorcode==0x11) {
+      /* Suspended account */
+      owl_aim_login_error("Your account is currently suspended.");
+    } else if (info->errorcode==0x14) {
+      /* service temporarily unavailable */
+      owl_aim_login_error("The AOL Instant Messenger service is temporarily unavailable.");
+    } else if (info->errorcode==0x18) {
+      /* connecting too frequently */
+      owl_aim_login_error("You have been connecting and disconnecting too frequently. Wait ten minutes and try again. If you continue to try, you will need to wait even longer.");
+    } else if (info->errorcode==0x1c) {
+      /* client too old */
+      owl_aim_login_error("The client version you are using is too old.");
+    } else {
+      owl_aim_login_error(NULL);
+    }
+    aim_conn_kill(sess, &fr->conn);
     return 1;
   }
 
@@ -394,9 +431,9 @@ static int faimtest_parse_authresp(aim_session_t *sess, aim_frame_t *fr, ...)
     aim_conn_kill(sess, &bosconn);
     return 1;
   }
+  owl_aim_successful_login(info->sn);
   addcb_bos(sess, bosconn);
   aim_sendcookie(sess, bosconn, info->cookie);
-  owl_function_makemsg("%s logged in", info->sn);
   return 1;
 }
 
@@ -423,6 +460,8 @@ int faimtest_flapversion(aim_session_t *sess, aim_frame_t *fr, ...)
 
 int faimtest_conncomplete(aim_session_t *sess, aim_frame_t *fr, ...)
 {
+  /* owl_aim_successful_login(info->sn); */
+
   return 1;
 }
 

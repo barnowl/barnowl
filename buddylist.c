@@ -9,25 +9,16 @@ void owl_buddylist_init(owl_buddylist *b)
 }
 
 /* Deal with an "oncoming" message.  This means recognizing the user
- * has logged in, and sending a message if they were not already
+ * has logged in, and displaying a message if they were not already
  * logged in.
  */
 void owl_buddylist_oncoming(owl_buddylist *b, char *screenname)
 {
-  int i, j, found;
-  owl_message *m;
   int *zero;
+  owl_message *m;
 
-  found=0;
-  j=owl_list_get_size(&(b->buddies));
-  for (i=0; i<j; i++) {
-    if (!strcasecmp(owl_list_get_element(&(b->buddies), i), screenname)) {
-      found=1;
-      break;
-    }
-  }
+  if (!owl_buddylist_is_buddy_loggedin(b, screenname)) {
 
-  if (!found) {
     /* add the buddy */
     owl_list_append_element(&(b->buddies), owl_strdup(screenname));
     zero=owl_malloc(sizeof(int));
@@ -35,11 +26,12 @@ void owl_buddylist_oncoming(owl_buddylist *b, char *screenname)
     owl_list_append_element(&(b->idletimes), zero);
 
     /* do a request for idle time */
-    owl_buddylist_request_idletimes(owl_global_get_buddylist(&g));
+    owl_buddylist_request_idletime(b, screenname);
 	
     /* are we ingoring login messages for a while? */
     if (!owl_timer_is_expired(owl_global_get_aim_login_timer(&g))) return;
 
+    /* if not, create the login message */
     m=owl_malloc(sizeof(owl_message));
     owl_message_create_aim(m,
 			   screenname,
@@ -48,7 +40,6 @@ void owl_buddylist_oncoming(owl_buddylist *b, char *screenname)
 			   OWL_MESSAGE_DIRECTION_IN,
 			   1);
     owl_global_messagequeue_addmsg(&g, m);
-
   }
 }
 
@@ -57,33 +48,25 @@ void owl_buddylist_oncoming(owl_buddylist *b, char *screenname)
  */
 void owl_buddylist_offgoing(owl_buddylist *b, char *screenname)
 {
-  int i, j, found;
+  int index;
   owl_message *m;
 
-  found=0;
-  j=owl_list_get_size(&(b->buddies));
-  for (i=0; i<j; i++) {
-    if (!strcasecmp(owl_list_get_element(&(b->buddies), i), screenname)) {
-      found=1;
-      owl_free(owl_list_get_element(&(b->buddies), i));
-      owl_free(owl_list_get_element(&(b->idletimes), i));
-      owl_list_remove_element(&(b->buddies), i);
-      owl_list_remove_element(&(b->idletimes), i);
-      break;
-    }
-  }
+  index=owl_buddylist_get_buddy_index(b, screenname);
+  if (index==-1) return;
 
-  if (found) {
-    m=owl_malloc(sizeof(owl_message));
-    owl_message_create_aim(m,
-			   screenname,
-			   owl_global_get_aim_screenname(&g),
-			   "",
-			   OWL_MESSAGE_DIRECTION_IN,
-			   -1);
+  owl_free(owl_list_get_element(&(b->buddies), index));
+  owl_free(owl_list_get_element(&(b->idletimes), index));
+  owl_list_remove_element(&(b->buddies), index);
+  owl_list_remove_element(&(b->idletimes), index);
 
-    owl_global_messagequeue_addmsg(&g, m);
-  }
+  m=owl_malloc(sizeof(owl_message));
+  owl_message_create_aim(m,
+			 screenname,
+			 owl_global_get_aim_screenname(&g),
+			 "",
+			 OWL_MESSAGE_DIRECTION_IN,
+			 -1);
+  owl_global_messagequeue_addmsg(&g, m);
 }
 
 /* send requests to the AIM server to retrieve info
@@ -100,6 +83,17 @@ void owl_buddylist_request_idletimes(owl_buddylist *b)
   }
 }
 
+/* send request to the AIM server to retrieve info on one buddy.  The
+ * AIM callback then fills in the values when the responses are
+ * received.  The buddy must be logged in or no request will be
+ * performed.
+ */
+void owl_buddylist_request_idletime(owl_buddylist *b, char *screenname)
+{
+  if (!owl_buddylist_is_buddy_loggedin(b, screenname)) return;
+  owl_aim_get_idle(screenname);
+}
+
 /* return the number of logged in buddies */
 int owl_buddylist_get_size(owl_buddylist *b)
 {
@@ -109,7 +103,33 @@ int owl_buddylist_get_size(owl_buddylist *b)
 /* get buddy number 'n' */
 char *owl_buddylist_get_buddy(owl_buddylist *b, int n)
 {
+  if (n > owl_buddylist_get_size(b)-1) return("");
   return(owl_list_get_element(&(b->buddies), n));
+}
+
+/* Return the index of the buddy 'screename' or -1
+ * if the buddy is not logged in.
+ */
+int owl_buddylist_get_buddy_index(owl_buddylist *b, char *screenname)
+{
+  int i, j;
+  
+  j=owl_list_get_size(&(b->buddies));
+  for (i=0; i<j; i++) {
+    if (!strcasecmp(owl_list_get_element(&(b->buddies), i), screenname)) {
+      return(i);
+    }
+  }
+  return(-1);
+}
+
+/* return 1 if the buddy 'screenname' is logged in,
+ * otherwise return 0
+ */
+int owl_buddylist_is_buddy_loggedin(owl_buddylist *b, char *screenname)
+{
+  if (owl_buddylist_get_buddy_index(b, screenname)!=-1) return(1);
+  return(0);
 }
 
 /* get the idle time for buddy number 'n' */
@@ -126,18 +146,15 @@ int owl_buddylist_get_idletime(owl_buddylist *b, int n)
  */
 void owl_buddylist_set_idletime(owl_buddylist *b, char *screenname, int minutes)
 {
-  int i, j, *idle;
+  int index, *idle;
 
-  j=owl_buddylist_get_size(b);
-  for (i=0; i<j; i++) {
-    if (!strcasecmp(owl_list_get_element(&(b->buddies), i), screenname)) {
-      owl_free(owl_list_get_element(&(b->idletimes), i));
-      idle=owl_malloc(sizeof(int));
-      *idle=minutes;
-      owl_list_replace_element(&(b->idletimes), i, idle);
-      return;
-    }
-  }
+  index=owl_buddylist_get_buddy_index(b, screenname);
+  if (index==-1) return;
+
+  owl_free(owl_list_get_element(&(b->idletimes), index));
+  idle=owl_malloc(sizeof(int));
+  *idle=minutes;
+  owl_list_replace_element(&(b->idletimes), index, idle);
 }
 
 /* remove all buddies from the list */
