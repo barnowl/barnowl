@@ -2,7 +2,7 @@ $Id$
 
 2.0.6-pre-1
 	Initialze $owl::auth
-	'addbuddy aim' now works and 'delbuddy aim' mostly works
+	'addbuddy aim' and 'delbuddy aim' now work
 	Bug fix to make zwrite -m work with -c/-i
 	Fix in autoconf for des425
 	

@@ -211,6 +211,13 @@ void owl_aim_delbuddy(char *screenname)
 		     aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
 		     "Buddies", &screenname, 1);
 
+  /* for some reason we don't get an offgoing notice, so we'll remove
+   * manually
+   */
+
+  owl_buddylist_offgoing(owl_global_get_buddylist(&g), screenname);
+
+
 }
 
 void owl_aim_chat_join(char *chatroom)
