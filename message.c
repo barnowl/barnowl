@@ -218,18 +218,45 @@ char *owl_message_get_opcode(owl_message *m)
 }
 
 
-void owl_message_set_isloginout(owl_message *m)
+void owl_message_set_islogin(owl_message *m)
 {
-  owl_message_set_attribute(m, "isloginout", "");
+  owl_message_set_attribute(m, "loginout", "login");
+}
+
+
+void owl_message_set_islogout(owl_message *m)
+{
+  owl_message_set_attribute(m, "loginout", "logout");
 }
 
 int owl_message_is_loginout(owl_message *m)
 {
   char *res;
 
-  res=owl_message_get_attribute_value(m, "isloginout");
+  res=owl_message_get_attribute_value(m, "loginout");
   if (!res) return(0);
   return(1);
+}
+
+int owl_message_is_login(owl_message *m)
+{
+  char *res;
+
+  res=owl_message_get_attribute_value(m, "loginout");
+  if (!res) return(0);
+  if (!strcmp(res, "login")) return(1);
+  return(0);
+}
+
+
+int owl_message_is_logout(owl_message *m)
+{
+  char *res;
+
+  res=owl_message_get_attribute_value(m, "loginout");
+  if (!res) return(0);
+  if (!strcmp(res, "logout")) return(1);
+  return(0);
 }
 
 void owl_message_set_isprivate(owl_message *m)
@@ -540,85 +567,85 @@ void owl_message_create(owl_message *m, char *header, char *text)
   owl_free(indent);
 }
 
-void owl_message_create_incoming_aim(owl_message *m, char *sender, char *recipient, char *text)
-{
-  char *indent;
-
-  owl_message_init(m);
-  owl_message_set_body(m, text);
-  owl_message_set_sender(m, sender);
-  owl_message_set_recipient(m, recipient);
-  owl_message_set_type_aim(m);
-  owl_message_set_direction_in(m);
-
-  /* for now, all AIM messages are private messages since we don't do chat rooms */
-  owl_message_set_isprivate(m);
-
-  indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
-  owl_text_indent(indent, text, OWL_MSGTAB);
-  owl_fmtext_init_null(&(m->fmtext));
-  owl_fmtext_append_bold(&(m->fmtext), OWL_TABSTR);
-  owl_fmtext_append_bold(&(m->fmtext), "AIM from ");
-  owl_fmtext_append_bold(&(m->fmtext), sender);
-  owl_fmtext_append_bold(&(m->fmtext), "\n");
-  owl_fmtext_append_bold(&(m->fmtext), indent);
-  if (text[strlen(text)-1]!='\n') {
-    owl_fmtext_append_bold(&(m->fmtext), "\n");
-  }
-  
-  owl_free(indent);
-}
-
-void owl_message_create_outgoing_aim(owl_message *m, char *sender, char *recipient, char *text)
-{
-  char *indent;
-
-  owl_message_init(m);
-  owl_message_set_body(m, text);
-  owl_message_set_sender(m, sender);
-  owl_message_set_recipient(m, recipient);
-  owl_message_set_type_aim(m);
-  owl_message_set_direction_out(m);
-
-  indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
-  owl_text_indent(indent, text, OWL_MSGTAB);
-  owl_fmtext_init_null(&(m->fmtext));
-  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
-  owl_fmtext_append_normal(&(m->fmtext), "AIM sent to ");
-  owl_fmtext_append_normal(&(m->fmtext), recipient);
-  owl_fmtext_append_normal(&(m->fmtext), "\n");
-  owl_fmtext_append_ztext(&(m->fmtext), indent);
-  if (text[strlen(text)-1]!='\n') {
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-  }
-  
-  owl_free(indent);
-}
-
-/* For login direction == 0
- * For logout direction == 1
+/* if loginout == -1 it's a logout message
+ *                 0 it's not a login/logout message
+ *                 1 it's a login message
  */
-void owl_message_create_aim_login(owl_message *m, int direction, char *screenname)
+void owl_message_create_aim(owl_message *m, char *sender, char *recipient, char *text, int direction, int loginout)
 {
   owl_message_init(m);
-  owl_message_set_body(m, "");
-  owl_message_set_sender(m, screenname);
-  owl_message_set_recipient(m, owl_global_get_aim_screenname(&g));
+  owl_message_set_body(m, text);
+  owl_message_set_sender(m, sender);
+  owl_message_set_recipient(m, recipient);
   owl_message_set_type_aim(m);
-  owl_message_set_direction_in(m);
 
-  owl_message_set_isloginout(m);
-
-  owl_fmtext_init_null(&(m->fmtext));
-  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
-  if (direction==0) {
-    owl_fmtext_append_bold(&(m->fmtext), "AIM LOGIN");
-  } else if (direction==1) {
-    owl_fmtext_append_bold(&(m->fmtext), "AIM LOGOUT");
+  if (direction==OWL_MESSAGE_DIRECTION_IN) {
+    owl_message_set_direction_in(m);
+  } else if (direction==OWL_MESSAGE_DIRECTION_OUT) {
+    owl_message_set_direction_out(m);
   }
-  owl_fmtext_append_normal(&(m->fmtext), " for ");
-  owl_fmtext_append_normal(&(m->fmtext), screenname);
-  owl_fmtext_append_normal(&(m->fmtext), "\n");
+
+  /* for now all messages that aren't loginout are private */
+  if (!loginout) {
+    owl_message_set_isprivate(m);
+  }
+
+  if (loginout==-1) {
+    owl_message_set_islogout(m);
+  } else if (loginout==1) {
+    owl_message_set_islogin(m);
+  }
+
+  /* create the formatted message */
+  if (owl_global_is_config_format(&g)) {
+    _owl_message_make_text_from_config(m);
+  } else {
+    _owl_message_make_text_from_aim(m);
+  }
+}
+
+void _owl_message_make_text_from_aim(owl_message *m)
+{
+  char *indent;
+
+  if (owl_message_is_loginout(m)) {
+    owl_fmtext_init_null(&(m->fmtext));
+    owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
+    if (owl_message_is_login(m)) {
+      owl_fmtext_append_bold(&(m->fmtext), "AIM LOGIN");
+    } else {
+      owl_fmtext_append_bold(&(m->fmtext), "AIM LOGOUT");
+    }
+    owl_fmtext_append_normal(&(m->fmtext), " for ");
+    owl_fmtext_append_normal(&(m->fmtext), owl_message_get_sender(m));
+    owl_fmtext_append_normal(&(m->fmtext), "\n");
+  } else if (owl_message_is_direction_in(m)) {
+    indent=owl_malloc(strlen(owl_message_get_body(m))+owl_text_num_lines(owl_message_get_body(m))*OWL_MSGTAB+10);
+    owl_text_indent(indent, owl_message_get_body(m), OWL_MSGTAB);
+    owl_fmtext_init_null(&(m->fmtext));
+    owl_fmtext_append_bold(&(m->fmtext), OWL_TABSTR);
+    owl_fmtext_append_bold(&(m->fmtext), "AIM from ");
+    owl_fmtext_append_bold(&(m->fmtext), owl_message_get_sender(m));
+    owl_fmtext_append_bold(&(m->fmtext), "\n");
+    owl_fmtext_append_bold(&(m->fmtext), indent);
+    if (indent[strlen(indent)-1]!='\n') {
+      owl_fmtext_append_normal(&(m->fmtext), "\n");
+    }
+    owl_free(indent);
+  } else if (owl_message_is_direction_out(m)) {
+    indent=owl_malloc(strlen(owl_message_get_body(m))+owl_text_num_lines(owl_message_get_body(m))*OWL_MSGTAB+10);
+    owl_text_indent(indent, owl_message_get_body(m), OWL_MSGTAB);
+    owl_fmtext_init_null(&(m->fmtext));
+    owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
+    owl_fmtext_append_normal(&(m->fmtext), "AIM sent to ");
+    owl_fmtext_append_normal(&(m->fmtext), owl_message_get_recipient(m));
+    owl_fmtext_append_normal(&(m->fmtext), "\n");
+    owl_fmtext_append_ztext(&(m->fmtext), indent);
+    if (indent[strlen(indent)-1]!='\n') {
+      owl_fmtext_append_normal(&(m->fmtext), "\n");
+    }
+    owl_free(indent);
+  }
 }
 
 void owl_message_create_admin(owl_message *m, char *header, char *text)
@@ -686,7 +713,11 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 
   /* Set the "isloginout" attribute if it's a login message */
   if (!strcasecmp(n->z_class, "login")) {
-    owl_message_set_isloginout(m);
+    if (!strcasecmp(n->z_opcode, "user_login")) {
+      owl_message_set_islogin(m);
+    } else if (!strcasecmp(n->z_opcode, "user_logout")) {
+      owl_message_set_islogout(m);
+    }
   }
 
   /* is the "isprivate" attribute if it's a private zephyr */

@@ -138,7 +138,12 @@ int owl_function_make_outgoing_aim(char *body, char *to)
 
   /* create the message */
   m=owl_malloc(sizeof(owl_message));
-  owl_message_create_outgoing_aim(m, owl_global_get_aim_screenname(&g), to, body);
+  owl_message_create_aim(m,
+			 owl_global_get_aim_screenname(&g),
+			 to,
+			 body,
+			 OWL_MESSAGE_DIRECTION_OUT,
+			 0);
 
   /* add it to the global list and current view */
   owl_messagelist_append_element(owl_global_get_msglist(&g), m);

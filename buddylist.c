@@ -27,7 +27,12 @@ void owl_buddylist_oncoming(owl_buddylist *b, char *screenname)
     owl_list_append_element(&(b->buddies), owl_strdup(screenname));
 
     m=owl_malloc(sizeof(owl_message));
-    owl_message_create_aim_login(m, 0, screenname);
+    owl_message_create_aim(m,
+			   screenname,
+			   owl_global_get_aim_screenname(&g),
+			   "",
+			   OWL_MESSAGE_DIRECTION_IN,
+			   1);
     owl_global_messagequeue_addmsg(&g, m);
   }
 }
@@ -55,7 +60,13 @@ void owl_buddylist_offgoing(owl_buddylist *b, char *screenname)
 
   if (found) {
     m=owl_malloc(sizeof(owl_message));
-    owl_message_create_aim_login(m, 1, screenname);
+    owl_message_create_aim(m,
+			   screenname,
+			   owl_global_get_aim_screenname(&g),
+			   "",
+			   OWL_MESSAGE_DIRECTION_IN,
+			   -1);
+
     owl_global_messagequeue_addmsg(&g, m);
   }
 }

@@ -1276,7 +1276,12 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   stripmsg=owl_text_htmlstrip(realmsg);
   nz_screenname=owl_aim_normalize_screenname(userinfo->sn);
   m=owl_malloc(sizeof(owl_message));
-  owl_message_create_incoming_aim(m, nz_screenname, owl_global_get_aim_screenname(&g), stripmsg);
+  owl_message_create_aim(m,
+			 nz_screenname,
+			 owl_global_get_aim_screenname(&g),
+			 stripmsg,
+			 OWL_MESSAGE_DIRECTION_IN,
+			 0);
   owl_global_messagequeue_addmsg(&g, m);
   owl_free(stripmsg);
   owl_free(nz_screenname);

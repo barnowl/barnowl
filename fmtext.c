@@ -456,15 +456,13 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
   return(0);
 }
 
-
+  
+/* the first column is column 0 */
+/* the message is expected to end in a new line for now */
 void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *out)
 {
   char *ptr1, *ptr2, *last;
   int len, offset;
-  
-  /* the first column is column 0 */
-
-  /* the message is expected to end in a new line for now */
 
   last=in->textbuff+in->textlen-1;
   ptr1=in->textbuff;
@@ -484,12 +482,15 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
     /* we need to check that we won't run over here */
     len=bcol-acol;
     if (len > (ptr2-(ptr1+acol))) {
+      /* the whole line fits with room to spare, don't take a full 'len' */
       len=ptr2-(ptr1+acol);
     }
     if (len>last-ptr1) {
+      /* the whole rest of the text fits with room to spare, adjust for it */
       len-=(last-ptr1);
     }
     if (len<=0) {
+      /* saftey check */
       owl_fmtext_append_normal(out, "\n");
       ptr1=ptr2+1;
       continue;

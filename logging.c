@@ -56,7 +56,7 @@ void owl_log_outgoing_zephyr(char *to, char *text) {
 void owl_log_outgoing_aim(char *to, char *text) {
   FILE *file;
   char filename[MAXPATHLEN], *logpath;
-  char *tobuff, *ptr;
+  char *tobuff;
 
   tobuff=owl_sprintf("aim:%s", to);
 
