@@ -476,13 +476,14 @@ void owl_zephyr_delsub(char *filename, char *class, char *inst, char *recip) {
 
   /* we'll read the entire file into memory, minus the line we don't want and
    * and at the same time create a backup file */
-  text=malloc(LINE);
+  text=owl_malloc(LINE);
+  strcpy(text, "");
   size=LINE;
   while (fgets(buff, LINE, file)!=NULL) {
     /* if we don't match the line, add to text */
     if (strcasecmp(buff, line)) {
       size+=LINE;
-      text=realloc(text, size);
+      text=owl_realloc(text, size);
       strcat(text, buff);
     }
 

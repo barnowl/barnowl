@@ -48,15 +48,15 @@ void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincol
 }
 
 WINDOW *owl_editwin_get_curswin(owl_editwin *e) {
-  return e->curswin;
+  return(e->curswin);
 }
 
 void owl_editwin_set_history(owl_editwin *e, owl_history *h) {
-  e->hist = h;
+  e->hist=h;
 }
 
 owl_history *owl_editwin_get_history(owl_editwin *e) {
-  return e->hist;
+  return(e->hist);
 }
 
 void owl_editwin_set_dotsend(owl_editwin *e) {
@@ -65,9 +65,9 @@ void owl_editwin_set_dotsend(owl_editwin *e) {
 
 int owl_editwin_limit_maxcols(int v, int maxv) {
   if (maxv > 5 && v > maxv) {
-    return maxv;
+    return(maxv);
   } else {
-    return v;
+    return(v);
   }
 }
 

@@ -1192,7 +1192,7 @@ void owl_function_info() {
 	owl_fmtext_append_normal(&fm, buff);
       }
 
-      sprintf(buff, "Checkd Ath: %i\n", buff, n->z_checked_auth);
+      sprintf(buff, "Checkd Ath: %i\n", n->z_checked_auth);
       sprintf(buff, "%sMulti notc: %s\n", buff, n->z_multinotice);
       sprintf(buff, "%sNum other : %i\n", buff, n->z_num_other_fields);
       sprintf(buff, "%sMsg Len   : %i\n", buff, n->z_message_len);
