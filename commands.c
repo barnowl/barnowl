@@ -148,6 +148,12 @@ owl_cmd commands_to_init[]
 	      "getsubs retrieves the current subscriptions from the server\n"
 	      "and displays them.\n"),
 
+  OWLCMD_ARGS("smartzpunt", owl_command_smartzpunt, OWL_CTX_INTERACTIVE,
+	      "creates a zpunt based on the current message",
+	      "smartnarrow [-i | --instance]",
+	      "Starts a zpunt command based on the current message's class\n"
+	      "(and instance if -i is specified).\n"),
+
   OWLCMD_ARGS("zpunt", owl_command_zpunt, OWL_CTX_ANY,
 	      "suppress a given zephyr triplet",
 	      "zpunt <class> <instance> [recipient]\n"
@@ -1384,6 +1390,18 @@ void owl_command_zpunt_and_zunpunt(int argc, char **argv, int type) {
     owl_function_makemsg("<%s, %s, %s> removed from punt list.", class, inst, recip);
   }
 }
+
+char *owl_command_smartzpunt(int argc, char **argv, char *buff) {
+  if (argc == 1) {
+    owl_function_smartzpunt(0);
+  } else if (argc == 2 && (!strcmp(argv[1], "-i") || !strcmp(argv[1], "--instance"))) {
+    owl_function_smartzpunt(1);
+  } else {
+    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);    
+  }
+  return NULL;
+}
+
 
 
 /*********************************************************************/

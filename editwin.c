@@ -20,12 +20,10 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->topline=0;
   e->winlines=winlines;
   e->wincols=wincols;
-  if (wincols > 80) {
-    e->fillcol=80-9;
-  } else {
-    e->fillcol=wincols-9;
-  }
-  e->wrapcol=wincols-9;
+  e->fillcol=owl_editwin_limit_maxcols(wincols-1, 
+				       owl_global_get_edit_maxfillcols(&g));
+  e->wrapcol=owl_editwin_limit_maxcols(wincols-1, 
+				       owl_global_get_edit_maxwrapcols(&g));
   e->curswin=win;
   e->style=style;
   if ((style!=OWL_EDITWIN_STYLE_MULTILINE) &&
@@ -41,12 +39,10 @@ void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincol
   e->curswin=w;
   e->winlines=winlines;
   e->wincols=wincols;
-  if (wincols > 80) {
-    e->fillcol=80-8;
-  } else {
-    e->fillcol=wincols-8;
-  }
-  e->wrapcol=wincols-9;
+  e->fillcol=owl_editwin_limit_maxcols(wincols-1, 
+				       owl_global_get_edit_maxfillcols(&g));
+  e->wrapcol=owl_editwin_limit_maxcols(wincols-1, 
+				       owl_global_get_edit_maxwrapcols(&g));
 }
 
 WINDOW *owl_editwin_get_curswin(owl_editwin *e) {
@@ -55,6 +51,14 @@ WINDOW *owl_editwin_get_curswin(owl_editwin *e) {
 
 void owl_editwin_set_dotsend(owl_editwin *e) {
   e->dotsend=1;
+}
+
+int owl_editwin_limit_maxcols(int v, int maxv) {
+  if (maxv > 5 && v > maxv) {
+    return maxv;
+  } else {
+    return v;
+  }
 }
 
 void owl_editwin_set_locktext(owl_editwin *e, char *text) {

@@ -119,6 +119,12 @@ static owl_variable variables_to_init[] = {
   OWLVAR_STRING( "view_home" /* %OwlVarStub */, "all",
 	         "home view to switch to after 'X'" ),
 
+  OWLVAR_INT(    "edit:maxfillcols" /* %OwlVarStub:edit_maxfillcols */, 70,
+	         "maximum number of columns for M-q to fill text to" ),
+
+  OWLVAR_INT(    "edit:maxwrapcols" /* %OwlVarStub:edit_maxwrapcols */, 70,
+	         "maximum number of columns for line-wrapping" ),
+
   OWLVAR_INT_FULL( "typewinsize" /* %OwlVarStub:typwin_lines */, 
 		   OWL_TYPWIN_SIZE,
 		  "number of lines in the typing window", "int > 0",

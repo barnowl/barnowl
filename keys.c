@@ -187,6 +187,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-u",     "undelete view",  "undelete a message marked for deletion");
   BIND_CMD("d",       "delete",         "mark message for deletion");
   BIND_CMD("M-D",     "delete view",    "mark all messages in view for deletion");
+  BIND_CMD("C-x k",   "smartzpunt -i",  "zpunt current <class,instance>");
 
   BIND_CMD("X",   "( expunge ; view --home )", "expunge deletions and switch to home view");
 

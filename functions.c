@@ -217,7 +217,7 @@ void owl_function_nextmsg_full(char *filter, int skip_deleted, int last_if_none)
     owl_function_makemsg("already at last%s message%s%s",
 			 skip_deleted?" non-deleted":"",
 			 filter?" in ":"", filter?filter:"");
-    owl_function_beep();
+    if (!skip_deleted) owl_function_beep();
   }
 
   if (last_if_none || found) {
@@ -266,7 +266,7 @@ void owl_function_prevmsg_full(char *filter, int skip_deleted, int first_if_none
     owl_function_makemsg("already at first%s message%s%s",
 			 skip_deleted?" non-deleted":"",
 			 filter?" in ":"", filter?filter:"");
-    owl_function_beep();
+    if (!skip_deleted) owl_function_beep();
   }
 
   if (first_if_none || found) {
@@ -1841,6 +1841,54 @@ char *owl_function_smartfilter(int type) {
   }
   return filtname;
 }
+
+void owl_function_smartzpunt(int type) {
+  /* Starts a zpunt command based on the current class,instance pair. 
+   * If type=0, uses just class.  If type=1, uses instance as well. */
+  owl_view *v;
+  owl_message *m;
+  char *cmd, *cmdprefix, *mclass, *minst;
+  
+  v=owl_global_get_current_view(&g);
+  m=owl_view_get_element(v, owl_global_get_curmsg(&g));
+
+  if (owl_view_get_size(v)==0) {
+    owl_function_makemsg("No message selected\n");
+    return;
+  }
+
+  /* for now we skip admin messages. */
+  if (owl_message_is_admin(m)
+      || owl_message_is_login(m)
+      || !owl_message_is_zephyr(m)) {
+    owl_function_makemsg("smartzpunt doesn't support this message type.");
+    return;
+  }
+
+  mclass = owl_message_get_class(m);
+  minst = owl_message_get_instance(m);
+  if (!mclass || !*mclass || *mclass==' '
+      || (!strcasecmp(mclass, "message") && !strcasecmp(minst, "personal"))
+      || (type && (!minst || !*minst|| *minst==' '))) {
+    owl_function_makemsg("smartzpunt can't safely do this for <%s,%s>",
+			 mclass, minst);
+  } else {
+    cmdprefix = "start-command zpunt ";
+    cmd = owl_malloc(strlen(cmdprefix)+strlen(mclass)+strlen(minst)+3);
+    strcpy(cmd, cmdprefix);
+    strcat(cmd, mclass);
+    if (type) {
+      strcat(cmd, " ");
+      strcat(cmd, minst);
+    } else {
+      strcat(cmd, " *");
+    }
+    owl_function_command(cmd);
+    owl_free(cmd);
+  }
+}
+
+
 
 void owl_function_color_current_filter(char *color) {
   owl_filter *f;
