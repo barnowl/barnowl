@@ -28,6 +28,7 @@ $Id$
 	  command
 	Made M-n work on classes and instances with spaces in them
 
+	
 1.2.8
 	Class pings are displayed differently now
 	Updated owlconf.simple example to format outgoing messages.
