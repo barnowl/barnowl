@@ -26,6 +26,8 @@
 
 static const char fileIdent[] = "$Id$";
 
+owl_global g;
+
 int main(int argc, char **argv, char **env) {
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
   owl_editwin *tw;

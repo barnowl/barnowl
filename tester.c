@@ -4,6 +4,8 @@
 
 static const char fileIdent[] = "$Id$";
 
+owl_global g;
+
 void screeninit() {
   char buff[1024];
   

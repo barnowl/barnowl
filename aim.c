@@ -294,7 +294,7 @@ static int faimtest_parse_login(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
 
   aim_send_login(sess, fr->conn, priv->screenname, priv->password, &info, key);
-
+  
   return 1;
 }
 
@@ -465,7 +465,7 @@ int login(aim_session_t *sess, const char *sn, const char *passwd)
 
   if (!priv->screenname || !priv->password) {
     /* printf("need SN and password\n"); */
-    return -1;
+    return(-1);
   }
 
   if (!(authconn = aim_newconn(sess, AIM_CONN_TYPE_AUTH, priv->server ? priv->server : FAIM_LOGIN_SERVER))) {
@@ -478,8 +478,7 @@ int login(aim_session_t *sess, const char *sn, const char *passwd)
       /* printf("could not connect to authorizer\n"); */
     }
     aim_conn_kill(sess, &authconn);
-
-    return (-1);
+    return(-1);
   }
 
   aim_conn_addhandler(sess, authconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_FLAPVER, faimtest_flapversion, 0);
@@ -491,7 +490,6 @@ int login(aim_session_t *sess, const char *sn, const char *passwd)
   aim_request_login(sess, authconn, priv->screenname);
 
   /* printf("login request sent\n"); */
-
   return(0);
 }
 

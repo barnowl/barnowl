@@ -36,8 +36,6 @@ void owl_buddylist_oncoming(owl_buddylist *b, char *screenname)
     owl_global_messagequeue_addmsg(&g, m);
   }
 }
-    
-
 
 /* Deal with an "offgoing" message.  This means recognizing the user
  * has logged out, and sending a message if they were logged in.
@@ -71,16 +69,19 @@ void owl_buddylist_offgoing(owl_buddylist *b, char *screenname)
   }
 }
 
+/* return the number of logged in buddies */
 int owl_buddylist_get_size(owl_buddylist *b)
 {
   return(owl_list_get_size(&(b->buddies)));
 }
 
+/* get buddy number 'n' */
 char *owl_buddylist_get_buddy(owl_buddylist *b, int n)
 {
   return(owl_list_get_element(&(b->buddies), n));
 }
 
+/* remove all buddies from the list */
 void owl_buddylist_clear(owl_buddylist *b) {
   owl_list_free_all(&(b->buddies), owl_free);
   owl_list_create(&(b->buddies));

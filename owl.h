@@ -421,7 +421,7 @@ typedef struct _owl_global {
 } owl_global;
 
 /* globals */
-owl_global g;
+extern owl_global g;
 
 #include "owl_prototypes.h"
 

@@ -3,6 +3,7 @@ $Id$
 2.0.3-pre-1
 	Don't ring the terminal bell on mail messages.
 	Nuke <FONT>
+	Make the build work a little better on OSX
 	
 2.0.2
 	Fixed bug in 'startup' command.

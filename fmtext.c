@@ -4,6 +4,7 @@
 
 static const char fileIdent[] = "$Id$";
 
+/* initialize an fmtext with no data */
 void owl_fmtext_init_null(owl_fmtext *f)
 {
   f->textlen=0;
@@ -14,7 +15,9 @@ void owl_fmtext_init_null(owl_fmtext *f)
   f->colorbuff[0]=OWL_COLOR_DEFAULT;
 }
 
-
+/* Internal function.  Set the attribute 'attr' from index 'first' to
+ * index 'last'
+ */
 void _owl_fmtext_set_attr(owl_fmtext *f, int attr, int first, int last)
 {
   int i;
@@ -23,6 +26,9 @@ void _owl_fmtext_set_attr(owl_fmtext *f, int attr, int first, int last)
   }
 }
 
+/* Internal function.  Add the attribute 'attr' to the existing
+ * attributes from index 'first' to index 'last'
+ */
 void _owl_fmtext_add_attr(owl_fmtext *f, int attr, int first, int last)
 {
   int i;
@@ -31,6 +37,9 @@ void _owl_fmtext_add_attr(owl_fmtext *f, int attr, int first, int last)
   }
 }
 
+/* Internal function.  Set the color to be 'color' from index 'first'
+ * to index 'last
+ */
 void _owl_fmtext_set_color(owl_fmtext *f, int color, int first, int last)
 {
   int i;
@@ -39,7 +48,9 @@ void _owl_fmtext_set_color(owl_fmtext *f, int color, int first, int last)
   }
 }
 
-
+/* append text to the end of 'f' with attribute 'attr' and color
+ * 'color'
+ */
 void owl_fmtext_append_attr(owl_fmtext *f, char *text, int attr, int color)
 {
   int newlen;
@@ -55,36 +66,37 @@ void owl_fmtext_append_attr(owl_fmtext *f, char *text, int attr, int color)
   f->textlen=newlen;
 }
 
-
+/* Append normal, uncolored text 'text' to 'f' */
 void owl_fmtext_append_normal(owl_fmtext *f, char *text)
 {
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_NONE, OWL_COLOR_DEFAULT);
 }
 
+/* Append normal text 'text' to 'f' with color 'color' */
 void owl_fmtext_append_normal_color(owl_fmtext *f, char *text, int color)
 {
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_NONE, color);
 }
 
-
+/* Append bold text 'text' to 'f' */
 void owl_fmtext_append_bold(owl_fmtext *f, char *text)
 {
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_BOLD, OWL_COLOR_DEFAULT);
 }
 
-
+/* Append reverse video text 'text' to 'f' */
 void owl_fmtext_append_reverse(owl_fmtext *f, char *text)
 {
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_REVERSE, OWL_COLOR_DEFAULT);
 }
 
-
+/* Append reversed and bold, uncolored text 'text' to 'f' */
 void owl_fmtext_append_reversebold(owl_fmtext *f, char *text)
 {
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_REVERSE | OWL_FMTEXT_ATTR_BOLD, OWL_COLOR_DEFAULT);
 }
 
-
+/* Add the attribute 'attr' to all text in 'f' */
 void owl_fmtext_addattr(owl_fmtext *f, int attr)
 {
   /* add the attribute to all text */
@@ -96,6 +108,9 @@ void owl_fmtext_addattr(owl_fmtext *f, int attr)
   }
 }
 
+/* Anywhere the color is NOT ALREDY SET, set the color to 'color'.
+ * Other colors are left unchanged
+ */
 void owl_fmtext_colorize(owl_fmtext *f, int color)
 {
   /* everywhere the color is OWL_COLOR_DEFAULT, change it to be 'color' */
@@ -107,7 +122,9 @@ void owl_fmtext_colorize(owl_fmtext *f, int color)
   }
 }
 
-
+/* Append the text 'text' to 'f' and interpret the zephyr style
+ * formatting syntax to set appropriate attributes.
+ */
 void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
 {
   int stacksize, curattrs, curcolor;
@@ -292,11 +309,11 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
       continue;
     }
   }
-
 }
 
-/* This is used internally to fmtext.  Use owl_fmtext_append_fmtext()
- * (no initial underscore) externally */
+/* Internal function.  Append text from 'in' between index 'start' and
+ * 'stop' to the end of 'f'
+ */
 void _owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in, int start, int stop)
 {
   int newlen, i;
@@ -315,12 +332,14 @@ void _owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in, int start, int sto
   f->textlen=newlen;
 }
 
+/* append fmtext 'in' to 'f' */
 void owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in)
 {
   _owl_fmtext_append_fmtext(f, in, 0, in->textlen);
 
 }
 
+/* Append 'nspaces' number of spaces to the end of 'f' */
 void owl_fmtext_append_spaces(owl_fmtext *f, int nspaces)
 {
   int i;
@@ -357,14 +376,17 @@ void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(
   }
 }
 
-
-/* caller is responsible for freeing */
+/* Return a plain version of the fmtext.  Caller is responsible for
+ * freeing the return
+ */
 char *owl_fmtext_print_plain(owl_fmtext *f)
 {
-  return owl_strdup(f->textbuff);
+  return(owl_strdup(f->textbuff));
 }
 
-
+/* add the formatted text to the curses window 'w'.  The window 'w'
+ * must already be initiatlized with curses
+ */
 void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w)
 {
   char *tmpbuff;
@@ -421,11 +443,11 @@ void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w)
 }
 
 
+/* start with line 'aline' (where the first line is 0) and print
+ * 'lines' number of lines into 'out'
+ */
 int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *out)
 {
-  /* start with line aline (where the first line is 0) and print
-   *  'lines' lines
-   */
   char *ptr1, *ptr2;
   int i, offset;
   
@@ -444,10 +466,10 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
   if (lines<1) return(-1);
 
   for (i=0; i<lines; i++) {
-    ptr2=strchr(ptr1, '\n');
     offset=ptr1-in->textbuff;
+    ptr2=strchr(ptr1, '\n'); /* this is a valgrind suspicious line */
     if (!ptr2) {
-      _owl_fmtext_append_fmtext(out, in, offset, in->textlen-1);
+      _owl_fmtext_append_fmtext(out, in, offset, (in->textlen)-1);
       return(-1);
     }
     _owl_fmtext_append_fmtext(out, in, offset, (ptr2-ptr1)+offset);
@@ -456,9 +478,11 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
   return(0);
 }
 
-  
-/* the first column is column 0 */
-/* the message is expected to end in a new line for now */
+/* Truncate the message so that each line begins at column 'acol' and
+ * ends at 'bcol' or sooner.  The first column is number 0.  The new
+ * message is placed in 'out'.  The message is * expected to end in a
+ * new line for now
+ */
 void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *out)
 {
   char *ptr1, *ptr2, *last;
@@ -503,7 +527,7 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
   }
 }
 
-
+/* Return the number of lines in 'f' */
 int owl_fmtext_num_lines(owl_fmtext *f)
 {
   int lines, i;
@@ -521,7 +545,6 @@ int owl_fmtext_num_lines(owl_fmtext *f)
   return(lines);
 }
 
-
 char *owl_fmtext_get_text(owl_fmtext *f)
 {
   return(f->textbuff);
@@ -535,6 +558,7 @@ void owl_fmtext_set_char(owl_fmtext *f, int index, int ch)
   f->textbuff[index]=ch;
 }
 
+/* Free all memory allocated by the object */
 void owl_fmtext_free(owl_fmtext *f)
 {
   if (f->textbuff) owl_free(f->textbuff);
@@ -542,21 +566,27 @@ void owl_fmtext_free(owl_fmtext *f)
   if (f->colorbuff) owl_free(f->colorbuff);
 }
 
-
+/* Make a copy of the fmtext 'src' into 'dst' */
 void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src)
 {
+  int mallocsize;
+
+  if (src->textlen==0) {
+    mallocsize=5;
+  } else {
+    mallocsize=src->textlen+2;
+  }
   dst->textlen=src->textlen;
-  dst->textbuff=owl_malloc(src->textlen+5);
-  dst->fmbuff=owl_malloc(src->textlen+5);
-  dst->colorbuff=owl_malloc(src->textlen+5);
+  dst->textbuff=owl_malloc(mallocsize); /* valgrind suspcious line */
+  dst->fmbuff=owl_malloc(mallocsize);
+  dst->colorbuff=owl_malloc(mallocsize);
   memcpy(dst->textbuff, src->textbuff, src->textlen);
   memcpy(dst->fmbuff, src->fmbuff, src->textlen);
   memcpy(dst->colorbuff, src->colorbuff, src->textlen);
 }
 
-
 /* highlight all instance of "string".  Return the number of
- * instances found.  This is case insensitive.
+ * instances found.  This is a case insensitive search.
  */
 int owl_fmtext_search_and_highlight(owl_fmtext *f, char *string)
 {
@@ -581,8 +611,8 @@ int owl_fmtext_search_and_highlight(owl_fmtext *f, char *string)
   return(found);
 }
 
-/* return 1 if the string is found, 0 if not.  This is case
- *  insensitive
+/* return 1 if the string is found, 0 if not.  This is a case
+ *  insensitive search.
  */
 int owl_fmtext_search(owl_fmtext *f, char *string)
 {

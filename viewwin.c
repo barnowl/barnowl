@@ -5,11 +5,11 @@ static const char fileIdent[] = "$Id$";
 
 #define BOTTOM_OFFSET 1
 
-void owl_viewwin_init_text(owl_viewwin *v, WINDOW *win, int winlines, int wincols, char *text) {
-  /* initialize the viewwin e.
-   * 'win' is an already initialzed curses window that will be used by viewwin
-   */
-
+/* initialize the viewwin e.  'win' is an already initialzed curses
+ * window that will be used by viewwin
+ */
+void owl_viewwin_init_text(owl_viewwin *v, WINDOW *win, int winlines, int wincols, char *text)
+{
   owl_fmtext_init_null(&(v->fmtext));
   if (text) {
     owl_fmtext_append_normal(&(v->fmtext), text);
@@ -25,11 +25,11 @@ void owl_viewwin_init_text(owl_viewwin *v, WINDOW *win, int winlines, int wincol
   v->curswin=win;
 }
 
-void owl_viewwin_init_fmtext(owl_viewwin *v, WINDOW *win, int winlines, int wincols, owl_fmtext *fmtext) {
-  /* initialize the viewwin e.
-   * 'win' is an already initialzed curses window that will be used by viewwin
-   */
-
+/* initialize the viewwin e.  'win' is an already initialzed curses
+ * window that will be used by viewwin
+ */
+void owl_viewwin_init_fmtext(owl_viewwin *v, WINDOW *win, int winlines, int wincols, owl_fmtext *fmtext)
+{
   owl_fmtext_copy(&(v->fmtext), fmtext);
   v->textlines=owl_fmtext_num_lines(&(v->fmtext));
   v->topline=0;
@@ -39,16 +39,17 @@ void owl_viewwin_init_fmtext(owl_viewwin *v, WINDOW *win, int winlines, int winc
   v->curswin=win;
 }
 
-void owl_viewwin_set_curswin(owl_viewwin *v, WINDOW *w, int winlines, int wincols) {
+void owl_viewwin_set_curswin(owl_viewwin *v, WINDOW *w, int winlines, int wincols)
+{
   v->curswin=w;
   v->winlines=winlines;
   v->wincols=wincols;
 }
 
-void owl_viewwin_redisplay(owl_viewwin *v, int update) {
-  /* regenerate text on the curses window. */
-  /* if update == 1 then do a doupdate() */
-
+/* regenerate text on the curses window. */
+/* if update == 1 then do a doupdate() */
+void owl_viewwin_redisplay(owl_viewwin *v, int update)
+{
   owl_fmtext fm1, fm2;
   
   werase(v->curswin);
@@ -81,48 +82,57 @@ void owl_viewwin_redisplay(owl_viewwin *v, int update) {
   owl_fmtext_free(&fm2);
 }
 
-void owl_viewwin_pagedown(owl_viewwin *v) {
+void owl_viewwin_pagedown(owl_viewwin *v)
+{
   v->topline+=v->winlines - BOTTOM_OFFSET;
   if ( (v->topline+v->winlines-BOTTOM_OFFSET) > v->textlines) {
     v->topline = v->textlines - v->winlines + BOTTOM_OFFSET;
   }
 }
 
-void owl_viewwin_linedown(owl_viewwin *v) {
+void owl_viewwin_linedown(owl_viewwin *v)
+{
   v->topline++;
   if ( (v->topline+v->winlines-BOTTOM_OFFSET) > v->textlines) {
     v->topline = v->textlines - v->winlines + BOTTOM_OFFSET;
   }
 }
 
-void owl_viewwin_pageup(owl_viewwin *v) {
+void owl_viewwin_pageup(owl_viewwin *v)
+{
   v->topline-=v->winlines;
   if (v->topline<0) v->topline=0;
 }
 
-void owl_viewwin_lineup(owl_viewwin *v) {
+void owl_viewwin_lineup(owl_viewwin *v)
+{
   v->topline--;
   if (v->topline<0) v->topline=0;
 }
 
-void owl_viewwin_right(owl_viewwin *v, int n) {
+void owl_viewwin_right(owl_viewwin *v, int n)
+{
   v->rightshift+=n;
 }
 
-void owl_viewwin_left(owl_viewwin *v, int n) {
+void owl_viewwin_left(owl_viewwin *v, int n)
+{
   v->rightshift-=n;
   if (v->rightshift<0) v->rightshift=0;
 }
 
-void owl_viewwin_top(owl_viewwin *v) {
+void owl_viewwin_top(owl_viewwin *v)
+{
   v->topline=0;
   v->rightshift=0;
 }
 
-void owl_viewwin_bottom(owl_viewwin *v) {
+void owl_viewwin_bottom(owl_viewwin *v)
+{
   v->topline = v->textlines - v->winlines + BOTTOM_OFFSET;
 }
 
-void owl_viewwin_free(owl_viewwin *v) {
+void owl_viewwin_free(owl_viewwin *v)
+{
   owl_fmtext_free(&(v->fmtext));
 }
