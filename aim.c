@@ -1607,6 +1607,7 @@ int faimtest_parse_genericerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("snac threw error (reason 0x%04x: %s)\n", reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
+  if (reason<msgerrreasonslen) owl_function_error(msgerrreasons[reason]);
   
   return 1;
 }
@@ -1623,6 +1624,11 @@ static int faimtest_parse_msgerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("message to %s bounced (reason 0x%04x: %s)\n", destsn, reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
+  if (reason<msgerrreasonslen) owl_function_error(msgerrreasons[reason]);
+
+  if (reason==4) {
+    owl_function_adminmsg("", "Could not send AIM message, user not logged on");
+  }
   
   return 1;
 }
@@ -1639,6 +1645,7 @@ static int faimtest_parse_locerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("user information for %s unavailable (reason 0x%04x: %s)\n", destsn, reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
+  if (reason<msgerrreasonslen) owl_function_error(msgerrreasons[reason]);
   
   return 1;
 }

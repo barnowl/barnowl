@@ -5,6 +5,7 @@ $Id$
 	Fixed bug in reporting when no one is subbed to a class
 	Added an extral newline in logging incoming zephyrs
 	An admin message is displayed when you are logged out of AIM
+	Print an error message and admin message if an AIM send fails
 	
 2.0.9
 	Added the 'fancylines' variable.
