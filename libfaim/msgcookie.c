@@ -131,15 +131,14 @@ faim_internal aim_msgcookie_t *aim_checkcookie(aim_session_t *sess, const fu8_t 
 }
 
 #if 0 /* debugging feature */
-faim_internal int aim_dumpcookie(aim_msgcookie_t *cookie) 
+faim_internal int aim_dumpcookie(aim_session_t *sess, aim_msgcookie_t *cookie) 
 {
 
 	if (!cookie)
 		return -EINVAL;
 
-	printf("\tCookie at %p: %d/%s with %p, next %p\n", 
-			cookie, cookie->type, cookie->cookie, 
-			cookie->data, cookie->next);
+	faimdprintf(sess, 0, "\tCookie at %p: %d/%s with %p, next %p\n", cookie, 
+			cookie->type, cookie->cookie, cookie->data, cookie->next);
 
 	return 0;
 }
@@ -185,7 +184,7 @@ faim_internal int aim_msgcookie_gettype(int reqclass)
 	switch(reqclass) {
 	case AIM_CAPS_BUDDYICON: return AIM_COOKIETYPE_OFTICON;
 	case AIM_CAPS_VOICE: return AIM_COOKIETYPE_OFTVOICE;
-	case AIM_CAPS_IMIMAGE: return AIM_COOKIETYPE_OFTIMAGE;
+	case AIM_CAPS_DIRECTIM: return AIM_COOKIETYPE_OFTIMAGE;
 	case AIM_CAPS_CHAT: return AIM_COOKIETYPE_CHAT;
 	case AIM_CAPS_GETFILE: return AIM_COOKIETYPE_OFTGET;
 	case AIM_CAPS_SENDFILE: return AIM_COOKIETYPE_OFTSEND;

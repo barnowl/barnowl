@@ -119,6 +119,7 @@ static int redirect(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 
 	redir.group = aim_gettlv16(tlvlist, 0x000d, 1);
 	redir.ip = aim_gettlv_str(tlvlist, 0x0005, 1);
+	redir.cookielen = aim_gettlv(tlvlist, 0x0006, 1)->length;
 	redir.cookie = aim_gettlv_str(tlvlist, 0x0006, 1);
 
 	/* Fetch original SNAC so we can get csi if needed */
@@ -391,6 +392,7 @@ faim_internal int aim_rates_delparam(aim_session_t *sess, aim_conn_t *conn)
 /* Subtype 0x000a - Rate Change */
 static int ratechange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
+	int ret = 0;
 	aim_rxcallback_t userfunc;
 	fu16_t code, rateclass;
 	fu32_t currentavg, maxavg, windowsize, clear, alert, limit, disconnect;
@@ -407,9 +409,9 @@ static int ratechange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	maxavg = aimbs_get32(bs);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		return userfunc(sess, rx, code, rateclass, windowsize, clear, alert, limit, disconnect, currentavg, maxavg);
+		ret = userfunc(sess, rx, code, rateclass, windowsize, clear, alert, limit, disconnect, currentavg, maxavg);
 
-	return 0;
+	return ret;
 }
 
 /*
@@ -428,12 +430,13 @@ static int ratechange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 /* Subtype 0x000b - Service Pause */
 static int serverpause(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
+	int ret = 0;
 	aim_rxcallback_t userfunc;
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		return userfunc(sess, rx);
+		ret = userfunc(sess, rx);
 
-	return 0;
+	return ret;
 }
 
 /*
@@ -476,12 +479,13 @@ faim_export int aim_sendpauseack(aim_session_t *sess, aim_conn_t *conn)
 /* Subtype 0x000d - Service Resume */
 static int serverresume(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
+	int ret = 0;
 	aim_rxcallback_t userfunc;
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		return userfunc(sess, rx);
+		ret = userfunc(sess, rx);
 
-	return 0;
+	return ret;
 }
 
 /* Subtype 0x000e - Request self-info */
@@ -493,20 +497,24 @@ faim_export int aim_reqpersonalinfo(aim_session_t *sess, aim_conn_t *conn)
 /* Subtype 0x000f - Self User Info */
 static int selfinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
+	int ret = 0;
 	aim_rxcallback_t userfunc;
 	aim_userinfo_t userinfo;
 
-	aim_extractuserinfo(sess, bs, &userinfo);
+	aim_info_extract(sess, bs, &userinfo);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		return userfunc(sess, rx, &userinfo);
+		ret = userfunc(sess, rx, &userinfo);
 
-	return 0;
+	aim_info_free(&userinfo);
+
+	return ret;
 }
 
 /* Subtype 0x0010 - Evil Notification */
 static int evilnotify(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
+	int ret = 0;
 	aim_rxcallback_t userfunc;
 	fu16_t newevil;
 	aim_userinfo_t userinfo;
@@ -516,12 +524,14 @@ static int evilnotify(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	newevil = aimbs_get16(bs);
 
 	if (aim_bstream_empty(bs))
-		aim_extractuserinfo(sess, bs, &userinfo);
+		aim_info_extract(sess, bs, &userinfo);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		return userfunc(sess, rx, newevil, &userinfo);
+		ret = userfunc(sess, rx, newevil, &userinfo);
 
-	return 0;
+	aim_info_free(&userinfo);
+
+	return ret;
 }
 
 /*
@@ -724,19 +734,25 @@ static int hostversions(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx,
 }
 
 /* 
- * Subtype 0x001e - Set Extended Status
+ * Subtype 0x001e - Extended Status
  *
- * Currently only works if using ICQ.
+ * Sets your ICQ status (available, away, do not disturb, etc.)
  *
+ * These are the same TLVs seen in user info.  You can 
+ * also set 0x0008 and 0x000c.
  */
-faim_export int aim_setextstatus(aim_session_t *sess, aim_conn_t *conn, fu32_t status)
+faim_export int aim_setextstatus(aim_session_t *sess, fu32_t status)
 {
+	aim_conn_t *conn;
 	aim_frame_t *fr;
 	aim_snacid_t snacid;
 	aim_tlvlist_t *tl = NULL;
 	fu32_t data;
 
-	data = 0x00030000 | status; /* yay for error checking ;^) */
+	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0004)))
+		return -EINVAL;
+
+	data = AIM_ICQ_STATE_HIDEIP | AIM_ICQ_STATE_WEBAWARE | status; /* yay for error checking ;^) */
 
 	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10 + 8)))
 		return -ENOMEM;
@@ -748,6 +764,59 @@ faim_export int aim_setextstatus(aim_session_t *sess, aim_conn_t *conn, fu32_t s
 	aim_writetlvchain(&fr->data, &tl);
 	aim_freetlvchain(&tl);
 	
+	aim_tx_enqueue(sess, fr);
+
+	return 0;
+}
+
+/* 
+ * Subtype 0x001e - Extended Status.
+ *
+ * Sets your "available" message.  This is currently only supported by iChat 
+ * and Gaim.
+ *
+ * These are the same TLVs seen in user info.  You can 
+ * also set 0x0008 and 0x000c.
+ */
+faim_export int aim_srv_setavailmsg(aim_session_t *sess, char *msg)
+{
+	aim_conn_t *conn;
+	aim_frame_t *fr;
+	aim_snacid_t snacid;
+
+	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0001)))
+		return -EINVAL;
+
+	if (msg) {
+		if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10 + 4 + strlen(msg) + 8)))
+			return -ENOMEM;
+
+		snacid = aim_cachesnac(sess, 0x0001, 0x001e, 0x0000, NULL, 0);
+		aim_putsnac(&fr->data, 0x0001, 0x001e, 0x0000, snacid);
+
+		aimbs_put16(&fr->data, 0x001d);
+		aimbs_put16(&fr->data, strlen(msg)+8);
+		aimbs_put16(&fr->data, 0x0002);
+		aimbs_put8(&fr->data, 0x04);
+		aimbs_put8(&fr->data, strlen(msg)+4);
+		aimbs_put16(&fr->data, strlen(msg));
+		aimbs_putraw(&fr->data, msg, strlen(msg));
+		aimbs_put16(&fr->data, 0x0000);
+	} else {
+		if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10 + 4 + 8)))
+			return -ENOMEM;
+
+		snacid = aim_cachesnac(sess, 0x0001, 0x001e, 0x0000, NULL, 0);
+		aim_putsnac(&fr->data, 0x0001, 0x001e, 0x0000, snacid);
+
+		aimbs_put16(&fr->data, 0x001d);
+		aimbs_put16(&fr->data, 0x0008);
+		aimbs_put16(&fr->data, 0x0002);
+		aimbs_put16(&fr->data, 0x0404);
+		aimbs_put16(&fr->data, 0x0000);
+		aimbs_put16(&fr->data, 0x0000);
+	}
+
 	aim_tx_enqueue(sess, fr);
 
 	return 0;
@@ -793,6 +862,7 @@ faim_export int aim_setextstatus(aim_session_t *sess, aim_conn_t *conn, fu32_t s
 /* Subtype 0x001f - Client verification */
 static int memrequest(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
+	int ret = 0;
 	aim_rxcallback_t userfunc;
 	fu32_t offset, len;
 	aim_tlvlist_t *list;
@@ -807,12 +877,12 @@ static int memrequest(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	faimdprintf(sess, 1, "data at 0x%08lx (%d bytes) of requested\n", offset, len, modname ? modname : "aim.exe");
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		return userfunc(sess, rx, offset, len, modname);
+		ret = userfunc(sess, rx, offset, len, modname);
 
 	free(modname);
 	aim_freetlvchain(&list);
 
-	return 0;
+	return ret;
 }
 
 #if 0
@@ -925,6 +995,45 @@ faim_export int aim_sendmemblock(aim_session_t *sess, aim_conn_t *conn, fu32_t o
 	return 0;
 }
 
+/*
+ * Subtype 0x0021 - Receive our extended status
+ *
+ * This is used for iChat's "available" messages, and maybe ICQ extended 
+ * status messages?  It's also used to tell the client whether or not it 
+ * needs to upload an SSI buddy icon... who engineers this stuff, anyway?
+ */
+static int aim_parse_extstatus(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
+{
+	int ret = 0;
+	aim_rxcallback_t userfunc;
+	fu16_t type;
+	fu8_t flags, length;
+
+	type = aimbs_get16(bs); 
+	flags = aimbs_get8(bs);
+	length = aimbs_get8(bs);
+
+	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype))) {
+		switch (type) {
+		case 0x0000:
+		case 0x0001: { /* buddy icon checksum */
+			/* not sure what the difference between 1 and 0 is */
+			fu8_t *md5 = aimbs_getraw(bs, length);
+			ret = userfunc(sess, rx, type, flags, length, md5);
+			free(md5);
+			} break;
+		case 0x0002: { /* available message */
+			/* there is a second length that is just for the message */
+			char *msg = aimbs_getstr(bs, aimbs_get16(bs));
+			ret = userfunc(sess, rx, msg);
+			free(msg);
+			} break;
+		}
+	}
+
+	return ret;
+}
+
 static int snachandler(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 
@@ -952,6 +1061,8 @@ static int snachandler(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 		return hostversions(sess, mod, rx, snac, bs);
 	else if (snac->subtype == 0x001f)
 		return memrequest(sess, mod, rx, snac, bs);
+	else if (snac->subtype == 0x0021)
+		return aim_parse_extstatus(sess, mod, rx, snac, bs);
 
 	return 0;
 }
@@ -962,7 +1073,7 @@ faim_internal int general_modfirst(aim_session_t *sess, aim_module_t *mod)
 	mod->family = 0x0001;
 	mod->version = 0x0003;
 	mod->toolid = 0x0110;
-	mod->toolversion = 0x047b;
+	mod->toolversion = 0x0629;
 	mod->flags = 0;
 	strncpy(mod->name, "general", sizeof(mod->name));
 	mod->snachandler = snachandler;

@@ -25,7 +25,7 @@ faim_internal int invite_modfirst(aim_session_t *sess, aim_module_t *mod)
 	mod->family = 0x0006;
 	mod->version = 0x0001;
 	mod->toolid = 0x0110;
-	mod->toolversion = 0x047b;
+	mod->toolversion = 0x0629;
 	mod->flags = 0;
 	strncpy(mod->name, "invite", sizeof(mod->name));
 	mod->snachandler = NULL;

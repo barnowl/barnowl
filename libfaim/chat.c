@@ -6,6 +6,8 @@
 #define FAIM_INTERNAL
 #include <aim.h> 
 
+#include <string.h>
+
 /* Stored in the ->priv of chat connections */
 struct chatconnpriv {
 	fu16_t exchange;
@@ -204,12 +206,11 @@ faim_export int aim_chat_invite(aim_session_t *sess, aim_conn_t *conn, const cha
 	snacid = aim_cachesnac(sess, 0x0004, 0x0006, 0x0000, sn, strlen(sn)+1);
 	aim_putsnac(&fr->data, 0x0004, 0x0006, 0x0000, snacid);
 
-
 	/*
 	 * Cookie
 	 */
-	for (i = 0; i < sizeof(ckstr); i++)
-		aimutil_put8(ckstr, (fu8_t) rand());
+	for (i = 0; i < 8; i++)
+		ckstr[i] = (fu8_t)rand();
 
 	/* XXX should be uncached by an unwritten 'invite accept' handler */
 	if ((priv = malloc(sizeof(struct aim_invite_priv)))) {
@@ -224,20 +225,11 @@ faim_export int aim_chat_invite(aim_session_t *sess, aim_conn_t *conn, const cha
 	else
 		free(priv);
 
-	for (i = 0; i < sizeof(ckstr); i++)
-		aimbs_put8(&fr->data, ckstr[i]);
-
-
-	/*
-	 * Channel (2)
-	 */
-	aimbs_put16(&fr->data, 0x0002);
-
-	/*
-	 * Dest sn
-	 */
-	aimbs_put8(&fr->data, strlen(sn));
-	aimbs_putraw(&fr->data, sn, strlen(sn));
+	/* ICBM Header */
+	aimbs_putraw(&fr->data, ckstr, 8); /* Cookie */
+	aimbs_put16(&fr->data, 0x0002); /* Channel */
+	aimbs_put8(&fr->data, strlen(sn)); /* Screename length */
+	aimbs_putraw(&fr->data, sn, strlen(sn)); /* Screenname */
 
 	/*
 	 * TLV t(0005)
@@ -345,7 +337,7 @@ static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 		aim_bstream_init(&occbs, tmptlv->value, tmptlv->length);
 
 		while (curoccupant < usercount)
-			aim_extractuserinfo(sess, &occbs, &userinfo[curoccupant++]);
+			aim_info_extract(sess, &occbs, &userinfo[curoccupant++]);
 	}
 
 	/* 
@@ -423,11 +415,11 @@ static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype))) {
 		ret = userfunc(sess,
-				rx, 
+				rx,
 				&roominfo,
 				roomname,
 				usercount,
-				userinfo,	
+				userinfo,
 				roomdesc,
 				flags,
 				creationtime,
@@ -438,6 +430,10 @@ static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	}
 
 	free(roominfo.name);
+
+	while (usercount > 0)
+		aim_info_free(&userinfo[--usercount]);
+
 	free(userinfo);
 	free(roomname);
 	free(roomdesc);
@@ -456,12 +452,13 @@ static int userlistchange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	while (aim_bstream_empty(bs)) {
 		curcount++;
 		userinfo = realloc(userinfo, curcount * sizeof(aim_userinfo_t));
-		aim_extractuserinfo(sess, bs, &userinfo[curcount-1]);
+		aim_info_extract(sess, bs, &userinfo[curcount-1]);
 	}
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, curcount, userinfo);
 
+	aim_info_free(userinfo);
 	free(userinfo);
 
 	return ret;
@@ -497,31 +494,23 @@ faim_export int aim_chat_send_im(aim_session_t *sess, aim_conn_t *conn, fu16_t f
 	snacid = aim_cachesnac(sess, 0x000e, 0x0005, 0x0000, NULL, 0);
 	aim_putsnac(&fr->data, 0x000e, 0x0005, 0x0000, snacid);
 
-
-	/* 
-	 * Generate a random message cookie.
+	/*
+	 * Cookie
 	 *
 	 * XXX mkcookie should generate the cookie and cache it in one
 	 * operation to preserve uniqueness.
-	 *
 	 */
-	for (i = 0; i < sizeof(ckstr); i++)
-		aimutil_put8(ckstr+i, (fu8_t) rand());
+	for (i = 0; i < 8; i++)
+		ckstr[i] = (fu8_t)rand();
 
 	cookie = aim_mkcookie(ckstr, AIM_COOKIETYPE_CHAT, NULL);
 	cookie->data = NULL; /* XXX store something useful here */
 
 	aim_cachecookie(sess, cookie);
 
-	for (i = 0; i < sizeof(ckstr); i++)
-		aimbs_put8(&fr->data, ckstr[i]);
-
-
-	/*
-	 * Channel ID. 
-	 */
-	aimbs_put16(&fr->data, 0x0003);
-
+	/* ICBM Header */
+	aimbs_putraw(&fr->data, ckstr, 8); /* Cookie */
+	aimbs_put16(&fr->data, 0x0003); /* Channel */
 
 	/*
 	 * Type 1: Flag meaning this message is destined to the room.
@@ -543,7 +532,7 @@ faim_export int aim_chat_send_im(aim_session_t *sess, aim_conn_t *conn, fu16_t f
 	/*
 	 * SubTLV: Type 1: Message
 	 */
-	aim_addtlvtochain_raw(&itl, 0x0001, strlen(msg), msg);
+	aim_addtlvtochain_raw(&itl, 0x0001, msglen, msg);
 
 	/*
 	 * Type 5: Message block.  Contains more TLVs.
@@ -643,7 +632,7 @@ static int incomingmsg(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 		userinfotlv = aim_gettlv(otl, 0x0003, 1);
 
 		aim_bstream_init(&tbs, userinfotlv->value, userinfotlv->length);
-		aim_extractuserinfo(sess, &tbs, &userinfo);
+		aim_info_extract(sess, &tbs, &userinfo);
 	}
 
 	/*
@@ -677,6 +666,7 @@ static int incomingmsg(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, &userinfo, msg);
 
+	aim_info_free(&userinfo);
 	free(cookie);
 	free(msg);
 	aim_freetlvchain(&otl);
@@ -702,8 +692,8 @@ faim_internal int chat_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	mod->family = 0x000e;
 	mod->version = 0x0001;
-	mod->toolid = 0x0004; /* XXX this doesn't look right */
-	mod->toolversion = 0x0001; /* nor does this */
+	mod->toolid = 0x0010;
+	mod->toolversion = 0x0629;
 	mod->flags = 0;
 	strncpy(mod->name, "chat", sizeof(mod->name));
 	mod->snachandler = snachandler;

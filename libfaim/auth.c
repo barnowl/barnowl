@@ -7,11 +7,11 @@
  */
 
 #define FAIM_INTERNAL
-#include <aim.h> 
+#include <aim.h>
 
 #include "md5.h"
 
-static int aim_encode_password(const char *password, unsigned char *encoded);
+static int aim_encode_password(const char *password, fu8_t *encoded);
 
 /* 
  * This just pushes the passed cookie onto the passed connection, without
@@ -21,16 +21,16 @@ static int aim_encode_password(const char *password, unsigned char *encoded);
  * be the first thing you send.
  *
  */
-faim_export int aim_sendcookie(aim_session_t *sess, aim_conn_t *conn, const fu8_t *chipsahoy)
+faim_export int aim_sendcookie(aim_session_t *sess, aim_conn_t *conn, const fu16_t length, const fu8_t *chipsahoy)
 {
 	aim_frame_t *fr;
 	aim_tlvlist_t *tl = NULL;
 
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x0001, 4+2+2+AIM_COOKIELEN)))
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x0001, 4+2+2+length)))
 		return -ENOMEM;
 
 	aimbs_put32(&fr->data, 0x00000001);
-	aim_addtlvtochain_raw(&tl, 0x0006, AIM_COOKIELEN, chipsahoy);	
+	aim_addtlvtochain_raw(&tl, 0x0006, length, chipsahoy);
 	aim_writetlvchain(&fr->data, &tl);
 	aim_freetlvchain(&tl);
 
@@ -156,10 +156,14 @@ static int goddamnicq2(aim_session_t *sess, aim_conn_t *conn, const char *sn, co
 {
 	aim_frame_t *fr;
 	aim_tlvlist_t *tl = NULL;
-	char *password_encoded;
+	int passwdlen;
+	fu8_t *password_encoded;
 
-	if (!(password_encoded = (char *) malloc(strlen(password))))
+	passwdlen = strlen(password);
+	if (!(password_encoded = (char *)malloc(passwdlen+1)))
 		return -ENOMEM;
+	if (passwdlen > MAXICQPASSLEN)
+		passwdlen = MAXICQPASSLEN;
 
 	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x01, 1152))) {
 		free(password_encoded);
@@ -170,7 +174,7 @@ static int goddamnicq2(aim_session_t *sess, aim_conn_t *conn, const char *sn, co
 
 	aimbs_put32(&fr->data, 0x00000001); /* FLAP Version */
 	aim_addtlvtochain_raw(&tl, 0x0001, strlen(sn), sn);
-	aim_addtlvtochain_raw(&tl, 0x0002, strlen(password), password_encoded);
+	aim_addtlvtochain_raw(&tl, 0x0002, passwdlen, password_encoded);
 
 	if (ci->clientstring)
 		aim_addtlvtochain_raw(&tl, 0x0003, strlen(ci->clientstring), ci->clientstring);
@@ -179,7 +183,7 @@ static int goddamnicq2(aim_session_t *sess, aim_conn_t *conn, const char *sn, co
 	aim_addtlvtochain16(&tl, 0x0018, (fu16_t)ci->minor);
 	aim_addtlvtochain16(&tl, 0x0019, (fu16_t)ci->point);
 	aim_addtlvtochain16(&tl, 0x001a, (fu16_t)ci->build);
-	aim_addtlvtochain32(&tl, 0x0014, 0x00000055); /* distribution chan */
+	aim_addtlvtochain32(&tl, 0x0014, (fu32_t)ci->distrib); /* distribution chan */
 	aim_addtlvtochain_raw(&tl, 0x000f, strlen(ci->lang), ci->lang);
 	aim_addtlvtochain_raw(&tl, 0x000e, strlen(ci->country), ci->country);
 
@@ -201,46 +205,6 @@ static int goddamnicq2(aim_session_t *sess, aim_conn_t *conn, const char *sn, co
  * NOTE!! If you want/need to make use of the aim_sendmemblock() function,
  * then the client information you send here must exactly match the
  * executable that you're pulling the data from.
- *
- * WinAIM 4.8.2540
- *   clientstring = "AOL Instant Messenger (SM), version 4.8.2540/WIN32"
- *   clientid = 0x0109
- *   major = 0x0004
- *   minor = 0x0008
- *   point = 0x0000
- *   build = 0x09ec
- *   t(0x0014) = 0x000000af
- *   t(0x004a) = 0x01
- *
- * WinAIM 4.3.2188:
- *   clientstring = "AOL Instant Messenger (SM), version 4.3.2188/WIN32"
- *   clientid = 0x0109
- *   major = 0x0400
- *   minor = 0x0003
- *   point = 0x0000
- *   build = 0x088c
- *   unknown = 0x00000086
- *   lang = "en"
- *   country = "us"
- *   unknown4a = 0x01
- *
- * Latest WinAIM that libfaim can emulate without server-side buddylists:
- *   clientstring = "AOL Instant Messenger (SM), version 4.1.2010/WIN32"
- *   clientid = 0x0004
- *   major  = 0x0004
- *   minor  = 0x0001
- *   point = 0x0000
- *   build  = 0x07da
- *   unknown= 0x0000004b
- *
- * WinAIM 3.5.1670:
- *   clientstring = "AOL Instant Messenger (SM), version 3.5.1670/WIN32"
- *   clientid = 0x0004
- *   major =  0x0003
- *   minor =  0x0005
- *   point = 0x0000
- *   build =  0x0686
- *   unknown =0x0000002a
  *
  * Java AIM 1.1.19:
  *   clientstring = "AOL Instant Messenger (TM) version 1.1.19 for Java built 03/24/98, freeMem 215871 totalMem 1048567, i686, Linus, #2 SMP Sun Feb 11 03:41:17 UTC 2001 2.4.1-ac9, IBM Corporation, 1.1.8, 45.3, Tue Mar 27 12:09:17 PST 2001"
@@ -303,14 +267,17 @@ faim_export int aim_send_login(aim_session_t *sess, aim_conn_t *conn, const char
 	aim_addtlvtochain16(&tl, 0x0018, (fu16_t)ci->minor);
 	aim_addtlvtochain16(&tl, 0x0019, (fu16_t)ci->point);
 	aim_addtlvtochain16(&tl, 0x001a, (fu16_t)ci->build);
+	aim_addtlvtochain32(&tl, 0x0014, (fu32_t)ci->distrib);
 	aim_addtlvtochain_raw(&tl, 0x000e, strlen(ci->country), ci->country);
 	aim_addtlvtochain_raw(&tl, 0x000f, strlen(ci->lang), ci->lang);
 
+#ifndef NOSSI
 	/*
 	 * If set, old-fashioned buddy lists will not work. You will need
 	 * to use SSI.
 	 */
 	aim_addtlvtochain8(&tl, 0x004a, 0x01);
+#endif
 
 	aim_writetlvchain(&fr->data, &tl);
 
@@ -387,10 +354,11 @@ static int parse(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mo
 {
 	aim_tlvlist_t *tlvlist;
 	aim_rxcallback_t userfunc;
-	struct aim_authresp_info info;
+	struct aim_authresp_info *info;
 	int ret = 0;
 
-	memset(&info, 0, sizeof(info));
+	info = (struct aim_authresp_info *)malloc(sizeof(struct aim_authresp_info));
+	memset(info, 0, sizeof(struct aim_authresp_info));
 
 	/*
 	 * Read block of TLVs.  All further data is derived
@@ -403,8 +371,8 @@ static int parse(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mo
 	 */
 	memset(sess->sn, 0, sizeof(sess->sn));
 	if (aim_gettlv(tlvlist, 0x0001, 1)) {
-		info.sn = aim_gettlv_str(tlvlist, 0x0001, 1);
-		strncpy(sess->sn, info.sn, sizeof(sess->sn));
+		info->sn = aim_gettlv_str(tlvlist, 0x0001, 1);
+		strncpy(sess->sn, info->sn, sizeof(sess->sn));
 	}
 
 	/*
@@ -412,15 +380,15 @@ static int parse(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mo
 	 * have an error url.
 	 */
 	if (aim_gettlv(tlvlist, 0x0008, 1)) 
-		info.errorcode = aim_gettlv16(tlvlist, 0x0008, 1);
+		info->errorcode = aim_gettlv16(tlvlist, 0x0008, 1);
 	if (aim_gettlv(tlvlist, 0x0004, 1))
-		info.errorurl = aim_gettlv_str(tlvlist, 0x0004, 1);
+		info->errorurl = aim_gettlv_str(tlvlist, 0x0004, 1);
 
 	/*
 	 * BOS server address.
 	 */
 	if (aim_gettlv(tlvlist, 0x0005, 1))
-		info.bosip = aim_gettlv_str(tlvlist, 0x0005, 1);
+		info->bosip = aim_gettlv_str(tlvlist, 0x0005, 1);
 
 	/*
 	 * Authorization cookie.
@@ -430,19 +398,23 @@ static int parse(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mo
 
 		tmptlv = aim_gettlv(tlvlist, 0x0006, 1);
 
-		info.cookie = tmptlv->value;
+		info->cookielen = tmptlv->length;
+		info->cookie = tmptlv->value;
 	}
 
 	/*
 	 * The email address attached to this account
-	 *   Not available for ICQ logins.
+	 *   Not available for ICQ or @mac.com logins.
+	 *   If you receive this TLV, then you are allowed to use 
+	 *   family 0x0018 to check the status of your email.
+	 * XXX - Not really true!
 	 */
 	if (aim_gettlv(tlvlist, 0x0011, 1))
-		info.email = aim_gettlv_str(tlvlist, 0x0011, 1);
+		info->email = aim_gettlv_str(tlvlist, 0x0011, 1);
 
 	/*
 	 * The registration status.  (Not real sure what it means.)
-	 *   Not available for ICQ logins.
+	 *   Not available for ICQ or @mac.com logins.
 	 *
 	 *   1 = No disclosure
 	 *   2 = Limited disclosure
@@ -451,29 +423,31 @@ static int parse(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mo
 	 * This has to do with whether your email address is available
 	 * to other users or not.  AFAIK, this feature is no longer used.
 	 *
+	 * Means you can use the admin family? (0x0007)
+	 *
 	 */
 	if (aim_gettlv(tlvlist, 0x0013, 1))
-		info.regstatus = aim_gettlv16(tlvlist, 0x0013, 1);
+		info->regstatus = aim_gettlv16(tlvlist, 0x0013, 1);
 
 	if (aim_gettlv(tlvlist, 0x0040, 1))
-		info.latestbeta.build = aim_gettlv32(tlvlist, 0x0040, 1);
+		info->latestbeta.build = aim_gettlv32(tlvlist, 0x0040, 1);
 	if (aim_gettlv(tlvlist, 0x0041, 1))
-		info.latestbeta.url = aim_gettlv_str(tlvlist, 0x0041, 1);
+		info->latestbeta.url = aim_gettlv_str(tlvlist, 0x0041, 1);
 	if (aim_gettlv(tlvlist, 0x0042, 1))
-		info.latestbeta.info = aim_gettlv_str(tlvlist, 0x0042, 1);
+		info->latestbeta.info = aim_gettlv_str(tlvlist, 0x0042, 1);
 	if (aim_gettlv(tlvlist, 0x0043, 1))
-		info.latestbeta.name = aim_gettlv_str(tlvlist, 0x0043, 1);
+		info->latestbeta.name = aim_gettlv_str(tlvlist, 0x0043, 1);
 	if (aim_gettlv(tlvlist, 0x0048, 1))
 		; /* no idea what this is */
 
 	if (aim_gettlv(tlvlist, 0x0044, 1))
-		info.latestrelease.build = aim_gettlv32(tlvlist, 0x0044, 1);
+		info->latestrelease.build = aim_gettlv32(tlvlist, 0x0044, 1);
 	if (aim_gettlv(tlvlist, 0x0045, 1))
-		info.latestrelease.url = aim_gettlv_str(tlvlist, 0x0045, 1);
+		info->latestrelease.url = aim_gettlv_str(tlvlist, 0x0045, 1);
 	if (aim_gettlv(tlvlist, 0x0046, 1))
-		info.latestrelease.info = aim_gettlv_str(tlvlist, 0x0046, 1);
+		info->latestrelease.info = aim_gettlv_str(tlvlist, 0x0046, 1);
 	if (aim_gettlv(tlvlist, 0x0047, 1))
-		info.latestrelease.name = aim_gettlv_str(tlvlist, 0x0047, 1);
+		info->latestrelease.name = aim_gettlv_str(tlvlist, 0x0047, 1);
 	if (aim_gettlv(tlvlist, 0x0049, 1))
 		; /* no idea what this is */
 
@@ -481,22 +455,18 @@ static int parse(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mo
 	 * URL to change password.
 	 */
 	if (aim_gettlv(tlvlist, 0x0054, 1))
-		info.chpassurl = aim_gettlv_str(tlvlist, 0x0054, 1);
+		info->chpassurl = aim_gettlv_str(tlvlist, 0x0054, 1);
+
+	/*
+	 * Unknown.  Seen on an @mac.com screen name with value of 0x003f
+	 */
+	if (aim_gettlv(tlvlist, 0x0055, 1))
+		;
+
+	sess->authinfo = info;
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac ? snac->family : 0x0017, snac ? snac->subtype : 0x0003)))
-		ret = userfunc(sess, rx, &info);
-
-	free(info.sn);
-	free(info.bosip);
-	free(info.errorurl);
-	free(info.email);
-	free(info.chpassurl);
-	free(info.latestrelease.name);
-	free(info.latestrelease.url);
-	free(info.latestrelease.info);
-	free(info.latestbeta.name);
-	free(info.latestbeta.url);
-	free(info.latestbeta.info);
+		ret = userfunc(sess, rx, info);
 
 	aim_freetlvchain(&tlvlist);
 
@@ -519,12 +489,34 @@ static int keyparse(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 	keylen = aimbs_get16(bs);
 	keystr = aimbs_getstr(bs, keylen);
 
+	/* XXX - When GiantGrayPanda signed on AIM I got a thing asking me to register 
+	 * for the netscape network.  This SNAC had a type 0x0058 TLV with length 10.  
+	 * Data is 0x0007 0004 3e19 ae1e 0006 0004 0000 0005 */
+
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, keystr);
 
 	free(keystr); 
 
 	return ret;
+}
+
+static void auth_shutdown(aim_session_t *sess, aim_module_t *mod)
+{
+	if (sess->authinfo) {
+		free(sess->authinfo->sn);
+		free(sess->authinfo->bosip);
+		free(sess->authinfo->errorurl);
+		free(sess->authinfo->email);
+		free(sess->authinfo->chpassurl);
+		free(sess->authinfo->latestrelease.name);
+		free(sess->authinfo->latestrelease.url);
+		free(sess->authinfo->latestrelease.info);
+		free(sess->authinfo->latestbeta.name);
+		free(sess->authinfo->latestbeta.url);
+		free(sess->authinfo->latestbeta.info);
+		free(sess->authinfo);
+	}
 }
 
 static int snachandler(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
@@ -546,6 +538,7 @@ faim_internal int auth_modfirst(aim_session_t *sess, aim_module_t *mod)
 	mod->flags = 0;
 	strncpy(mod->name, "auth", sizeof(mod->name));
 	mod->snachandler = snachandler;
+	mod->shutdown = auth_shutdown;
 
 	return 0;
 }

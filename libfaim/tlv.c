@@ -113,7 +113,7 @@ faim_internal aim_tlvlist_t *aim_readtlvchain(aim_bstream_t *bs)
  * @param num The max number of TLVs that will be read, or -1 if unlimited.  
  *        There are a number of places where you want to read in a tlvchain, 
  *        but the chain is not at the end of the SNAC, and the chain is 
- *        preceeded by the number of TLVs.  So you can limit that.
+ *        preceeded by the number of TLVs.  So you can limit that with this.
  *
  * Reads and parses a series of TLV patterns from a data buffer; the
  * returned structure is manipulatable with the rest of the TLV
@@ -130,7 +130,7 @@ faim_internal aim_tlvlist_t *aim_readtlvchain(aim_bstream_t *bs)
 faim_internal aim_tlvlist_t *aim_readtlvchain_num(aim_bstream_t *bs, fu16_t num)
 {
 	aim_tlvlist_t *list = NULL, *cur;
-	
+
 	while ((aim_bstream_empty(bs) > 0) && (num != 0)) {
 		fu16_t type, length;
 
@@ -158,7 +158,7 @@ faim_internal aim_tlvlist_t *aim_readtlvchain_num(aim_bstream_t *bs, fu16_t num)
 		}
 		cur->tlv->type = type;
 		if ((cur->tlv->length = length)) {
-		       cur->tlv->value = aimbs_getraw(bs, length);	
+		       cur->tlv->value = aimbs_getraw(bs, length);
 		       if (!cur->tlv->value) {
 			       freetlv(&cur->tlv);
 			       free(cur);
@@ -173,6 +173,126 @@ faim_internal aim_tlvlist_t *aim_readtlvchain_num(aim_bstream_t *bs, fu16_t num)
 	}
 
 	return list;
+}
+
+/**
+ * aim_readtlvchain_len - Read a TLV chain from a buffer.
+ * @param bs Input bstream
+ * @param len The max length in bytes that will be read.
+ *        There are a number of places where you want to read in a tlvchain, 
+ *        but the chain is not at the end of the SNAC, and the chain is 
+ *        preceeded by the length of the TLVs.  So you can limit that with this.
+ *
+ * Reads and parses a series of TLV patterns from a data buffer; the
+ * returned structure is manipulatable with the rest of the TLV
+ * routines.  When done with a TLV chain, aim_freetlvchain() should
+ * be called to free the dynamic substructures.
+ *
+ * XXX There should be a flag setable here to have the tlvlist contain
+ * bstream references, so that at least the ->value portion of each 
+ * element doesn't need to be malloc/memcpy'd.  This could prove to be
+ * just as effecient as the in-place TLV parsing used in a couple places
+ * in libfaim.
+ *
+ */
+faim_internal aim_tlvlist_t *aim_readtlvchain_len(aim_bstream_t *bs, fu16_t len)
+{
+	aim_tlvlist_t *list = NULL, *cur;
+
+	while ((aim_bstream_empty(bs) > 0) && (len > 0)) {
+		fu16_t type, length;
+
+		type = aimbs_get16(bs);
+		length = aimbs_get16(bs);
+
+		if (length > aim_bstream_empty(bs)) {
+			aim_freetlvchain(&list);
+			return NULL;
+		}
+
+		cur = (aim_tlvlist_t *)malloc(sizeof(aim_tlvlist_t));
+		if (!cur) {
+			aim_freetlvchain(&list);
+			return NULL;
+		}
+
+		memset(cur, 0, sizeof(aim_tlvlist_t));
+
+		cur->tlv = createtlv();
+		if (!cur->tlv) {
+			free(cur);
+			aim_freetlvchain(&list);
+			return NULL;
+		}
+		cur->tlv->type = type;
+		if ((cur->tlv->length = length)) {
+		       cur->tlv->value = aimbs_getraw(bs, length);
+		       if (!cur->tlv->value) {
+			       freetlv(&cur->tlv);
+			       free(cur);
+			       aim_freetlvchain(&list);
+			       return NULL;
+		       }
+		}
+
+		len -= aim_sizetlvchain(&cur);
+		cur->next = list;
+		list = cur;
+	}
+
+	return list;
+}
+
+/**
+ * aim_tlvlist_copy - Duplicate a TLV chain.
+ * @param orig
+ *
+ * This is pretty pelf exslanatory.
+ *
+ */
+faim_internal aim_tlvlist_t *aim_tlvlist_copy(aim_tlvlist_t *orig)
+{
+	aim_tlvlist_t *new = NULL;
+
+	while (orig) {
+		aim_addtlvtochain_raw(&new, orig->tlv->type, orig->tlv->length, orig->tlv->value);
+		orig = orig->next;
+	}
+
+	return new;
+}
+
+/*
+ * Compare two TLV lists for equality.  This probably is not the most 
+ * efficient way to do this.
+ *
+ * @param one One of the TLV chains to compare.
+ * @param two The other TLV chain to compare.
+ * @preturn Retrun 0 if the lists are the same, return 1 if they are different.
+ */
+faim_internal int aim_tlvlist_cmp(aim_tlvlist_t *one, aim_tlvlist_t *two)
+{
+	aim_bstream_t bs1, bs2;
+
+	if (aim_sizetlvchain(&one) != aim_sizetlvchain(&two))
+		return 1;
+
+	aim_bstream_init(&bs1, ((fu8_t *)malloc(aim_sizetlvchain(&one)*sizeof(fu8_t))), aim_sizetlvchain(&one));
+	aim_bstream_init(&bs2, ((fu8_t *)malloc(aim_sizetlvchain(&two)*sizeof(fu8_t))), aim_sizetlvchain(&two));
+
+	aim_writetlvchain(&bs1, &one);
+	aim_writetlvchain(&bs2, &two);
+
+	if (memcmp(bs1.data, bs2.data, bs1.len)) {
+		free(bs1.data);
+		free(bs2.data);
+		return 1;
+	}
+
+	free(bs1.data);
+	free(bs2.data);
+
+	return 0;
 }
 
 /**
@@ -462,10 +582,7 @@ faim_internal int aim_writetlvchain(aim_bstream_t *bs, aim_tlvlist_t **list)
 	aim_tlvlist_t *cur;
 
 	/* do an initial run to test total length */
-	for (cur = *list, goodbuflen = 0; cur; cur = cur->next) {
-		goodbuflen += 2 + 2; /* type + len */
-		goodbuflen += cur->tlv->length;
-	}
+	goodbuflen = aim_sizetlvchain(list);
 
 	if (goodbuflen > aim_bstream_empty(bs))
 		return 0; /* not enough buffer */

@@ -62,6 +62,7 @@ faim_export int aim_email_sendcookies(aim_session_t *sess, aim_conn_t *conn)
 
 /**
  * Subtype 0x0007 - Receive information about your email account
+ *
  * So I don't even know if you can have multiple 16 byte keys, 
  * but this is coded so it will handle that, and handle it well.
  * This tells you if you have unread mail or not, the URL you 
@@ -73,6 +74,7 @@ faim_export int aim_email_sendcookies(aim_session_t *sess, aim_conn_t *conn)
  */
 static int parseinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
+	int ret = 0;
 	aim_rxcallback_t userfunc;
 	struct aim_emailinfo *new;
 	aim_tlvlist_t *tlvlist;
@@ -124,9 +126,11 @@ static int parseinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, ai
 	new->flag = aim_gettlv16(tlvlist, 0x0084, 1);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		return userfunc(sess, rx, new, havenewmail);
+		ret = userfunc(sess, rx, new, havenewmail);
 
-	return 0;
+	aim_freetlvchain(&tlvlist);
+
+	return ret;
 }
 
 /**

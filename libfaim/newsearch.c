@@ -159,6 +159,7 @@ faim_export int aim_usersearch_interest(aim_session_t *sess, const char *region,
  */
 static int parseresults(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
+#if 0
 	aim_rxcallback_t userfunc;
 	fu16_t tmp, numresults;
 	struct aim_usersearch *results = NULL;
@@ -216,7 +217,7 @@ static int parseresults(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx,
 		free(del->address);
 		free(del);
 	}
-
+#endif
 	return 0;
 }
 

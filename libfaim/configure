@@ -746,7 +746,7 @@ else
 fi
 
 if test "$GCC" = yes; then
-   CFLAGS="$CFLAGS -Wall";
+   CFLAGS="$CFLAGS -Wall -g";
 fi
 # Extract the first word of "ranlib", so it can be a program name with args.
 set dummy ranlib; ac_word=$2

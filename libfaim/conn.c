@@ -172,9 +172,7 @@ static void connkill_real(aim_session_t *sess, aim_conn_t **deadconn)
 	/*
 	 * This will free ->internal if it necessary...
 	 */
-	if ((*deadconn)->type == AIM_CONN_TYPE_RENDEZVOUS)
-		aim_conn_kill_rend(sess, *deadconn);
-	else if ((*deadconn)->type == AIM_CONN_TYPE_CHAT)
+	if ((*deadconn)->type == AIM_CONN_TYPE_CHAT)
 		aim_conn_kill_chat(sess, *deadconn);
 
 	if ((*deadconn)->inside) {
@@ -318,14 +316,18 @@ faim_export void aim_conn_kill(aim_session_t *sess, aim_conn_t **deadconn)
  */
 faim_export void aim_conn_close(aim_conn_t *deadconn)
 {
+	aim_rxcallback_t userfunc;
 
 	if (deadconn->fd >= 3)
 		close(deadconn->fd);
+
 	deadconn->fd = -1;
+
+	if ((userfunc = aim_callhandler(deadconn->sessv, deadconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNDEAD)))
+		userfunc(deadconn->sessv, NULL, deadconn);
+
 	if (deadconn->handlerlist)
 		aim_clearhandlers(deadconn);
-	if (deadconn->type == AIM_CONN_TYPE_RENDEZVOUS)
-		aim_conn_close_rend((aim_session_t *)deadconn->sessv, deadconn);
 
 	return;
 }
@@ -870,6 +872,8 @@ faim_export void aim_session_init(aim_session_t *sess, fu32_t flags, int debugle
 	sess->queue_incoming = NULL;
 	aim_initsnachash(sess);
 	sess->msgcookies = NULL;
+	sess->icq_info = NULL;
+	sess->oft_info = NULL;
 	sess->snacid_next = 0x00000001;
 
 	sess->flags = 0;
@@ -879,12 +883,14 @@ faim_export void aim_session_init(aim_session_t *sess, fu32_t flags, int debugle
 	sess->modlistv = NULL;
 
 	sess->ssi.received_data = 0;
-	sess->ssi.waiting_for_ack = 0;
-	sess->ssi.holding_queue = NULL;
-	sess->ssi.revision = 0;
-	sess->ssi.items = NULL;
+	sess->ssi.numitems = 0;
+	sess->ssi.official = NULL;
+	sess->ssi.local = NULL;
+	sess->ssi.pending = NULL;
 	sess->ssi.timestamp = (time_t)0;
+	sess->ssi.waiting_for_ack = 0;
 
+	sess->authinfo = NULL;
 	sess->emailinfo = NULL;
 
 	/*
@@ -919,8 +925,9 @@ faim_export void aim_session_init(aim_session_t *sess, fu32_t flags, int debugle
 	aim__registermodule(sess, translate_modfirst);
 	aim__registermodule(sess, chatnav_modfirst);
 	aim__registermodule(sess, chat_modfirst);
-	aim__registermodule(sess, newsearch_modfirst);
-	/* missing 0x10 - 0x12 */
+	/*	aim__registermodule(sess, odir_modfirst); */ /* kretch */
+	/*	aim__registermodule(sess, bart_modfirst); */ /* kretch */
+	/* missing 0x11 - 0x12 */
 	aim__registermodule(sess, ssi_modfirst);
 	/* missing 0x14 */
 	aim__registermodule(sess, icq_modfirst); /* XXX - Make sure this isn't sent for AIM */
@@ -991,11 +998,6 @@ faim_export int aim_conn_isconnecting(aim_conn_t *conn)
  */
 faim_export int aim_conn_completeconnect(aim_session_t *sess, aim_conn_t *conn)
 {
-	fd_set fds, wfds;
-	struct timeval tv;
-	int res;
-	int error = ETIMEDOUT;
-
 	aim_rxcallback_t userfunc;
 
 	if (!conn || (conn->fd == -1))
@@ -1004,35 +1006,7 @@ faim_export int aim_conn_completeconnect(aim_session_t *sess, aim_conn_t *conn)
 	if (!(conn->status & AIM_CONN_STATUS_INPROGRESS))
 		return -1;
 
-	FD_ZERO(&fds);
-	FD_SET(conn->fd, &fds);
-	FD_ZERO(&wfds);
-	FD_SET(conn->fd, &wfds);
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
-
-	if ((res = select(conn->fd+1, &fds, &wfds, NULL, &tv)) == -1) {
-		error = errno;
-		aim_conn_close(conn);
-		errno = error;
-		return -1;
-	} else if (res == 0) {
-		faimdprintf(sess, 0, "aim_conn_completeconnect: false alarm on %d\n", conn->fd);
-		return 0; /* hasn't really completed yet... */
-	} 
-
-	if (FD_ISSET(conn->fd, &fds) || FD_ISSET(conn->fd, &wfds)) {
-		int len = sizeof(error);
-		if (getsockopt(conn->fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0)
-			error = errno;
-	}
-
-	if (error) {
-		aim_conn_close(conn);
-		errno = error;
-		return -1;
-	}
-	fcntl(conn->fd, F_SETFL, 0); /* XXX should restore original flags */
+	fcntl(conn->fd, F_SETFL, 0);
 
 	conn->status &= ~AIM_CONN_STATUS_INPROGRESS;
 

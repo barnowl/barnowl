@@ -423,9 +423,9 @@ faim_internal int chatnav_modfirst(aim_session_t *sess, aim_module_t *mod)
 {
 
 	mod->family = 0x000d;
-	mod->version = 0x0003;
+	mod->version = 0x0001;
 	mod->toolid = 0x0010;
-	mod->toolversion = 0x047c;
+	mod->toolversion = 0x0629;
 	mod->flags = 0;
 	strncpy(mod->name, "chatnav", sizeof(mod->name));
 	mod->snachandler = snachandler;

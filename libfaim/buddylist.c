@@ -6,6 +6,8 @@
 #define FAIM_INTERNAL
 #include <aim.h>
 
+#include <string.h>
+
 /*
  * Subtype 0x0002 - Request rights.
  *
@@ -232,24 +234,27 @@ faim_export int aim_sendbuddyoffgoing(aim_session_t *sess, aim_conn_t *conn, con
  * Subtypes 0x000b and 0x000c - Change in buddy status
  *
  * Oncoming Buddy notifications contain a subset of the
- * user information structure.  Its close enough to run
- * through aim_extractuserinfo() however.
+ * user information structure.  It's close enough to run
+ * through aim_info_extract() however.
  *
  * Although the offgoing notification contains no information,
- * it is still in a format parsable by extractuserinfo.
+ * it is still in a format parsable by aim_info_extract().
  *
  */
 static int buddychange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
+	int ret = 0;
 	aim_userinfo_t userinfo;
 	aim_rxcallback_t userfunc;
 
-	aim_extractuserinfo(sess, bs, &userinfo);
+	aim_info_extract(sess, bs, &userinfo);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		return userfunc(sess, rx, &userinfo);
+		ret = userfunc(sess, rx, &userinfo);
 
-	return 0;
+	aim_info_free(&userinfo);
+
+	return ret;
 }
 
 static int snachandler(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
@@ -269,7 +274,7 @@ faim_internal int buddylist_modfirst(aim_session_t *sess, aim_module_t *mod)
 	mod->family = 0x0003;
 	mod->version = 0x0001;
 	mod->toolid = 0x0110;
-	mod->toolversion = 0x047b;
+	mod->toolversion = 0x0629;
 	mod->flags = 0;
 	strncpy(mod->name, "buddylist", sizeof(mod->name));
 	mod->snachandler = snachandler;

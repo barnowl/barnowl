@@ -24,6 +24,7 @@
 #define AIM_CB_FAM_CTN 0x000d /* ChatNav */
 #define AIM_CB_FAM_CHT 0x000e /* Chat */
 #define AIM_CB_FAM_SCH 0x000f /* "New" search */
+#define AIM_CB_FAM_ICO 0x0010 /* Used for uploading buddy icons */
 #define AIM_CB_FAM_SSI 0x0013 /* Server stored information */
 #define AIM_CB_FAM_ICQ 0x0015
 #define AIM_CB_FAM_ATH 0x0017
@@ -178,12 +179,17 @@
 
 /*
  * SNAC Family: "New" Search
- *
- * Most of these are actually special.
  */ 
 #define AIM_CB_SCH_ERROR 0x0001
 #define AIM_CB_SCH_SEARCH 0x0002
 #define AIM_CB_SCH_RESULTS 0x0003
+
+/*
+ * SNAC Family: Buddy icons
+ */ 
+#define AIM_CB_ICO_ERROR 0x0001
+#define AIM_CB_ICO_REQUEST 0x0004
+#define AIM_CB_ICO_RESPONSE 0x0005
 
 /*
  * SNAC Family: ICQ
@@ -193,7 +199,8 @@
 #define AIM_CB_ICQ_ERROR 0x0001
 #define AIM_CB_ICQ_OFFLINEMSG 0x00f0
 #define AIM_CB_ICQ_OFFLINEMSGCOMPLETE 0x00f1
-#define AIM_CB_ICQ_SIMPLEINFO 0x00f2
+#define AIM_CB_ICQ_INFO 0x00f2
+#define AIM_CB_ICQ_ALIAS 0x00f3
 #define AIM_CB_ICQ_DEFAULT 0xffff
 
 /*
@@ -202,7 +209,8 @@
 #define AIM_CB_SSI_ERROR 0x0001
 #define AIM_CB_SSI_REQRIGHTS 0x0002
 #define AIM_CB_SSI_RIGHTSINFO 0x0003
-#define AIM_CB_SSI_REQLIST 0x0005
+#define AIM_CB_SSI_REQDATA 0x0004
+#define AIM_CB_SSI_REQIFCHANGED 0x0005
 #define AIM_CB_SSI_LIST 0x0006
 #define AIM_CB_SSI_ACTIVATE 0x0007
 #define AIM_CB_SSI_ADD 0x0008
@@ -212,6 +220,13 @@
 #define AIM_CB_SSI_NOLIST 0x000F
 #define AIM_CB_SSI_EDITSTART 0x0011
 #define AIM_CB_SSI_EDITSTOP 0x0012
+#define AIM_CB_SSI_SENDAUTH 0x0014
+#define AIM_CB_SSI_RECVAUTH 0x0015
+#define AIM_CB_SSI_SENDAUTHREQ 0x0018
+#define AIM_CB_SSI_RECVAUTHREQ 0x0019
+#define AIM_CB_SSI_SENDAUTHREP 0x001a
+#define AIM_CB_SSI_RECVAUTHREP 0x001b
+#define AIM_CB_SSI_ADDED 0x001c
 
 /*
  * SNAC Family: Authorizer
@@ -240,32 +255,34 @@
 /*
  * OFT Services
  *
- * See non-SNAC note below.
+ * For all of the above #defines, the number is the subtype 
+ * of the SNAC.  For OFT #defines, the number is the 
+ * "hdrtype" which comes after the magic string and OFT 
+ * packet length.
+ *
+ * I'm pretty sure the ODC ones are arbitrary right now, 
+ * that should be changed.
  */
-#define AIM_CB_OFT_DIRECTIMCONNECTREQ 0x0001/* connect request -- actually an OSCAR CAP*/
+#define AIM_CB_OFT_DIRECTIMCONNECTREQ 0x0001	/* connect request -- actually an OSCAR CAP */
 #define AIM_CB_OFT_DIRECTIMINCOMING 0x0002
 #define AIM_CB_OFT_DIRECTIMDISCONNECT 0x0003
 #define AIM_CB_OFT_DIRECTIMTYPING 0x0004
-#define AIM_CB_OFT_DIRECTIMINITIATE 0x0005
+#define AIM_CB_OFT_DIRECTIM_ESTABLISHED 0x0005
 
-/* had been removed, put back by kretch */
-#define AIM_CB_OFT_GETFILECONNECTREQ 0x0006 /* connect request -- actually an OSCAR CAP*/
-#define AIM_CB_OFT_GETFILELISTINGREQ 0x0007 /* OFT listing.txt request */
-#define AIM_CB_OFT_GETFILEFILEREQ 0x0008    /* received file request */
-#define AIM_CB_OFT_GETFILEFILESEND 0x0009   /* received file request confirm -- send data */
-#define AIM_CB_OFT_GETFILECOMPLETE 0x000a   /* received file send complete*/
-#define AIM_CB_OFT_GETFILEINITIATE 0x000b   /* request for file get acknowledge */
-#define AIM_CB_OFT_GETFILEDISCONNECT 0x000c   /* OFT connection disconnected.*/
-#define AIM_CB_OFT_GETFILELISTING 0x000d   /* OFT listing.txt received.*/
-#define AIM_CB_OFT_GETFILERECEIVE 0x000e   /* OFT file incoming.*/
-#define AIM_CB_OFT_GETFILELISTINGRXCONFIRM 0x000f
-#define AIM_CB_OFT_GETFILESTATE4 0x0010
+#define AIM_CB_OFT_PROMPT 0x0101		/* "I am going to send you this file, is that ok?" */
+#define AIM_CB_OFT_RESUMESOMETHING 0x0106	/* I really don't know */
+#define AIM_CB_OFT_ACK 0x0202			/* "Yes, it is ok for you to send me that file" */
+#define AIM_CB_OFT_DONE 0x0204			/* "I received that file with no problems, thanks a bunch" */
+#define AIM_CB_OFT_RESUME 0x0205		/* Resume transferring, sent by whoever paused? */
+#define AIM_CB_OFT_RESUMEACK 0x0207		/* Not really sure */
 
-#define AIM_CB_OFT_SENDFILEFILEREQ 0x0011 /* started receiving file */
-#define AIM_CB_OFT_SENDFILEFILESEND 0x0012 /* buddy ready to for us to send */
-#define AIM_CB_OFT_SENDFILECOMPLETE 0x0013 /* send to buddy complete */
-#define AIM_CB_OFT_SENDFILEINITIATE 0x0014 /* connection to buddy initiated */
+#define AIM_CB_OFT_GETFILE_REQUESTLISTING 0x1108 /* "I have a listing.txt file, do you want it?" */
+#define AIM_CB_OFT_GETFILE_RECEIVELISTING 0x1209 /* "Yes, please send me your listing.txt file" */
+#define AIM_CB_OFT_GETFILE_RECEIVEDLISTING 0x120a /* received corrupt listing.txt file? */ /* I'm just guessing about this one... */
+#define AIM_CB_OFT_GETFILE_ACKLISTING 0x120b	/* "I received the listing.txt file successfully" */
+#define AIM_CB_OFT_GETFILE_REQUESTFILE 0x120c	/* "Please send me this file" */
 
+#define AIM_CB_OFT_ESTABLISHED 0xFFFF		/* connection to buddy initiated */
 
 /*
  * SNAC Family: Internal Messages
@@ -281,8 +298,9 @@
 #define AIM_CB_SPECIAL_CONNCOMPLETE 0x0004
 #define AIM_CB_SPECIAL_FLAPVER 0x0005
 #define AIM_CB_SPECIAL_CONNINITDONE 0x0006
-#define AIM_CB_SPECIAL_IMAGETRANSFER 0x007
-#define AIM_CB_SPECIAL_MSGTIMEOUT 0x008
+#define AIM_CB_SPECIAL_IMAGETRANSFER 0x0007
+#define AIM_CB_SPECIAL_MSGTIMEOUT 0x0008
+#define AIM_CB_SPECIAL_CONNDEAD 0x0009
 #define AIM_CB_SPECIAL_UNKNOWN 0xffff
 #define AIM_CB_SPECIAL_DEFAULT AIM_CB_SPECIAL_UNKNOWN
 

@@ -40,7 +40,7 @@ static int error(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mo
  * Subtype 0x0002
  *
  */
-faim_export int aim_usersearch_address(aim_session_t *sess, aim_conn_t *conn, const char *address)
+faim_export int aim_search_address(aim_session_t *sess, aim_conn_t *conn, const char *address)
 {
 	aim_frame_t *fr;
 	aim_snacid_t snacid;
@@ -122,7 +122,7 @@ faim_internal int search_modfirst(aim_session_t *sess, aim_module_t *mod)
 	mod->family = 0x000a;
 	mod->version = 0x0001;
 	mod->toolid = 0x0110;
-	mod->toolversion = 0x047b;
+	mod->toolversion = 0x0629;
 	mod->flags = 0;
 	strncpy(mod->name, "search", sizeof(mod->name));
 	mod->snachandler = snachandler;

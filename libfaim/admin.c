@@ -3,7 +3,7 @@
  *
  * Used for stuff like changing the formating of your screen name, changing your 
  * email address, requesting an account confirmation email, getting account info, 
- * 
+ *
  */
 
 #define FAIM_INTERNAL
@@ -196,6 +196,7 @@ faim_export int aim_admin_reqconfirm(aim_session_t *sess, aim_conn_t *conn)
  */
 static int accountconfirm(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
+	int ret = 0;
 	aim_rxcallback_t userfunc;
 	fu16_t status;
 	aim_tlvlist_t *tl;
@@ -206,9 +207,9 @@ static int accountconfirm(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	tl = aim_readtlvchain(bs);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		return userfunc(sess, rx, status);
+		ret = userfunc(sess, rx, status);
 
-	return 0;
+	return ret;
 }
 
 static int snachandler(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
@@ -227,8 +228,8 @@ faim_internal int admin_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	mod->family = 0x0007;
 	mod->version = 0x0001;
-	mod->toolid = AIM_TOOL_NEWWIN;
-	mod->toolversion = 0x0361; /* XXX this and above aren't right */
+	mod->toolid = 0x0010;
+	mod->toolversion = 0x0629;
 	mod->flags = 0;
 	strncpy(mod->name, "admin", sizeof(mod->name));
 	mod->snachandler = snachandler;

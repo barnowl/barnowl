@@ -34,6 +34,7 @@ faim_export int aim_getbuildstring(char *buf, int buflen)
 	return 0;
 }
 
+#if 0
 faim_internal void faimdprintf(aim_session_t *sess, int dlevel, const char *format, ...)
 {
   return; /* kretch */
@@ -54,3 +55,4 @@ faim_internal void faimdprintf(aim_session_t *sess, int dlevel, const char *form
 	return;
 }
 
+#endif

@@ -1,10 +1,13 @@
 /*
  * Family 0x0009 - Basic Oscar Service.
  *
+ * The functionality of this family has been replaced by SSI.
  */
 
 #define FAIM_INTERNAL
 #include <aim.h>
+
+#include <string.h>
 
 /* Subtype 0x0002 - Request BOS rights. */
 faim_export int aim_bos_reqrights(aim_session_t *sess, aim_conn_t *conn)
@@ -126,7 +129,7 @@ faim_export int aim_bos_changevisibility(aim_session_t *sess, aim_conn_t *conn, 
 	aim_putsnac(&fr->data, 0x0009, subtype, 0x00, snacid);
 
 	for (i = 0; (i < (listcount - 1)) && (i < 99); i++) {
-		tmpptr = aimutil_itemidx(localcpy, i, '&');
+		tmpptr = aimutil_itemindex(localcpy, i, '&');
 
 		aimbs_put8(&fr->data, strlen(tmpptr));
 		aimbs_putraw(&fr->data, tmpptr, strlen(tmpptr));
@@ -155,7 +158,7 @@ faim_internal int bos_modfirst(aim_session_t *sess, aim_module_t *mod)
 	mod->family = 0x0009;
 	mod->version = 0x0001;
 	mod->toolid = 0x0110;
-	mod->toolversion = 0x047b;
+	mod->toolversion = 0x0629;
 	mod->flags = 0;
 	strncpy(mod->name, "bos", sizeof(mod->name));
 	mod->snachandler = snachandler;

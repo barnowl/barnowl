@@ -8,6 +8,9 @@
 
 #define FAIM_INTERNAL
 #include <aim.h>
+#ifdef _WIN32
+#include "win32dep.h"
+#endif
 
 struct aim_priv_inforeq {
 	char sn[MAXSNLEN+1];
@@ -29,19 +32,48 @@ faim_export int aim_bos_reqlocaterights(aim_session_t *sess, aim_conn_t *conn)
  * Subtype 0x0004
  *
  * Gives BOS your profile.
+ *
+ * profile_encoding and awaymsg_encoding MUST be set if profile or
+ * away are set, respectively, and their value may or may not be
+ * restricted to a few choices.  I am currently aware of:
+ * 
+ * us-ascii		Just that
+ * unicode-2-0		UCS2-BE
+ * 
+ * profile_len and awaymsg_len MUST be set similarly, and they MUST
+ * be the length of their respective strings in bytes.
+ *
+ * To get the previous behavior of awaymsg == "" un-setting the away
+ * message, set awaymsg non-NULL and awaymsg_len to 0 (this is the
+ * obvious equivalent).
  * 
  */
-faim_export int aim_bos_setprofile(aim_session_t *sess, aim_conn_t *conn, const char *profile, const char *awaymsg, fu32_t caps)
+faim_export int aim_bos_setprofile(aim_session_t *sess, aim_conn_t *conn, 
+				  const char *profile_encoding, const char *profile, const int profile_len,
+				  const char *awaymsg_encoding, const char *awaymsg, const int awaymsg_len,
+				  fu32_t caps)
 {
-	static const char defencoding[] = {"text/aolrtf; charset=\"us-ascii\""};
+	static const char defencoding[] = {"text/aolrtf; charset=\"%s\""};
 	aim_frame_t *fr;
 	aim_tlvlist_t *tl = NULL;
 	aim_snacid_t snacid;
+	char *encoding;
+
+	if ((profile && profile_encoding == NULL) || (awaymsg && awaymsg_len && awaymsg_encoding == NULL)) {
+		return -EINVAL;
+	}
 
 	/* Build to packet first to get real length */
 	if (profile) {
-		aim_addtlvtochain_raw(&tl, 0x0001, strlen(defencoding), defencoding);
-		aim_addtlvtochain_raw(&tl, 0x0002, strlen(profile), profile);
+		/* no + 1 here because of %s */
+		encoding = malloc(strlen(defencoding) + strlen(profile_encoding));
+		if (encoding == NULL) {
+			return -ENOMEM;
+		}
+		snprintf(encoding, strlen(defencoding) + strlen(profile_encoding), defencoding, profile_encoding);
+		aim_addtlvtochain_raw(&tl, 0x0001, strlen(encoding), encoding);
+		aim_addtlvtochain_raw(&tl, 0x0002, profile_len, profile);
+		free(encoding);
 	}
 
 	/*
@@ -53,9 +85,15 @@ faim_export int aim_bos_setprofile(aim_session_t *sess, aim_conn_t *conn, const 
 	 *       (that is, if you were away, you'll remain away).
 	 */
 	if (awaymsg) {
-		if (strlen(awaymsg)) {
-			aim_addtlvtochain_raw(&tl, 0x0003, strlen(defencoding), defencoding);
-			aim_addtlvtochain_raw(&tl, 0x0004, strlen(awaymsg), awaymsg);
+		if (awaymsg_len) {
+			encoding = malloc(strlen(defencoding) + strlen(awaymsg_encoding));
+			if (encoding == NULL) {
+				return -ENOMEM;
+			}
+			snprintf(encoding, strlen(defencoding) + strlen(awaymsg_encoding), defencoding, awaymsg_encoding);
+			aim_addtlvtochain_raw(&tl, 0x0003, strlen(encoding), encoding);
+			aim_addtlvtochain_raw(&tl, 0x0004, awaymsg_len, awaymsg);
+			free(encoding);
 		} else
 			aim_addtlvtochain_noval(&tl, 0x0004);
 	}
@@ -204,15 +242,20 @@ static const struct {
 } aim_caps[] = {
 
 	/*
-	 * Chat is oddball.
+	 * These are in ascending numerical order.
 	 */
-	{AIM_CAPS_CHAT,
-	 {0x74, 0x8f, 0x24, 0x20, 0x62, 0x87, 0x11, 0xd1, 
+	{AIM_CAPS_ICHAT,
+	 {0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 
 	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
 
-	/*
-	 * These are mostly in order.
-	 */
+	{AIM_CAPS_SECUREIM,
+	 {0x09, 0x46, 0x00, 0x01, 0x4c, 0x7f, 0x11, 0xd1, 
+	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
+
+	{AIM_CAPS_HIPTOP,
+	 {0x09, 0x46, 0x13, 0x23, 0x4c, 0x7f, 0x11, 0xd1, 
+	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
+
 	{AIM_CAPS_VOICE,
 	 {0x09, 0x46, 0x13, 0x41, 0x4c, 0x7f, 0x11, 0xd1, 
 	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
@@ -228,7 +271,7 @@ static const struct {
 	 {0x09, 0x46, 0x13, 0x44, 0x4c, 0x7f, 0x11, 0xd1, 
 	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
 
-	{AIM_CAPS_IMIMAGE,
+	{AIM_CAPS_DIRECTIM,
 	 {0x09, 0x46, 0x13, 0x45, 0x4c, 0x7f, 0x11, 0xd1, 
 	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
 
@@ -236,6 +279,9 @@ static const struct {
 	 {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 
 	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
 
+	/*
+	 * Windows AIM calls this "Add-ins," which is probably more accurate
+	 */
 	{AIM_CAPS_SAVESTOCKS,
 	 {0x09, 0x46, 0x13, 0x47, 0x4c, 0x7f, 0x11, 0xd1,
 	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
@@ -265,13 +311,42 @@ static const struct {
 	 {0x09, 0x46, 0x13, 0x4b, 0x4c, 0x7f, 0x11, 0xd1,
 	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
 
-	/* from ICQ2002a
-	{AIM_CAPS_ICQUNKNOWN2,
+	/*
+	 * Setting this lets AIM users receive messages from ICQ users, and ICQ 
+	 * users receive messages from AIM users.  It also lets ICQ users show 
+	 * up in buddy lists for AIM users, and AIM users show up in buddy lists 
+	 * for ICQ users.  And ICQ privacy/invisibility acts like AIM privacy, 
+	 * in that if you add a user to your deny list, you will not be able to 
+	 * see them as online (previous you could still see them, but they 
+	 * couldn't see you.
+	 */
+	{AIM_CAPS_INTEROPERATE,
+	 {0x09, 0x46, 0x13, 0x4d, 0x4c, 0x7f, 0x11, 0xd1,
+	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
+
+	{AIM_CAPS_ICQUTF8,
 	 {0x09, 0x46, 0x13, 0x4e, 0x4c, 0x7f, 0x11, 0xd1,
-	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}}, */
+	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
+
+	{AIM_CAPS_ICQUTF8OLD,
+	 {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8,
+	  0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf}},
+
+	/*
+	 * Chat is oddball.
+	 */
+	{AIM_CAPS_CHAT,
+	 {0x74, 0x8f, 0x24, 0x20, 0x62, 0x87, 0x11, 0xd1, 
+	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
+
+	/*
+	{AIM_CAPS_ICQ2GO,
+	 {0x56, 0x3f, 0xc8, 0x09, 0x0b, 0x6f, 0x41, 0xbd,
+	  0x9f, 0x79, 0x42, 0x26, 0x09, 0xdf, 0xa2, 0xf3}},
+	*/
 
 	{AIM_CAPS_ICQRTF,
-	 {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 
+	 {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34,
 	  0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92}},
 
 	/* supposed to be ICQRTF?
@@ -279,21 +354,17 @@ static const struct {
 	 {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 
 	  0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09}}, */
 
-	{AIM_CAPS_ICQUNKNOWN,
-	 {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8,
-	  0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf}},
-
-	{AIM_CAPS_EMPTY,
-	 {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
+	{AIM_CAPS_APINFO, 
+	 {0xaa, 0x4a, 0x32, 0xb5, 0xf8, 0x84, 0x48, 0xc6,
+	  0xa3, 0xd7, 0x8c, 0x50, 0x97, 0x19, 0xfd, 0x5b}},
 
 	{AIM_CAPS_TRILLIANCRYPT,
 	 {0xf2, 0xe7, 0xc7, 0xf4, 0xfe, 0xad, 0x4d, 0xfb,
 	  0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00}},
 
-	{AIM_CAPS_APINFO, 
-         {0xAA, 0x4A, 0x32, 0xB5, 0xF8, 0x84, 0x48, 0xc6,
-	  0xA3, 0xD7, 0x8C, 0x50, 0x97, 0x19, 0xFD, 0x5B}},
+	{AIM_CAPS_EMPTY,
+	 {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
 
 	{AIM_CAPS_LAST}
 };
@@ -384,11 +455,18 @@ static void dumptlv(aim_session_t *sess, fu16_t type, aim_bstream_t *bs, fu8_t l
 	return;
 }
 
+faim_internal void aim_info_free(aim_userinfo_t *info)
+{
+	free(info->iconcsum);
+	free(info->availmsg_encoding);
+	free(info->availmsg);
+}
+
 /*
  * AIM is fairly regular about providing user info.  This is a generic 
  * routine to extract it in its standard form.
  */
-faim_internal int aim_extractuserinfo(aim_session_t *sess, aim_bstream_t *bs, aim_userinfo_t *outinfo)
+faim_internal int aim_info_extract(aim_session_t *sess, aim_bstream_t *bs, aim_userinfo_t *outinfo)
 {
 	int curtlv, tlvcnt;
 	fu8_t snlen;
@@ -477,7 +555,7 @@ faim_internal int aim_extractuserinfo(aim_session_t *sess, aim_bstream_t *bs, ai
 			/*
 			 * Type = 0x0004: Idle time.
 			 *
-			 * Number of seconds since the user actively used the 
+			 * Number of minutes since the user actively used the 
 			 * service.
 			 *
 			 * Note that the client tells the server when to start
@@ -529,6 +607,10 @@ faim_internal int aim_extractuserinfo(aim_session_t *sess, aim_bstream_t *bs, ai
 			 * random crap containing the IP address,
 			 * apparently a port number, and some Other Stuff.
 			 *
+			 * Format is:
+			 * 4 bytes - Our IP address, 0xc0 a8 01 2b for 192.168.1.43
+			 * 
+			 *
 			 */
 			aimbs_getrawbuf(bs, outinfo->icqinfo.crap, 0x25);
 			outinfo->present |= AIM_USERINFO_PRESENT_ICQDATA;
@@ -569,12 +651,73 @@ faim_internal int aim_extractuserinfo(aim_session_t *sess, aim_bstream_t *bs, ai
 			outinfo->sessionlen = aimbs_get32(bs);
 			outinfo->present |= AIM_USERINFO_PRESENT_SESSIONLEN;
 
+		} else if (type == 0x0019) {
+/*			faimdprintf(sess, 0, "userinfo: **warning: unexpected TLV type 0x0019: from %s\n", outinfo->sn); */
+
+		} else if (type == 0x001b) {
+/*			faimdprintf(sess, 0, "userinfo: **warning: unexpected TLV type 0x001b: from %s\n", outinfo->sn); */
+
 		} else if (type == 0x001d) {
 			/*
-			 * Type 29: Unknown.
+			 * Type = 0x001d
 			 *
-			 * Currently very rare. Always 18 bytes of mostly zero.
+			 * Buddy icon information and available messages.
+			 *
+			 * This almost seems like the AIM protocol guys gave 
+			 * the iChat guys a Type, and the iChat guys tried to 
+			 * cram as much cool shit into it as possible.  Then 
+			 * the Windows AIM guys were like, "hey, that's 
+			 * pretty neat, let's copy those prawns."
+			 *
+			 * In that spirit, this can contain a custom message, 
+			 * kind of like an away message, but you're not away 
+			 * (it's called an "available" message).  Or it can 
+			 * contain information about the buddy icon the user 
+			 * has stored on the server.
 			 */
+			int type2, number, length2;
+
+			while (aim_bstream_curpos(bs) < endpos) {
+				type2 = aimbs_get16(bs);
+				number = aimbs_get8(bs);
+				length2 = aimbs_get8(bs);
+
+				switch (type2) {
+					case 0x0000: { /* This is an official buddy icon? */
+						/* This is always 5 bytes of "0x02 01 d2 04 72"? */
+						aim_bstream_advance(bs, length2);
+					} break;
+
+					case 0x0001: { /* A buddy icon checksum */
+						if ((length2 > 0) && (number == 0x01)) {
+							free(outinfo->iconcsum);
+							outinfo->iconcsum = aimbs_getraw(bs, length2);
+							outinfo->iconcsumlen = length2;
+						} else
+							aim_bstream_advance(bs, length2);
+					} break;
+
+					case 0x0002: { /* An available message */
+						if (length2 > 4) {
+							free(outinfo->availmsg);
+							outinfo->availmsg_len = aimbs_get16(bs);
+							outinfo->availmsg = aimbs_getstr(bs, outinfo->availmsg_len);
+							if (aimbs_get16(bs) == 0x0001) { /* We have an encoding */
+								aimbs_get16(bs);
+								outinfo->availmsg_encoding = aimbs_getstr(bs, aimbs_get16(bs));
+							} else {
+								/* No explicit encoding, client should use UTF-8 */
+								outinfo->availmsg_encoding = NULL;
+							}
+						} else
+							aim_bstream_advance(bs, length2);
+					} break;
+
+					default: {
+						aim_bstream_advance(bs, length2);
+					} break;
+				}
+			}
 
 		} else if (type == 0x001e) {
 			/*
@@ -606,7 +749,7 @@ faim_internal int aim_extractuserinfo(aim_session_t *sess, aim_bstream_t *bs, ai
 }
 
 /*
- * Inverse of aim_extractuserinfo()
+ * Inverse of aim_info_extract()
  */
 faim_internal int aim_putuserinfo(aim_bstream_t *bs, aim_userinfo_t *info)
 {
@@ -712,8 +855,10 @@ static int userinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 {
 	aim_userinfo_t userinfo;
 	char *text_encoding = NULL, *text = NULL;
+	int textlen = 0;
 	aim_rxcallback_t userfunc;
 	aim_tlvlist_t *tlvlist;
+	aim_tlv_t *text_tlv = NULL;
 	aim_snac_t *origsnac = NULL;
 	struct aim_priv_inforeq *inforeq;
 	int ret = 0;
@@ -734,7 +879,7 @@ static int userinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 		return 0;
 	}
 
-	aim_extractuserinfo(sess, bs, &userinfo);
+	aim_info_extract(sess, bs, &userinfo);
 
 	tlvlist = aim_readtlvchain(bs);
 
@@ -747,10 +892,10 @@ static int userinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 	 */
 	if (inforeq->infotype == AIM_GETINFO_GENERALINFO) {
 		text_encoding = aim_gettlv_str(tlvlist, 0x0001, 1);
-		text = aim_gettlv_str(tlvlist, 0x0002, 1);
+		text_tlv = aim_gettlv(tlvlist, 0x0002, 1);
 	} else if (inforeq->infotype == AIM_GETINFO_AWAYMESSAGE) {
 		text_encoding = aim_gettlv_str(tlvlist, 0x0003, 1);
-		text = aim_gettlv_str(tlvlist, 0x0004, 1);
+		text_tlv = aim_gettlv(tlvlist, 0x0004, 1);
 	} else if (inforeq->infotype == AIM_GETINFO_CAPABILITIES) {
 		aim_tlv_t *ct;
 
@@ -764,14 +909,17 @@ static int userinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 		}
 	}
 
+	if (text_tlv) {
+		text = text_tlv->value;
+		textlen = text_tlv->length;
+	}
+
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		ret = userfunc(sess, rx, &userinfo, inforeq->infotype, text_encoding, text);
+		ret = userfunc(sess, rx, &userinfo, inforeq->infotype, text_encoding, text, textlen);
 
+	aim_info_free(&userinfo);
 	free(text_encoding);
-	free(text);
-
 	aim_freetlvchain(&tlvlist);
-
 	if (origsnac)
 		free(origsnac->data);
 	free(origsnac);
@@ -886,8 +1034,8 @@ faim_internal int locate_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	mod->family = 0x0002;
 	mod->version = 0x0001;
-	mod->toolid = 0x0101;
-	mod->toolversion = 0x047b;
+	mod->toolid = 0x0110;
+	mod->toolversion = 0x0629;
 	mod->flags = 0;
 	strncpy(mod->name, "locate", sizeof(mod->name));
 	mod->snachandler = snachandler;

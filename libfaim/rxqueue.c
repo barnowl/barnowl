@@ -82,7 +82,7 @@ faim_internal void aim_frame_destroy(aim_frame_t *frame)
 /*
  * Read a FLAP header from conn into fr, and return the number of bytes in the payload.
  */
-static faim_shortfunc int aim_get_command_flap(aim_session_t *sess, aim_conn_t *conn, aim_frame_t *fr)
+static int aim_get_command_flap(aim_session_t *sess, aim_conn_t *conn, aim_frame_t *fr)
 {
 	fu8_t flaphdr_raw[6];
 	aim_bstream_t flaphdr;
@@ -164,7 +164,7 @@ faim_export int aim_get_command(aim_session_t *sess, aim_conn_t *conn)
 	fu16_t payloadlen;
 
 	if (!sess || !conn)
-		return -1;
+		return -EINVAL;
 
 	if (conn->fd == -1)
 		return -1; /* it's an aim_conn_close()'d connection */
@@ -176,16 +176,23 @@ faim_export int aim_get_command(aim_session_t *sess, aim_conn_t *conn)
 		return aim_conn_completeconnect(sess, conn);
 
 	if (!(newrx = (aim_frame_t *)calloc(sizeof(aim_frame_t), 1)))
-		return -1;
+		return -ENOMEM;
 
 	/*
 	 * Rendezvous (client to client) connections do not speak FLAP, so this 
 	 * function will break on them.
 	 */
-	if (conn->type == AIM_CONN_TYPE_RENDEZVOUS)
-		payloadlen = aim_get_command_rendezvous(sess, conn, newrx);
-	else if (conn->type == AIM_CONN_TYPE_RENDEZVOUS_OUT) {
-		faimdprintf(sess, 0, "AIM_CONN_TYPE_RENDEZVOUS_OUT on fd %d\n", conn->fd);
+	if (conn->type == AIM_CONN_TYPE_RENDEZVOUS) {
+		int ret = aim_get_command_rendezvous(sess, conn, newrx);
+
+		if (ret < 0) {
+			free(newrx);
+			return -1;
+		}
+
+		payloadlen = ret;
+	} else if (conn->type == AIM_CONN_TYPE_LISTENER) {
+		faimdprintf(sess, 0, "AIM_CONN_TYPE_LISTENER on fd %d\n", conn->fd);
 		free(newrx);
 		return -1;
 	} else

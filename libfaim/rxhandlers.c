@@ -14,7 +14,7 @@ struct aim_rxcblist_s {
 	fu16_t family;
 	fu16_t type;
 	aim_rxcallback_t handler;
-	u_short flags;
+	fu16_t flags;
 	struct aim_rxcblist_s *next;
 };
 
@@ -107,6 +107,27 @@ static int consumesnac(aim_session_t *sess, aim_frame_t *rx)
 	snac.subtype = aimbs_get16(&rx->data);
 	snac.flags = aimbs_get16(&rx->data);
 	snac.id = aimbs_get32(&rx->data);
+
+	/* SNAC flags are apparently uniform across all SNACs, so we handle them here */
+	if (snac.flags & 0x0001) {
+		/*
+		 * This means the SNAC will be followed by another SNAC with 
+		 * related information.  We don't need to do anything about 
+		 * this here.
+		 */
+	}
+	if (snac.flags & 0x8000) {
+		/*
+		 * This packet contains the version of the family that this SNAC is 
+		 * in.  You get this when your SSI module is version 2 or higher.  
+		 * For now we have no need for this, but you could always save 
+		 * it as a part of aim_modnsac_t, or something.  The format is...
+		 * 2 byte length of total mini-header (which is 6 bytes), then TLV 
+		 * of  type 0x0001, length 0x0002, value is the 2 byte version 
+		 * number
+		 */
+		aim_bstream_advance(&rx->data, aimbs_get16(&rx->data));
+	}
 
 	for (cur = (aim_module_t *)sess->modlistv; cur; cur = cur->next) {
 
@@ -370,34 +391,6 @@ faim_internal int bleck(aim_session_t *sess, aim_frame_t *frame, ...)
 	return 1;
 }
 
-/*
- * Some SNACs we do not allow to be hooked, for good reason.
- */
-static int checkdisallowed(fu16_t group, fu16_t type)
-{
-	static const struct {
-		fu16_t group;
-		fu16_t type;
-	} dontuse[] = {
-		{0x0001, 0x0002},
-		{0x0001, 0x0003},
-		{0x0001, 0x0006},
-		{0x0001, 0x0007},
-		{0x0001, 0x0008},
-		{0x0001, 0x0017},
-		{0x0001, 0x0018},
-		{0x0000, 0x0000}
-	};
-	int i;
-
-	for (i = 0; dontuse[i].group != 0x0000; i++) {
-		if ((dontuse[i].group == group) && (dontuse[i].type == type))
-			return 1;
-	}
-
-	return 0;
-}
-
 faim_export int aim_conn_addhandler(aim_session_t *sess, aim_conn_t *conn, fu16_t family, fu16_t type, aim_rxcallback_t newhandler, fu16_t flags)
 {
 	struct aim_rxcblist_s *newcb;
@@ -406,11 +399,6 @@ faim_export int aim_conn_addhandler(aim_session_t *sess, aim_conn_t *conn, fu16_
 		return -1;
 
 	faimdprintf(sess, 1, "aim_conn_addhandler: adding for %04x/%04x\n", family, type);
-
-	if (checkdisallowed(family, type)) {
-		faimdprintf(sess, 0, "aim_conn_addhandler: client tried to hook %x/%x -- BUG!!!\n", family, type);
-		return -1;
-	}
 
 	if (!(newcb = (struct aim_rxcblist_s *)calloc(1, sizeof(struct aim_rxcblist_s))))
 		return -1;
@@ -528,56 +516,37 @@ faim_export void aim_rxdispatch(aim_session_t *sess)
 		if (cur->handled)
 			continue;
 
-		/*
-		 * This is a debugging/sanity check only and probably 
-		 * could/should be removed for stable code.
-		 */
-		if (((cur->hdrtype == AIM_FRAMETYPE_OFT) && 
-		   (cur->conn->type != AIM_CONN_TYPE_RENDEZVOUS)) || 
-		  ((cur->hdrtype == AIM_FRAMETYPE_FLAP) && 
-		   (cur->conn->type == AIM_CONN_TYPE_RENDEZVOUS))) {
-			faimdprintf(sess, 0, "rxhandlers: incompatible frame type %d on connection type 0x%04x\n", cur->hdrtype, cur->conn->type);
-			cur->handled = 1;
-			continue;
-		}
-
-		if (cur->conn->type == AIM_CONN_TYPE_RENDEZVOUS) {
-			if (cur->hdrtype != AIM_FRAMETYPE_OFT) {
-				faimdprintf(sess, 0, "internal error: non-OFT frames on OFT connection\n");
-				cur->handled = 1; /* get rid of it */
-			} else {
-				aim_rxdispatch_rendezvous(sess, cur);
-				cur->handled = 1;
-			}
-			continue;
-		}
-
-		if (cur->conn->type == AIM_CONN_TYPE_RENDEZVOUS_OUT) {
-			/* not possible */
-			faimdprintf(sess, 0, "rxdispatch called on RENDEZVOUS_OUT connection!\n");
-			cur->handled = 1;
-			continue;
-		}
-
-		if (cur->hdr.flap.type == 0x01) {
-			
-			cur->handled = aim_callhandler_noparam(sess, cur->conn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_FLAPVER, cur); /* XXX use consumenonsnac */
-			
-			continue;
-			
-		} else if (cur->hdr.flap.type == 0x02) {
-
-			if ((cur->handled = consumesnac(sess, cur)))
+		if (cur->hdrtype == AIM_FRAMETYPE_FLAP) {
+			if (cur->hdr.flap.type == 0x01) {
+				cur->handled = aim_callhandler_noparam(sess, cur->conn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_FLAPVER, cur); /* XXX use consumenonsnac */
 				continue;
 
-		} else if (cur->hdr.flap.type == 0x04) {
+			} else if (cur->hdr.flap.type == 0x02) {
+				if ((cur->handled = consumesnac(sess, cur)))
+					continue;
 
-			cur->handled = negchan_middle(sess, cur);
-			continue;
+			} else if (cur->hdr.flap.type == 0x04) {
+				cur->handled = negchan_middle(sess, cur);
+				continue;
 
-		} else if (cur->hdr.flap.type == 0x05)
-			;
-		
+			} else if (cur->hdr.flap.type == 0x05) {
+
+			}
+
+		} else if (cur->hdrtype == AIM_FRAMETYPE_OFT) {
+			if (cur->conn->type == AIM_CONN_TYPE_RENDEZVOUS) {
+				aim_rxdispatch_rendezvous(sess, cur);
+				cur->handled = 1;
+				continue;
+
+			} else if (cur->conn->type == AIM_CONN_TYPE_LISTENER) {
+				/* not possible */
+				faimdprintf(sess, 0, "rxdispatch called on LISTENER connection!\n");
+				cur->handled = 1;
+				continue;
+			}
+		}
+
 		if (!cur->handled) {
 			consumenonsnac(sess, cur, 0xffff, 0xffff); /* last chance! */
 			cur->handled = 1;
