@@ -1,0 +1,21 @@
+CC=@CC@
+LIBS=@LIBS@
+LDFLAGS=@LDFLAGS@
+RANLIB=@RANLIB@
+OBJS=admin.o adverts.o auth.o bos.o buddylist.o \
+     chat.o chatnav.o conn.o ft.o icq.o im.o \
+     info.o invite.o md5.o meta.o misc.o msgcookie.o \
+     popups.o rxhandlers.o rxqueue.o search.o service.o \
+     snac.o ssi.o stats.o tlv.o translate.o txqueue.o \
+     util.o
+CFLAGS=@CFLAGS@ -I. -DAIM_BUILDDATE=\"x\" -DAIM_BUILDTIME=\"x\"
+
+libfaim: $(OBJS)
+	$(AR) -r libfaim.a $(OBJS)
+	$(RANLIB) libfaim.a
+
+clean:
+	$(RM) *.o libfaim.a
+
+distclean: clean
+	$(RM) config.cache config.log config.status Makefile config.h TAGS *~ core
