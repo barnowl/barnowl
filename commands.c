@@ -997,9 +997,6 @@ char *owl_command_startup(int argc, char **argv, char *buff)
     return(NULL);
   }
 
-  /* we'll be pedantic here, just in case this command gets another name
-   *  (or is aliased) start after the first space on the line
-   */
   ptr=strchr(buff, ' ');
   if (!ptr) {
     owl_function_makemsg("Parse error finding command for startup");
@@ -1021,9 +1018,6 @@ char *owl_command_unstartup(int argc, char **argv, char *buff)
     return(NULL);
   }
 
-  /* we'll be pedantic here, just in case this command gets another name
-   *  (or is aliased) start after the first space on the line
-   */
   ptr=strchr(buff, ' ');
   if (!ptr) {
     owl_function_makemsg("Parse error finding command for unstartup");

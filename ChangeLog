@@ -1,5 +1,8 @@
 $Id$
 
+2.0.8-pre-1
+	Improved intro doc
+
 2.0.7
 	Idletimes now appear in the buddylisting
 	Failed AIM logins are now correctly reported
