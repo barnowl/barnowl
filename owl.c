@@ -94,6 +94,11 @@ int main(int argc, char **argv, char **env)
       debug=1;
       argv++;
       argc--;
+    } else if (!strcmp(argv[0], "-D")) {
+      debug=1;
+      unlink(OWL_DEBUG_FILE);
+      argv++;
+      argc--;
     } else if (!strcmp(argv[0], "-v")) {
       printf("This is owl version %s\n", OWL_VERSION_STRING);
       exit(0);
@@ -622,9 +627,10 @@ void sig_handler(int sig, siginfo_t *si, void *data)
 void usage()
 {
   fprintf(stderr, "Owl version %s\n", OWL_VERSION_STRING);
-  fprintf(stderr, "Usage: owl [-n] [-d] [-v] [-h] [-c <configfile>] [-t <ttyname>]\n");
+  fprintf(stderr, "Usage: owl [-n] [-d] [-D] [-v] [-h] [-c <configfile>] [-t <ttyname>]\n");
   fprintf(stderr, "  -n      don't load zephyr subscriptions\n");
   fprintf(stderr, "  -d      enable debugging\n");
+  fprintf(stderr, "  -D      enable debugging and delete previous debug file\n");
   fprintf(stderr, "  -v      print the Owl version number and exit\n");
   fprintf(stderr, "  -h      print this help message\n");
   fprintf(stderr, "  -c      specify an alternate config file\n");

@@ -5,6 +5,8 @@ $Id$
 	Better 'status' command
 	Use '+' for popwin corners when 'fancylines' is off
 	Allow TERMINFO to be overridden in the envrionment
+	Command line arg -D turns on debugging and deletes previous
+	  debugging file
 	
 2.0.13
 	Changed startup message for new mailing list
