@@ -8,7 +8,7 @@ $Id$
 	Added M-D, M-u to basic key help
 	Fixed a quoting problem in configure.in
 	Changed top of help to use 'show' instead of M-x
-	Fixed a bug in the summary field for user-created aliases.
+	Fixed a bug in the summary field for user-created aliases
 	
 1.2.1-pre-1
 	Added RCS Id strings to all files.
