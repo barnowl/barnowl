@@ -587,7 +587,7 @@ void _owl_message_make_text_from_notice_standard(owl_message *m) {
   owl_fmtext_init_null(&(m->fmtext));
   owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
 
-  if (!strcasecmp(n->z_opcode, "ping")) {
+  if (!strcasecmp(n->z_opcode, "ping") && owl_message_is_private(m)) {
     owl_fmtext_append_bold(&(m->fmtext), "PING");
     owl_fmtext_append_normal(&(m->fmtext), " from ");
     owl_fmtext_append_bold(&(m->fmtext), frombuff);

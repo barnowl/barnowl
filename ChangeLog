@@ -1,5 +1,8 @@
 $Id$
 
+1.2.8
+	Class pings are displayed differently now
+	
 1.2.7
 	Outgoing messages now go through the config for formatting
 	Zaway now makes an outgoing message, instead of an admin message
