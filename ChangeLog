@@ -2,6 +2,7 @@ $Id$
 
 2.0.8-pre-4
 	Added the 'source' command.
+	Fix to make 'default' style the default again.
 	
 2.0.8-pre-3   
         Make sure that a newline is always at the end of messages

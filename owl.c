@@ -243,16 +243,6 @@ int main(int argc, char **argv, char **env) {
     owl_global_set_default_style(&g, "perl");
   }
 
-  /* set the startup and default style, based on userclue and presence of a
-   * formatting function */
-  if (owl_global_is_config_format(&g)) {
-    owl_global_set_default_style(&g, "perl");
-  } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
-    owl_global_set_default_style(&g, "default");
-  } else {
-    owl_global_set_default_style(&g, "basic");
-  }
-
   /* execute the startup function in the configfile */
   perlout = owl_perlconfig_execute("owl::startup();");
   if (perlout) owl_free(perlout);
@@ -279,6 +269,18 @@ int main(int argc, char **argv, char **env) {
     if (owl_global_is_loginsubs(&g)) {
       owl_function_loadloginsubs(NULL);
     }
+  }
+
+  /* set the startup and default style, based on userclue and presence of a
+   * formatting function */
+  if (owl_global_is_config_format(&g)) {
+    owl_global_set_default_style(&g, "perl");
+  } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
+    owl_function_debugmsg("Here with default style\n");
+    owl_global_set_default_style(&g, "default");
+  } else {
+    owl_function_debugmsg("Here with basic style\n");
+    owl_global_set_default_style(&g, "basic");
   }
 
   /* zlog in if we need to */
