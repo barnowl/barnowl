@@ -47,11 +47,11 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_DIRECTION_DOWNWARDS 1
 #define OWL_DIRECTION_UPWARDS   2
 
-#define OWL_SCROLLMODE_NORMAL   0
-#define OWL_SCROLLMODE_TOP      1
-#define OWL_SCROLLMODE_NEARTOP  2
-#define OWL_SCROLLMODE_CENTER   3
-#define OWL_SCROLLMODE_PAGED    4
+#define OWL_SCROLLMODE_NORMAL      0
+#define OWL_SCROLLMODE_TOP         1
+#define OWL_SCROLLMODE_NEARTOP     2
+#define OWL_SCROLLMODE_CENTER      3
+#define OWL_SCROLLMODE_PAGED       4
 #define OWL_SCROLLMODE_PAGEDCENTER 5
 
 #define OWL_TAB               3  /* This *HAS* to be the size of TABSTR below */

@@ -839,6 +839,8 @@ int owl_function_calculate_topmsg_paged(int direction, owl_view *v, int curmsg, 
 int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines) {
   int savey, j, i, foo, y;
 
+  if (curmsg<0) return(topmsg);
+    
   /* If we're off the top of the screen then center */
   if (curmsg<topmsg) {
     topmsg=owl_function_calculate_topmsg_center(direction, v, curmsg, 0, recwinlines);

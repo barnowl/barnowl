@@ -7,6 +7,9 @@ $Id$
 	Will attempt to keep the current message as close as possible
 	     to the previous current message after an expunge.
 	"set <variable>" and "unset <variable>" now work for boolean variables.
+	Fixed a bug in owl_function_calculate_topmsg_normal that caused a
+	  segfault
+	Fixed some typos in the intro doc
 	
 1.2.5
 	Patch to fix memory bug in replying to CC messages

@@ -56,12 +56,12 @@ command.
 
 Sending a Zephyr
 ----------------
-To send a zephyr to yourself press the 'z' key.  This will start a
-zwrite command, which you can finish by typing the name of the user
-you wish to send to, followed by enter.  Begin typing your message.
-You will notice that most emacs-style editing is available.  When you
-are ready to send the message type Control-D or a dot ('.') on a line
-by itself.  If instead you wish to cancel the message type Control-C.
+To send a zephyr press the 'z' key.  This will start a zwrite command,
+which you can finish by typing the name of the user you wish to send
+to, followed by enter.  Begin typing your message.  You will notice
+that most emacs-style editing is available.  When you are ready to
+send the message type Control-D or a dot ('.') on a line by itself.
+If instead you wish to cancel the message type Control-C.
 
 If you wish to send to a class/instance pair simply supply -c and -i
 arguments to the zwrite command as you normally would.
@@ -137,7 +137,7 @@ Some other funcions that can be performed with a single keystroke:
 Command Mode
 ------------
 Owl has a command mode where you can enter more detailed commands for
-owl to process.  To enter command press the color (':') key:
+owl to process.  To enter command mode press the colon (':') key:
 
 	:		begin command mode
 
