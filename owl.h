@@ -112,7 +112,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_CMD_ALIAS_SUMMARY_PREFIX "command alias to: "
 
 #if defined(HAVE_DES_STRING_TO_KEY) && defined(HAVE_DES_KEY_SCHED) && defined(HAVE_DES_ECB_ENCRYPT)
-#define OWL_HAVE_DES 1
+#define OWL_ENABLE_ZCRYPT 1
 #endif
 
 #define OWL_META(key) ((key)|0200)

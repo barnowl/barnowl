@@ -17,7 +17,7 @@ static const char fileIdent[] = "$Id$";
 #include <sys/wait.h>
 #include "owl.h"
 
-#ifdef OWL_HAVE_DES
+#ifdef OWL_ENABLE_ZCRYPT
 
 #define BASE_CODE 70
 #define LAST_CODE (BASE_CODE + 15)

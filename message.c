@@ -477,7 +477,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
   }
   owl_free(tmp);
 
-#ifdef OWL_HAVE_DES  
+#ifdef OWL_ENABLE_ZCRYPT
   /* if zcrypt is enabled try to decrypt the message */
   if (owl_global_is_zcrypt(&g) && !strcasecmp(n->z_opcode, "crypt")) {
     char *out;
