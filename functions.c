@@ -133,8 +133,7 @@ void owl_function_make_outgoing_aim(char *body, char *to)
 
   /* create the message */
   m=owl_malloc(sizeof(owl_message));
-  owl_message_create_aim(m, owl_global_get_aim_screenname(&g), to, body);
-  owl_message_set_direction_out(m);
+  owl_message_create_outgoing_aim(m, owl_global_get_aim_screenname(&g), to, body);
 
   /* add it to the global list and current view */
   owl_messagelist_append_element(owl_global_get_msglist(&g), m);
@@ -2115,11 +2114,12 @@ void owl_function_show_zpunts()
   owl_fmtext_free(&fm);
 }
 
-char *owl_function_fastclassinstfilt(char *class, char *instance) 
+/* Create a filter for a class, instance if one doesn't exist.  If
+ * instance is NULL then catch all messgaes in the class.  Returns the
+ * name of the filter, which the caller must free.
+ */
+char *owl_function_classinstfilt(char *class, char *instance) 
 {
-  /* creates a filter for a class, instance if one doesn't exist.
-   * If instance is null then apply for all messgaes in the class.
-   * returns the name of the filter, which the caller must free.*/
   owl_list *fl;
   owl_filter *f;
   char *argbuff, *filtname;
@@ -2172,7 +2172,14 @@ char *owl_function_fastclassinstfilt(char *class, char *instance)
   return(filtname);
 }
 
-char *owl_function_fastuserfilt(char *user)
+/* Create a filter for personal zephyrs to or from the specified
+ * zephyr user.  Includes login/logout notifications for the user.
+ * The name of the filter will be 'user-<user>'.  If a filter already
+ * exists with this name, no new filter will be created.  This allows
+ * the configuration to override this function.  Returns the name of
+ * the filter, which the caller must free.
+ */
+char *owl_function_zuserfilt(char *user)
 {
   owl_filter *f;
   char *argbuff, *longuser, *shortuser, *filtname;
@@ -2187,7 +2194,7 @@ char *owl_function_fastuserfilt(char *user)
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
-    return(filtname);
+    return(owl_strdup(filtname));
   }
 
   /* create the new-internal filter */
@@ -2211,7 +2218,46 @@ char *owl_function_fastuserfilt(char *user)
   return(filtname);
 }
 
-char *owl_function_fasttypefilt(char *type)
+/* Create a filter for AIM IM messages to or from the specified
+ * screenname.  The name of the filter will be 'aimuser-<user>'.  If a
+ * filter already exists with this name, no new filter will be
+ * created.  This allows the configuration to override this function.
+ * Returns the name of the filter, which the caller must free.
+ */
+char *owl_function_aimuserfilt(char *user)
+{
+  owl_filter *f;
+  char *argbuff, *filtname;
+
+  /* name for the filter */
+  filtname=owl_malloc(strlen(user)+40);
+  sprintf(filtname, "aimuser-%s", user);
+
+  /* if it already exists then go with it.  This lets users override */
+  if (owl_global_get_filter(&g, filtname)) {
+    return(owl_strdup(filtname));
+  }
+
+  /* create the new-internal filter */
+  f=owl_malloc(sizeof(owl_filter));
+
+  argbuff=owl_malloc(1000);
+  sprintf(argbuff,
+	  "( type ^aim$ and ( ( sender ^%s$ and recipient ^%s$ ) or ( sender ^%s$ and recipient ^%s$ ) ) )",
+	  user, owl_global_get_aim_screenname(&g), owl_global_get_aim_screenname(&g), user);
+
+  owl_filter_init_fromstring(f, filtname, argbuff);
+
+  /* add it to the global list */
+  owl_global_add_filter(&g, f);
+
+  /* free stuff */
+  owl_free(argbuff);
+
+  return(filtname);
+}
+
+char *owl_function_typefilt(char *type)
 {
   owl_filter *f;
   char *argbuff, *filtname;
@@ -2262,19 +2308,22 @@ void owl_function_delete_curview_msgs(int flag)
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));  
 }
 
+/* Create a filter based on the current message.  Returns the name of
+ * a filter or null.  The caller must free this name.
+ *
+ * if the curmsg is a personal zephyr return a filter name
+ *    to the zephyr converstaion with that user.
+ * If the curmsg is a zephyr class message, instance foo, recip *,
+ *    return a filter name to the class, inst.
+ * If the curmsg is a zephyr class message and type==0 then 
+ *    return a filter name for just the class.
+ * If the curmsg is a zephyr class message and type==1 then 
+ *    return a filter name for the class and instance.
+ * If the curmsg is a personal AIM message returna  filter
+ *    name to the AIM conversation with that user 
+ */
 char *owl_function_smartfilter(int type)
 {
-  /* Returns the name of a filter, or null.  The caller 
-   * must free this name.  */
-  /* if the curmsg is a personal message return a filter name
-   *    to the converstaion with that user.
-   * If the curmsg is a class message, instance foo, recip *
-   *    message, return a filter name to the class, inst.
-   * If the curmsg is a class message and type==0 then 
-   *    return a filter name for just the class.
-   * If the curmsg is a class message and type==1 then 
-   *    return a filter name for the class and instance.
-   */
   owl_view *v;
   owl_message *m;
   char *zperson, *filtname=NULL;
@@ -2289,7 +2338,17 @@ char *owl_function_smartfilter(int type)
 
   /* very simple handling of admin messages for now */
   if (owl_message_is_type_admin(m)) {
-    return(owl_function_fasttypefilt("admin"));
+    return(owl_function_typefilt("admin"));
+  }
+
+  /* aim messages */
+  if (owl_message_is_type_aim(m)) {
+    if (owl_message_is_direction_in(m)) {
+      filtname=owl_function_aimuserfilt(owl_message_get_sender(m));
+    } else if (owl_message_is_direction_out(m)) {
+      filtname=owl_function_aimuserfilt(owl_message_get_recipient(m));
+    }
+    return(filtname);
   }
 
   /* narrow personal and login messages to the sender or recip as appropriate */
@@ -2300,7 +2359,7 @@ char *owl_function_smartfilter(int type)
       } else {
 	zperson=short_zuser(owl_message_get_recipient(m));
       }
-      filtname=owl_function_fastuserfilt(zperson);
+      filtname=owl_function_zuserfilt(zperson);
       owl_free(zperson);
       return(filtname);
     }
@@ -2308,17 +2367,16 @@ char *owl_function_smartfilter(int type)
   }
 
   /* narrow class MESSAGE, instance foo, recip * messages to class, inst */
-  if (!strcasecmp(owl_message_get_class(m), "message") &&
-      !owl_message_is_personal(m)) {
-    filtname=owl_function_fastclassinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
+  if (!strcasecmp(owl_message_get_class(m), "message") && !owl_message_is_personal(m)) {
+    filtname=owl_function_classinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
     return(filtname);
   }
 
   /* otherwise narrow to the class */
   if (type==0) {
-    filtname=owl_function_fastclassinstfilt(owl_message_get_class(m), NULL);
+    filtname=owl_function_classinstfilt(owl_message_get_class(m), NULL);
   } else if (type==1) {
-    filtname=owl_function_fastclassinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
+    filtname=owl_function_classinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
   }
   return(filtname);
 }

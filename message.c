@@ -528,7 +528,7 @@ void owl_message_create(owl_message *m, char *header, char *text)
   owl_free(indent);
 }
 
-void owl_message_create_aim(owl_message *m, char *sender, char *recipient, char *text)
+void owl_message_create_incoming_aim(owl_message *m, char *sender, char *recipient, char *text)
 {
   char *indent;
 
@@ -537,14 +537,39 @@ void owl_message_create_aim(owl_message *m, char *sender, char *recipient, char 
   owl_message_set_sender(m, sender);
   owl_message_set_recipient(m, recipient);
   owl_message_set_type_aim(m);
+  owl_message_set_direction_in(m);
+
+  indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
+  owl_text_indent(indent, text, OWL_MSGTAB);
+  owl_fmtext_init_null(&(m->fmtext));
+  owl_fmtext_append_bold(&(m->fmtext), OWL_TABSTR);
+  owl_fmtext_append_bold(&(m->fmtext), "AIM from ");
+  owl_fmtext_append_bold(&(m->fmtext), sender);
+  owl_fmtext_append_bold(&(m->fmtext), "\n");
+  owl_fmtext_append_bold(&(m->fmtext), indent);
+  if (text[strlen(text)-1]!='\n') {
+    owl_fmtext_append_bold(&(m->fmtext), "\n");
+  }
+  
+  owl_free(indent);
+}
+
+void owl_message_create_outgoing_aim(owl_message *m, char *sender, char *recipient, char *text)
+{
+  char *indent;
+
+  owl_message_init(m);
+  owl_message_set_body(m, text);
+  owl_message_set_sender(m, sender);
+  owl_message_set_recipient(m, recipient);
+  owl_message_set_type_aim(m);
+  owl_message_set_direction_out(m);
 
   indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
   owl_text_indent(indent, text, OWL_MSGTAB);
   owl_fmtext_init_null(&(m->fmtext));
   owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
-  owl_fmtext_append_normal(&(m->fmtext), "AIM: ");
-  owl_fmtext_append_normal(&(m->fmtext), sender);
-  owl_fmtext_append_normal(&(m->fmtext), " -> ");
+  owl_fmtext_append_normal(&(m->fmtext), "AIM sent to ");
   owl_fmtext_append_normal(&(m->fmtext), recipient);
   owl_fmtext_append_normal(&(m->fmtext), "\n");
   owl_fmtext_append_ztext(&(m->fmtext), indent);
@@ -888,7 +913,7 @@ void _owl_message_make_text_from_notice_standard(owl_message *m)
     /* then the indented message */
     owl_fmtext_append_ztext(&(m->fmtext), indent);
 
-    /* make personal messages bold for smaat users */
+    /* make private messages bold for smaat users */
     if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
       if (owl_message_is_personal(m)) {
 	owl_fmtext_addattr((&m->fmtext), OWL_FMTEXT_ATTR_BOLD);

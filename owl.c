@@ -137,8 +137,14 @@ int main(int argc, char **argv, char **env) {
   }
 
   /* setup the default filters */
+
+  /* the personal filter will need to change again when AIM chat's are
+   *  included.  Also, there should be an %aimme% */
   f=malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "personal", "class ^message$ and instance ^personal$ and ( recipient ^%me%$ or sender ^%me%$ )");
+  owl_filter_init_fromstring(f, "personal", "( type ^zephyr$ "
+			     "and class ^message$ and instance ^personal$ "
+			     "and ( recipient ^%me%$ or sender ^%me%$ ) ) "
+			     "or ( type ^aim$ )");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   f=malloc(sizeof(owl_filter));
@@ -329,7 +335,9 @@ int main(int argc, char **argv, char **env) {
       }
 
       /* ring the bell if it's a personal */
-      if (owl_global_is_personalbell(&g) && owl_message_is_personal(m)) {
+      if (owl_global_is_personalbell(&g) &&
+	  (owl_message_is_personal(m) ||
+	  (owl_message_is_type_aim(m) && owl_message_is_to_me(m)))) {
 	owl_function_beep();
       }
 

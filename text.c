@@ -126,3 +126,56 @@ int owl_text_num_lines(char *in) {
   return(lines);
 }
 
+
+/* caller must free the return */
+char *owl_text_htmlstrip(char *in) {
+  char *ptr1, *end, *ptr2, *ptr3, *out;
+
+  out=owl_malloc(strlen(in)+30);
+  strcpy(out, "");
+
+  ptr1=in;
+  end=in+strlen(in);
+  
+  while(ptr1<end) {
+    /* look for an open bracket */
+    ptr2=strchr(ptr1, '<');
+
+    /* if not, copy in from here to end and exit */
+    if (ptr2==NULL) {
+      strcat(out, ptr1);
+      return(out);
+    }
+
+    /* otherwise copy in everything before the open bracket */
+    if (ptr2>ptr1) {
+      strncat(out, ptr1, ptr2-ptr1);
+    }
+
+    /* find the close bracket */
+    ptr3=strchr(ptr2, '>');
+    
+    /* if there is no close, copy as you are and exit */
+    if (!ptr3) {
+      strcat(out, ptr2);
+    }
+
+    /* look for things we know */
+    if (!strncasecmp(ptr2, "<BODY ", 6) ||
+	!strncasecmp(ptr2, "<FONT ", 6) ||
+	!strncasecmp(ptr2, "<HTML", 5) ||
+	!strncasecmp(ptr2, "</FONT", 6) ||
+	!strncasecmp(ptr2, "</HTML", 6) ||
+	!strncasecmp(ptr2, "</BODY", 6)) {
+
+      /* advance to beyond the angle brakcet and go again */
+      ptr1=ptr3+1;
+      continue;
+    }
+
+    /* if it wasn't something we know, copy to the > and  go again */
+    strncat(out, ptr2, ptr3-ptr2);
+    ptr1=ptr3+1;
+  }
+  return(out);
+}

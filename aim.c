@@ -410,7 +410,7 @@ on them.", priv->ohcaptainmycaptain);
   aim_bos_reqlocaterights(sess, fr->conn);
 
   /*aim_bos_setprofile(sess, fr->conn, profile, awaymsg, AIM_CAPS_BUDDYICON | AIM_CAPS_CHAT | AIM_CAPS_GETFILE | AIM_CAPS_SENDFILE | AIM_CAPS_IMIMAGE | AIM_CAPS_GAMES | AIM_CAPS_SAVESTOCKS | AIM_CAPS_SENDBUDDYLIST | AIM_CAPS_ICQ | AIM_CAPS_ICQUNKNOWN | AIM_CAPS_ICQRTF | AIM_CAPS_ICQSERVERRELAY | AIM_CAPS_TRILLIANCRYPT); */
-  aim_bos_setprofile(sess, fr->conn, profile, awaymsg, AIM_CAPS_SENDBUDDYLIST | AIM_CAPS_CHAT );
+  aim_bos_setprofile(sess, fr->conn, profile, "", AIM_CAPS_SENDBUDDYLIST | AIM_CAPS_CHAT );
   aim_bos_reqbuddyrights(sess, fr->conn);
 
   /* send the buddy list and profile (required, even if empty) */
@@ -950,7 +950,8 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
     aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_ACK, "Good day to you too.");
   } else if (strstr(tmpstr, "haveicon") && priv->buddyicon) {
     struct aim_sendimext_args args;
-    static const char iconmsg[] = {"I have an icon"};
+    /* static const char iconmsg[] = {"I have an icon"}; */
+    static const char iconmsg[] = {""};
     
     args.destsn = userinfo->sn;
     args.flags = AIM_IMFLAGS_HASICON;
@@ -960,7 +961,7 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
     args.iconstamp = priv->buddyiconstamp;
     args.iconsum = priv->buddyiconsum;
     
-    aim_send_im_ext(sess, &args);
+    /* aim_send_im_ext(sess, &args); */
     
   } else if (strstr(tmpstr, "sendbin")) {
     struct aim_sendimext_args args;
@@ -1169,6 +1170,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   char *tmpstr;
   int clienttype = AIM_CLIENTTYPE_UNKNOWN;
   owl_message *m;
+  char *stripmsg;
   char realmsg[8192+1] = {""};
   clienttype = aim_fingerprintclient(args->features, args->featureslen);
 
@@ -1243,10 +1245,11 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   }
 
   /* create a message, and put it on the message queue */
+  stripmsg=owl_text_htmlstrip(realmsg);
   m=owl_malloc(sizeof(owl_message));
-  owl_message_create_aim(m, userinfo->sn, owl_global_get_aim_screenname(&g), realmsg);
-  owl_message_set_direction_in(m);
+  owl_message_create_incoming_aim(m, userinfo->sn, owl_global_get_aim_screenname(&g), stripmsg);
   owl_global_messagequeue_addmsg(&g, m);
+  owl_free(stripmsg);
   
   /* printf("icbm: message: %s\n", realmsg); */
   

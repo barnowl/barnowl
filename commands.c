@@ -1566,7 +1566,7 @@ char *owl_command_viewclass(int argc, char **argv, char *buff) {
     owl_function_makemsg("Wrong number of arguments to viewclass command");
     return NULL;
   }
-  filtname = owl_function_fastclassinstfilt(argv[1], NULL);
+  filtname = owl_function_classinstfilt(argv[1], NULL);
   owl_function_change_view(filtname);
   owl_free(filtname);
   return NULL;
@@ -1578,7 +1578,7 @@ char *owl_command_viewuser(int argc, char **argv, char *buff) {
     owl_function_makemsg("Wrong number of arguments to viewuser command");
     return NULL;
   }
-  filtname = owl_function_fastuserfilt(argv[1]);
+  filtname=owl_function_zuserfilt(argv[1]);
   owl_function_change_view(filtname);
   owl_free(filtname);
   return NULL;

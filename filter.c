@@ -149,15 +149,7 @@ int owl_filter_message_match(owl_filter *f, owl_message *m) {
     } else if (!strcasecmp(field, "realm")) {
       match=owl_message_get_realm(m);
     } else if (!strcasecmp(field, "type")) {
-      if (owl_message_is_type_zephyr(m)) {
-	match="zephyr";
-      } else if (owl_message_is_type_aim(m)) {
-	match="aim";
-      } else if (owl_message_is_type_admin(m)) {
-	match="admin";
-      } else {
-	match="";
-      }
+      match=owl_message_type_to_string(m);
     } else if (!strcasecmp(field, "direction")) {
       if (owl_message_is_direction_out(m)) {
 	match="out";
