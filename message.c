@@ -18,7 +18,7 @@ void owl_message_init(owl_message *m)
   m->type=OWL_MESSAGE_TYPE_GENERIC;
   owl_message_set_direction_none(m);
   m->delete=0;
-  strcpy(m->hostname, "");
+  m->hostname=owl_strdup("");
   m->zwriteline=strdup("");
   m->invalid_format=1;
 
@@ -463,6 +463,15 @@ void *owl_message_get_notice(owl_message *m)
 }
 #endif
 
+void owl_message_set_hostname(owl_message *m, char *hostname)
+{
+  if (m==NULL) return;
+  if (m->hostname!=NULL) {
+    owl_free(m->hostname);
+  }
+  m->hostname=owl_strdup(hostname);
+}
+
 char *owl_message_get_hostname(owl_message *m)
 {
   return(m->hostname);
@@ -814,9 +823,9 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   owl_function_debugmsg("About to do gethostbyaddr");
   hent=gethostbyaddr((char *) &(n->z_uid.zuid_addr), sizeof(n->z_uid.zuid_addr), AF_INET);
   if (hent && hent->h_name) {
-    strcpy(m->hostname, hent->h_name);
+    owl_message_set_hostname(m, hent->h_name);
   } else {
-    strcpy(m->hostname, inet_ntoa(n->z_sender_addr));
+    owl_message_set_hostname(m, inet_ntoa(n->z_sender_addr));
   }
 }
 #else
@@ -869,7 +878,7 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, char *user,
 
   /* save the hostname */
   owl_function_debugmsg("create_pseudo_login: host is %s", host ? host : "");
-  strcpy(m->hostname, host ? host : "");
+  owl_message_set_hostname(m, host ? host : "");
   owl_free(longuser);
 }
 
@@ -877,6 +886,7 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
 {
   owl_zwrite z;
   int ret;
+  char hostbuff[5000];
   
   owl_message_init(m);
 
@@ -900,11 +910,13 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   owl_message_set_zsig(m, zsig);
   
   /* save the hostname */
-  ret=gethostname(m->hostname, MAXHOSTNAMELEN);
+  ret=gethostname(hostbuff, MAXHOSTNAMELEN);
+  hostbuff[MAXHOSTNAMELEN]='\0';
   if (ret) {
-    strcpy(m->hostname, "localhost");
+    owl_message_set_hostname(m, "localhost");
+  } else {
+    owl_message_set_hostname(m, hostbuff);
   }
-
   owl_zwrite_free(&z);
 }
 

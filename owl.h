@@ -58,8 +58,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.1.9-pre-1
-#define OWL_VERSION_STRING "2.1.9-pre-1"
+#define OWL_VERSION         2.1.10-pre-1
+#define OWL_VERSION_STRING "2.1.10-pre-1"
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */
@@ -327,7 +327,7 @@ typedef struct _owl_message {
   owl_fmtext fmtext;              /* this is now only a CACHED copy */
   int invalid_format;             /* indicates whether fmtext needs to be regenerated */
   int delete;
-  char hostname[MAXHOSTNAMELEN+1];
+  char *hostname;
   owl_list attributes;            /* this is a list of pairs */
   char *timestr;
   time_t time;

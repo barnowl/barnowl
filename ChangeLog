@@ -1,6 +1,10 @@
 $Id$
 
-2.1.9-pre-1
+2.1.10-pre-1
+	Fix a new problem finding libdes425
+	Don't crash on super-long hostnames
+	
+2.1.9
 	Include /usr/include/kerberosIV if it's found
 	
 2.1.8
