@@ -1318,7 +1318,7 @@ void owl_function_popless_file(char *filename)
   owl_fmtext_init_null(&fm);
   while (fgets(buff, 1024, file)) {
     owl_fmtext_append_normal(&fm, buff);
-    owl_fmtext_append_normal(&fm, "\n");
+    /*    owl_fmtext_append_normal(&fm, "\n"); */
   }
 
   owl_function_popless_fmtext(&fm);

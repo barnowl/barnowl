@@ -7,6 +7,8 @@ $Id$
 	New code for getting users from .anyfile
 	Added the 'pseudologins' variable, and code to do it
 	new attributes 'pseudo' 'logintty' and 'loginhost'
+	Don't print extra new lines in popless_file
+	
 2.0.14
 	Fixed missing word in startup message
 	Better 'status' command
