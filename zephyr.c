@@ -125,7 +125,7 @@ int owl_zephyr_loadsubs(char *filename)
 
   /* sub with defaults */
   if (ZSubscribeTo(subs,count,0) != ZERR_NONE) {
-    fprintf(stderr, "Error subbing\n");
+    owl_function_error("Error subscribing to zephyr notifications.");
     ret=-2;
   }
 
@@ -187,7 +187,7 @@ int owl_zephyr_loadloginsubs(char *filename)
 
   /* sub with defaults */
   if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
-    fprintf(stderr, "Error subbing\n");
+    owl_function_error("Error subscribing to zephyr notifications.");
     ret=-2;
   }
 

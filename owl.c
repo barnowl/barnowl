@@ -279,12 +279,32 @@ int main(int argc, char **argv, char **env) {
   typwin=owl_global_get_curs_typwin(&g);
   tw=owl_global_get_typwin(&g);
 
+  /* welcome message */
+  strcpy(startupmsg, "-------------------------------------------------------------------------\n");
+  sprintf(buff,      "Welcome to Owl version %s.  Press 'h' for on-line help. \n", OWL_VERSION_STRING);
+  strcat(startupmsg, buff);
+  strcat(startupmsg, "                                                                         \n");
+  strcat(startupmsg, "If you would like to receive release announcements about owl you can join \n");
+  strcat(startupmsg, "the owl-users@mit.edu mailing list.  MIT users can add themselves,       \n");
+  strcat(startupmsg, "otherwise send a request to owner-owl-users@mit.edu.               ^ ^   \n");
+  strcat(startupmsg, "                                                                   OvO   \n");
+  strcat(startupmsg, "Please report any bugs or suggestions to bug-owl@mit.edu          (   )  \n");
+  strcat(startupmsg, "-------------------------------------------------------------------m-m---\n");
+  owl_function_adminmsg("", startupmsg);
+  sepbar(NULL);
+
   wrefresh(sepwin);
 
   /* load zephyr subs */
   if (initialsubs) {
     /* load normal subscriptions */
     ret=owl_zephyr_loadsubs(NULL);
+    if (ret==-1) {
+      owl_function_adminmsg("", "Error loading subscriptions, file inaccessable");
+    } else if (ret!=0) {
+      owl_function_adminmsg("", "Error loading subscriptions");
+    }
+    
     if (ret!=-1) {
       owl_global_add_userclue(&g, OWL_USERCLUE_CLASSES);
     }
@@ -314,20 +334,6 @@ int main(int argc, char **argv, char **env) {
 
   owl_view_set_style(owl_global_get_current_view(&g), 
 		     owl_global_get_style_by_name(&g, owl_global_get_default_style(&g)));   
-
-  /* welcome message */
-  strcpy(startupmsg, "-------------------------------------------------------------------------\n");
-  sprintf(buff,      "Welcome to Owl version %s.  Press 'h' for on-line help. \n", OWL_VERSION_STRING);
-  strcat(startupmsg, buff);
-  strcat(startupmsg, "                                                                         \n");
-  strcat(startupmsg, "If you would like to receive release announcements about owl you can join \n");
-  strcat(startupmsg, "the owl-users@mit.edu mailing list.  MIT users can add themselves,       \n");
-  strcat(startupmsg, "otherwise send a request to owner-owl-users@mit.edu.               ^ ^   \n");
-  strcat(startupmsg, "                                                                   OvO   \n");
-  strcat(startupmsg, "Please report any bugs or suggestions to bug-owl@mit.edu          (   )  \n");
-  strcat(startupmsg, "-------------------------------------------------------------------m-m---\n");
-  owl_function_adminmsg("", startupmsg);
-  sepbar(NULL);
   
   owl_context_set_interactive(owl_global_get_context(&g));
 

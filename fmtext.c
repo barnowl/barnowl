@@ -546,6 +546,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
 
 	  /* set it as the current color */
 	  curcolor=owl_util_string_to_color(buff);
+	  if (curcolor==-1) curcolor=OWL_COLOR_DEFAULT;
 	  owl_free(buff);
 	  txtptr=tmpptr+1;
 	  continue;

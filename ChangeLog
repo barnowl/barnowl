@@ -1,5 +1,10 @@
 $Id$
 
+2.0.12-pre-3
+	Print an admin message indicating when subscriptions can
+	   not be loaded on startup
+	Fixed bug causing problems with invalid @ colors
+	
 2.0.12-pre-2
 	Set aim_ignorelogin_timer to 15 by default
 	Admin message on login/logout of AIM
