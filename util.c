@@ -46,11 +46,11 @@ void sepbar(char *in)
   waddstr(sepwin, buff);
 
   foo=owl_view_get_filtname(v);
-  if (strcmp(foo, "all")) wattroff(sepwin, A_REVERSE);
+  if (strcmp(foo, owl_global_get_view_home(&g))) wattroff(sepwin, A_REVERSE);
   waddstr(sepwin, " ");
   waddstr(sepwin, owl_view_get_filtname(v));
   waddstr(sepwin, " ");
-  if (strcmp(foo, "all")) wattron(sepwin, A_REVERSE);
+  if (strcmp(foo, owl_global_get_view_home(&g))) wattron(sepwin, A_REVERSE);
 
   if (owl_mainwin_is_curmsg_truncated(owl_global_get_mainwin(&g))) {
     getyx(sepwin, y, x);

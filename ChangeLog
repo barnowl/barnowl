@@ -4,6 +4,8 @@ $Id$
 	Filters of filters now work.
 	Removed the "possibly not readable" part of the config parsing
   	  error
+	In the sepbar, reverse video the view name when it's not set to
+	  view_home (as opposed to the static 'all').
 	
 2.1.1-pre-2
 	Added the 'aim search' command.  The popup on callback may be
