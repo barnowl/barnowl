@@ -20,8 +20,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.8
-#define OWL_VERSION_STRING "2.0.8"
+#define OWL_VERSION         2.0.9-pre-1
+#define OWL_VERSION_STRING "2.0.9-pre-1"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
@@ -407,6 +407,10 @@ typedef struct _owl_timer {
   int start;
 } owl_timer;
 
+typedef struct _owl_errqueue {
+  owl_list errlist;
+} owl_errqueue;
+
 typedef struct _owl_global {
   owl_mainwin mw;
   owl_popwin pw;
@@ -418,6 +422,7 @@ typedef struct _owl_global {
   owl_vardict vars;
   owl_cmddict cmds;
   owl_context ctx;
+  owl_errqueue errqueue;
   int lines, cols;
   int curmsg, topmsg;
   int curmsg_vert_offset;

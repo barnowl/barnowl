@@ -158,7 +158,12 @@ int main(int argc, char **argv, char **env) {
   owl_style_create_internal(s, "basic", &owl_stylefunc_basic,
 			    "Basic message formatting.");
   owl_global_add_style(&g, s);
-
+#if 0
+  s=owl_malloc(sizeof(owl_style));
+  owl_style_create_internal(s, "vt", &owl_stylefunc_vt,
+			    "VT message formatting.");
+  owl_global_add_style(&g, s);
+#endif
   s=owl_malloc(sizeof(owl_style));
   owl_style_create_internal(s, "oneline", &owl_stylefunc_oneline,
 			    "Formats for one-line-per-message");
@@ -543,5 +548,4 @@ void usage() {
   fprintf(stderr, "  -h      print this help message\n");
   fprintf(stderr, "  -c      specify an alternate config file\n");
   fprintf(stderr, "  -t      set the tty name\n");
-  
 }

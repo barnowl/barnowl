@@ -101,6 +101,8 @@ void owl_global_init(owl_global *g) {
   g->havezephyr=0;
   g->haveaim=0;
   owl_global_set_no_doaimevents(g);
+
+  owl_errqueue_init(&(g->errqueue));
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -830,4 +832,9 @@ int owl_global_is_havezephyr(owl_global *g)
 owl_timer *owl_global_get_aim_buddyinfo_timer(owl_global *g)
 {
   return(&(g->aim_buddyinfo_timer));
+}
+
+owl_errqueue *owl_global_get_errqueue(owl_global *g)
+{
+  return(&(g->errqueue));
 }

@@ -25,7 +25,6 @@ struct owlfaim_priv {
   fu16_t buddyiconsum;
 };
 
-/*
 static char *msgerrreasons[] = {
 	"Invalid error",
 	"Invalid SNAC",
@@ -54,7 +53,6 @@ static char *msgerrreasons[] = {
 	"Not while on AOL",
 };
 static int msgerrreasonslen = 25;
-*/
 
 static void faimtest_debugcb(aim_session_t *sess, int level, const char *format, va_list va);
 static int faimtest_parse_login(aim_session_t *sess, aim_frame_t *fr, ...);
@@ -244,7 +242,7 @@ int owl_aim_send_im(char *to, char *msg)
   /* aim_send_im(owl_global_get_aimsess(&g), to, AIM_IMFLAGS_ACK, msg); */
 
   /* I don't know how to check for an error yet */
-  return(0);
+  return(ret);
 }
 
 void owl_aim_addbuddy(char *name)
@@ -1597,6 +1595,7 @@ int faimtest_parse_genericerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("snac threw error (reason 0x%04x: %s)\n", reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
+  owl_function_makemsg(msgerrreasons[reason]);
   
   return 1;
 }

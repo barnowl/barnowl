@@ -66,7 +66,7 @@ void owl_function_show_view(char *viewname)
   /* we only have the one view right now */
   v=owl_global_get_current_view(&g);
   if (viewname && strcmp(viewname, owl_view_get_name(v))) {
-    owl_function_makemsg("No view named '%s'", viewname);
+    owl_function_error("No view named '%s'", viewname);
     return;
   }
 
@@ -217,7 +217,7 @@ void owl_function_zwrite_setup(char *line)
   /* check the arguments */
   ret=owl_zwrite_create_from_line(&z, line);
   if (ret) {
-    owl_function_makemsg("Error in zwrite arugments");
+    owl_function_error("Error in zwrite arugments");
     owl_zwrite_free(&z);
     return;
   }
@@ -342,7 +342,7 @@ void owl_function_zcrypt(char *line, char *msg)
   cryptmsg=owl_malloc(strlen(mymsg)*4);
   ret=owl_zcrypt_encrypt(cryptmsg, mymsg, owl_zwrite_get_class(&z), owl_zwrite_get_instance(&z));
   if (ret) {
-    owl_function_makemsg("Error in zcrypt, possibly no key found.  Message not sent.");
+    owl_function_error("Error in zcrypt, possibly no key found.  Message not sent.");
     owl_function_beep();
     owl_free(cryptmsg);
     return;
@@ -378,9 +378,15 @@ void owl_function_zcrypt(char *line, char *msg)
 
 void owl_function_aimwrite(char *to)
 {
+  int ret;
+  
   /*  send the message */
-  owl_aim_send_im(to, owl_editwin_get_text(owl_global_get_typwin(&g)));
-  owl_function_makemsg("AIM message sent.");
+  ret=owl_aim_send_im(to, owl_editwin_get_text(owl_global_get_typwin(&g)));
+  if (!ret) {
+    owl_function_makemsg("AIM message sent.");
+  } else {
+    owl_function_error("Could not send AIM message.");
+  }
 
   /* display the message as an outgoing message in the receive window */
   if (owl_global_is_displayoutgoing(&g)) {
@@ -409,7 +415,7 @@ void owl_function_nextmsg_full(char *filter, int skip_deleted, int last_if_none)
   if (filter) {
     f=owl_global_get_filter(&g, filter);
     if (!f) {
-      owl_function_makemsg("No %s filter defined", filter);
+      owl_function_error("No %s filter defined", filter);
       return;
     }
   }
@@ -433,7 +439,7 @@ void owl_function_nextmsg_full(char *filter, int skip_deleted, int last_if_none)
   if (i>owl_view_get_size(v)-1) i=owl_view_get_size(v)-1;
 
   if (!found) {
-    owl_function_makemsg("already at last%s message%s%s",
+    owl_function_error("already at last%s message%s%s",
 			 skip_deleted?" non-deleted":"",
 			 filter?" in ":"", filter?filter:"");
     /* if (!skip_deleted) owl_function_beep(); */
@@ -459,7 +465,7 @@ void owl_function_prevmsg_full(char *filter, int skip_deleted, int first_if_none
   if (filter) {
     f=owl_global_get_filter(&g, filter);
     if (!f) {
-      owl_function_makemsg("No %s filter defined", filter);
+      owl_function_error("No %s filter defined", filter);
       return;
     }
   }
@@ -482,7 +488,7 @@ void owl_function_prevmsg_full(char *filter, int skip_deleted, int first_if_none
   if (i<0) i=0;
 
   if (!found) {
-    owl_function_makemsg("already at first%s message%s%s",
+    owl_function_error("already at first%s message%s%s",
 			 skip_deleted?" non-deleted":"",
 			 filter?" in ":"", filter?filter:"");
     /* if (!skip_deleted) owl_function_beep(); */
@@ -537,7 +543,7 @@ void owl_function_deletecur(int move_after)
 
   /* bail if there's no current message */
   if (owl_view_get_size(v) < 1) {
-    owl_function_makemsg("No current message to delete");
+    owl_function_error("No current message to delete");
     return;
   }
 
@@ -564,7 +570,7 @@ void owl_function_undeletecur(int move_after)
   v=owl_global_get_current_view(&g);
   
   if (owl_view_get_size(v) < 1) {
-    owl_function_makemsg("No current message to undelete");
+    owl_function_error("No current message to undelete");
     return;
   }
   curmsg=owl_global_get_curmsg(&g);
@@ -676,7 +682,7 @@ void owl_function_shift_left()
     owl_global_set_needrefresh(&g);
   } else {
     owl_function_beep();
-    owl_function_makemsg("Already full left");
+    owl_function_error("Already full left");
   }
 }
 
@@ -696,9 +702,9 @@ void owl_function_loadsubs(char *file)
   if (ret==0) {
     owl_function_makemsg("Subscribed to messages from file.");
   } else if (ret==-1) {
-    owl_function_makemsg("Could not open file.");
+    owl_function_error("Could not open file.");
   } else {
-    owl_function_makemsg("Error subscribing to messages from file.");
+    owl_function_error("Error subscribing to messages from file.");
   }
 }
 
@@ -712,9 +718,9 @@ void owl_function_loadloginsubs(char *file)
   if (ret==0) {
     owl_function_makemsg("Subscribed to login messages from file.");
   } else if (ret==-1) {
-    owl_function_makemsg("Could not open file for login subscriptions.");
+    owl_function_error("Could not open file for login subscriptions.");
   } else {
-    owl_function_makemsg("Error subscribing to login messages from file.");
+    owl_function_error("Error subscribing to login messages from file.");
   }
 }
 
@@ -775,43 +781,6 @@ void owl_function_quit()
   exit(0);
 }
 
-void owl_function_makemsg(char *fmt, ...)
-{
-  va_list ap;
-  char buff[2048];
-
-  if (!owl_global_get_curs_msgwin(&g)) return;
-
-  va_start(ap, fmt);
-  werase(owl_global_get_curs_msgwin(&g));
-  
-  vsnprintf(buff, 2048, fmt, ap);
-  owl_function_debugmsg("makemsg: %s", buff);
-  waddstr(owl_global_get_curs_msgwin(&g), buff);  
-  wnoutrefresh(owl_global_get_curs_msgwin(&g));
-  owl_global_set_needrefresh(&g);
-  va_end(ap);
-}
-
-void owl_function_errormsg(char *fmt, ...)
-{
-  va_list ap;
-  char buff[2048];
-
-  if (!owl_global_get_curs_msgwin(&g)) return;
-
-  va_start(ap, fmt);
-  werase(owl_global_get_curs_msgwin(&g));
-  
-  vsnprintf(buff, 2048, fmt, ap);
-  owl_function_debugmsg("ERROR: %s", buff);
-  waddstr(owl_global_get_curs_msgwin(&g), buff);  
-  waddstr(owl_global_get_curs_msgwin(&g), "ERROR: ");  
-  wnoutrefresh(owl_global_get_curs_msgwin(&g));
-  owl_global_set_needrefresh(&g);
-  va_end(ap);
-}
-
 void owl_function_openurl()
 {
   /* visit the first url in the current message */
@@ -823,7 +792,7 @@ void owl_function_openurl()
   webbrowser = owl_global_get_webbrowser(&g);
 
   if (webbrowser < 0 || webbrowser == OWL_WEBBROWSER_NONE) {
-    owl_function_makemsg("No browser selected");
+    owl_function_error("No browser selected");
     return;
   }
 
@@ -832,7 +801,7 @@ void owl_function_openurl()
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
 
   if (!m || owl_view_get_size(v)==0) {
-    owl_function_makemsg("No current message selected");
+    owl_function_error("No current message selected");
     return;
   }
 
@@ -881,7 +850,7 @@ void owl_function_openurl()
     }
   } else {
     owl_function_beep();
-    owl_function_makemsg("Could not find URL to open.");
+    owl_function_error("Could not find URL to open.");
     return;
   }
 
@@ -889,7 +858,7 @@ void owl_function_openurl()
   for (ptr1 = url; *ptr1; ptr1++) {
     if (*ptr1 == '"' || *ptr1 == '\\') {
       owl_function_beep();
-      owl_function_makemsg("URL contains invalid characters.");
+      owl_function_error("URL contains invalid characters.");
       return;
     }
   }
@@ -1161,7 +1130,7 @@ void owl_function_subscribe(char *class, char *inst, char *recip)
 
   ret=owl_zephyr_sub(class, inst, recip);
   if (ret) {
-    owl_function_makemsg("Error subscribing.");
+    owl_function_error("Error subscribing.");
   } else {
     owl_function_makemsg("Subscribed.");
   }
@@ -1173,7 +1142,7 @@ void owl_function_unsubscribe(char *class, char *inst, char *recip)
 
   ret=owl_zephyr_unsub(class, inst, recip);
   if (ret) {
-    owl_function_makemsg("Error subscribing.");
+    owl_function_error("Error subscribing.");
   } else {
     owl_function_makemsg("Unsubscribed.");
   }
@@ -1277,7 +1246,7 @@ void owl_function_info()
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
   if (!m || owl_view_get_size(v)==0) {
-    owl_function_makemsg("No message selected\n");
+    owl_function_error("No message selected\n");
     return;
   }
 
@@ -1442,7 +1411,7 @@ void owl_function_curmsg_to_popwin()
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
 
   if (!m || owl_view_get_size(v)==0) {
-    owl_function_makemsg("No current message");
+    owl_function_error("No current message");
     return;
   }
 
@@ -1471,13 +1440,13 @@ void owl_function_page_curmsg(int step)
   if (offset==0) {
     /* Bail if the curmsg isn't the last one displayed */
     if (curmsg != owl_mainwin_get_last_msg(owl_global_get_mainwin(&g))) {
-      owl_function_makemsg("The entire message is already displayed");
+      owl_function_error("The entire message is already displayed");
       return;
     }
     
     /* Bail if we're not truncated */
     if (!owl_mainwin_is_curmsg_truncated(owl_global_get_mainwin(&g))) {
-      owl_function_makemsg("The entire message is already displayed");
+      owl_function_error("The entire message is already displayed");
       return;
     }
   }
@@ -1646,7 +1615,7 @@ void owl_function_delete_by_id(int id, int flag)
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
     owl_global_set_needrefresh(&g);
   } else {
-    owl_function_makemsg("No message with id %d: unable to mark for (un)delete",id);
+    owl_function_error("No message with id %d: unable to mark for (un)delete",id);
   }
 }
 
@@ -1663,7 +1632,7 @@ void owl_function_delete_automsgs()
   /* get the trash filter */
   f=owl_global_get_filter(&g, "trash");
   if (!f) {
-    owl_function_makemsg("No trash filter defined");
+    owl_function_error("No trash filter defined");
     return;
   }
 
@@ -1786,13 +1755,13 @@ void owl_function_reply(int type, int enter)
   owl_filter *f;
   
   if (owl_view_get_size(owl_global_get_current_view(&g))==0) {
-    owl_function_makemsg("No message selected");
+    owl_function_error("No message selected");
   } else {
     char *class, *inst, *to, *cc=NULL;
     
     m=owl_view_get_element(owl_global_get_current_view(&g), owl_global_get_curmsg(&g));
     if (!m) {
-      owl_function_makemsg("No message selected");
+      owl_function_error("No message selected");
       return;
     }
 
@@ -1800,14 +1769,14 @@ void owl_function_reply(int type, int enter)
     f=owl_global_get_filter(&g, "reply-lockout");
     if (f) {
       if (owl_filter_message_match(f, m)) {
-	owl_function_makemsg("Sorry, replies to this message have been disabled by the reply-lockout filter");
+	owl_function_error("Sorry, replies to this message have been disabled by the reply-lockout filter");
 	return;
       }
     }
 
     /* admin */
     if (owl_message_is_type_admin(m)) {
-      owl_function_makemsg("You cannot reply to an admin message");
+      owl_function_error("You cannot reply to an admin message");
       return;
     }
 
@@ -2003,7 +1972,7 @@ char *owl_function_exec(int argc, char **argv, char *buff, int type)
   FILE *p;
 
   if (argc<2) {
-    owl_function_makemsg("Wrong number of arguments to the exec command");
+    owl_function_error("Wrong number of arguments to the exec command");
     return NULL;
   }
 
@@ -2046,7 +2015,7 @@ char *owl_function_perl(int argc, char **argv, char *buff, int type)
   char *perlout;
 
   if (argc<2) {
-    owl_function_makemsg("Wrong number of arguments to perl command");
+    owl_function_error("Wrong number of arguments to perl command");
     return NULL;
   }
 
@@ -2092,7 +2061,7 @@ void owl_function_change_view_old(char *filtname)
   /* grab the filter */;
   f=owl_global_get_filter(&g, filtname);
   if (!f) {
-    owl_function_makemsg("Unknown filter");
+    owl_function_error("Unknown filter %s", filtname);
     return;
   }
 
@@ -2141,7 +2110,7 @@ void owl_function_change_view(char *filtname)
 
   f=owl_global_get_filter(&g, filtname);
   if (!f) {
-    owl_function_makemsg("Unknown filter");
+    owl_function_error("Unknown filter %s", filtname);
     return;
   }
 
@@ -2171,7 +2140,7 @@ void owl_function_create_filter(int argc, char **argv)
   int ret, inuse=0;
 
   if (argc < 2) {
-    owl_function_makemsg("Wrong number of arguments to filter command");
+    owl_function_error("Wrong number of arguments to filter command");
     return;
   }
 
@@ -2179,7 +2148,7 @@ void owl_function_create_filter(int argc, char **argv)
 
   /* don't touch the all filter */
   if (!strcmp(argv[1], "all")) {
-    owl_function_makemsg("You may not change the 'all' filter.");
+    owl_function_error("You may not change the 'all' filter.");
     return;
   }
 
@@ -2187,7 +2156,7 @@ void owl_function_create_filter(int argc, char **argv)
   if (argc==4 && !strcmp(argv[2], "-c")) {
     f=owl_global_get_filter(&g, argv[1]);
     if (!f) {
-      owl_function_makemsg("The filter '%s' does not exist.", argv[1]);
+      owl_function_error("The filter '%s' does not exist.", argv[1]);
       return;
     }
     owl_filter_set_color(f, owl_util_string_to_color(argv[3]));
@@ -2201,7 +2170,7 @@ void owl_function_create_filter(int argc, char **argv)
   ret=owl_filter_init(f, argv[1], argc-2, argv+2);
   if (ret==-1) {
     owl_free(f);
-    owl_function_makemsg("Invalid filter syntax");
+    owl_function_error("Invalid filter syntax");
     return;
   }
 
@@ -2261,7 +2230,7 @@ void owl_function_show_filter(char *name)
 
   f=owl_global_get_filter(&g, name);
   if (!f) {
-    owl_function_makemsg("There is no filter with that name");
+    owl_function_error("There is no filter named %s", name);
     return;
   }
   owl_filter_print(f, buff);
@@ -2509,7 +2478,7 @@ char *owl_function_smartfilter(int type)
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
 
   if (!m || owl_view_get_size(v)==0) {
-    owl_function_makemsg("No message selected\n");
+    owl_function_error("No message selected\n");
     return(NULL);
   }
 
@@ -2570,7 +2539,7 @@ void owl_function_smartzpunt(int type)
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
 
   if (!m || owl_view_get_size(v)==0) {
-    owl_function_makemsg("No message selected\n");
+    owl_function_error("No message selected\n");
     return;
   }
 
@@ -2578,7 +2547,7 @@ void owl_function_smartzpunt(int type)
   if (owl_message_is_type_admin(m)
       || owl_message_is_loginout(m)
       || !owl_message_is_type_zephyr(m)) {
-    owl_function_makemsg("smartzpunt doesn't support this message type.");
+    owl_function_error("smartzpunt doesn't support this message type.");
     return;
   }
 
@@ -2587,7 +2556,7 @@ void owl_function_smartzpunt(int type)
   if (!mclass || !*mclass || *mclass==' '
       || (!strcasecmp(mclass, "message") && !strcasecmp(minst, "personal"))
       || (type && (!minst || !*minst|| *minst==' '))) {
-    owl_function_makemsg("smartzpunt can't safely do this for <%s,%s>",
+    owl_function_error("smartzpunt can't safely do this for <%s,%s>",
 			 mclass, minst);
   } else {
     cmdprefix = "start-command zpunt ";
@@ -2613,13 +2582,13 @@ void owl_function_color_current_filter(char *color)
   name=owl_view_get_filtname(owl_global_get_current_view(&g));
   f=owl_global_get_filter(&g, name);
   if (!f) {
-    owl_function_makemsg("Unknown filter");
+    owl_function_error("Unknown filter");
     return;
   }
 
   /* don't touch the all filter */
   if (!strcmp(name, "all")) {
-    owl_function_makemsg("You may not change the 'all' filter.");
+    owl_function_error("You may not change the 'all' filter.");
     return;
   }
 
@@ -2682,7 +2651,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   ret=owl_filter_init_fromstring(f, "punt-filter", buff);
   owl_free(buff);
   if (ret) {
-    owl_function_makemsg("Error creating filter for zpunt");
+    owl_function_error("Error creating filter for zpunt");
     owl_filter_free(f);
     return;
   }
@@ -2715,7 +2684,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
 void owl_function_activate_keymap(char *keymap)
 {
   if (!owl_keyhandler_activate(owl_global_get_keyhandler(&g), keymap)) {
-    owl_function_makemsg("Unable to activate keymap '%s'", keymap);
+    owl_function_error("Unable to activate keymap '%s'", keymap);
   }
 }
 
@@ -2817,7 +2786,7 @@ void owl_function_search_helper(int mode, int direction)
   curmsg=owl_global_get_curmsg(&g);
   
   if (viewsize==0) {
-    owl_function_makemsg("No messages present");
+    owl_function_error("No messages present");
     return;
   }
 
@@ -2831,7 +2800,7 @@ void owl_function_search_helper(int mode, int direction)
 
   /* bounds check */
   if (start>=viewsize || start<0) {
-    owl_function_makemsg("No further matches found");
+    owl_function_error("No further matches found");
     return;
   }
 
@@ -2855,7 +2824,7 @@ void owl_function_search_helper(int mode, int direction)
     }
   }
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_function_makemsg("No matches found");
+  owl_function_error("No matches found");
 }
 
 /* strips formatting from ztext and returns the unformatted text. 
@@ -2917,7 +2886,7 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
     if (file==NULL) {
       tmp=owl_global_get_homedir(&g);
       if (!tmp) {
-	owl_function_makemsg("Could not determine home directory");
+	owl_function_error("Could not determine home directory");
 	return;
       }
       ourfile=owl_malloc(strlen(tmp)+50);
@@ -2928,7 +2897,7 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
     
     f=fopen(ourfile, "r");
     if (!f) {
-      owl_function_makemsg("Error opening file %s: %s",
+      owl_function_error("Error opening file %s: %s",
 			   ourfile,
 			   strerror(errno) ? strerror(errno) : "");
       return;
@@ -2961,7 +2930,7 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
       
       ret=ZLocateUser(buff, &numlocs, ZAUTH);
       if (ret!=ZERR_NONE) {
-	owl_function_makemsg("Error getting location for %s", buff);
+	owl_function_error("Error getting location for %s", buff);
 	continue;
       }
       
@@ -3014,7 +2983,7 @@ void owl_function_dump(char *filename)
 
   file=fopen(filename, "w");
   if (!file) {
-    owl_function_makemsg("Error opening file");
+    owl_function_error("Error opening file");
     return;
   }
 
@@ -3106,7 +3075,7 @@ void owl_function_addstartup(char *buff)
   filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
   file=fopen(filename, "a");
   if (!file) {
-    owl_function_makemsg("Error opening startupfile for new command");
+    owl_function_error("Error opening startupfile for new command");
     owl_free(filename);
     return;
   }
@@ -3162,14 +3131,13 @@ void owl_function_change_style(owl_view *v, char *stylename)
 
   s=owl_global_get_style_by_name(&g, stylename);
   if (!s) {
-    owl_function_makemsg("No style named %s", stylename);
+    owl_function_error("No style named %s", stylename);
     return;
   }
   owl_view_set_style(v, s);
   owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
   owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  
 }
 
 void owl_function_toggleoneline()
@@ -3189,4 +3157,59 @@ void owl_function_toggleoneline()
   owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
   owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+}
+
+void owl_function_error(char *fmt, ...)
+{
+  va_list ap;
+  char buff[2048], buff2[2048];
+  char *date;
+  time_t now;
+
+  now=time(NULL);
+  date=owl_strdup(ctime(&now));
+  date[strlen(date)-1]='\0';
+
+  va_start(ap, fmt);
+
+  vsnprintf(buff, 2048, fmt, ap);
+  sprintf(buff2, "%s %s", date, buff);
+  owl_function_debugmsg("ERROR: %s", buff);
+  if (owl_global_get_curs_msgwin(&g)) {
+    werase(owl_global_get_curs_msgwin(&g));
+    waddstr(owl_global_get_curs_msgwin(&g), buff);  
+    wnoutrefresh(owl_global_get_curs_msgwin(&g));
+    owl_global_set_needrefresh(&g);
+  }
+  owl_errqueue_append_err(owl_global_get_errqueue(&g), buff2);
+  va_end(ap);
+  owl_free(date);
+}
+
+void owl_function_showerrs()
+{
+  owl_fmtext fm;
+
+  owl_fmtext_init_null(&fm);
+  owl_fmtext_append_normal(&fm, "Errors:\n\n");
+  owl_errqueue_to_fmtext(owl_global_get_errqueue(&g), &fm);
+  owl_function_popless_fmtext(&fm);
+}
+
+void owl_function_makemsg(char *fmt, ...)
+{
+  va_list ap;
+  char buff[2048];
+
+  if (!owl_global_get_curs_msgwin(&g)) return;
+
+  va_start(ap, fmt);
+  werase(owl_global_get_curs_msgwin(&g));
+  
+  vsnprintf(buff, 2048, fmt, ap);
+  owl_function_debugmsg("makemsg: %s", buff);
+  waddstr(owl_global_get_curs_msgwin(&g), buff);  
+  wnoutrefresh(owl_global_get_curs_msgwin(&g));
+  owl_global_set_needrefresh(&g);
+  va_end(ap);
 }

@@ -380,7 +380,7 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
   owl_free(notice.z_message);
   ZFreeNotice(&notice);
   if (ret!=ZERR_NONE) {
-    owl_function_makemsg("Error sending zephyr");
+    owl_function_error("Error sending zephyr");
     return(ret);
   }
   return(0);
@@ -412,32 +412,32 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
   if (retnotice->z_kind == HMACK) return;
 
   if (retnotice->z_kind == SERVNAK) {
-    owl_function_makemsg("Authorization failure sending zephyr");
+    owl_function_error("Authorization failure sending zephyr");
   } else if ((retnotice->z_kind != SERVACK) || !retnotice->z_message_len) {
-    owl_function_makemsg("Detected server failure while receiving acknowledgement");
+    owl_function_error("Detected server failure while receiving acknowledgement");
   } else if (!strcmp(retnotice->z_message, ZSRVACK_SENT)) {
     if (!strcasecmp(retnotice->z_opcode, "ping")) {
       return;
     } else if (!strcasecmp(retnotice->z_class, "message") &&
 	       !strcasecmp(retnotice->z_class_inst, "personal")) {
       tmp=short_zuser(retnotice->z_recipient);
-      owl_function_makemsg("Message sent to %s.", tmp);
+      owl_function_error("Message sent to %s.", tmp);
       free(tmp);
     } else {
-      owl_function_makemsg("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
+      owl_function_error("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
     }
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
     if (strcasecmp(retnotice->z_class, "message")) {
-      owl_function_makemsg("Not logged in or not subscribing to class %s, instance %s",
+      owl_function_error("Not logged in or not subscribing to class %s, instance %s",
 			   retnotice->z_class, retnotice->z_class_inst);
     } else {
       tmp = short_zuser(retnotice->z_recipient);
-      owl_function_makemsg("%s: Not logged in or subscribing to messages.", 
+      owl_function_error("%s: Not logged in or subscribing to messages.", 
 			   tmp);
       owl_free(tmp);
     }
   } else {
-    owl_function_makemsg("Internal error on ack (%s)", retnotice->z_message);
+    owl_function_error("Internal error on ack (%s)", retnotice->z_message);
   }
 }
 #else
@@ -531,7 +531,7 @@ void owl_zephyr_zlocate(char *user, char *out, int auth)
   ZResetAuthentication();
   ret=ZLocateUser(user,&numlocs,auth?ZAUTH:ZNOAUTH);
   if (ret != ZERR_NONE) {
-    owl_function_makemsg("Error locating user");
+    owl_function_error("Error locating user %s", user);
   }
 
   if (numlocs==0) {
@@ -567,13 +567,13 @@ void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip)
   /* first check if it exists already */
   file=fopen(subsfile, "r");
   if (!file) {
-    owl_function_makemsg("Error opening file %s", subsfile);
+    owl_function_error("Error opening file %s", subsfile);
     owl_free(line);
     return;
   }
   while (fgets(buff, LINE, file)!=NULL) {
     if (!strcasecmp(buff, line)) {
-      owl_function_makemsg("Subscription already present in %s", subsfile);
+      owl_function_error("Subscription already present in %s", subsfile);
       owl_free(line);
       return;
     }
@@ -583,7 +583,7 @@ void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip)
   fclose(file);
   file=fopen(subsfile, "a");
   if (!file) {
-    owl_function_makemsg("Error opening file %s for writing", subsfile);
+    owl_function_error("Error opening file %s for writing", subsfile);
     owl_free(line);
     return;
   }
@@ -690,7 +690,7 @@ void owl_zephyr_addbuddy(char *name)
   file=fopen(filename, "a");
   owl_free(filename);
   if (!file) {
-    owl_function_makemsg("Error opening zephyr buddy file for append");
+    owl_function_error("Error opening zephyr buddy file for append");
     return;
   }
   fprintf(file, "%s\n", name);

@@ -584,7 +584,8 @@ owl_cmd commands_to_init[]
 	      "show terminal\n"
 	      "show version\n"
 	      "show view [<view>]\n"
-	      "show status\n",
+	      "show status\n"
+	      "show errors\n",
 
 	      "Show colors will display a list of valid colors for the\n"
 	      "     terminal."
@@ -599,6 +600,7 @@ owl_cmd commands_to_init[]
 	      "Show styles will list the names of all styles available\n"
 	      "for formatting messages.\n\n"
 	      "Show variables will list the names of all variables.\n\n"
+	      "Show errors will show a list of errors ecountered by Owl.\n\n"
 	      "SEE ALSO: filter, view, alias, bindkey, help\n"),
   
   OWLCMD_ARGS("delete", owl_command_delete, OWL_CTX_INTERACTIVE,
@@ -1921,6 +1923,8 @@ char *owl_command_show(int argc, char **argv, char *buff)
     owl_function_about();
   } else if (!strcmp(argv[1], "status")) {
     owl_function_status();
+  } else if (!strcmp(argv[1], "errors")) {
+    owl_function_showerrs();
   } else {
     owl_function_makemsg("Unknown subcommand for 'show' command (see 'help show' for allowed args)");
     return NULL;
