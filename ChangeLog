@@ -1,5 +1,8 @@
 $Id$
 
+2.0.2
+	Fixed bug in 'startup' command.
+	
 2.0.1
 	Hacked the Perl build stuff not to link with iconv
 

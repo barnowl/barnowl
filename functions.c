@@ -2916,14 +2916,15 @@ void owl_function_addstartup(char *buff)
 
   filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
   file=fopen(filename, "a");
-  owl_free(filename);
   if (!file) {
     owl_function_makemsg("Error opening startupfile for new command");
+    owl_free(filename);
     return;
   }
 
   /* delete earlier copies */
   owl_util_file_deleteline(filename, buff, 1);
+  owl_free(filename);
 
   /* add this line */
   fprintf(file, "%s\n", buff);

@@ -671,11 +671,12 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
   if (backup) {
     backupfilename=owl_sprintf("%s.backup", filename);
     backupfile=fopen(backupfilename, "w");
-    owl_free(backupfilename);
     if (!backupfile) {
       owl_function_makemsg("Error opening file %s for writing", backupfilename);
+      owl_free(backupfilename);
       return;
     }
+    owl_free(backupfilename);
   }
 
   /* we'll read the entire file into memory, minus the line we don't want and
