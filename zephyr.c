@@ -344,8 +344,15 @@ int owl_zephyr_get_num_fields(void *n)
  */
 char *owl_zephyr_get_message(ZNotice_t *n)
 {
+  /* don't let ping messages have a body */
   if (!strcasecmp(n->z_opcode, "ping")) {
     return(owl_strdup(""));
+  }
+
+  /* deal with MIT Athena OLC messages */
+  if (!strcasecmp(n->z_class, "olc") &&
+      !strcasecmp(n->z_sender, "olc.matisse@ATHENA.MIT.EDU")) {
+    return(owl_zephyr_get_field(n, 1));
   }
 
   return(owl_zephyr_get_field(n, 2));
@@ -357,10 +364,19 @@ char *owl_zephyr_get_zsig(ZNotice_t *n, int *k)
 {
   /* return a pointer to the zsig if there is one */
 
+  /* message length 0? No zsig */
   if (n->z_message_len==0) {
     *k=0;
     return("");
   }
+
+  /* No zsig for OLC messages */
+  if (!strcasecmp(n->z_class, "olc") &&
+      !strcasecmp(n->z_sender, "olc.matisse@ATHENA.MIT.EDU")) {
+    return("");
+  }
+
+  /* Everything else is field 1 */
   *k=strlen(n->z_message);
   return(n->z_message);
 }

@@ -2,6 +2,8 @@ $Id$
 
 2.1.7-pre-1
 	The colorclass command is added, to make colorization easy
+	Handle MIT Athena OLC zephyrs correctly
+	Updated ktools website / bug address
 	
 2.1.6
         Fixed three bugs found by Valgrind.
