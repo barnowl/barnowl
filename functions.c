@@ -2300,6 +2300,10 @@ char *owl_function_perl(int argc, char **argv, char *buff, int type)
   return NULL;
 }
 
+/* Change the filter associated with the current view.
+ * This also figures out which message in the new filter
+ * should have the pointer.
+ */
 void owl_function_change_currentview_filter(char *filtname)
 {
   owl_view *v;
@@ -2345,6 +2349,9 @@ void owl_function_change_currentview_filter(char *filtname)
   owl_global_set_direction_downwards(&g);
 }
 
+/* Create a new filter, or replace an existing one
+ * with a new definition.
+ */
 void owl_function_create_filter(int argc, char **argv)
 {
   owl_filter *f;
@@ -2838,32 +2845,45 @@ void owl_function_smartzpunt(int type)
   }
 }
 
+/* Set the color of the current view's filter to
+ * be 'color'
+ */
 void owl_function_color_current_filter(char *color)
 {
-  owl_filter *f;
   char *name;
 
   name=owl_view_get_filtname(owl_global_get_current_view(&g));
-  f=owl_global_get_filter(&g, name);
+  owl_function_color_filter(name, color);
+}
+
+/* Set the color of the filter 'filter' to be 'color'.  If the color
+ * name does not exist, return -1, if the filter does not exist or is
+ * the "all" filter, return -2.  Return 0 on success
+ */
+int owl_function_color_filter(char *filtname, char *color)
+{
+  owl_filter *f;
+
+  f=owl_global_get_filter(&g, filtname);
   if (!f) {
     owl_function_error("Unknown filter");
-    return;
+    return(-2);
   }
 
   /* don't touch the all filter */
-  if (!strcmp(name, "all")) {
+  if (!strcmp(filtname, "all")) {
     owl_function_error("You may not change the 'all' filter.");
-    return;
+    return(-2);
   }
 
-  /* deal with the case of trying change the filter color */
   if (owl_util_string_to_color(color)==-1) {
     owl_function_error("No color named '%s' avilable.");
-    return;
+    return(-1);
   }
   owl_filter_set_color(f, owl_util_string_to_color(color));
   owl_global_set_needrefresh(&g);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  return(0);
 }
 
 void owl_function_show_colors()

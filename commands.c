@@ -548,6 +548,14 @@ owl_cmd commands_to_init[]
 	      "of valid colors.\n\n"
 	      "SEE ALSO: 'show colors'\n"),
 
+  OWLCMD_ARGS("colorclass", owl_command_colorclass, OWL_CTX_INTERACTIVE,
+	      "create a filter to color messages of the given class name",
+	      "colorclass <class> <color>",
+	      "A filter will be created to color messages in <class>"
+	      "in <color>.  Use the 'show colors' command for a list\n"
+	      "of valid colors.\n\n"
+	      "SEE ALSO: 'show colors'\n"),
+
   OWLCMD_ARGS("view", owl_command_view, OWL_CTX_INTERACTIVE,
 	      "view messages matching a filter",
 	      "view [<viewname>] [-f <filter> | --home | -r ] [-s <style>]\n"
@@ -2228,6 +2236,20 @@ char *owl_command_colorview(int argc, char **argv, char *buff)
     return NULL;
   }
   owl_function_color_current_filter(argv[1]);
+  return NULL;
+}
+
+char *owl_command_colorclass(int argc, char **argv, char *buff)
+{
+  char *filtname;
+  
+  if (argc!=3) {
+    owl_function_makemsg("Wrong number of arguments to colorclass command");
+    return NULL;
+  }
+
+  filtname=owl_function_classinstfilt(argv[1], NULL);
+  (void) owl_function_color_filter(filtname, argv[2]);
   return NULL;
 }
 

@@ -1,5 +1,8 @@
 $Id$
 
+2.1.7-pre-1
+	The colorclass command is added, to make colorization easy
+	
 2.1.6
         Fixed three bugs found by Valgrind.
         Fixed a case where doing "aim addbuddy" instead of "addbuddy aim"
