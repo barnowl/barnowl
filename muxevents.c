@@ -12,7 +12,8 @@ static int owl_mux_nexthandle = 5000; /* next handle to hand out */
 static int owl_mux_needgc = 0;	/* number of muxevents needing to be gc'd */
 
 /* returns a handle id or 0 on failure */
-int owl_muxevents_add(owl_muxevents *muxevents, int fd, int eventmask, void (*handler_fn)(int handle, int fd, int eventmask, void *data), void *data) {
+int owl_muxevents_add(owl_muxevents *muxevents, int fd, int eventmask, void (*handler_fn)(int handle, int fd, int eventmask, void *data), void *data)
+{
   owl_mux *mux;
   
   mux = owl_malloc(sizeof(owl_mux));
@@ -35,7 +36,8 @@ int owl_muxevents_add(owl_muxevents *muxevents, int fd, int eventmask, void (*ha
 }
 
 /* deactivates a muxevent entry with the given handle */
-void owl_muxevents_remove(owl_muxevents *muxevents, int handle) {
+void owl_muxevents_remove(owl_muxevents *muxevents, int handle)
+{
   int max, i;
   owl_mux *m;
 
@@ -51,7 +53,8 @@ void owl_muxevents_remove(owl_muxevents *muxevents, int handle) {
 
 /* cleans up a muxevents list at a safe time (ie, when it is
    not being traversed). */
-void owl_muxevents_gc(owl_muxevents *muxevents) {
+void owl_muxevents_gc(owl_muxevents *muxevents)
+{
   int max, i, done=0;
   owl_mux *m;
 
@@ -72,7 +75,8 @@ void owl_muxevents_gc(owl_muxevents *muxevents) {
 }
 
 /* dispatches out events */
-void owl_muxevents_dispatch(owl_muxevents *muxevents, int timeout_usec) {
+void owl_muxevents_dispatch(owl_muxevents *muxevents, int timeout_usec)
+{
   int nevents, i, rv, emask;
   owl_mux *m;
   fd_set rfds, wfds, efds;
@@ -123,5 +127,3 @@ void owl_muxevents_dispatch(owl_muxevents *muxevents, int timeout_usec) {
   * doesn't change while we're traversing it... */
   owl_muxevents_gc(muxevents);
 }
-
-

@@ -1,6 +1,6 @@
 $Id$
 
-2.1.6pre1
+2.1.6-pre-1
 	pexec will now incrimentally display data as it is output
 	  by the child process.  Additionally, commands running under
 	  pexec may now be killed by quitting out of the popless window.
@@ -8,6 +8,8 @@ $Id$
 	  be registered with muxevents and handlers will be dispatched
 	  to when data is available for non-blocking read/write/except.
 	Switched the stderr_redir stuff to use muxevents.
+	Print C-\ correctly (from gildea)
+	Dropped first brace in muxevents functions for consistency
 	
 2.1.5
 	Added a licence

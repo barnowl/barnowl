@@ -153,7 +153,8 @@ int owl_keypress_tostring(int j, int esc, char *buff, int bufflen)
     }
     if ((OWL_CTRL(j) == j)) {
       strcat(kb, "C-");
-      j |= 0x60;
+      j |= 0x40;
+      if (isupper(j)) j = tolower(j);
 
     }
     if (isascii(j)) {
