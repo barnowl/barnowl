@@ -199,10 +199,12 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("RIGHT",  "recv:shiftright","");
   BIND_CMD("DOWN",   "recv:next",      "");
   BIND_CMD("C-n",    "recv:next",      "");
+  BIND_CMD("M-C-n",  "recv:next --smart-filter", "move to next message matching the current one"); 
   BIND_CMD("UP",     "recv:prev",      "");
   BIND_CMD("n",      "recv:next-notdel", "");
   BIND_CMD("p",      "recv:prev-notdel", "");
   BIND_CMD("C-p",    "recv:prev",        "");
+  BIND_CMD("M-C-p",  "recv:prev --smart-filter", "move to previous message matching the current one");
   BIND_CMD("P",      "recv:next-personal", "");
   BIND_CMD("M-P",    "recv:prev-personal", "");
   BIND_CMD("M-<",    "recv:first",     "");

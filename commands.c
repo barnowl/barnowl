@@ -194,10 +194,13 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("next", owl_command_next, OWL_CTX_INTERACTIVE,
 	      "move the pointer to the next message",
-	      "recv:next [ --filter <name> ] [ --skip-deleted ] [ --last-if-none ]",
+	      "recv:next [ --filter <name> ] [ --skip-deleted ] [ --last-if-none ]\n"
+	      "          [ --smart-filter | --smart-filter-instance ]",
 	      "Moves the pointer to the next message in the current view.\n"
 	      "If --filter is specified, will only consider messages in\n"
 	      "the filter <name>.\n"
+	      "If --smart-filter or --smart-filter-instance is specified,\n"
+	      "goes to the next message that is similar to the current message.\n"
 	      "If --skip-deleted is specified, deleted messages will\n"
 	      "be skipped.\n"
 	      "If --last-if-none is specified, will stop at last message\n"
@@ -206,10 +209,13 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("prev", owl_command_prev, OWL_CTX_INTERACTIVE,
 	      "move the pointer to the previous message",
-	      "recv:prev [ --filter <name> ] [ --skip-deleted ] [ --first-if-none ]",
+	      "recv:prev [ --filter <name> ] [ --skip-deleted ] [ --first-if-none ]\n"
+	      "          [ --smart-filter | --smart-filter-instance ]",
 	      "Moves the pointer to the next message in the current view.\n"
 	      "If --filter is specified, will only consider messages in\n"
 	      "the filter <name>.\n"
+	      "If --smart-filter or --smart-filter-instance is specified,\n"
+	      "goes to the previous message that is similar to the current message.\n"
 	      "If --skip-deleted is specified, deleted messages will\n"
 	      "be skipped.\n"
 	      "If --first-if-none is specified, will stop at first message\n"
@@ -365,7 +371,7 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("smartnarrow", owl_command_smartnarrow, OWL_CTX_INTERACTIVE,
 	      "view only messages similar to the current message",
-	      "smartnarrow [-i]",
+	      "smartnarrow [-i | --instance]",
 	      "If the curmsg is a personal message narrow\n"
 	      "   to the converstaion with that user.\n"
 	      "If the curmsg is a class message, instance foo, recip *\n"
@@ -374,6 +380,17 @@ owl_cmd commands_to_init[]
 	      "    to the class.\n"
 	      "If the curmsg is a class message and '-i' is specied\n"
 	      "    then narrow to the class, instance\n"),
+
+  OWLCMD_ARGS("smartfilter", owl_command_smartfilter, OWL_CTX_INTERACTIVE,
+	      "returns the name of a filter based on the current message",
+	      "smartfilter [-i | --instance]",
+	      "If the curmsg is a personal message, the filter is\n"
+	      "   the converstaion with that user.\n"
+	      "If the curmsg is a class message, instance foo, recip *\n"
+	      "   message, the filter is the class, inst.\n"
+	      "If the curmsg is a class message, the filter is that class.\n"
+	      "If the curmsg is a class message and '-i' is specied\n"
+	      "    the filter is that <class,instance> pair\n"),
 
   OWLCMD_ARGS("viewclass", owl_command_viewclass, OWL_CTX_INTERACTIVE,
 	      "view messages matching a particular class",
@@ -671,7 +688,13 @@ char *owl_command_next(int argc, char **argv, char *buff) {
       last_if_none=1;
       argc-=1; argv+=1; 
     } else if (argc>=2 && !strcmp(argv[1], "--filter")) {
-      filter = argv[2];
+      filter = owl_strdup(argv[2]);
+      argc-=2; argv+=2; 
+    } else if (argc>=2 && !strcmp(argv[1], "--smart-filter")) {
+      filter = owl_function_smartfilter(0);
+      argc-=2; argv+=2; 
+    } else if (argc>=2 && !strcmp(argv[1], "--smart-filter-instance")) {
+      filter = owl_function_smartfilter(1);
       argc-=2; argv+=2; 
     } else {
       owl_function_makemsg("Invalid arguments to command 'next'.");
@@ -679,6 +702,7 @@ char *owl_command_next(int argc, char **argv, char *buff) {
     }
   }
   owl_function_nextmsg_full(filter, skip_deleted, last_if_none);
+  if (filter) owl_free(filter);
   return(NULL);
 }
 
@@ -693,26 +717,52 @@ char *owl_command_prev(int argc, char **argv, char *buff) {
       first_if_none=1;
       argc-=1; argv+=1; 
     } else if (argc>=2 && !strcmp(argv[1], "--filter")) {
-      filter = argv[2];
+      filter = owl_strdup(argv[2]);
       argc-=2; argv+=2; 
-    } else {
+    } else if (argc>=2 && !strcmp(argv[1], "--smart-filter")) {
+      filter = owl_function_smartfilter(0);
+      argc-=2; argv+=2; 
+    } else if (argc>=2 && !strcmp(argv[1], "--smart-filter-instance")) {
+      filter = owl_function_smartfilter(1);
+      argc-=2; argv+=2;  
+   } else {
       owl_function_makemsg("Invalid arguments to command 'prev'.");
       return(NULL);
     }
   }
   owl_function_prevmsg_full(filter, skip_deleted, first_if_none);
+  if (filter) owl_free(filter);
   return(NULL);
 }
 
 char *owl_command_smartnarrow(int argc, char **argv, char *buff) {
+  char *filtname = NULL;
+
   if (argc == 1) {
-    owl_function_smartnarrow(0);
-  } else if (argc == 2 && !strcmp(argv[1], "-i")) {
-    owl_function_smartnarrow(1);
+    filtname = owl_function_smartfilter(0);
+  } else if (argc == 2 && (!strcmp(argv[1], "-i") || !strcmp(argv[1], "--instance"))) {
+    filtname = owl_function_smartfilter(1);
   } else {
     owl_function_makemsg("Wrong number of arguments for %s", argv[0]);    
   }
+  if (filtname) {
+    owl_function_change_view(filtname);
+    owl_free(filtname);
+  }
   return NULL;
+}
+
+char *owl_command_smartfilter(int argc, char **argv, char *buff) {
+  char *filtname = NULL;
+
+  if (argc == 1) {
+    filtname = owl_function_smartfilter(0);
+  } else if (argc == 2 && (!strcmp(argv[1], "-i") || !strcmp(argv[1], "--instance"))) {
+    filtname = owl_function_smartfilter(1);
+  } else {
+    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);    
+  }
+  return filtname;
 }
 
 void owl_command_expunge() {
@@ -1182,20 +1232,26 @@ char *owl_command_show(int argc, char **argv, char *buff) {
 }
 
 char *owl_command_viewclass(int argc, char **argv, char *buff) {
+  char *filtname;
   if (argc!=2) {
     owl_function_makemsg("Wrong number of arguments to viewclass command");
     return NULL;
   }
-  owl_function_fastclassinstfilt(argv[1], NULL);
+  filtname = owl_function_fastclassinstfilt(argv[1], NULL);
+  owl_function_change_view(filtname);
+  owl_free(filtname);
   return NULL;
 }
 
 char *owl_command_viewuser(int argc, char **argv, char *buff) {
+  char *filtname;
   if (argc!=2) {
     owl_function_makemsg("Wrong number of arguments to viewuser command");
     return NULL;
   }
-  owl_function_fastuserfilt(argv[1]);
+  filtname = owl_function_fastuserfilt(argv[1]);
+  owl_function_change_view(filtname);
+  owl_free(filtname);
   return NULL;
 }
 
@@ -1232,7 +1288,7 @@ char *owl_command_delete(int argc, char **argv, char *buff) {
     return NULL;
   }
 
-  if (argc==3 && !strcmp(argv[1], "-id")) {
+  if (argc==3 && (!strcmp(argv[1], "-id") || !strcmp(argv[1], "--id"))) {
     owl_function_delete_by_id(atoi(argv[2]), 1);
     return NULL;
   }
@@ -1260,7 +1316,7 @@ char *owl_command_undelete(int argc, char **argv, char *buff) {
     return NULL;
   }
 
-  if (argc==3 && !strcmp(argv[1], "-id")) {
+  if (argc==3 && (!strcmp(argv[1], "-id") || !strcmp(argv[1], "--id"))) {
     owl_function_delete_by_id(atoi(argv[2]), 0);
     return NULL;
   }

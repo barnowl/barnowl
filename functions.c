@@ -1682,9 +1682,10 @@ void owl_function_show_zpunts() {
   owl_fmtext_free(&fm);
 }
 
-void owl_function_fastclassinstfilt(char *class, char *instance) {
-  /* narrow to the current class, instance.  If instance is null then
-     just narrow to the current class */
+char *owl_function_fastclassinstfilt(char *class, char *instance) {
+  /* creates a filter for a class, instance if one doesn't exist.
+   * If instance is null then apply for all messgaes in the class.
+   * returns the name of the filter, which the caller must free.*/
   owl_list *fl;
   owl_filter *f;
   char *argbuff, *filtname;
@@ -1705,9 +1706,7 @@ void owl_function_fastclassinstfilt(char *class, char *instance) {
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
-    owl_function_change_view(filtname);
-    owl_free(filtname);
-    return;
+    return filtname;
   }
 
   /* create the new filter */
@@ -1723,14 +1722,11 @@ void owl_function_fastclassinstfilt(char *class, char *instance) {
   /* add it to the global list */
   owl_global_add_filter(&g, f);
 
-  /* set the current view to use it */
-  owl_function_change_view(filtname);
-
   owl_free(argbuff);
-  owl_free(filtname);
+  return filtname;
 }
 
-void owl_function_fastuserfilt(char *user) {
+char *owl_function_fastuserfilt(char *user) {
   owl_filter *f;
   char *argbuff, *longuser, *shortuser, *filtname;
 
@@ -1744,9 +1740,7 @@ void owl_function_fastuserfilt(char *user) {
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
-    owl_function_change_view(filtname);
-    owl_free(filtname);
-    return;
+    return filtname;
   }
 
   /* create the new-internal filter */
@@ -1762,15 +1756,12 @@ void owl_function_fastuserfilt(char *user) {
   /* add it to the global list */
   owl_global_add_filter(&g, f);
 
-  /* set the current view to use it */
-  owl_function_change_view(filtname);
-
   /* free stuff */
   owl_free(argbuff);
-  owl_free(filtname);
   owl_free(longuser);
   owl_free(shortuser);
-    
+
+  return filtname;
 }
 
 /* If flag is 1, marks for deletion.  If flag is 0,
@@ -1794,57 +1785,61 @@ void owl_function_delete_curview_msgs(int flag) {
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));  
 }
 
-void owl_function_smartnarrow(int type) {
-  /* if the curmsg is a personal message narrow
+char *owl_function_smartfilter(int type) {
+  /* Returns the name of a filter, or null.  The caller 
+   * must free this name.  */
+  /* if the curmsg is a personal message return a filter name
    *    to the converstaion with that user.
    * If the curmsg is a class message, instance foo, recip *
-   *    message, narrow to the class, inst.
-   * If the curmsg is a class message and type==0 then narrow
-   *    to the class
-   * If the curmsg is a class message and type==1 then narrow
-   *    to the class, instance
+   *    message, return a filter name to the class, inst.
+   * If the curmsg is a class message and type==0 then 
+   *    return a filter name for just the class.
+   * If the curmsg is a class message and type==1 then 
+   *    return a filter name for the class and instance.
    */
   owl_view *v;
   owl_message *m;
-  char *sender;
+  char *sender, *filtname=NULL;
   
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
 
   if (owl_view_get_size(v)==0) {
     owl_function_makemsg("No message selected\n");
-    return;
+    return NULL;
   }
 
   /* for now we skip admin messages. */
   if (owl_message_is_admin(m)) {
     owl_function_makemsg("Narrowing on an admin message has not been implemented yet.  Check back soon.");
-    return;
+    return NULL;
   }
 
   /* narrow personal and login messages to the sender */
   if (owl_message_is_personal(m) || owl_message_is_login(m)) {
     if (owl_message_is_zephyr(m)) {
       sender=pretty_sender(owl_message_get_sender(m));
-      owl_function_fastuserfilt(sender);
-      free(sender);
+      filtname = owl_function_fastuserfilt(sender);
+      owl_free(sender);
+      return filtname;
     }
-    return;
+    return NULL;
   }
 
   /* narrow class MESSAGE, instance foo, recip * messages to class, inst */
   if (!strcasecmp(owl_message_get_class(m), "message") &&
       !owl_message_is_personal(m)) {
-    owl_function_fastclassinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
-    return;
+    filtname = owl_function_fastclassinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
+    return filtname;
   }
 
   /* otherwise narrow to the class */
   if (type==0) {
-    owl_function_fastclassinstfilt(owl_message_get_class(m), NULL);
+    filtname = owl_function_fastclassinstfilt(owl_message_get_class(m), NULL);
   } else if (type==1) {
-    owl_function_fastclassinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
+    filtname = owl_function_fastclassinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
   }
+  return filtname;
 }
 
 void owl_function_color_current_filter(char *color) {
