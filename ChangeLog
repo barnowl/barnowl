@@ -1,17 +1,14 @@
 $Id$
 
-2.0.6-pre-2
-	Started adding code to do question/response stuff
+2.0.6
 	aimlogin will now accept the screenname without a password and ask
 	   for the password such that it is not echo'd to the terminal
-	Fixed documentation bug in aimwrite
-
-2.0.6-pre-1
-	Initialze $owl::auth
 	'addbuddy aim' and 'delbuddy aim' now work
 	Bug fix to make zwrite -m work with -c/-i
+	Fixed documentation bug in aimwrite
+	Initialze $owl::auth
 	Fix in autoconf for des425
-	Reformatted editwin.c and added capability of doing password
+	Reformatted editwin.c and added capability of doing password-style
 	   echoing
 	
 2.0.5

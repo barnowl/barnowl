@@ -1085,8 +1085,6 @@ void owl_function_run_buffercommand()
 {
   char *buff, *ptr;
 
-  owl_function_debugmsg("Got: %s", buff);
-
   buff=owl_global_get_buffercommand(&g);
   if (!strncmp(buff, "zwrite ", 7)) {
     owl_function_zwrite(buff, owl_editwin_get_text(owl_global_get_typwin(&g)));
