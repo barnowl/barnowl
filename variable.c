@@ -476,19 +476,19 @@ int owl_variable_set_fromstring(owl_vardict *d, char *name, char *value, int msg
   if (!name) return(-1);
   v = owl_dict_find_element(d, name);
   if (v == NULL) {
-    if (msg) owl_function_makemsg("Unknown variable %s", name);
+    if (msg) owl_function_error("Unknown variable %s", name);
     return -1;
   }
   if (!v->set_fromstring_fn) {
-    if (msg) owl_function_makemsg("Variable %s is read-only", name);
+    if (msg) owl_function_error("Variable %s is read-only", name);
     return -1;   
   }
   if (requirebool && v->type!=OWL_VARIABLE_BOOL) {
-    if (msg) owl_function_makemsg("Variable %s is not a boolean", name);
+    if (msg) owl_function_error("Variable %s is not a boolean", name);
     return -1;   
   }
   if (0 != v->set_fromstring_fn(v, value)) {
-    if (msg) owl_function_makemsg("Unable to set %s (must be %s)", name, 
+    if (msg) owl_function_error("Unable to set %s (must be %s)", name, 
 				  owl_variable_get_validsettings(v));
     return -1;
   }

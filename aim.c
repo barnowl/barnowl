@@ -224,9 +224,9 @@ void owl_aim_logout(void)
 void owl_aim_login_error(char *message)
 {
   if (message) {
-    owl_function_makemsg(message);
+    owl_function_error(message);
   } else {
-    owl_function_makemsg("Authentication error on login");
+    owl_function_error("Authentication error on login");
   }
   owl_function_beep();
   owl_global_set_aimnologgedin(&g);
@@ -1595,7 +1595,6 @@ int faimtest_parse_genericerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("snac threw error (reason 0x%04x: %s)\n", reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
-  owl_function_makemsg(msgerrreasons[reason]);
   
   return 1;
 }

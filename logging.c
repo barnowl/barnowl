@@ -27,7 +27,7 @@ void owl_log_outgoing_zephyr(char *to, char *text) {
   snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
   file=fopen(filename, "a");
   if (!file) {
-    owl_function_makemsg("Unable to open file for outgoing logging");
+    owl_function_error("Unable to open file for outgoing logging");
     owl_free(logpath);
     return;
   }
@@ -41,7 +41,7 @@ void owl_log_outgoing_zephyr(char *to, char *text) {
   owl_free(logpath);
   file=fopen(filename, "a");
   if (!file) {
-    owl_function_makemsg("Unable to open file for outgoing logging");
+    owl_function_error("Unable to open file for outgoing logging");
     return;
   }
   fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
@@ -67,7 +67,7 @@ void owl_log_outgoing_aim(char *to, char *text) {
   snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
   file=fopen(filename, "a");
   if (!file) {
-    owl_function_makemsg("Unable to open file for outgoing logging");
+    owl_function_error("Unable to open file for outgoing logging");
     owl_free(logpath);
     return;
   }
@@ -81,7 +81,7 @@ void owl_log_outgoing_aim(char *to, char *text) {
   owl_free(logpath);
   file=fopen(filename, "a");
   if (!file) {
-    owl_function_makemsg("Unable to open file for outgoing logging");
+    owl_function_error("Unable to open file for outgoing logging");
     return;
   }
   fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
@@ -178,7 +178,7 @@ void owl_log_incoming(owl_message *m) {
   
   file=fopen(filename, "a");
   if (!file) {
-    owl_function_makemsg("Unable to open file for incoming logging");
+    owl_function_error("Unable to open file for incoming logging");
     return;
   }
 
@@ -186,7 +186,7 @@ void owl_log_incoming(owl_message *m) {
   if (personal) {
     allfile=fopen(allfilename, "a");
     if (!allfile) {
-      owl_function_makemsg("Unable to open file for incoming logging");
+      owl_function_error("Unable to open file for incoming logging");
       fclose(file);
       return;
     }

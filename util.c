@@ -725,7 +725,7 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
   /* open the file for reading */
   file=fopen(filename, "r");
   if (!file) {
-    owl_function_makemsg("Error opening file %s", filename);
+    owl_function_error("Error opening file %s", filename);
     return;
   }
 
@@ -734,7 +734,7 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
     backupfilename=owl_sprintf("%s.backup", filename);
     backupfile=fopen(backupfilename, "w");
     if (!backupfile) {
-      owl_function_makemsg("Error opening file %s for writing", backupfilename);
+      owl_function_error("Error opening file %s for writing", backupfilename);
       owl_free(backupfilename);
       return;
     }
@@ -772,7 +772,7 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
   /* now rewrite the original file from memory */
   file=fopen(filename, "w");
   if (!file) {
-    owl_function_makemsg("WARNING: Error opening %s for writing.  Use %s to restore.", filename, backupfilename);
+    owl_function_error("WARNING: Error opening %s for writing.  Use %s to restore.", filename, backupfilename);
     owl_function_beep();
     owl_free(line);
     return;

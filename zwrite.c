@@ -29,7 +29,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
   /* parse the command line for options */
   argv=myargv=owl_parseline(line, &argc);
   if (argc<0) {
-    owl_function_makemsg("Unbalanced quotes");
+    owl_function_error("Unbalanced quotes in zwrite");
     return(-1);
   }
   myargc=argc;
@@ -134,7 +134,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
   if (!strcasecmp(z->class, "message") &&
       !strcasecmp(z->inst, "personal") &&
       owl_list_get_size(&(z->recips))==0) {
-    owl_function_makemsg("You must specify a recipient");
+    owl_function_error("You must specify a recipient for zwrite");
     return(-1);
   }
 
