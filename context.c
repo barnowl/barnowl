@@ -43,6 +43,9 @@ int owl_context_is_startup(owl_context *ctx) {
   return (ctx->mode & OWL_CTX_STARTUP)?1:0;
 }
 
+int owl_context_is_interactive(owl_context *ctx) {
+  return(ctx->mode & OWL_CTX_INTERACTIVE)?1:0;
+}
 
 void owl_context_set_startup(owl_context *ctx) {
   SET_MODE(ctx, OWL_CTX_STARTUP);

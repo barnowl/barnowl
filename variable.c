@@ -187,6 +187,14 @@ static owl_variable variables_to_init[] = {
 	         "home view to switch to after 'X' and 'V'", 
 		 "SEE ALSO: view, filter\n" ),
 
+  OWLVAR_STRING( "alert_filter" /* %OwlVarStub */, "none",
+		 "filter on which to trigger alert actions",
+		 "" ),
+
+  OWLVAR_STRING( "alert_action" /* %OwlVarStub */, "nop",
+		 "filter on which to trigger alert actions",
+		 "" ),
+
   OWLVAR_STRING_FULL( "tty" /* %OwlVarStub */, "", "tty name for zephyr location", "",
 		      NULL, owl_variable_tty_set, NULL),
   
@@ -256,6 +264,7 @@ static owl_variable variables_to_init[] = {
 	       "When the 'w' key is pressed, this browser is used\n"
 	       "to display the requested URL.\n",
 	       "none,netscape,galeon,opera" ),
+
 
   OWLVAR_BOOL( "_followlast" /* %OwlVarStub */, 0,
 	       "enable automatic following of the last zephyr",

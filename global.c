@@ -89,17 +89,30 @@ void owl_global_init(owl_global *g) {
 }
 
 void _owl_global_setup_windows(owl_global *g) {
-  int lines, cols, typwin_lines;
+  int cols, typwin_lines;
 
-  lines=g->lines;
   cols=g->cols;
-  typwin_lines = owl_global_get_typwin_lines(g);
+  typwin_lines=owl_global_get_typwin_lines(g);
 
   /* set the new window sizes */
   g->recwinlines=g->lines-(typwin_lines+2);
+  if (g->recwinlines<1) {
+    /* this will screw things up.  I'm not sure what to do yet,
+       but this is better than nothing */
+    /* g->recwinlines=1; */
+  }
 
   /* create the new windows */
   g->recwin=newwin(g->recwinlines, cols, 0, 0);
+  if (g->recwin==NULL) {
+    owl_function_debugmsg("\n\nI just received an error on creating a new receive window\n");
+    owl_function_debugmsg("newwin was called with arguments (%i, %i, 0, 0) and returned NULL\n",
+	   g->recwinlines, cols);
+    endwin();
+
+    exit(50);
+  }
+      
   g->sepwin=newwin(1, cols, g->recwinlines, 0);
   g->msgwin=newwin(1, cols, g->recwinlines+1, 0);
   g->typwin=newwin(typwin_lines, cols, g->recwinlines+2, 0);
@@ -374,13 +387,8 @@ void owl_global_resize(owl_global *g, int x, int y) {
     owl_viewwin_redisplay(owl_global_get_viewwin(g), 0);
   }
 
-  /*
-  char buff[1024];
-  sprintf(buff, "New size is %i lines, %i cols.\n", size.ws_row, size.ws_col);
-  owl_function_makemsg(buff);
-  */
+  owl_function_debugmsg("New size is %i lines, %i cols.", size.ws_row, size.ws_col);
   owl_function_makemsg("");
-
   g->resizepending=0;
 }
 

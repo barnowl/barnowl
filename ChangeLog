@@ -32,6 +32,15 @@ $Id$
 	Added ZResetAuthentication in a number of places to fix problems
 	  with stale tickets
 	Added some hooks for malloc debugging
+	M-p is bound to 'view personal' by default
+	loadsubs and loadloginsubs only print messages if in interactive
+	  mode
+	added the 'alert_filter' variable, defaults to 'none'.
+	added the 'alert_action' variable, which is an owl command that
+	  will be executed when new messages arive that match the
+	  alert_filter
+	added the 'term' command which takes the 'raise' and 'deiconify'
+	  options.  It assumes xterm for now.
 	
 1.2.8
 	Class pings are displayed differently now

@@ -514,7 +514,10 @@ void owl_function_unsuball() {
 
 void owl_function_loadsubs(char *file) {
   int ret;
+
   ret=owl_zephyr_loadsubs(file);
+
+  if (!owl_context_is_interactive(owl_global_get_context(&g))) return;
   if (ret==0) {
     owl_function_makemsg("Subscribed to messages from file.");
   } else if (ret==-1) {
@@ -526,7 +529,10 @@ void owl_function_loadsubs(char *file) {
 
 void owl_function_loadloginsubs(char *file) {
   int ret;
+
   ret=owl_zephyr_loadloginsubs(file);
+
+  if (!owl_context_is_interactive(owl_global_get_context(&g))) return;
   if (ret==0) {
     owl_function_makemsg("Subscribed to login messages from file.");
   } else if (ret==-1) {
@@ -2623,4 +2629,24 @@ void owl_function_do_newmsgproc() {
       }
     }
   }
+}
+
+void owl_function_xterm_raise() {
+  char buff[10];
+
+  buff[0]=0x1b;
+  buff[1]='[';
+  buff[2]='5';
+  buff[3]='t';
+  write(fileno(stdout), buff, 4);
+}
+
+void owl_function_xterm_deiconify() {
+  char buff[10];
+
+  buff[0]=0x1b;
+  buff[1]='[';
+  buff[2]='1';
+  buff[3]='t';
+  write(fileno(stdout), buff, 4);
 }

@@ -267,6 +267,7 @@ int main(int argc, char **argv, char **env) {
       ZNotice_t notice;
       struct sockaddr_in from;
       owl_message *m;
+      owl_filter *f;
 
       /* grab a notice, but if we've done 20 without stopping, take
 	 a break to process keystrokes etc. */
@@ -314,6 +315,14 @@ int main(int argc, char **argv, char **env) {
       if (owl_global_is_personalbell(&g) && owl_message_is_personal(m)) {
 	owl_function_beep();
       }
+
+      /* if it matches the alert filter, do the alert action */
+      f=owl_global_get_filter(&g, owl_global_get_alert_filter(&g));
+      if (f && owl_filter_message_match(f, m)) {
+	owl_function_command(owl_global_get_alert_action(&g));
+      }
+
+	 
 
       /* check for burning ears message */
       /* this is an unsupported feature */

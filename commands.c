@@ -60,6 +60,17 @@ owl_cmd commands_to_init[]
 	      "Exit owl and run any shutdown activities."),
   OWLCMD_ALIAS("exit", "quit"),
   OWLCMD_ALIAS("q",    "quit"),
+
+  OWLCMD_ARGS("term", owl_command_term, OWL_CTX_ANY,
+	      "control the terminal",
+	      "term raise\n"
+	      "term deiconify\n",
+	      ""),
+
+  OWLCMD_VOID("nop", owl_command_nop, OWL_CTX_ANY,
+	      "do nothing",
+	      "",
+	      ""),
   
   OWLCMD_ARGS("start-command", owl_command_start_command, OWL_CTX_INTERACTIVE,
 	      "prompts the user to enter a command",
@@ -749,6 +760,9 @@ void owl_command_info() {
   owl_function_info();
 }
 
+void owl_command_nop() {
+}
+
 char *owl_command_help(int argc, char **argv, char *buff) {
   if (argc!=2) {
     owl_help();
@@ -1167,21 +1181,32 @@ void owl_command_quit() {
 char *owl_command_debug(int argc, char **argv, char *buff) {
   if (argc<2) {
     owl_function_makemsg("Need at least one argument to debug command");
-    return NULL;
+    return(NULL);
   }
 
   if (!owl_global_is_debug_fast(&g)) {
     owl_function_makemsg("Debugging is not turned on");
-    return NULL;
+    return(NULL);
   }
 
   owl_function_debugmsg(argv[1]);
-  return NULL;
+  return(NULL);
 }
 
-char *owl_command_ktest(int argc, char **argv, char *buff) {
-  owl_function_popless_text("foobar");
-  return NULL;
+char *owl_command_term(int argc, char **argv, char *buff) {
+  if (argc<2) {
+    owl_function_makemsg("Need at least one argument to the term command");
+    return(NULL);
+  }
+
+  if (!strcmp(argv[1], "raise")) {
+    owl_function_xterm_raise();
+  } else if (!strcmp(argv[1], "deiconify")) {
+    owl_function_xterm_deiconify();
+  } else {
+    owl_function_makemsg("Uknown terminal subcommand");
+  }
+  return(NULL);
 }
 
 char *owl_command_zlog(int argc, char **argv, char *buff) {

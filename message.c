@@ -471,11 +471,11 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
   if (owl_global_is_newlinestrip(&g)) {
     tmp2=owl_util_stripnewlines(tmp);
     owl_message_set_body(m, tmp2);
-    owl_free(tmp);
     owl_free(tmp2);
   } else {
     owl_message_set_body(m, tmp);
   }
+  owl_free(tmp);
 
   /* if zcrypt is enabled try to decrypt the message */
   if (owl_global_is_zcrypt(&g) && !strcasecmp(n->z_opcode, "crypt")) {
@@ -742,8 +742,8 @@ void _owl_message_make_text_from_notice_simple(owl_message *m) {
   n=&(m->notice);
 
   /* get the body */
-  body=owl_malloc(strlen(owl_message_get_body(m)+30));
-  strcpy(body, owl_message_get_body(m));
+  body=owl_strdup(owl_message_get_body(m));
+  body=realloc(body, strlen(body)+30);
 
   /* add a newline if we need to */
   if (body[0]!='\0' && body[strlen(body)-1]!='\n') {
