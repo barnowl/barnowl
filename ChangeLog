@@ -1,8 +1,10 @@
 $Id$
 
+2.0.5-pre-1
+	Fix in finding des for building zcrypt
+	
 2.0.4
 	Made command line option -n actually work
-
 	Implemented styles, including the 'default' 'basic' and 'oneline'
 	  styles.  A 'perl' style is available if a format_msg() function
 	  is found in .owlconf

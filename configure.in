@@ -57,7 +57,6 @@ if test "$ac_cv_des_ecb_encrypt_proto" = yes; then
 	AC_DEFINE([HAVE_DES_ECB_ENCRYPT_PROTO], [], [have proto for des_ecb_encrypt])
 fi
 
-
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
