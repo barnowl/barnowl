@@ -1,6 +1,6 @@
 $Id$
 
-2.1.11-pre-1
+2.1.11
 	Don't crash doing zlocate with bad tickets. [BZ 12]
 	Metion the path for the owlconf in intro.txt [BZ 54]
 	Print better error message if startup fails due to unreadable
