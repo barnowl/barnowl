@@ -298,6 +298,14 @@ char *stristr(char *a, char *b) {
   return(ret);
 }
 
+/* returns if a string is only whitespace */
+int only_whitespace(char *s) {
+  int i;
+  for (i=0; s[i]; i++) {
+    if (!isspace(s[i])) return(0);
+  }
+  return(1);
+}
 
 void *owl_malloc(size_t size) {
   return(malloc(size));

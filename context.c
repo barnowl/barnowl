@@ -15,7 +15,7 @@ int owl_context_init(owl_context *ctx) {
 
 /* returns whether test matches the current context */
 int owl_context_matches(owl_context *ctx, int test) {
-  owl_function_debugmsg(", current: 0x%04x test: 0x%04x\n", ctx->mode, test);
+  /*owl_function_debugmsg(", current: 0x%04x test: 0x%04x\n", ctx->mode, test);*/
   if ((((ctx->mode&OWL_CTX_MODE_BITS) & test)
        || !(test&OWL_CTX_MODE_BITS))
       && 

@@ -592,12 +592,12 @@ owl_cmd commands_to_init[]
 		  "", ""),
 
   OWLCMD_VOID_CTX("edit:history-next", owl_command_edit_history_next, 
-		  OWL_CTX_EDITLINE,
+		  OWL_CTX_EDIT,
 		  "replaces the text with the previous history",
 		  "", ""),
 
   OWLCMD_VOID_CTX("edit:history-prev", owl_command_edit_history_prev, 
-		  OWL_CTX_EDITLINE,
+		  OWL_CTX_EDIT,
 		  "replaces the text with the previous history",
 		  "", ""),
 
@@ -1477,19 +1477,26 @@ char *owl_command_getvar(int argc, char **argv, char *buff) {
 /*********************************************************************/
 
 void owl_command_edit_cancel(owl_editwin *e) {
+  owl_history *hist;
+
   owl_function_makemsg("Command cancelled.");
+
+  hist=owl_editwin_get_history(e);
+  owl_history_store(hist, owl_editwin_get_text(e));
+  owl_history_reset(hist);
+
   owl_editwin_fullclear(e);
   owl_global_set_needrefresh(&g);
   wnoutrefresh(owl_editwin_get_curswin(e));
   owl_global_set_typwin_inactive(&g);
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_ONELINE);
+  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_ONELINE, NULL);
 }
 
 void owl_command_edit_history_prev(owl_editwin *e) {
   owl_history *hist;
   char *ptr;
 
-  hist=owl_global_get_history(&g);
+  hist=owl_editwin_get_history(e);
   if (!owl_history_is_touched(hist)) {
     owl_history_store(hist, owl_editwin_get_text(e));
     owl_history_set_partial(hist);
@@ -1509,7 +1516,7 @@ void owl_command_edit_history_next(owl_editwin *e) {
   owl_history *hist;
   char *ptr;
 
-  hist=owl_global_get_history(&g);
+  hist=owl_editwin_get_history(e);
   ptr=owl_history_get_next(hist);
   if (ptr) {
     owl_editwin_clear(e);
@@ -1530,12 +1537,12 @@ char *owl_command_edit_insert_text(owl_editwin *e, int argc, char **argv, char *
 }
 
 void owl_command_editline_done(owl_editwin *e) {
-  owl_history *hist=owl_global_get_history(&g);
+  owl_history *hist=owl_editwin_get_history(e);
   char *rv, *cmd;
 
-  owl_global_set_typwin_inactive(&g);
   owl_history_store(hist, owl_editwin_get_text(e));
   owl_history_reset(hist);
+  owl_global_set_typwin_inactive(&g);
   cmd = owl_strdup(owl_editwin_get_text(e));
   owl_editwin_fullclear(e);
   rv = owl_function_command(cmd);
@@ -1551,8 +1558,13 @@ void owl_command_editline_done(owl_editwin *e) {
 }
 
 void owl_command_editmulti_done(owl_editwin *e) {
+  owl_history *hist=owl_editwin_get_history(e);
+
+  owl_history_store(hist, owl_editwin_get_text(e));
+  owl_history_reset(hist);
+
   owl_function_run_buffercommand();
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_ONELINE);
+  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_ONELINE, NULL);
   owl_editwin_fullclear(e);
   owl_global_set_typwin_inactive(&g);
   owl_global_set_needrefresh(&g);

@@ -41,7 +41,7 @@ void owl_global_init(owl_global *g) {
 
   g->rightshift=0;
 
-  owl_editwin_init(&(g->tw), NULL, owl_global_get_typwin_lines(g), g->cols, OWL_EDITWIN_STYLE_ONELINE);
+  owl_editwin_init(&(g->tw), NULL, owl_global_get_typwin_lines(g), g->cols, OWL_EDITWIN_STYLE_ONELINE, NULL);
 
   owl_keyhandler_init(&g->kh);
   owl_keys_setup_keymaps(&g->kh);
@@ -64,7 +64,8 @@ void owl_global_init(owl_global *g) {
   owl_global_set_config_format(g, 0);
   owl_global_set_userclue(g, OWL_USERCLUE_NONE);
   owl_global_set_no_have_config(g);
-  owl_history_init(&(g->hist));
+  owl_history_init(&(g->msghist));
+  owl_history_init(&(g->cmdhist));
   g->nextmsgid=0;
 
   owl_filterelement_create_true(&(g->fe_true));
@@ -485,8 +486,12 @@ char *owl_global_get_startupargs(owl_global *g) {
 
 /* history */
 
-owl_history *owl_global_get_history(owl_global *g) {
-  return(&(g->hist));
+owl_history *owl_global_get_msg_history(owl_global *g) {
+  return(&(g->msghist));
+}
+
+owl_history *owl_global_get_cmd_history(owl_global *g) {
+  return(&(g->cmdhist));
 }
 
 /* filterlist */

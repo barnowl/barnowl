@@ -237,19 +237,6 @@ typedef struct _owl_mainwin {
   int lastdisplayed;
 } owl_mainwin;
 
-typedef struct _owl_editwin {
-  char *buff;
-  int bufflen;
-  int allocated;
-  int buffx, buffy;
-  int topline;
-  int winlines, wincols, fillcol, wrapcol;
-  WINDOW *curswin;
-  int style;
-  int lock;
-  int dotsend;
-} owl_editwin;
-
 typedef struct _owl_viewwin {
   owl_fmtext fmtext;
   int textlines;
@@ -304,6 +291,20 @@ typedef struct _owl_history {
   int partial;
 } owl_history;
 
+typedef struct _owl_editwin {
+  char *buff;
+  owl_history *hist;
+  int bufflen;
+  int allocated;
+  int buffx, buffy;
+  int topline;
+  int winlines, wincols, fillcol, wrapcol;
+  WINDOW *curswin;
+  int style;
+  int lock;
+  int dotsend;
+} owl_editwin;
+
 typedef struct _owl_keybinding {
   int  *j;			/* keypress stack (0-terminated) */  
   int   type;			/* command or function? */
@@ -333,7 +334,8 @@ typedef struct _owl_keyhandler {
 typedef struct _owl_global {
   owl_mainwin mw;
   owl_popwin pw;
-  owl_history hist;
+  owl_history cmdhist;		/* command history */
+  owl_history msghist;		/* outgoing message history */
   owl_keyhandler kh;
   owl_list filterlist;
   owl_list puntlist;

@@ -2,18 +2,20 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctype.h>
 
 static const char fileIdent[] = "$Id$";
 
 #define INCR 5000
 
-void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, int style) {
+void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, int style, owl_history *hist) {
   /* initialize the editwin e.
    * 'win' is an already initialzed curses window that will be used by editwin
    */
-  e->buff=owl_malloc(INCR);
+  e->buff=owl_malloc(INCR);  
   e->buff[0]='\0';
   e->bufflen=0;
+  e->hist=hist;
   e->allocated=INCR;
   e->buffx=0;
   e->buffy=0;
@@ -47,6 +49,14 @@ void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincol
 
 WINDOW *owl_editwin_get_curswin(owl_editwin *e) {
   return e->curswin;
+}
+
+void owl_editwin_set_history(owl_editwin *e, owl_history *h) {
+  e->hist = h;
+}
+
+owl_history *owl_editwin_get_history(owl_editwin *e) {
+  return e->hist;
 }
 
 void owl_editwin_set_dotsend(owl_editwin *e) {
@@ -84,9 +94,10 @@ int owl_editwin_get_style(owl_editwin *e) {
   return(e->style);
 }
 
-void owl_editwin_new_style(owl_editwin *e, int newstyle) {
+void owl_editwin_new_style(owl_editwin *e, int newstyle, owl_history *h) {
   char *ptr;
-  
+
+  owl_editwin_set_history(e, h);
   if (e->style==newstyle) return;
 
   if (newstyle==OWL_EDITWIN_STYLE_MULTILINE) {
@@ -110,14 +121,15 @@ void owl_editwin_new_style(owl_editwin *e, int newstyle) {
 void owl_editwin_fullclear(owl_editwin *e) {
   /* completly reinitialize the buffer */
   owl_free(e->buff);
-  owl_editwin_init(e, e->curswin, e->winlines, e->wincols, e->style);
+  owl_editwin_init(e, e->curswin, e->winlines, e->wincols, e->style, e->hist);
 }
 
 void owl_editwin_clear(owl_editwin *e) {
   /* clear all text except for locktext and put the cursor at the beginning */
   int lock;
+  int dotsend=e->dotsend;
   char *locktext=NULL;
-  
+
   lock=0;
   if (e->lock > 0) {
     lock=1;
@@ -128,10 +140,13 @@ void owl_editwin_clear(owl_editwin *e) {
   }
 
   owl_free(e->buff);
-  owl_editwin_init(e, e->curswin, e->winlines, e->wincols, e->style);
+  owl_editwin_init(e, e->curswin, e->winlines, e->wincols, e->style, e->hist);
 
   if (lock > 0) {
     owl_editwin_set_locktext(e, locktext);
+  }
+  if (dotsend) {
+    owl_editwin_set_dotsend(e);
   }
 
   if (locktext) owl_free(locktext);
@@ -741,18 +756,8 @@ void owl_editwin_fill_paragraph(owl_editwin *e) {
 
 /* returns if only whitespace remains */
 int owl_editwin_is_at_end(owl_editwin *e) {
-  int i, cur;  
-  cur=_owl_editwin_get_index_from_xy(e);
-  if (cur >= e->bufflen) return(1);
-  for (i=e->bufflen-1; i>cur; i--) {
-    if (e->buff[i] != '\r'
-	&& e->buff[i] != '\n'
-	&& e->buff[i] != ' ') {
-      return(0);
-    }
-  }
-  if (cur==i) return(1);
-  else return(0);
+  int cur=_owl_editwin_get_index_from_xy(e);
+  return only_whitespace(e->buff+cur);
 }
 
 int owl_editwin_check_dotsend(owl_editwin *e) {
@@ -767,9 +772,7 @@ int owl_editwin_check_dotsend(owl_editwin *e) {
       e->buff[i] = '\0';
       return(1);
     }
-    if (e->buff[i] != '\r'
-	&& e->buff[i] != '\n'
-	&& e->buff[i] != ' ') {
+    if (!isspace(e->buff[i])) {
       return(0);
     }
   }

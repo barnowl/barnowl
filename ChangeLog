@@ -27,7 +27,13 @@ $Id$
 	Fixed a bug in the "reply -e" command.
 	Always clear the command buffer before executing the command.
 	        (So that interactive commands can sanely do start-command.)
-
+	Fixed preservation of e->dotsend across owl_editwin_clear().
+	Added history for multiline edit windows (eg, for zephyr composition).
+	        The M-n and M-p keys will cycle through the history ring.
+		In particular, it is now possible to edit the command line
+		of a zephyr being composed:  C-c it and restart it 
+		and then M-p to get the aborted composition back.
+	
 1.2.1-pre-1
 	Added RCS Id strings to all files.
 	'show keymaps' shows details of all keymaps after summary list.

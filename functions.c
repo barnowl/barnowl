@@ -123,7 +123,8 @@ void owl_function_zwrite_setup(char *line) {
 
   /* create and setup the editwin */
   e=owl_global_get_typwin(&g);
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE);
+  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE,
+			owl_global_get_msg_history(&g));
 
   if (!owl_global_get_lockout_ctrld(&g)) {
     owl_function_makemsg("Type your zephyr below.  End with ^D or a dot on a line by itself.  ^C will quit.");
@@ -1415,9 +1416,10 @@ void owl_function_reply(int type, int enter) {
       }
 
       if (enter) {
-	owl_history_store(owl_global_get_history(&g), buff);
-	owl_function_zwrite_setup(buff);
-	owl_global_set_buffercommand(&g, buff);
+	owl_history *hist = owl_global_get_cmd_history(&g);
+	owl_history_store(hist, buff);
+	owl_history_reset(hist);
+	owl_function_command_norv(buff);
       } else {
 	owl_function_start_command(buff);
       }
@@ -1446,6 +1448,9 @@ void owl_function_start_command(char *line) {
 
   tw=owl_global_get_typwin(&g);
   owl_global_set_typwin_active(&g);
+  owl_editwin_new_style(tw, OWL_EDITWIN_STYLE_ONELINE, 
+			owl_global_get_cmd_history(&g));
+
   owl_editwin_set_locktext(tw, "command: ");
   owl_global_set_needrefresh(&g);
 

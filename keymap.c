@@ -200,8 +200,10 @@ int owl_keyhandler_process(owl_keyhandler *kh, int j) {
 	return(-1);
   }
 
-  owl_function_debugmsg("processkey: got key %d, active keymap %s, stack at %d",
-			j, kh->active->name, kh->kpstackpos);
+  /*
+    owl_function_debugmsg("processkey: got key %d, active keymap %s, stack at %d",
+    j, kh->active->name, kh->kpstackpos);
+  */
 
   /* deal with ESC prefixing */
   if (!kh->in_esc && j==27) {
@@ -235,10 +237,11 @@ int owl_keyhandler_process(owl_keyhandler *kh, int j) {
       kb = (owl_keybinding*)owl_list_get_element(&km->bindings, i);
       match = owl_keybinding_match(kb, kh->kpstack);
       if (match == 1) {		/* subset match */
-	owl_function_debugmsg("processkey: found subset match in %s", km->name);
+
+	/* owl_function_debugmsg("processkey: found subset match in %s", km->name); */
 	return(0);
       } else if (match == 2) {	/* exact match */
-	owl_function_debugmsg("processkey: found exact match in %s", km->name);
+	/* owl_function_debugmsg("processkey: found exact match in %s", km->name); */
 	owl_keybinding_execute(kb, j);
 	owl_keyhandler_reset(kh);
 	if (km->postalways_fn) {
@@ -251,7 +254,8 @@ int owl_keyhandler_process(owl_keyhandler *kh, int j) {
 
   /* see if a default action exists for the active keymap */
   if (kh->active->default_fn && kh->kpstackpos<1) {
-    owl_function_debugmsg("processkey: executing default_fn");
+    /*owl_function_debugmsg("processkey: executing default_fn");*/
+
     kh->active->default_fn(j);
     owl_keyhandler_reset(kh);
     if (kh->active->postalways_fn) {
