@@ -1,0 +1,108 @@
+                     ========================
+                     Owl Advanced Users Guide
+                     ========================
+
+
+=========================
+Section X: CUSTOM FILTERS
+=========================
+
+
+==========================
+Section X: THE CONFIG FILE
+==========================
+
+=======================
+Section X: KEY BINDINGS
+=======================
+
+
+=========================
+Section X: COMMAND ALISES
+=========================
+
+
+=================
+Section X: STYLES
+=================
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+For example, the following
+command will create a filter called 'mail' that maches any messages
+sent to the zephyr class 'mail':
+
+     filter mail class ^mail$
+
+The first argument after the filter command specifies the name of the
+filter to be created.  The text after that indicates that matching
+messages must have the zephyr class "mail".  For help understanding
+the '^' and '$' characters, consult a reference on regular
+expressions.  Note that all pattern matching in Owl is
+case-insensitive.
+
+The message fields that can be used in a filter command include:
+
+     sender        message sender
+     recipient     message recipient
+     class         zephyr class name
+     instance      zephyr instance name
+     opcode        zephyr opcode
+     realm         zephyr realm
+     body          message body
+     type          message type ('zephyr', 'aim', 'admin')
+     direction     either 'in' 'out' or 'none'\n"
+     login         either 'login' 'logout' or 'none'\n" 
+
+You can also use the operators 'and' 'or' and 'not' as well as the
+values 'true' and 'false'.  Parentheses can be used to group
+expressions, though there must be spaces present before and after all
+parenthesis.  For example:
+
+   filter myfilt ( class ^foo$ ) or ( class ^quux$ and instance ^bar$ )
+
+If you define a filter using a filter name that already exists, it
+will overwrite the existing filter.  This can be a useful way to
+override the built-in filters.
+
+
+==========================
+Section 6: THE CONFIG FILE
+==========================
+
+*** WARNING: This interface may change substantially in the near future ***
+
+This file is interpreted by the perl interpreter.
+If you wish to execute an owl command use the
+function owl::command().  i.e.
+
+     owl::command("set zsigproc \"/mit/kretch/bin/getzsig foo\"");
+
+will set the owl variable zsigproc.  Note that commands will currently
+be executed in order after the called configuration subroutine exits.
+
+Subroutines created with the names below will be executed at the
+specified times:
+
+    subroutine name    properties
+    ---------------    ----------
+    owl::startup()     run when owl first starts
+    owl::shutdown()    run when owl exits
+    owl::format_msg()  run when a new message arrives, the return
+                          value is used to display the message on the
+                          screen
+    owl::receive_msg() run when a message is received, and after
+		       it has been added to the message list
+
+
+The following variables will be set each time a message is recevied:
+
+    $owl::class, $owl::instance, $owl::recipient,
+    $owl::sender, $owl::opcode, $owl::zsig,
+    $owl::msg, $owl::time, $owl::host, @owl::fields, $owl::id
+
+The "appendtosepbar" variable may be set in owl::format_msg()
+to set text to be appended to sepbar that separates the received
+message list from the edit window.

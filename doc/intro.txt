@@ -7,9 +7,9 @@ Section 1: INTRODUCTION
 =======================
 
 Owl is a tty, curses-based instant messaging client.  This is a quick
-guide to learning how to use it.  Currently it supports only zephyr,
-but other messaging protocols, including AIM and Jabber, are on the
-way.  Some major features of owl include:
+guide to learning how to use it.  Currently Owl supports AIM & zephyr,
+but other messaging protocols, including Jabber, are on the way.  Some
+major features of owl include:
 
    o) As a tty client it can be run over telnet, rlogin or text ssh
       sessions
@@ -27,28 +27,30 @@ way.  Some major features of owl include:
 Section 2: GETTING STARTED
 ==========================
 
-Owl will run happily without a configfile, so to get started just run
-the program.  Owl will take over the terminal window it is started in,
-so you may wish to have another terminal window available at the same
-time.
+Owl will run happily without a configuration file, so to get started
+just run the program.  Owl will take over the terminal window it is
+started in, so you may wish to have another terminal window available
+at the same time.
 
 On Athena you can find owl in the ktools locker.  To run it, type:
 
-        add ktools
-        owl
+     add ktools
+     owl
 
 at the Athena% prompt.  If you wish to run the latest beta release of
 owl use:
 
-        add ktools
-        owl-beta
+     add ktools
+     owl-beta
 
-instead.
+instead.  The beta release will often have newer features, but is not
+as tried and true as the production release.  As a result it may be
+less stable.
 
 The Screen Layout
 -----------------
 There are three main parts to the owl screen.  The large top portion
-of the screen is where zephyrs are displayed.  The status bar
+of the screen is where messages are displayed.  The status bar
 separates this area from the one below and displays owl status
 information.  The space below that is used to type messages and is
 also used by owl to give warnings and information to the user.
@@ -71,6 +73,23 @@ If instead you wish to cancel the message type Control-C.
 If you wish to send to a class/instance pair simply supply -c and -i
 arguments to the zwrite command as you normally would.
 
+Sending an AIM message
+----------------------
+
+Before sending an AIM message you must login to AOL Instant Messenger.
+Use the 'aimlogin' command, with your screenname as an argument:
+
+     aimlogin <screenname>
+
+You will be prompted for your password, which you must enter.  Once
+you are successfully logged in you can send an AIM message by pressing
+the 'a' key, which will bring up an 'aimwrite' command:
+
+     aimwrite <screenname>
+
+Supply the screen name you wish to write to as an argument and then
+send the message just as you would send a zephyr, as described above.
+
 Manipulating Messages
 ---------------------
 When there are zephyrs in the message window, one of them will be the
@@ -78,72 +97,72 @@ When there are zephyrs in the message window, one of them will be the
 that looks like this: -> The following keys will move you to different
 messages:
 
-	n		move to the next non-deleted message
-	p		move to the previous non-deleted message
-	C-n , down	move to the next message
-	C-p , up	move to the previous message
-	<		move to the first message
-	>		move to the last message
-	C-v		page down
-	M-v		page up
-	right		scroll the screen to the right
-	left		scroll the screen to the left
-	P		move to the next personal message
-	M-P		move to the previous personal message
+     n		  move to the next non-deleted message
+     p		  move to the previous non-deleted message
+     C-n or down  move to the next message
+     C-p or up	  move to the previous message
+     <		  move to the first message
+     >		  move to the last message
+     C-v          page down
+     M-v          page up
+     right        scroll the screen to the right
+     left         scroll the screen to the left
+     P            move to the next personal message
+     M-P          move to the previous personal message
 
 When you are ready to delete a message you can mark it for deletion
-and a 'D' will appear to the left of the message.  Messages will not
-actually be removed until you perform an expunge.  The following keys
-are used to delete, undelete and expunge messages:
+with the 'd' key, and a 'D' will appear to the left of the message.
+Messages will not actually be removed until you perform an expunge.
+The following keys are used to delete, undelete and expunge messages:
 
-	d		mark a message for deletion
-	u		unmark a message for deletion
-	x		expunge deleted messages
-	T		mark all 'trash' messages for deletion
-        M-D		mark all messages in the view for deletion
-	M-u		unmark all messages in the view for deletion
+     d		  mark a message for deletion
+     u		  unmark a message for deletion
+     x		  expunge deleted messages
+     T		  mark all 'trash' messages for deletion
+     M-D          mark all messages in the view for deletion
+     M-u          unmark all messages in the view for deletion
 
-If you would like to respond to a zephyr sent to you there is a reply
+If you would like to respond to a message sent to you there is a reply
 shortcut:
 
-	r               Reply.  Personal zephyrs get a personal reply,
-                        class/instance zephyrs get a public reply.
-	R		Reply to sender.  Always replies personally
-                        to the user.
-        M-r             Reply but allow editing of the command line.
-        M-R             Reply to sender but allow editing of the
-                        command line.
+     r            Reply.  Personal messages get a personal reply,
+                       group messages get a group reply.
+     R            Reply to sender.  Always replies personally
+                       to the sender.
+     M-r          Reply but allow editing of the command line.
+     M-R          Reply to sender but allow editing of the
+                       command line.
 
 In the event that the current message is too large to fit on the
 screen, you can scroll within the message using the following keys:
 
-	SPACE		page down
-	b		page up
-	RETURN		line down
-	BACKSPACE	line up
+     SPACE        page down
+     b            page up
+     RETURN       line down
+     BACKSPACE    line up
 
 The message pointer will change to indicate that the message is not
 starting at the first line.
 
 Two other keys that relate to the current message:
 
-	i 		print detailed information about the message
-	w 		instruct netscape to visit a URL in the message
+     i 		  print detailed information about the message
+     w            instruct netscape to visit a URL in the message
 
 Other Functions
 ----------------
 Some other functions that can be performed with a single keystroke:
 
-	A		toggle zaway on or off
-	C-l		refresh and resize the screen
-	C-z		suspend
+     A            toggle zephyr zaway on or off
+     C-l          refresh and resize the screen
+     C-z          suspend
 
 Command Mode
 ------------
 Owl has a command mode from which you can enter more detailed commands
-for owl to process.  To enter command mode press the colon (':') key:
+for Owl to process.  To enter command mode press the colon (':') key:
 
-	:		begin command mode
+     :		  begin command mode
 
 Owl will give you a command prompt and you can begin typing your
 command.  Type Enter to execute the command, Control-C to cancel.
@@ -151,12 +170,12 @@ There are many commands.  The basic commands are listed on the basic
 help screen (by pressing 'h').  If you'd like a list of all commands
 you can use the command:
 
-        show commands
+     show commands
 
 And for detailed information on the syntax and use of a command you
 can use:
 
-        help <command>
+     help <command>
 
 For example "help zwrite" will display all the options available when
 using the zwrite command.
@@ -168,62 +187,144 @@ behavior the program.  The 'print' command will let you view the value
 of a variable and the 'set' commmand will let you set the value of a
 variable.  For example:
 
-        set personalbell on 
+     set personalbell on 
 
-will set the value of the variable 'personalbell' to on.  The command:
+will set the value of the variable 'personalbell' to 'on'.  The
+command:
 
-	print personalbell
+     print personalbell
 
 will show you the current value.  The 'print' command with no
 arguments:
 
-        print
+     print
 
 Owl will show you the value of all variables.  You can also use
 
-        show variables
-        show variable <variable>
+     show variables
+
+     show variable <variable>
 
 To display further information on owl variables.
 
-Views
------
+
+================
+Section 3: VIEWS
+================
+
 Owl always displays a current "view" of messages.  The view describes
 which set of messages should be included on the display.  The default
 view is called "all" and includes every message.  However, you can
-narrow the view to a particular set of zephyrs:
+narrow the view to a particular set of messages:
 
-	M-n		Narrow view to the selected conversation
-	M-N		Narrow view to selected conversation by instance
-	V		Return to the home view (the 'all' view)
-	X		Expunge messages and return to home view
+     M-n          Narrow view to the selected conversation
+     M-N          Narrow view to selected conversation by instance
+     V            Return to the home view (the 'all' view)
+     X            Expunge messages and return to home view
 
-If you press M-n while the pointer is on a personal zephyr, the view
+If you press M-n while the pointer is on a personal message, the view
 will be narrowed to the conversation with that user only.  If used on
-a class zephyr the conversation will be narrowed to that class, with
-a few special exceptions like class MESSAGE.
+a group message the conversation will be narrowed to that group.
 
-There are also some owl commands related to views:
+There are also some Owl commands related to views:
 
-        viewclass <class>     Narrow the view to the named class
-        viewuser <user>       Narrow the view to the named user
+     viewclass <class>     Narrow the view to the named zephyr class
+     viewuser <user>       Narrow the view to the named user
 
 More information on views and how they work is included in the section
 on "FILTERS AND COLORS".
-
-==========================================
-Section 3: KEYBINDINGS AND COMMAND ALIASES
-==========================================
-
 
 =============================
 Section 4: FILTERS AND COLORS
 =============================
 
+Filters
+-------
+Owl will allow you to create custom message filters.  A message filter
+is an expression that matches a set of messages based on certain
+criteria.  Owl comes with a number of build-in filters already.  You can
+view a list of them with the command:
 
+     show filters
+
+The default filters include:
+
+     all              Matches all messages
+     none             Matches no messages
+     personal         Only personal messages (no group messages)
+     login            Login/Logout notifications
+     auto             Messages generated by automated programs
+     out              Messages sent from you to another user
+     aim              AIM messages
+     zephyr           Zephyr messages
+     trash            "Trash" messages
+     ping             Zephyr pings
+     reply-lockout    Messages for which the reply commands
+                          should not work
+
+If you wish to view the messages that match a particular filter, use
+the 'view' command.  For example:
+
+     view personal
+
+This will display only personal messages on the screen.  You can
+change back to the 'all' view by pressing the 'V' key (capitalized).
+Note that the 'v' key (not capitalized) is a shortcut to bring up the
+'view' command.
+
+You can also create your own filters.  For more information on this,
+consult the Owl Advanced Users Guide.
+
+Colors
+------
+Every filter can have a color associated with it.  Messages matching
+the filter will then be displayed in that color if your terminal
+supports it.  The color for a filter can be set by using the '-c'
+option to the filter command.  For example:
+
+     filter personal -c white
+
+This cause all messages in the 'personal' filter to be displayed in
+white.  You can produce a list of the colors available to Owl with the
+command:
+
+     show colors
+
+If a message matches more than one filter it will be displayed in the
+color specified in the last filter listed in the 'show filters'
+command.
+
+If you would like your color settings to persist, such that they are
+preset every time you start Owl, please read the "Saving Your
+Settings" section below.
+
+===============================
+Section 5: SAVING YOUR SETTINGS
+===============================
+
+Any changes you make to Owl are lost when the program is terminated,
+unless you specify otherwise.  If you would like a setting to persist
+such that it is available every time you start Owl you can use the
+word 'startup' before any command.  For example:
+
+     startup filter personal -c white
+
+Will instruct Owl to color personal messages white both in the current
+session and in any future Owl session.  You may revert this behavior
+with the 'unstartup' command:
+
+     unstartup filter personal -c white
+
+which will not affect the current session, but will cause future
+sessions not to take this action.
+
+Here is another example, this instructs Owl to display zephyr ping
+messages:
+
+     startup set rxping on
 
 ==========================
-Section 5: THE CONFIG FILE
+Section 6: THE CONFIG FILE
 ==========================
 
 *** WARNING: This interface may change substantially in the near future ***
@@ -260,6 +361,11 @@ The following variables will be set each time a message is recevied:
 The "appendtosepbar" variable may be set in owl::format_msg()
 to set text to be appended to sepbar that separates the received
 message list from the edit window.
+
+
+==========================================
+Section 4: KEYBINDINGS AND COMMAND ALIASES
+==========================================
 
 
 ==============================
