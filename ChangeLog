@@ -1,8 +1,10 @@
 $Id$
 
-2.1.10-pre-1
+2.1.10-pre-2
 	Fix a new problem finding libdes425
-	Don't crash on super-long hostnames
+	Don't crash on super-long hostnames [BZ 52]
+	In 'sub' command, create .zephyr.subs if it doesn't exist [BZ 15]
+	A fix for certain resize crashes (part from alexmv) [BZ 55]
 	
 2.1.9
 	Include /usr/include/kerberosIV if it's found

@@ -487,7 +487,17 @@ int main(int argc, char **argv, char **env)
 	owl_message_create_from_znotice(m, &notice);
 #endif
       } else if (owl_global_messagequeue_pending(&g)) {
+	/* pick up the non-zephyr message in the message queue */
 	m=owl_global_messageuque_popmsg(&g);
+      } else {
+	/* Not supposed to happen, but we seem to get here on resizes */
+	owl_function_debugmsg("Bottomed out looking for zephyr");
+      }
+
+      /* If we didn't pick up a message for some reason, don't go on */
+      if (m==NULL) {
+	owl_function_debugmsg("m is null in main loop");
+	continue;
       }
       
       /* if this message it on the puntlist, nuke it and continue */

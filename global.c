@@ -393,7 +393,7 @@ void owl_global_resize(owl_global *g, int x, int y) {
     g->cols=y;
   }
 
-  /* resizeterm(size.ws_row, size.ws_col); */
+  resizeterm(size.ws_row, size.ws_col);
 
   /* re-initialize the windows */
   _owl_global_setup_windows(g);

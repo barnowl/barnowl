@@ -615,18 +615,15 @@ void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip)
     strcpy(subsfile, filename);
   }
 
-  /* first check if it exists already */
+  /* if the file already exists, check to see if the sub is already there */
   file=fopen(subsfile, "r");
-  if (!file) {
-    owl_function_error("Error opening file %s", subsfile);
-    owl_free(line);
-    return;
-  }
-  while (fgets(buff, LINE, file)!=NULL) {
-    if (!strcasecmp(buff, line)) {
-      owl_function_error("Subscription already present in %s", subsfile);
-      owl_free(line);
-      return;
+  if (file) {
+    while (fgets(buff, LINE, file)!=NULL) {
+      if (!strcasecmp(buff, line)) {
+	owl_function_error("Subscription already present in %s", subsfile);
+	owl_free(line);
+	return;
+      }
     }
   }
 
