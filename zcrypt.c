@@ -266,9 +266,14 @@ int zcrypt(int argc, char *argv[]) {
   exit(0);
 }
 
-int zcrypt_decrypt(char *out, char *in, char *class, char *instance) {
-  /* written by kretch for owl. */
-  /* return 0 on success, otherwise -1 */
+/* The 'owl_zcrypt_decrypt' function was written by kretch for Owl.
+ * Decrypt the message in 'in' on class 'class' and instance
+ * 'instance' and leave the result in 'out'.  Out must be a buffer
+ * allocated by the caller.
+ *
+ * return 0 on success, otherwise -1
+ */
+int owl_zcrypt_decrypt(char *out, char *in, char *class, char *instance) {
   char *fname, keystring[MAX_KEY], *inptr, *endptr;
   FILE *fkey;
   des_cblock key;
@@ -277,6 +282,7 @@ int zcrypt_decrypt(char *out, char *in, char *class, char *instance) {
   int i, c1, c2;
   
   fname=GetZephyrVarKeyFile("zcrypt", class, instance);
+  if (!fname) return(-1);
   fkey=fopen(fname, "r");
   if (!fkey) return(-1);
   fgets(keystring, MAX_KEY-1, fkey);
@@ -313,7 +319,67 @@ int zcrypt_decrypt(char *out, char *in, char *class, char *instance) {
   return(0);
 }
 
-int zcrypt_encrypt(char *out, char *in, char *class, char *instance) {
+int owl_zcrypt_encrypt(char *out, char *in, char *class, char *instance) {
+  /*  static int do_encrypt(char *keystring, int zephyr, char *class, char *instance, ZWRITEOPTIONS *zoptions, char* keyfile) { */
+  char *fname, keystring[MAX_KEY];
+  FILE *fkey;
+  des_cblock key;
+  des_key_schedule schedule;
+  char input[8], output[8];
+  int size, length, i;
+  char *inbuff = NULL, *inptr;
+  int use_buffer = FALSE;
+  int num_blocks=0, last_block_size=0;
+
+  fname=GetZephyrVarKeyFile("zcrypt", class, instance);
+  if (!fname) return(-1);
+  fkey=fopen(fname, "r");
+  if (!fkey) return(-1);
+  fgets(keystring, MAX_KEY-1, fkey);
+  fclose(fkey);
+
+  des_string_to_key(keystring, key);
+  des_key_sched(key, schedule);
+
+  inbuff=in;
+  length=strlen(inbuff);
+  num_blocks=(length+7)/8;
+  last_block_size=((length+7)%8)+1;
+  use_buffer=TRUE;
+
+  strcpy(out, "");
+  
+  inptr=inbuff;
+  while (TRUE) {
+    /* Get 8 bytes from buffer */
+    if (num_blocks > 1) {
+      size = 8;
+      memcpy(input, inptr, size);
+      inptr+=8;
+      num_blocks--;
+    } else if (num_blocks == 1) {
+      size=last_block_size;
+      memcpy(input, inptr, size);
+      num_blocks--;
+    } else {
+      size=0;
+    }
+
+    /* Check for EOF and pad the string to 8 chars, if needed */
+    if (size == 0) break;     /* END OF INPUT: BREAK FROM while LOOP! */
+      
+    if (size<8) memset(input + size, 0, 8 - size);
+
+    /* Encrypt and output the block */
+    des_ecb_encrypt(input, output, schedule, TRUE);
+
+    for (i = 0; i < 8; i++) {
+      sprintf(out, "%s%c", out, ((output[i] & 0xf0) >> 4) + BASE_CODE);
+      sprintf(out, "%s%c", out, (output[i] & 0x0f)        + BASE_CODE);
+    }
+
+    if (size < 8) break;
+  }
   return(0);
 }
 
@@ -366,8 +432,7 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance) {
 
   /* Determine names to look for in .crypt-table */
   if (instance) {
-    sprintf(varname[numsearch++], "crypt-%s-%s:", (class?class:"message"), 
-	    instance);
+    sprintf(varname[numsearch++], "crypt-%s-%s:", (class?class:"message"), instance);
   }
   if (class) {
     sprintf(varname[numsearch++], "crypt-%s:", class);
@@ -412,7 +477,7 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance) {
     }
 
     if (keyfile == NULL) {
-      printf("Could not find key table entry.\n");
+      /* printf("Could not find key table entry.\n"); */
     } else {
       /* Prepare result to be returned */
       char *temp = keyfile;
@@ -420,13 +485,13 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance) {
       if (keyfile) {
 	strcpy(keyfile, temp);
       } else {
-	printf("Memory allocation error.\n");
+	/* printf("Memory allocation error.\n"); */
       }
     }
     
     fclose(fsearch);
   } else {
-    printf("Could not open key table file: %s\n", filename);
+    /* printf("Could not open key table file: %s\n", filename); */
   }
 
   return(keyfile);

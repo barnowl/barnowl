@@ -305,6 +305,12 @@ char *owl_zwrite_get_opcode(owl_zwrite *z)
   return(z->opcode);
 }
 
+void owl_zwrite_set_opcode(owl_zwrite *z, char *opcode)
+{
+  if (z->opcode) owl_free(z->opcode);
+  z->opcode=owl_strdup(opcode);
+}
+
 char *owl_zwrite_get_realm(owl_zwrite *z)
 {
   return(z->realm);

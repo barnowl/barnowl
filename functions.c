@@ -254,58 +254,6 @@ void owl_function_aimwrite_setup(char *line)
   owl_global_set_buffercommand(&g, line);
 }
 
-
-
-void owl_function_zcrypt_setup(char *line)
-{
-  owl_editwin *e;
-  char buff[1024];
-  owl_zwrite z;
-  int ret;
-
-  /* check the arguments */
-  ret=owl_zwrite_create_from_line(&z, line);
-  if (ret) {
-    owl_function_makemsg("Error in zwrite arugments");
-    owl_zwrite_free(&z);
-    return;
-  }
-
-  if (owl_zwrite_get_numrecips(&z)>0) {
-    owl_function_makemsg("You may not specifiy a recipient for a zcrypt message");
-    owl_zwrite_free(&z);
-    return;
-  }
-
-  /* send a ping if necessary */
-  if (owl_global_is_txping(&g)) {
-    owl_zwrite_send_ping(&z);
-  }
-  owl_zwrite_free(&z);
-
-  /* create and setup the editwin */
-  e=owl_global_get_typwin(&g);
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE, owl_global_get_msg_history(&g));
-
-  if (!owl_global_get_lockout_ctrld(&g)) {
-    owl_function_makemsg("Type your zephyr below.  End with ^D or a dot on a line by itself.  ^C will quit.");
-  } else {
-    owl_function_makemsg("Type your zephyr below.  End with a dot on a line by itself.  ^C will quit.");
-  }
-
-  owl_editwin_clear(e);
-  owl_editwin_set_dotsend(e);
-  strcpy(buff, "----> ");
-  strcat(buff, line);
-  strcat(buff, "\n");
-  owl_editwin_set_locktext(e, buff);
-
-  /* make it active */
-  owl_global_set_typwin_active(&g);
-
-  owl_global_set_buffercommand(&g, line);
-}
-
 /* send, log and display an outgoing zephyr.  If 'msg' is NULL
  * the message is expected to be set from the zwrite line itself
  */
@@ -340,6 +288,61 @@ void owl_function_zwrite(char *line, char *msg)
   }
 
   /* free the zwrite */
+  owl_zwrite_free(&z);
+}
+
+/* send, log and display an outgoing zcrypt zephyr.  If 'msg' is NULL
+ * the message is expected to be set from the zwrite line itself
+ */
+void owl_function_zcrypt(char *line, char *msg)
+{
+  owl_zwrite z;
+  int i, j, ret;
+  char *mymsg;
+  char *cryptmsg;
+
+  /* create the zwrite and send the message */
+  owl_zwrite_create_from_line(&z, line);
+  if (msg) {
+    owl_zwrite_set_message(&z, msg);
+  }
+
+  mymsg=owl_zwrite_get_message(&z);
+#ifdef OWL_ENABLE_ZCRYPT
+  cryptmsg=owl_malloc(strlen(mymsg)*4);
+  ret=owl_zcrypt_encrypt(cryptmsg, mymsg, owl_zwrite_get_class(&z), owl_zwrite_get_instance(&z));
+  if (ret) {
+    owl_function_makemsg("Error in zcrypt, possibly no key found.  Message not sent.");
+    owl_function_beep();
+    owl_free(cryptmsg);
+    return;
+  }
+#else
+  cryptmsg=owl_strdup(mymsg);
+#endif
+
+  owl_zwrite_set_message(&z, cryptmsg);
+  owl_zwrite_set_opcode(&z, "crypt");
+  mymsg=cryptmsg;
+    
+  owl_zwrite_send_message(&z);
+  owl_function_makemsg("Waiting for ack...");
+
+  /* display the message as an outgoing message in the receive window */
+  if (owl_global_is_displayoutgoing(&g) && owl_zwrite_is_personal(&z)) {
+    owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
+  }
+
+  /* log it if we have logging turned on */
+  if (owl_global_is_logging(&g) && owl_zwrite_is_personal(&z)) {
+    j=owl_zwrite_get_numrecips(&z);
+    for (i=0; i<j; i++) {
+      owl_log_outgoing_zephyr(owl_zwrite_get_recip_n(&z, i), mymsg);
+    }
+  }
+
+  /* free the zwrite */
+  owl_free(cryptmsg);
   owl_zwrite_free(&z);
 }
 
@@ -1086,6 +1089,8 @@ void owl_function_run_buffercommand()
   buff=owl_global_get_buffercommand(&g);
   if (!strncmp(buff, "zwrite ", 7)) {
     owl_function_zwrite(buff, owl_editwin_get_text(owl_global_get_typwin(&g)));
+  } else if (!strncmp(buff, "zcrypt ", 7)) {
+    owl_function_zcrypt(buff, owl_editwin_get_text(owl_global_get_typwin(&g)));
   } else if (!strncmp(buff, "aimwrite ", 9)) {
     owl_function_aimwrite(buff+9);
   } else if (!strncmp(buff, "aimlogin ", 9)) {
@@ -1773,13 +1778,6 @@ void owl_function_reply(int type, int enter)
 
     /* zephyr */
     if (owl_message_is_type_zephyr(m)) {
-      /* for now we disable replies to zcrypt messages, since we can't
-	 support an encrypted reply */
-      if (!strcasecmp(owl_message_get_opcode(m), "crypt")) {
-	owl_function_makemsg("Replies to zcrypt messages are not enabled in this release");
-	return;
-      }
-
       /* if it's a zephyr we sent, send it out the same way again */
       if (owl_message_is_direction_out(m)) {
 	owl_function_zwrite_setup(owl_message_get_zwriteline(m));
@@ -1823,7 +1821,11 @@ void owl_function_reply(int type, int enter)
       }
 	
       /* create the command line */
-      buff = owl_strdup("zwrite");
+      if (!strcasecmp(owl_message_get_opcode(m), "CRYPT")) {
+	buff=owl_strdup("zcrypt");
+      } else {
+	buff = owl_strdup("zwrite");
+      }
       if (strcasecmp(class, "message")) {
 	buff = owl_sprintf("%s -c %s%s%s", oldbuff=buff, owl_getquoting(class), class, owl_getquoting(class));
 	owl_free(oldbuff);

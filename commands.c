@@ -126,13 +126,11 @@ owl_cmd commands_to_init[]
 	      "aimzwrite <user>",
 	      "Send an aim message to a user.\n"),
 
-  /*
   OWLCMD_ARGS("zcrypt", owl_command_zcrypt, OWL_CTX_INTERACTIVE,
 	      "send an encrypted zephyr",
 	      "zcrypt [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcde] [-m <message...>]\n",
 	      "Behaves like zwrite but uses encryption.  Not for use with\n"
 	      "personal messages\n"),
-  */
   
   OWLCMD_ARGS("reply", owl_command_reply,  OWL_CTX_INTERACTIVE,
 	      "reply to the current message",
@@ -1659,13 +1657,17 @@ char *owl_command_aimwrite(int argc, char **argv, char *buff)
 
 char *owl_command_zcrypt(int argc, char **argv, char *buff)
 {
+#ifdef OWL_ENABLE_ZCRYPT
   owl_zwrite z;
 
-  /* check for a zwrite -m */
+  if (!owl_global_is_havezephyr(&g)) {
+    owl_function_makemsg("Zephyr is not available");
+    return(NULL);
+  }
+  /* check for a zcrypt -m */
   owl_zwrite_create_from_line(&z, buff);
   if (owl_zwrite_is_message_set(&z)) {
-    owl_zwrite_send_message(&z);
-    owl_function_make_outgoing_zephyr(owl_zwrite_get_message(&z), buff, owl_zwrite_get_zsig(&z));
+    owl_function_zcrypt(buff, NULL);
     owl_zwrite_free(&z);
     return (NULL);
   }
@@ -1676,6 +1678,9 @@ char *owl_command_zcrypt(int argc, char **argv, char *buff)
     owl_function_zwrite_setup(buff);
   }
   return(NULL);
+#else
+  owl_function_makemsg("This Owl does not support zcrypt");
+#endif
 }
 
 char *owl_command_reply(int argc, char **argv, char *buff)

@@ -698,7 +698,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
     int ret;
 
     out=owl_malloc(strlen(owl_message_get_body(m))*16+20);
-    ret=zcrypt_decrypt(out, owl_message_get_body(m), owl_message_get_class(m), owl_message_get_instance(m));
+    ret=owl_zcrypt_decrypt(out, owl_message_get_body(m), owl_message_get_class(m), owl_message_get_instance(m));
     if (ret==0) {
       owl_message_set_body(m, out);
     } else {
@@ -742,8 +742,10 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   owl_message_set_sender(m, owl_zephyr_get_sender());
   owl_message_set_class(m, owl_zwrite_get_class(&z));
   owl_message_set_instance(m, owl_zwrite_get_instance(&z));
-  owl_message_set_recipient(m,
-			    long_zuser(owl_zwrite_get_recip_n(&z, 0))); /* only gets the first user, must fix */
+  if (owl_zwrite_get_numrecips(&z)>0) {
+    owl_message_set_recipient(m,
+			      long_zuser(owl_zwrite_get_recip_n(&z, 0))); /* only gets the first user, must fix */
+  }
   owl_message_set_opcode(m, owl_zwrite_get_opcode(&z));
   owl_message_set_realm(m, owl_zwrite_get_realm(&z)); /* also a hack, but not here */
   m->zwriteline=owl_strdup(line);
