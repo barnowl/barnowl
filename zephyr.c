@@ -338,9 +338,8 @@ void owl_zephyr_zaway(owl_message *m) {
   if (!strcasecmp(owl_message_get_sender(m), "")) return;
   if (!strcasecmp(owl_message_get_opcode(m), "ping")) return;
   if (!strcasecmp(owl_message_get_opcode(m), "auto")) return;
-  if (!strcasecmp(owl_message_get_notice(m)->z_message, "Automated reply:")) return;
+  if (!strcasecmp(owl_message_get_zsig(m), "Automated reply:")) return;
   if (!strcasecmp(owl_message_get_sender(m), ZGetSender())) return;
-  /* add one to not send to ourselves */
 
   send_zephyr("",
 	      "Automated reply:",
@@ -350,8 +349,11 @@ void owl_zephyr_zaway(owl_message *m) {
 	      owl_global_get_zaway_msg(&g));
 
   /* display the message as an admin message in the receive window */
-  tmpbuff = owl_sprintf("Message sent to %s", owl_message_get_sender(m));
-  owl_function_adminmsg(tmpbuff, owl_global_get_zaway_msg(&g));
+  tmpbuff = owl_sprintf("zwrite -c %s -i %s %s",
+			owl_message_get_class(m),
+			owl_message_get_instance(m),
+			owl_message_get_sender(m));
+  owl_function_make_outgoing_zephyr(owl_global_get_zaway_msg(&g), tmpbuff, "Automated reply:");
   owl_free(tmpbuff);
 }
 
