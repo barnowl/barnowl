@@ -1262,27 +1262,35 @@ void owl_function_mainwin_pageup() {
 void owl_function_getsubs() {
   int ret, num, i, one;
   ZSubscription_t sub;
-  char *buff;
+  char *buff, *tmpbuff;
 
   one = 1;
 
   ret=ZRetrieveSubscriptions(0, &num);
   if (ret == ZERR_TOOMANYSUBS) {
-
+    owl_function_makemsg("Zephyr: too many subscriptions");
+    return;
   }
 
-  buff=owl_malloc(num*200);
+  buff=owl_malloc(num*500);
+  tmpbuff=owl_malloc(2048);
   strcpy(buff, "");
   for (i=0; i<num; i++) {
     if ((ret = ZGetSubscriptions(&sub, &one)) != ZERR_NONE) {
-      /* deal with error */
+      owl_function_makemsg("Error while getting subscriptions");
+      owl_free(buff);
+      owl_free(tmpbuff);
+      ZFlushSubscriptions();
+      return;
     } else {
-      sprintf(buff, "%s<%s,%s,%s>\n", buff, sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient);
+      sprintf(tmpbuff, "<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, buff);
+      strcpy(buff, tmpbuff);
     }
   }
 
   owl_function_popless_text(buff);
   owl_free(buff);
+  owl_free(tmpbuff);
   ZFlushSubscriptions();
 }
 
