@@ -421,7 +421,7 @@ static int conninitdone_bos(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   char buddies[128]; /* this is the new buddy list */
   char profile[256]; /* this is the new profile */
-  char awaymsg[] = {"blah blah blah Ole! blah blah blah"};
+  /* char awaymsg[] = {"blah blah blah Ole! blah blah blah"}; */
 
   /* Caution: Buddy1 and Buddy2 are real people! (who I don't know) */
   /*  snprintf(buddies, sizeof(buddies), "Buddy1&Buddy2&%s&", priv->ohcaptainmycaptain ? priv->ohcaptainmycaptain : "blah");
@@ -1196,10 +1196,9 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
 static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, struct aim_incomingim_ch1_args *args)
 {
   struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
-  char *tmpstr;
   int clienttype = AIM_CLIENTTYPE_UNKNOWN;
   owl_message *m;
-  char *stripmsg;
+  char *stripmsg, *nz_screenname;
   char realmsg[8192+1] = {""};
   clienttype = aim_fingerprintclient(args->features, args->featureslen);
 
@@ -1240,7 +1239,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   if (args->icbmflags & AIM_IMFLAGS_UNICODE) {
     int i;
     
-    for (i = 0; i < args->msglen; i += 2) {
+    for (i=0; i<args->msglen; i+=2) {
       fu16_t uni;
 
       uni = ((args->msg[i] & 0xff) << 8) | (args->msg[i+1] & 0xff);
@@ -1275,10 +1274,12 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
 
   /* create a message, and put it on the message queue */
   stripmsg=owl_text_htmlstrip(realmsg);
+  nz_screenname=owl_aim_normalize_screenname(userinfo->sn);
   m=owl_malloc(sizeof(owl_message));
-  owl_message_create_incoming_aim(m, userinfo->sn, owl_global_get_aim_screenname(&g), stripmsg);
+  owl_message_create_incoming_aim(m, nz_screenname, owl_global_get_aim_screenname(&g), stripmsg);
   owl_global_messagequeue_addmsg(&g, m);
   owl_free(stripmsg);
+  owl_free(nz_screenname);
 
   return(1);
   
@@ -1402,6 +1403,7 @@ static int faimtest_parse_incoming_im(aim_session_t *sess, aim_frame_t *fr, ...)
 static int faimtest_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   aim_userinfo_t *userinfo;
+  char *nz_screenname;
 
   va_list ap;
   va_start(ap, fr);
@@ -1409,9 +1411,11 @@ static int faimtest_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
 
   /* first check that we're not still ignoreing login messages */
-  if (!owl_timer_is_expired(owl_global_get_aim_login_timer(&g))) return;
-  
-  owl_buddylist_oncoming(owl_global_get_buddylist(&g), userinfo->sn);
+  if (!owl_timer_is_expired(owl_global_get_aim_login_timer(&g))) return(1);
+
+  nz_screenname=owl_aim_normalize_screenname(userinfo->sn);
+  owl_buddylist_oncoming(owl_global_get_buddylist(&g), nz_screenname);
+  owl_free(nz_screenname);
   
   /*
     printf("%ld  %s is now online (flags: %04x = %s%s%s%s%s%s%s%s) (caps = %s = 0x%08lx)\n",
@@ -1434,13 +1438,16 @@ static int faimtest_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...)
 static int faimtest_parse_offgoing(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   aim_userinfo_t *userinfo;
+  char *nz_screenname;
   va_list ap;
   
   va_start(ap, fr);
   userinfo = va_arg(ap, aim_userinfo_t *);
   va_end(ap);
 
-  owl_buddylist_offgoing(owl_global_get_buddylist(&g), userinfo->sn);
+  nz_screenname=owl_aim_normalize_screenname(userinfo->sn);
+  owl_buddylist_offgoing(owl_global_get_buddylist(&g), nz_screenname);
+  owl_free(nz_screenname);
 
   /*
   printf("%ld  %s is now offline (flags: %04x = %s%s%s%s%s%s%s%s) (caps = %s = 0x%08lx)\n",
