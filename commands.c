@@ -1009,7 +1009,7 @@ char *owl_command_aim(int argc, char **argv, char *buff)
     }
     owl_aim_search(argv[2]);
   } else {
-    owl_function_makemsg("unknown subcommand '%s' for aim command");
+    owl_function_makemsg("unknown subcommand '%s' for aim command", argv[1]);
     return(NULL);
   }
   return(NULL);

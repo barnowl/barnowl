@@ -1,6 +1,8 @@
 $Id$
 
 2.1.6-pre-1
+        Fixed a case where doing "aim addbuddy" instead of "addbuddy aim"
+	  would cause a segfault.
 	pexec will now incrimentally display data as it is output
 	  by the child process.  Additionally, commands running under
 	  pexec may now be killed by quitting out of the popless window.
