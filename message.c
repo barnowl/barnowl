@@ -436,15 +436,15 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   /* set things */
   owl_message_set_direction_out(m);
   owl_message_set_type_zephyr(m);
-  m->sender=owl_strdup(ZGetSender());
-  m->class=owl_strdup(owl_zwrite_get_class(&z));
-  m->inst=owl_strdup(owl_zwrite_get_instance(&z));
+  owl_message_set_sender(m, ZGetSender());
+  owl_message_set_class(m, owl_zwrite_get_class(&z));
+  owl_message_set_instance(m, owl_zwrite_get_instance(&z));
   m->recip=long_zuser(owl_zwrite_get_recip_n(&z, 0)); /* only gets the first user, must fix */
-  m->opcode=owl_strdup(owl_zwrite_get_opcode(&z));
+  owl_message_set_opcode(m, owl_zwrite_get_opcode(&z));
   m->realm=owl_strdup(owl_zwrite_get_realm(&z)); /* also a hack, but not here */
   m->zwriteline=owl_strdup(line);
   m->body=owl_strdup(body);
-  m->zsig=owl_strdup(zsig);
+  owl_message_set_zsig(m, zsig);
   
   /* save the hostname */
   ret=gethostname(m->hostname, MAXHOSTNAMELEN);
@@ -498,7 +498,7 @@ void _owl_message_make_text_from_zwriteline_standard(owl_message *m) {
   owl_free(foo);
   owl_fmtext_append_normal(&(m->fmtext), "  (Zsig: ");
 
-  zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m)));
+  zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m))+30);
   owl_message_pretty_zsig(m, zsigbuff);
   owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
   owl_free(zsigbuff);

@@ -95,7 +95,7 @@ void owl_function_make_outgoing_zephyr(char *body, char *zwriteline, char *zsig)
   m=owl_malloc(sizeof(owl_message));
   owl_message_create_from_zwriteline(m, zwriteline, body, zsig);
 
-  /* add it to the global list */
+  /* add it to the global list and current view */
   owl_messagelist_append_element(owl_global_get_msglist(&g), m);
   owl_view_consider_message(owl_global_get_current_view(&g), m);
 
@@ -153,7 +153,6 @@ void owl_function_zwrite_setup(char *line) {
 }
 
 void owl_function_zwrite(char *line) {
-  char buff[1024];
   owl_zwrite z;
   int i, j;
 
@@ -164,7 +163,6 @@ void owl_function_zwrite(char *line) {
 
   /* display the message as an outgoing message in the receive window */
   if (owl_global_is_displayoutgoing(&g) && owl_zwrite_is_personal(&z)) {
-    owl_zwrite_get_recipstr(&z, buff);
     owl_function_make_outgoing_zephyr(owl_editwin_get_text(owl_global_get_typwin(&g)), line, owl_zwrite_get_zsig(&z));
   }
 
