@@ -1,6 +1,9 @@
 $Id$
+
 2.0.12-pre-2
 	Fixed double quoting in smartzpunt
+	Added timestamp to login/logout messages
+	Turned history duplicates off, it's not exactly what we want
 	
 2.0.12-pre-1
 	Fixed replies to loopback messages

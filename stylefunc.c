@@ -291,6 +291,8 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
       owl_fmtext_append_normal(fm, host);
       owl_fmtext_append_normal(fm, " ");
       owl_fmtext_append_normal(fm, tty);
+      owl_fmtext_append_normal(fm, " ");
+      owl_fmtext_append_normal(fm, shorttimestr);
       owl_fmtext_append_normal(fm, "\n");
 
       owl_free(host);
@@ -381,6 +383,8 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
       }
       owl_fmtext_append_normal(fm, " for ");
       owl_fmtext_append_normal(fm, owl_message_get_sender(m));
+      owl_fmtext_append_normal(fm, " ");
+      owl_fmtext_append_normal(fm, shorttimestr);
       owl_fmtext_append_normal(fm, "\n");
     } else if (owl_message_is_direction_in(m)) {
       indent=owl_malloc(strlen(owl_message_get_body(m))+owl_text_num_lines(owl_message_get_body(m))*OWL_MSGTAB+10);
