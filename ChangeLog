@@ -1,5 +1,8 @@
 $Id$
 
+2.1.5-pre-1
+	Added a licence
+	
 2.1.4
 	Normalize and downcase AIM names for logging
 	Fixed a bug where sending a null zsig could cause a crash
