@@ -5,6 +5,7 @@ $Id$
 	Handle MIT Athena OLC zephyrs correctly
 	Updated ktools website / bug address
 	Do ntohs() when printing zephyr port in zephyr info
+	Updated man page
 	
 2.1.6
         Fixed three bugs found by Valgrind.
