@@ -134,7 +134,7 @@ int owl_text_num_lines(char *in)
 /* caller must free the return */
 char *owl_text_htmlstrip(char *in)
 {
-  char *ptr1, *end, *ptr2, *ptr3, *out;
+  char *ptr1, *end, *ptr2, *ptr3, *out, *out2;
 
   out=owl_malloc(strlen(in)+30);
   strcpy(out, "");
@@ -149,7 +149,7 @@ char *owl_text_htmlstrip(char *in)
     /* if none, copy in from here to end and exit */
     if (ptr2==NULL) {
       strcat(out, ptr1);
-      return(out);
+      break;
     }
 
     /* otherwise copy in everything before the open bracket */
@@ -163,7 +163,7 @@ char *owl_text_htmlstrip(char *in)
     /* if there is no close, copy as you are and exit */
     if (!ptr3) {
       strcat(out, ptr2);
-      return(out);
+      break;
     }
 
     /* look for things we know */
@@ -188,7 +188,27 @@ char *owl_text_htmlstrip(char *in)
     strncat(out, ptr2, ptr3-ptr2+1);
     ptr1=ptr3+1;
   }
-  return(out);
+
+  out2=owl_util_substitute(out, "&lt;", "<");
+  owl_free(out);
+  out=owl_util_substitute(out2, "&gt;", ">");
+  owl_free(out2);
+  out2=owl_util_substitute(out, "&amp;", "&");
+  owl_free(out);
+  out=owl_util_substitute(out2, "&quot;", "\"");
+  owl_free(out2);
+  out2=owl_util_substitute(out, "&nbsp;", " ");
+  owl_free(out);
+  out=owl_util_substitute(out2, "&ensp;", "  ");
+  owl_free(out2);
+  out2=owl_util_substitute(out, "&emsp;", "   ");
+  owl_free(out);
+  out=owl_util_substitute(out2, "&endash;", "--");
+  owl_free(out2);
+  out2=owl_util_substitute(out, "&emdash;", "---");
+  owl_free(out);
+
+  return(out2);
 }
 
 /* caller must free the return */

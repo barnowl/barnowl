@@ -25,6 +25,8 @@ $Id$
 	Wordwrap incoming AIM messages.
 	Fixed bug causing buddies not to be added to buddy list during
 	  ingorelogin timer
+	Translate &lt; &gt; &amp; &quot; &nbsp; &ensp, &emsp, &endash and
+	   &emdash
 
 2.0.4-pre-1
 	Make command line option -n actualy work
