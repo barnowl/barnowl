@@ -145,8 +145,8 @@ static owl_variable variables_to_init[] = {
   OWLVAR_BOOL( "ignorelogins" /* %OwlVarStub */, 0,
 	       "Enable printing of login notifications",
 	       "When this is enabled, Owl will print login and logout notifications\n"
-	       "and AIM, zephyr, or other protocols.  If disabled Owl will not print\n"
-	       "login or logout notifications\n"),
+	       "for AIM, zephyr, or other protocols.  If disabled Owl will not print\n"
+	       "login or logout notifications.\n"),
 
   OWLVAR_ENUM_FULL( "disable-ctrl-d" /* %OwlVarStub:lockout_ctrld */, 1,
 		    "don't send zephyrs on C-d",
