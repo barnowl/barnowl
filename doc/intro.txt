@@ -335,8 +335,7 @@ function owl::command().  i.e.
 
      owl::command("set zsigproc \"/mit/kretch/bin/getzsig foo\"");
 
-will set the owl variable zsigproc.  Note that commands will currently
-be executed in order after the called configuration subroutine exits.
+will set the owl variable zsigproc.  
 
 Subroutines created with the names below will be executed at the
 specified times:
@@ -345,18 +344,16 @@ specified times:
     ---------------    ----------
     owl::startup()     run when owl first starts
     owl::shutdown()    run when owl exits
-    owl::format_msg()  run when a new message arrives, the return
-                          value is used to display the message on the
-                          screen
+    owl::format_msg()  run to format messages when using the perl style.
+		       The return value is used to display the message on the
+                       screen. 
     owl::receive_msg() run when a message is received, and after
 		       it has been added to the message list
 
-
-The following variables will be set each time a message is recevied:
-
-    $owl::class, $owl::instance, $owl::recipient,
-    $owl::sender, $owl::opcode, $owl::zsig,
-    $owl::msg, $owl::time, $owl::host, @owl::fields, $owl::id
+Both owl::format_msg and owl::receive_msg are passed
+perl owl::Message objects which contain attributes of the message.
+Please see the advanced.txt file for further documentation
+of the Perl extension API.
 
 The "appendtosepbar" variable may be set in owl::format_msg()
 to set text to be appended to sepbar that separates the received
@@ -366,6 +363,97 @@ message list from the edit window.
 ==========================================
 Section 4: KEYBINDINGS AND COMMAND ALIASES
 ==========================================
+
+Aliases
+-------
+
+Command aliases allow users to create shortcuts
+for commonly used commands.  Aliases can be created wit
+the alias command:
+
+    alias NAME VALUE
+
+For example:
+
+    alias zw zwrite
+
+Will make "zw" an alias for the zwrite command.  As such, "zw aphacker"
+will be expanded to "zwrite aphacker".  If the value of an
+alias is multiple words, use of the alias will result in the alias
+command name being replaced by the sequence of words.
+Any arguments following the alias name will be appended
+after the expanded alias value.  For example:
+
+   alias vs view -s
+
+will result in "vs standard" being expanded to "view -s standard".
+There is not yet any way to allow an alias to take arguments
+that will be inserted in the middle of the expansion.
+
+
+Separating Commands
+-------------------
+
+Multiple commands can be grouped together with parentheses
+and then separated by semicolons.  For example:
+
+   ( smartnarrow ; delete view ; expunge ; view all )
+
+Will result in the four commands being executed
+in sequence.  This is particularly useful with key bindings
+and coommands.  For example:
+
+   alias sn-delete ( smartnarrow ; delete view )
+
+will create an "sn-delete" alias that will smartnarrow
+to a view and them mark the view for deletion.
+
+Using "show commands" will list all existing aliases.
+
+
+Key Bindings
+------------
+
+New key bindings may be created with the "bindkey" command.  Each key
+binding is associated with a particular keymap which is applicable in
+a particular context/situation.  When the key associated with a
+binding is pressed in the right context, it will result in an owl
+command being run.  The syntax is:
+
+   bindkey <keymap> <keyseq> command <command>
+
+For example:
+
+   bindkey recv C-k command delete 
+
+will bind Control-k to the delete command, but only in the 
+recv window context.
+
+Some keymaps inherit their bindings from more 
+general keymaps.  The valid keymaps are:
+
+  - global	      - owl-wide defaults (apply everywhere)
+    |-edit	      - all text editing and command windows
+    |  |-editmulti    - multi-line text editing windows
+    |  |-editline     - single-line editing and command windows
+    |  |-editresponse - single-line responses to questions
+    |-popless	      - scrolling pop-up windows
+    |-recv	      - the main message list window 
+			where received messages are displayed
+
+The existing key bindings can be shown with "show keymaps".
+The use of "show commands" will list all available commands.
+Note that not all commands may be used in all contexts.
+
+Key sequences may be surrounded by quotes and include 
+a sequence of keys that must be pressed in order
+to execute the command.  For example:
+
+   bindkey recv "C-s v" command view -s vt
+
+will result in "Control-s" followed by "v" in the recv window
+causing the command "view -s vt" to be run.
+
 
 
 ==============================

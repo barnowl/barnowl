@@ -4,31 +4,20 @@
 
 
 =========================
-Section X: CUSTOM FILTERS
+Section X: COMMAND ALISES
 =========================
 
-
-==========================
-Section X: THE CONFIG FILE
-==========================
+[see Section 4 in intro.txt, which may want to be moved here]
 
 =======================
 Section X: KEY BINDINGS
 =======================
 
+[see Section 4 in intro.txt, which may want to be moved here]
 
 =========================
-Section X: COMMAND ALISES
+Section X: CUSTOM FILTERS
 =========================
-
-
-=================
-Section X: STYLES
-=================
-
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 
 For example, the following
 command will create a filter called 'mail' that maches any messages
@@ -68,20 +57,14 @@ will overwrite the existing filter.  This can be a useful way to
 override the built-in filters.
 
 
-==========================
-Section 6: THE CONFIG FILE
-==========================
+=========================================
+Section 6: THE PERL EXTENSION CONFIG FILE
+=========================================
 
-*** WARNING: This interface may change substantially in the near future ***
+*** WARNING: This interface is still evolving and may change over time ***
 
-This file is interpreted by the perl interpreter.
-If you wish to execute an owl command use the
-function owl::command().  i.e.
-
-     owl::command("set zsigproc \"/mit/kretch/bin/getzsig foo\"");
-
-will set the owl variable zsigproc.  Note that commands will currently
-be executed in order after the called configuration subroutine exits.
+The ~/.owlconf file is interpreted by the perl interpreter. 
+You may specify an alternate file by running owl with "owl -c <configfile>".
 
 Subroutines created with the names below will be executed at the
 specified times:
@@ -90,19 +73,129 @@ specified times:
     ---------------    ----------
     owl::startup()     run when owl first starts
     owl::shutdown()    run when owl exits
-    owl::format_msg()  run when a new message arrives, the return
-                          value is used to display the message on the
-                          screen
+    owl::format_msg()  run to format messages when using the perl style.
+		       The return value is used to display the message on the
+                       screen. 
     owl::receive_msg() run when a message is received, and after
 		       it has been added to the message list
 
+It is possible to call back into owl and execute owl commands
+from within these functions.  This is particularly useful
+in owl::startup for setting up your initial owl environment.
+If you wish to execute an owl command use the function owl::command().  i.e.
 
-The following variables will be set each time a message is recevied:
+     owl::command('set zsigproc "/mit/kretch/bin/getzsig foo"');
 
-    $owl::class, $owl::instance, $owl::recipient,
-    $owl::sender, $owl::opcode, $owl::zsig,
-    $owl::msg, $owl::time, $owl::host, @owl::fields, $owl::id
+will set the owl variable zsigproc to 
+the value "/mit/kretch/bin/getzsig foo".
+Note that you will need to watch out for perl quoting issues.
+[It may be worth talking about them a little here...]
 
-The "appendtosepbar" variable may be set in owl::format_msg()
-to set text to be appended to sepbar that separates the received
-message list from the edit window.
+Both owl::format_msg and owl::receive_msg are passed perl owl::Message
+objects which have methods for accessing the attributes of the message.  
+
+(Caveat: Note that these owl::Message objects are currently only
+	 snapshots of the message contents that are created as needed.  As
+	 such, there could be multiple owl::Message objects for the same owl
+	 message.  Use the msgid if you want to uniquely identify individual
+	 messages.)
+
+All owl::Message objects contain the following methods:
+
+    type      - returns the type of the message ("zephyr", "aim", "admin")
+    direction - returns "in" or "out" for incoming or outgoing messages
+    time      - returns a string of the time when the message showed up
+    id	      - returns a unique id for the message
+    body      - returns the body text of the message
+    sender    - returns the sender of the message
+    recipient - returns the recipient of the message
+    login     - returns either "login", "logout", or "none"
+    is_login  - returns true if this is a login message
+    is_logout - returns true if this is a logout message
+    is_loginout - returns true if this is a login or logout message
+    is_incoming - returns true if this is an incoming message
+    is_outgoing - returns true if this is an outgoing message
+    is_deleted  - returns true if this message is marked for deletion
+    is_<type>	- returns true if the message is of type <type> (eg, is_zephyr)
+    delete	- marks the message for deletion
+    undelete	- unmarks the message from deletion
+    pretty_sender - returns a cleaned up version of the sender
+
+The following owl::Message methods are only applicable to
+various message types:
+
+    header	- returns the admin message header line  (admin)
+    is_personal - returns true if this is a personal message (aim,zephyr)
+    is_private  - returns true if this was a private message (zephyr)
+    login_tty	- returns the login tty for login messages (zephyr)
+    login_host  - returns the login host for login messages (zephyr)
+    zwriteline  - returns the zwrite command line for outgoing zephyrs (zephyr)
+    zsig	- returns the zsig (zephyr)
+    is_ping	- returns true if this was a zephyr ping (zephyr)
+    is_mail	- returns true if this was a new mail notification (zephyr)
+    class	- returns the zephyr class (zephyr)
+    instance	- returns the zephyr instance (zephyr)
+    realm	- returns the zephyr realm (zephyr)
+    opcode	- returns the zephyr opcode (zephyr)
+    hostname	- returns the zephyr sender's hostname (zephyr)
+    fields	- returns the zephyr fields as a perl list (zephyr)
+    auth	- returns whether this zephyr was authentic (zephyr)
+
+An example formatting function that formats messages so that they only
+list the direction, sender, and time would be:
+
+    sub owl::format_msg {
+	my ($m) = @_;    # assigns the message object passed
+			 # to this function to $m
+	return sprintf "[direction=%s] from sender %s at %s\n",
+		       $m->direction,
+		       $m->sender,
+		       $m->time;
+    }
+
+In the above, $m is the owl::Message object and 
+its methods are called with $m->METHODNAME.
+
+An example receiver function that tags all zephyr pings for 
+deletion would be:
+
+    sub owl::receive_msg {
+	my ($m) = @_;    # assigns the message object passed
+			 # to this function to $m
+	if ($m->is_zephyr and $m->is_ping) {
+	   $m->delete();
+	}
+    }
+
+
+=================
+Section X: STYLES
+=================
+
+
+
+
+
+========================================
+Section 7: PERL COMMANDS FROM WITHIN OWL
+========================================
+
+Perl code may be executed from within owl with:
+
+  perl <perlcode>
+
+If you use pperl instead of perl, the return value
+of the perl command will be displayed in a pop-up window.
+This is particularly useful within key bindings 
+and aliases.  For example:
+
+  alias finger pperl $x=owl::getcurmsg()->hostname; `finger \@$x`;
+
+Will cause the "finger" command to be used to finger at the host
+where the current message came from.  You can then bind this 
+to the "f" key with:
+
+   bindkey recv f command finger
+
+See the section above for detailss of commands and functions
+that are available from within the perl interpreter.
