@@ -18,10 +18,17 @@ foreach $file (@ARGV) {
 	    && !/^#/
 	    && !/^static/
 	    && !/^system/
-	    && !/\/\*/)
-	{s/\s+\{/\;/; s/\)[ \t]*$/\)\;/; print "extern "; print;}
+	    && !/^XS/
+	    && !/\/\*/) {
+	    s/\s+\{/\;/;
+	    s/\)[ \t]*$/\)\;/;
+	    print "extern ";
+	    print;
+	}
 	    
     }
     close(FILE);
     print "\n";
 }
+
+
