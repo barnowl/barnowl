@@ -226,12 +226,13 @@ int main(int argc, char **argv, char **env) {
     exit(1);
   }
 
-  /* if the config defaults a formatting function, add 'perl' as a style */
+  /* if the config defines a formatting function, add 'perl' as a style */
   if (owl_global_is_config_format(&g)) {
     owl_function_debugmsg("Found perl formatting");
     s=owl_malloc(sizeof(owl_style));
     owl_style_create_perl(s, "perl", "owl::format_msg");
     owl_global_add_style(&g, s);
+    owl_global_set_default_style(&g, "perl");
   }
 
   /* execute the startup function in the configfile */
@@ -267,14 +268,17 @@ int main(int argc, char **argv, char **env) {
     owl_zephyr_zlog_in();
   }
 
-  /* set the default style, based on userclue and presence of a
-   *  formatting function */
+  /* set the startup and default style, based on userclue and presence of a
+   * formatting function */
   if (owl_global_is_config_format(&g)) {
     owl_view_set_style(owl_global_get_current_view(&g), owl_global_get_style_by_name(&g, "perl"));
+    owl_global_set_default_style(&g, "perl");
   } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
     owl_view_set_style(owl_global_get_current_view(&g), owl_global_get_style_by_name(&g, "default"));
+    owl_global_set_default_style(&g, "default");
   } else {
     owl_view_set_style(owl_global_get_current_view(&g), owl_global_get_style_by_name(&g, "basic"));
+    owl_global_set_default_style(&g, "basic");
   }
 
   /* welcome message */
