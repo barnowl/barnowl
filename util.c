@@ -493,6 +493,25 @@ char *owl_util_color_to_string(int color) {
   return("Unknown color");
 }
 
+char *owl_util_get_default_tty() {
+  /* call must free the return */
+  char *out;
+
+  if (getenv("DISPLAY")) {
+    out=owl_strdup(getenv("DISPLAY"));
+  } else if (ttyname(fileno(stdout))) {
+    out=strdup(ttyname(fileno(stdout)));
+    if (!strncmp(out, "/dev/", 5)) {
+      owl_free(out);
+      out=strdup(ttyname(fileno(stdout)+5));
+    }
+  } else {
+    out=strdup("unknown");
+  }
+  return(out);
+}
+
+
 void owl_hack_animate() {
   owl_messagelist *ml;
   owl_message *m;

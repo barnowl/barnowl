@@ -131,8 +131,12 @@ int main(int argc, char **argv, char **env) {
   owl_global_init(&g);
   if (debug) owl_global_set_debug_on(&g);
   owl_global_set_startupargs(&g, argcsave, argvsave);
-  owl_global_set_tty(&g, tty);
   owl_context_set_readconfig(owl_global_get_context(&g));
+  if (tty) {
+    owl_global_set_tty(&g, tty);
+  } else {
+    owl_global_set_tty(&g, owl_util_get_default_tty());
+  }
 
   /* setup the default filters */
   f=malloc(sizeof(owl_filter));

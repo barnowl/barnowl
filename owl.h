@@ -367,7 +367,6 @@ typedef struct _owl_global {
   int recwinlines;
   int typwinactive;
   char thishost[LINE];
-  char thistty[LINE];
   char homedir[LINE];
   int direction;
   int zaway;

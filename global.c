@@ -62,6 +62,7 @@ void owl_global_init(owl_global *g) {
   g->starttime=time(NULL); /* assumes we call init only a start time */
   strcpy(g->buffercommand, "");
 
+  
   owl_global_set_config_format(g, 0);
   owl_global_set_userclue(g, OWL_USERCLUE_NONE);
   owl_global_set_no_have_config(g);
@@ -380,28 +381,6 @@ void owl_global_resize(owl_global *g, int x, int y) {
   g->resizepending=0;
 }
 
-/* tty (not fully implemented yet) */
-
-void owl_global_set_tty_old(owl_global *g, char *tty) {
-  if (tty) {
-    strcpy(g->thistty, tty);
-  } else if (getenv("DISPLAY")) {
-    strcpy(g->thistty, getenv("DISPLAY"));
-  } else if (ttyname(fileno(stdout))) {
-    strcpy(g->thistty, ttyname(fileno(stdout)));
-    if (!strncmp(g->thistty, "/dev/", 5)) {
-      strcpy(g->thistty, g->thistty+5);
-    }
-  } else {
-    strcpy(g->thistty, "unknown");
-  }
-    
-#ifdef HAVE_LIBZEPHYR_ZINITLOCATIONINFO
-  ZInitLocationInfo(g->thishost, g->thistty); 
-#endif
-}
-
-
 /* debug */
 
 int owl_global_is_debug_fast(owl_global *g) {
@@ -426,6 +405,10 @@ void owl_global_get_runtime_string(owl_global *g, char *buff) {
 
   /* print something nicer later */   
   sprintf(buff, "%i seconds", (int) diff);
+}
+
+char *owl_global_get_hostname(owl_global *g) {
+  return(g->thishost);
 }
 
 /* userclue */
