@@ -227,6 +227,12 @@ void owl_aim_logout(void)
   owl_global_set_no_doaimevents(&g);
 }
 
+void owl_aim_logged_out()
+{
+  owl_function_adminmsg("", "You have been logged out of AIM");
+  owl_aim_logout();
+}
+
 void owl_aim_login_error(char *message)
 {
   if (message) {
@@ -262,17 +268,17 @@ void owl_aim_delbuddy(char *name)
   owl_buddylist_offgoing(owl_global_get_buddylist(&g), name);
 }
 
-#if 0
-void owl_aim_get_idle(char *screenname)
+
+int owl_aim_set_awaymsg(char *msg)
 {
-  /*
-  aim_getinfo(owl_global_get_aimsess(&g),
-	      aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
-	      screenname,
-	      AIM_GETINFO_GENERALINFO);
-  */
+  /* there is a max away message lentgh we should check against */
+
+  aim_bos_setprofile(owl_global_get_aimsess(&g),
+		     owl_global_get_bosconn(&g),
+		     NULL, NULL, 0, "us-ascii", msg, 
+		     strlen(msg), 0);
+  return(0);
 }
-#endif
 
 void owl_aim_chat_join(char *chatroom)
 {
@@ -326,8 +332,7 @@ int owl_aim_process_events() {
   }
 
   if (selstat == -1) {
-    owl_function_debugmsg("Error in select");
-    /* error */
+    owl_aim_logged_out();
   } else if (selstat == 0) {
     /* no events pending */
   } else if (selstat == 1) { /* outgoing data pending */

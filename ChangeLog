@@ -4,6 +4,7 @@ $Id$
 	Allow 'hostname' in filters.
 	Fixed bug in reporting when no one is subbed to a class
 	Added an extral newline in logging incoming zephyrs
+	An admin message is displayed when you are logged out of AIM
 	
 2.0.9
 	Added the 'fancylines' variable.
