@@ -442,7 +442,7 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance) {
 static pid_t zephyrpipe_pid = 0;
 
 /* Open a pipe to zwrite */
-FILE *GetZephyrPipe(char *class, char *instance, ZWRITEOPTIONS *zoptions) {
+static FILE *GetZephyrPipe(char *class, char *instance, ZWRITEOPTIONS *zoptions) {
   int fildes[2];
   pid_t pid;
   FILE *result;
@@ -520,7 +520,7 @@ void block_to_ascii(char *output, FILE *outfile) {
 
 /* Encrypt stdin, with prompt if isatty, and send to stdout, or to zwrite
    if zephyr is set. */
-int do_encrypt(char *keystring, int zephyr, char *class, char *instance, ZWRITEOPTIONS *zoptions, char* keyfile) {
+static int do_encrypt(char *keystring, int zephyr, char *class, char *instance, ZWRITEOPTIONS *zoptions, char* keyfile) {
   des_cblock key;
   des_key_schedule schedule;
   char input[8], output[8];
