@@ -1,11 +1,13 @@
 $Id$
 
-2.0.8-pre-3
+2.0.8-pre-3   
         Make sure that a newline is always at the end of messages
 	        returned by perl style formatting functions.
 	Add owl::login and owl::auth to legacy variables populated for format_msg.
 	Additions to intro.txt and advanced.txt documents.  (Still in progress.)
-
+	Add base methods for login_host and login_tty 
+	        and others that return undef.
+	
 2.0.8-pre-2
 	New API for perl message formatting functions.  
 	        Legacy variables are still supported for owl::format_msg

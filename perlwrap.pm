@@ -61,6 +61,8 @@ sub is_generic  { return (shift->{"type"} eq "generic"); }
 # These are overridden by appropriate message types
 sub is_ping     { return 0; }
 sub is_mail     { return 0; }
+sub is_personal { return undef; }
+sub is_private  { return undef; }
 sub class       { return undef; }
 sub instance    { return undef; }
 sub realm       { return undef; }
@@ -72,6 +74,8 @@ sub auth        { return undef; }
 sub fields      { return undef; }
 sub zsig        { return undef; }
 sub zwriteline  { return undef; }
+sub login_host  { return undef; }
+sub login_tty   { return undef; }
 
 sub pretty_sender { return shift->sender; }
 
@@ -123,6 +127,7 @@ sub legacy_populate_global {
     $owl::time       = $m->time      ;
     $owl::host       = $m->host      ;
     $owl::login      = $m->login     ;
+    $owl::auth       = $m->auth      ;
     if ($m->fields) {
 	@owl::fields = @{$m->fields};
 	@main::fields = @{$m->fields};
