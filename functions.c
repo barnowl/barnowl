@@ -1224,17 +1224,11 @@ void owl_function_info()
   sprintf(buff, "%i", owl_message_get_id(m));
   owl_fmtext_append_normal(&fm, buff);
   owl_fmtext_append_normal(&fm, "\n");
-  if (owl_message_is_type_zephyr(m)) {
-    owl_fmtext_append_normal(&fm, "Type      : zephyr\n");
-  } else if (owl_message_is_type_admin(m)) {
-    owl_fmtext_append_normal(&fm, "Type      : admin\n");
-  } else if (owl_message_is_type_generic(m)) {
-    owl_fmtext_append_normal(&fm, "Type      : generic\n");
-  } else if (owl_message_is_type_aim(m)) {
-    owl_fmtext_append_normal(&fm, "Type      : aim\n");
-  } else {
-    owl_fmtext_append_normal(&fm, "Type      : unknown\n");
-  }
+
+  owl_fmtext_append_normal(&fm, "Type      : ");
+  owl_fmtext_append_bold(&fm, owl_message_type_to_string(m));
+  owl_fmtext_append_normal(&fm, "\n");
+
   if (owl_message_is_direction_in(m)) {
     owl_fmtext_append_normal(&fm, "Direction : in\n");
   } else if (owl_message_is_direction_out(m)) {
@@ -1244,33 +1238,41 @@ void owl_function_info()
   } else {
     owl_fmtext_append_normal(&fm, "Direction : unknown\n");
   }
+
   owl_fmtext_append_normal(&fm, "Time      : ");
   owl_fmtext_append_normal(&fm, owl_message_get_timestr(m));
   owl_fmtext_append_normal(&fm, "\n");
 
-  owl_fmtext_append_normal(&fm, "Sender    : ");
-  owl_fmtext_append_normal(&fm, owl_message_get_sender(m));
-  owl_fmtext_append_normal(&fm, "\n");
-
-  owl_fmtext_append_normal(&fm, "Recipient : ");
-  owl_fmtext_append_normal(&fm, owl_message_get_recipient(m));
-  owl_fmtext_append_normal(&fm, "\n");
-
-
+  if (!owl_message_is_type_admin(m)) {
+    owl_fmtext_append_normal(&fm, "Sender    : ");
+    owl_fmtext_append_normal(&fm, owl_message_get_sender(m));
+    owl_fmtext_append_normal(&fm, "\n");
+    
+    owl_fmtext_append_normal(&fm, "Recipient : ");
+    owl_fmtext_append_normal(&fm, owl_message_get_recipient(m));
+    owl_fmtext_append_normal(&fm, "\n");
+  }
+    
   if (owl_message_is_type_zephyr(m)) {
     owl_fmtext_append_bold(&fm, "  Zephyr Specific Info\n");
     
+    owl_fmtext_append_normal(&fm, "Class     : ");
+    owl_fmtext_append_normal(&fm, owl_message_get_class(m));
+    owl_fmtext_append_normal(&fm, "\n");
+    owl_fmtext_append_normal(&fm, "Instance  : ");
+    owl_fmtext_append_normal(&fm, owl_message_get_instance(m));
+    owl_fmtext_append_normal(&fm, "\n");
+    owl_fmtext_append_normal(&fm, "Opcode    : ");
+    owl_fmtext_append_normal(&fm, owl_message_get_opcode(m));
+    owl_fmtext_append_normal(&fm, "\n");
+    
+    owl_fmtext_append_normal(&fm, "Time      : ");
+    owl_fmtext_append_normal(&fm, owl_message_get_timestr(m));
+    owl_fmtext_append_normal(&fm, "\n");
+
     if (owl_message_is_direction_in(m)) {
       n=owl_message_get_notice(m);
-      owl_fmtext_append_normal(&fm, "Class     : ");
-      owl_fmtext_append_normal(&fm, owl_message_get_class(m));
-      owl_fmtext_append_normal(&fm, "\n");
-      owl_fmtext_append_normal(&fm, "Instance  : ");
-      owl_fmtext_append_normal(&fm, owl_message_get_instance(m));
-      owl_fmtext_append_normal(&fm, "\n");
-      owl_fmtext_append_normal(&fm, "Opcode    : ");
-      owl_fmtext_append_normal(&fm, owl_message_get_opcode(m));
-      owl_fmtext_append_normal(&fm, "\n");
+
       owl_fmtext_append_normal(&fm, "Kind      : ");
       if (n->z_kind==UNSAFE) {
 	owl_fmtext_append_normal(&fm, "UNSAFE\n");
@@ -1293,10 +1295,6 @@ void owl_function_info()
       } else {
 	owl_fmtext_append_normal(&fm, "ILLEGAL VALUE\n");
       }
-
-      owl_fmtext_append_normal(&fm, "Time      : ");
-      owl_fmtext_append_normal(&fm, owl_message_get_timestr(m));
-      owl_fmtext_append_normal(&fm, "\n");
       owl_fmtext_append_normal(&fm, "Host      : ");
       owl_fmtext_append_normal(&fm, owl_message_get_hostname(m));
       owl_fmtext_append_normal(&fm, "\n");
@@ -1354,7 +1352,7 @@ void owl_function_info()
   }
 
   if (owl_message_is_type_aim(m)) {
-
+    owl_fmtext_append_bold(&fm, "  AIM Specific Info\n");    
   }
   
   owl_function_popless_fmtext(&fm);

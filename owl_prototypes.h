@@ -581,6 +581,7 @@ extern int owl_message_is_type_admin(owl_message *m);
 extern int owl_message_is_type_zephyr(owl_message *m);
 extern int owl_message_is_type_aim(owl_message *m);
 extern int owl_message_is_type_generic(owl_message *m);
+extern char *owl_message_type_to_string(owl_message *m);
 extern char *owl_message_get_text(owl_message *m);
 extern void owl_message_set_direction_in(owl_message *m);
 extern void owl_message_set_direction_out(owl_message *m);

@@ -242,6 +242,19 @@ int owl_message_is_type_generic(owl_message *m)
   return(0);
 }
 
+char *owl_message_type_to_string(owl_message *m)
+{
+  if (m->type==OWL_MESSAGE_TYPE_ADMIN) return("admin");
+  if (m->type==OWL_MESSAGE_TYPE_GENERIC) return("generic");
+  if (m->type==OWL_MESSAGE_TYPE_ZEPHYR) return("zephyr");
+  if (m->type==OWL_MESSAGE_TYPE_AIM) return("aim");
+  if (m->type==OWL_MESSAGE_TYPE_JABBER) return("jabber");
+  if (m->type==OWL_MESSAGE_TYPE_ICQ) return("icq");
+  if (m->type==OWL_MESSAGE_TYPE_MSN) return("msn");
+  return("unknown");
+}
+
+
 char *owl_message_get_text(owl_message *m)
 {
   return(owl_fmtext_get_text(&(m->fmtext)));
