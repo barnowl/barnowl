@@ -33,6 +33,10 @@ static int in_regtest = 0;
         { name, OWL_VARIABLE_STRING, default, 0, "<string>", summary,description, NULL, \
         NULL, NULL, NULL, NULL, NULL, NULL }
 
+#define OWLVAR_STRING_FULL(name,default,summary,description,validate,set,get) \
+        { name, OWL_VARIABLE_STRING, default, 0, "<string>", summary,description, NULL, \
+        validate, set, NULL, get, NULL, NULL }
+
 /* enums are really integers, but where validset is a comma-separated
  * list of strings which can be specified.  The tokens, starting at 0,
  * correspond to the values that may be specified. */
@@ -167,6 +171,9 @@ static owl_variable variables_to_init[] = {
 	         "home view to switch to after 'X' and 'V'", 
 		 "SEE ALSO: view, filter\n" ),
 
+  OWLVAR_STRING_FULL( "tty" /* %OwlVarStub */, "", "tty name for zephyr location", "",
+		      NULL, owl_variable_tty_set, NULL),
+  
   OWLVAR_INT(    "edit:maxfillcols" /* %OwlVarStub:edit_maxfillcols */, 70,
 	         "maximum number of columns for M-q to fill text to",
 		 "This specifies the maximum number of columns for M-q\n"
@@ -300,6 +307,11 @@ int owl_variable_disable_ctrl_d_set(owl_variable *v, void *newval) {
     }
   }  
   return owl_variable_int_set_default(v, newval);  
+}
+
+int owl_variable_tty_set(owl_variable *v, void *newval) {
+  owl_function_makemsg("This is a test.");
+  return(owl_variable_string_set_default(v, newval));
 }
 
 

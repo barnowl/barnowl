@@ -382,7 +382,7 @@ void owl_global_resize(owl_global *g, int x, int y) {
 
 /* tty (not fully implemented yet) */
 
-void owl_global_set_tty(owl_global *g, char *tty) {
+void owl_global_set_tty_old(owl_global *g, char *tty) {
   if (tty) {
     strcpy(g->thistty, tty);
   } else if (getenv("DISPLAY")) {

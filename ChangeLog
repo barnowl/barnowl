@@ -17,6 +17,7 @@ $Id$
              long_zuser
 	Moved zsig generation to the zwrite object
 	Print the zsig used for outgoing messages
+	Started changes to tty variables *** NOT DONE ***
 	
 1.2.2
 	Added the 'search' command.

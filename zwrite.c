@@ -217,7 +217,7 @@ void owl_zwrite_send_message(owl_zwrite *z, char *msg) {
     }
   } else {
     sprintf(to, "@%s", z->realm);
-    send_zephyr(z->opcode, NULL, z->class, z->inst, to, msg);
+    send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, msg);
   }
 }
 
