@@ -45,12 +45,14 @@ owl_cmd commands_to_init[]
   = {
   OWLCMD_ARGS("zlog", owl_command_zlog, OWL_CTX_ANY,
 	      "send a login or logout notification",
-	      "zlog in\nzlog out",
+	      "zlog in [tty]\nzlog out",
 	      "zlog in will send a login notification, zlog out will send a\n"
 	      "logout notification.  By default a login notification is sent\n"
 	      "when owl is started and a logout notification is sent when owl\n"
 	      "is exited.  This behavior can be changed with the 'startuplogin'\n"
-	      "and 'shudownlogout' variables.\n"),
+	      "and 'shudownlogout' variables.  If a tty is specified for zlog in\n"
+	      "then the owl variable 'tty' will be set to that string, causing\n"
+	      "it to be used as the zephyr location tty.\n"),
 
   OWLCMD_VOID("quit", owl_command_quit, OWL_CTX_ANY,
 	      "exit owl",
@@ -1061,19 +1063,26 @@ char *owl_command_ktest(int argc, char **argv, char *buff) {
 }
 
 char *owl_command_zlog(int argc, char **argv, char *buff) {
-  if (argc != 2) {
+  if ((argc<2) || (argc>3)) {
     owl_function_makemsg("Wrong number of arguments for zlog command");
-    return NULL;
+    return(NULL);
   }
 
   if (!strcmp(argv[1], "in")) {
+    if (argc>2) {
+      owl_global_set_tty(&g, argv[2]);
+    }
     owl_function_zlog_in();
   } else if (!strcmp(argv[1], "out")) {
+    if (argc!=2) {
+      owl_function_makemsg("Wrong number of arguments for zlog command");
+      return(NULL);
+    }
     owl_function_zlog_out();
   } else {
     owl_function_makemsg("Invalid subcommand for zlog");
   }
-  return NULL;
+  return(NULL);
 }
 
 
