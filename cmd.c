@@ -106,9 +106,9 @@ int owl_cmd_create_alias(owl_cmd *cmd, char *name, char *aliased_to) {
   memset(cmd, 0, sizeof(owl_cmd));
   cmd->name = owl_strdup(name);
   cmd->cmd_aliased_to = owl_strdup(aliased_to);
-  cmd->summary = owl_malloc(strlen(name)+strlen(OWL_CMD_ALIAS_SUMMARY_PREFIX)+2);
+  cmd->summary = owl_malloc(strlen(aliased_to)+strlen(OWL_CMD_ALIAS_SUMMARY_PREFIX)+2);
   strcpy(cmd->summary, OWL_CMD_ALIAS_SUMMARY_PREFIX);
-  strcat(cmd->summary, name);
+  strcat(cmd->summary, aliased_to);
   return(0);
 }
 

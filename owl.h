@@ -95,7 +95,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 
 #define OWL_INCLUDE_REG_TESTS  1  /* whether to build in regression tests */
 
-#define OWL_CMD_ALIAS_SUMMARY_PREFIX "command alias to "
+#define OWL_CMD_ALIAS_SUMMARY_PREFIX "command alias to: "
 
 #ifndef CTRL
 #define CTRL(key) ((key)&037)
