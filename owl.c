@@ -204,7 +204,7 @@ int main(int argc, char **argv, char **env) {
 
   /* load login subs */
   if (owl_global_is_loginsubs(&g)) {
-    loadloginsubs(NULL);
+    owl_function_loadloginsubs(NULL);
   }
 
   /* zlog in if we need to */

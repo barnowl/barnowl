@@ -365,6 +365,15 @@ owl_cmd commands_to_init[]
 	      "load subscriptions from a file",
 	      "load-subs <file>\n", ""),
 
+  OWLCMD_ARGS("loadsubs", owl_command_loadsubs, OWL_CTX_ANY,
+	      "load subscriptions from a file",
+	      "loadsubs <file>\n", ""),
+
+  OWLCMD_ARGS("loadloginsubs", owl_command_loadloginsubs, OWL_CTX_ANY,
+	      "load login subscriptions from a file",
+	      "loadloginsubs <file>\n",
+	      "The file should contain a list of usernames, one per line."),
+
   OWLCMD_VOID("about", owl_command_about, OWL_CTX_INTERACTIVE,
 	      "print information about owl", "", ""),
 
@@ -932,9 +941,22 @@ char *owl_command_loadsubs(int argc, char **argv, char *buff) {
     owl_function_loadsubs(NULL);
   } else {
     owl_function_makemsg("Wrong number of arguments for load-subs.");
-    return NULL;
+    return(NULL);
   }
-  return NULL;
+  return(NULL);
+}
+
+
+char *owl_command_loadloginsubs(int argc, char **argv, char *buff) {
+  if (argc == 2) {
+    owl_function_loadloginsubs(argv[1]);
+  } else if (argc == 1) {
+    owl_function_loadloginsubs(NULL);
+  } else {
+    owl_function_makemsg("Wrong number of arguments for load-subs.");
+    return(NULL);
+  }
+  return(NULL);
 }
 
 void owl_command_suspend() {

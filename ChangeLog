@@ -22,6 +22,10 @@ $Id$
 	  the file cannot be opened.
 	Renamed old instances of zsig_exec in the code to zsigproc
 	Don't print the stderr from zsigproc
+	Added a 'loadloginsubs' command to load login subscriptions from a
+	  file
+	Added a 'loadsubs' command to eventually phase out the 'load-subs'
+	  command
 
 1.2.8
 	Class pings are displayed differently now

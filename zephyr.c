@@ -80,7 +80,7 @@ int owl_zephyr_loadsubs(char *filename) {
   return(ret);
 }
 
-int loadloginsubs(char *filename) {
+int owl_zephyr_loadloginsubs(char *filename) {
   FILE *file;
   ZSubscription_t subs[3001];
   char subsfile[1024], buffer[1024];
@@ -121,7 +121,7 @@ int loadloginsubs(char *filename) {
   }
 
   /* sub with defaults */
-  if (ZSubscribeTo(subs,count,0) != ZERR_NONE) {
+  if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
     fprintf(stderr, "Error subbing\n");
     ret=-2;
   }

@@ -524,6 +524,18 @@ void owl_function_loadsubs(char *file) {
   }
 }
 
+void owl_function_loadloginsubs(char *file) {
+  int ret;
+  ret=owl_zephyr_loadloginsubs(file);
+  if (ret==0) {
+    owl_function_makemsg("Subscribed to login messages from file.");
+  } else if (ret==-1) {
+    owl_function_makemsg("Could not open file for login subscriptions.");
+  } else {
+    owl_function_makemsg("Error subscribing to login messages from file.");
+  }
+}
+
 void owl_function_suspend() {
   endwin();
   printf("\n");
