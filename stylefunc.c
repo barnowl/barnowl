@@ -33,12 +33,12 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
     /* set the message for printing */
     owl_fmtext_append_normal(fm, OWL_TABSTR);
     
-    if (!strcasecmp(owl_message_get_opcode(m), "ping")) {
+    if (owl_message_is_ping(m)) {
       owl_fmtext_append_bold(fm, "PING");
       owl_fmtext_append_normal(fm, " from ");
       owl_fmtext_append_bold(fm, frombuff);
       owl_fmtext_append_normal(fm, "\n");
-    } else if (!strcasecmp(owl_message_get_class(m), "login")) {
+    } else if (owl_message_is_loginout(m)) {
       char *ptr, host[LINE], tty[LINE];
       int len;
       
@@ -48,10 +48,10 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
       ptr=owl_zephyr_get_field(n, 3, &len);
       strncpy(tty, ptr, len);
       tty[len]='\0';
-      
-      if (!strcasecmp(owl_message_get_opcode(m), "user_login")) {
+
+      if (owl_message_is_login(m)) {
 	owl_fmtext_append_bold(fm, "LOGIN");
-      } else if (!strcasecmp(owl_message_get_opcode(m), "user_logout")) {
+      } else if (owl_message_is_logout(m)) {
 	owl_fmtext_append_bold(fm, "LOGOUT");
       }
       owl_fmtext_append_normal(fm, " for ");
@@ -224,12 +224,12 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     owl_fmtext_init_null(fm);
     owl_fmtext_append_normal(fm, OWL_TABSTR);
     
-    if (!strcasecmp(owl_message_get_opcode(m), "ping") && owl_message_is_private(m)) {
+    if (owl_message_is_ping(m) && owl_message_is_private(m)) {
       owl_fmtext_append_bold(fm, "PING");
       owl_fmtext_append_normal(fm, " from ");
       owl_fmtext_append_bold(fm, frombuff);
       owl_fmtext_append_normal(fm, "\n");
-    } else if (!strcasecmp(n->z_class, "login")) {
+    } else if (owl_message_is_loginout(m)) {
       char *ptr, host[LINE], tty[LINE];
       int len;
       
@@ -240,9 +240,9 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
       strncpy(tty, ptr, len);
       tty[len]='\0';
       
-      if (!strcasecmp(n->z_opcode, "user_login")) {
+      if (owl_message_is_login(m)) {
 	owl_fmtext_append_bold(fm, "LOGIN");
-      } else if (!strcasecmp(n->z_opcode, "user_logout")) {
+      } else if (owl_message_is_logout(m)) {
 	owl_fmtext_append_bold(fm, "LOGOUT");
       }
       owl_fmtext_append_normal(fm, " for ");
@@ -382,4 +382,95 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     
     owl_free(indent);
   }
+}
+
+void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
+{
+  char *tmp;
+
+  if (owl_message_is_type_zephyr(m)) {
+    owl_fmtext_append_spaces(fm, OWL_TAB);
+    if (owl_message_is_login(m)) {
+      tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "LOGIN", "", owl_message_get_sender(m));
+      owl_fmtext_append_normal(fm, tmp);
+      owl_fmtext_append_normal(fm, "\n");
+      if (tmp) owl_free(tmp);
+    } else if (owl_message_is_logout(m)) {
+      tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "LOGOUT", "", owl_message_get_sender(m));
+      owl_fmtext_append_normal(fm, tmp);
+      owl_fmtext_append_normal(fm, "\n");
+      if (tmp) owl_free(tmp);
+    } else if (owl_message_is_ping(m)) {
+      tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "PING", "", owl_message_get_sender(m));
+      owl_fmtext_append_normal(fm, tmp);
+      owl_fmtext_append_normal(fm, "\n");
+      if (tmp) owl_free(tmp);
+    } else {
+      if (owl_message_is_direction_in(m)) {
+	tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", owl_message_get_class(m), owl_message_get_instance(m), owl_message_get_sender(m));
+      } else if (owl_message_is_direction_out(m)) {
+	tmp=owl_sprintf("> %-15.15s %-15.15s %-12.12s ", owl_message_get_class(m), owl_message_get_instance(m), owl_message_get_recipient(m));
+      } else {
+	tmp=owl_sprintf("- %-15.15s %-15.15s %-12.12s ", owl_message_get_class(m), owl_message_get_instance(m), owl_message_get_sender(m));
+      }
+      owl_fmtext_append_normal(fm, tmp);
+      if (tmp) owl_free(tmp);
+      
+      tmp=owl_strdup(owl_message_get_body(m));
+      owl_util_tr(tmp, '\n', ' ');
+      owl_fmtext_append_normal(fm, tmp);
+      owl_fmtext_append_normal(fm, "\n");
+      if (tmp) owl_free(tmp);
+    }
+      
+    /* make personal messages bold for smaat users */
+    if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES) && owl_message_is_personal(m)) {
+      owl_fmtext_addattr(fm, OWL_FMTEXT_ATTR_BOLD);
+    }
+    
+  } else if (owl_message_is_type_aim(m)) {
+    owl_fmtext_append_spaces(fm, OWL_TAB);
+    if (owl_message_is_login(m)) {
+      tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "AIM LOGIN", "", owl_message_get_sender(m));
+      owl_fmtext_append_normal(fm, tmp);
+      owl_fmtext_append_normal(fm, "\n");
+      if (tmp) owl_free(tmp);
+    } else if (owl_message_is_logout(m)) {
+      tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "AIM LOGOUT", "", owl_message_get_sender(m));
+      owl_fmtext_append_normal(fm, tmp);
+      owl_fmtext_append_normal(fm, "\n");
+      if (tmp) owl_free(tmp);
+    } else {
+      if (owl_message_is_direction_in(m)) {
+	tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "AIM", "", owl_message_get_sender(m));
+	owl_fmtext_append_normal(fm, tmp);
+	if (tmp) owl_free(tmp);
+      } else if (owl_message_is_direction_out(m)) {
+	tmp=owl_sprintf("> %-15.15s %-15.15s %-12.12s ", "AIM", "", owl_message_get_recipient(m));
+	owl_fmtext_append_normal(fm, tmp);
+	if (tmp) owl_free(tmp);
+      }
+      
+      tmp=owl_strdup(owl_message_get_body(m));
+      owl_util_tr(tmp, '\n', ' ');
+      owl_fmtext_append_normal(fm, tmp);
+      owl_fmtext_append_normal(fm, "\n");
+      if (tmp) owl_free(tmp);
+    }
+
+    /* make personal messages bold for smaat users */
+    if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
+      owl_fmtext_addattr(fm, OWL_FMTEXT_ATTR_BOLD);
+    }
+  } else if (owl_message_is_type_admin(m)) {
+    owl_fmtext_append_spaces(fm, OWL_TAB);
+    owl_fmtext_append_normal(fm, "< ADMIN                                        ");
+    
+    tmp=owl_strdup(owl_message_get_body(m));
+    owl_util_tr(tmp, '\n', ' ');
+    owl_fmtext_append_normal(fm, tmp);
+    owl_fmtext_append_normal(fm, "\n");
+    if (tmp) owl_free(tmp);
+  }
+
 }

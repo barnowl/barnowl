@@ -155,6 +155,10 @@ int main(int argc, char **argv, char **env) {
   owl_style_create_internal(s, "basic", &owl_stylefunc_basic);
   owl_global_add_style(&g, s);
 
+  s=owl_malloc(sizeof(owl_style));
+  owl_style_create_internal(s, "oneline", &owl_stylefunc_oneline);
+  owl_global_add_style(&g, s);
+
   /* setup the default filters */
   /* the personal filter will need to change again when AIM chat's are
    *  included.  Also, there should be an %aimme% */

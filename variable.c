@@ -198,7 +198,10 @@ static owl_variable variables_to_init[] = {
   OWLVAR_STRING_FULL( "tty" /* %OwlVarStub */, "", "tty name for zephyr location", "",
 		      NULL, owl_variable_tty_set, NULL),
 
-  OWLVAR_STRING_FULL( "style" /* %OwlVarStub */, "default", "name of the current formatting style", "",
+  OWLVAR_STRING_FULL( "style" /* %OwlVarStub */, "default", "name of the current formatting style",
+		      "This sets the current message formatting style. Possbile\n"
+		      "values include 'default' 'basic' 'oneline' and if\n"
+		      "available, 'perl'\n",
 		      NULL, owl_variable_style_set, NULL),
 
   OWLVAR_INT(    "edit:maxfillcols" /* %OwlVarStub:edit_maxfillcols */, 70,
