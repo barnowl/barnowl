@@ -315,10 +315,10 @@ int main(int argc, char **argv, char **env)
   perlerr=owl_perlconfig_readconfig(configfile);
   if (perlerr) {
     endwin();
-    owl_function_error("Error parsing configfile\n");
-    fprintf(stderr, "\nError parsing configfile. (%s)\n", perlerr);
+    owl_function_error("Error parsing configfile: %s\n", perlerr);
+    fprintf(stderr, "\nError parsing configfile: %s\n", perlerr);
     fflush(stderr);
-    printf("\nError parsing configfile. (%s)\n", perlerr);
+    printf("\nError parsing configfile: %s\n", perlerr);
     fflush(stdout);
     exit(1);
   }

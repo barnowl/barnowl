@@ -1,8 +1,10 @@
 $Id$
 
-2.1.11
+2.1.11-pre-1
 	Don't crash doing zlocate with bad tickets. [BZ 12]
 	Metion the path for the owlconf in intro.txt [BZ 54]
+	Print Better error message if startup fails due to unreadable
+	   .owlconf [BZ 57]
 
 2.1.10
 	Fix a new problem finding libdes425
