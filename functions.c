@@ -7,6 +7,8 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <errno.h>
 #include "owl.h"
 
 static const char fileIdent[] = "$Id$";
@@ -2526,4 +2528,51 @@ void owl_function_dump(char *filename) {
     fputs(owl_message_get_text(m), file);
   }
   fclose(file);
+}
+
+
+
+void owl_function_do_newmsgproc() {
+  if (owl_global_get_newmsgproc(&g) && strcmp(owl_global_get_newmsgproc(&g), "")) {
+    /* if there's a process out there, we need to check on it */
+    if (owl_global_get_newmsgproc_pid(&g)) {
+      owl_function_debugmsg("Checking on newmsgproc pid==%i", owl_global_get_newmsgproc_pid(&g));
+      owl_function_debugmsg("Waitpid return is %i", waitpid(owl_global_get_newmsgproc_pid(&g), NULL, WNOHANG));
+      waitpid(owl_global_get_newmsgproc_pid(&g), NULL, WNOHANG);
+      if (waitpid(owl_global_get_newmsgproc_pid(&g), NULL, WNOHANG)==-1) {
+	/* it exited */
+	owl_global_set_newmsgproc_pid(&g, 0);
+	owl_function_debugmsg("newmsgproc exited");
+      } else {
+	owl_function_debugmsg("newmsgproc did not exit");
+      }
+    }
+    
+    /* if it exited, fork & exec a new one */
+    if (owl_global_get_newmsgproc_pid(&g)==0) {
+      int i, myargc;
+      i=fork();
+      if (i) {
+	/* parent set the child's pid */
+	owl_global_set_newmsgproc_pid(&g, i);
+	waitpid(i, NULL, WNOHANG);
+	owl_function_debugmsg("I'm the parent and I started a new newmsgproc with pid %i", i);
+      } else {
+	/* child exec's the program */
+	char **parsed;
+	parsed=owl_parseline(owl_global_get_newmsgproc(&g), &myargc);
+	parsed=realloc(parsed, strlen(owl_global_get_newmsgproc(&g)+300));
+	parsed[myargc]=(char *) NULL;
+	
+	owl_function_debugmsg("About to exec: %s with %i arguments", parsed[0], myargc);
+	
+	execvp(parsed[0], (char **) parsed);
+	
+	
+	/* was there an error exec'ing? */
+	owl_function_debugmsg("Error execing: %s", strerror(errno));
+	_exit(127);
+      }
+    }
+  }
 }

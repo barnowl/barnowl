@@ -1,5 +1,8 @@
 $Id$
 
+2.0.1-pre-1
+	Moved the (broken) newmsgproc stuff it a function procedure
+
 1.2.8
 	Class pings are displayed differently now
 	Updated owlconf.simple example to format outgoing messages.
