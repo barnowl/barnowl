@@ -963,7 +963,6 @@ void owl_function_quit()
 
   /* Quit zephyr */
   owl_zephyr_shutdown();
-
   
   /* Quit AIM */
   if (owl_global_is_aimloggedin(&g)) {

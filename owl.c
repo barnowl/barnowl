@@ -151,6 +151,8 @@ int main(int argc, char **argv, char **env)
   sigaction(SIGWINCH, &sigact, NULL);
   sigaction(SIGALRM, &sigact, NULL);
   sigaction(SIGPIPE, &sigact, NULL);
+  sigaction(SIGTERM, &sigact, NULL);
+  sigaction(SIGHUP, &sigact, NULL);
 
   /* screen init */
   if (!getenv("TERMINFO")) {
@@ -693,6 +695,8 @@ void sig_handler(int sig, siginfo_t *si, void *data)
     /* Set a flag and some info that we got the sigpipe
      * so we can record that we got it and why... */
     owl_global_set_errsignal(&g, sig, si);
+  } else if (sig==SIGTERM || sig==SIGHUP) {
+    owl_function_quit();
   }
 
 }
