@@ -72,7 +72,7 @@ int owl_readconfig(char *file) {
   perl_get_sv("owl::host", TRUE);
   perl_get_av("owl::fields", TRUE);
   
-  /* perl bootstrapping code*/
+  /* perl bootstrapping code */
   codebuff = 
     "                                             \n"
     "package owl;                                 \n"

@@ -1562,7 +1562,7 @@ CFLAGS=${CFLAGS}\ ${FOO}
 
 echo $ac_n "checking for the perl xsubpp precompiler""... $ac_c" 1>&6
 echo "configure:1565: checking for the perl xsubpp precompiler" >&5
-XSUBPPDIR="`(perl -MExtUtils::MakeMaker -e 'print ExtUtils::MakeMaker->new({NAME => qw(owl)})->tool_xsubpp;') | grep ^XSUBPPDIR | sed -e 's/XSUBPPDIR = //g;'`"
+XSUBPPDIR="`(perl -MExtUtils::MakeMaker -e 'print ExtUtils::MakeMaker->new({NAME => qw(owl)})->tool_xsubpp;') | grep \^XSUBPPDIR | sed -e 's/XSUBPPDIR = //g;'`"
 if test -n "${XSUBPPDIR}"; then
    echo "$ac_t""${XSUBPPDIR}" 1>&6
 else
