@@ -568,7 +568,7 @@ owl_cmd commands_to_init[]
   OWLCMD_ALIAS("vu", "viewuser"),
 
   OWLCMD_ARGS("show", owl_command_show, OWL_CTX_INTERACTIVE,
-	      "show information\n",
+	      "show information",
 	      "show colors\n"
 	      "show commands\n"
 	      "show command <command>\n"

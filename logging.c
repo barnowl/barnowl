@@ -6,7 +6,8 @@
 
 static const char fileIdent[] = "$Id$";
 
-void owl_log_outgoing_zephyr(char *to, char *text) {
+void owl_log_outgoing_zephyr(char *to, char *text)
+{
   FILE *file;
   char filename[MAXPATHLEN], *logpath;
   char *tobuff, *ptr="";
@@ -93,7 +94,8 @@ void owl_log_outgoing_aim(char *to, char *text) {
   owl_free(tobuff);
 }
 
-void owl_log_incoming(owl_message *m) {
+void owl_log_incoming(owl_message *m)
+{
   FILE *file, *allfile;
   char filename[MAXPATHLEN], allfilename[MAXPATHLEN], *logpath;
   char *frombuff=NULL, *from=NULL, *buff=NULL, *ptr;

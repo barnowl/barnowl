@@ -1,6 +1,9 @@
 $Id$
 
-2.0.10-pre-1
+2.0.11-pre-1
+	Updated basic help
+	
+2.0.10
 	Allow 'hostname' in filters.
 	Fixed bug in reporting when no one is subbed to a class
 	Added an extral newline in logging incoming zephyrs
