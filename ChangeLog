@@ -1,5 +1,14 @@
 $Id$
 
+2.0.12-pre-1
+	Fixed replies to loopback messages
+	Fixed smartnarrow on classes/instances with spaces
+	Don't allow duplicates in command history
+	Added the 'loggingdirection' variable
+	All loopback messages log to 'loopback' now
+	Print an error message if trying an invalid color for a filter
+	Fixed bug causing > not to go to end of editwin every time
+	
 2.0.11
 	Updated basic help
 	Display CC: in outgoing CC messages

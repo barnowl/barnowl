@@ -1885,6 +1885,12 @@ void owl_function_reply(int type, int enter)
       return;
     }
 
+    /* loopback */
+    if (owl_message_is_type_loopback(m)) {
+      owl_function_loopwrite_setup();
+      return;
+    }
+
     /* zephyr */
     if (owl_message_is_type_zephyr(m)) {
       /* if it's a zephyr we sent, send it out the same way again */
@@ -2267,6 +2273,10 @@ void owl_function_create_filter(int argc, char **argv)
       owl_function_error("The filter '%s' does not exist.", argv[1]);
       return;
     }
+    if (owl_util_string_to_color(argv[3])==-1) {
+      owl_function_error("The color '%s' is not available.", argv[3]);
+      return;
+    }
     owl_filter_set_color(f, owl_util_string_to_color(argv[3]));
     owl_global_set_needrefresh(&g);
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
@@ -2404,8 +2414,10 @@ char *owl_function_classinstfilt(char *class, char *instance)
   /* create the new filter */
   argbuff=owl_malloc(len+20);
   tmpclass=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+  owl_text_tr(tmpclass, ' ', '.');
   if (instance) {
     tmpinstance=owl_text_quote(instance, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+    owl_text_tr(tmpinstance, ' ', '.');
   }
   sprintf(argbuff, "( class ^%s$ )", tmpclass);
   if (tmpinstance) {
@@ -2706,6 +2718,10 @@ void owl_function_color_current_filter(char *color)
   }
 
   /* deal with the case of trying change the filter color */
+  if (owl_util_string_to_color(color)==-1) {
+    owl_function_error("No color named '%s' avilable.");
+    return;
+  }
   owl_filter_set_color(f, owl_util_string_to_color(color));
   owl_global_set_needrefresh(&g);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));

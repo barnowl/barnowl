@@ -12,6 +12,8 @@ void owl_log_outgoing_zephyr(char *to, char *text)
   char filename[MAXPATHLEN], *logpath;
   char *tobuff, *ptr="";
 
+  if (owl_global_get_loggingdirection(&g)==OWL_LOGGING_DIRECTION_IN) return;
+
   tobuff=owl_malloc(strlen(to)+20);
   strcpy(tobuff, to);
 
@@ -60,6 +62,8 @@ void owl_log_outgoing_aim(char *to, char *text)
   char filename[MAXPATHLEN], *logpath;
   char *tobuff;
 
+  if (owl_global_get_loggingdirection(&g)==OWL_LOGGING_DIRECTION_IN) return;
+
   tobuff=owl_sprintf("aim:%s", to);
 
   /* expand ~ in path names */
@@ -101,7 +105,9 @@ void owl_log_outgoing_loopback(char *text)
   char filename[MAXPATHLEN], *logpath;
   char *tobuff;
 
-  tobuff=owl_sprintf("loopback:%s", "loppback");
+  if (owl_global_get_loggingdirection(&g)==OWL_LOGGING_DIRECTION_IN) return;
+
+  tobuff=owl_sprintf("loopback");
 
   /* expand ~ in path names */
   logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", 
@@ -142,6 +148,8 @@ void owl_log_incoming(owl_message *m)
   char filename[MAXPATHLEN], allfilename[MAXPATHLEN], *logpath;
   char *frombuff=NULL, *from=NULL, *buff=NULL, *ptr;
   int len, ch, i, personal;
+
+  if (owl_global_get_loggingdirection(&g)==OWL_LOGGING_DIRECTION_OUT) return;
       
   /* check for nolog */
   if (!strcasecmp(owl_message_get_opcode(m), "nolog") ||

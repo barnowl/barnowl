@@ -18,8 +18,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.11
-#define OWL_VERSION_STRING "2.0.11"
+#define OWL_VERSION         2.0.12-pre-1
+#define OWL_VERSION_STRING "2.0.12-pre-1"
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */
@@ -73,6 +73,10 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_DIRECTION_NONE      0
 #define OWL_DIRECTION_DOWNWARDS 1
 #define OWL_DIRECTION_UPWARDS   2
+
+#define OWL_LOGGING_DIRECTION_BOTH 0
+#define OWL_LOGGING_DIRECTION_IN   1
+#define OWL_LOGGING_DIRECTION_OUT  2
 
 #define OWL_SCROLLMODE_NORMAL      0
 #define OWL_SCROLLMODE_TOP         1
@@ -354,6 +358,7 @@ typedef struct _owl_history {
   int cur;
   int touched;
   int partial;
+  int repeats;
 } owl_history;
 
 typedef struct _owl_editwin {

@@ -29,7 +29,11 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
   /* first take arguments that have to come first */
   /* set the color */
   if (argc>=2 && !strcmp(argv[0], "-c")) {
-    f->color=owl_util_string_to_color(argv[1]);
+    if (owl_util_string_to_color(argv[1])==-1) {
+      owl_function_error("The color '%s' is not available, using default.", argv[1]);
+    } else {
+      f->color=owl_util_string_to_color(argv[1]);
+    }
     argc-=2;
     argv+=2;
   }

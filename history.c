@@ -8,6 +8,12 @@ void owl_history_init(owl_history *h)
   h->cur=0;			/* current position in history */
   h->touched=0;			/* whether we've gone into history */
   h->partial=0;			/* is the 0th element is partially composed? */
+  h->repeats=1;                 /* by default we'll allow repeat entries */
+}
+
+void owl_history_set_norepeats(owl_history *h)
+{
+  h->repeats=0;
 }
 
 char *owl_history_get_prev(owl_history *h)
@@ -41,9 +47,15 @@ char *owl_history_get_next(owl_history *h)
 
 void owl_history_store(owl_history *h, char *line)
 {
-  int size;
+  int i, size;
 
   if (!h) return;
+  size=owl_list_get_size(&(h->hist));
+
+  /* if repeats are disallowed, check if the line is present already */
+  for (i=0; i<size; i++) {
+    if (!strcmp(line, owl_list_get_element(&(h->hist), i))) return;
+  }
 
   /* if partial is set, remove the first entry first */
   if (h->partial) {
@@ -51,7 +63,6 @@ void owl_history_store(owl_history *h, char *line)
   }
 
   /* if we've reached the max history size, pop off the last element */
-  size=owl_list_get_size(&(h->hist));
   if (size>OWL_HISTORYSIZE) {
     owl_free(owl_list_get_element(&(h->hist), size-1));
     owl_list_remove_element(&(h->hist), size-1);

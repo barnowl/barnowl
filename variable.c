@@ -111,6 +111,15 @@ static owl_variable variables_to_init[] = {
 	       "The filename in that directory is derived from\n"
 	       "the name of the class to which the message was sent.\n" ),
 
+  OWLVAR_ENUM( "loggingdirection" /* %OwlVarStub */, OWL_LOGGING_DIRECTION_BOTH,
+	       "specifices which kind of messages should be logged",
+	       "Can be one of 'both', 'in', or 'out'.  If 'in' is\n"
+	       "selected, only incoming messages are logged, if 'out'\n"
+	       "is selected only outgoing messages are logged.  If 'both'\n"
+	       "is selected both incoming and outgoing messages are\n"
+	       "logged.",
+	       "both,in,out"),
+
   OWLVAR_BOOL( "colorztext" /* %OwlVarStub */, 1,
 	       "allow @color() in zephyrs to change color",
 	       "Note that only messages received after this variable\n"

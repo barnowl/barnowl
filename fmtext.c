@@ -122,195 +122,6 @@ void owl_fmtext_colorize(owl_fmtext *f, int color)
   }
 }
 
-/* Append the text 'text' to 'f' and interpret the zephyr style
- * formatting syntax to set appropriate attributes.
- */
-void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
-{
-  int stacksize, curattrs, curcolor;
-  char *ptr, *txtptr, *buff, *tmpptr;
-  int attrstack[32], chrstack[32];
-
-  curattrs=OWL_FMTEXT_ATTR_NONE;
-  curcolor=OWL_COLOR_DEFAULT;
-  stacksize=0;
-  txtptr=text;
-  while (1) {
-    ptr=strpbrk(txtptr, "@{[<()>]}");
-    if (!ptr) {
-      /* add all the rest of the text and exit */
-      owl_fmtext_append_attr(f, txtptr, curattrs, curcolor);
-      return;
-    } else if (ptr[0]=='@') {
-      /* add the text up to this point then deal with the stack */
-      buff=owl_malloc(ptr-txtptr+20);
-      strncpy(buff, txtptr, ptr-txtptr);
-      buff[ptr-txtptr]='\0';
-      owl_fmtext_append_attr(f, buff, curattrs, curcolor);
-      owl_free(buff);
-
-      /* update pointer to point at the @ */
-      txtptr=ptr;
-
-      /* now the stack */
-
-      /* if we've hit our max stack depth, print the @ and move on */
-      if (stacksize==32) {
-	owl_fmtext_append_attr(f, "@", curattrs, curcolor);
-	txtptr++;
-	continue;
-      }
-
-      /* if it's an @@, print an @ and continue */
-      if (txtptr[1]=='@') {
-	owl_fmtext_append_attr(f, "@", curattrs, curcolor);
-	txtptr+=2;
-	continue;
-      }
-	
-      /* if there's no opener, print the @ and continue */
-      tmpptr=strpbrk(txtptr, "(<[{ ");
-      if (!tmpptr || tmpptr[0]==' ') {
-	owl_fmtext_append_attr(f, "@", curattrs, curcolor);
-	txtptr++;
-	continue;
-      }
-
-      /* check what command we've got, push it on the stack, start
-	 using it, and continue ... unless it's a color command */
-      buff=owl_malloc(tmpptr-ptr+20);
-      strncpy(buff, ptr, tmpptr-ptr);
-      buff[tmpptr-ptr]='\0';
-      if (!strcasecmp(buff, "@bold")) {
-	attrstack[stacksize]=OWL_FMTEXT_ATTR_BOLD;
-	chrstack[stacksize]=tmpptr[0];
-	stacksize++;
-	curattrs|=OWL_FMTEXT_ATTR_BOLD;
-	txtptr+=6;
-	owl_free(buff);
-	continue;
-      } else if (!strcasecmp(buff, "@b")) {
-	attrstack[stacksize]=OWL_FMTEXT_ATTR_BOLD;
-	chrstack[stacksize]=tmpptr[0];
-	stacksize++;
-	curattrs|=OWL_FMTEXT_ATTR_BOLD;
-	txtptr+=3;
-	owl_free(buff);
-	continue;
-      } else if (!strcasecmp(buff, "@i")) {
-	attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
-	chrstack[stacksize]=tmpptr[0];
-	stacksize++;
-	curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
-	txtptr+=3;
-	owl_free(buff);
-	continue;
-      } else if (!strcasecmp(buff, "@italic")) {
-	attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
-	chrstack[stacksize]=tmpptr[0];
-	stacksize++;
-	curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
-	txtptr+=8;
-	owl_free(buff);
-	continue;
-
-	/* if it's a color read the color, set the current color and
-           continue */
-      } else if (!strcasecmp(buff, "@color") 
-		 && owl_global_get_hascolors(&g)
-		 && owl_global_is_colorztext(&g)) {
-	owl_free(buff);
-	txtptr+=7;
-	tmpptr=strpbrk(txtptr, "@{[<()>]}");
-	if (tmpptr &&
-	    ((txtptr[-1]=='(' && tmpptr[0]==')') ||
-	     (txtptr[-1]=='<' && tmpptr[0]=='>') ||
-	     (txtptr[-1]=='[' && tmpptr[0]==']') ||
-	     (txtptr[-1]=='{' && tmpptr[0]=='}'))) {
-
-	  /* grab the color name */
-	  buff=owl_malloc(tmpptr-txtptr+20);
-	  strncpy(buff, txtptr, tmpptr-txtptr);
-	  buff[tmpptr-txtptr]='\0';
-
-	  /* set it as the current color */
-	  curcolor=owl_util_string_to_color(buff);
-	  owl_free(buff);
-	  txtptr=tmpptr+1;
-	  continue;
-
-	} else {
-
-	}
-
-      } else {
-	/* if we didn't understand it, we'll print it.  This is different from zwgc
-	 * but zwgc seems to be smarter about some screw cases than I am
-	 */
-	owl_fmtext_append_attr(f, "@", curattrs, curcolor);
-	txtptr++;
-	continue;
-      }
-
-    } else if (ptr[0]=='}' || ptr[0]==']' || ptr[0]==')' || ptr[0]=='>') {
-      /* add the text up to this point first */
-      buff=owl_malloc(ptr-txtptr+20);
-      strncpy(buff, txtptr, ptr-txtptr);
-      buff[ptr-txtptr]='\0';
-      owl_fmtext_append_attr(f, buff, curattrs, curcolor);
-      owl_free(buff);
-
-      /* now deal with the closer */
-      txtptr=ptr;
-
-      /* first, if the stack is empty we must bail (just print and go) */
-      if (stacksize==0) {
-	buff=owl_malloc(5);
-	buff[0]=ptr[0];
-	buff[1]='\0';
-	owl_fmtext_append_attr(f, buff, curattrs, curcolor);
-	owl_free(buff);
-	txtptr++;
-	continue;
-      }
-
-      /* if the closing char is what's on the stack, turn off the
-         attribue and pop the stack */
-      if ((ptr[0]==')' && chrstack[stacksize-1]=='(') ||
-	  (ptr[0]=='>' && chrstack[stacksize-1]=='<') ||
-	  (ptr[0]==']' && chrstack[stacksize-1]=='[') ||
-	  (ptr[0]=='}' && chrstack[stacksize-1]=='{')) {
-	int i;
-	stacksize--;
-	curattrs=OWL_FMTEXT_ATTR_NONE;
-	for (i=0; i<stacksize; i++) {
-	  curattrs|=attrstack[i];
-	}
-	txtptr+=1;
-	continue;
-      } else {
-	/* otherwise print and continue */
-	buff=owl_malloc(5);
-	buff[0]=ptr[0];
-	buff[1]='\0';
-	owl_fmtext_append_attr(f, buff, curattrs, curcolor);
-	owl_free(buff);
-	txtptr++;
-	continue;
-      }
-    } else {
-      /* we've found an unattached opener, print everything and move on */
-      buff=owl_malloc(ptr-txtptr+20);
-      strncpy(buff, txtptr, ptr-txtptr+1);
-      buff[ptr-txtptr+1]='\0';
-      owl_fmtext_append_attr(f, buff, curattrs, curcolor);
-      owl_free(buff);
-      txtptr=ptr+1;
-      continue;
-    }
-  }
-}
-
 /* Internal function.  Append text from 'in' between index 'start' and
  * 'stop' to the end of 'f'
  */
@@ -585,7 +396,7 @@ void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src)
   memcpy(dst->colorbuff, src->colorbuff, src->textlen);
 }
 
-/* highlight all instance of "string".  Return the number of
+/* highlight all instances of "string".  Return the number of
  * instances found.  This is a case insensitive search.
  */
 int owl_fmtext_search_and_highlight(owl_fmtext *f, char *string)
@@ -619,4 +430,194 @@ int owl_fmtext_search(owl_fmtext *f, char *string)
 
   if (stristr(f->textbuff, string)) return(1);
   return(0);
+}
+
+
+/* Append the text 'text' to 'f' and interpret the zephyr style
+ * formatting syntax to set appropriate attributes.
+ */
+void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
+{
+  int stacksize, curattrs, curcolor;
+  char *ptr, *txtptr, *buff, *tmpptr;
+  int attrstack[32], chrstack[32];
+
+  curattrs=OWL_FMTEXT_ATTR_NONE;
+  curcolor=OWL_COLOR_DEFAULT;
+  stacksize=0;
+  txtptr=text;
+  while (1) {
+    ptr=strpbrk(txtptr, "@{[<()>]}");
+    if (!ptr) {
+      /* add all the rest of the text and exit */
+      owl_fmtext_append_attr(f, txtptr, curattrs, curcolor);
+      return;
+    } else if (ptr[0]=='@') {
+      /* add the text up to this point then deal with the stack */
+      buff=owl_malloc(ptr-txtptr+20);
+      strncpy(buff, txtptr, ptr-txtptr);
+      buff[ptr-txtptr]='\0';
+      owl_fmtext_append_attr(f, buff, curattrs, curcolor);
+      owl_free(buff);
+
+      /* update pointer to point at the @ */
+      txtptr=ptr;
+
+      /* now the stack */
+
+      /* if we've hit our max stack depth, print the @ and move on */
+      if (stacksize==32) {
+	owl_fmtext_append_attr(f, "@", curattrs, curcolor);
+	txtptr++;
+	continue;
+      }
+
+      /* if it's an @@, print an @ and continue */
+      if (txtptr[1]=='@') {
+	owl_fmtext_append_attr(f, "@", curattrs, curcolor);
+	txtptr+=2;
+	continue;
+      }
+	
+      /* if there's no opener, print the @ and continue */
+      tmpptr=strpbrk(txtptr, "(<[{ ");
+      if (!tmpptr || tmpptr[0]==' ') {
+	owl_fmtext_append_attr(f, "@", curattrs, curcolor);
+	txtptr++;
+	continue;
+      }
+
+      /* check what command we've got, push it on the stack, start
+	 using it, and continue ... unless it's a color command */
+      buff=owl_malloc(tmpptr-ptr+20);
+      strncpy(buff, ptr, tmpptr-ptr);
+      buff[tmpptr-ptr]='\0';
+      if (!strcasecmp(buff, "@bold")) {
+	attrstack[stacksize]=OWL_FMTEXT_ATTR_BOLD;
+	chrstack[stacksize]=tmpptr[0];
+	stacksize++;
+	curattrs|=OWL_FMTEXT_ATTR_BOLD;
+	txtptr+=6;
+	owl_free(buff);
+	continue;
+      } else if (!strcasecmp(buff, "@b")) {
+	attrstack[stacksize]=OWL_FMTEXT_ATTR_BOLD;
+	chrstack[stacksize]=tmpptr[0];
+	stacksize++;
+	curattrs|=OWL_FMTEXT_ATTR_BOLD;
+	txtptr+=3;
+	owl_free(buff);
+	continue;
+      } else if (!strcasecmp(buff, "@i")) {
+	attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
+	chrstack[stacksize]=tmpptr[0];
+	stacksize++;
+	curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
+	txtptr+=3;
+	owl_free(buff);
+	continue;
+      } else if (!strcasecmp(buff, "@italic")) {
+	attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
+	chrstack[stacksize]=tmpptr[0];
+	stacksize++;
+	curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
+	txtptr+=8;
+	owl_free(buff);
+	continue;
+
+	/* if it's a color read the color, set the current color and
+           continue */
+      } else if (!strcasecmp(buff, "@color") 
+		 && owl_global_get_hascolors(&g)
+		 && owl_global_is_colorztext(&g)) {
+	owl_free(buff);
+	txtptr+=7;
+	tmpptr=strpbrk(txtptr, "@{[<()>]}");
+	if (tmpptr &&
+	    ((txtptr[-1]=='(' && tmpptr[0]==')') ||
+	     (txtptr[-1]=='<' && tmpptr[0]=='>') ||
+	     (txtptr[-1]=='[' && tmpptr[0]==']') ||
+	     (txtptr[-1]=='{' && tmpptr[0]=='}'))) {
+
+	  /* grab the color name */
+	  buff=owl_malloc(tmpptr-txtptr+20);
+	  strncpy(buff, txtptr, tmpptr-txtptr);
+	  buff[tmpptr-txtptr]='\0';
+
+	  /* set it as the current color */
+	  curcolor=owl_util_string_to_color(buff);
+	  owl_free(buff);
+	  txtptr=tmpptr+1;
+	  continue;
+
+	} else {
+
+	}
+
+      } else {
+	/* if we didn't understand it, we'll print it.  This is different from zwgc
+	 * but zwgc seems to be smarter about some screw cases than I am
+	 */
+	owl_fmtext_append_attr(f, "@", curattrs, curcolor);
+	txtptr++;
+	continue;
+      }
+
+    } else if (ptr[0]=='}' || ptr[0]==']' || ptr[0]==')' || ptr[0]=='>') {
+      /* add the text up to this point first */
+      buff=owl_malloc(ptr-txtptr+20);
+      strncpy(buff, txtptr, ptr-txtptr);
+      buff[ptr-txtptr]='\0';
+      owl_fmtext_append_attr(f, buff, curattrs, curcolor);
+      owl_free(buff);
+
+      /* now deal with the closer */
+      txtptr=ptr;
+
+      /* first, if the stack is empty we must bail (just print and go) */
+      if (stacksize==0) {
+	buff=owl_malloc(5);
+	buff[0]=ptr[0];
+	buff[1]='\0';
+	owl_fmtext_append_attr(f, buff, curattrs, curcolor);
+	owl_free(buff);
+	txtptr++;
+	continue;
+      }
+
+      /* if the closing char is what's on the stack, turn off the
+         attribue and pop the stack */
+      if ((ptr[0]==')' && chrstack[stacksize-1]=='(') ||
+	  (ptr[0]=='>' && chrstack[stacksize-1]=='<') ||
+	  (ptr[0]==']' && chrstack[stacksize-1]=='[') ||
+	  (ptr[0]=='}' && chrstack[stacksize-1]=='{')) {
+	int i;
+	stacksize--;
+	curattrs=OWL_FMTEXT_ATTR_NONE;
+	for (i=0; i<stacksize; i++) {
+	  curattrs|=attrstack[i];
+	}
+	txtptr+=1;
+	continue;
+      } else {
+	/* otherwise print and continue */
+	buff=owl_malloc(5);
+	buff[0]=ptr[0];
+	buff[1]='\0';
+	owl_fmtext_append_attr(f, buff, curattrs, curcolor);
+	owl_free(buff);
+	txtptr++;
+	continue;
+      }
+    } else {
+      /* we've found an unattached opener, print everything and move on */
+      buff=owl_malloc(ptr-txtptr+20);
+      strncpy(buff, txtptr, ptr-txtptr+1);
+      buff[ptr-txtptr+1]='\0';
+      owl_fmtext_append_attr(f, buff, curattrs, curcolor);
+      owl_free(buff);
+      txtptr=ptr+1;
+      continue;
+    }
+  }
 }

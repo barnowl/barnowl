@@ -773,7 +773,7 @@ char *owl_zephyr_getsubs()
   ZFlushSubscriptions();
   return(out);
 #else
-  return("");
+  return(owl_strdup("Zephyr not available"));
 #endif
 }
 

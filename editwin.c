@@ -175,7 +175,6 @@ void owl_editwin_clear(owl_editwin *e)
   owl_editwin_adjust_for_locktext(e);
 }
 
-
 /* malloc more space for the buffer */
 void _owl_editwin_addspace(owl_editwin *e)
 {
@@ -772,9 +771,12 @@ void owl_editwin_move_to_end(owl_editwin *e)
   owl_editwin_key_right(e);
 
   /* do we need to scroll? */
+  /*
   if (e->buffy-e->topline > e->winlines) {
     e->topline+=e->winlines/2;
   }
+  */
+  owl_editwin_recenter(e);
 }
 
 void owl_editwin_move_to_top(owl_editwin *e)

@@ -407,7 +407,9 @@ char *owl_sprintf(const char *fmt, ...)
   }
 }
 
-/* Return the owl color associated with the named color */
+/* Return the owl color associated with the named color.  Return -1
+ * if the named color is not available
+ */
 int owl_util_string_to_color(char *color)
 {
   if (!strcasecmp(color, "black")) {
@@ -429,7 +431,7 @@ int owl_util_string_to_color(char *color)
   } else if (!strcasecmp(color, "default")) {
     return(OWL_COLOR_DEFAULT);
   }
-  return(OWL_COLOR_DEFAULT);
+  return(-1);
 }
 
 /* Return a string name of the given owl color */

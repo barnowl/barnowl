@@ -1909,7 +1909,6 @@ char *owl_command_view(int argc, char **argv, char *buff)
   return(NULL);
 }
 
-
 char *owl_command_show(int argc, char **argv, char *buff)
 {
   if (argc<2) {
