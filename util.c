@@ -610,7 +610,7 @@ char *owl_util_stripnewlines(char *in)
     ptr1++;
   }
   ptr2=ptr1+strlen(ptr1)-1;
-  while (ptr2[0]=='\n' && ptr2>ptr1) {
+  while (ptr2>ptr1 && ptr2[0]=='\n') {
     ptr2[0]='\0';
     ptr2--;
   }

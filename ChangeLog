@@ -1,6 +1,7 @@
 $Id$
 
 2.1.6-pre-1
+        Fixed three bugs found by Valgrind.
         Fixed a case where doing "aim addbuddy" instead of "addbuddy aim"
 	  would cause a segfault.
 	pexec will now incrimentally display data as it is output

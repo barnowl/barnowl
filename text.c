@@ -124,7 +124,7 @@ int owl_text_num_lines(char *in)
   }
 
   /* if the last char wasn't a \n there's one more line */
-  if (in[i-1]!='\n') lines++;
+  if (i>0 && in[i-1]!='\n') lines++;
 
   return(lines);
 }
