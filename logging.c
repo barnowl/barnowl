@@ -234,8 +234,8 @@ void owl_log_incoming(owl_message *m) {
       if (owl_message_is_login(m)) fprintf(allfile, "LOGIN\n\n");
       if (owl_message_is_logout(m)) fprintf(allfile, "LOGOUT\n\n");
     }
+    fclose(allfile);
   }
-  fclose(allfile);
 
   if (owl_message_is_type_zephyr(m)) {
     owl_free(tmp);
