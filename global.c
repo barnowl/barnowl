@@ -74,7 +74,7 @@ void owl_global_init(owl_global *g) {
   owl_global_set_no_have_config(g);
   owl_history_init(&(g->msghist));
   owl_history_init(&(g->cmdhist));
-  /* owl_history_set_norepeats(&(g->cmdhist)); */
+  owl_history_set_norepeats(&(g->cmdhist));
   g->nextmsgid=0;
 
   owl_filterelement_create_true(&(g->fe_true));

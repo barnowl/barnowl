@@ -52,16 +52,14 @@ void owl_history_store(owl_history *h, char *line)
   if (!h) return;
   size=owl_list_get_size(&(h->hist));
 
-  /* if repeats are disallowed, check if the line is present already */
-  if (!h->repeats) {
-    for (i=0; i<size; i++) {
-      if (!strcmp(line, owl_list_get_element(&(h->hist), i))) return;
-    }
-  }
-
   /* if partial is set, remove the first entry first */
   if (h->partial) {
     owl_list_remove_element(&(h->hist), 0);
+  }
+
+  /* if repeats are disallowed, check if the line is the same as the last */
+  if (owl_list_get_size(&(h->hist))>0) {
+    if (!strcmp(line, owl_list_get_element(&(h->hist), 0))) return;
   }
 
   /* if we've reached the max history size, pop off the last element */

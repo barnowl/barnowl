@@ -58,6 +58,10 @@ void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, owl_message *m)
 
     /* run the perl function */
     body=owl_perlconfig_getmsg(m, 1, s->perlfuncname);
+    if (!strcmp(body, "")) {
+      owl_free(body);
+      body=owl_strdup("<unformatted message>");
+    }
     
     /* indent and ensure ends with a newline */
     indent=owl_malloc(strlen(body)+(owl_text_num_lines(body))*OWL_TAB+10);

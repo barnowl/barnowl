@@ -1,5 +1,10 @@
 $Id$
 
+2.0.13-pre-4
+	Command history now doesn't allow the last entry
+	   to be repeated
+	If format_msg returns "" print "<unformatted message>"
+
 2.0.12-pre-3
 	Better align oneline admin and loopback messages
 	Print an admin message indicating when subscriptions can
