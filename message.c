@@ -528,7 +528,7 @@ void _owl_message_make_text_from_zwriteline_simple(owl_message *m) {
   owl_free(foo);
   owl_fmtext_append_normal(&(m->fmtext), "  (Zsig: ");
 
-  zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m)));
+  zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m))+30);
   owl_message_pretty_zsig(m, zsigbuff);
   owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
   owl_free(zsigbuff);
@@ -623,7 +623,7 @@ void _owl_message_make_text_from_notice_standard(owl_message *m) {
     }
 
     /* stick on the zsig */
-    zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m)));
+    zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m))+30);
     owl_message_pretty_zsig(m, zsigbuff);
     owl_fmtext_append_normal(&(m->fmtext), "    (");
     owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
@@ -725,7 +725,7 @@ void _owl_message_make_text_from_notice_simple(owl_message *m) {
     }
 
     /* stick on the zsig */
-    zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m)));
+    zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m))+30);
     owl_message_pretty_zsig(m, zsigbuff);
     owl_fmtext_append_normal(&(m->fmtext), "    (");
     owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
