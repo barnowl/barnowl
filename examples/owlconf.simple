@@ -1,0 +1,250 @@
+### The owlconf config file   -*- perl -*-  
+###  $Id$
+
+### !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!!
+### This is an example file intended to demonstrate how to use 
+### various features of owl.  Some of the key bindings, in particular,
+### are more for examples than things you may actually want to use.
+### Make sure to read through it first and understand it before just using it.
+### Don't blame me if anything in here ends up vaporizing your dog.
+### !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!!
+
+###
+### This file is interpreted by the perl interpreter.
+### If you wish to execute an owl command use the
+### function owl::command().  i.e.
+###
+###      owl::command("set zsigproc /mit/kretch/bin/getzsig");
+###
+### will set the owl variable zsigproc.  Subroutines created with
+### the names below will be executed at the specified times:
+###
+###     subroutine name    properties
+###     ---------------    ----------
+###     owl::startup()     run when owl first starts
+###     owl::shutdown()    run when owl exits
+###     owl::format_msg()  run when a new message arrives, the return
+###                           value is used to display the message on the
+###                           screen
+###     owl::receive_msg() run when a message is received, and after
+###	  	           it has been added to the message list
+###
+###
+### The following variables will be set each time a message is recevied
+### and when owl::format_msg() and owl::receive_msg() are run.
+###
+###     $owl::class, $owl::instance, $owl::recipient,
+###     $owl::sender, $owl::opcode, $owl::zsig,
+###     $owl::msg, $owl::time, $owl::host, @owl::fields, $owl::id
+###    
+
+# NOTE: Lines beginning with a "#" are perl comments.
+
+
+# This subroutine is run whenever owl starts up.
+# The owl::command("foo") lines execute the owl command "foo".
+sub owl::startup {
+
+    ################################################################
+    ## The following set the values of variables.
+    ## Doing "help" will show you more about each variable.
+    ## These lines will set things to the default.
+    ## You can uncomment them and then change the value to get 
+    ## a different behavior (remove the "#" to an alternate value).
+    ################################################################
+
+    ## Set this to off to disable the terminal bell.
+    # owl::command('set -q bell on');
+
+    ## Set this to off to disable the terminal bell on personal zephyrs.
+    # owl::command('set -q personalbell off');
+
+    ## Set this to on to enable logging of personal zephyrs
+    # owl::command('set -q logging off');  
+
+    ## This directory must exist and is where personal zephyrs are logged.
+    ## By default, this is the ~/zlog/personal/ directory
+    # owl::command('set -q logpath '.$ENV{'HOME'}.'/zlog/personal/');
+
+    ## Set this to on to enable logging of classes
+    # owl::command('set -q classlogging off');  
+
+    ## This directory must exist and is where class zephyrs are logged.
+    ## By default, this is the ~/zlog/class/ directory
+    # owl::command('set -q classlogpath '.$ENV{'HOME'}.'/zlog/class/');
+
+    ## If set to on, this will make is so that C-d doesn't
+    ## send zephyrs by accident.
+    # owl::command('set -q disable-ctrl-d off');
+
+    ## If set to on, outgoing messages will be displayed.
+    # owl::command('set -q displayoutgoing on');
+
+    ## Displays received pings?
+    # owl::command('set -q rxping off');
+
+    ## Send pings?
+    # owl::command('set -q txping on');
+
+    ## Size of typing window at the bottom of the screen
+    # owl::command('set -q typewinsize 8');
+
+    ## Which view to switch to after the 'V' or 'X' commands.
+    # owl::command('set -q view_home all');
+
+
+    ## Which webbrowser to use to launch URLs with the 'w' key.
+    # owl::command('set -q webbrowser netscape');
+    # owl::command('set -q webbrowser galeon');
+    # owl::command('set -q webbrowser none');
+
+    ## Default message to send when zaway is on (toggle with 'A')
+    # owl::command('set -q zaway_msg_default "Not here now..."');
+
+    ## Default zephyr signature.
+    # owl::command('set -q zsig "meep"');
+
+    ## Program to generate a zsig.
+    # owl::command('set -q zsigproc "/mit/foo/bin/randzsig"');
+
+
+    ################################################################
+    ## The following create filters.  Filters can be used to select
+    ## on multiple zephyrs for operations.  With 'views' you can 
+    ## look at only the zephyrs matching a particular filter.
+    ## Use the 'view <filtername>' command or the 'v' key to switch views.
+    ## The 'V' key will switch you back to your 'view_home' view.
+    ## The M-D key will delete all messages in the current view
+    ##
+    ##
+    ## The filter command creates a filter with the specified name,
+    ## or if one already exists it is replaced.  Example filter
+    ## syntax would be:                                        
+    ##
+    ##    filter myfilter -c red ( class ^foobar$ ) or ( class ^quux$ and instance ^bar$ )
+    ##
+    ## Valid matching fields are class, instance, recipient, sender, opcode
+    ## and realm.  Valid operations are 'and', 'or' and 'not'.  Spaces must be
+    ## present before and after parenthesis.  If the optional color argument
+    ## is used it specifies the color that messages matching this filter
+    ## should be displayed in.  Do 'show colors' to see the available colors.
+    ## 
+    ################################################################
+
+    ## This would create a shortcut to only show personal messages
+    ## with filter 'me' and to color them yellow.
+    ## Replace myusername with yours.
+    # owl::command('filter me -c yellow recipient myusername');
+
+    ## This would create a 'quiet' filter to not show messages
+    ## on noisy classes and instances.
+    # owl::command('filter quiet not ( class ^foo|bar|quux$ or instance ( ^baaz$ ) ');
+
+    ## The 'trash' filter is used when you press 'T' to mark things
+    ## for autodeletion.
+    # owl::command('filter trash class ^mail$ or opcode ^ping$ or type ^admin$ or class ^login$');   
+
+}
+
+## This is run when owl exits.  Currently this does nothing.
+sub owl::shutdown {
+}
+
+## This is run to format the contents of the message.
+## It returns a string which is a formatted message.
+## The following variables will be set each time before this is run:
+##
+##     $owl::class, $owl::instance, $owl::recipient,
+##     $owl::sender, $owl::opcode, $owl::zsig,
+##     $owl::msg, $owl::time, $owl::host, @owl::fields, $owl::id
+
+sub owl::format_msg {
+    my $out, $tmp;
+
+    ## Strip out noise from the sender string.
+    $owl::sender=~s/\@ATHENA\.MIT\.EDU$//;
+    $owl::sender=~s/\@local-realm$//;
+
+    ## Format ping, login, and mail messages.
+    ## uc(foo) upcases the string and "eq" does string comparison.
+    if (uc($owl::opcode) eq "PING") {
+	return("\@bold(PING) from \@bold($owl::sender)\n");
+    } elsif (uc($owl::class) eq "LOGIN") {
+	if (uc($owl::opcode) eq "USER_LOGIN") {
+	    $out="\@bold(LOGIN)";
+	} elsif (uc($owl::opcode) eq "USER_LOGOUT") {
+	    $out="\@bold(LOGOUT)";
+	} else {
+	    $out="\@bold(UNKNOWN)";
+	}
+	$out.=" for \@bold($owl::sender) at $fields[0] on $fields[2]\n";
+	return($out);
+    } elsif (uc($owl::class) eq "MAIL" and uc($owl::instance) eq "INBOX") {
+	$out = "\@bold(MAIL) ";
+	if ($owl::msg =~ /^From:\s+(.+)\s*$/m) { $out .= "From $1 "; }
+	if ($owl::msg =~ /^To:\s+(.+)\s*$/m) { $out .= "To $1 "; }
+	if ($owl::msg =~ /^Subject:\s+(.+)\s*$/m) { $out .= "Subject $1 "; }
+	return($out."\n");
+    }
+
+    ## The remainder formats normal messages (eg, to classes and instances).
+    ## Note that:
+    ##   $out .= "foo";  appends "foo" to the end of the variable $out.
+    ##   lc(bar) will convert bar to lowercase.    
+    ##   "ne" does "not equal" for string comparison.
+    ##   sprintf fills in the %s's with the arguments later on the line.
+    ##   "foo"."bar" will append the two strings together.
+
+    $out = sprintf "[mit,%s,%s] / %s / %s", lc($owl::class), 
+                   lc($owl::instance), $owl::time, lc($owl::host);
+    if ($owl::opcode ne "") {$out.=" op:$owl::opcode";}
+    $out.="\n";
+    $out.= "  \@bold($owl::sender)> ";
+    if ($owl::zsig ne "") {
+	my $zsig = $owl::zsig;
+	$zsig =~ s/(\n.*)+$/ [...]/;
+	if (length($zsig)+5+length($owl::sender) > 70) {
+	    $out.="# ...";
+	} else {
+	    $out.="# $zsig";
+	}
+    }
+    $out.="\n";		
+
+    # This indents the body of the message and then appends it on.
+    $tmp=$owl::msg;
+    $tmp=~s/^/    /g;
+    $tmp=~s/\n/\n    /g;
+    $out.=$tmp;
+
+    # This makes personal messages bold.
+    if (uc($owl::class) eq "MESSAGE" &&
+	uc($owl::instance) eq "PERSONAL") {
+	$out="\@bold{".$out."}";
+    }
+
+    # Finally, this appends a newline and returns the formatted message.
+    return($out."\n");
+}
+
+## This is run when a message is received, and after
+## it has been added to the message list.
+## In most cases you won't need anything here.
+sub owl::receive_msg() {
+    
+    ## If this is uncommented, it would mark all messages
+    ## with opcode "PING" for immediate deletion:
+    #
+    # if (uc($owl::opcode) eq "PING") {
+    #    owl::command("delete -id $owl::id");
+    # }
+
+    ## If this is uncommented, it would mark all messages
+    ## with class "LOGIN" for immediate deletion:
+    #
+    # if (uc($owl::login) eq "LOGIN") {
+    #    owl::command("delete -id $owl::id");
+    # }
+
+    return 1;
+}
