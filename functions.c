@@ -1785,6 +1785,12 @@ void owl_function_status()
   owl_fmtext_append_normal(&fm, "  Startup Arugments: ");
   owl_fmtext_append_normal(&fm, owl_global_get_startupargs(&g));
   owl_fmtext_append_normal(&fm, "\n");
+
+  owl_fmtext_append_normal(&fm, "  Current Directory: ");
+  (void) getcwd(buff, MAXPATHLEN);
+  owl_fmtext_append_normal(&fm, buff);
+  owl_fmtext_append_normal(&fm, "\n");
+
   sprintf(buff, "  Startup Time: %s", ctime(&start));
   owl_fmtext_append_normal(&fm, buff);
 

@@ -8,6 +8,7 @@ $Id$
 	Command line arg -D turns on debugging and deletes previous
 	  debugging file
 	Do ~ expansion in 'dump' command.
+	Current directory added to 'status' command
 	
 2.0.13
 	Changed startup message for new mailing list
