@@ -1,5 +1,8 @@
 $Id$
 
+2.0.13
+	Changed startup message for new mailing list
+	
 2.0.12
 	Command history now doesn't allow the last entry
 	   to be repeated

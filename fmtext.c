@@ -159,34 +159,6 @@ void owl_fmtext_append_spaces(owl_fmtext *f, int nspaces)
   }
 }
 
-/* requires that the list values are strings or NULL.
- * joins the elements together with join_with. 
- * If format_fn is specified, passes it the list element value
- * and it will return a string which this needs to free. */
-void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(format_fn)(void*))
-{
-  int i, size;
-  void *elem;
-  char *text;
-
-  size = owl_list_get_size(l);
-  for (i=0; i<size; i++) {
-    elem = (char*)owl_list_get_element(l,i);
-    if (elem && format_fn) {
-      text = format_fn(elem);
-      if (text) {
-	owl_fmtext_append_normal(f, text);
-	owl_free(text);
-      }
-    } else if (elem) {
-      owl_fmtext_append_normal(f, elem);
-    }
-    if ((i < size-1) && join_with) {
-      owl_fmtext_append_normal(f, join_with);
-    }
-  }
-}
-
 /* Return a plain version of the fmtext.  Caller is responsible for
  * freeing the return
  */
@@ -361,20 +333,12 @@ char *owl_fmtext_get_text(owl_fmtext *f)
   return(f->textbuff);
 }
 
+/* set the charater at 'index' to be 'char'.  If index is out of
+ * bounds don't do anything */
 void owl_fmtext_set_char(owl_fmtext *f, int index, int ch)
 {
-  /* set the charater at 'index' to be 'char'.  If index is out of
-   * bounds don't do anything */
   if ((index < 0) || (index > f->textlen-1)) return;
   f->textbuff[index]=ch;
-}
-
-/* Free all memory allocated by the object */
-void owl_fmtext_free(owl_fmtext *f)
-{
-  if (f->textbuff) owl_free(f->textbuff);
-  if (f->fmbuff) owl_free(f->fmbuff);
-  if (f->colorbuff) owl_free(f->colorbuff);
 }
 
 /* Make a copy of the fmtext 'src' into 'dst' */
@@ -622,3 +586,40 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
     }
   }
 }
+
+/* requires that the list values are strings or NULL.
+ * joins the elements together with join_with. 
+ * If format_fn is specified, passes it the list element value
+ * and it will return a string which this needs to free. */
+void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(format_fn)(void*))
+{
+  int i, size;
+  void *elem;
+  char *text;
+
+  size = owl_list_get_size(l);
+  for (i=0; i<size; i++) {
+    elem = (char*)owl_list_get_element(l,i);
+    if (elem && format_fn) {
+      text = format_fn(elem);
+      if (text) {
+	owl_fmtext_append_normal(f, text);
+	owl_free(text);
+      }
+    } else if (elem) {
+      owl_fmtext_append_normal(f, elem);
+    }
+    if ((i < size-1) && join_with) {
+      owl_fmtext_append_normal(f, join_with);
+    }
+  }
+}
+
+/* Free all memory allocated by the object */
+void owl_fmtext_free(owl_fmtext *f)
+{
+  if (f->textbuff) owl_free(f->textbuff);
+  if (f->fmbuff) owl_free(f->fmbuff);
+  if (f->colorbuff) owl_free(f->colorbuff);
+}
+

@@ -56,6 +56,9 @@ int main(int argc, char **argv, char **env) {
   int newstderr;
 #endif
 
+  owl_function_debugmsg("startup: it's the very best place to start");
+
+  owl_function_debugmsg("startup: processing command line arguments");
   argcsave=argc;
   argvsave=argv;
   configfile=NULL;
@@ -105,6 +108,7 @@ int main(int argc, char **argv, char **env) {
 
 #ifdef HAVE_LIBZEPHYR
   /* zephyr init */
+  owl_function_debugmsg("startup: initializing zephyr");
   ret=owl_zephyr_initialize();
   if (ret) {
     exit(1);
@@ -112,6 +116,7 @@ int main(int argc, char **argv, char **env) {
 #endif
   
   /* signal handler */
+  owl_function_debugmsg("startup: setting up signal handler");
   sigact.sa_handler=sig_handler;
   sigemptyset(&sigact.sa_mask);
   sigact.sa_flags=0;
@@ -119,6 +124,7 @@ int main(int argc, char **argv, char **env) {
   sigaction(SIGALRM, &sigact, NULL);
 
   /* screen init */
+  owl_function_debugmsg("startup: initializing screen");
   sprintf(buff, "TERMINFO=%s", TERMINFO);
   putenv(buff);
   initscr();
@@ -142,6 +148,7 @@ int main(int argc, char **argv, char **env) {
   }
 
   /* owl global init */
+  owl_function_debugmsg("startup: doing owl global initialization");
   owl_global_init(&g);
   if (debug) owl_global_set_debug_on(&g);
   owl_global_set_startupargs(&g, argcsave, argvsave);
@@ -151,16 +158,19 @@ int main(int argc, char **argv, char **env) {
   owl_global_set_haveaim(&g);
 
 #if OWL_STDERR_REDIR
-  /* Do this only after we've started curses up... */  
+  /* Do this only after we've started curses up... */
+  owl_function_debugmsg("startup: doing stderr redirection");
   newstderr = stderr_replace();
 #endif   
 
   /* create the owl directory, in case it does not exist */
+  owl_function_debugmsg("startup: creating owl directory, if not present");
   dir=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_CONFIG_DIR);
   mkdir(dir, S_IRWXU);
   owl_free(dir);
 
   /* set the tty, either from the command line, or by figuring it out */
+  owl_function_debugmsg("startup: setting tty name");
   if (tty) {
     owl_global_set_tty(&g, tty);
   } else {
@@ -168,6 +178,7 @@ int main(int argc, char **argv, char **env) {
   }
 
   /* setup the built-in styles */
+  owl_function_debugmsg("startup: creating built-in styles");
   s=owl_malloc(sizeof(owl_style));
   owl_style_create_internal(s, "default", &owl_stylefunc_default,
 			    "Default message formatting");
@@ -191,6 +202,7 @@ int main(int argc, char **argv, char **env) {
   /* setup the default filters */
   /* the personal filter will need to change again when AIM chat's are
    *  included.  Also, there should be an %aimme% */
+  owl_function_debugmsg("startup: creating default filters");
   f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "personal", "( type ^zephyr$ "
 			     "and class ^message$ and instance ^personal$ "
@@ -239,15 +251,19 @@ int main(int argc, char **argv, char **env) {
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   /* set the current view */
+  owl_function_debugmsg("startup: setting the current view");
   owl_view_create(owl_global_get_current_view(&g), "main", f, owl_global_get_style_by_name(&g, "default"));
 
   /* AIM init */
+  owl_function_debugmsg("startup: doing AIM initialization");
   owl_aim_init();
 
   /* process the startup file */
+  owl_function_debugmsg("startup: processing startup file");
   owl_function_source(NULL);
 
   /* read the config file */
+  owl_function_debugmsg("startup: processing config file");
   owl_context_set_readconfig(owl_global_get_context(&g));
   perlerr=owl_perlconfig_readconfig(configfile);
   if (perlerr) {
@@ -268,9 +284,9 @@ int main(int argc, char **argv, char **env) {
   }
 
   /* execute the startup function in the configfile */
+  owl_function_debugmsg("startup: executing perl startup, if applicable");
   perlout = owl_perlconfig_execute("owl::startup();");
   if (perlout) owl_free(perlout);
-  owl_function_debugmsg("-- Owl Startup --");
   
   /* hold on to the window names for convenience */
   msgwin=owl_global_get_curs_msgwin(&g);
@@ -280,6 +296,7 @@ int main(int argc, char **argv, char **env) {
   tw=owl_global_get_typwin(&g);
 
   /* welcome message */
+  owl_function_debugmsg("startup: creating splash message");
   strcpy(startupmsg, "-----------------------------------------------------------------------\n");
   sprintf(buff,      "Welcome to Owl version %s.  Press 'h' for on-line help. \n", OWL_VERSION_STRING);
   strcat(startupmsg, buff);
@@ -297,6 +314,7 @@ int main(int argc, char **argv, char **env) {
 
   /* load zephyr subs */
   if (initialsubs) {
+    owl_function_debugmsg("startup: loading initial zephyr subs");
     /* load normal subscriptions */
     ret=owl_zephyr_loadsubs(NULL);
     if (ret==-1) {
@@ -311,12 +329,14 @@ int main(int argc, char **argv, char **env) {
 
     /* load login subscriptions */
     if (owl_global_is_loginsubs(&g)) {
+      owl_function_debugmsg("startup: loading login subs");
       owl_function_loadloginsubs(NULL);
     }
   }
 
   /* set the startup and default style, based on userclue and presence of a
    * formatting function */
+  owl_function_debugmsg("startup: setting startup and default style");
   if (0 != strcmp(owl_global_get_default_style(&g), "__unspecified__")) {
     /* the style was set by the user: leave it alone */
   } else if (owl_global_is_config_format(&g)) {
@@ -329,17 +349,21 @@ int main(int argc, char **argv, char **env) {
 
   /* zlog in if we need to */
   if (owl_global_is_startuplogin(&g)) {
+    owl_function_debugmsg("startup: doing zlog in");
     owl_zephyr_zlog_in();
   }
 
+  owl_function_debugmsg("startup: set style for the view");
   owl_view_set_style(owl_global_get_current_view(&g), 
 		     owl_global_get_style_by_name(&g, owl_global_get_default_style(&g)));   
-  
+
+  owl_function_debugmsg("startup: setting context interactive");
   owl_context_set_interactive(owl_global_get_context(&g));
 
   nexttimediff=10;
   nexttime=time(NULL);
 
+  owl_function_debugmsg("startup: entering main loop");
   /* main loop */
   while (1) {
 

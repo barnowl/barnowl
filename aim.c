@@ -115,7 +115,7 @@ void owl_aim_init(void)
   aim_setdebuggingcb(owl_global_get_aimsess(&g), faimtest_debugcb);
 
   /* an experiment to expose idle time */
-  aim_ssi_setpresence(owl_global_get_aimsess(&g), 0x00000400);
+  /* aim_ssi_setpresence(owl_global_get_aimsess(&g), 0x00000400); */
 }
 
 
@@ -135,74 +135,19 @@ int owl_aim_login(char *screenname, char *password)
 
   aim_tx_setenqueue(owl_global_get_aimsess(&g), AIM_TX_IMMEDIATE, NULL);
   
-  /* login */
+  /* request a login */
   ret=login(owl_global_get_aimsess(&g), priv->screenname, priv->password);
   if (ret) {
     owl_global_set_aimnologgedin(&g);
     owl_global_set_no_doaimevents(&g);
     return(-1);
   }
+
+  /* start processing AIM events */
   owl_global_set_doaimevents(&g);
 
   return(0);
 }
-
-#if 0
-static void oscar_login(GaimAccount *account)
-{
-  aim_session_t *sess;
-  aim_conn_t *conn;
-  char buf[256];
-  GaimConnection *gc = gaim_account_get_connection(account);
-  struct oscar_data *od = gc->proto_data = g_new0(struct oscar_data, 1);
-
-  gaim_debug(GAIM_DEBUG_MISC, "oscar", "oscar_login: gc = %p\n", gc);
-
-  if (isdigit(*(gaim_account_get_username(account)))) {
-    od->icq = TRUE;
-  } else {
-    gc->flags |= GAIM_CONNECTION_HTML;
-    gc->flags |= GAIM_CONNECTION_AUTO_RESP;
-  }
-  od->buddyinfo = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, oscar_free_buddyinfo);
-
-  sess = g_new0(aim_session_t, 1);
-
-  aim_session_init(sess, AIM_SESS_FLAGS_NONBLOCKCONNECT, 0);
-  aim_setdebuggingcb(sess, oscar_debug);
-
-  /* we need an immediate queue because we don't use a while-loop to
-   * see if things need to be sent. */
-  aim_tx_setenqueue(sess, AIM_TX_IMMEDIATE, NULL);
-  od->sess = sess;
-  sess->aux_data = gc;
-
-  conn = aim_newconn(sess, AIM_CONN_TYPE_AUTH, NULL);
-  if (conn == NULL) {
-    gaim_debug(GAIM_DEBUG_ERROR, "oscar",
-	       "internal connection error\n");
-    gaim_connection_error(gc, _("Unable to login to AIM"));
-    return;
-  }
-
-  g_snprintf(buf, sizeof(buf), _("Signon: %s"), gaim_account_get_username(account));
-  gaim_connection_update_progress(gc, buf, 2, 5);
-
-  aim_conn_addhandler(sess, conn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNERR, gaim_connerr, 0);
-  aim_conn_addhandler(sess, conn, 0x0017, 0x0007, gaim_parse_login, 0);
-  aim_conn_addhandler(sess, conn, 0x0017, 0x0003, gaim_parse_auth_resp, 0);
-
-  conn->status |= AIM_CONN_STATUS_INPROGRESS;
-  if (gaim_proxy_connect(account, gaim_account_get_string(account, "server", FAIM_LOGIN_SERVER),
-			 gaim_account_get_int(account, "port", FAIM_LOGIN_PORT),
-			 oscar_login_connect, gc) < 0) {
-    gaim_connection_error(gc, _("Couldn't connect to host"));
-    return;
-  }
-  aim_request_login(sess, conn, gaim_account_get_username(account));
-}
-#endif
-
 
 /* stuff to run once login has been successful */
 void owl_aim_successful_login(char *screenname)
@@ -268,7 +213,16 @@ int owl_aim_send_im(char *to, char *msg)
 
 void owl_aim_addbuddy(char *name)
 {
+
   aim_ssi_addbuddy(owl_global_get_aimsess(&g), name, "Buddies", NULL, NULL, NULL, 0);
+
+  /*
+  aim_ssi_addbuddy(owl_global_get_aimsess(&g),
+		   name,
+		   "Buddies",
+		   NULL, NULL, NULL,
+		   aim_ssi_waitingforauth(owl_global_get_aimsess(&g)->ssi.local, "Buddies", name));
+  */
 }
 
 void owl_aim_delbuddy(char *name)
@@ -565,7 +519,7 @@ static int conninitdone_bos(aim_session_t *sess, aim_frame_t *fr, ...)
   aim_im_reqparams(sess);
   aim_bos_reqrights(sess, fr->conn); /* XXX - Don't call this with ssi? */
 
-  /* aim_bos_setprofile(owl_global_get_aimsess(&g), fr->conn, NULL, NULL, 0, NULL, NULL, 0, AIM_CAPS_CHAT); */
+  /* aim_bos_setprofile(owl_global_get_aimsess(&g), fr->conn, NULL, NULL, 0, NULL, NULL, 0, AIM_CAPS_EMPTY); */
 
 #ifdef NOSSI
   /*
@@ -587,18 +541,18 @@ int login(aim_session_t *sess, const char *sn, const char *passwd)
   if (priv->proxy) aim_setupproxy(sess, priv->proxy, priv->proxyusername, priv->proxypass);
 
   if (!priv->screenname || !priv->password) {
-    /* printf("need SN and password\n"); */
+    owl_function_error("Internal error: aim login called without screenname or password");
     return(-1);
   }
 
   if (!(authconn = aim_newconn(sess, AIM_CONN_TYPE_AUTH, priv->server ? priv->server : FAIM_LOGIN_SERVER))) {
-    /* printf("internal connection error during login\n"); */
+    owl_function_error("Internal error: connection error during AIM login\n");
     return (-1);
   } else if (authconn->fd == -1) {
     if (authconn->status & AIM_CONN_STATUS_RESOLVERR) {
-      /* printf("could not resolve authorizer name\n");*/
+      owl_function_error("AIM: could not resolve authorize name");
     } else if (authconn->status & AIM_CONN_STATUS_CONNERR) {
-      /* printf("could not connect to authorizer\n"); */
+      owl_function_error("AIM: could not connect to authorizer");
     }
     aim_conn_kill(sess, &authconn);
     return(-1);
@@ -611,8 +565,8 @@ int login(aim_session_t *sess, const char *sn, const char *passwd)
 
   /* If the connection is in progress, this will just be queued */
   aim_request_login(sess, authconn, priv->screenname);
+  owl_function_debugmsg("AIM login request sent for %s", priv->screenname);
 
-  /* printf("login request sent\n"); */
   return(0);
 }
 
@@ -620,7 +574,7 @@ int login(aim_session_t *sess, const char *sn, const char *passwd)
 static int conninitdone_admin(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   aim_clientready(sess, fr->conn);
-  /* printf("initialization done for admin connection\n"); */
+  owl_function_debugmsg("conninitdone_admin: initializtion done for admin connection");
   return(1);
 }
 
@@ -628,8 +582,9 @@ int logout(aim_session_t *sess)
 {
   aim_session_kill(sess);
   owl_aim_init();
-  
-  /* kretch
+
+  owl_function_debugmsg("libfaim logout called");
+  /*
   if (faimtest_init() == -1)
     printf("faimtest_init failed\n");
   */
@@ -769,6 +724,7 @@ static int faimtest_parse_buddyrights(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("buddy list rights: Max buddies = %d / Max watchers = %d\n", maxbuddies, maxwatchers); */
+  owl_function_debugmsg("in faimtest_parse_buddyrights");
   
   /* aim_ssi_reqrights(sess, fr->conn); */
   aim_ssi_reqrights(sess);
@@ -801,6 +757,8 @@ static int faimtest_locrights(aim_session_t *sess, aim_frame_t *fr, ...)
   va_start(ap, fr);
   maxsiglen = va_arg(ap, int);
   va_end(ap);
+
+  owl_function_debugmsg("in faimtest_parse_locrights");
 
   /* printf("locate rights: max signature length = %d\n", maxsiglen); */
   

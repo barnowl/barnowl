@@ -40,13 +40,13 @@ static struct aim_ssi_item *aim_ssi_itemlist_rebuildgroup(struct aim_ssi_item *l
 {
   int newlen;
   struct aim_ssi_item *cur, *group;
+
+  owl_function_debugmsg("aim_ssi_itemlist_rebuildgroup: in for group %s", name?name:"NULL");
   
-  if (!list)
-    return NULL;
+  if (!list) return(NULL);
   
   /* Find the group */
-  if (!(group = aim_ssi_itemlist_finditem(list, name, NULL, AIM_SSI_TYPE_GROUP)))
-    return NULL;
+  if (!(group = aim_ssi_itemlist_finditem(list, name, NULL, AIM_SSI_TYPE_GROUP))) return(NULL);
   
   /* Free the old data */
   aim_freetlvchain(&group->data);
@@ -63,13 +63,13 @@ static struct aim_ssi_item *aim_ssi_itemlist_rebuildgroup(struct aim_ssi_item *l
       if ((cur->gid == group->gid) && (cur->type == AIM_SSI_TYPE_BUDDY))
 	newlen += 2;
   }
+  owl_function_debugmsg("aim_ssi_itemlist_rebuildgroup: newlen is %i", newlen);
   
   /* Build the new TLV list */
   if (newlen > 0) {
     fu8_t *newdata;
     
-    if (!(newdata = (fu8_t *)malloc((newlen)*sizeof(fu8_t))))
-      return NULL;
+    if (!(newdata = (fu8_t *)malloc((newlen)*sizeof(fu8_t)))) return NULL;
     newlen = 0;
     if (group->gid == 0x0000) {
       for (cur=list; cur; cur=cur->next)
@@ -84,7 +84,8 @@ static struct aim_ssi_item *aim_ssi_itemlist_rebuildgroup(struct aim_ssi_item *l
     
     free(newdata);
   }
-  
+
+  owl_function_debugmsg("aim_ssi_itemlist_rebuildgroup: exiting");
   return group;
 }
 
@@ -176,16 +177,20 @@ static int aim_ssi_itemlist_del(struct aim_ssi_item **list, struct aim_ssi_item 
 {
   if (!list || !(*list) || !del) return -EINVAL;
 
+  owl_function_debugmsg("aim_ssi_itemlist_del: in");
   /* Remove the item from the list */
   if (*list == del) {
     *list = (*list)->next;
+    owl_function_debugmsg("aim_ssi_itemlist_del: deleted %s from beginning of list", del->name);
   } else {
     struct aim_ssi_item *cur;
     for (cur=*list; (cur->next && (cur->next!=del)); cur=cur->next);
     if (cur->next) cur->next=cur->next->next;
+    owl_function_debugmsg("aim_ssi_itemlist_del: deleted %s from middle of list", del->name);
   }
 
   /* Free the deleted item */
+  owl_function_debugmsg("aim_ssi_itemlist_del: freeing");
   free(del->name);
   aim_freetlvchain(&del->data);
   free(del);
@@ -449,13 +454,16 @@ static int aim_ssi_sync(aim_session_t *sess)
 {
   struct aim_ssi_item *cur1, *cur2;
   struct aim_ssi_tmp *cur, *new;
+
+  owl_function_debugmsg("aim_ssi_sync: beginning");
   
-  if (!sess)
-    return -EINVAL;
-  
+  if (!sess) return (-EINVAL);
+
   /* If we're waiting for an ack, we shouldn't do anything else */
-  if (sess->ssi.waiting_for_ack)
+  if (sess->ssi.waiting_for_ack) {
+    owl_function_debugmsg("Aborting aim_ssi_sync, waiting for ack");
     return 0;
+  }
   
   /*
    * Compare the 2 lists and create an aim_ssi_tmp for each difference.  
@@ -465,11 +473,12 @@ static int aim_ssi_sync(aim_session_t *sess)
    * list should be in ascending numerical order for the group ID#s and the 
    * buddy ID#s, which makes things more efficient.  I think.
    */
-  
+
   /* Additions */
   if (!sess->ssi.pending) {
     for (cur1=sess->ssi.local; cur1; cur1=cur1->next) {
       if (!aim_ssi_itemlist_find(sess->ssi.official, cur1->gid, cur1->bid)) {
+	owl_function_debugmsg("aim_ssi_sync: doing addition");
 	new = (struct aim_ssi_tmp *)malloc(sizeof(struct aim_ssi_tmp));
 	new->action = AIM_CB_SSI_ADD;
 	new->ack = 0xffff;
@@ -489,6 +498,7 @@ static int aim_ssi_sync(aim_session_t *sess)
   if (!sess->ssi.pending) {
     for (cur1=sess->ssi.official; cur1; cur1=cur1->next) {
       if (!aim_ssi_itemlist_find(sess->ssi.local, cur1->gid, cur1->bid)) {
+	owl_function_debugmsg("aim_ssi_sync: doing deletion");
 	new = (struct aim_ssi_tmp *)malloc(sizeof(struct aim_ssi_tmp));
 	new->action = AIM_CB_SSI_DEL;
 	new->ack = 0xffff;
@@ -509,6 +519,7 @@ static int aim_ssi_sync(aim_session_t *sess)
     for (cur1=sess->ssi.local; cur1; cur1=cur1->next) {
       cur2 = aim_ssi_itemlist_find(sess->ssi.official, cur1->gid, cur1->bid);
       if (cur2 && (aim_ssi_itemlist_cmp(cur1, cur2))) {
+	owl_function_debugmsg("aim_ssi_sync: doing modification");
 	new = (struct aim_ssi_tmp *)malloc(sizeof(struct aim_ssi_tmp));
 	new->action = AIM_CB_SSI_MOD;
 	new->ack = 0xffff;
@@ -526,15 +537,18 @@ static int aim_ssi_sync(aim_session_t *sess)
   
   /* We're out of stuff to do, so tell the AIM servers we're done and exit */
   if (!sess->ssi.pending) {
+    owl_function_debugmsg("aim_ssi_sync: telling server we're done modifying SSI data.");
     aim_ssi_modend(sess);
     return 0;
   }
   
   /* Make sure we don't send anything else between now 
    * and when we receive the ack for the following operation */
+  owl_function_debugmsg("aim_ssi_sync: setting SSI waiting_for_ack");
   sess->ssi.waiting_for_ack = 1;
   
   /* Now go mail off our data and wait 4 to 6 weeks */
+  owl_function_debugmsg("aim_ssi_sync: about to call addmoddel to send SNACs to server");
   aim_ssi_addmoddel(sess);
   
   return 0;
@@ -788,7 +802,7 @@ faim_export int aim_ssi_delbuddy(aim_session_t *sess, const char *name, const ch
   
   /* Remove the item from the list */
   aim_ssi_itemlist_del(&sess->ssi.local, del);
-  
+
   /* Modify the parent group */
   aim_ssi_itemlist_rebuildgroup(sess->ssi.local, group);
   
@@ -806,6 +820,7 @@ faim_export int aim_ssi_delbuddy(aim_session_t *sess, const char *name, const ch
   }
   
   /* Sync our local list with the server list */
+  owl_function_debugmsg("aim_ssi_delbuddy: about to sync");
   aim_ssi_sync(sess);
   
   return(0);
@@ -1260,39 +1275,37 @@ faim_export int aim_ssi_addmoddel(aim_session_t *sess)
   int snaclen;
   struct aim_ssi_tmp *cur;
   
-  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)) || !sess->ssi.pending || !sess->ssi.pending->item)
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)) || !sess->ssi.pending || !sess->ssi.pending->item) {
+    owl_function_debugmsg("aim_ssi_addmoddel: aborting early");
     return -EINVAL;
+  }
   
   /* Calculate total SNAC size */
   snaclen = 10; /* For family, subtype, flags, and SNAC ID */
   for (cur=sess->ssi.pending; cur; cur=cur->next) {
     snaclen += 10; /* For length, GID, BID, type, and length */
-    if (cur->item->name)
-      snaclen += strlen(cur->item->name);
-    if (cur->item->data)
-      snaclen += aim_sizetlvchain(&cur->item->data);
+    if (cur->item->name) snaclen += strlen(cur->item->name);
+    if (cur->item->data) snaclen += aim_sizetlvchain(&cur->item->data);
   }
   
-  if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, snaclen)))
-    return -ENOMEM;
+  if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, snaclen))) return (-ENOMEM);
   
   snacid = aim_cachesnac(sess, AIM_CB_FAM_SSI, sess->ssi.pending->action, 0x0000, NULL, 0);
   aim_putsnac(&fr->data, AIM_CB_FAM_SSI, sess->ssi.pending->action, 0x0000, snacid);
   
   for (cur=sess->ssi.pending; cur; cur=cur->next) {
     aimbs_put16(&fr->data, cur->item->name ? strlen(cur->item->name) : 0);
-    if (cur->item->name)
-      aimbs_putraw(&fr->data, cur->item->name, strlen(cur->item->name));
+    if (cur->item->name) aimbs_putraw(&fr->data, cur->item->name, strlen(cur->item->name));
     aimbs_put16(&fr->data, cur->item->gid);
     aimbs_put16(&fr->data, cur->item->bid);
     aimbs_put16(&fr->data, cur->item->type);
     aimbs_put16(&fr->data, cur->item->data ? aim_sizetlvchain(&cur->item->data) : 0);
-    if (cur->item->data)
-      aim_writetlvchain(&fr->data, &cur->item->data);
+    if (cur->item->data) aim_writetlvchain(&fr->data, &cur->item->data);
   }
   
   aim_tx_enqueue(sess, fr);
-  
+
+  owl_function_debugmsg("aim_ssi_addmoddel: exiting normally");
   return 0;
 }
 
@@ -1440,6 +1453,8 @@ static int parseack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
   int ret = 0;
   aim_rxcallback_t userfunc;
   struct aim_ssi_tmp *cur, *del;
+
+  owl_function_debugmsg("Handling SNAC SSI ACK");
   
   /* Read in the success/failure flags from the ack SNAC */
   cur = sess->ssi.pending;
@@ -1454,10 +1469,12 @@ static int parseack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
    * local list, or unmodify it, or add it.
    */
   for (cur=sess->ssi.pending; (cur && (cur->ack != 0xffff)); cur=cur->next) {
+    owl_function_debugmsg("parseack: processing a change");
     if (cur->item) {
       if (cur->ack) {
 	/* Our action was unsuccessful, so change the local list back to how it was */
 	if (cur->action == AIM_CB_SSI_ADD) {
+	  owl_function_debugmsg("parseack: unsuccesful add, reverting");
 	  /* Remove the item from the local list */
 	  /* Make sure cur->item is still valid memory */
 	  if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
@@ -1471,6 +1488,7 @@ static int parseack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 	  
 	} else if (cur->action == AIM_CB_SSI_MOD) {
 	  /* Replace the local item with the item from the official list */
+	  owl_function_debugmsg("parseack: unsuccesful modify, reverting");
 	  if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
 	    struct aim_ssi_item *cur1;
 	    if ((cur1 = aim_ssi_itemlist_find(sess->ssi.official, cur->item->gid, cur->item->bid))) {
@@ -1488,6 +1506,7 @@ static int parseack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 	  
 	} else if (cur->action == AIM_CB_SSI_DEL) {
 	  /* Add the item back into the local list */
+	  owl_function_debugmsg("parseack: unsuccesful delete, reverting");
 	  if (aim_ssi_itemlist_valid(sess->ssi.official, cur->item)) {
 	    aim_ssi_itemlist_add(&sess->ssi.local, cur->item->name, cur->item->gid, cur->item->bid, cur->item->type, cur->item->data);
 	  } else
@@ -1498,6 +1517,7 @@ static int parseack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 	/* Do the exact opposite */
 	if (cur->action == AIM_CB_SSI_ADD) {
 	  /* Add the local item to the official list */
+	  owl_function_debugmsg("parseack: succesful add");
 	  if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
 	    aim_ssi_itemlist_add(&sess->ssi.official, cur->item->name, cur->item->gid, cur->item->bid, cur->item->type, cur->item->data);
 	  } else
@@ -1505,6 +1525,7 @@ static int parseack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 	  
 	} else if (cur->action == AIM_CB_SSI_MOD) {
 	  /* Replace the official item with the item from the local list */
+	  owl_function_debugmsg("parseack: succesful modify");
 	  if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
 	    struct aim_ssi_item *cur1;
 	    if ((cur1 = aim_ssi_itemlist_find(sess->ssi.official, cur->item->gid, cur->item->bid))) {
@@ -1522,6 +1543,7 @@ static int parseack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 	  
 	} else if (cur->action == AIM_CB_SSI_DEL) {
 	  /* Remove the item from the official list */
+	  owl_function_debugmsg("parseack: succesful delete");
 	  if (aim_ssi_itemlist_valid(sess->ssi.official, cur->item))
 	    aim_ssi_itemlist_del(&sess->ssi.official, cur->item);
 	  cur->item = NULL;
@@ -1545,11 +1567,15 @@ static int parseack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
   sess->ssi.pending = cur;
   
   /* If we're not waiting for any more acks, then send more SNACs */
+
   if (!sess->ssi.pending) {
     sess->ssi.pending = NULL;
     sess->ssi.waiting_for_ack = 0;
+    owl_function_debugmsg("parseack: Clearing SSI waiting_for_ack");
     aim_ssi_sync(sess);
   }
+
+  owl_function_debugmsg("parseack: returning with %i", ret);
   
   return ret;
 }
@@ -1600,8 +1626,7 @@ faim_export int aim_ssi_modend(aim_session_t *sess)
 {
   aim_conn_t *conn;
   
-  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
-    return -EINVAL;
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI))) return -EINVAL;
   
   return aim_genericreq_n(sess, conn, AIM_CB_FAM_SSI, AIM_CB_SSI_EDITSTOP);
 }
