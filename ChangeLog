@@ -2,6 +2,8 @@ $Id$
 
 2.1.5-pre-1
 	Added a licence
+	The 'personalbell' variable can now be set to 'on' 'off' or
+	  the name of a filter to match against
 	
 2.1.4
 	Normalize and downcase AIM names for logging

@@ -521,12 +521,21 @@ int main(int argc, char **argv, char **env)
       }
 
       /* ring the bell if it's a personal */
-      if (owl_global_is_personalbell(&g) &&
-	  !owl_message_is_loginout(m) &&
-	  !owl_message_is_mail(m) &&
-	  owl_message_is_private(m)) {
-	owl_function_beep();
+      if (!strcmp(owl_global_get_personalbell(&g), "on")) {
+	  if (!owl_message_is_loginout(m) &&
+	      !owl_message_is_mail(m) &&
+	      owl_message_is_private(m)) {
+	    owl_function_beep();
+	  }
+      } else if (!strcmp(owl_global_get_personalbell(&g), "off")) {
+	/* do nothing */
+      } else {
+	f=owl_global_get_filter(&g, owl_global_get_personalbell(&g));
+	if (f && owl_filter_message_match(f, m)) {
+	  owl_function_beep();
+	}
       }
+
 
       /* if it matches the alert filter, do the alert action */
       f=owl_global_get_filter(&g, owl_global_get_alert_filter(&g));
