@@ -14,6 +14,7 @@ $Id$
 	added the 'show view' command.
 	removed 'set style'
 	A style is now part of a view, the view command has been revamped
+	Bug fix in owl_regex
 
 2.0.4-pre-1
 	Make command line option -n actualy work

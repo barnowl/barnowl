@@ -29,6 +29,7 @@ int owl_regex_create(owl_regex *re, char *string) {
     sprintf(buff2, "Error in regular expression: %s", buff1);
     owl_function_makemsg(buff2);
     owl_free(re->string);
+    re->string=NULL;
     return(-1);
   }
 
@@ -70,5 +71,4 @@ void owl_regex_free(owl_regex *re) {
   if (re->string) owl_free(re->string);
 
   /* do we need to free the regular expression? */
-  
 }
