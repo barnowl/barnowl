@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <string.h>
 #include "owl.h"
 
@@ -77,14 +78,18 @@ int owl_zephyr_loadsubs(char *filename)
   char buffer[1024], subsfile[1024];
   ZSubscription_t subs[3001];
   int count, ret, i;
+  struct stat statbuff;
 
-  ret=0;
-  
   if (filename==NULL) {
     sprintf(subsfile, "%s/%s", owl_global_get_homedir(&g), ".zephyr.subs");
   } else {
     strcpy(subsfile, filename);
   }
+
+  ret=stat(subsfile, &statbuff);
+  if (ret) return(0);
+
+  ret=0;
 
   ZResetAuthentication();
   /* need to redo this to do chunks, not just bail after 3000 */
@@ -123,8 +128,8 @@ int owl_zephyr_loadsubs(char *filename)
     ret=-1;
   }
 
-  /* sub with defaults */
-  if (ZSubscribeTo(subs,count,0) != ZERR_NONE) {
+  /* sub without defaults */
+  if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
     owl_function_error("Error subscribing to zephyr notifications.");
     ret=-2;
   }
@@ -142,6 +147,17 @@ int owl_zephyr_loadsubs(char *filename)
 #endif
 }
 
+int owl_zephyr_loaddefaultsubs()
+{
+  ZSubscription_t subs[10];
+    
+  if (ZSubscribeTo(subs,0,0) != ZERR_NONE) {
+    owl_function_error("Error subscribing to default zephyr notifications.");
+    return(-1);
+  }
+  return(0);
+}
+
 int owl_zephyr_loadloginsubs(char *filename)
 {
 #ifdef HAVE_LIBZEPHYR
@@ -149,14 +165,18 @@ int owl_zephyr_loadloginsubs(char *filename)
   ZSubscription_t subs[3001];
   char subsfile[1024], buffer[1024];
   int count, ret, i;
-
-  ret=0;
+  struct stat statbuff;
 
   if (filename==NULL) {
     sprintf(subsfile, "%s/%s", owl_global_get_homedir(&g), ".anyone");
   } else {
     strcpy(subsfile, filename);
   }
+  
+  ret=stat(subsfile, &statbuff);
+  if (ret) return(0);
+
+  ret=0;
 
   ZResetAuthentication();
   /* need to redo this to do chunks, not just bag out after 3000 */

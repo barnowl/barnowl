@@ -135,12 +135,13 @@ static owl_variable variables_to_init[] = {
 	       "Do automatic zcrypt processing",
 	       "" ),
 
-  OWLVAR_BOOL( "pseudologins" /* %OwlVarStub */, 0,
-	       "Enable zephyr pseudo logins",
-	       "When this is enabled, Owl will periodically check the zephyr\n"
-	       "location of users in your .anyone file.  If a user is present\n"
-	       "but sent no login message, or a user is not present that sent no\n"
-	       "logout message a pseudo login or logout message wil be created\n"),
+  OWLVAR_BOOL_FULL( "pseudologins" /* %OwlVarStub */, 0,
+		    "Enable zephyr pseudo logins",
+		    "When this is enabled, Owl will periodically check the zephyr\n"
+		    "location of users in your .anyone file.  If a user is present\n"
+		    "but sent no login message, or a user is not present that sent no\n"
+		    "logout message a pseudo login or logout message wil be created\n",
+		    NULL, owl_variable_pseudologins_set, NULL),
 
   OWLVAR_BOOL( "ignorelogins" /* %OwlVarStub */, 0,
 	       "Enable printing of login notifications",
@@ -351,21 +352,23 @@ static owl_variable variables_to_init[] = {
 
 /* commonly useful */
 
-int owl_variable_int_validate_gt0(owl_variable *v, void *newval) {
+int owl_variable_int_validate_gt0(owl_variable *v, void *newval)
+{
   if (newval == NULL) return(0);
   else if (*(int*)newval < 1) return(0);
   else return (1);
 }
 
-int owl_variable_int_validate_positive(owl_variable *v, void *newval) {
+int owl_variable_int_validate_positive(owl_variable *v, void *newval)
+{
   if (newval == NULL) return(0);
   else if (*(int*)newval < 0) return(0);
   else return (1);
 }
 
 /* typewinsize */
-
-int owl_variable_typewinsize_set(owl_variable *v, void *newval) {
+int owl_variable_typewinsize_set(owl_variable *v, void *newval)
+{
   int rv;
   rv = owl_variable_int_set_default(v, newval);
   if (0 == rv) owl_function_resize();
@@ -373,7 +376,8 @@ int owl_variable_typewinsize_set(owl_variable *v, void *newval) {
 }
 
 /* debug (cache value in g->debug) */
-int owl_variable_debug_set(owl_variable *v, void *newval) {
+int owl_variable_debug_set(owl_variable *v, void *newval)
+{
   if (newval && (*(int*)newval == 1 || *(int*)newval == 0)) {
     g.debug = *(int*)newval;
   }
@@ -381,7 +385,8 @@ int owl_variable_debug_set(owl_variable *v, void *newval) {
 }
 
 /* When 'aaway' is changed, need to notify the AIM server */
-int owl_variable_aaway_set(owl_variable *v, void *newval) {
+int owl_variable_aaway_set(owl_variable *v, void *newval)
+{
   if (newval) {
     if (*(int*)newval == 1) {
       owl_aim_set_awaymsg(owl_global_get_aaway_msg(&g));
@@ -392,9 +397,20 @@ int owl_variable_aaway_set(owl_variable *v, void *newval) {
   return owl_variable_bool_set_default(v, newval);
 }
 
+int owl_variable_pseudologins_set(owl_variable *v, void *newval)
+{
+  if (newval) {
+    if (*(int*)newval == 1) {
+      owl_function_zephyr_buddy_check(0);
+    }
+  }
+  return owl_variable_bool_set_default(v, newval);
+}
+
 /* note that changing the value of this will clobber 
  * any user setting of this */
-int owl_variable_disable_ctrl_d_set(owl_variable *v, void *newval) {
+int owl_variable_disable_ctrl_d_set(owl_variable *v, void *newval)
+{
 
   if (in_regtest) return owl_variable_int_set_default(v, newval);
 
@@ -410,7 +426,8 @@ int owl_variable_disable_ctrl_d_set(owl_variable *v, void *newval) {
   return owl_variable_int_set_default(v, newval);  
 }
 
-int owl_variable_tty_set(owl_variable *v, void *newval) {
+int owl_variable_tty_set(owl_variable *v, void *newval)
+{
   owl_zephyr_set_locationinfo(owl_global_get_hostname(&g), newval);
   return(owl_variable_string_set_default(v, newval));
 }

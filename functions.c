@@ -809,9 +809,12 @@ void owl_function_unsuball()
 
 void owl_function_loadsubs(char *file)
 {
-  int ret;
+  int ret, ret2;
 
   ret=owl_zephyr_loadsubs(file);
+
+  /* for backwards compatibility for now */
+  ret2=owl_zephyr_loaddefaultsubs();
 
   if (!owl_context_is_interactive(owl_global_get_context(&g))) return;
   if (ret==0) {

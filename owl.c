@@ -325,16 +325,18 @@ int main(int argc, char **argv, char **env)
 
   /* load zephyr subs */
   if (initialsubs) {
+    int ret2;
     owl_function_debugmsg("startup: loading initial zephyr subs");
-    /* load normal subscriptions */
-    ret=owl_zephyr_loadsubs(NULL);
-    if (ret==-1) {
-      owl_function_adminmsg("", "Error loading zephyr subscriptions, file inaccessable");
-    } else if (ret!=0) {
-      owl_function_adminmsg("", "Error loading zephyr subscriptions");
-    }
+
+    /* load default subscriptions */
+    ret=owl_zephyr_loaddefaultsubs();
     
-    if (ret!=-1) {
+    /* load subscriptions from subs file */
+    ret2=owl_zephyr_loadsubs(NULL);
+
+    if (ret || ret2) {
+      owl_function_adminmsg("", "Error loading zephyr subscriptions");
+    } else if (ret2!=-1) {
       owl_global_add_userclue(&g, OWL_USERCLUE_CLASSES);
     }
 
@@ -347,7 +349,7 @@ int main(int argc, char **argv, char **env)
 
   /* First buddy check to sync the list without notifications */
   owl_function_debugmsg("startup: doing initial zephyr buddy check");
-  owl_function_zephyr_buddy_check(0);
+  /* owl_function_zephyr_buddy_check(0); */
 
   /* set the startup and default style, based on userclue and presence of a
    * formatting function */
