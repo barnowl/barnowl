@@ -601,8 +601,6 @@ int main(int argc, char **argv, char **env) {
       }
     }
 
-    owl_function_debugmsg("main loop iteration end");
-
   }
 }
 
