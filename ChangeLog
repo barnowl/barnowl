@@ -18,6 +18,7 @@ $Id$
 	  next patch.
 	The 'A' key is bound to 'away'
 	Status bar can now read AWAY, Z-AWAY or A-AWAY.
+	Changed C-n to scroll down just a line in popless
  	
 2.1.1-pre-1
 	Only print forced AIM logout message once.
