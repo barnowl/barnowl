@@ -6,7 +6,7 @@ $Id$
 	Temporary fix to bug where C-SPACE would cause the key handler to
 	     lock up.
 	Messages now have a direciton (in, out or none).  Filters can
-             this direction
+	     match on this direction
 	Outbound messages are no longer type 'admin' but are of the
 	     appropriate message type (i.e. 'zephyr') and are direction
 	     'out'.

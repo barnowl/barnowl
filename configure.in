@@ -27,39 +27,6 @@ else
 	AC_MSG_RESULT(no)
 fi
 
-dnl A hack for myself to use gnu curses
-dnl AC_MSG_CHECKING(for mit gnu hack)
-dnl if test -d /mit/gnu/include; then
-dnl 	CFLAGS=${CFLAGS}\ -I/mit/gnu/include
-dnl 	AC_MSG_RESULT(yes)
-dnl else
-dnl 	AC_MSG_RESULT(no)
-dnl fi
-
-
-dnl Solaris ships with a broken curses.h
-dnl AC_MSG_CHECKING(for solaris broken curses.h)
-dnl if grep "Sun Microsystems" /usr/include/curses.h > /dev/null 2> /dev/null; then
-dnl   if test  "`grep -c getwc\(stdin\) /usr/include/widec.h`" = "2" ; then
-dnl     rm -rf includefix
-dnl     mkdir includefix
-dnl     sed -e 's/<widec.h>/\"widec.h\"/' /usr/include/curses.h > ./includefix/curses.h
-dnl  
-dnl     sed -e 's/<wchar.h>/\"wchar.h\"/' \
-dnl         -e 's/^#define.putwchar.*//' \
-dnl         -e 's/^#define.getwchar().*//' \
-dnl         -e 's/^#define.getwc(p).*//' \
-dnl         -e 's/^#define.putwc(x, p).*//' \
-dnl         /usr/include/widec.h > includefix/widec.h
-dnl     CFLAGS=-I./includefix\ ${CFLAGS}
-dnl     AC_MSG_RESULT(yes)
-dnl   fi
-dnl else
-dnl   AC_MSG_RESULT(no)
-dnl fi
-
-
-
 AC_CHECK_LIB(ncurses, initscr,,
    AC_CHECK_LIB(curses, initscr,, AC_MSG_ERROR(No curses library found.)))
 AC_CHECK_LIB(com_err, com_err)

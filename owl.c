@@ -18,6 +18,7 @@
 #include <zephyr/zephyr.h>
 #include <com_err.h>
 #include <signal.h>
+#include <time.h>
 #include <sys/param.h>
 #include "owl.h"
 
@@ -108,13 +109,6 @@ int main(int argc, char **argv, char **env) {
   raw();
   noecho();
 
-#if 0 /* Removed to prevent flashing of popwin */
-  intrflush(stdscr,FALSE);
-  keypad(stdscr,TRUE);
-  nodelay(stdscr,1);
-  meta(stdscr,TRUE);
-#endif /*0*/
-
   /* define simple color pairs */
   if (has_colors() && COLOR_PAIRS>=8) {
     init_pair(OWL_COLOR_BLACK,   COLOR_BLACK,   -1);
@@ -132,6 +126,7 @@ int main(int argc, char **argv, char **env) {
   if (debug) owl_global_set_debug_on(&g);
   owl_global_set_startupargs(&g, argcsave, argvsave);
   owl_context_set_readconfig(owl_global_get_context(&g));
+
   if (tty) {
     owl_global_set_tty(&g, tty);
   } else {

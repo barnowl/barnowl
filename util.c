@@ -1,6 +1,7 @@
 #include "owl.h"
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <malloc.h>
 #include <ctype.h>
 
@@ -495,18 +496,18 @@ char *owl_util_color_to_string(int color) {
 
 char *owl_util_get_default_tty() {
   /* call must free the return */
-  char *out;
+  char *out, *tmp;
 
   if (getenv("DISPLAY")) {
     out=owl_strdup(getenv("DISPLAY"));
-  } else if (ttyname(fileno(stdout))) {
-    out=strdup(ttyname(fileno(stdout)));
+  } else if ((tmp=ttyname(fileno(stdout)))!=NULL) {
+    out=owl_strdup(tmp);
     if (!strncmp(out, "/dev/", 5)) {
       owl_free(out);
-      out=strdup(ttyname(fileno(stdout)+5));
+      out=owl_strdup(tmp+5);
     }
   } else {
-    out=strdup("unknown");
+    out=owl_strdup("unknown");
   }
   return(out);
 }
