@@ -699,3 +699,22 @@ void owl_zephyr_delbuddy(char *name)
   owl_util_file_deleteline(filename, name, 0);
   owl_free(filename);
 }
+
+/* return auth string */
+char *owl_zephyr_get_authstr(ZNotice_t *n)
+{
+
+  if (!n) return("UNKNOWN");
+
+  if (n->z_auth == ZAUTH_FAILED) {
+    return ("FAILED");
+  } else if (n->z_auth == ZAUTH_NO) {
+    return ("NO");
+  } else if (n->z_auth == ZAUTH_YES) {
+    return ("YES");
+  } else {
+    return ("UNKNOWN");
+  }           
+}
+
+

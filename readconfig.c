@@ -169,9 +169,17 @@ char *owl_config_getmsg(owl_message *m, char *funcname) {
   /* set owl::type */
   sv_setpv(perl_get_sv("owl::type", TRUE), owl_message_type_to_string(m));
 
+
+  /* set owl::auth default */
+  sv_setpv(perl_get_sv("owl::auth", TRUE), "YES");
+
   /* set owl::direction */
   if (owl_message_is_direction_in(m)) {
     sv_setpv(perl_get_sv("owl::direction", TRUE), "in");
+
+    /* Change auth value for in messages */
+    sv_setpv(perl_get_sv("owl::auth", TRUE), owl_zephyr_get_authstr(owl_message_get_notice(m)));
+
   } else if (owl_message_is_direction_out(m)) {
     sv_setpv(perl_get_sv("owl::direction", TRUE), "out");
   } else if (owl_message_is_direction_none(m)) {

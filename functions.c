@@ -1314,16 +1314,8 @@ void owl_function_info()
       owl_fmtext_append_normal(&fm, buff);
 
       owl_fmtext_append_normal(&fm,    "  Auth      : ");
-      if (n->z_auth == ZAUTH_FAILED) {
-	owl_fmtext_append_normal(&fm, "FAILED\n");
-      } else if (n->z_auth == ZAUTH_NO) {
-	owl_fmtext_append_normal(&fm, "NO\n");
-      } else if (n->z_auth == ZAUTH_YES) {
-	owl_fmtext_append_normal(&fm, "YES\n");
-      } else {
-	sprintf(buff, "Unknown State (%i)\n", n->z_auth);
-	owl_fmtext_append_normal(&fm, buff);
-      }
+      owl_fmtext_append_normal(&fm, owl_zephyr_get_authstr(n));
+      owl_fmtext_append_normal(&fm, "\n");
 
       /* fix this */
       sprintf(buff, "  Checkd Ath: %i\n", n->z_checked_auth);
