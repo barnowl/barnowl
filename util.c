@@ -7,7 +7,8 @@
 
 static const char fileIdent[] = "$Id$";
 
-void sepbar(char *in) {
+void sepbar(char *in)
+{
   char buff[1024];
   WINDOW *sepwin;
   owl_messagelist *ml;
@@ -116,13 +117,15 @@ void sepbar(char *in) {
 }
 
 
-void pophandler_quit(int ch) {
+void pophandler_quit(int ch)
+{
   if (ch=='q') {
     owl_popwin_close(owl_global_get_popwin(&g));
   }
 }
 
-char **atokenize(char *buffer, char *sep, int *i) {
+char **atokenize(char *buffer, char *sep, int *i)
+{
   /* each element of return must be freed by user */
   char **args;
   char *workbuff, *foo;
@@ -170,7 +173,8 @@ char *skiptokens(char *buff, int n) {
   return buff;
 }
 
-void atokenize_free(char **tok, int nels) {
+void atokenize_free(char **tok, int nels)
+{
   int i;
   for (i=0; i<nels; i++) {
     owl_free(tok[i]);
@@ -179,7 +183,8 @@ void atokenize_free(char **tok, int nels) {
 }
 
 
-void owl_parsefree(char **argv, int argc) {
+void owl_parsefree(char **argv, int argc)
+{
   int i;
 
   if (!argv) return;
@@ -190,7 +195,8 @@ void owl_parsefree(char **argv, int argc) {
   owl_free(argv);
 }
 
-char **owl_parseline(char *line, int *argc) {
+char **owl_parseline(char *line, int *argc)
+{
   /* break a command line up into argv, argc.  The caller must free
      the returned values.  If there is an error argc will be set to
      -1, argv will be NULL and the caller does not need to free
@@ -274,10 +280,9 @@ char **owl_parseline(char *line, int *argc) {
 }
 
 
-
-int owl_util_find_trans(char *in, int len) {
-  /* return the index of the last char before a change from the first
-     one */
+/* return the index of the last char before a change from the first one */
+int owl_util_find_trans(char *in, int len)
+{
   int i;
   for (i=1; i<len; i++) {
     if (in[i] != in[0]) return(i-1);
@@ -286,15 +291,18 @@ int owl_util_find_trans(char *in, int len) {
 }
 
 
-void downstr(char *foo) {
+/* downcase the string 'foo' */
+void downstr(char *foo)
+{
   int i;
   for (i=0; foo[i]!='\0'; i++) {
     foo[i]=tolower(foo[i]);
   }
 }
 
-char *stristr(char *a, char *b) {
-  /* exactly like strstr but it's case insensitive */
+/* exactly like strstr but case insensitive */
+char *stristr(char *a, char *b)
+{
   char *x, *y, *ret;
 
   if ((x=owl_strdup(a))==NULL) return(NULL);
@@ -313,13 +321,14 @@ char *stristr(char *a, char *b) {
   return(ret);
 }
 
-char *owl_util_uniq(char *A, char *B, char *prohibit) {
-  /* Caller must free response. 
-     Takes in strings which are space-separated lists of tokens
-     and returns a single string containing no token more than once.
-     If prohibit is non-null, no token may start with a character
-     in prohibit.
-  */
+/* Caller must free response. 
+ * Takes in strings which are space-separated lists of tokens
+ * and returns a single string containing no token more than once.
+ * If prohibit is non-null, no token may start with a character
+ * in prohibit.
+ */
+char *owl_util_uniq(char *A, char *B, char *prohibit)
+{
   
   char *cat, **tok;
   int toklen, i, j, first=1;
@@ -346,9 +355,9 @@ char *owl_util_uniq(char *A, char *B, char *prohibit) {
   return(cat);
 }
 
-int only_whitespace(char *s) {
-  /* returns if a string is only whitespace */
-
+/* return 1 if a string is only whitespace, otherwise 0 */
+int only_whitespace(char *s)
+{
   int i;
   for (i=0; s[i]; i++) {
     if (!isspace((int) s[i])) return(0);
@@ -358,28 +367,33 @@ int only_whitespace(char *s) {
 
 /* hooks for doing memory allocation et. al. in owl */
 
-void *owl_malloc(size_t size) {
+void *owl_malloc(size_t size)
+{
   return(malloc(size));
 }
 
-void owl_free(void *ptr) {
+void owl_free(void *ptr)
+{
   free(ptr);
 }
 
-char *owl_strdup(const char *s1) {
+char *owl_strdup(const char *s1)
+{
   return(strdup(s1));
 }
 
-void *owl_realloc(void *ptr, size_t size) {
+void *owl_realloc(void *ptr, size_t size)
+{
   return(realloc(ptr, size));
 }
 
-char *owl_sprintf(const char *fmt, ...) {
-  /* allocates memory and returns the string or null.
-   * caller must free the string. 
-   * from Linux sprintf man page. 
-   */
-  
+
+/* allocates memory and returns the string or null.
+ * caller must free the string. 
+ * from Linux sprintf man page. 
+ */
+char *owl_sprintf(const char *fmt, ...)
+{
   int n, size = 100;
   char *p;
   va_list ap;
@@ -402,8 +416,11 @@ char *owl_sprintf(const char *fmt, ...) {
   }
 }
 
-/* the caller must free the return */
-char *short_zuser(char *in) {
+/* Strip a local realm fron the zephyr user name.
+ * The caller must free the return
+ */
+char *short_zuser(char *in)
+{
   char *out, *ptr;
 
   out=owl_strdup(in);
@@ -416,8 +433,11 @@ char *short_zuser(char *in) {
   return(out);
 }
 
-/* the caller must free the return */
-char *long_zuser(char *in) {
+/* Append a local realm to the zephyr user name if necessary.
+ * The caller must free the return.
+ */
+char *long_zuser(char *in)
+{
   char *ptr;
 
   if (NULL != (ptr=strchr(in, '@'))) {
@@ -428,11 +448,12 @@ char *long_zuser(char *in) {
 }
 
 
-char *owl_util_smartstripped_user(char *in) {
-  /* strip out the instance from a zsender's principal.  Preserves the
-   * realm if present.  daemon.webzephyr is a special case.  The
-   * caller must free the return */
-
+/* strip out the instance from a zsender's principal.  Preserves the
+ * realm if present.  daemon.webzephyr is a special case.  The
+ * caller must free the return
+ */
+char *owl_util_smartstripped_user(char *in)
+{
   char *ptr, *realm, *out;
 
   out=owl_strdup(in);
@@ -450,7 +471,6 @@ char *owl_util_smartstripped_user(char *in) {
   if (!strncasecmp(in, "daemon.webzephyr", strlen("daemon.webzephyr"))) {
     return(out);
   }
-
 
   /* remove the realm from ptr, but hold on to it */
   realm=strchr(out, '@');
@@ -470,7 +490,8 @@ char *owl_util_smartstripped_user(char *in) {
   return(out);
 }
 
-char *owl_getquoting(char *line) {
+char *owl_getquoting(char *line)
+{
   if (line[0]=='\0') return("'");
   if (strchr(line, '\'')) return("\"");
   if (strchr(line, '"')) return("'");
@@ -478,11 +499,14 @@ char *owl_getquoting(char *line) {
   return("");
 }
 
-char *owl_util_substitute(char *in, char *from, char *to) {
-  /* Caller must free returned string.
-   * Returns a string with any occurances of 'from' replaced with 'to'.
-   * Does not currently handle backslash quoting, but may in the future.
-   */
+
+
+/* Return a string with any occurances of 'from' replaced with 'to'.
+ * Does not currently handle backslash quoting, but may in the future.
+ * Caller must free returned string.
+ */
+char *owl_util_substitute(char *in, char *from, char *to)
+{
   
   char *out;
   int   outlen, tolen, fromlen, inpos=0, outpos=0;
@@ -510,9 +534,11 @@ char *owl_util_substitute(char *in, char *from, char *to) {
   return(out);
 }
 
-void owl_util_tr(char *buff, char a, char b) {
-  /* replace all instances of character a in buff with the character
-     b.  buff must be null terminated */
+/* replace all instances of character a in buff with the character
+ * b.  buff must be null terminated.
+ */
+void owl_util_tr(char *buff, char a, char b)
+{
   int i;
 
   owl_function_debugmsg("In: %s", buff);
@@ -522,7 +548,10 @@ void owl_util_tr(char *buff, char a, char b) {
   owl_function_debugmsg("Out: %s", buff);
 }
 
-int owl_util_string_to_color(char *color) {
+
+/* Return the owl color associated with the named color */
+int owl_util_string_to_color(char *color)
+{
   if (!strcasecmp(color, "black")) {
     return(OWL_COLOR_BLACK);
   } else if (!strcasecmp(color, "red")) {
@@ -545,7 +574,9 @@ int owl_util_string_to_color(char *color) {
   return(OWL_COLOR_DEFAULT);
 }
 
-char *owl_util_color_to_string(int color) {
+/* Return a string name of the given owl color */
+char *owl_util_color_to_string(int color)
+{
   if (color==OWL_COLOR_BLACK)   return("black");
   if (color==OWL_COLOR_RED)     return("red");
   if (color==OWL_COLOR_GREEN)   return("green");
@@ -558,8 +589,9 @@ char *owl_util_color_to_string(int color) {
   return("Unknown color");
 }
 
-char *owl_util_get_default_tty() {
-  /* call must free the return */
+/* Get the default tty name.  Caller must free the return */
+char *owl_util_get_default_tty()
+{
   char *out, *tmp;
 
   if (getenv("DISPLAY")) {
@@ -577,7 +609,9 @@ char *owl_util_get_default_tty() {
 }
 
 
-void owl_hack_animate() {
+/* Animation hack */
+void owl_hack_animate()
+{
   owl_messagelist *ml;
   owl_message *m;
   owl_fmtext *fm;
@@ -630,9 +664,11 @@ void owl_hack_animate() {
   }
 }
 
-char *owl_util_stripnewlines(char *in) {
-  /* strip leading and trailing new lines.
-     caller must free the return */
+/* strip leading and trailing new lines.  Caller must free the
+ * return.
+ */
+char *owl_util_stripnewlines(char *in)
+{
   
   char  *tmp, *ptr1, *ptr2, *out;
 
@@ -732,7 +768,8 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
 
 #define FAIL_UNLESS(desc,pred) printf("\t%-4s: %s\n", (pred)?"ok":(numfailed++,"FAIL"), desc)
 
-int owl_util_regtest(void) {
+int owl_util_regtest(void)
+{
   int numfailed=0;
 
   printf("BEGIN testing owl_util\n");
