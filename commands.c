@@ -1545,6 +1545,9 @@ char *owl_command_zwrite(int argc, char **argv, char *buff) {
 }
 
 char *owl_command_aimwrite(int argc, char **argv, char *buff) {
+  char *newbuff;
+  int i, j;
+  
   if (!owl_global_is_aimloggedin(&g)) {
     owl_function_makemsg("You are not logged in to AIM.");
     return(NULL);
@@ -1555,8 +1558,17 @@ char *owl_command_aimwrite(int argc, char **argv, char *buff) {
     return(NULL);
   }
 
-  owl_function_aimwrite_setup(buff);
-  owl_global_set_buffercommand(&g, buff);
+  /* squish arguments together to make one screenname w/o spaces for now */
+  newbuff=owl_malloc(strlen(buff)+5);
+  sprintf(newbuff, "%s ", argv[0]);
+  j=argc-1;
+  for (i=0; i<j; i++) {
+    strcat(newbuff, argv[i+1]);
+  }
+    
+  owl_function_aimwrite_setup(newbuff);
+  owl_global_set_buffercommand(&g, newbuff);
+  owl_free(newbuff);
   return(NULL);
 }
 
