@@ -69,13 +69,15 @@ int owl_view_get_nearest_to_msgid(owl_view *v, int targetid) {
       bestpos = i;
     }
   }
-  return bestpos;
+  return (bestpos);
 }
 
 int owl_view_get_nearest_to_saved(owl_view *v) {
-  int cachedid = owl_filter_get_cachedmsgid(v->filter);
+  int cachedid;
+
+  cachedid=owl_filter_get_cachedmsgid(v->filter);
   if (cachedid<0) return(0);
-  return owl_view_get_nearest_to_msgid(v, cachedid);
+  return (owl_view_get_nearest_to_msgid(v, cachedid));
 }
 
 /* saves the current message position in the filter so it can 

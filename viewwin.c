@@ -65,7 +65,7 @@ void owl_viewwin_redisplay(owl_viewwin *v, int update) {
   /* print the message at the bottom */
   wmove(v->curswin, v->winlines-1, 0);
   wattrset(v->curswin, A_REVERSE);
-  if (v->textlines - v->topline > v->winlines-BOTTOM_OFFSET - 1) {
+  if (v->textlines - v->topline > v->winlines-BOTTOM_OFFSET) {
     waddstr(v->curswin, "--More-- (Space to see more, 'q' to quit)");
   } else {
     waddstr(v->curswin, "--End-- (Press 'q' to quit)");

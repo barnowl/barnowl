@@ -5,6 +5,9 @@ $Id$
 	There is now a 'zlist' command that acts like 'znol -l'
 	'l' is bound to 'zlist'
 	Fixed memory leak uninitialzed memory read in fmtext
+	viewwin will now say "End" instead of "More" when at the end
+	Added a debugging message indicating the result of topmsg
+	  calculations
 	
 1.2.3
 	Added filters "ping", "auto" and "login" by default.

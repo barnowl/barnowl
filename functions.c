@@ -787,6 +787,7 @@ void owl_function_calculate_topmsg(int direction) {
     topmsg = owl_function_calculate_topmsg_normal(direction, v, curmsg,
 						  topmsg, recwinlines);
   }
+  owl_function_debugmsg("Calculated a topmsg of %i", topmsg);
   owl_global_set_topmsg(&g, topmsg);
 }
 

@@ -388,7 +388,7 @@ void owl_message_create_from_zephyr(owl_message *m, ZNotice_t *n) {
   m->body[k]='\0';
 
   /* save the hostname */
-  owl_function_debugmsg("About to do get hostbyaddr");
+  owl_function_debugmsg("About to do gethostbyaddr");
   hent=gethostbyaddr((char *) &(n->z_uid.zuid_addr), sizeof(n->z_uid.zuid_addr), AF_INET);
   if (hent && hent->h_name) {
     strcpy(m->hostname, hent->h_name);
