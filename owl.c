@@ -36,7 +36,8 @@ static const char fileIdent[] = "$Id$";
 
 owl_global g;
 
-int main(int argc, char **argv, char **env) {
+int main(int argc, char **argv, char **env)
+{
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
   owl_editwin *tw;
   owl_popwin *pw;
@@ -604,7 +605,8 @@ int main(int argc, char **argv, char **env) {
   }
 }
 
-void sig_handler(int sig, siginfo_t *si, void *data) {
+void sig_handler(int sig, siginfo_t *si, void *data)
+{
   if (sig==SIGWINCH) {
     /* we can't inturrupt a malloc here, so it just sets a flag
      * schedulding a resize for later
@@ -618,7 +620,8 @@ void sig_handler(int sig, siginfo_t *si, void *data) {
 
 }
 
-void usage() {
+void usage()
+{
   fprintf(stderr, "Owl version %s\n", OWL_VERSION_STRING);
   fprintf(stderr, "Usage: owl [-n] [-d] [-v] [-h] [-c <configfile>] [-t <ttyname>]\n");
   fprintf(stderr, "  -n      don't load zephyr subscriptions\n");
@@ -629,13 +632,12 @@ void usage() {
   fprintf(stderr, "  -t      set the tty name\n");
 }
 
-
-
 #if OWL_STDERR_REDIR
 
 /* Replaces stderr with a pipe so that we can read from it. 
  * Returns the fd of the pipe from which stderr can be read. */
-int stderr_replace(void) {
+int stderr_replace(void)
+{
   int pipefds[2];
   if (0 != pipe(pipefds)) {
     perror("pipe");
@@ -652,7 +654,8 @@ int stderr_replace(void) {
 }
 
 /* Sends stderr (read from rfd) messages to a file */
-void stderr_redirect(int rfd) {
+void stderr_redirect(int rfd)
+{
   int navail, bread;
   char *buf;
   /*owl_function_debugmsg("stderr_redirect: called with rfd=%d\n", rfd);*/

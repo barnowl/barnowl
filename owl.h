@@ -19,8 +19,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.13-pre-3
-#define OWL_VERSION_STRING "2.0.13-pre-3"
+#define OWL_VERSION         2.0.13
+#define OWL_VERSION_STRING "2.0.13"
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */

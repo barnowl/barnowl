@@ -1,6 +1,6 @@
 $Id$
 
-2.0.13-pre-3
+2.0.13
 	Changed startup message for new mailing list
 	blist now prints AIM info even if .anyone is unreadable
 	Catch SIGPIPE and print an error rather than crashing.
