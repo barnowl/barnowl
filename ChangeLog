@@ -1,6 +1,6 @@
 $Id$
 
-2.1.8-pre-1
+2.1.8
 	Do OLC formatting for anything coming from olc.matisse
 	Improvements to popup size algorithm (from gildea)
 	Improved 'show colors' with non-colored labels
