@@ -86,7 +86,7 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
 	owl_fmtext_append_normal(fm, " / ");
       }
       owl_fmtext_append_normal(fm, frombuff);
-      if (strcasecmp(owl_message_get_realm(m), owl_zephyr_get_realm()) {
+      if (strcasecmp(owl_message_get_realm(m), owl_zephyr_get_realm())) {
 	owl_fmtext_append_normal(fm, " {");
 	owl_fmtext_append_normal(fm, owl_message_get_realm(m));
 	owl_fmtext_append_normal(fm, "} ");
@@ -260,7 +260,7 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
 	owl_fmtext_append_bold(fm, "LOGOUT");
       }
       owl_fmtext_append_normal(fm, " for ");
-      ptr=short_zuser(owl_zephyr_get_instance(m));
+      ptr=short_zuser(owl_message_get_instance(m));
       owl_fmtext_append_bold(fm, ptr);
       owl_free(ptr);
       owl_fmtext_append_normal(fm, " at ");
@@ -282,7 +282,7 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
 	owl_fmtext_append_normal(fm, owl_message_get_realm(m));
 	owl_fmtext_append_normal(fm, "} ");
       }
-      if (strccmp(owl_zephyr_get_opcode(m), "")) {
+      if (strcmp(owl_message_get_opcode(m), "")) {
 	owl_fmtext_append_normal(fm, " [");
 	owl_fmtext_append_normal(fm, owl_message_get_opcode(m));
 	owl_fmtext_append_normal(fm, "] ");

@@ -760,7 +760,7 @@ char *owl_zephyr_getsubs()
       out=owl_strdup("Error while getting subscriptions\n");
       return(out);
     } else {
-      sprintf(tmpbuff, "<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, buff);
+      sprintf(tmpbuff, "<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, out);
       strcpy(out, tmpbuff);
     }
   }
