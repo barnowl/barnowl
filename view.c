@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "owl.h"
 
 static const char fileIdent[] = "$Id$";
