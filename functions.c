@@ -3041,7 +3041,14 @@ void owl_function_execstartup(void)
 
 void owl_function_change_style(owl_view *v, char *stylename)
 {
-  owl_view_set_style(v, owl_global_get_style_by_name(&g, stylename));
+  owl_style *s;
+
+  s=owl_global_get_style_by_name(&g, stylename);
+  if (!s) {
+    owl_function_makemsg("No style named %s", stylename);
+    return;
+  }
+  owl_view_set_style(v, s);
   owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
   owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
