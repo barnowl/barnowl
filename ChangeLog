@@ -1,7 +1,8 @@
 $Id$
 
-2.0.13
+2.0.13-pre-1
 	Changed startup message for new mailing list
+	blist now prints AIM info even if .anyone is unreadable
 	
 2.0.12
 	Command history now doesn't allow the last entry
