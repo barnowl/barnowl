@@ -3119,12 +3119,14 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
   owl_fmtext_free(&fm);
 }
 
+/* Dump messages in the current view to the file 'filename'. */
 void owl_function_dump(char *filename) 
 {
   int i, j, count;
   owl_message *m;
   owl_view *v;
   FILE *file;
+
   /* struct stat sbuf; */
 
   v=owl_global_get_current_view(&g);
@@ -3151,6 +3153,7 @@ void owl_function_dump(char *filename)
     fputs(owl_message_get_text(m), file);
   }
   fclose(file);
+  owl_function_makemsg("Messages dumped to %s", filename);
 }
 
 void owl_function_do_newmsgproc(void)

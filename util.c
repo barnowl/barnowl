@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <pwd.h>
 
 static const char fileIdent[] = "$Id$";
 
@@ -174,6 +175,72 @@ char *skiptokens(char *buff, int n) {
       n--;
   }
   return buff;
+}
+
+/* Return a "nice" version of the path.  Tilde expansion is done, and
+ * duplicate slashes are removed.  Caller must free the return.
+ */
+char *owl_util_makepath(char *in)
+{
+  int i, j, x;
+  char *out, user[MAXPATHLEN];
+  struct passwd *pw;
+
+  out=owl_malloc(MAXPATHLEN+1);
+  out[0]='\0';
+  j=strlen(in);
+  x=0;
+  for (i=0; i<j; i++) {
+    if (in[i]=='~') {
+      if ( (i==(j-1)) ||          /* last character */
+	   (in[i+1]=='/') ) {     /* ~/ */
+	/* use my homedir */
+	pw=getpwuid(getuid());
+	if (!pw) {
+	  out[x]=in[i];
+	} else {
+	  out[x]='\0';
+	  strcat(out, pw->pw_dir);
+	  x+=strlen(pw->pw_dir);
+	}
+      } else {
+	/* another user homedir */
+	int a, b;
+	b=0;
+	for (a=i+1; i<j; a++) {
+	  if (in[a]==' ' || in[a]=='/') {
+	    break;
+	  } else {
+	    user[b]=in[a];
+	    i++;
+	    b++;
+	  }
+	}
+	user[b]='\0';
+	pw=getpwnam(user);
+	if (!pw) {
+	  out[x]==in[i];
+	} else {
+	  out[x]='\0';
+	  strcat(out, pw->pw_dir);
+	  x+=strlen(pw->pw_dir);
+	}
+      }
+    } else if (in[i]=='/') {
+      /* check for a double / */
+      if (i<(j-1) && (in[i+1]=='/')) {
+	/* do nothing */
+      } else {
+	out[x]=in[i];
+	x++;
+      }
+    } else {
+      out[x]=in[i];
+      x++;
+    }
+  }
+  out[x]='\0';
+  return(out);
 }
 
 void atokenize_free(char **tok, int nels)

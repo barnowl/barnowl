@@ -1082,12 +1082,15 @@ char *owl_command_unstartup(int argc, char **argv, char *buff)
 
 char *owl_command_dump(int argc, char **argv, char *buff)
 {
+  char *filename;
+  
   if (argc!=2) {
     owl_function_makemsg("usage: dump <filename>");
     return(NULL);
   }
-
-  owl_function_dump(argv[1]);
+  filename=owl_util_makepath(argv[1]);
+  owl_function_dump(filename);
+  owl_free(filename);
   return(NULL);
 }
 
