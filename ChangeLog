@@ -1,6 +1,6 @@
 $Id$
 
-2.1.6-pre-1
+2.1.6
         Fixed three bugs found by Valgrind.
         Fixed a case where doing "aim addbuddy" instead of "addbuddy aim"
 	  would cause a segfault.
