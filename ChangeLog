@@ -1,6 +1,6 @@
 $Id$
 
-2.0.11-pre-1
+2.0.11
 	Updated basic help
 	Display CC: in outgoing CC messages
 	More AIM logout detection
