@@ -256,12 +256,14 @@ int owl_zephyr_unsub(char *class, char *inst, char *recip)
 #endif
 }
 
+/* return a pointer to the data in the Jth field, (NULL terminated by
+ * definition).  Caller must free the return.
+ */
 #ifdef HAVE_LIBZEPHYR
-char *owl_zephyr_get_field(ZNotice_t *n, int j, int *k)
+char *owl_zephyr_get_field(ZNotice_t *n, int j)
 {
-  /* return a pointer to the Jth field, place the length in k.  If the
-     field doesn't exist return an emtpy string */
   int i, count, save;
+  char *out;
 
   count=save=0;
   for (i=0; i<n->z_message_len; i++) {
@@ -269,28 +271,29 @@ char *owl_zephyr_get_field(ZNotice_t *n, int j, int *k)
       count++;
       if (count==j) {
 	/* just found the end of the field we're looking for */
-	*k=i-save;
-	return(n->z_message+save);
+	return(owl_strdup(n->z_message+save));
       } else {
 	save=i+1;
       }
     }
   }
-  /* catch the last field */
+  /* catch the last field, which might not be null terminated */
   if (count==j-1) {
-    *k=n->z_message_len-save;
-    return(n->z_message+save);
+    out=owl_malloc(n->z_message_len-save+5);
+    memcpy(out, n->z_message+save, n->z_message_len-save);
+    out[n->z_message_len-save]='\0';
+    return(out);
   }
-  
-  *k=0;
-  return("");
+
+  return(owl_strdup(""));
 }
 #else
 char *owl_zephyr_get_field(void *n, int j, int *k)
 {
-  return("");
+  return(owl_strdup(""));
 }
 #endif
+
 
 #ifdef HAVE_LIBZEPHYR
 int owl_zephyr_get_num_fields(ZNotice_t *n)
@@ -312,15 +315,14 @@ int owl_zephyr_get_num_fields(void *n)
 #endif
 
 #ifdef HAVE_LIBZEPHYR
-char *owl_zephyr_get_message(ZNotice_t *n, int *k)
+/* return a pointer to the message, place the message length in k */
+char *owl_zephyr_get_message(ZNotice_t *n)
 {
-  /* return a pointer to the message, place the message length in k */
   if (!strcasecmp(n->z_opcode, "ping")) {
-    *k=0;
     return("");
   }
 
-  return(owl_zephyr_get_field(n, 2, k));
+  return(owl_zephyr_get_field(n, 2));
 }
 #endif
 
@@ -792,7 +794,6 @@ void owl_zephyr_set_locationinfo(char *host, char *val)
 #endif
 }
   
-
 /* Strip a local realm fron the zephyr user name.
  * The caller must free the return
  */

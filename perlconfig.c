@@ -25,8 +25,8 @@ static void owl_perl_xs_init(pTHX) {
 SV *owl_perlconfig_message2hashref(owl_message *m) { /*noproto*/
   HV *h;
   SV *hr;
-  char *ptr, *ptr2, *blessas;
-  int len, i, j;
+  char *ptr, *blessas;
+  int i, j;
 
   if (!m) return &PL_sv_undef;
   h = newHV();
@@ -42,12 +42,9 @@ SV *owl_perlconfig_message2hashref(owl_message *m) { /*noproto*/
     av_zfields = newAV();
     j=owl_zephyr_get_num_fields(owl_message_get_notice(m));
     for (i=0; i<j; i++) {
-      ptr=owl_zephyr_get_field(owl_message_get_notice(m), i+1, &len);
-      ptr2=owl_malloc(len+1);
-      memcpy(ptr2, ptr, len);
-      ptr2[len]='\0';
-      av_push(av_zfields, newSVpvn(ptr2, len));
-      owl_free(ptr2);
+      ptr=owl_zephyr_get_field(owl_message_get_notice(m), i+1);
+      av_push(av_zfields, newSVpvn(ptr, strlen(ptr)));
+      owl_free(ptr);
     }
     hv_store(h, "fields", strlen("fields"), newRV_noinc((SV*)av_zfields), 0);
 

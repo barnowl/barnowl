@@ -713,7 +713,6 @@ void owl_message_create_loopback(owl_message *m, char *text)
 void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 {
   struct hostent *hent;
-  int k, len;
   char *ptr, *tmp, *tmp2;
 
   owl_message_init(m);
@@ -754,17 +753,11 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   /* Set the "isloginout" attribute if it's a login message */
   if (!strcasecmp(n->z_class, "login") || !strcasecmp(n->z_class, OWL_WEBZEPHYR_CLASS)) {
     if (!strcasecmp(n->z_opcode, "user_login") || !strcasecmp(n->z_opcode, "user_logout")) {
-      ptr=owl_zephyr_get_field(n, 1, &len);
-      tmp=owl_malloc(len+10);
-      strncpy(tmp, ptr, len);
-      tmp[len]='\0';
+      tmp=owl_zephyr_get_field(n, 1);
       owl_message_set_attribute(m, "loginhost", tmp);
       owl_free(tmp);
 
-      ptr=owl_zephyr_get_field(n, 3, &len);
-      tmp=owl_malloc(len+10);
-      strncpy(tmp, ptr, len);
-      tmp[len]='\0';
+      tmp=owl_zephyr_get_field(n, 3);
       owl_message_set_attribute(m, "logintty", tmp);
       owl_free(tmp);
     }
@@ -785,10 +778,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   m->zwriteline=strdup("");
 
   /* set the body */
-  ptr=owl_zephyr_get_message(n, &k);
-  tmp=owl_malloc(k+10);
-  memcpy(tmp, ptr, k);
-  tmp[k]='\0';
+  tmp=owl_zephyr_get_message(n);
   if (owl_global_is_newlinestrip(&g)) {
     tmp2=owl_util_stripnewlines(tmp);
     owl_message_set_body(m, tmp2);

@@ -1478,8 +1478,8 @@ void owl_function_info()
 	for (i=0; i<fields; i++) {
 	  sprintf(buff, "  Field %i   : ", i+1);
 	  
-	  ptr=owl_zephyr_get_field(n, i+1, &len);
-	  if (!ptr) break;
+	  ptr=owl_zephyr_get_field(n, i+1);
+	  len=strlen(ptr);
 	  if (len<30) {
 	    strncpy(tmpbuff, ptr, len);
 	    tmpbuff[len]='\0';
@@ -1488,6 +1488,7 @@ void owl_function_info()
 	    tmpbuff[30]='\0';
 	    strcat(tmpbuff, "...");
 	  }
+	  owl_free(ptr);
 	  
 	  for (j=0; j<strlen(tmpbuff); j++) {
 	    if (tmpbuff[j]=='\n') tmpbuff[j]='~';
