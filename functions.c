@@ -860,8 +860,16 @@ void owl_function_quit()
     kill(owl_global_get_newmsgproc_pid(&g), SIGHUP);
   }
 
-  /* final clean up */
+  /* Quit zephyr */
   owl_zephyr_shutdown();
+
+  
+  /* Quit AIM */
+  if (owl_global_is_aimloggedin(&g)) {
+    owl_aim_logout();
+  }
+
+  /* final clean up */
   endwin();
   owl_function_debugmsg("Quitting Owl");
   exit(0);
