@@ -60,6 +60,10 @@
 #include "win32dep.h"
 #endif
 
+#ifndef socklen_t
+#define socklen_t int
+#endif
+
 struct aim_odc_intdata {
 	fu8_t cookie[8];
 	char sn[MAXSNLEN+1];
