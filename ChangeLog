@@ -3,6 +3,7 @@ $Id$
 2.1.1-pre-1
 	Only print forced AIM logout message once.
 	Don't bind F1 to help in edit context
+	Fix bug in 'getsubs' with no tickets
 	
 2.0.14
 	Fixed missing word in startup message

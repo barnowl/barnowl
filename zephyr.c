@@ -747,8 +747,9 @@ char *owl_zephyr_getsubs()
 
   ret=ZRetrieveSubscriptions(0, &num);
   if (ret==ZERR_TOOMANYSUBS) {
-    out=owl_strdup("Zephyr: too many subscriptions\n");
-    return(out);
+    return(owl_strdup("Zephyr: too many subscriptions\n"));
+  } else if (ret) {
+    return(owl_strdup("Zephyr: error retriving subscriptions\n"));
   }
 
   out=owl_malloc(num*500);

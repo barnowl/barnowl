@@ -284,10 +284,12 @@ int owl_aim_set_awaymsg(char *msg)
 {
   /* there is a max away message lentgh we should check against */
 
+  /*
   aim_bos_setprofile(owl_global_get_aimsess(&g),
 		     owl_global_get_bosconn(&g),
 		     NULL, NULL, 0, "us-ascii", msg, 
 		     strlen(msg), 0);
+  */
   return(0);
 }
 
@@ -2202,8 +2204,8 @@ static int conninitdone_chatnav(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   owl_function_debugmsg("faimtest_conninitdone_chatnav:");
 
-  aim_conn_addhandler(sess, fr->conn, 0x000d, 0x0001, gaim_parse_genericerr, 0);
-  aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CTN, AIM_CB_CTN_INFO, gaim_chatnav_info, 0);
+  /* aim_conn_addhandler(sess, fr->conn, 0x000d, 0x0001, gaim_parse_genericerr, 0); */
+  /* aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CTN, AIM_CB_CTN_INFO, gaim_chatnav_info, 0); */
 
   aim_clientready(sess, fr->conn);
 
