@@ -304,7 +304,7 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("blist", owl_command_blist, OWL_CTX_INTERACTIVE,
 	      "List all buddies logged in",
-	      "alist",
+	      "blist",
 	      "Print a listing of buddies logged in, regardless of protocol."),
 
   OWLCMD_ARGS("toggle-oneline", owl_command_toggleoneline, OWL_CTX_INTERACTIVE,

@@ -3155,12 +3155,12 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
 	}
       }
     }
+    owl_list_free_all(&anyone, owl_free);
   }
 #endif
   
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);
-  owl_list_free_all(&anyone, owl_free);
 }
 
 /* Dump messages in the current view to the file 'filename'. */
