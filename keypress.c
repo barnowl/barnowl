@@ -126,6 +126,9 @@ static struct _owl_keypress_specialmap {
    { 0,                 NULL }
 };
 
+#define OWL_CTRL(key) ((key)&037)
+/* OWL_META is definied in owl.h */
+
 /* returns 0 on success */
 int owl_keypress_tostring(int j, int esc, char *buff, int bufflen) {
   char kb[64], kb2[2];
@@ -133,7 +136,7 @@ int owl_keypress_tostring(int j, int esc, char *buff, int bufflen) {
 
   *kb = '\0';
   for (sm = specialmap; sm->kj!=0; sm++) {
-    if (j == META(sm->kj) || (esc && j == sm->kj)) {
+    if (j == OWL_META(sm->kj) || (esc && j == sm->kj)) {
       strcat(kb, "M-");
       strcat(kb, sm->ks);
       break;
@@ -143,11 +146,11 @@ int owl_keypress_tostring(int j, int esc, char *buff, int bufflen) {
     }
   }
   if (!*kb) {
-    if (j&META(0)) {
+    if (j&OWL_META(0)) {
       strcat(kb, "M-");
-      j &= ~META(0);
+      j &= ~OWL_META(0);
     }
-    if ((CTRL(j) == j)) {
+    if ((OWL_CTRL(j) == j)) {
       strcat(kb, "C-");
       j |= 0x60;
 
@@ -195,10 +198,10 @@ int owl_keypress_fromstring(char *kb) {
   }
   if (j==ERR) return(ERR);
   if (isctrl) {
-    j = CTRL(j);
+    j = OWL_CTRL(j);
   }
   if (ismeta) {
-    j = META(j);
+    j = OWL_META(j);
   }
   return(j);
 }

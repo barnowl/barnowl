@@ -213,7 +213,7 @@ int owl_keyhandler_process(owl_keyhandler *kh, int j) {
     return(0);
   }
   if (kh->in_esc) {
-    j = META(j);
+    j = OWL_META(j);
     kh->in_esc = 0;
   }
   

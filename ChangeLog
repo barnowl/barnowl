@@ -64,6 +64,9 @@ $Id$
 	Change to codelist.pl to deal with new code style
 	Remove some ancient stuff from zcrypt.c
 	General cleanup to Makefile.in
+	CTRL and META are now OWL_CTRL and OWL_META.  OWL_CTRL moved to
+	  keypress.c
+	do_encrypt declaired static
 	
 1.2.8
 	Class pings are displayed differently now

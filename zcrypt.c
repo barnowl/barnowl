@@ -51,7 +51,7 @@ typedef struct
 
 char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance);
 char *BuildArgString(char **argv, int start, int end);
-int do_encrypt(char *keystring, int zephyr, char *class, char *instance, ZWRITEOPTIONS *zoptions, char* keyfile);
+static int do_encrypt(char *keystring, int zephyr, char *class, char *instance, ZWRITEOPTIONS *zoptions, char* keyfile);
 int do_decrypt(char *keystring);
 
 #ifndef HAVE_DES_ECB_ENCRYPT_PROTO

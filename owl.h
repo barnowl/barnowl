@@ -111,12 +111,8 @@ static const char owl_h_fileIdent[] = "$Id$";
 
 #define OWL_CMD_ALIAS_SUMMARY_PREFIX "command alias to: "
 
-#ifndef CTRL
-#define CTRL(key) ((key)&037)
-#endif
-#ifndef META
-#define META(key) ((key)|0200)
-#endif
+#define OWL_META(key) ((key)|0200)
+/* OWL_CTRL is definied in kepress.c */
 
 #define LINE 2048
 
