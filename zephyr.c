@@ -440,6 +440,7 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
 
       sprintf(buff, "Could not send message to %s: not logged in or subscribing to messages.\n", tmp);
       owl_function_adminmsg("", buff);
+      if (owl_global_is_logging(&g)) owl_log_outgoing_zephyr_error(tmp, buff);
       owl_free(tmp);
     }
   } else {

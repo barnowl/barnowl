@@ -56,6 +56,54 @@ void owl_log_outgoing_zephyr(char *to, char *text)
   owl_free(tobuff);
 }
 
+void owl_log_outgoing_zephyr_error(char *to, char *text)
+{
+  FILE *file;
+  char filename[MAXPATHLEN], *logpath;
+  char *tobuff, *ptr="";
+
+  tobuff=owl_malloc(strlen(to)+20);
+  strcpy(tobuff, to);
+
+  /* chop off a local realm */
+  ptr=strchr(tobuff, '@');
+  if (ptr && !strncmp(ptr+1, owl_zephyr_get_realm(), strlen(owl_zephyr_get_realm()))) {
+    *ptr='\0';
+  }
+
+  /* expand ~ in path names */
+  logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", 
+				owl_global_get_homedir(&g));
+
+  snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
+  file=fopen(filename, "a");
+  if (!file) {
+    owl_function_error("Unable to open file for outgoing logging");
+    owl_free(logpath);
+    return;
+  }
+  fprintf(file, "ERROR (owl): %s\n%s\n", tobuff, text);
+  if (text[strlen(text)-1]!='\n') {
+    fprintf(file, "\n");
+  }
+  fclose(file);
+
+  snprintf(filename, MAXPATHLEN, "%s/all", logpath);
+  owl_free(logpath);
+  file=fopen(filename, "a");
+  if (!file) {
+    owl_function_error("Unable to open file for outgoing logging");
+    return;
+  }
+  fprintf(file, "ERROR (owl): %s\n%s\n", tobuff, text);
+  if (text[strlen(text)-1]!='\n') {
+    fprintf(file, "\n");
+  }
+  fclose(file);
+
+  owl_free(tobuff);
+}
+
 void owl_log_outgoing_aim(char *to, char *text)
 {
   FILE *file;

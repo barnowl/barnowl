@@ -10,6 +10,7 @@ $Id$
 	  the current view and switches to it.  i.e. "show me all the
 	  messages that are not these"
 	Added the 'ignorelogins' variable
+	Log when outgoing personal message fails
 	
 2.1.1-pre-2
 	Added the 'aim search' command.  The popup on callback may be
