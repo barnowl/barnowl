@@ -279,6 +279,18 @@ void owl_aim_delbuddy(char *name)
   owl_buddylist_offgoing(owl_global_get_buddylist(&g), name);
 }
 
+void owl_aim_search(char *email)
+{
+  int ret;
+
+  owl_function_debugmsg("owl_aim_search: doing search for %s", email);
+  ret=aim_search_address(owl_global_get_aimsess(&g), 
+			 aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
+			 email);
+
+  if (ret) owl_function_error("owl_aim_search: aim_search_address returned %i", ret);
+}
+
 
 int owl_aim_set_awaymsg(char *msg)
 {
@@ -570,8 +582,15 @@ void addcb_bos(aim_session_t *sess, aim_conn_t *bosconn)
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_MISSEDCALL,         faimtest_parse_misses, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_GEN, AIM_CB_GEN_RATECHANGE,         faimtest_parse_ratechange, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_GEN, AIM_CB_GEN_EVIL,               faimtest_parse_evilnotify, 0);
+
   aim_conn_addhandler(sess, bosconn, 0x000a,         0x0001,                        faimtest_parse_searcherror, 0);
   aim_conn_addhandler(sess, bosconn, 0x000a,         0x0003,                        faimtest_parse_searchreply, 0);
+
+  /*
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOK, AIM_CB_LOK_ERROR, faimtest_parse_searcherror, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOK, 0x0003, faimtest_parse_searchreply, 0);
+  */
+  
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_ERROR,              faimtest_parse_msgerr, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOC, AIM_CB_LOC_USERINFO,           faimtest_parse_userinfo, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_ACK,                faimtest_parse_msgack, 0);
@@ -1821,20 +1840,24 @@ static int faimtest_parse_searchreply(aim_session_t *sess, aim_frame_t *fr, ...)
   va_list ap;
   char *address, *SNs;
   int num, i;
+  owl_list list;
   
   va_start(ap, fr);
   address = va_arg(ap, char *);
   num = va_arg(ap, int);
   SNs = va_arg(ap, char *);
   va_end(ap);
+
+  owl_list_create(&list);
   
   owl_function_debugmsg("faimtest_parse_searchreply: E-Mail Search Results for %s: ", address);
-  
-  for(i = 0; i < num; i++) {
+  for (i=0; i<num; i++) {
     owl_function_debugmsg("  %s", &SNs[i*(MAXSNLEN+1)]);
+    owl_list_append_element(&list, &SNs[i*(MAXSNLEN+1)]);
   }
-  
-  return 1;
+  owl_function_aimsearch_results(address, &list);
+  owl_list_free_simple(&list);
+  return(1);
 }
 
 static int faimtest_parse_searcherror(aim_session_t *sess, aim_frame_t *fr, ...)
@@ -1845,10 +1868,11 @@ static int faimtest_parse_searcherror(aim_session_t *sess, aim_frame_t *fr, ...)
   va_start(ap, fr);
   address = va_arg(ap, char *);
   va_end(ap);
-  
+
+  owl_function_error("No results searching for %s", address);
   owl_function_debugmsg("faimtest_parse_searcherror: E-Mail Search Results for %s: No Results or Invalid Email\n", address);
   
-  return 1;
+  return(1);
 }
 
 static int handlepopup(aim_session_t *sess, aim_frame_t *fr, ...)

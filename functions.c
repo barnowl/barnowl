@@ -3425,3 +3425,24 @@ void owl_function_zephyr_buddy_check(int notify)
   owl_list_free_all(&anyone, owl_free);
 #endif
 }
+
+void owl_function_aimsearch_results(char *email, owl_list *namelist)
+{
+  owl_fmtext fm;
+  int i, j;
+
+  owl_fmtext_init_null(&fm);
+  owl_fmtext_append_normal(&fm, "AIM screennames associated with ");
+  owl_fmtext_append_normal(&fm, email);
+  owl_fmtext_append_normal(&fm, ":\n");
+
+  j=owl_list_get_size(namelist);
+  for (i=0; i<j; i++) {
+    owl_fmtext_append_normal(&fm, "  ");
+    owl_fmtext_append_normal(&fm, owl_list_get_element(namelist, i));
+    owl_fmtext_append_normal(&fm, "\n");
+  }
+
+  owl_function_popless_fmtext(&fm);
+  owl_fmtext_free(&fm);
+}

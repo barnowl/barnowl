@@ -1,5 +1,10 @@
 $Id$
 
+2.1.1-pre-2
+	Added the 'aim search' command.  The popup on callback may be
+	  dangerous, should switch to an admin msg for results, or add a
+	  new event queue
+	
 2.1.1-pre-1
 	Only print forced AIM logout message once.
 	Don't bind F1 to help in edit context

@@ -237,6 +237,11 @@ owl_cmd commands_to_init[]
 	      "source <filename>",
 	      "Execute the owl commands in <filename>.\n"),
 
+  OWLCMD_ARGS("aim", owl_command_aim, OWL_CTX_INTERACTIVE,
+	      "AIM specific commands",
+	      "aim search <email>",
+	      ""),
+
   OWLCMD_ARGS("addbuddy", owl_command_addbuddy, OWL_CTX_INTERACTIVE,
 	      "add a buddy to a buddylist",
 	      "addbuddy aim <screenname>",
@@ -960,6 +965,26 @@ void owl_command_version()
 
   sprintf(buff, "Owl version %s", OWL_VERSION_STRING);
   owl_function_makemsg(buff);
+}
+
+char *owl_command_aim(int argc, char **argv, char *buff)
+{
+  if (argc<2) {
+    owl_function_makemsg("not enough arguments to aim command");
+    return(NULL);
+  }
+
+  if (!strcmp(argv[1], "search")) {
+    if (argc!=3) {
+      owl_function_makemsg("not enough arguments to aim search command");
+      return(NULL);
+    }
+    owl_aim_search(argv[2]);
+  } else {
+    owl_function_makemsg("unknown subcommand '%s' for aim command");
+    return(NULL);
+  }
+  return(NULL);
 }
 
 char *owl_command_addbuddy(int argc, char **argv, char *buff)
