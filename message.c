@@ -657,7 +657,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   }
 
   /* Set the "isloginout" attribute if it's a login message */
-  if (!strcasecmp(n->z_class, "login")) {
+  if (!strcasecmp(n->z_class, "login") || !strcasecmp(n->z_class, OWL_WEBZEPHYR_CLASS)) {
     if (!strcasecmp(n->z_opcode, "user_login")) {
       owl_message_set_islogin(m);
     } else if (!strcasecmp(n->z_opcode, "user_logout")) {

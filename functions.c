@@ -1797,14 +1797,13 @@ void owl_function_reply(int type, int enter)
       }
 
       /* Special case a personal reply to a webzephyr user on a class */
-      if ((type==1) && !strcasecmp(owl_message_get_opcode(m), "webzephyr")) {
-	class="webzephyr";
+      if ((type==1) && !strcasecmp(owl_message_get_opcode(m), OWL_WEBZEPHYR_OPCODE)) {
+	class=OWL_WEBZEPHYR_CLASS;
 	inst=owl_message_get_sender(m);
 	to=OWL_WEBZEPHYR_PRINCIPAL;
-      } else if (!strcasecmp(owl_message_get_class(m), "webzephyr") &&
-		 owl_message_is_loginout(m)) {
+      } else if (!strcasecmp(owl_message_get_class(m), OWL_WEBZEPHYR_CLASS) && owl_message_is_loginout(m)) {
 	/* Special case LOGIN/LOGOUT notifications on class "webzephyr" */
-	class="webzephyr";
+	class=OWL_WEBZEPHYR_CLASS;
 	inst=owl_message_get_instance(m);
 	to=OWL_WEBZEPHYR_PRINCIPAL;
       } else if (owl_message_is_loginout(m)) {
