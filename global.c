@@ -96,6 +96,7 @@ void owl_global_init(owl_global *g) {
   owl_timer_create_countdown(&(g->aim_ignorelogin_timer), 0);
   owl_timer_create_countdown(&(g->aim_buddyinfo_timer), 60);
   owl_buddylist_init(&(g->buddylist));
+    
   g->response=NULL;
   g->havezephyr=0;
   g->haveaim=0;

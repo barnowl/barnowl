@@ -226,6 +226,11 @@ owl_cmd commands_to_init[]
 	      "dump <filename>",
 	      "Dump messages in current view to the named file."),
 
+  OWLCMD_ARGS("source", owl_command_source, OWL_CTX_ANY,
+	      "execute owl commands from a file",
+	      "source <filename>",
+	      "Execute the owl commands in <filename>.\n"),
+
   OWLCMD_ARGS("addbuddy", owl_command_addbuddy, OWL_CTX_INTERACTIVE,
 	      "add a buddy to a buddylist",
 	      "addbuddy aim <screenname>",
@@ -1048,6 +1053,17 @@ char *owl_command_dump(int argc, char **argv, char *buff)
   }
 
   owl_function_dump(argv[1]);
+  return(NULL);
+}
+
+char *owl_command_source(int argc, char **argv, char *buff)
+{
+  if (argc!=2) {
+    owl_function_makemsg("usage: source <filename>");
+    return(NULL);
+  }
+
+  owl_function_source(argv[1]);
   return(NULL);
 }
 

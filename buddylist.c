@@ -6,6 +6,7 @@ void owl_buddylist_init(owl_buddylist *b)
 {
   owl_list_create(&(b->buddies));
   owl_list_create(&(b->idletimes));
+  /* owl_list_create(&(g->buddymsg_queue)); */
 }
 
 /* Deal with an "oncoming" message.  This means recognizing the user
@@ -91,6 +92,7 @@ void owl_buddylist_request_idletimes(owl_buddylist *b)
 void owl_buddylist_request_idletime(owl_buddylist *b, char *screenname)
 {
   if (!owl_buddylist_is_buddy_loggedin(b, screenname)) return;
+  
   owl_aim_get_idle(screenname);
 }
 
@@ -141,8 +143,9 @@ int owl_buddylist_get_idletime(owl_buddylist *b, int n)
   return(*foo);
 }
 
-/* set the idle time for user 'screenname'.  If the given
- * screenname is not on the buddy list do nothing
+/* Set the idle time for user 'screenname'.  If the given screenname
+ * is not on the buddy list do nothing.  If there is a queued request
+ * for this screename, remove it from the queue.
  */
 void owl_buddylist_set_idletime(owl_buddylist *b, char *screenname, int minutes)
 {

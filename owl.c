@@ -127,7 +127,6 @@ int main(int argc, char **argv, char **env) {
     init_pair(OWL_COLOR_WHITE,   COLOR_WHITE,   -1);
   }
 
-    
   /* owl global init */
   owl_global_init(&g);
   if (debug) owl_global_set_debug_on(&g);
@@ -222,7 +221,7 @@ int main(int argc, char **argv, char **env) {
   owl_aim_init();
 
   /* process the startup file */
-  owl_function_execstartup();
+  owl_function_source(NULL);
 
   /* read the config file */
   owl_context_set_readconfig(owl_global_get_context(&g));

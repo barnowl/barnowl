@@ -1,5 +1,8 @@
 $Id$
 
+2.0.8-pre-4
+	Added the 'source' command.
+	
 2.0.8-pre-3   
         Make sure that a newline is always at the end of messages
 	        returned by perl style formatting functions.

@@ -3158,15 +3158,21 @@ void owl_function_delstartup(char *buff)
   owl_free(filename);
 }
 
-void owl_function_execstartup(void)
+/* Execute owl commands from the given filename.  If the filename
+ * is NULL, use the default owl startup commands file.
+ */
+void owl_function_source(char *filename)
 {
   FILE *file;
-  char *filename;
   char buff[LINE];
 
-  filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
-  file=fopen(filename, "r");
-  owl_free(filename);
+  if (!filename) {
+    filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
+    file=fopen(filename, "r");
+    owl_free(filename);
+  } else {
+    file=fopen(filename, "r");
+  }
   if (!file) {
     /* just fail silently if it doesn't exist */
     return;
