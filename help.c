@@ -64,6 +64,9 @@ void owl_help() {
      "    C-z           Suspend\n"
      "    h             Print this help message\n"
      "    : , M-x       Enter command mode\n"
+     "\n"
+     "    /             Foward search\n"
+     "    ?             Reverse search\n"
      "\n\n"
      );
   owl_fmtext_append_bold
@@ -94,6 +97,7 @@ void owl_help() {
      "    expunge       Expunge messages marked for deletion\n"
      "    zaway         Turn zaway on or off, or set the message\n"
      "    load-subs     Load zephyr subscriptions from a file\n"
+     "    search        Search for a text string\n"
      "\n"
      "    set           Set a variable (see list below)\n"
      "    print         Print a variable's value (variables listed below)\n"
