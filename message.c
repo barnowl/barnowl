@@ -400,6 +400,16 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
   memcpy(m->body, ptr, k);
   m->body[k]='\0';
 
+  /* if zcrypt is enabled try to decrypt the message */
+  if (owl_global_is_zcrypt(&g) && !strcasecmp(n->z_opcode, "crypt")) {
+    char *out;
+
+    out=owl_malloc(strlen(m->body)*16+20);
+    zcrypt_decrypt(out, m->body, m->class, m->inst);
+    owl_free(m->body);
+    m->body=out;
+  }
+
   /* save the hostname */
   owl_function_debugmsg("About to do gethostbyaddr");
   hent=gethostbyaddr((char *) &(n->z_uid.zuid_addr), sizeof(n->z_uid.zuid_addr), AF_INET);
@@ -546,14 +556,12 @@ void _owl_message_make_text_from_zwriteline_simple(owl_message *m) {
 void _owl_message_make_text_from_notice_standard(owl_message *m) {
   char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
   ZNotice_t *n;
-  int len;
 
-  /* get the body */
   n=&(m->notice);
-  ptr=(owl_zephyr_get_message(n, &len));
-  body=owl_malloc(len+20);
-  strncpy(body, ptr, len);
-  body[len]='\0';
+  
+  /* get the body */
+  body=owl_malloc(strlen(m->body)+30);
+  strcpy(body, m->body);
 
   /* add a newline if we need to */
   if (body[0]!='\0' && body[strlen(body)-1]!='\n') {
@@ -649,14 +657,12 @@ void _owl_message_make_text_from_notice_standard(owl_message *m) {
 void _owl_message_make_text_from_notice_simple(owl_message *m) {
   char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
   ZNotice_t *n;
-  int len;
+
+  n=&(m->notice);
 
   /* get the body */
-  n=&(m->notice);
-  ptr=(owl_zephyr_get_message(n, &len));
-  body=owl_malloc(len+20);
-  strncpy(body, ptr, len);
-  body[len]='\0';
+  body=owl_malloc(strlen(m->body)+30);
+  strcpy(body, m->body);
 
   /* add a newline if we need to */
   if (body[0]!='\0' && body[strlen(body)-1]!='\n') {

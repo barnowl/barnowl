@@ -99,6 +99,14 @@ owl_cmd commands_to_init[]
 	      "      Send to a foreign realm\n"
 	      "-O opcode\n"
 	      "      Send to the specified opcode\n"),
+
+  /*
+  OWLCMD_ARGS("zcrypt", owl_command_zcrypt, OWL_CTX_INTERACTIVE,
+	      "send an encrypted zephyr",
+	      "zcrypt [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcde] [-m <message...>]\n",
+	      "Behaves like zwrite but uses encryption.  Not for use with\n"
+	      "personal messages\n"),
+  */
   
   OWLCMD_ARGS("reply", owl_command_reply,  OWL_CTX_INTERACTIVE,
 	      "reply to the current message",
@@ -1301,6 +1309,33 @@ char *owl_command_zwrite(int argc, char **argv, char *buff) {
     owl_free(tmpbuff);
   }
   return NULL;
+}
+
+char *owl_command_zcrypt(int argc, char **argv, char *buff) {
+  char *tmpbuff, *pos, *cmd, *msg;
+  
+  /* check for a zwrite -m */
+  for (pos = buff; *pos; pos = skiptokens(pos, 1)) {
+    if (!strncmp(pos, "-m ", 3)) {
+      cmd = owl_strdup(buff);
+      msg = cmd+(pos-buff);
+      *msg = '\0';
+      msg += 3;
+      owl_zwrite_create_and_send_from_line(cmd, msg);
+      owl_free(cmd);
+      return NULL;
+    }
+  }
+
+  if (argc < 2) {
+    owl_function_makemsg("Not enough arguments to the zcrypt command.");
+  } else {
+    tmpbuff = owl_strdup(buff);
+    owl_function_zwrite_setup(tmpbuff);
+    owl_global_set_buffercommand(&g, tmpbuff);
+    owl_free(tmpbuff);
+  }
+  return(NULL);
 }
 
 char *owl_command_reply(int argc, char **argv, char *buff) {

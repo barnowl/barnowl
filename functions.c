@@ -152,6 +152,53 @@ void owl_function_zwrite_setup(char *line) {
   owl_global_set_typwin_active(&g);
 }
 
+void owl_function_zcrypt_setup(char *line) {
+  owl_editwin *e;
+  char buff[1024];
+  owl_zwrite z;
+  int ret;
+
+  /* check the arguments */
+  ret=owl_zwrite_create_from_line(&z, line);
+  if (ret) {
+    owl_function_makemsg("Error in zwrite arugments");
+    owl_zwrite_free(&z);
+    return;
+  }
+
+  if (owl_zwrite_get_numrecips(&z)>0) {
+    owl_function_makemsg("You may not specifiy a recipient for a zcrypt message");
+    owl_zwrite_free(&z);
+    return;
+  }
+
+  /* send a ping if necessary */
+  if (owl_global_is_txping(&g)) {
+    owl_zwrite_send_ping(&z);
+  }
+  owl_zwrite_free(&z);
+
+  /* create and setup the editwin */
+  e=owl_global_get_typwin(&g);
+  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE, owl_global_get_msg_history(&g));
+
+  if (!owl_global_get_lockout_ctrld(&g)) {
+    owl_function_makemsg("Type your zephyr below.  End with ^D or a dot on a line by itself.  ^C will quit.");
+  } else {
+    owl_function_makemsg("Type your zephyr below.  End with a dot on a line by itself.  ^C will quit.");
+  }
+
+  owl_editwin_clear(e);
+  owl_editwin_set_dotsend(e);
+  strcpy(buff, "----> ");
+  strcat(buff, line);
+  strcat(buff, "\n");
+  owl_editwin_set_locktext(e, buff);
+
+  /* make it active */
+  owl_global_set_typwin_active(&g);
+}
+
 void owl_function_zwrite(char *line) {
   owl_zwrite z;
   int i, j;
@@ -1294,7 +1341,7 @@ void owl_function_getsubs() {
   }
 
   buff=owl_malloc(num*500);
-  tmpbuff=owl_malloc(2048);
+  tmpbuff=owl_malloc(num*500);
   strcpy(buff, "");
   for (i=0; i<num; i++) {
     if ((ret = ZGetSubscriptions(&sub, &one)) != ZERR_NONE) {
@@ -1511,6 +1558,13 @@ void owl_function_reply(int type, int enter) {
 	owl_function_makemsg("Sorry, replies to this message have been disabled by the reply-lockout filter");
 	return;
       }
+    }
+
+    /* for now we disable replies to zcrypt messages, since we can't
+       support an encrypted reply */
+    if (!strcasecmp(owl_message_get_opcode(m), "crypt")) {
+      owl_function_makemsg("Replies to zcrypt messages are not enabled in this release");
+      return;
     }
 
     if (owl_message_is_direction_out(m)) {

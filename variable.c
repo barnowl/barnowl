@@ -110,6 +110,10 @@ static owl_variable variables_to_init[] = {
 	       "Note that only messages received after this variable\n"
 	       "is set will be affected." ),
 
+  OWLVAR_BOOL( "zcrypt" /* %OwlVarStub */, 1,
+	       "Do automatic zcrypt processing",
+	       "" ),
+
   OWLVAR_ENUM_FULL( "disable-ctrl-d" /* %OwlVarStub:lockout_ctrld */, 1,
 		    "don't send zephyrs on C-d",
 		    "If set to 'off', C-d won't send a zephyr from the edit\n"
