@@ -6,11 +6,11 @@
 
 static const char fileIdent[] = "$Id$";
 
+/* start with line aline (where the first line is 1) and print 'lines'
+ *  lines
+ */
 int owl_text_truncate_lines(char *out, char *in, int aline, int lines)
 {
-  /* start with line aline (where the first line is 1) and print
-   *  'lines' lines
-   */
   char *ptr1, *ptr2;
   int i;
 
@@ -44,14 +44,13 @@ int owl_text_truncate_lines(char *out, char *in, int aline, int lines)
   return(0);
 }
 
+  
+/* the first column is column 0.  The message is expected to end in a
+ * new line for now */
 void owl_text_truncate_cols(char *out, char *in, int acol, int bcol)
 {
   char *ptr1, *ptr2, *tmpbuff, *last;
   int len;
-  
-  /* the first column is column 0 */
-
-  /* the message is expected to end in a new line for now */
 
   tmpbuff=owl_malloc(strlen(in)+20);
 

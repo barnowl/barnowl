@@ -65,13 +65,13 @@ char *owl_zephyr_get_sender()
 #endif
 }
 
+/* return 0  on success
+ *        -1 on file error
+ *        -2 on subscription error
+ */
 int owl_zephyr_loadsubs(char *filename)
 {
 #ifdef HAVE_LIBZEPHYR
-  /* return 0  on success
-   *        -1 on file error
-   *        -2 on subscription error
-   */
   FILE *file;
   char *tmp, *start;
   char buffer[1024], subsfile[1024];
@@ -474,7 +474,8 @@ void owl_zephyr_zaway(owl_message *m)
   char *tmpbuff, *myuser, *to;
   
   /* bail if it doesn't look like a message we should reply to.  Some
-     of this defined by the way zaway(1) works */
+   * of this defined by the way zaway(1) works
+   */
   if (strcasecmp(owl_message_get_class(m), "message")) return;
   if (strcasecmp(owl_message_get_recipient(m), ZGetSender())) return;
   if (!strcasecmp(owl_message_get_sender(m), "")) return;
@@ -736,8 +737,8 @@ char *owl_zephyr_get_authstr(void *n)
 }
 #endif
 
-/* returns a buffer of subscriptions or an error message.
- * Caller must free the return.
+/* Returns a buffer of subscriptions or an error message.  Caller must
+ * free the return.
  */
 char *owl_zephyr_getsubs()
 {

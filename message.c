@@ -860,7 +860,7 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, char *user,
   owl_message_set_body(m, "<uninitialized>");
 
   /* save the hostname */
-  owl_function_debugmsg("create_pseudo_login: host is %s", host);
+  owl_function_debugmsg("create_pseudo_login: host is %s", host ? host : "");
   strcpy(m->hostname, host ? host : "");
   owl_free(longuser);
 }

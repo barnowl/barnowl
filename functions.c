@@ -3414,7 +3414,7 @@ void owl_function_zephyr_buddy_check(int notify)
       /* Send a PSEUDO LOGOUT! */
       if (notify) {
 	m=owl_malloc(sizeof(owl_message));
-	owl_message_create_pseudo_zlogin(m, 1, user, location[0].host, location[0].time, location[0].tty);
+	owl_message_create_pseudo_zlogin(m, 1, user, "", "", "");
 	owl_global_messagequeue_addmsg(&g, m);
       }
       owl_zbuddylist_deluser(zbl, user);
