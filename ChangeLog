@@ -1,5 +1,16 @@
 $Id$
 
+2.1.3-pre-2
+	Added perl filter elements.  Similar to having "filter <subfilter>"
+	  in a filter, you may also have "perl <functionname>"
+	  where <functionname> is passed an owl::Message object and
+	  returns 0 or 1 depending on whether the message matches
+	  that element of the filter.
+	  [Note: currently this overloads the filtername element
+	  of the filterelement structure to store the function name.
+	  Perhaps we should change the name of this element to something
+	  more general to avoid confusion?]
+	
 2.1.3-pre-1
 	Don't print an error about loading subs if there is no
 	  .zephyr.subs

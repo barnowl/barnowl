@@ -12,6 +12,7 @@ static const char fileIdent[] = "$Id$";
 #define OWL_FILTERELEMENT_NOT         7
 #define OWL_FILTERELEMENT_RE          8
 #define OWL_FILTERELEMENT_FILTER      9
+#define OWL_FILTERELEMENT_PERL       10
 
 void owl_filterelement_create_null(owl_filterelement *fe)
 {
@@ -77,6 +78,13 @@ void owl_filterelement_create_filter(owl_filterelement *fe, char *name)
   fe->filtername=owl_strdup(name);
 }
 
+void owl_filterelement_create_perl(owl_filterelement *fe, char *name)
+{
+  owl_filterelement_create_null(fe);
+  fe->type=OWL_FILTERELEMENT_PERL;
+  fe->filtername=owl_strdup(name);
+}
+
 void owl_filterelement_free(owl_filterelement *fe)
 {
   if (fe->field) owl_free(fe->field);
@@ -137,6 +145,12 @@ int owl_filterelement_is_re(owl_filterelement *fe)
   return(0);
 }
 
+int owl_filterelement_is_perl(owl_filterelement *fe)
+{
+  if (fe->type==OWL_FILTERELEMENT_PERL) return(1);
+  return(0);
+}
+
 owl_regex *owl_filterelement_get_re(owl_filterelement *fe)
 {
   return(&(fe->re));
@@ -165,6 +179,7 @@ int owl_filterelement_is_value(owl_filterelement *fe)
   if ( (fe->type==OWL_FILTERELEMENT_TRUE) ||
        (fe->type==OWL_FILTERELEMENT_FALSE) ||
        (fe->type==OWL_FILTERELEMENT_RE) ||
+       (fe->type==OWL_FILTERELEMENT_PERL) ||
        (fe->type==OWL_FILTERELEMENT_FILTER)) {
     return(1);
   }
@@ -192,6 +207,8 @@ char *owl_filterelement_to_string(owl_filterelement *fe)
     return(owl_sprintf("%s %s ", fe->field, owl_regex_get_string(&(fe->re))));
   } else if (owl_filterelement_is_filter(fe)) {
     return(owl_sprintf("filter %s ", fe->filtername));
+  } else if (owl_filterelement_is_perl(fe)) {
+    return(owl_sprintf("perl %s ", fe->filtername));
   }
 
   return(owl_strdup("?"));

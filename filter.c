@@ -83,6 +83,9 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
       } else if (!strcasecmp(argv[i], "filter")) {
 	owl_filterelement_create_filter(fe, argv[i+1]);
 	i++;
+      } else if (!strcasecmp(argv[i], "perl")) {
+	owl_filterelement_create_perl(fe, argv[i+1]);
+	i++;
       } else {
 	error=1;
       }
@@ -223,23 +226,47 @@ int owl_filter_message_match(owl_filter *f, owl_message *m)
     }
   }
 
-  /* now subfilters */
+  /* now subfilters and perl functions */
   for (i=0; i<j; i++) {
     owl_filter *subfilter;
 			   
     fe=owl_list_get_element(&work_fes, i);
-    if (!owl_filterelement_is_filter(fe)) continue;
 
-    subfilter=owl_global_get_filter(&g, owl_filterelement_get_filtername(fe));
-    if (!subfilter) {
-      /* the filter does not exist, maybe because it was deleted.
-       * Default to not matching
-       */
-      owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_false(&g));
-    } else if (owl_filter_message_match(subfilter, m)) {
-      owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_true(&g));
-    } else {
-      owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_false(&g));
+    if (owl_filterelement_is_filter(fe)) {
+
+      subfilter=owl_global_get_filter(&g, owl_filterelement_get_filtername(fe));
+      if (!subfilter) {
+	/* the filter does not exist, maybe because it was deleted.
+	 * Default to not matching
+	 */
+	owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_false(&g));
+      } else if (owl_filter_message_match(subfilter, m)) {
+	owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_true(&g));
+      } else {
+	owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_false(&g));
+      }
+
+    } else if (owl_filterelement_is_perl(fe)) {
+      char *subname, *perlrv;
+      int   tf=0;
+
+      subname = owl_filterelement_get_filtername(fe);
+      if (!owl_perlconfig_is_function(subname)) {
+	owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_false(&g));
+	continue;
+      }
+      perlrv = owl_perlconfig_call_with_message(subname, m);
+      if (perlrv) {
+	if (0 == strcmp(perlrv, "1")) {
+	  tf=1;
+	}
+	owl_free(perlrv);
+      } 
+      if (tf) {
+	owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_true(&g));
+      } else {
+	owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_false(&g));
+      }
     }
   }
 
