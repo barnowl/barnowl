@@ -270,6 +270,11 @@ owl_cmd commands_to_init[]
 	      "alist",
 	      "Print a listing of buddies logged in, regardless of protocol."),
 
+  OWLCMD_ARGS("toggle-oneline", owl_command_toggleoneline, OWL_CTX_INTERACTIVE,
+	      "Toggle the style between oneline and the default style",
+	      "toggle-oneline",
+	      ""),
+
   OWLCMD_VOID("recv:shiftleft", owl_command_shift_left, OWL_CTX_INTERACTIVE,
 	      "scrolls receive window to the left", "", ""),
 
@@ -865,6 +870,11 @@ char *owl_command_alist() {
 
 char *owl_command_blist() {
   owl_function_buddylist(1, 1, NULL);
+  return(NULL);
+}
+
+char *owl_command_toggleoneline() {
+  owl_function_toggleoneline();
   return(NULL);
 }
 

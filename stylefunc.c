@@ -429,7 +429,9 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
     }
       
     /* make personal messages bold for smaat users */
-    if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES) && owl_message_is_personal(m)) {
+    if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES) &&
+	owl_message_is_personal(m) &&
+	owl_message_is_direction_in(m)) {
       owl_fmtext_addattr(fm, OWL_FMTEXT_ATTR_BOLD);
     }
 

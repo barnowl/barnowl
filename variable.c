@@ -204,6 +204,12 @@ static owl_variable variables_to_init[] = {
 		      "available, 'perl'\n",
 		      NULL, owl_variable_style_set, NULL),
 
+  OWLVAR_STRING( "default_style" /* %OwlVarStub */, "default",
+		 "name of the default formatting style",
+		 "This sets the default message formatting style. Possbile\n"
+		 "values include 'default' 'basic' 'oneline' and if\n"
+		 "available, 'perl'\n" ),
+
   OWLVAR_INT(    "edit:maxfillcols" /* %OwlVarStub:edit_maxfillcols */, 70,
 	         "maximum number of columns for M-q to fill text to",
 		 "This specifies the maximum number of columns for M-q\n"

@@ -313,8 +313,10 @@ typedef struct _owl_filter {
 } owl_filter;
 
 typedef struct _owl_view {
+  char *name;
   owl_filter *filter;
   owl_messagelist ml;
+  owl_style *style;
 } owl_view;
 
 typedef struct _owl_history {

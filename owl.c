@@ -210,7 +210,7 @@ int main(int argc, char **argv, char **env) {
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   /* set the current view */
-  owl_view_create(owl_global_get_current_view(&g), f);
+  owl_view_create(owl_global_get_current_view(&g), "main", f, owl_global_get_style_by_name(&g, "default"));
 
   /* AIM init */
   owl_aim_init();

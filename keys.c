@@ -245,6 +245,8 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M",   "pop-message",      "");
   BIND_CMD("T",   "delete trash",     "mark all 'trash' messages for deletion");
 
+  BIND_CMD("o",   "toggle-oneline", "");
+
   BIND_CMD("A",   "zaway toggle",     "toggles zaway on and off");
 
   BIND_CMD("z",   "start-command zwrite ", "start a zwrite command");

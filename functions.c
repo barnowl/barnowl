@@ -1954,8 +1954,8 @@ char *owl_function_perl(int argc, char **argv, char *buff, int type)
   return NULL;
 }
 
-
-void owl_function_change_view(char *filtname)
+#if 0
+void owl_function_change_view_old(char *filtname)
 {
   owl_view *v;
   owl_filter *f;
@@ -1998,6 +1998,52 @@ void owl_function_change_view(char *filtname)
 
   owl_global_set_curmsg(&g, newpos);
 
+  owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  owl_global_set_direction_downwards(&g);
+}
+#endif
+
+void owl_function_change_view(char *filtname)
+{
+  owl_view *v;
+  owl_filter *f;
+  int curid=-1, newpos, curmsg;
+  owl_message *curm=NULL;
+
+  v=owl_global_get_current_view(&g);
+
+  curmsg=owl_global_get_curmsg(&g);
+  if (curmsg==-1) {
+    owl_function_debugmsg("Hit the curmsg==-1 case in change_view");
+  } else {
+    curm=owl_view_get_element(v, curmsg);
+    if (curm) {
+      curid=owl_message_get_id(curm);
+      owl_view_save_curmsgid(v, curid);
+    }
+  }
+
+  f=owl_global_get_filter(&g, filtname);
+  if (!f) {
+    owl_function_makemsg("Unknown filter");
+    return;
+  }
+
+  owl_view_new_filter(v, f);
+
+  /* Figure out what to set the current message to.
+   * - If the view we're leaving has messages in it, go to the closest message
+   *   to the last message pointed to in that view. 
+   * - If the view we're leaving is empty, try to restore the position
+   *   from the last time we were in the new view.  */
+  if (curm) {
+    newpos = owl_view_get_nearest_to_msgid(v, curid);
+  } else {
+    newpos = owl_view_get_nearest_to_saved(v);
+  }
+
+  owl_global_set_curmsg(&g, newpos);
   owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_global_set_direction_downwards(&g);
@@ -2964,4 +3010,17 @@ void owl_function_execstartup(void)
     owl_function_command(buff);
   }
   fclose(file);
+}
+
+void owl_function_toggleoneline()
+{
+  char *style;
+
+  style=owl_global_get_style(&g);
+
+  if (strcmp(style, "oneline")) {
+    owl_global_set_style(&g, "oneline");
+  } else {
+    owl_global_set_style(&g, owl_global_get_default_style(&g));
+  }
 }
