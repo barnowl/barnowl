@@ -59,6 +59,9 @@ void owl_log_incoming(owl_message *m) {
   char *frombuff, *ptr, *from, *buff, *tmp;
   int len, ch, i, personal;
 
+  /* we only do zephyrs right now */
+  if (!owl_message_is_type_zephyr(m)) return;
+      
   /* check for nolog */
   if (!strcasecmp(owl_message_get_opcode(m), "nolog") ||
       !strcasecmp(owl_message_get_instance(m), "nolog")) return;

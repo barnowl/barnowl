@@ -808,20 +808,6 @@ int owl_editwin_check_dotsend(owl_editwin *e) {
     }
   }
   return(0);
-
-#if 0  /* old implementation */
-  if (e->bufflen>=2) {
-    if ((e->buff[e->bufflen-1]=='\n') &&
-	(e->buff[e->bufflen-2]=='.') &&
-	((e->bufflen==2) || (e->buff[e->bufflen-3]=='\n'))) {
-      e->buff[e->bufflen-2]='\0';
-      e->bufflen-=2;
-      owl_editwin_redisplay(e, 0);
-      return(1);
-    }
-  }
-  return(0);
-#endif
 }
 
 void owl_editwin_post_process_char(owl_editwin *e, int j) {

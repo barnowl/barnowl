@@ -30,7 +30,7 @@ int main(int argc, char **argv, char **env) {
   owl_editwin *tw;
   owl_popwin *pw;
   int j, ret, initialsubs, debug, argcsave, followlast;
-  int newzephyrs, zpendcount, nexttimediff;
+  int newmsgs, zpendcount, nexttimediff;
   struct sigaction sigact;
   char *configfile, *tty, *perlout, **argvsave, buff[LINE], startupmsg[LINE];
   owl_filter *f;
@@ -214,6 +214,9 @@ int main(int argc, char **argv, char **env) {
     owl_function_zlog_in();
   }
 
+  /* AIM init */
+  owl_aim_init();
+
   /* welcome message */
   strcpy(startupmsg, "-------------------------------------------------------------------------\n");
   sprintf(buff,      "Welcome to owl version %s.  Press 'h' for on line help. \n", OWL_VERSION_STRING);
@@ -263,34 +266,38 @@ int main(int argc, char **argv, char **env) {
     }
 
     /* grab incoming zephyrs */
-    newzephyrs=0;
+    newmsgs=0;
     zpendcount=0;
-    while(ZPending()) {
+    while(ZPending() || owl_global_messagequeue_pending(&g)) {
       ZNotice_t notice;
       struct sockaddr_in from;
       owl_message *m;
       owl_filter *f;
 
-      /* grab a notice, but if we've done 20 without stopping, take
-	 a break to process keystrokes etc. */
-      if (zpendcount>20) break;
-      ZReceiveNotice(&notice, &from);
-      zpendcount++;
+      if (ZPending()) {
+	/* grab a zephyr notice, but if we've done 20 without stopping,
+	   take a break to process keystrokes etc. */
+	if (zpendcount>20) break;
+	ZReceiveNotice(&notice, &from);
+	zpendcount++;
+	
+	/* is this an ack from a zephyr we sent? */
+	if (owl_zephyr_notice_is_ack(&notice)) {
+	  owl_zephyr_handle_ack(&notice);
+	  continue;
+	}
+	
+	/* if it's a ping and we're not viewing pings then skip it */
+	if (!owl_global_is_rxping(&g) && !strcasecmp(notice.z_opcode, "ping")) {
+	  continue;
+	}
 
-      /* is this an ack from a zephyr we sent? */
-      if (owl_zephyr_notice_is_ack(&notice)) {
-	owl_zephyr_handle_ack(&notice);
-	continue;
+	/* create the new message */
+	m=owl_malloc(sizeof(owl_message));
+	owl_message_create_from_znotice(m, &notice);
+      } else if (owl_global_messagequeue_pending(&g)) {
+	m=owl_global_messageuque_popmsg(&g);
       }
-      
-      /* if it's a ping and we're not viewing pings then skip it */
-      if (!owl_global_is_rxping(&g) && !strcasecmp(notice.z_opcode, "ping")) {
-	continue;
-      }
-
-      /* create the new message */
-      m=owl_malloc(sizeof(owl_message));
-      owl_message_create_from_znotice(m, &notice);
       
       /* if it's on the puntlist then, nuke it and continue */
       if (owl_global_message_is_puntable(&g, m)) {
@@ -300,7 +307,7 @@ int main(int argc, char **argv, char **env) {
 
       /* otherwise add it to the global list */
       owl_messagelist_append_element(owl_global_get_msglist(&g), m);
-      newzephyrs=1;
+      newmsgs=1;
 
       /* let the config know the new message has been received */
       owl_config_getmsg(m, 0);
@@ -324,8 +331,6 @@ int main(int argc, char **argv, char **env) {
 	owl_function_command(owl_global_get_alert_action(&g));
       }
 
-	 
-
       /* check for burning ears message */
       /* this is an unsupported feature */
       if (owl_global_is_burningears(&g) && owl_message_is_burningears(m)) {
@@ -337,26 +342,31 @@ int main(int argc, char **argv, char **env) {
 	owl_function_beep();
       }
 
-      /* log the zephyr if we need to */
+      /* log the message if we need to */
       if (owl_global_is_logging(&g) || owl_global_is_classlogging(&g)) {
 	owl_log_incoming(m);
       }
     }
 
+    /* If we're logged into AIM, do AIM stuff */
+    if (owl_global_is_aimloggedin(&g)) {
+      owl_function_debugmsg("Doing aim processing");
+      owl_aim_process_events();
+    }
+
     /* follow the last message if we're supposed to */
-    if (newzephyrs && followlast) {
+    if (newmsgs && followlast) {
       owl_function_lastmsg_noredisplay();
     }
 
     /* do the newmsgproc thing */
-    if (newzephyrs) {
+    if (newmsgs) {
       owl_function_do_newmsgproc();
     }
     
     /* redisplay if necessary */
-    /* maybe this should be optimized to not even run if
-       the zephyr won't be displayed */
-    if (newzephyrs) {
+    /* this should be optimized to not run if the new messages won't be displayed */
+    if (newmsgs) {
       owl_mainwin_redisplay(owl_global_get_mainwin(&g));
       sepbar(NULL);
       if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
@@ -393,7 +403,10 @@ int main(int argc, char **argv, char **env) {
       owl_global_set_noneedrefresh(&g);
     }
 
-    /* handle all keypresses */
+    /* Handle all keypresses.
+     * If no key has been pressed sleep for a little bit, but
+     * otherwise do not, this lets input be grabbed as quickly
+     * as possbile */
     j=wgetch(typwin);
     if (j==ERR) {
       usleep(10);
@@ -425,7 +438,6 @@ int main(int argc, char **argv, char **env) {
       owl_function_makemsg("Unable to handle keypress");
     }
   }
-
 }
 
 void sig_handler(int sig) {

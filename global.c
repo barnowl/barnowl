@@ -50,6 +50,7 @@ void owl_global_init(owl_global *g) {
 
   owl_list_create(&(g->filterlist));
   owl_list_create(&(g->puntlist));
+  owl_list_create(&(g->messagequeue));
   g->curmsg_vert_offset=0;
   g->resizepending=0;
   g->typwinactive=0;
@@ -86,6 +87,10 @@ void owl_global_init(owl_global *g) {
   owl_messagelist_create(&(g->msglist));
   owl_mainwin_init(&(g->mw));
   owl_popwin_init(&(g->pw));
+
+  g->aim_screenname=NULL;
+  g->aim_loggedin=0;
+  g->aim_lastnop=0;
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -635,4 +640,79 @@ int owl_global_get_freed(owl_global *g) {
 
 int owl_global_get_meminuse(owl_global *g) {
   return(g->malloced-g->freed);
+}
+
+/* AIM stuff */
+
+int owl_global_is_aimloggedin(owl_global *g) {
+  if (g->aim_loggedin) return(1);
+  return(0);
+}
+
+char *owl_global_get_aim_screenname(owl_global *g) {
+  return (g->aim_screenname);
+}
+
+void owl_global_set_aimloggedin(owl_global *g, char *screenname) {
+  g->aim_loggedin=1;
+  if (g->aim_screenname) owl_free(g->aim_screenname);
+  g->aim_screenname=owl_strdup(screenname);
+}
+
+void owl_global_set_aimnologgedin(owl_global *g) {
+  g->aim_loggedin=0;
+}
+
+aim_session_t *owl_global_get_aimsess(owl_global *g) {
+  return(&(g->aimsess));
+}
+
+aim_conn_t *owl_global_get_waitingconn(owl_global *g) {
+  return(&(g->waitingconn));
+}
+
+int owl_global_is_aimnop_time(owl_global *g) {
+  time_t now;
+
+  now=time(NULL);
+  if (g->aim_lastnop==0) {
+    g->aim_lastnop=now;
+    return(0);
+  }
+
+  if (now-g->aim_lastnop >= 30) {
+    return(1);
+  }
+  return(0);
+}
+
+void owl_global_aimnop_sent(owl_global *g) {
+  time_t now;
+
+  now=time(NULL);
+  g->aim_lastnop=now;
+}
+
+/* message queue */
+
+void owl_global_messagequeue_addmsg(owl_global *g, owl_message *m) {
+  owl_list_append_element(&(g->messagequeue), m);
+}
+
+/* pop off the first message and return it.  Return NULL if the queue
+ * is empty.  The caller should free the message after using it, if
+ * necessary.
+ */
+owl_message *owl_global_messageuque_popmsg(owl_global *g) {
+  owl_message *out;
+
+  if (owl_list_get_size(&(g->messagequeue))==0) return(NULL);
+  out=owl_list_get_element(&(g->messagequeue), 0);
+  owl_list_remove_element(&(g->messagequeue), 0);
+  return(out);
+}
+
+int owl_global_messagequeue_pending(owl_global *g) {
+  if (owl_list_get_size(&(g->messagequeue))==0) return(0);
+  return(1);
 }

@@ -68,6 +68,10 @@ $Id$
 	  keypress.c
 	do_encrypt declaired static
 	if we don't have des functions, do not try to build in zcrypt
+	kill the newmsgproc function on exit
+	Added libfaim
+	Added basic AIM support, including the "aimlogin", "aimwrite" and
+	   "aimlogout" commands
 	
 1.2.8
 	Class pings are displayed differently now

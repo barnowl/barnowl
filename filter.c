@@ -120,7 +120,7 @@ int owl_filter_message_match(owl_filter *f, owl_message *m) {
   owl_filterelement *fe;
   char *field, *match;
 
-  /* create the working list */
+  /* create the working list of expression elements */
   fes=&(f->fes);
   owl_list_create(&work_fes);
   j=owl_list_get_size(fes);
@@ -128,7 +128,7 @@ int owl_filter_message_match(owl_filter *f, owl_message *m) {
     owl_list_append_element(&work_fes, owl_list_get_element(fes, i));
   }
 
-  /* first go thru and turn all RE elements into true or false */
+  /* first go thru and evaluate all RE elements to true or false */
   match="";
   for (i=0; i<j; i++) {
     fe=owl_list_get_element(&work_fes, i);
@@ -151,6 +151,8 @@ int owl_filter_message_match(owl_filter *f, owl_message *m) {
     } else if (!strcasecmp(field, "type")) {
       if (owl_message_is_type_zephyr(m)) {
 	match="zephyr";
+      } else if (owl_message_is_type_aim(m)) {
+	match="aim";
       } else if (owl_message_is_type_admin(m)) {
 	match="admin";
       } else {
@@ -176,12 +178,11 @@ int owl_filter_message_match(owl_filter *f, owl_message *m) {
     }
   }
 
-  
   /* call the recrsive helper */
   i=_owl_filter_message_match_recurse(f, m, &work_fes, 0, owl_list_get_size(&(f->fes))-1);
 
+  /* now there will be only one TRUE / FALSE, find it among the NULL's */
   tmp=0;
-  /* now we should have one value */
   for (i=0; i<j; i++) {
     fe=owl_list_get_element(&work_fes, i);
     if (owl_filterelement_is_null(fe)) continue;
@@ -195,9 +196,9 @@ int owl_filter_message_match(owl_filter *f, owl_message *m) {
     }
   }  
 
-  if (f->polarity) {
-    tmp=!tmp;
-  }
+  /* reverse the answer if negative polarity is in use */
+  if (f->polarity) tmp=!tmp;
+
   owl_list_free_simple(&work_fes);
   return(tmp);
 }
@@ -206,8 +207,9 @@ int _owl_filter_message_match_recurse(owl_filter *f, owl_message *m, owl_list *f
   int a=0, b=0, i, x, y, z, score, ret, type;
   owl_filterelement *fe, *tmpfe=NULL;
 
-  /* deal with parens first */
+  /* Deal with parens first. */
   for (i=0; i<OWL_FILTER_MAX_DEPTH; i++) {
+    /* Find first open paren and matching close paren, store in x, y */
     score=x=y=0;
     for (i=start; i<=end; i++) {
       fe=owl_list_get_element(fes, i);
@@ -230,12 +232,13 @@ int _owl_filter_message_match_recurse(owl_filter *f, owl_message *m, owl_list *f
       return(-1);
     }
 
+    /* Simply the parens by removing them and evaluating what was in between */
     if (y>0) {
       /* null out the parens */
       owl_list_replace_element(fes, x, owl_global_get_filterelement_null(&g));
       owl_list_replace_element(fes, y, owl_global_get_filterelement_null(&g));
 
-      /* simplify the part that was in between */
+      /* evaluate expression in between */
       ret=_owl_filter_message_match_recurse(f, m, fes, x+1, y-1);
       if (ret<0) return(-1);
 
@@ -247,10 +250,19 @@ int _owl_filter_message_match_recurse(owl_filter *f, owl_message *m, owl_list *f
     }
   }
   if (i==OWL_FILTER_MAX_DEPTH) {
+    /* hit the saftey limit, consider it invalid */
     return(-1);
   }
 
-  /* and / or / not */
+  /* Find AND / OR / NOT.
+   *   For binary expressions (AND/OR):
+   *     "type" is 1
+   *     "x" will index first val, "y" the operator and "z" the second val
+   *   For unary expressions (NOT):
+   *     "type" is 2
+   *     "x" will index the operator, "y" the value
+   *   "score" tallys how many expression elements have been found so far
+   */
   for (i=0; i<OWL_FILTER_MAX_DEPTH; i++) {
     type=score=x=y=z=0;
     for (i=start; i<=end; i++) {
@@ -272,18 +284,19 @@ int _owl_filter_message_match_recurse(owl_filter *f, owl_message *m, owl_list *f
 	    score=2;
 	    y=i;
 	  } else {
+	    /* it's not a valid binary expression */
 	    x=y=z=score=0;
 	  }
 	} else if (type==2) {
 	  if (owl_filterelement_is_value(fe)) {
-	    /* it's a valid "NOT expr" */
+	    /* valid unary expression, we're done */
 	    y=i;
 	    break;
 	  }
 	}
       } else if (score==2) {
 	if (owl_filterelement_is_value(fe)) {
-	  /* yes, it's a good match */
+	  /* valid binary expression, we're done */
 	  z=i;
 	  break;
 	} else {
@@ -292,7 +305,7 @@ int _owl_filter_message_match_recurse(owl_filter *f, owl_message *m, owl_list *f
       }
     }
 
-    /* process and / or */
+    /* simplify AND / OR */
     if ((type==1) && (z>0)) {
       fe=owl_list_get_element(fes, x);
       if (owl_filterelement_is_true(fe)) {
@@ -325,7 +338,8 @@ int _owl_filter_message_match_recurse(owl_filter *f, owl_message *m, owl_list *f
       owl_list_replace_element(fes, x, owl_global_get_filterelement_null(&g));
       owl_list_replace_element(fes, y, tmpfe);
       owl_list_replace_element(fes, z, owl_global_get_filterelement_null(&g));
-    } else if ((type==2) && (y>0)) { /* process NOT */
+    } else if ((type==2) && (y>0)) {
+      /* simplify NOT */
       fe=owl_list_get_element(fes, y);
       owl_list_replace_element(fes, x, owl_global_get_filterelement_null(&g));
       if (owl_filterelement_is_false(fe)) {

@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <signal.h>
 #include "owl.h"
 
 static const char fileIdent[] = "$Id$";
@@ -123,6 +124,34 @@ void owl_function_make_outgoing_zephyr(char *body, char *zwriteline, char *zsig)
   owl_zwrite_free(&z);
 }
 
+void owl_function_make_outgoing_aim(char *body, char *to)
+{
+  owl_message *m;
+  int followlast;
+  
+  followlast=owl_global_should_followlast(&g);
+
+  /* create the message */
+  m=owl_malloc(sizeof(owl_message));
+  owl_message_create_aim(m, owl_global_get_aim_screenname(&g), body);
+  owl_message_set_recipient(m, to);
+  owl_message_set_direction_out(m);
+
+  /* add it to the global list and current view */
+  owl_messagelist_append_element(owl_global_get_msglist(&g), m);
+  owl_view_consider_message(owl_global_get_current_view(&g), m);
+
+  if (followlast) owl_function_lastmsg_noredisplay();
+
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
+    owl_popwin_refresh(owl_global_get_popwin(&g));
+  }
+  
+  wnoutrefresh(owl_global_get_curs_recwin(&g));
+  owl_global_set_needrefresh(&g);
+}
+
 void owl_function_zwrite_setup(char *line)
 {
   owl_editwin *e;
@@ -164,6 +193,36 @@ void owl_function_zwrite_setup(char *line)
   /* make it active */
   owl_global_set_typwin_active(&g);
 }
+
+void owl_function_aimwrite_setup(char *line)
+{
+  owl_editwin *e;
+  char buff[1024];
+
+  /* check the arguments */
+
+  /* create and setup the editwin */
+  e=owl_global_get_typwin(&g);
+  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE, owl_global_get_msg_history(&g));
+
+  if (!owl_global_get_lockout_ctrld(&g)) {
+    owl_function_makemsg("Type your message below.  End with ^D or a dot on a line by itself.  ^C will quit.");
+  } else {
+    owl_function_makemsg("Type your message below.  End with a dot on a line by itself.  ^C will quit.");
+  }
+
+  owl_editwin_clear(e);
+  owl_editwin_set_dotsend(e);
+  strcpy(buff, "----> ");
+  strcat(buff, line);
+  strcat(buff, "\n");
+  owl_editwin_set_locktext(e, buff);
+
+  /* make it active */
+  owl_global_set_typwin_active(&g);
+}
+
+
 
 void owl_function_zcrypt_setup(char *line)
 {
@@ -240,6 +299,28 @@ void owl_function_zwrite(char *line)
   /* free the zwrite */
   owl_zwrite_free(&z);
 }
+
+
+void owl_function_aimwrite(char *to)
+{
+  /*  send the message */
+  owl_aim_send_im(to, owl_editwin_get_text(owl_global_get_typwin(&g)));
+  owl_function_makemsg("AIM message sent.");
+
+  /* display the message as an outgoing message in the receive window */
+  if (owl_global_is_displayoutgoing(&g)) {
+    owl_function_make_outgoing_aim(owl_editwin_get_text(owl_global_get_typwin(&g)), to);
+  }
+
+  /* not yet */
+#if 0
+  /* log it if we have logging turned on */
+  if (owl_global_is_logging(&g)) {
+    owl_log_outgoing(to, owl_editwin_get_text(owl_global_get_typwin(&g)));
+  }
+#endif
+}
+
 
 
 /* If filter is non-null, looks for the next message matching
@@ -618,6 +699,11 @@ void owl_function_quit()
   /* execute the commands in shutdown */
   ret = owl_config_execute("owl::shutdown();");
   if (ret) owl_free(ret);
+
+  /* signal our child process, if any */
+  if (owl_global_get_newmsgproc_pid(&g)) {
+    kill(owl_global_get_newmsgproc_pid(&g), SIGHUP);
+  }
 
   /* final clean up */
   unsuball();
@@ -1004,8 +1090,9 @@ void owl_function_run_buffercommand()
 
   buff=owl_global_get_buffercommand(&g);
   if (!strncmp(buff, "zwrite ", 7)) {
-
     owl_function_zwrite(buff);
+  } else if (!strncmp(buff, "aimwrite ", 9)) {
+    owl_function_aimwrite(buff+9);
   }
 }
 
@@ -1192,6 +1279,8 @@ void owl_function_info()
     owl_fmtext_append_normal(&fm, "Type      : admin\n");
   } else if (owl_message_is_type_generic(m)) {
     owl_fmtext_append_normal(&fm, "Type      : generic\n");
+  } else if (owl_message_is_type_aim(m)) {
+    owl_fmtext_append_normal(&fm, "Type      : aim\n");
   } else {
     owl_fmtext_append_normal(&fm, "Type      : unknown\n");
   }
@@ -1679,19 +1768,27 @@ void owl_function_reply(int type, int enter)
       }
     }
 
-    /* for now we disable replies to zcrypt messages, since we can't
-       support an encrypted reply */
-    if (!strcasecmp(owl_message_get_opcode(m), "crypt")) {
-      owl_function_makemsg("Replies to zcrypt messages are not enabled in this release");
+    /* admin */
+    if (owl_message_is_type_admin(m)) {
+      owl_function_makemsg("You cannot reply to an admin message");
       return;
     }
 
-    if (owl_message_is_direction_out(m)) {
-      owl_function_zwrite_setup(owl_message_get_zwriteline(m));
-      owl_global_set_buffercommand(&g, owl_message_get_zwriteline(m));
-    } else if (owl_message_is_type_admin(m)) {
-      owl_function_makemsg("You cannot reply to an admin message");
-    } else {
+    /* zephyr */
+    if (owl_message_is_type_zephyr(m)) {
+      /* for now we disable replies to zcrypt messages, since we can't
+	 support an encrypted reply */
+      if (!strcasecmp(owl_message_get_opcode(m), "crypt")) {
+	owl_function_makemsg("Replies to zcrypt messages are not enabled in this release");
+	return;
+      }
+
+      if (owl_message_is_direction_out(m)) {
+	owl_function_zwrite_setup(owl_message_get_zwriteline(m));
+	owl_global_set_buffercommand(&g, owl_message_get_zwriteline(m));
+	return;
+      }
+      
       if (owl_message_is_login(m)) {
 	class="MESSAGE";
 	inst="PERSONAL";
@@ -1713,7 +1810,7 @@ void owl_function_reply(int type, int enter)
 	  to=owl_message_get_sender(m);
 	}
       }
-      
+	
       /* create the command line */
       buff = owl_strdup("zwrite");
       if (strcasecmp(class, "message")) {
@@ -1744,17 +1841,22 @@ void owl_function_reply(int type, int enter)
 	owl_free(tmp);
       }
       if (cc) owl_free(cc);
-
-      if (enter) {
-	owl_history *hist = owl_global_get_cmd_history(&g);
-	owl_history_store(hist, buff);
-	owl_history_reset(hist);
-	owl_function_command_norv(buff);
-      } else {
-	owl_function_start_command(buff);
-      }
-      owl_free(buff);
     }
+
+    /* aim */
+    if (owl_message_is_type_aim(m)) {
+      buff=owl_sprintf("aimwrite %s", owl_message_get_sender(m));
+    }
+
+    if (enter) {
+      owl_history *hist = owl_global_get_cmd_history(&g);
+      owl_history_store(hist, buff);
+      owl_history_reset(hist);
+      owl_function_command_norv(buff);
+    } else {
+      owl_function_start_command(buff);
+    }
+    owl_free(buff);
   }
 }
 

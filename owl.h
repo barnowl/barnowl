@@ -7,6 +7,8 @@
 #include <EXTERN.h>
 #include <netdb.h>
 #include <regex.h>
+#include <time.h>
+#include <libfaim/aim.h>
 #include "config.h"
 
 static const char owl_h_fileIdent[] = "$Id$";
@@ -395,6 +397,12 @@ typedef struct _owl_global {
   owl_filterelement fe_true;
   owl_filterelement fe_false;
   owl_filterelement fe_null;
+  aim_session_t aimsess;
+  aim_conn_t waitingconn;
+  time_t aim_lastnop;
+  int aim_loggedin;
+  char *aim_screenname;
+  owl_list messagequeue; /* for queueing up aim and other messages */
 } owl_global;
 
 /* globals */

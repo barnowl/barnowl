@@ -195,6 +195,10 @@ void owl_message_set_type_admin(owl_message *m) {
 void owl_message_set_type_zephyr(owl_message *m) {
   m->type=OWL_MESSAGE_TYPE_ZEPHYR;
 }
+
+void owl_message_set_type_aim(owl_message *m) {
+  m->type=OWL_MESSAGE_TYPE_AIM;
+}
 						
 int owl_message_is_type_admin(owl_message *m) {
   if (m->type==OWL_MESSAGE_TYPE_ADMIN) return(1);
@@ -203,6 +207,11 @@ int owl_message_is_type_admin(owl_message *m) {
 
 int owl_message_is_type_zephyr(owl_message *m) {
   if (m->type==OWL_MESSAGE_TYPE_ZEPHYR) return(1);
+  return(0);
+}
+
+int owl_message_is_type_aim(owl_message *m) {
+  if (m->type==OWL_MESSAGE_TYPE_AIM) return(1);
   return(0);
 }
 
@@ -383,7 +392,6 @@ void owl_message_create(owl_message *m, char *header, char *text) {
   char *indent;
 
   owl_message_init(m);
-
   owl_message_set_body(m, text);
 
   indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
@@ -397,6 +405,29 @@ void owl_message_create(owl_message *m, char *header, char *text) {
     owl_fmtext_append_normal(&(m->fmtext), "\n");
   }
 
+  owl_free(indent);
+}
+
+void owl_message_create_aim(owl_message *m, char *sender, char *text) {
+  char *indent;
+
+  owl_message_init(m);
+  owl_message_set_body(m, text);
+  owl_message_set_sender(m, sender);
+  owl_message_set_type_aim(m);
+
+  indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
+  owl_text_indent(indent, text, OWL_MSGTAB);
+  owl_fmtext_init_null(&(m->fmtext));
+  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
+  owl_fmtext_append_normal(&(m->fmtext), "AIM: ");
+  owl_fmtext_append_normal(&(m->fmtext), sender);
+  owl_fmtext_append_normal(&(m->fmtext), "\n");
+  owl_fmtext_append_ztext(&(m->fmtext), indent);
+  if (text[strlen(text)-1]!='\n') {
+    owl_fmtext_append_normal(&(m->fmtext), "\n");
+  }
+  
   owl_free(indent);
 }
 

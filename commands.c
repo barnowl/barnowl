@@ -111,6 +111,11 @@ owl_cmd commands_to_init[]
 	      "-O opcode\n"
 	      "      Send to the specified opcode\n"),
 
+  OWLCMD_ARGS("aimwrite", owl_command_aimwrite, OWL_CTX_INTERACTIVE,
+	      "send a zephyr",
+	      "aimzwrite <user>",
+	      "Send an aim message to a user.\n"),
+
   /*
   OWLCMD_ARGS("zcrypt", owl_command_zcrypt, OWL_CTX_INTERACTIVE,
 	      "send an encrypted zephyr",
@@ -564,6 +569,17 @@ owl_cmd commands_to_init[]
 	      "argument is supplied then the previous one is used.  By\n"
 	      "default searches are done fowards, if -r is used the search\n"
 	      "is performed backwards"),
+
+  OWLCMD_ARGS("aimlogin", owl_command_aimlogin, OWL_CTX_ANY,
+	      "login to an AIM account",
+	      "aimlogin <screenname> <password>\n",
+	      ""),
+
+  OWLCMD_ARGS("aimlogout", owl_command_aimlogout, OWL_CTX_ANY,
+	      "logout from AIM",
+	      "aimlogout\n",
+	      ""),
+
 
   /****************************************************************/
   /************************* EDIT-SPECIFIC ************************/
@@ -1204,7 +1220,7 @@ char *owl_command_term(int argc, char **argv, char *buff) {
   } else if (!strcmp(argv[1], "deiconify")) {
     owl_function_xterm_deiconify();
   } else {
-    owl_function_makemsg("Uknown terminal subcommand");
+    owl_function_makemsg("Unknown terminal subcommand");
   }
   return(NULL);
 }
@@ -1352,6 +1368,20 @@ char *owl_command_zwrite(int argc, char **argv, char *buff) {
   } else {
     tmpbuff = owl_strdup(buff);
     owl_function_zwrite_setup(tmpbuff);
+    owl_global_set_buffercommand(&g, tmpbuff);
+    owl_free(tmpbuff);
+  }
+  return NULL;
+}
+
+char *owl_command_aimwrite(int argc, char **argv, char *buff) {
+  char *tmpbuff, *pos, *cmd, *msg;
+
+  if (argc < 2) {
+    owl_function_makemsg("Not enough arguments to the aimwrite command.");
+  } else {
+    tmpbuff = owl_strdup(buff);
+    owl_function_aimwrite_setup(tmpbuff);
     owl_global_set_buffercommand(&g, tmpbuff);
     owl_free(tmpbuff);
   }
@@ -1736,6 +1766,28 @@ char *owl_command_search(int argc, char **argv, char *buff) {
     owl_function_search_start(buffstart, direction);
   }
   
+  return(NULL);
+}
+
+char *owl_command_aimlogin(int argc, char **argv, char *buff) {
+  int ret;
+
+  if (argc!=3) {
+    owl_function_makemsg("Wrong number of arguments to aimlogin command");
+    return(NULL);
+  }
+  ret=owl_aim_login(argv[1], argv[2]);
+  if (!ret) {
+    owl_function_makemsg("%s logged in.\n", argv[1]);
+    return(NULL);
+  }
+  
+  owl_function_makemsg("Warning: login for %s failed.\n");
+  return(NULL);
+}
+
+char *owl_command_aimlogout(int argc, char **argv, char *buff) {
+  owl_aim_logout();
   return(NULL);
 }
 

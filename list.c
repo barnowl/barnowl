@@ -25,10 +25,13 @@ void *owl_list_get_element(owl_list *l, int n) {
 }
 
 int owl_list_append_element(owl_list *l, void *element) {
+  void *ptr;
+  
   if ((l->size+1) > (l->avail/GROWAT)) {
-    l->list=owl_realloc(l->list, l->avail*GROWBY*sizeof(void *));
+    ptr=owl_realloc(l->list, l->avail*GROWBY*sizeof(void *));
+    if (ptr==NULL) return(-1);
+    l->list=ptr;
     l->avail=l->avail*GROWBY;
-    if (l->list==NULL) return(-1);
   }
 
   l->list[l->size]=element;
@@ -37,12 +40,14 @@ int owl_list_append_element(owl_list *l, void *element) {
 }
 
 int owl_list_prepend_element(owl_list *l, void *element) {
+  void *ptr;
   int i;
  
   if ((l->size+1) > (l->avail/GROWAT)) {
-    l->list=owl_realloc(l->list, l->avail*GROWBY*sizeof(void *));
+    ptr=owl_realloc(l->list, l->avail*GROWBY*sizeof(void *));
+    if (ptr==NULL) return(-1);
+    l->list=ptr;
     l->avail=l->avail*GROWBY;
-    if (l->list==NULL) return(-1);
   }
 
   for (i=l->size; i>0; i--) {

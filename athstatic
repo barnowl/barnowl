@@ -28,4 +28,5 @@ for arg do
   esac
 done
 
+echo "$progname" $options
 exec "$progname" $options
