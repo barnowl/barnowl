@@ -479,12 +479,10 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
     } else {
       char buff[1024];
       tmp = short_zuser(retnotice->z_recipient);
-      owl_function_error("%s: Not logged in or subscribing to messages.", 
-			   tmp);
-
+      owl_function_error("%s: Not logged in or subscribing to messages.", tmp);
       sprintf(buff, "Could not send message to %s: not logged in or subscribing to messages.\n", tmp);
       owl_function_adminmsg("", buff);
-      if (owl_global_is_logging(&g)) owl_log_outgoing_zephyr_error(tmp, buff);
+      owl_log_outgoing_zephyr_error(tmp, buff);
       owl_free(tmp);
     }
   } else {

@@ -125,8 +125,22 @@ void owl_log_outgoing_zephyr_error(char *to, char *text)
 {
   FILE *file;
   char filename[MAXPATHLEN], *logpath;
-  char *tobuff;
+  char *tobuff, *zwriteline;
+  owl_message *m;
 
+  /* create a present message so we can pass it to
+   * owl_log_shouldlog_message()
+   */
+  zwriteline=owl_sprintf("zwrite %s", to);
+  m=owl_function_make_outgoing_zephyr(text, zwriteline, "");
+  owl_free(zwriteline);
+  if (!owl_log_shouldlog_message(m)) {
+    owl_message_free(m);
+    return;
+  }
+  owl_message_free(m);
+
+  /* chop off a local realm */
   tobuff=short_zuser(to);
 
   /* expand ~ in path names */
