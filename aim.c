@@ -1408,6 +1408,9 @@ static int faimtest_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...)
   userinfo = va_arg(ap, aim_userinfo_t *);
   va_end(ap);
 
+  /* first check that we're not still ignoreing login messages */
+  if (!owl_timer_is_expired(owl_global_get_aim_login_timer(&g))) return;
+  
   owl_buddylist_oncoming(owl_global_get_buddylist(&g), userinfo->sn);
   
   /*

@@ -90,8 +90,8 @@ void owl_global_init(owl_global *g) {
 
   g->aim_screenname=NULL;
   g->aim_loggedin=0;
-  g->aim_lastnop=0;
-
+  owl_timer_create_countdown(&(g->aim_noop_timer), 30);
+  owl_timer_create_countdown(&(g->aim_ignorelogin_timer), 0);
   owl_buddylist_init(&(g->buddylist));
 }
 
@@ -646,58 +646,59 @@ int owl_global_get_meminuse(owl_global *g) {
 
 /* AIM stuff */
 
-int owl_global_is_aimloggedin(owl_global *g) {
+int owl_global_is_aimloggedin(owl_global *g)
+{
   if (g->aim_loggedin) return(1);
   return(0);
 }
 
-char *owl_global_get_aim_screenname(owl_global *g) {
+char *owl_global_get_aim_screenname(owl_global *g)
+{
   return (g->aim_screenname);
 }
 
-void owl_global_set_aimloggedin(owl_global *g, char *screenname) {
+void owl_global_set_aimloggedin(owl_global *g, char *screenname)
+{
   g->aim_loggedin=1;
   if (g->aim_screenname) owl_free(g->aim_screenname);
   g->aim_screenname=owl_strdup(screenname);
 }
 
-void owl_global_set_aimnologgedin(owl_global *g) {
+void owl_global_set_aimnologgedin(owl_global *g)
+{
   g->aim_loggedin=0;
 }
 
-aim_session_t *owl_global_get_aimsess(owl_global *g) {
+aim_session_t *owl_global_get_aimsess(owl_global *g)
+{
   return(&(g->aimsess));
 }
 
-aim_conn_t *owl_global_get_waitingconn(owl_global *g) {
+aim_conn_t *owl_global_get_waitingconn(owl_global *g)
+{
   return(&(g->waitingconn));
 }
 
-int owl_global_is_aimnop_time(owl_global *g) {
-  time_t now;
-
-  now=time(NULL);
-  if (g->aim_lastnop==0) {
-    g->aim_lastnop=now;
-    return(0);
-  }
-
-  if (now-g->aim_lastnop >= 30) {
-    return(1);
-  }
+int owl_global_is_aimnop_time(owl_global *g)
+{
+  if (owl_timer_is_expired(&(g->aim_noop_timer))) return(1);
   return(0);
 }
 
-void owl_global_aimnop_sent(owl_global *g) {
-  time_t now;
+void owl_global_aimnop_sent(owl_global *g)
+{
+  owl_timer_reset(&(g->aim_noop_timer));
+}
 
-  now=time(NULL);
-  g->aim_lastnop=now;
+owl_timer *owl_global_get_aim_login_timer(owl_global *g)
+{
+  return(&(g->aim_ignorelogin_timer));
 }
 
 /* message queue */
 
-void owl_global_messagequeue_addmsg(owl_global *g, owl_message *m) {
+void owl_global_messagequeue_addmsg(owl_global *g, owl_message *m)
+{
   owl_list_append_element(&(g->messagequeue), m);
 }
 
@@ -705,7 +706,8 @@ void owl_global_messagequeue_addmsg(owl_global *g, owl_message *m) {
  * is empty.  The caller should free the message after using it, if
  * necessary.
  */
-owl_message *owl_global_messageuque_popmsg(owl_global *g) {
+owl_message *owl_global_messageuque_popmsg(owl_global *g)
+{
   owl_message *out;
 
   if (owl_list_get_size(&(g->messagequeue))==0) return(NULL);
@@ -714,12 +716,14 @@ owl_message *owl_global_messageuque_popmsg(owl_global *g) {
   return(out);
 }
 
-int owl_global_messagequeue_pending(owl_global *g) {
+int owl_global_messagequeue_pending(owl_global *g)
+{
   if (owl_list_get_size(&(g->messagequeue))==0) return(0);
   return(1);
 }
 
-owl_buddylist *owl_global_get_buddylist(owl_global *g) {
+owl_buddylist *owl_global_get_buddylist(owl_global *g)
+{
   return(&(g->buddylist));
 }
   

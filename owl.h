@@ -357,6 +357,11 @@ typedef struct _owl_buddylist {
   owl_list buddies;
 } owl_buddylist;
 
+typedef struct _owl_timer {
+  int direction;
+  time_t starttime;
+  int start;
+} owl_timer;
 
 typedef struct _owl_global {
   owl_mainwin mw;
@@ -407,7 +412,8 @@ typedef struct _owl_global {
   owl_filterelement fe_null;
   aim_session_t aimsess;
   aim_conn_t waitingconn;
-  time_t aim_lastnop;
+  owl_timer aim_noop_timer;
+  owl_timer aim_ignorelogin_timer;
   int aim_loggedin;
   char *aim_screenname;
   owl_buddylist buddylist;

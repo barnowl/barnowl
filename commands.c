@@ -1930,6 +1930,11 @@ char *owl_command_aimlogin(int argc, char **argv, char *buff) {
   ret=owl_aim_login(argv[1], argv[2]);
   if (!ret) {
     owl_function_makemsg("%s logged in.\n", argv[1]);
+
+    /* start the ingorelogin timer */
+    owl_timer_reset_newstart(owl_global_get_aim_login_timer(&g),
+			     owl_global_get_aim_ignorelogin_timer(&g));
+    
     return(NULL);
   }
   

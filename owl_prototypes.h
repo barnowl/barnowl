@@ -494,6 +494,7 @@ extern aim_session_t *owl_global_get_aimsess(owl_global *g);
 extern aim_conn_t *owl_global_get_waitingconn(owl_global *g);
 extern int owl_global_is_aimnop_time(owl_global *g);
 extern void owl_global_aimnop_sent(owl_global *g);
+extern owl_timer *owl_global_get_aim_login_timer(owl_global *g);
 extern void owl_global_messagequeue_addmsg(owl_global *g, owl_message *m);
 extern owl_message *owl_global_messageuque_popmsg(owl_global *g);
 extern int owl_global_messagequeue_pending(owl_global *g);
@@ -715,6 +716,14 @@ extern void owl_text_indent(char *out, char *in, int n);
 extern int owl_text_num_lines(char *in);
 extern char *owl_text_htmlstrip(char *in);
 
+/* -------------------------------- timer.c -------------------------------- */
+extern void owl_timer_create_countup(owl_timer *t);
+extern void owl_timer_create_countdown(owl_timer *t, int start);
+extern void owl_timer_reset(owl_timer *t);
+extern void owl_timer_reset_newstart(owl_timer *t, int start);
+extern int owl_timer_get_time(owl_timer *t);
+extern int owl_timer_is_expired(owl_timer *t);
+
 /* -------------------------------- util.c -------------------------------- */
 extern void sepbar(char *in);
 extern void pophandler_quit(int ch);
@@ -882,6 +891,8 @@ extern void owl_global_set_edit_maxfillcols(owl_global *g, int n);
 extern int owl_global_get_edit_maxfillcols(owl_global *g);
 extern void owl_global_set_edit_maxwrapcols(owl_global *g, int n);
 extern int owl_global_get_edit_maxwrapcols(owl_global *g);
+extern void owl_global_set_aim_ignorelogin_timer(owl_global *g, int n);
+extern int owl_global_get_aim_ignorelogin_timer(owl_global *g);
 extern void owl_global_set_typwin_lines(owl_global *g, int n);
 extern int owl_global_get_typwin_lines(owl_global *g);
 extern void owl_global_set_scrollmode(owl_global *g, int n);
