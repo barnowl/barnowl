@@ -4,7 +4,7 @@ $Id$
 	     'tty' variable before setting the zlocation
 	There is now a 'zlist' command that acts like 'znol -l'
 	'l' is bound to 'zlist'
-	Fixed memory leak and buffer overrun in fmtext
+	Fixed memory leak uninitialzed memory read in fmtext
 	
 1.2.3
 	Added filters "ping", "auto" and "login" by default.
