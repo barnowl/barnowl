@@ -42,6 +42,8 @@
 /* Define if you have the zephyr library (-lzephyr).  */
 #undef HAVE_LIBZEPHYR
 
+#undef HAVE_ZEPHYR_ZEPHYR_H
+
 /* Define if libzephyr contains ZInitLocationInfo */
 #undef HAVE_LIBZEPHYR_ZINITLOCATIONINFO
 

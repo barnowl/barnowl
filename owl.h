@@ -10,8 +10,7 @@
 #include <libfaim/aim.h>
 #include "config.h"
 #ifdef HAVE_LIBZEPHYR
-#undef HAVE_LIBZEPHYR
-/* #include <zephyr/zephyr.h> */ /* this is to simulate not having zephyr */
+#include <zephyr/zephyr.h>
 #endif
 
 
