@@ -147,6 +147,12 @@ static owl_variable variables_to_init[] = {
 	       "This program should produce a zsig on stdout when run.\n"
 	       "Note that it is important that this program not block.\n" ),
 
+  OWLVAR_PATH( "newmsgproc" /* %OwlVarStub:newmsgproc */, NULL,
+	       "name of a program to run when new messages are present",
+	       "The named program will be run when owl recevies new.\n"
+	       "messages.  It will not be run again until the first\n"
+	       "instance exits"),
+
   OWLVAR_STRING( "zsig" /* %OwlVarStub */, "",
 	         "zephyr signature", 
 		 "If 'zsigproc' is not set, this string will be used\n"

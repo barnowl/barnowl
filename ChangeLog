@@ -1,4 +1,8 @@
 $Id$
+1.2.6
+	Started adding code for newmsgproc.  It doesn't fully work yet!
+	  Don't use it.
+	
 1.2.5
 	Patch to fix memory bug in replying to CC messages
 	If we're on Athena and have static krb (or other) libraries, use

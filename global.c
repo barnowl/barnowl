@@ -61,7 +61,7 @@ void owl_global_init(owl_global *g) {
   g->searchstring=NULL;
   g->starttime=time(NULL); /* assumes we call init only a start time */
   strcpy(g->buffercommand, "");
-
+  g->newmsgproc_pid=0;
   
   owl_global_set_config_format(g, 0);
   owl_global_set_userclue(g, OWL_USERCLUE_NONE);
@@ -597,3 +597,12 @@ char *owl_global_get_search_string(owl_global *g) {
   if (g->searchstring==NULL) return("");
   return(g->searchstring);
 }
+
+void owl_global_set_newmsgproc_pid(owl_global *g, int i) {
+  g->newmsgproc_pid=i;
+}
+
+int owl_global_get_newmsgproc_pid(owl_global *g) {
+  return(g->newmsgproc_pid);
+}
+

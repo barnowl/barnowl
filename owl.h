@@ -385,6 +385,7 @@ typedef struct _owl_global {
   int hascolors;
   int colorpairs;
   int searchactive;
+  int newmsgproc_pid;
   char *searchstring;
   owl_filterelement fe_true;
   owl_filterelement fe_false;
