@@ -106,11 +106,14 @@ void owl_message_invalidate_format(owl_message *m)
 
 owl_fmtext *owl_message_get_fmtext(owl_message *m)
 {
+  owl_message_format(m);
+  return(&(m->fmtext));
+}
+
+void owl_message_format(owl_message *m)
+{
   owl_style *s;
 
-  /* if the format is invalid, regenerate the text based on the
-   * current style
-   */
   if (m->invalid_format) {
     owl_fmtext_free(&(m->fmtext));
     owl_fmtext_init_null(&(m->fmtext));
@@ -118,7 +121,6 @@ owl_fmtext *owl_message_get_fmtext(owl_message *m)
     owl_style_get_formattext(s, &(m->fmtext), m);
     m->invalid_format=0;
   }
-  return(&(m->fmtext));
 }
 
 void owl_message_set_class(owl_message *m, char *class)
@@ -389,7 +391,7 @@ int owl_message_is_direction_none(owl_message *m)
 int owl_message_get_numlines(owl_message *m)
 {
   if (m == NULL) return(0);
-  (void) owl_message_get_fmtext(m);
+  owl_message_format(m);
   return(owl_fmtext_num_lines(&(m->fmtext)));
 }
 
@@ -438,7 +440,7 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
   owl_fmtext a, b;
 
   /* this will ensure that our cached copy is up to date */
-  (void) owl_message_get_fmtext(m);
+  owl_message_format(m);
 
   owl_fmtext_init_null(&a);
   owl_fmtext_init_null(&b);
@@ -567,7 +569,7 @@ int owl_message_get_id(owl_message *m)
 int owl_message_search(owl_message *m, char *string)
 {
 
-  (void) owl_message_get_fmtext(m); /* is this necessary? */
+  owl_message_format(m); /* is this necessary? */
   
   return (owl_fmtext_search(&(m->fmtext), string));
 }
