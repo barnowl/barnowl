@@ -1,4 +1,4 @@
-
+#! /usr/bin/perl
 # $Id$
 
 if ($#ARGV eq -1) {
@@ -17,6 +17,7 @@ foreach $file (@ARGV) {
 	    && !/^\{/
 	    && !/^#/
 	    && !/^static/
+	    && !/^system/
 	    && !/\/\*/)
 	{s/\s+\{/\;/; s/\)[ \t]*$/\)\;/; print "extern "; print;}
 	    

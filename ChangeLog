@@ -62,6 +62,7 @@ $Id$
 	  des.h.
 	zcrypt.c: include owl.h so we get the configure-generated config.h
 	Change to codelist.pl to deal with new code style
+	Remove some ancient stuff from zcrypt.c
 	
 1.2.8
 	Class pings are displayed differently now

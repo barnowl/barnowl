@@ -20,18 +20,7 @@ static const char fileIdent[] = "$Id$";
 #define BASE_CODE 70
 #define LAST_CODE (BASE_CODE + 15)
 #define OUTPUT_BLOCK_SIZE 16
-
-#if defined(vax) || defined(ibm032)
-#define pid_t int
-int waitpid(pid_t pid, int *statloc, int options)
-{
-  while (wait(statloc) != pid)
-    ;
-}
-#define STDIN_FILENO 0
-#else
 #include <unistd.h>
-#endif
 #include <sys/types.h>
 #include <des.h>
 #include <zephyr/zephyr.h>
