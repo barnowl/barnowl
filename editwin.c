@@ -613,6 +613,18 @@ void owl_editwin_delete_nextword(owl_editwin *e) {
   owl_editwin_delete_char(e);
 }
 
+void owl_editwin_delete_previousword(owl_editwin *e) {
+  /* go backwards to the last non-space character, then delete chars */
+  int i, startpos, endpos;
+
+  startpos = _owl_editwin_get_index_from_xy(e);
+  owl_editwin_move_to_previousword(e);
+  endpos = _owl_editwin_get_index_from_xy(e);
+  for (i=0; i<startpos-endpos; i++) {
+    owl_editwin_delete_char(e);
+  }
+}
+
 void owl_editwin_delete_to_endofline(owl_editwin *e) {
   int i;
 

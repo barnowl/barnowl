@@ -543,6 +543,11 @@ owl_cmd commands_to_init[]
 		  "deletes the word to the right of the cursor",
 		  "", ""),
 
+  OWLCMD_VOID_CTX("edit:delete-prev-word", owl_editwin_delete_previousword,
+		  OWL_CTX_EDIT,
+		  "deletes the word to the left of the cursor",
+		  "", ""),
+
   OWLCMD_VOID_CTX("edit:delete-prev-char", owl_editwin_backspace,
 		  OWL_CTX_EDIT,
 		  "deletes the character to the left of the cursor",
