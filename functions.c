@@ -2692,7 +2692,8 @@ void owl_function_dump(char *filename)
 
 
 
-void owl_function_do_newmsgproc(void) {
+void owl_function_do_newmsgproc(void)
+{
   if (owl_global_get_newmsgproc(&g) && strcmp(owl_global_get_newmsgproc(&g), "")) {
     /* if there's a process out there, we need to check on it */
     if (owl_global_get_newmsgproc_pid(&g)) {
@@ -2743,10 +2744,12 @@ void owl_function_do_newmsgproc(void) {
   }
 }
 
-void owl_function_xterm_raise(void) {
+void owl_function_xterm_raise(void)
+{
   printf("\033[5t");
 }
 
-void owl_function_xterm_deiconify(void) {
+void owl_function_xterm_deiconify(void)
+{
   printf("\033[1t");
 }
