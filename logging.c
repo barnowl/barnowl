@@ -113,7 +113,7 @@ void owl_log_incoming(owl_message *m) {
       if (!owl_global_is_classlogging(&g)) return;
     }
   } else {
-    if (owl_message_is_private(m)) {
+    if (owl_message_is_private(m) || owl_message_is_loginout(m)) {
       personal=1;
       if (!owl_global_is_logging(&g)) return;
     } else {
@@ -185,6 +185,7 @@ void owl_log_incoming(owl_message *m) {
     allfile=fopen(allfilename, "a");
     if (!allfile) {
       owl_function_makemsg("Unable to open file for incoming logging");
+      fclose(file);
       return;
     }
   }
@@ -202,10 +203,15 @@ void owl_log_incoming(owl_message *m) {
     buff[i]='\0';
     fprintf(file, "From: %s <%s>\n\n", buff, tmp);
     fprintf(file, "%s\n", owl_message_get_body(m));
-  } else if (owl_message_is_type_aim(m)) {
+  } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
     fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
     fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
     fprintf(file, "%s\n\n", owl_message_get_body(m));
+  } else if (owl_message_is_type_aim(m) && owl_message_is_loginout(m)) {
+    fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
+    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
+    if (owl_message_is_login(m)) fprintf(file, "LOGIN\n\n");
+    if (owl_message_is_logout(m)) fprintf(file, "LOGOUT\n\n");
   }
   fclose(file);
 
@@ -218,13 +224,18 @@ void owl_log_incoming(owl_message *m) {
       fprintf(allfile, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
       fprintf(allfile, "From: %s <%s>\n\n", buff, tmp);
       fprintf(allfile, "%s\n", owl_message_get_body(m));
-      fclose(allfile);
-    } else {
-      fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
-      fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
-      fprintf(file, "%s\n\n", owl_message_get_body(m));
+    } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
+      fprintf(allfile, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
+      fprintf(allfile, "Time: %s\n\n", owl_message_get_timestr(m));
+      fprintf(allfile, "%s\n\n", owl_message_get_body(m));
+    } else if (owl_message_is_type_aim(m) && owl_message_is_loginout(m)) {
+      fprintf(allfile, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
+      fprintf(allfile, "Time: %s\n\n", owl_message_get_timestr(m));
+      if (owl_message_is_login(m)) fprintf(allfile, "LOGIN\n\n");
+      if (owl_message_is_logout(m)) fprintf(allfile, "LOGOUT\n\n");
     }
   }
+  fclose(allfile);
 
   if (owl_message_is_type_zephyr(m)) {
     owl_free(tmp);

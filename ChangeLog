@@ -15,6 +15,8 @@ $Id$
 	removed 'set style'
 	A style is now part of a view, the view command has been revamped
 	Bug fix in owl_regex
+	Fixed personal aim messages logging to class directory
+	Log "LOGIN" or "LOGOUT" for AIM buddy messages message
 
 2.0.4-pre-1
 	Make command line option -n actualy work
