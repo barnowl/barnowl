@@ -47,7 +47,7 @@ char *owl_history_get_next(owl_history *h)
 
 void owl_history_store(owl_history *h, char *line)
 {
-  int i, size;
+  int size;
 
   if (!h) return;
   size=owl_list_get_size(&(h->hist));
