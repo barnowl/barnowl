@@ -514,7 +514,33 @@ void _owl_message_make_text_from_zwriteline_standard(owl_message *m) {
 }
 
 void _owl_message_make_text_from_zwriteline_simple(owl_message *m) {
-  _owl_message_make_text_from_zwriteline_standard(m);
+  char *indent, *text, *zsigbuff, *foo;
+
+  text=owl_message_get_body(m);
+
+  indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
+  owl_text_indent(indent, text, OWL_MSGTAB);
+  owl_fmtext_init_null(&(m->fmtext));
+  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
+  owl_fmtext_append_normal(&(m->fmtext), "To: ");
+  foo=short_zuser(owl_message_get_recipient(m));
+  owl_fmtext_append_normal(&(m->fmtext), foo);
+  owl_free(foo);
+  owl_fmtext_append_normal(&(m->fmtext), "  (Zsig: ");
+
+  zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m)));
+  owl_message_pretty_zsig(m, zsigbuff);
+  owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
+  owl_free(zsigbuff);
+  
+  owl_fmtext_append_normal(&(m->fmtext), ")");
+  owl_fmtext_append_normal(&(m->fmtext), "\n");
+  owl_fmtext_append_ztext(&(m->fmtext), indent);
+  if (text[strlen(text)-1]!='\n') {
+    owl_fmtext_append_normal(&(m->fmtext), "\n");
+  }
+
+  owl_free(indent);
 }
 
 void _owl_message_make_text_from_notice_standard(owl_message *m) {
