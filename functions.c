@@ -1971,6 +1971,10 @@ char *owl_function_exec(int argc, char **argv, char *buff, int type)
   int size;
   FILE *p;
 
+#if OWL_STDERR_REDIR
+  redirect = " < /dev/null";
+#endif 
+
   if (argc<2) {
     owl_function_error("Wrong number of arguments to the exec command");
     return NULL;

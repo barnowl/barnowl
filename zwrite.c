@@ -153,7 +153,9 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       /* simple hack for now to nuke stderr */
       openline=owl_malloc(strlen(zsigproc)+40);
       strcpy(openline, zsigproc);
+#if !(OWL_STDERR_REDIR)
       strcat(openline, " 2> /dev/null");
+#endif
       file=popen(openline, "r");
       owl_free(openline);
       if (!file) {

@@ -1,5 +1,11 @@
 $Id$
 
+2.0.9-pre-3
+	Added testing feature for capturing stderr messages
+	        from commands and displaying them in the errors buffer.
+		This feature is disabled by default.
+		Enable in owl.h with:  OWL_STDERR_REDIR 1
+	
 2.0.9-pre-2
 	Better reporting of perl errors (both into the errqueue
 	        and also clearing the error after displaying it).

@@ -21,6 +21,12 @@
 #include <sys/stat.h>
 #include "owl.h"
 
+#if OWL_STDERR_REDIR
+#include <sys/ioctl.h>
+int stderr_replace(void);
+void stderr_redirect(int rfd);
+#endif
+
 static const char fileIdent[] = "$Id$";
 
 owl_global g;
@@ -40,6 +46,9 @@ int main(int argc, char **argv, char **env) {
   char *dir;
 #ifdef HAVE_LIBZEPHYR
   ZNotice_t notice;
+#endif
+#if OWL_STDERR_REDIR
+  int newstderr;
 #endif
 
   argcsave=argc;
@@ -135,6 +144,12 @@ int main(int argc, char **argv, char **env) {
   owl_global_set_havezephyr(&g);
 #endif
   owl_global_set_haveaim(&g);
+
+#if OWL_STDERR_REDIR
+  /* Do this only after we've started curses up... */  
+  newstderr = stderr_replace();
+#endif   
+
   
   /* create the owl directory, in case it does not exist */
   dir=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_CONFIG_DIR);
@@ -529,6 +544,11 @@ int main(int argc, char **argv, char **env) {
     if (ret!=0 && ret!=1) {
       owl_function_makemsg("Unable to handle keypress");
     }
+
+#if OWL_STDERR_REDIR
+    stderr_redirect(newstderr);
+#endif   
+
   }
 }
 
@@ -551,3 +571,48 @@ void usage() {
   fprintf(stderr, "  -c      specify an alternate config file\n");
   fprintf(stderr, "  -t      set the tty name\n");
 }
+
+
+
+#if OWL_STDERR_REDIR
+
+/* Replaces stderr with a pipe so that we can read from it. 
+ * Returns the fd of the pipe from which stderr can be read. */
+int stderr_replace(void) {
+  int pipefds[2];
+  if (0 != pipe(pipefds)) {
+    perror("pipe");
+    owl_function_debugmsg("stderr_replace: pipe FAILED\n");
+    return -1;
+  }
+    owl_function_debugmsg("stderr_replace: pipe: %d,%d\n", pipefds[0], pipefds[1]);
+  if (-1 == dup2(pipefds[1], 2 /*stderr*/)) {
+    owl_function_debugmsg("stderr_replace: dup2 FAILED (%s)\n", strerror(errno));
+    perror("dup2");
+    return -1;
+  }
+  return pipefds[0];
+}
+
+/* Sends stderr (read from rfd) messages to a file */
+void stderr_redirect(int rfd) {
+  int navail, bread;
+  char *buf;
+  /*owl_function_debugmsg("stderr_redirect: called with rfd=%d\n", rfd);*/
+  if (rfd<0) return;
+  if (-1 == ioctl(rfd, FIONREAD, (void*)&navail)) {
+    return;
+  }
+  /*owl_function_debugmsg("stderr_redirect: navail = %d\n", navail);*/
+  if (navail<=0) return;
+  if (navail>256) { navail = 256; }
+  buf = owl_malloc(navail+1);
+  bread = read(rfd, buf, navail);
+  if (buf[navail-1] != '\0') {
+    buf[navail] = '\0';
+  }
+  owl_function_error("Err: %s", buf);
+  owl_free(buf);
+}
+
+#endif /* OWL_STDERR_REDIR */

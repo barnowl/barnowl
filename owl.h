@@ -16,12 +16,14 @@
 #include <com_err.h>
 #endif
 
-
-
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.9-pre-2
-#define OWL_VERSION_STRING "2.0.9-pre-2"
+#define OWL_VERSION         2.0.9-pre-3
+#define OWL_VERSION_STRING "2.0.9-pre-3"
+
+/* Feature that is being tested to redirect stderr through a pipe. 
+ * There may still be some portability problems with this. */
+#define OWL_STDERR_REDIR 1
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
