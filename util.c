@@ -410,6 +410,7 @@ char *short_zuser(char *in) {
   return(out);
 }
 
+
 char *long_zuser(char *in) {
   char *ptr;
 
@@ -420,7 +421,43 @@ char *long_zuser(char *in) {
     return owl_sprintf("%s@%s", in, ZGetRealm());
   }
 }
-		  
+
+
+char *smartstripped_user(char *in) {
+  /* strip out the instance from a zsender's principal.
+   * Preserves the realm if present.
+   * the caller must free the return */
+
+  char *ptr, *realm, *out;
+
+  out=owl_strdup(in);
+
+  /* bail immeaditly if we don't have to do any work */
+  ptr=strchr(in, '.');
+  if (!strchr(in, '/') && !ptr) {
+    return(out);
+  }
+  if (ptr && strchr(in, '@') && (ptr > strchr(in, '@'))) {
+    return(out);
+  }
+
+  /* remove the realm from ptr, but hold on to it */
+  realm=strchr(out, '@');
+  if (realm) realm[0]='\0';
+
+  /* strip */
+  ptr=strchr(out, '.');
+  if (!ptr) ptr=strchr(out, '/');
+  ptr[0]='\0';
+
+  /* reattach the realm if we had one */
+  if (realm) {
+    strcat(out, "@");
+    strcat(out, realm+1);
+  }
+
+  return(out);
+}
 
 char *owl_getquoting(char *line) {
   if (line[0]=='\0') return("'");

@@ -758,35 +758,31 @@ void owl_function_calculate_topmsg(int direction) {
   topmsg=owl_global_get_topmsg(&g);
   recwinlines=owl_global_get_recwin_lines(&g);
 
+  /*
   if (owl_view_get_size(v) < 1) {
     return;
   }
+  */
 
   switch (owl_global_get_scrollmode(&g)) {
   case OWL_SCROLLMODE_TOP:
-    topmsg = owl_function_calculate_topmsg_top(direction, v, curmsg,
-					       topmsg, recwinlines);
+    topmsg = owl_function_calculate_topmsg_top(direction, v, curmsg, topmsg, recwinlines);
     break;
   case OWL_SCROLLMODE_NEARTOP:
-    topmsg = owl_function_calculate_topmsg_neartop(direction, v, curmsg, 
-						   topmsg, recwinlines);
+    topmsg = owl_function_calculate_topmsg_neartop(direction, v, curmsg, topmsg, recwinlines);
     break;
   case OWL_SCROLLMODE_CENTER:
-    topmsg = owl_function_calculate_topmsg_center(direction, v, curmsg,
-						  topmsg, recwinlines);
+    topmsg = owl_function_calculate_topmsg_center(direction, v, curmsg, topmsg, recwinlines);
     break;
   case OWL_SCROLLMODE_PAGED:
-    topmsg = owl_function_calculate_topmsg_paged(direction, v, curmsg, 
-						 topmsg, recwinlines, 0);
+    topmsg = owl_function_calculate_topmsg_paged(direction, v, curmsg, topmsg, recwinlines, 0);
     break;
   case OWL_SCROLLMODE_PAGEDCENTER:
-    topmsg = owl_function_calculate_topmsg_paged(direction, v, curmsg, 
-						 topmsg, recwinlines, 1);
+    topmsg = owl_function_calculate_topmsg_paged(direction, v, curmsg, topmsg, recwinlines, 1);
     break;
   case OWL_SCROLLMODE_NORMAL:
   default:
-    topmsg = owl_function_calculate_topmsg_normal(direction, v, curmsg,
-						  topmsg, recwinlines);
+    topmsg = owl_function_calculate_topmsg_normal(direction, v, curmsg, topmsg, recwinlines);
   }
   owl_function_debugmsg("Calculated a topmsg of %i", topmsg);
   owl_global_set_topmsg(&g, topmsg);
@@ -800,16 +796,16 @@ void owl_function_calculate_topmsg(int direction) {
  * and the number of lines in the recwin.
  */
 int owl_function_calculate_topmsg_top(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines) {
-  return curmsg;
+  return(curmsg);
 }
 
 int owl_function_calculate_topmsg_neartop(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines) {
   if (curmsg>0 
       && (owl_message_get_numlines(owl_view_get_element(v, curmsg-1))
 	  <  recwinlines/2)) {
-    return curmsg-1;
+    return(curmsg-1);
   } else {
-    return curmsg;
+    return(curmsg);
   }
 }
   
@@ -823,7 +819,7 @@ int owl_function_calculate_topmsg_center(int direction, owl_view *v, int curmsg,
     if (lines > recwinlines/2) break;
     last = i;
   }
-  return last;
+  return(last);
 }
   
 int owl_function_calculate_topmsg_paged(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines, int center_on_page) {
@@ -840,9 +836,9 @@ int owl_function_calculate_topmsg_paged(int direction, owl_view *v, int curmsg, 
     last = i;
     }
     if (center_on_page) {
-      return owl_function_calculate_topmsg_center(direction, v, curmsg, 0, recwinlines);
+      return(owl_function_calculate_topmsg_center(direction, v, curmsg, 0, recwinlines));
     } else {
-      return last;
+      return(last);
     }
   }
 
@@ -855,37 +851,39 @@ int owl_function_calculate_topmsg_paged(int direction, owl_view *v, int curmsg, 
   /* if we're off the bottom of the screen, scroll down */
   if (savey > recwinlines) {
     if (center_on_page) {
-      return owl_function_calculate_topmsg_center(direction, v, curmsg, 0, recwinlines);
+      return(owl_function_calculate_topmsg_center(direction, v, curmsg, 0, recwinlines));
     } else {
-      return curmsg;
+      return(curmsg);
     }
   }
 
   /* else just stay as we are... */
-  return topmsg;
+  return(topmsg);
 }
 
 
 int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines) {
   int savey, j, i, foo, y;
-  
+
+  /* If we're off the top of the screen then center */
+  if (curmsg<topmsg) {
+    topmsg=owl_function_calculate_topmsg_center(direction, v, curmsg, 0, recwinlines);
+  }
+
   /* Find number of lines from top to bottom of curmsg (store in savey) */
   savey=0;
   for (i=topmsg; i<=curmsg; i++) {
     savey+=owl_message_get_numlines(owl_view_get_element(v, i));
   }
 
-  /* If the direction is DOWNWARDS but we're off the bottom of the
-   *  screen, then set the topmsg to curmsg and scroll UPWARDS
-   */
-  if (direction == OWL_DIRECTION_DOWNWARDS) {
-    if (savey > recwinlines) {
-      topmsg=curmsg;
-      savey=owl_message_get_numlines(owl_view_get_element(v, i));
-      direction=OWL_DIRECTION_UPWARDS;
-    }
+  /* If we're off the bottom of the screen, set the topmsg to curmsg
+   * and scroll upwards */
+  if (savey > recwinlines) {
+    topmsg=curmsg;
+    savey=owl_message_get_numlines(owl_view_get_element(v, i));
+    direction=OWL_DIRECTION_UPWARDS;
   }
-
+  
   /* If our bottom line is less than 1/4 down the screen then scroll up */
   if (direction == OWL_DIRECTION_UPWARDS || direction == OWL_DIRECTION_NONE) {
     if (savey < (recwinlines / 4)) {
@@ -903,7 +901,7 @@ int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg,
 	if (y > (recwinlines / 2)) break;
       }
       if (j<0) j=0;
-      return j;
+      return(j);
     }
   }
 
@@ -919,11 +917,11 @@ int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg,
       if (j==curmsg) {
 	j--;
       }
-      return j+1;
+      return(j+1);
     }
   }
 
-  return topmsg;
+  return(topmsg);
 }
 
 
@@ -1553,7 +1551,6 @@ void owl_function_reply(int type, int enter) {
       return;
     }
 
-
     /* first check if we catch the reply-lockout filter */
     f=owl_global_get_filter(&g, "reply-lockout");
     if (f) {
@@ -1567,7 +1564,7 @@ void owl_function_reply(int type, int enter) {
       owl_function_zwrite_setup(owl_message_get_zwriteline(m));
       owl_global_set_buffercommand(&g, owl_message_get_zwriteline(m));
     } else if (owl_message_is_type_admin(m)) {
-      owl_function_makemsg("You cannot reply to this admin message");
+      owl_function_makemsg("You cannot reply to an admin message");
     } else {
       if (owl_message_is_login(m)) {
 	class="MESSAGE";
@@ -1602,8 +1599,7 @@ void owl_function_reply(int type, int enter) {
 	owl_free(oldbuff);
       }
       if (*to != '\0') {
-	char *tmp, *oldtmp;
-	tmp=short_zuser(to);
+	char *tmp, *oldtmp, *tmp2;
 	if (cc) {
 	  tmp = owl_util_uniq(oldtmp=tmp, cc, "-");
 	  owl_free(oldtmp);
@@ -1611,6 +1607,11 @@ void owl_function_reply(int type, int enter) {
 	  owl_free(oldbuff);
 	} else {
 	  tmp=short_zuser(to);
+	  if (owl_global_is_smartstrip(&g)) {
+	    tmp2=tmp;
+	    tmp=smartstripped_user(tmp2);
+	    owl_free(tmp2);
+	  }
 	  buff = owl_sprintf("%s %s", oldbuff=buff, tmp);
 	  owl_free(oldbuff);
 	}
@@ -1747,30 +1748,37 @@ char *owl_function_perl(int argc, char **argv, char *buff, int type) {
 void owl_function_change_view(char *filtname) {
   owl_view *v;
   owl_filter *f;
-  int curid=-1, newpos;
-  owl_message *curm;
+  int curid=-1, newpos, curmsg;
+  owl_message *curm=NULL;
 
   v=owl_global_get_current_view(&g);
-  curm=owl_view_get_element(v, owl_global_get_curmsg(&g));
-  if (curm) {
-    curid = owl_message_get_id(curm);
-    owl_view_save_curmsgid(v, curid);
+  curmsg=owl_global_get_curmsg(&g);
+  if (curmsg==-1) {
+    owl_function_debugmsg("Hit the curmsg==-1 case in change_view");
+  } else {
+    curm=owl_view_get_element(v, curmsg);
+    if (curm) {
+      curid=owl_message_get_id(curm);
+      owl_view_save_curmsgid(v, curid);
+    }
   }
 
+  /* grab the filter */;
   f=owl_global_get_filter(&g, filtname);
   if (!f) {
     owl_function_makemsg("Unknown filter");
     return;
   }
 
+  /* free the existing view and create a new one based on the filter */
   owl_view_free(v);
   owl_view_create(v, f);
 
-  /* Figure out where to set the current message to.
-   * - If the previous view had messages in it, go to the closest message
-   *   to the last message in that view. 
-   * - If the previous view was empty, attempts to restore the position
-   *   from the last time we were in that view.  */
+  /* Figure out what to set the current message to.
+   * - If the view we're leaving has messages in it, go to the closest message
+   *   to the last message pointed to in that view. 
+   * - If the view we're leaving is empty, try to restore the position
+   *   from the last time we were in the new view.  */
   if (curm) {
     newpos = owl_view_get_nearest_to_msgid(v, curid);
   } else {
@@ -1779,10 +1787,9 @@ void owl_function_change_view(char *filtname) {
 
   owl_global_set_curmsg(&g, newpos);
 
-  owl_global_set_curmsg_vert_offset(&g, 0);
-  owl_global_set_direction_downwards(&g);
-  owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
+  owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  owl_global_set_direction_downwards(&g);
 }
 
 void owl_function_create_filter(int argc, char **argv) {
