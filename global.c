@@ -104,6 +104,8 @@ void owl_global_init(owl_global *g) {
   owl_global_set_no_doaimevents(g);
 
   owl_errqueue_init(&(g->errqueue));
+
+  g->got_err_signal=0;
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -843,3 +845,25 @@ owl_errqueue *owl_global_get_errqueue(owl_global *g)
 {
   return(&(g->errqueue));
 }
+
+void owl_global_set_errsignal(owl_global *g, int signum, siginfo_t *siginfo)
+{
+  g->got_err_signal = signum;
+  if (siginfo) {
+    g->err_signal_info = *siginfo;
+  } else {
+    memset(&(g->err_signal_info), 0, sizeof(siginfo_t));
+  }
+}
+
+int owl_global_get_errsignal_and_clear(owl_global *g, siginfo_t *siginfo)
+{
+  int signum;
+  if (siginfo && g->got_err_signal) {
+    *siginfo = g->err_signal_info;
+  } 
+  signum = g->got_err_signal;
+  g->got_err_signal = 0;
+  return signum;
+}
+

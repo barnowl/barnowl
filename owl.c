@@ -117,11 +117,13 @@ int main(int argc, char **argv, char **env) {
   
   /* signal handler */
   owl_function_debugmsg("startup: setting up signal handler");
-  sigact.sa_handler=sig_handler;
+  /*sigact.sa_handler=sig_handler;*/
+  sigact.sa_sigaction=sig_handler;
   sigemptyset(&sigact.sa_mask);
-  sigact.sa_flags=0;
+  sigact.sa_flags=SA_SIGINFO;
   sigaction(SIGWINCH, &sigact, NULL);
   sigaction(SIGALRM, &sigact, NULL);
+  sigaction(SIGPIPE, &sigact, NULL);
 
   /* screen init */
   owl_function_debugmsg("startup: initializing screen");
@@ -588,16 +590,32 @@ int main(int argc, char **argv, char **env) {
     stderr_redirect(newstderr);
 #endif   
 
+    /* Log any error signals */
+    {
+      siginfo_t si;
+      int signum;
+      if ((signum = owl_global_get_errsignal_and_clear(&g, &si)) > 0) {
+	owl_function_error("Got unexpected signal: %d %s  (code: %d  fd: %d  band: %d  errno: %d)", 
+			   signum, signum==SIGPIPE?"SIGPIPE":"",
+			   si.si_code, si.si_fd, si.si_band, si.si_errno);
+      }
+    }
+
   }
 }
 
-void sig_handler(int sig) {
+void sig_handler(int sig, siginfo_t *si, void *data) {
   if (sig==SIGWINCH) {
     /* we can't inturrupt a malloc here, so it just sets a flag
      * schedulding a resize for later
      */
     owl_function_resize();
+  } else if (sig==SIGPIPE) {
+    /* Set a flag and some info that we got the sigpipe
+     * so we can record that we got it and why... */
+    owl_global_set_errsignal(&g, sig, si);
   }
+
 }
 
 void usage() {

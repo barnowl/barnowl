@@ -1,8 +1,12 @@
 $Id$
 
-2.0.13-pre-1
+2.0.13-pre-2
 	Changed startup message for new mailing list
 	blist now prints AIM info even if .anyone is unreadable
+	Catch SIGPIPE and print an error rather than crashing.
+	        [It's possible that this may have some portability 
+		issues under Solaris and we may need to add some 
+		configure stuff around SA_SIGINFO...]
 	
 2.0.12
 	Command history now doesn't allow the last entry

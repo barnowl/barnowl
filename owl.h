@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include <regex.h>
 #include <time.h>
+#include <signal.h>
 #include <libfaim/aim.h>
 #include "config.h"
 #ifdef HAVE_LIBZEPHYR
@@ -18,8 +19,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.13-pre-1
-#define OWL_VERSION_STRING "2.0.13-pre-1"
+#define OWL_VERSION         2.0.13-pre-2
+#define OWL_VERSION_STRING "2.0.13-pre-2"
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */
@@ -485,6 +486,8 @@ typedef struct _owl_global {
   char *response;           /* response to the last question asked */
   int havezephyr;
   int haveaim;
+  int got_err_signal;	    /* 1 if we got an unexpected signal */
+  siginfo_t err_signal_info; 
 } owl_global;
 
 /* globals */
