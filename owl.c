@@ -166,6 +166,14 @@ int main(int argc, char **argv, char **env) {
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   f=malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "aim", "type ^aim$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "zephyr", "type ^zephyr$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "none", "false");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
@@ -211,7 +219,7 @@ int main(int argc, char **argv, char **env) {
 
   /* zlog in if we need to */
   if (owl_global_is_startuplogin(&g)) {
-    owl_function_zlog_in();
+    owl_zephyr_zlog_in();
   }
 
   /* AIM init */

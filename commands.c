@@ -1235,13 +1235,13 @@ char *owl_command_zlog(int argc, char **argv, char *buff) {
     if (argc>2) {
       owl_global_set_tty(&g, argv[2]);
     }
-    owl_function_zlog_in();
+    owl_zephyr_zlog_in();
   } else if (!strcmp(argv[1], "out")) {
     if (argc!=2) {
       owl_function_makemsg("Wrong number of arguments for zlog command");
       return(NULL);
     }
-    owl_function_zlog_out();
+    owl_zephyr_zlog_out();
   } else {
     owl_function_makemsg("Invalid subcommand for zlog");
   }
@@ -1249,8 +1249,8 @@ char *owl_command_zlog(int argc, char **argv, char *buff) {
 }
 
 
-void owl_command_zlog_out() {
-  owl_function_zlog_out();
+void owl_command_zlog_out(void) {
+  owl_zephyr_zlog_out();
 }
 
 

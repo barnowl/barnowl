@@ -72,6 +72,8 @@ $Id$
 	Added libfaim
 	Added basic AIM support, including the "aimlogin", "aimwrite" and
 	   "aimlogout" commands
+	New built-in filters 'aim' and 'zephyr'.
+	Do ZResetAuthentication() before zlog_in and zlog_out as well.
 	
 1.2.8
 	Class pings are displayed differently now

@@ -79,7 +79,7 @@ extern void owl_command_quit();
 extern char *owl_command_debug(int argc, char **argv, char *buff);
 extern char *owl_command_term(int argc, char **argv, char *buff);
 extern char *owl_command_zlog(int argc, char **argv, char *buff);
-extern void owl_command_zlog_out();
+extern void owl_command_zlog_out(void);
 extern char *owl_command_subscribe(int argc, char **argv, char *buff);
 extern char *owl_command_unsubscribe(int argc, char **argv, char *buff);
 extern char *owl_command_echo(int argc, char **argv, char *buff);
@@ -308,8 +308,6 @@ extern void owl_function_zaway_toggle();
 extern void owl_function_zaway_on();
 extern void owl_function_zaway_off();
 extern void owl_function_quit();
-extern void owl_function_zlog_in();
-extern void owl_function_zlog_out();
 extern void owl_function_makemsg(char *fmt, ...);
 extern void owl_function_errormsg(char *fmt, ...);
 extern void owl_function_openurl();
@@ -930,6 +928,8 @@ extern void owl_zephyr_zlocate(char *user, char *out, int auth);
 extern void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip);
 extern void owl_zephyr_delsub(char *filename, char *class, char *inst, char *recip);
 extern char *owl_zephyr_makesubline(char *class, char *inst, char *recip);
+extern void owl_zephyr_zlog_in(void);
+extern void owl_zephyr_zlog_out(void);
 
 /* -------------------------------- zwrite.c -------------------------------- */
 extern int owl_zwrite_create_and_send_from_line(char *cmd, char *msg);

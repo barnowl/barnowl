@@ -11,7 +11,8 @@ static const char fileIdent[] = "$Id$";
 
 Code_t ZResetAuthentication();
 
-int owl_zephyr_loadsubs(char *filename) {
+int owl_zephyr_loadsubs(char *filename)
+{
   /* return 0  on success
    *        -1 on file error
    *        -2 on subscription error
@@ -83,7 +84,8 @@ int owl_zephyr_loadsubs(char *filename) {
   return(ret);
 }
 
-int owl_zephyr_loadloginsubs(char *filename) {
+int owl_zephyr_loadloginsubs(char *filename)
+{
   FILE *file;
   ZSubscription_t subs[3001];
   char subsfile[1024], buffer[1024];
@@ -138,7 +140,8 @@ int owl_zephyr_loadloginsubs(char *filename) {
   return(ret);
 }
 
-void unsuball() {
+void unsuball()
+{
   int ret;
 
   ZResetAuthentication();
@@ -148,7 +151,8 @@ void unsuball() {
   }
 }
 
-int owl_zephyr_sub(char *class, char *inst, char *recip) {
+int owl_zephyr_sub(char *class, char *inst, char *recip)
+{
   ZSubscription_t subs[5];
   int ret;
 
@@ -165,7 +169,8 @@ int owl_zephyr_sub(char *class, char *inst, char *recip) {
 }
 
 
-int owl_zephyr_unsub(char *class, char *inst, char *recip) {
+int owl_zephyr_unsub(char *class, char *inst, char *recip)
+{
   ZSubscription_t subs[5];
   int ret;
 
@@ -182,7 +187,8 @@ int owl_zephyr_unsub(char *class, char *inst, char *recip) {
 }
 
 
-char *owl_zephyr_get_field(ZNotice_t *n, int j, int *k) {
+char *owl_zephyr_get_field(ZNotice_t *n, int j, int *k)
+{
   /* return a pointer to the Jth field, place the length in k.  If the
      field doesn't exist return an emtpy string */
   int i, count, save;
@@ -211,7 +217,8 @@ char *owl_zephyr_get_field(ZNotice_t *n, int j, int *k) {
 }
 
 
-int owl_zephyr_get_num_fields(ZNotice_t *n) {
+int owl_zephyr_get_num_fields(ZNotice_t *n)
+{
   int i, fields;
 
   fields=1;
@@ -223,7 +230,8 @@ int owl_zephyr_get_num_fields(ZNotice_t *n) {
 }
 
 
-char *owl_zephyr_get_message(ZNotice_t *n, int *k) {
+char *owl_zephyr_get_message(ZNotice_t *n, int *k)
+{
   /* return a pointer to the message, place the message length in k */
   if (!strcasecmp(n->z_opcode, "ping")) {
     *k=0;
@@ -234,7 +242,8 @@ char *owl_zephyr_get_message(ZNotice_t *n, int *k) {
 }
 
 
-char *owl_zephyr_get_zsig(ZNotice_t *n, int *k) {
+char *owl_zephyr_get_zsig(ZNotice_t *n, int *k)
+{
   /* return a pointer to the zsig if there is one */
 
   if (n->z_message_len==0) {
@@ -246,7 +255,8 @@ char *owl_zephyr_get_zsig(ZNotice_t *n, int *k) {
 }
 
 
-int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *recipient, char *message) {
+int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *recipient, char *message)
+{
   int ret;
   ZNotice_t notice;
     
@@ -286,15 +296,18 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
   return(0);
 }
 
-Code_t send_zephyr_helper(ZNotice_t *notice, char *buf, int len, int wait) {
+Code_t send_zephyr_helper(ZNotice_t *notice, char *buf, int len, int wait)
+{
   return(ZSendPacket(buf, len, 0));
 }
 
-void send_ping(char *to) {
+void send_ping(char *to)
+{
   send_zephyr("PING", "", "MESSAGE", "PERSONAL", to, "");
 }
 
-void owl_zephyr_handle_ack(ZNotice_t *retnotice) {
+void owl_zephyr_handle_ack(ZNotice_t *retnotice)
+{
   char *tmp;
   
   /* if it's an HMACK ignore it */
@@ -330,7 +343,8 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice) {
   }
 }
 
-int owl_zephyr_notice_is_ack(ZNotice_t *n) {
+int owl_zephyr_notice_is_ack(ZNotice_t *n)
+{
   if (n->z_kind == SERVNAK || n->z_kind == SERVACK || n->z_kind == HMACK) {
     if (!strcasecmp(n->z_class, LOGIN_CLASS)) return(0);
     return(1);
@@ -338,7 +352,8 @@ int owl_zephyr_notice_is_ack(ZNotice_t *n) {
   return(0);
 }
   
-void owl_zephyr_zaway(owl_message *m) {
+void owl_zephyr_zaway(owl_message *m)
+{
   char *tmpbuff, *myuser, *to;
   
   /* bail if it doesn't look like a message we should reply to.  Some
@@ -379,7 +394,8 @@ void owl_zephyr_zaway(owl_message *m) {
 }
 
 
-void owl_zephyr_hackaway_cr(ZNotice_t *n) {
+void owl_zephyr_hackaway_cr(ZNotice_t *n)
+{
   /* replace \r's with ' '.  Gross-ish */
   int i;
 
@@ -390,7 +406,8 @@ void owl_zephyr_hackaway_cr(ZNotice_t *n) {
   }
 }
 
-void owl_zephyr_zlocate(char *user, char *out, int auth) {
+void owl_zephyr_zlocate(char *user, char *out, int auth)
+{
   int ret, numlocs;
   int one = 1;
   ZLocations_t locations;
@@ -418,7 +435,8 @@ void owl_zephyr_zlocate(char *user, char *out, int auth) {
   }
 }
 
-void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip) {
+void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip)
+{
   char *line, subsfile[LINE], buff[LINE];
   FILE *file;
 
@@ -460,7 +478,8 @@ void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip) {
   owl_free(line);
 }
 
-void owl_zephyr_delsub(char *filename, char *class, char *inst, char *recip) {
+void owl_zephyr_delsub(char *filename, char *class, char *inst, char *recip)
+{
   char *line, subsfile[LINE], buff[LINE], *text;
   char backupfilename[LINE];
   FILE *file, *backupfile;
@@ -526,7 +545,8 @@ void owl_zephyr_delsub(char *filename, char *class, char *inst, char *recip) {
   owl_function_makemsg("Subscription removed");
 }
 
-char *owl_zephyr_makesubline(char *class, char *inst, char *recip) {
+char *owl_zephyr_makesubline(char *class, char *inst, char *recip)
+{
   /* caller must free the return */
   char *out;
 
@@ -534,3 +554,55 @@ char *owl_zephyr_makesubline(char *class, char *inst, char *recip) {
   sprintf(out, "%s,%s,%s\n", class, inst, !strcmp(recip, "") ? "*" : recip);
   return(out);
 }
+
+
+void owl_zephyr_zlog_in(void)
+{
+  char *exposure, *eset;
+  int ret;
+
+  ZResetAuthentication();
+    
+  eset=EXPOSE_REALMVIS;
+  exposure=ZGetVariable("exposure");
+  if (exposure==NULL) {
+    eset=EXPOSE_REALMVIS;
+  } else if (!strcasecmp(exposure,EXPOSE_NONE)) {
+    eset = EXPOSE_NONE;
+  } else if (!strcasecmp(exposure,EXPOSE_OPSTAFF)) {
+    eset = EXPOSE_OPSTAFF;
+  } else if (!strcasecmp(exposure,EXPOSE_REALMVIS)) {
+    eset = EXPOSE_REALMVIS;
+  } else if (!strcasecmp(exposure,EXPOSE_REALMANN)) {
+    eset = EXPOSE_REALMANN;
+  } else if (!strcasecmp(exposure,EXPOSE_NETVIS)) {
+    eset = EXPOSE_NETVIS;
+  } else if (!strcasecmp(exposure,EXPOSE_NETANN)) {
+    eset = EXPOSE_NETANN;
+  }
+   
+  ret=ZSetLocation(eset);
+  if (ret != ZERR_NONE) {
+    /*
+      char buff[LINE];
+      sprintf(buff, "Error setting location: %s", error_message(ret));
+      owl_function_makemsg(buff);
+    */
+  }
+}
+
+void owl_zephyr_zlog_out(void)
+{
+  int ret;
+
+  ZResetAuthentication();
+  ret=ZUnsetLocation();
+  if (ret != ZERR_NONE) {
+    /*
+      char buff[LINE];
+      sprintf(buff, "Error unsetting location: %s", error_message(ret));
+      owl_function_makemsg(buff);
+    */
+  }
+}
+

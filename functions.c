@@ -692,7 +692,7 @@ void owl_function_quit()
   
   /* zlog out if we need to */
   if (owl_global_is_shutdownlogout(&g)) {
-    owl_function_zlog_out();
+    owl_zephyr_zlog_out();
   }
 
   /* execute the commands in shutdown */
@@ -710,54 +710,6 @@ void owl_function_quit()
   endwin();
   owl_function_debugmsg("Quitting Owl");
   exit(0);
-}
-
-
-void owl_function_zlog_in()
-{
-  char *exposure, *eset;
-  int ret;
-
-  eset=EXPOSE_REALMVIS;
-  exposure=ZGetVariable("exposure");
-  if (exposure==NULL) {
-    eset=EXPOSE_REALMVIS;
-  } else if (!strcasecmp(exposure,EXPOSE_NONE)) {
-    eset = EXPOSE_NONE;
-  } else if (!strcasecmp(exposure,EXPOSE_OPSTAFF)) {
-    eset = EXPOSE_OPSTAFF;
-  } else if (!strcasecmp(exposure,EXPOSE_REALMVIS)) {
-    eset = EXPOSE_REALMVIS;
-  } else if (!strcasecmp(exposure,EXPOSE_REALMANN)) {
-    eset = EXPOSE_REALMANN;
-  } else if (!strcasecmp(exposure,EXPOSE_NETVIS)) {
-    eset = EXPOSE_NETVIS;
-  } else if (!strcasecmp(exposure,EXPOSE_NETANN)) {
-    eset = EXPOSE_NETANN;
-  }
-   
-  ret=ZSetLocation(eset);
-  if (ret != ZERR_NONE) {
-    /*
-      char buff[LINE];
-      sprintf(buff, "Error setting location: %s", error_message(ret));
-      owl_function_makemsg(buff);
-    */
-  }
-}
-
-void owl_function_zlog_out()
-{
-  int ret;
-  
-  ret=ZUnsetLocation();
-  if (ret != ZERR_NONE) {
-    /*
-      char buff[LINE];
-      sprintf(buff, "Error unsetting location: %s", error_message(ret));
-      owl_function_makemsg(buff);
-    */
-  }
 }
 
 
