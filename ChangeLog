@@ -23,6 +23,8 @@ $Id$
 	Removed libfaim/config.log from CVS
 	Fixed some easy fixed-length buffers
 	Wordwrap incoming AIM messages.
+	Fixed bug causing buddies not to be added to buddy list during
+	  ingorelogin timer
 
 2.0.4-pre-1
 	Make command line option -n actualy work

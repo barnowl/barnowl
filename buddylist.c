@@ -28,6 +28,9 @@ void owl_buddylist_oncoming(owl_buddylist *b, char *screenname)
   if (!found) {
     owl_list_append_element(&(b->buddies), owl_strdup(screenname));
 
+    /* are we ingoring login messages for a while? */
+    if (!owl_timer_is_expired(owl_global_get_aim_login_timer(&g))) return;
+
     m=owl_malloc(sizeof(owl_message));
     owl_message_create_aim(m,
 			   screenname,
