@@ -580,7 +580,7 @@ void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src)
   dst->textbuff=owl_malloc(mallocsize); /* valgrind suspcious line */
   dst->fmbuff=owl_malloc(mallocsize);
   dst->colorbuff=owl_malloc(mallocsize);
-  memcpy(dst->textbuff, src->textbuff, src->textlen);
+  memcpy(dst->textbuff, src->textbuff, src->textlen+1);
   memcpy(dst->fmbuff, src->fmbuff, src->textlen);
   memcpy(dst->colorbuff, src->colorbuff, src->textlen);
 }

@@ -4,6 +4,7 @@ $Id$
 	Don't ring the terminal bell on mail messages.
 	Nuke <FONT>
 	Make the build work a little better on OSX
+	Fixed a bug in fmtext
 	
 2.0.2
 	Fixed bug in 'startup' command.
