@@ -14,7 +14,8 @@ extern char *owl_perlwrap_codebuff;
 
 extern XS(boot_owl);
 
-static void owl_perl_xs_init(pTHX) {
+static void owl_perl_xs_init(pTHX)
+{
   char *file = __FILE__;
   dXSUB_SYS;
   {
@@ -22,7 +23,8 @@ static void owl_perl_xs_init(pTHX) {
   }
 }
 
-SV *owl_perlconfig_message2hashref(owl_message *m) { /*noproto*/
+SV *owl_perlconfig_message2hashref(owl_message *m)  /*noproto*/
+{
   HV *h;
   SV *hr;
   char *ptr, *blessas;
@@ -83,7 +85,8 @@ SV *owl_perlconfig_message2hashref(owl_message *m) { /*noproto*/
 }
 
 
-SV *owl_perlconfig_curmessage2hashref(void) { /*noproto*/
+SV *owl_perlconfig_curmessage2hashref(void) /*noproto*/
+{
   int curmsg;
   owl_view *v;
   v=owl_global_get_current_view(&g);
@@ -97,7 +100,8 @@ SV *owl_perlconfig_curmessage2hashref(void) { /*noproto*/
 
 /* Calls in a scalar context, passing it a hash reference.
    If return value is non-null, caller must free. */
-char *owl_perlconfig_call_with_message(char *subname, owl_message *m) {
+char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
+{
   dSP ;
   int count, len;
   SV *msgref, *srv;
@@ -145,7 +149,8 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m) {
   return out;
 }
 
-char *owl_perlconfig_readconfig(char *file) {
+char *owl_perlconfig_readconfig(char *file)
+{
   int ret;
   PerlInterpreter *p;
   char filename[1024];
@@ -232,7 +237,8 @@ int owl_perlconfig_is_function(char *fn) {
 }
 
 /* returns 0 on success */
-int owl_perlconfig_get_hashkeys(char *hashname, owl_list *l) {
+int owl_perlconfig_get_hashkeys(char *hashname, owl_list *l)
+{
   HV *hv;
   HE *he;
   char *key;
@@ -252,7 +258,8 @@ int owl_perlconfig_get_hashkeys(char *hashname, owl_list *l) {
 }
 
 /* caller is responsible for freeing returned string */
-char *owl_perlconfig_execute(char *line) {
+char *owl_perlconfig_execute(char *line)
+{
   STRLEN len;
   SV *response;
   char *out, *preout;
@@ -280,7 +287,8 @@ char *owl_perlconfig_execute(char *line) {
   return(out);
 }
 
-char *owl_perlconfig_getmsg(owl_message *m, int mode, char *subname) { 
+char *owl_perlconfig_getmsg(owl_message *m, int mode, char *subname)
+{ 
   /* if mode==1 we are doing message formatting.  The returned
    * formatted message needs to be freed by the caller.
    *
