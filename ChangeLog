@@ -9,6 +9,8 @@ $Id$
 	Fixed bug that caused a crash on zpunt with '*' for an instance
 	AIM logout and then login now works.
 	Fixed bug causing view -d not to work.
+	Added hostname and tty name to LOGIN/LOGOUT zephyrs on oneline
+	  style
 	
 2.0.4
 	Made command line option -n actually work

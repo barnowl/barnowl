@@ -43,13 +43,16 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
       owl_fmtext_append_bold(fm, frombuff);
       owl_fmtext_append_normal(fm, "\n");
     } else if (owl_message_is_loginout(m)) {
-      char *ptr, host[LINE], tty[LINE];
+      char *ptr, *host, *tty;
       int len;
-      
+
       ptr=owl_zephyr_get_field(n, 1, &len);
+      host=owl_malloc(len+10);
       strncpy(host, ptr, len);
       host[len]='\0';
+
       ptr=owl_zephyr_get_field(n, 3, &len);
+      tty=owl_malloc(len+10);
       strncpy(tty, ptr, len);
       tty[len]='\0';
 
@@ -67,6 +70,9 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
       owl_fmtext_append_normal(fm, " ");
       owl_fmtext_append_normal(fm, tty);
       owl_fmtext_append_normal(fm, "\n");
+
+      owl_free(host);
+      owl_free(tty);
     } else {
       owl_fmtext_append_normal(fm, "From: ");
       if (strcasecmp(owl_message_get_class(m), "message")) {
@@ -228,13 +234,16 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
       owl_fmtext_append_bold(fm, frombuff);
       owl_fmtext_append_normal(fm, "\n");
     } else if (owl_message_is_loginout(m)) {
-      char *ptr, host[LINE], tty[LINE];
+      char *ptr, *host, *tty;
       int len;
-      
+
       ptr=owl_zephyr_get_field(n, 1, &len);
+      host=owl_malloc(len+10);
       strncpy(host, ptr, len);
       host[len]='\0';
+
       ptr=owl_zephyr_get_field(n, 3, &len);
+      tty=owl_malloc(len+10);
       strncpy(tty, ptr, len);
       tty[len]='\0';
       
@@ -252,6 +261,9 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
       owl_fmtext_append_normal(fm, " ");
       owl_fmtext_append_normal(fm, tty);
       owl_fmtext_append_normal(fm, "\n");
+
+      owl_free(host);
+      owl_free(tty);
     } else {
       owl_fmtext_append_normal(fm, owl_message_get_class(m));
       owl_fmtext_append_normal(fm, " / ");
@@ -382,27 +394,56 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
   char *tmp;
   char *baseformat="%s %-13.13s %-11.11s %-12.12s ";
   char *sender, *recip;
+  ZNotice_t *n;
+
 
   sender=short_zuser(owl_message_get_sender(m));
   recip=short_zuser(owl_message_get_recipient(m));
   
   if (owl_message_is_type_zephyr(m)) {
+    n=owl_message_get_notice(m);
+    
     owl_fmtext_append_spaces(fm, OWL_TAB);
-    if (owl_message_is_login(m)) {
-      tmp=owl_sprintf(baseformat, "<", "LOGIN", "", sender);
-      owl_fmtext_append_normal(fm, tmp);
+
+    if (owl_message_is_loginout(m)) {
+      char *ptr, *host, *tty;
+      int len;
+      
+      ptr=owl_zephyr_get_field(n, 1, &len);
+      host=owl_malloc(len+10);
+      strncpy(host, ptr, len);
+      host[len]='\0';
+
+      ptr=owl_zephyr_get_field(n, 3, &len);
+      tty=owl_malloc(len+10);
+      strncpy(tty, ptr, len);
+      tty[len]='\0';
+
+      if (owl_message_is_login(m)) {
+	tmp=owl_sprintf(baseformat, "<", "LOGIN", "", sender);
+	owl_fmtext_append_normal(fm, tmp);
+	owl_free(tmp);
+      } else if (owl_message_is_logout(m)) {
+	tmp=owl_sprintf(baseformat, "<", "LOGOUT", "", sender);
+	owl_fmtext_append_normal(fm, tmp);
+	owl_free(tmp);
+      }
+
+      owl_fmtext_append_normal(fm, "at ");
+      owl_fmtext_append_normal(fm, host);
+      owl_fmtext_append_normal(fm, " ");
+      owl_fmtext_append_normal(fm, tty);
       owl_fmtext_append_normal(fm, "\n");
-      owl_free(tmp);
-    } else if (owl_message_is_logout(m)) {
-      tmp=owl_sprintf(baseformat, "<", "LOGOUT", "", sender);
-      owl_fmtext_append_normal(fm, tmp);
-      owl_fmtext_append_normal(fm, "\n");
-      owl_free(tmp);
+
+      owl_free(host);
+      owl_free(tty);
+
     } else if (owl_message_is_ping(m)) {
       tmp=owl_sprintf(baseformat, "<", "PING", "", sender);
       owl_fmtext_append_normal(fm, tmp);
       owl_fmtext_append_normal(fm, "\n");
       owl_free(tmp);
+
     } else {
       if (owl_message_is_direction_in(m)) {
 	tmp=owl_sprintf(baseformat, "<", owl_message_get_class(m), owl_message_get_instance(m), sender);
