@@ -556,55 +556,6 @@ int owl_filter_is_toodeep(owl_filter *f)
   return(1);
 }
 
-/* If the filter exceeds the max recursion depth, due to filters of
- * filters with possible loops, return 1.  Otherwise, return 0.
- */
-int owl_filter_is_toodeep_old(owl_filter *f)
-{
-  int ret;
-
-  owl_function_debugmsg("owl_filter_is_toodeep: checking depth");
-  filter_depth=0;
-  ret=_owl_filter_toodeep_recurse(f);
-  if (ret || (filter_depth>OWL_FILTER_MAXRECURSE)) {
-    owl_function_debugmsg("owl_filter_is_toodeep: too deep");
-    return(1);
-  }
-  owl_function_debugmsg("owl_filter_is_toodeep: ok");
-  return(0);
-}
-
-int _owl_filter_toodeep_recurse(owl_filter *f)
-{
-  owl_list list;
-  owl_filter *subfilter;
-  int i, j;
-
-  owl_function_debugmsg("_owl_filter_toodeep_recurse: filter_depth on entrance is  %i", filter_depth);
-
-  owl_list_create(&list);
-  _owl_filter_get_subfilter_names(f, &list);
-  j=owl_list_get_size(&list);
-  if (j>0) {
-    filter_depth++;
-    if (filter_depth>OWL_FILTER_MAXRECURSE) {
-      owl_list_free_all(&list, owl_free);
-      return(1);
-    }
-    for (i=0; i<j; i++) {
-      subfilter=owl_global_get_filter(&g, owl_list_get_element(&list, i));
-      if (!subfilter) {
-	owl_function_error("_owl_filter_toodeep_recurse: subfilter %s does not exist",
-			   owl_list_get_element(&list, i));
-	return(1);
-      }
-      return(_owl_filter_toodeep_recurse(subfilter));
-    }
-  }
-  owl_list_free_all(&list, owl_free);
-  return(0);
-}
-
 void owl_filter_free(owl_filter *f)
 {
   void (*func)();
