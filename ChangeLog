@@ -28,7 +28,7 @@ $Id$
 	  command
 	Made M-n work on classes and instances with spaces in them
 	Zaway now obeys the smart strip variable
-
+	Hacked the build system to not have the -E link problem on Athena
 	
 1.2.8
 	Class pings are displayed differently now
