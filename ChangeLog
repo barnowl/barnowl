@@ -5,6 +5,8 @@ $Id$
 	'addbuddy aim' and 'delbuddy aim' now work
 	Bug fix to make zwrite -m work with -c/-i
 	Fix in autoconf for des425
+	Reformatted editwin.c and added capability of doing password
+	   echoing
 	
 2.0.5
 	Fix in finding des for building zcrypt

@@ -348,6 +348,7 @@ typedef struct _owl_editwin {
   int style;
   int lock;
   int dotsend;
+  int echochar;
 } owl_editwin;
 
 typedef struct _owl_keybinding {

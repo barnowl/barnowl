@@ -8,7 +8,8 @@ static const char fileIdent[] = "$Id$";
 
 #define INCR 5000
 
-void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, int style, owl_history *hist) {
+void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, int style, owl_history *hist)
+{
   /* initialize the editwin e.
    * 'win' is an already initialzed curses window that will be used by editwin
    */
@@ -34,10 +35,12 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   }
   e->lock=0;
   e->dotsend=0;
+  e->echochar='\0';
   if (win) werase(win);
 }
 
-void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincols) {
+void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincols)
+{
   e->curswin=w;
   e->winlines=winlines;
   e->wincols=wincols;
@@ -47,23 +50,37 @@ void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincol
 				       owl_global_get_edit_maxwrapcols(&g));
 }
 
-WINDOW *owl_editwin_get_curswin(owl_editwin *e) {
+/* echo the character 'ch' for each normal character keystroke,
+ * excepting locktext.  This is useful for entering passwords etc.  If
+ * ch=='\0' characters are echo'd normally
+ */
+void owl_editwin_set_echochar(owl_editwin *e, int ch)
+{
+  e->echochar=ch;
+}
+
+WINDOW *owl_editwin_get_curswin(owl_editwin *e)
+{
   return(e->curswin);
 }
 
-void owl_editwin_set_history(owl_editwin *e, owl_history *h) {
+void owl_editwin_set_history(owl_editwin *e, owl_history *h)
+{
   e->hist=h;
 }
 
-owl_history *owl_editwin_get_history(owl_editwin *e) {
+owl_history *owl_editwin_get_history(owl_editwin *e)
+{
   return(e->hist);
 }
 
-void owl_editwin_set_dotsend(owl_editwin *e) {
+void owl_editwin_set_dotsend(owl_editwin *e)
+{
   e->dotsend=1;
 }
 
-int owl_editwin_limit_maxcols(int v, int maxv) {
+int owl_editwin_limit_maxcols(int v, int maxv)
+{
   if (maxv > 5 && v > maxv) {
     return(maxv);
   } else {
@@ -71,9 +88,11 @@ int owl_editwin_limit_maxcols(int v, int maxv) {
   }
 }
 
-void owl_editwin_set_locktext(owl_editwin *e, char *text) {
-  /* set text to be 'locked in' at the beginning of the buffer, any
-     previous text (including locked text) will be overwritten */
+/* set text to be 'locked in' at the beginning of the buffer, any
+ * previous text (including locked text) will be overwritten
+ */
+void owl_editwin_set_locktext(owl_editwin *e, char *text)
+{
   
   int x, y;
 
@@ -90,11 +109,13 @@ void owl_editwin_set_locktext(owl_editwin *e, char *text) {
   owl_editwin_redisplay(e, 0);
 }
 
-int owl_editwin_get_style(owl_editwin *e) {
+int owl_editwin_get_style(owl_editwin *e)
+{
   return(e->style);
 }
 
-void owl_editwin_new_style(owl_editwin *e, int newstyle, owl_history *h) {
+void owl_editwin_new_style(owl_editwin *e, int newstyle, owl_history *h)
+{
   char *ptr;
 
   owl_editwin_set_history(e, h);
@@ -118,14 +139,19 @@ void owl_editwin_new_style(owl_editwin *e, int newstyle, owl_history *h) {
   }
 }
 
-void owl_editwin_fullclear(owl_editwin *e) {
-  /* completly reinitialize the buffer */
+/* completly reinitialize the buffer */
+void owl_editwin_fullclear(owl_editwin *e)
+{
   owl_free(e->buff);
   owl_editwin_init(e, e->curswin, e->winlines, e->wincols, e->style, e->hist);
 }
 
-void owl_editwin_clear(owl_editwin *e) {
-  /* clear all text except for locktext and put the cursor at the beginning */
+/* clear all text except for locktext and put the cursor at the
+ * beginning
+ */
+void owl_editwin_clear(owl_editwin *e)
+{
+
   int lock;
   int dotsend=e->dotsend;
   char *locktext=NULL;
@@ -154,8 +180,9 @@ void owl_editwin_clear(owl_editwin *e) {
 }
 
 
-void _owl_editwin_addspace(owl_editwin *e) {
-  /* malloc more space for the buffer */
+/* malloc more space for the buffer */
+void _owl_editwin_addspace(owl_editwin *e)
+{
   e->buff=owl_realloc(e->buff, e->allocated+INCR);
   if (!e->buff) {
     /* error */
@@ -164,18 +191,20 @@ void _owl_editwin_addspace(owl_editwin *e) {
   e->allocated+=INCR;
 }
 
-void owl_editwin_recenter(owl_editwin *e) {
+void owl_editwin_recenter(owl_editwin *e)
+{
   e->topline=e->buffy-(e->winlines/2);
   if (e->topline<0) e->topline=0;
   if (e->topline>owl_editwin_get_numlines(e)) e->topline=owl_editwin_get_numlines(e);
 }
 
-void owl_editwin_redisplay(owl_editwin *e, int update) {
-  /* regenerate the text on the curses window */
-  /* if update == 1 then do a doupdate(), otherwise do not */
+/* regenerate the text on the curses window */
+/* if update == 1 then do a doupdate(), otherwise do not */
+void owl_editwin_redisplay(owl_editwin *e, int update)
+{
   
   char *ptr1, *ptr2, *ptr3, *buff;
-  int i;
+  int i, j;
 
   werase(e->curswin);
   wmove(e->curswin, 0, 0);
@@ -211,7 +240,21 @@ void owl_editwin_redisplay(owl_editwin *e, int update) {
   buff=owl_malloc(ptr3-ptr1+50);
   strncpy(buff, ptr1, ptr3-ptr1);
   buff[ptr3-ptr1]='\0';
-  waddstr(e->curswin, buff);
+  if (e->echochar=='\0') {
+    waddstr(e->curswin, buff);
+  } else {
+    /* translate to echochar, *except* for the locktext */
+    int len;
+    int dolocklen=e->lock-(ptr1-e->buff);
+
+    for (i=0; i<dolocklen; i++) {
+      waddch(e->curswin, buff[i]);
+    }
+    len=strlen(buff);
+    for (i=0; i<len-dolocklen; i++) {
+      waddch(e->curswin, e->echochar);
+    }
+  }
   wmove(e->curswin, e->buffy-e->topline, e->buffx);
   wnoutrefresh(e->curswin);
   if (update==1) {
@@ -221,12 +264,12 @@ void owl_editwin_redisplay(owl_editwin *e, int update) {
 }
 
 
-int _owl_editwin_linewrap_word(owl_editwin *e) {
-  /* linewrap the word just before the cursor.
-   * returns 0 on success
-   * returns -1 if we could not wrap.
-   */
-
+/* linewrap the word just before the cursor.
+ * returns 0 on success
+ * returns -1 if we could not wrap.
+ */
+int _owl_editwin_linewrap_word(owl_editwin *e)
+{
   int i, z;
 
   z=_owl_editwin_get_index_from_xy(e);
@@ -249,9 +292,11 @@ int _owl_editwin_linewrap_word(owl_editwin *e) {
   }
 }
 
-void owl_editwin_insert_char(owl_editwin *e, char c) {
-  /* insert a character at the current point (shift later
-   * characters over) */
+/* insert a character at the current point (shift later
+ * characters over)
+ */
+void owl_editwin_insert_char(owl_editwin *e, char c)
+{
   
   int z, i, ret;
 
@@ -305,8 +350,9 @@ void owl_editwin_insert_char(owl_editwin *e, char c) {
   }
 }
 
-void owl_editwin_overwrite_char(owl_editwin *e, char c) {
-  /* overwrite the character at the current point with 'c' */
+/* overwrite the character at the current point with 'c' */
+void owl_editwin_overwrite_char(owl_editwin *e, char c)
+{
   int z;
   
   /* \r is \n */
@@ -347,10 +393,11 @@ void owl_editwin_overwrite_char(owl_editwin *e, char c) {
 
 }
 
-void owl_editwin_delete_char(owl_editwin *e) {
-  /* delete the character at the current point, following chars
-   * shift left.
-   */ 
+/* delete the character at the current point, following chars
+ * shift left.
+ */ 
+void owl_editwin_delete_char(owl_editwin *e)
+{
   int z, i;
 
   if (e->bufflen==0) return;
@@ -367,13 +414,13 @@ void owl_editwin_delete_char(owl_editwin *e) {
   e->buff[e->bufflen]='\0';
 }
 
-void owl_editwin_transpose_chars(owl_editwin *e) {
-  /* Swap the character at point with the character at point-1 and
-   * advance the pointer.  If point is at beginning of buffer do
-   * nothing.  If point is after the last character swap point-1 with
-   * point-2.  (Behaves as observed in tcsh and emacs).  
-   */
-
+/* Swap the character at point with the character at point-1 and
+ * advance the pointer.  If point is at beginning of buffer do
+ * nothing.  If point is after the last character swap point-1 with
+ * point-2.  (Behaves as observed in tcsh and emacs).  
+ */
+void owl_editwin_transpose_chars(owl_editwin *e)
+{
   int z;
   char tmp;
 
@@ -398,10 +445,11 @@ void owl_editwin_transpose_chars(owl_editwin *e) {
   owl_editwin_key_right(e);
 }
 
-void owl_editwin_insert_string(owl_editwin *e, char *string) {
-  /* insert 'string' at the current point, later text is shifted
-   * right
-   */
+/* insert 'string' at the current point, later text is shifted
+ * right
+ */
+void owl_editwin_insert_string(owl_editwin *e, char *string)
+{
   int i, j;
 
   j=strlen(string);
@@ -410,11 +458,13 @@ void owl_editwin_insert_string(owl_editwin *e, char *string) {
   }
 }
 
-void owl_editwin_overwrite_string(owl_editwin *e, char *string) {
+/* write 'string' at the current point, overwriting text that is
+ * already there
+ */
+
+void owl_editwin_overwrite_string(owl_editwin *e, char *string)
+{
   int i, j;
-  /* write 'string' at the current point, overwriting text that is
-   * already there
-   */
 
   j=strlen(string);
   for (i=0; i<j; i++) {
@@ -422,10 +472,11 @@ void owl_editwin_overwrite_string(owl_editwin *e, char *string) {
   }
 }
 
-int _owl_editwin_get_index_from_xy(owl_editwin *e) {
-  /* get the index into e->buff for the current cursor
-   * position.
-   */
+/* get the index into e->buff for the current cursor
+ * position.
+ */
+int _owl_editwin_get_index_from_xy(owl_editwin *e)
+{
   int i;
   char *ptr1, *ptr2;
 
@@ -458,7 +509,8 @@ int _owl_editwin_get_index_from_xy(owl_editwin *e) {
   return(ptr1-e->buff);
 }
 
-void _owl_editwin_set_xy_by_index(owl_editwin *e, int index) {
+void _owl_editwin_set_xy_by_index(owl_editwin *e, int index)
+{
   int z, i;
 
   z=_owl_editwin_get_index_from_xy(e);
@@ -473,7 +525,8 @@ void _owl_editwin_set_xy_by_index(owl_editwin *e, int index) {
   }
 }
 
-void owl_editwin_adjust_for_locktext(owl_editwin *e) {
+void owl_editwin_adjust_for_locktext(owl_editwin *e)
+{
   /* if we happen to have the cursor over locked text
    * move it to be out of the locktext region */
   if (_owl_editwin_get_index_from_xy(e)<e->lock) {
@@ -481,7 +534,8 @@ void owl_editwin_adjust_for_locktext(owl_editwin *e) {
   }
 }
 
-void owl_editwin_backspace(owl_editwin *e) {
+void owl_editwin_backspace(owl_editwin *e)
+{
   /* delete the char before the current one
    * and shift later chars left
    */
@@ -492,7 +546,8 @@ void owl_editwin_backspace(owl_editwin *e) {
   owl_editwin_adjust_for_locktext(e);
 }
 
-void owl_editwin_key_up(owl_editwin *e) {
+void owl_editwin_key_up(owl_editwin *e)
+{
   if (e->buffy > 0) e->buffy--;
   if (e->buffx >= owl_editwin_get_numchars_on_line(e, e->buffy)) {
     e->buffx=owl_editwin_get_numchars_on_line(e, e->buffy);
@@ -506,7 +561,8 @@ void owl_editwin_key_up(owl_editwin *e) {
   owl_editwin_adjust_for_locktext(e);
 }
 
-void owl_editwin_key_down(owl_editwin *e) {
+void owl_editwin_key_down(owl_editwin *e)
+{
   /* move down if we can */
   if (e->buffy+1 < owl_editwin_get_numlines(e)) e->buffy++;
 
@@ -524,7 +580,8 @@ void owl_editwin_key_down(owl_editwin *e) {
   owl_editwin_adjust_for_locktext(e);
 }
 
-void owl_editwin_key_left(owl_editwin *e) {
+void owl_editwin_key_left(owl_editwin *e)
+{
   /* move left if we can, and maybe up a line */
   if (e->buffx>0) {
     e->buffx--;
@@ -542,7 +599,8 @@ void owl_editwin_key_left(owl_editwin *e) {
   owl_editwin_adjust_for_locktext(e);
 }
 
-void owl_editwin_key_right(owl_editwin *e) {
+void owl_editwin_key_right(owl_editwin *e)
+{
   int i;
 
   /* move right if we can, and skip down a line if needed */
@@ -563,7 +621,8 @@ void owl_editwin_key_right(owl_editwin *e) {
   }
 }
 
-void owl_editwin_move_to_nextword(owl_editwin *e) {
+void owl_editwin_move_to_nextword(owl_editwin *e)
+{
   int i, x;
 
   /* if we're starting on a space, find the first non-space */
@@ -599,8 +658,10 @@ void owl_editwin_move_to_nextword(owl_editwin *e) {
   }
 }
 
-void owl_editwin_move_to_previousword(owl_editwin *e) {
-  /* go backwards to the last non-space character */
+/* go backwards to the last non-space character
+ */
+void owl_editwin_move_to_previousword(owl_editwin *e)
+{
   int i, x;
 
   /* are we already at the beginning of the word? */
@@ -634,7 +695,8 @@ void owl_editwin_move_to_previousword(owl_editwin *e) {
 }
 
 
-void owl_editwin_delete_nextword(owl_editwin *e) {
+void owl_editwin_delete_nextword(owl_editwin *e)
+{
   int z;
 
   if (e->bufflen==0) return;
@@ -659,7 +721,8 @@ void owl_editwin_delete_nextword(owl_editwin *e) {
   owl_editwin_delete_char(e);
 }
 
-void owl_editwin_delete_previousword(owl_editwin *e) {
+void owl_editwin_delete_previousword(owl_editwin *e)
+{
   /* go backwards to the last non-space character, then delete chars */
   int i, startpos, endpos;
 
@@ -671,7 +734,8 @@ void owl_editwin_delete_previousword(owl_editwin *e) {
   }
 }
 
-void owl_editwin_delete_to_endofline(owl_editwin *e) {
+void owl_editwin_delete_to_endofline(owl_editwin *e)
+{
   int i;
 
   if (owl_editwin_get_numchars_on_line(e, e->buffy)>e->buffx) {
@@ -693,16 +757,19 @@ void owl_editwin_delete_to_endofline(owl_editwin *e) {
   }
 }
 
-void owl_editwin_move_to_line_end(owl_editwin *e) {
+void owl_editwin_move_to_line_end(owl_editwin *e)
+{
   e->buffx=owl_editwin_get_numchars_on_line(e, e->buffy);
 }
 
-void owl_editwin_move_to_line_start(owl_editwin *e) {
+void owl_editwin_move_to_line_start(owl_editwin *e)
+{
   e->buffx=0;
   owl_editwin_adjust_for_locktext(e);
 }
 
-void owl_editwin_move_to_end(owl_editwin *e) {
+void owl_editwin_move_to_end(owl_editwin *e)
+{
   /* go to last char */
   e->buffy=owl_editwin_get_numlines(e)-1;
   e->buffx=owl_editwin_get_numchars_on_line(e, e->buffy);
@@ -714,7 +781,8 @@ void owl_editwin_move_to_end(owl_editwin *e) {
   }
 }
 
-void owl_editwin_move_to_top(owl_editwin *e) {
+void owl_editwin_move_to_top(owl_editwin *e)
+{
   _owl_editwin_set_xy_by_index(e, 0);
 
   /* do we need to scroll? */
@@ -723,7 +791,8 @@ void owl_editwin_move_to_top(owl_editwin *e) {
   owl_editwin_adjust_for_locktext(e);
 }
 
-void owl_editwin_fill_paragraph(owl_editwin *e) {
+void owl_editwin_fill_paragraph(owl_editwin *e)
+{
   int i, save;
 
   /* save our starting point */
@@ -786,12 +855,14 @@ void owl_editwin_fill_paragraph(owl_editwin *e) {
 }
 
 /* returns if only whitespace remains */
-int owl_editwin_is_at_end(owl_editwin *e) {
+int owl_editwin_is_at_end(owl_editwin *e)
+{
   int cur=_owl_editwin_get_index_from_xy(e);
-  return only_whitespace(e->buff+cur);
+  return (only_whitespace(e->buff+cur));
 }
 
-int owl_editwin_check_dotsend(owl_editwin *e) {
+int owl_editwin_check_dotsend(owl_editwin *e)
+{
   int i;
 
   if (!e->dotsend) return(0);
@@ -810,7 +881,8 @@ int owl_editwin_check_dotsend(owl_editwin *e) {
   return(0);
 }
 
-void owl_editwin_post_process_char(owl_editwin *e, int j) {
+void owl_editwin_post_process_char(owl_editwin *e, int j)
+{
   /* check if we need to scroll down */
   if (e->buffy-e->topline >= e->winlines) {
     e->topline+=e->winlines/2;
@@ -822,7 +894,8 @@ void owl_editwin_post_process_char(owl_editwin *e, int j) {
   owl_editwin_redisplay(e, 0);  
 }
 
-void owl_editwin_process_char(owl_editwin *e, int j) {
+void owl_editwin_process_char(owl_editwin *e, int j)
+{
   if (j == ERR) return;
   if (j>127 || ((j<32) && (j!=10) && (j!=13))) {
     return;
@@ -831,11 +904,13 @@ void owl_editwin_process_char(owl_editwin *e, int j) {
   }
 }
 
-char *owl_editwin_get_text(owl_editwin *e) {
+char *owl_editwin_get_text(owl_editwin *e)
+{
   return(e->buff+e->lock);
 }
 
-int owl_editwin_get_numchars_on_line(owl_editwin *e, int line) {
+int owl_editwin_get_numchars_on_line(owl_editwin *e, int line)
+{
   int i;
   char *ptr1, *ptr2;
 
@@ -860,7 +935,8 @@ int owl_editwin_get_numchars_on_line(owl_editwin *e, int line) {
   return(ptr2-ptr1); /* don't count the newline for now */
 }
 
-int owl_editwin_get_numlines(owl_editwin *e) {
+int owl_editwin_get_numlines(owl_editwin *e)
+{
   return(owl_text_num_lines(e->buff));
 }
 
