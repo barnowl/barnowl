@@ -1671,7 +1671,7 @@ char *owl_command_view(int argc, char **argv, char *buff) {
   }
 
   /* Now get 'view -d <expression>' */
-  if (argc==3 && !strcmp(argv[1], "-d")) {
+  if (argc>=3 && !strcmp(argv[1], "-d")) {
     char **myargv;
     int i;
 
