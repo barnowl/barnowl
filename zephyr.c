@@ -330,9 +330,10 @@ int owl_zephyr_notice_is_ack(ZNotice_t *n) {
 }
   
 void owl_zephyr_zaway(owl_message *m) {
-  char *tmpbuff;
+  char *tmpbuff, *myuser;
   
-  /* bail if it doesn't look like a message we should reply to */
+  /* bail if it doesn't look like a message we should reply to.  Some
+     of this defined by the way zaway(1) works */
   if (strcasecmp(owl_message_get_class(m), "message")) return;
   if (strcasecmp(owl_message_get_recipient(m), ZGetSender())) return;
   if (!strcasecmp(owl_message_get_sender(m), "")) return;
@@ -348,11 +349,15 @@ void owl_zephyr_zaway(owl_message *m) {
 	      owl_message_get_sender(m),
 	      owl_global_get_zaway_msg(&g));
 
+  myuser=short_zuser(owl_message_get_sender(m));
+  if (!strcasecmp(owl_message_get_instance(m), "personal")) {
+    tmpbuff = owl_sprintf("zwrite %s", myuser);
+  } else {
+    tmpbuff = owl_sprintf("zwrite -i %s %s", owl_message_get_instance(m), myuser);
+  }
+  owl_free(myuser);
+
   /* display the message as an admin message in the receive window */
-  tmpbuff = owl_sprintf("zwrite -c %s -i %s %s",
-			owl_message_get_class(m),
-			owl_message_get_instance(m),
-			owl_message_get_sender(m));
   owl_function_make_outgoing_zephyr(owl_global_get_zaway_msg(&g), tmpbuff, "Automated reply:");
   owl_free(tmpbuff);
 }
