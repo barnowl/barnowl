@@ -58,8 +58,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.1.5
-#define OWL_VERSION_STRING "2.1.5"
+#define OWL_VERSION         2.1.6pre1
+#define OWL_VERSION_STRING "2.1.6pre1"
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */
@@ -109,6 +109,10 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_MESSAGE_DIRECTION_NONE  0
 #define OWL_MESSAGE_DIRECTION_IN    1
 #define OWL_MESSAGE_DIRECTION_OUT   2
+
+#define OWL_MUX_READ   1
+#define OWL_MUX_WRITE  2
+#define OWL_MUX_EXCEPT 4
 
 #define OWL_DIRECTION_NONE      0
 #define OWL_DIRECTION_DOWNWARDS 1
@@ -351,6 +355,8 @@ typedef struct _owl_viewwin {
   int rightshift;
   int winlines, wincols;
   WINDOW *curswin;
+  void (*onclose_hook) (struct _owl_viewwin *vwin, void *data);
+  void *onclose_hook_data;
 } owl_viewwin;
   
 typedef struct _owl_popwin {
@@ -362,6 +368,14 @@ typedef struct _owl_popwin {
   int needsfirstrefresh;
   void (*handler) (int ch);
 } owl_popwin;
+
+typedef struct _owl_popexec {
+  int refcount;
+  owl_viewwin *vwin;
+  int winactive;
+  int pid;			/* or 0 if it has terminated */
+  int rfd;  
+} owl_popexec;
 
 typedef struct _owl_messagelist {
   owl_list list;
@@ -417,6 +431,16 @@ typedef struct _owl_editwin {
   int dotsend;
   int echochar;
 } owl_editwin;
+
+typedef struct _owl_mux {
+  int handle;			/* for referencing this */
+  int active;			/* has this been deleted? */
+  int fd;		       
+  int eventmask;		/* bitmask of OWL_MUX_* */
+  void (*handler_fn)(int handle, int fd, int eventmask, void *data);
+  void *data;			/* data reference to pass to callback */
+} owl_mux;
+typedef owl_list owl_muxevents;
 
 typedef struct _owl_keybinding {
   int  *j;			/* keypress stack (0-terminated) */  
@@ -477,6 +501,7 @@ typedef struct _owl_global {
   owl_keyhandler kh;
   owl_list filterlist;
   owl_list puntlist;
+  owl_muxevents muxevents;	/* fds to dispatch on */
   owl_vardict vars;
   owl_cmddict cmds;
   owl_context ctx;

@@ -56,7 +56,6 @@
 #include <sys/filio.h>
 #endif
 int stderr_replace(void);
-void stderr_redirect(int rfd);
 #endif
 
 static const char fileIdent[] = "$Id$";
@@ -195,6 +194,8 @@ int main(int argc, char **argv, char **env)
   /* Do this only after we've started curses up... */
   owl_function_debugmsg("startup: doing stderr redirection");
   newstderr = stderr_replace();
+  owl_muxevents_add(owl_global_get_muxevents(&g), newstderr, OWL_MUX_READ,
+		    stderr_redirect_handler, NULL);
 #endif   
 
   /* create the owl directory, in case it does not exist */
@@ -579,6 +580,9 @@ int main(int argc, char **argv, char **env)
       }
     }
 
+    /* dispatch any muxevents */
+    owl_muxevents_dispatch(owl_global_get_muxevents(&g), 0);
+
     /* follow the last message if we're supposed to */
     if (newmsgs && followlast) {
       owl_function_lastmsg_noredisplay();
@@ -664,17 +668,13 @@ int main(int argc, char **argv, char **env)
       }
     }
 
-#if OWL_STDERR_REDIR
-    stderr_redirect(newstderr);
-#endif   
-
     /* Log any error signals */
     {
       siginfo_t si;
       int signum;
       if ((signum = owl_global_get_errsignal_and_clear(&g, &si)) > 0) {
 	owl_function_error("Got unexpected signal: %d %s  (code: %d band: %d  errno: %d)", 
-			   signum, signum==SIGPIPE?"SIGPIPE":"",
+			   signum, signum==SIGPIPE?"SIGPIPE":"SIG????",
 			   si.si_code, si.si_band, si.si_errno);
       }
     }
@@ -689,7 +689,7 @@ void sig_handler(int sig, siginfo_t *si, void *data)
      * schedulding a resize for later
      */
     owl_function_resize();
-  } else if (sig==SIGPIPE) {
+  } else if (sig==SIGPIPE || sig==SIGCHLD) {
     /* Set a flag and some info that we got the sigpipe
      * so we can record that we got it and why... */
     owl_global_set_errsignal(&g, sig, si);
@@ -731,8 +731,8 @@ int stderr_replace(void)
   return pipefds[0];
 }
 
-/* Sends stderr (read from rfd) messages to a file */
-void stderr_redirect(int rfd)
+/* Sends stderr (read from rfd) messages to the error console */
+void stderr_redirect_handler(int handle, int rfd, int eventmask, void *data) 
 {
   int navail, bread;
   char *buf;

@@ -49,6 +49,7 @@ void owl_global_init(owl_global *g) {
   owl_keyhandler_init(&g->kh);
   owl_keys_setup_keymaps(&g->kh);
 
+  owl_list_create(&(g->muxevents));
   owl_list_create(&(g->filterlist));
   owl_list_create(&(g->puntlist));
   owl_list_create(&(g->messagequeue));
@@ -520,6 +521,12 @@ owl_history *owl_global_get_msg_history(owl_global *g) {
 
 owl_history *owl_global_get_cmd_history(owl_global *g) {
   return(&(g->cmdhist));
+}
+
+/* muxevents */
+
+owl_muxevents *owl_global_get_muxevents(owl_global *g) {
+  return(&(g->muxevents));
 }
 
 /* filterlist */

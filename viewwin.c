@@ -13,7 +13,7 @@ void owl_viewwin_init_text(owl_viewwin *v, WINDOW *win, int winlines, int wincol
   owl_fmtext_init_null(&(v->fmtext));
   if (text) {
     owl_fmtext_append_normal(&(v->fmtext), text);
-    if (text[strlen(text)-1]!='\n') {
+    if (text[strlen(text)-1]!='\n' && text[0]!='\0') {
       owl_fmtext_append_normal(&(v->fmtext), "\n");
     }
     v->textlines=owl_fmtext_num_lines(&(v->fmtext));
@@ -23,6 +23,12 @@ void owl_viewwin_init_text(owl_viewwin *v, WINDOW *win, int winlines, int wincol
   v->winlines=winlines;
   v->wincols=wincols;
   v->curswin=win;
+  v->onclose_hook = NULL;
+}
+
+void owl_viewwin_append_text(owl_viewwin *v, char *text) {
+    owl_fmtext_append_normal(&(v->fmtext), text);
+    v->textlines=owl_fmtext_num_lines(&(v->fmtext));  
 }
 
 /* initialize the viewwin e.  'win' is an already initialzed curses
@@ -44,6 +50,11 @@ void owl_viewwin_set_curswin(owl_viewwin *v, WINDOW *w, int winlines, int wincol
   v->curswin=w;
   v->winlines=winlines;
   v->wincols=wincols;
+}
+
+void owl_viewwin_set_onclose_hook(owl_viewwin *v, void (*onclose_hook) (owl_viewwin *vwin, void *data), void *onclose_hook_data) {
+  v->onclose_hook = onclose_hook;
+  v->onclose_hook_data = onclose_hook_data;
 }
 
 /* regenerate text on the curses window. */
@@ -134,5 +145,8 @@ void owl_viewwin_bottom(owl_viewwin *v)
 
 void owl_viewwin_free(owl_viewwin *v)
 {
+  if (v->onclose_hook) {
+    v->onclose_hook(v, v->onclose_hook_data);
+  }
   owl_fmtext_free(&(v->fmtext));
 }

@@ -1,5 +1,14 @@
 $Id$
 
+2.1.6pre1
+	pexec will now incrimentally display data as it is output
+	  by the child process.  Additionally, commands running under
+	  pexec may now be killed by quitting out of the popless window.
+	Added muxevents select loop dispatcher.  File descriptors may
+	  be registered with muxevents and handlers will be dispatched
+	  to when data is available for non-blocking read/write/except.
+	Switched the stderr_redir stuff to use muxevents.
+	
 2.1.5
 	Added a licence
 	The 'personalbell' variable can now be set to 'on' 'off' or

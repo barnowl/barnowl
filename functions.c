@@ -2240,27 +2240,31 @@ char *owl_function_exec(int argc, char **argv, char *buff, int type)
   strcpy(newbuff, buff);
   strcat(newbuff, redirect);
 
-  p=popen(newbuff, "r");
-  out=owl_malloc(1024);
-  size=1024;
-  strcpy(out, "");
-  while (fgets(buff2, 1024, p)!=NULL) {
-    size+=1024;
-    out=owl_realloc(out, size);
-    strcat(out, buff2);
-  }
-  pclose(p);
-
-  if (type==1) {
-    owl_function_popless_text(out);
-  } else if (type==0) {
-    return out;
-  } else if (type==2) {
-    owl_function_adminmsg(buff, out);
+  if (type == 1) {
+    owl_popexec_new(newbuff);
   } else {
-    owl_function_popless_text(out);
+    p=popen(newbuff, "r");
+    out=owl_malloc(1024);
+    size=1024;
+    strcpy(out, "");
+    while (fgets(buff2, 1024, p)!=NULL) {
+      size+=1024;
+      out=owl_realloc(out, size);
+      strcat(out, buff2);
+    }
+    pclose(p);
+    
+    if (type==1) {
+      owl_function_popless_text(out);
+    } else if (type==0) {
+      return out;
+    } else if (type==2) {
+      owl_function_adminmsg(buff, out);
+    } else {
+      owl_function_popless_text(out);
+    }
+    owl_free(out);
   }
-  owl_free(out);
   return NULL;
 }
 
