@@ -142,6 +142,18 @@ int main(int argc, char **argv, char **env) {
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   f=malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "ping", "opcode ^ping$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "auto", "opcode ^auto$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "login", "class ^login$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "reply-lockout", "class ^noc or class ^mail$");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 

@@ -24,6 +24,7 @@ $Id$
 	      of the screen.
 	Fixed a typo in the help for smartzpunt.
 	Fixed functions to handle curmsg being past the end of the view.
+	Added filters "ping", "auto" and "login" by default.
 
 1.2.1
         New framework for command handling.
