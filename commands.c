@@ -97,13 +97,14 @@ owl_cmd commands_to_init[]
   
   OWLCMD_ARGS("reply", owl_command_reply,  OWL_CTX_INTERACTIVE,
 	      "reply to the current message",
-	      "reply [-e] [ sender | all ]",
+	      "reply [-e] [ sender | all | zaway ]",
 	      "If -e is specified, the zwrite command line is presented to\n"
 	      "allow editing.\n\n"
 	      "If 'sender' is specified, reply to the sender.\n\n"
 	      "If 'all' or no args are specified, reply publically to the\n"
 	      "same class/instance for non-personal messages and to the\n"
-	      "sender for personal messages.\n"),
+	      "sender for personal messages.\n\n"
+	      "If 'zaway' is specified, replies with a zaway message.\n\n"),
 
   OWLCMD_ARGS("set", owl_command_set, OWL_CTX_ANY,
 	      "set a variable value",
@@ -1126,8 +1127,14 @@ char *owl_command_reply(int argc, char **argv, char *buff) {
 
   if ((argc==1) || (argc==2 && !strcmp(argv[1], "all"))) {    
     owl_function_reply(0, !edit);
-  } else if ((argc==1) || (argc==2 && !strcmp(argv[1], "sender"))) {
+  } else if (argc==2 && !strcmp(argv[1], "sender")) {
     owl_function_reply(1, !edit);
+  } else if (argc==2 && !strcmp(argv[1], "zaway")) {
+    owl_message *m;
+    owl_view    *v;
+    v = owl_global_get_current_view(&g);    
+    m = owl_view_get_element(v, owl_global_get_curmsg(&g));
+    if (m) owl_zephyr_zaway(m);
   } else {
     owl_function_makemsg("Invalid arguments to the reply command.");
   }
