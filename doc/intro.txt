@@ -1,3 +1,7 @@
+
+$Id$
+
+
 Owl is a tty, curses-based zephyr client.  This is a quick guide to
 learning how to use it.
 
