@@ -5,7 +5,8 @@
 
 static const char fileIdent[] = "$Id$";
 
-int owl_text_truncate_lines(char *out, char *in, int aline, int lines) {
+int owl_text_truncate_lines(char *out, char *in, int aline, int lines)
+{
   /* start with line aline (where the first line is 1) and print
    *  'lines' lines
    */
@@ -42,7 +43,8 @@ int owl_text_truncate_lines(char *out, char *in, int aline, int lines) {
   return(0);
 }
 
-void owl_text_truncate_cols(char *out, char *in, int acol, int bcol) {
+void owl_text_truncate_cols(char *out, char *in, int acol, int bcol)
+{
   char *ptr1, *ptr2, *tmpbuff, *last;
   int len;
   
@@ -88,7 +90,8 @@ void owl_text_truncate_cols(char *out, char *in, int acol, int bcol) {
 }
 
 
-void owl_text_indent(char *out, char *in, int n) {
+void owl_text_indent(char *out, char *in, int n)
+{
   char *ptr1, *ptr2, *last;
   int i;
 
@@ -112,7 +115,8 @@ void owl_text_indent(char *out, char *in, int n) {
 }
 
 
-int owl_text_num_lines(char *in) {
+int owl_text_num_lines(char *in)
+{
   int lines, i;
 
   lines=0;
@@ -128,7 +132,8 @@ int owl_text_num_lines(char *in) {
 
 
 /* caller must free the return */
-char *owl_text_htmlstrip(char *in) {
+char *owl_text_htmlstrip(char *in)
+{
   char *ptr1, *end, *ptr2, *ptr3, *out;
 
   out=owl_malloc(strlen(in)+30);
@@ -182,6 +187,52 @@ char *owl_text_htmlstrip(char *in) {
     /* if it wasn't something we know, copy to the > and  go again */
     strncat(out, ptr2, ptr3-ptr2+1);
     ptr1=ptr3+1;
+  }
+  return(out);
+}
+
+/* caller must free the return */
+char *owl_text_wordwrap(char *in, int col)
+{
+  char *out;
+  int cur, lastspace, len, lastnewline;
+
+  out=owl_strdup(in);
+  len=strlen(in);
+  cur=0;
+  lastspace=-1;
+  lastnewline=-1;
+
+  while (cur<(len-1)) {
+    if (out[cur]==' ') {
+      lastspace=cur;
+      cur++;
+      continue;
+    } else if (out[cur]=='\n') {
+      lastnewline=cur;
+      cur++;
+      continue;
+    }
+
+    /* do we need to wrap? */
+    if ( (cur-(lastnewline+1)) > col ) {
+      if (lastspace==-1 ||
+	  (lastnewline>0 && (lastspace<=lastnewline))) {
+	/* we can't help, sorry */
+	cur++;
+	continue;
+      }
+
+      /* turn the last space into a newline */
+      out[lastspace]='\n';
+      lastnewline=lastspace;
+      lastspace=-1;
+      cur++;
+      continue;
+    }
+
+    cur++;
+    continue;
   }
   return(out);
 }

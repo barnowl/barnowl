@@ -22,6 +22,7 @@ $Id$
 	Don't allow sending to AIM users with spaces
 	Removed libfaim/config.log from CVS
 	Fixed some easy fixed-length buffers
+	Wordwrap incoming AIM messages.
 
 2.0.4-pre-1
 	Make command line option -n actualy work

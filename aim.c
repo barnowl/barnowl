@@ -1196,7 +1196,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
   int clienttype = AIM_CLIENTTYPE_UNKNOWN;
   owl_message *m;
-  char *stripmsg, *nz_screenname;
+  char *stripmsg, *nz_screenname, *wrapmsg;
   char realmsg[8192+1] = {""};
   clienttype = aim_fingerprintclient(args->features, args->featureslen);
 
@@ -1272,16 +1272,18 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
 
   /* create a message, and put it on the message queue */
   stripmsg=owl_text_htmlstrip(realmsg);
+  wrapmsg=owl_text_wordwrap(stripmsg, 70);
   nz_screenname=owl_aim_normalize_screenname(userinfo->sn);
   m=owl_malloc(sizeof(owl_message));
   owl_message_create_aim(m,
 			 nz_screenname,
 			 owl_global_get_aim_screenname(&g),
-			 stripmsg,
+			 wrapmsg,
 			 OWL_MESSAGE_DIRECTION_IN,
 			 0);
   owl_global_messagequeue_addmsg(&g, m);
   owl_free(stripmsg);
+  owl_free(wrapmsg);
   owl_free(nz_screenname);
 
   return(1);
