@@ -20,6 +20,7 @@ $Id$
 	zwrite -m now logs and displays an outgoing message
 	zwrite -s now works
 	Don't allow sending to AIM users with spaces
+	Removed libfaim/config.log from CVS
 
 2.0.4-pre-1
 	Make command line option -n actualy work
