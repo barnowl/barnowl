@@ -1,5 +1,8 @@
 $Id$
 
+2.1.11
+	Don't crash doing zlocate with bad tickets. [BZ 12]
+
 2.1.10
 	Fix a new problem finding libdes425
 	Don't crash on very long hostnames [BZ 52]

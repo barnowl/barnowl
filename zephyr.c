@@ -582,7 +582,8 @@ void owl_zephyr_zlocate(char *user, char *out, int auth)
   ZResetAuthentication();
   ret=ZLocateUser(user,&numlocs,auth?ZAUTH:ZNOAUTH);
   if (ret != ZERR_NONE) {
-    owl_function_error("Error locating user %s", user);
+    sprintf(out, "Error locating user %s\n", user);
+    return;
   }
 
   if (numlocs==0) {
@@ -595,7 +596,10 @@ void owl_zephyr_zlocate(char *user, char *out, int auth)
   for (;numlocs;numlocs--) {
     ZGetLocations(&locations,&one);
     myuser=short_zuser(user);
-    sprintf(out, "%s%s: %s\t%s\t%s\n", out, myuser, locations.host, locations.tty, locations.time);
+    sprintf(out, "%s%s: %s\t%s\t%s\n", out, myuser,
+	    locations.host ? locations.host : "?",
+	    locations.tty ? locations.tty : "?",
+	    locations.time ? locations.time : "?");
     owl_free(myuser);
   }
 #endif
