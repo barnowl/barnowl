@@ -620,6 +620,7 @@ owl_cmd commands_to_init[]
 	      "show filter <filter>\n"
 	      "show keymaps\n"
 	      "show keymap <keymap>\n"
+	      "show license\n"
 	      "show startup\n"
 	      "show status\n"
 	      "show styles\n"
@@ -2098,6 +2099,8 @@ char *owl_command_show(int argc, char **argv, char *buff)
     owl_function_about();
   } else if (!strcmp(argv[1], "status")) {
     owl_function_status();
+  } else if (!strcmp(argv[1], "license")) {
+    owl_function_show_license();
   } else if (!strcmp(argv[1], "startup")) {
     char *filename;
     

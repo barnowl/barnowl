@@ -117,6 +117,51 @@ void owl_function_show_command(char *name)
   owl_function_help_for_command(name);
 }
 
+void owl_function_show_license()
+{
+  char *text;
+
+  text=""
+    "Owl version " OWL_VERSION_STRING "\n"
+    "Copyright (c) 2004 James Kretchmar. All rights reserved.\n"
+    "\n"
+    "Redistribution and use in source and binary forms, with or without\n"
+    "modification, are permitted provided that the following conditions are\n"
+    "met:\n"
+    "\n"
+    "   * Redistributions of source code must retain the above copyright\n"
+    "     notice, this list of conditions and the following disclaimer.\n"
+    "\n"
+    "   * Redistributions in binary form must reproduce the above copyright\n"
+    "     notice, this list of conditions and the following disclaimer in\n"
+    "     the documentation and/or other materials provided with the\n"
+    "     distribution.\n"
+    "\n"
+    "   * Redistributions in any form must be accompanied by information on\n"
+    "     how to obtain complete source code for the Owl software and any\n"
+    "     accompanying software that uses the Owl software. The source code\n"
+    "     must either be included in the distribution or be available for no\n"
+    "     more than the cost of distribution plus a nominal fee, and must be\n"
+    "     freely redistributable under reasonable conditions. For an\n"
+    "     executable file, complete source code means the source code for\n"
+    "     all modules it contains. It does not include source code for\n"
+    "     modules or files that typically accompany the major components of\n"
+    "     the operating system on which the executable file runs.\n"
+    "\n"
+    "THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR\n"
+    "IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\n"
+    "WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR\n"
+    "NON-INFRINGEMENT, ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE\n"
+    "LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR\n"
+    "CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF\n"
+    "SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR\n"
+    "BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,\n"
+    "WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE\n"
+    "OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN\n"
+    "IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n";
+  owl_function_popless_text(text);
+}
+
 void owl_function_adminmsg(char *header, char *body)
 {
   owl_message *m;
