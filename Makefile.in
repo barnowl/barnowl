@@ -1,0 +1,45 @@
+CC=@CC@
+LIBS=@LIBS@
+#CFLAGS=@CFLAGS@ @DEFS@
+CFLAGS=@CFLAGS@
+LDFLAGS=@LDFLAGS@
+
+OBJS=list.o message.o mainwin.o popwin.o zephyr.o messagelist.o commands.o \
+     global.o text.o fmtext.o editwin.o util.o logging.o readconfig.o keys.o \
+     functions.o zwrite.o viewwin.o help.o filter.o regex.o history.o view.o \
+     dict.o variable.o varstubs.o filterelement.o \
+     keypress.o keymap.o keybinding.o cmd.o context.o
+
+AUTOGEN=owl_prototypes.h varstubs.c
+
+owl: $(AUTOGEN) $(OBJS) owl.o
+	$(CC) -o owl owl.o $(OBJS) $(LDFLAGS) $(LIBS)
+
+tester: $(AUTOGEN) $(OBJS) tester.o
+	$(CC) -o tester tester.o $(OBJS) $(LDFLAGS) $(LIBS)
+
+test: tester
+	./tester reg
+
+clean:
+	$(RM) *~ *.o owl tester core $(AUTOGEN) owl_prototypes.h.new
+
+distclean: clean
+	$(RM) config.cache config.log config.status Makefile config.h TAGS
+
+proto: owl_prototypes.h
+
+
+varstubs.c: variable.c stubgen.pl
+	perl stubgen.pl > varstubs.c
+
+# Only move owl_prototypes.h into place if the new one is different
+owl_prototypes.h: codelist.pl varstubs.c $(OBJS:.o=.c)
+	perl codelist.pl > owl_prototypes.h.new
+	@cmp -s owl_prototypes.h.new owl_prototypes.h || echo 'Interfaces changed!'
+	@cmp -s owl_prototypes.h.new owl_prototypes.h || mv -f owl_prototypes.h.new owl_prototypes.h
+
+tags:
+	etags *.[ch]
+
+*.o:: owl.h config.h owl_prototypes.h

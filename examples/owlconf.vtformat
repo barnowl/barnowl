@@ -1,0 +1,141 @@
+### The owlconf config file   -*- perl -*-  
+###  $Id$
+###
+### This file is interpreted by the perl interpreter.
+### If you wish to execute an owl command use the
+### function owl::command().  i.e.
+###
+###      owl::command("set zsigproc /mit/kretch/bin/getzsig");
+###
+### will set the owl variable zsigproc.  Subroutines created with
+### the names below will be executed at the specified times:
+###
+###     subroutine name    properties
+###     ---------------    ----------
+###     owl::startup()     run when owl first starts
+###     owl::shutdown()    run when owl exits
+###     owl::format_msg()  run when a new message arrives, the return
+###                           value is used to display the message on the
+###                           screen
+###
+### The following variables will be set each time a message is recevied:
+###
+###     $owl::class, $owl::instance, $owl::recipient,
+###     $owl::sender, $owl::opcode, $owl::zsig,
+###     $owl::msg, $owl::time, $owl::host, @owl::fields
+###    
+
+# classes will be appreviated this way
+my %class_abbrev = (
+		   "message"         => "",
+		   "spleen"          => "sp",
+		   "ccare"           => "cc",
+		   "implied-consent" => "ic",
+		   "syseng"          => "se",
+		   "install"         => "i",
+		   );
+
+sub owl::startup {
+    owl::command("set logging off");
+    #owl::command("set zsigproc /home/nygren/bin/owlzsigs");
+    owl::command("set startuplogin off");
+    owl::command("set shutdownlogout off");
+    #owl::command("set personalbell on");
+    owl::command("set rxping on");
+    owl::command("set typewinsize 5");
+}
+
+sub owl::shutdown {
+#    system("/mit/kretch/bin/zkill > /dev/null 2> /dev/null");
+}
+
+sub owl::format_msg {
+    my ($out, $tmp);
+
+    $owl::sender=~s/\@ATHENA\.MIT\.EDU$//;
+    $owl::sender=~s/\@local-realm$//;
+
+    if (uc($owl::opcode) eq "PING") {
+	return("\@bold(PING) from \@bold($owl::sender)\n");
+    } elsif (uc($owl::class) eq "LOGIN") {
+	if (uc($owl::opcode) eq "USER_LOGIN") {
+	    $out="\@bold(LOGIN)";
+	} elsif (uc($owl::opcode) eq "USER_LOGOUT") {
+	    $out="\@bold(LOGOUT)";
+	} else {
+	    $out="\@bold(UNKNOWN)";
+	}
+	$out.=" for \@bold($owl::sender) at $fields[0] on $fields[2]\n";
+	return($out);
+    } elsif (uc($owl::class) eq "MAIL") {
+	$out = "\@bold(MAIL) ";
+	if ($owl::msg =~ /^From:\s+(.+)\s*$/m) { $out .= "From $1 "; }
+	if ($owl::msg =~ /^To:\s+(.+)\s*$/m) { $out .= "To $1 "; }
+	if ($owl::msg =~ /^Subject:\s+(.+)\s*$/m) { $out .= "Subject $1 "; }
+	return($out."\n");
+    }
+
+    my $channel = $owl::class;
+    if (defined $class_abbrev{lc($owl::class)}) {
+	$channel = $class_abbrev{lc($owl::class)};
+    }
+    if (lc($owl::class) ne "message" and lc($owl::instance) eq "personal") {
+	$owl::instance = "";
+    }
+    $channel .= "[".$owl::instance."]";
+    $channel = substr($channel,0,13);
+
+    $header = sprintf "%-8s %-13s ", lc($owl::sender), lc($channel);
+
+    if ($owl::msg =~ /=/) {
+	# indent it
+	$tmp=$owl::msg;
+	$tmp=~s/^/    /g;
+	$tmp=~s/\n/\n    /g;
+	$out.=$header."\n".$tmp;
+    } else {
+	# fill it
+	my $pagewidth = 74;
+	$out .= $header;
+	$out .= fill_text($owl::msg, $pagewidth, 22, 1);
+    }
+
+    # note: no zsig added in this version
+
+    # make personal messages bold
+    if (uc($owl::class) eq "MESSAGE" &&
+	uc($owl::instance) eq "PERSONAL") {
+	$out="\@bold{".$out."}\n";
+    }
+
+    return($out);
+}
+
+
+
+sub fill_text {
+    my ($in, $width, $indent, $unindent_first) = @_;
+    $indent = 0 if (@_ < 3);
+    my $unindent = $indent if ($unindent_first);
+    my @words = split " ", $in;
+    my $out = "";
+    my $outline = "";
+    if (!$unindent_first) {
+	my $outline = " "x$indent;
+    }
+    for my $w (@words) {
+	if (($outline ne "") 
+	    && (length($outline)+length($w) > $width-$unindent)) {
+	    $out .= $outline."\n";
+	    $outline = " "x$indent;
+	    $unindent = 0;
+	}
+	if ($outline =~ /.*\.$/) {
+	    $outline .= "  ";
+	} elsif ($outline ne "") {
+	    $outline .= " ";
+	}
+	$outline .= $w;
+    }
+    $out .= $outline . "\n";    
+}

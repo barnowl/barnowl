@@ -1,0 +1,72 @@
+#include <string.h>
+#include "owl.h"
+
+void owl_regex_init(owl_regex *re) {
+  re->negate=0;
+  re->string=NULL;
+}
+
+int owl_regex_create(owl_regex *re, char *string) {
+  int ret;
+  char buff1[LINE], buff2[LINE];
+  char *ptr;
+  
+  re->string=owl_strdup(string);
+
+  ptr=string;
+  re->negate=0;
+  if (string[0]=='!') {
+    ptr++;
+    re->negate=1;
+  }
+
+  /* set the regex */
+  ret=regcomp(&(re->re), ptr, REG_EXTENDED|REG_ICASE);
+  if (ret) {
+    regerror(ret, NULL, buff1, LINE);
+    sprintf(buff2, "Error in regular expression: %s", buff1);
+    owl_function_makemsg(buff2);
+    owl_free(re->string);
+    return(-1);
+  }
+
+  return(0);
+}
+
+int owl_regex_compare(owl_regex *re, char *string) {
+  int out, ret;
+
+  /* if the regex is not set we match */
+  if (!owl_regex_is_set(re)) {
+    return(0);
+  }
+  
+  ret=regexec(&(re->re), string, 0, NULL, 0);
+  out=ret;
+  if (re->negate) {
+    out=!out;
+  }
+  return(out);
+}
+
+int owl_regex_is_set(owl_regex *re) {
+  if (re->string) return(1);
+  return(0);
+}
+
+char *owl_regex_get_string(owl_regex *re) {
+  return(re->string);
+}
+
+void owl_regex_copy(owl_regex *a, owl_regex *b) {
+  b->negate=a->negate;
+  b->string=owl_strdup(a->string);
+  memcpy(&(b->re), &(a->re), sizeof(regex_t));
+}
+
+void owl_regex_free(owl_regex *re) {
+  if (re->string) owl_free(re->string);
+
+  /* do we need to free the regular expression? */
+  
+}

@@ -1,0 +1,371 @@
+1.2.0-pre-erikdevel-17
+	Integrated change to fix problem with popup blinking on new zephyrs.
+	C-l and resizes will now refresh an open viewwin (eg, help).
+	Updated doc/code.txt to include info about filters, commands,
+	        contexts, and keybindings.
+	Ooops.  "delete view" had accidentally been misbound to M-d.
+	        Switched the binding back to M-D.
+	Exec commands cleaned up to not have buffer-size limitations
+	        and to not mess up spaces.  exec also returns a string
+		of the output now.
+	
+1.2.0-pre-erikdevel-16
+	Integrated changes from 1.1.3, and added docs for "zlocate -d"
+		and new show commands.
+	Show with arguments produces help on show.
+	Fix a bug in readconfig caught by efence (where we'd try to read before 
+	        the beginning of a string if it was empty).
+	
+1.1.2-erikdevel-15
+        The perl command doesn't do makemsg directly, but instead
+	     returns the string and it will get printed if it 
+	     was run interactively.
+
+1.1.2-erikdevel-14
+	*** NOTE: I probably missed some things here...
+	New framework for command handling.
+	New framework for keymap handling.
+	Added commands for everything that is bound 
+	     to a key (do 'show commands' to get the full list).
+	Added 'multi' and '(' commands to allow multiple commands
+	     to be specified on a line.		     
+	Added user keybindings with bindkey command.
+	Added command aliases (eg, "alias foo bar").
+	Added undelete command that parallels the delete command.
+	Added additional options to delete command.
+	The reply command now takes arguments.
+	Added 'edit:insert-text' command.
+	Added 'show zpunts' to show active punt filters.
+	Added 'show variable <name>' and 'show variables'.
+	Added 'show command <name>' and 'show commands'.
+	Added 'show keymap <name>' and 'show keymaps'.
+	Added 'M-u' to undelete all messages in current view.
+	Fixed dotsend so that the zephyr will still send if there
+	     is whitespace after the dot but not on the same line.
+	     This should resolve an issue where dotsend wouldn't work
+	     if you'd gone up and edited a zephyr.
+	
+1.1.3
+	'show subs' and 'show subscriptions' are now the same as 'getsubs'
+	zlocate now takes an optional -d argument
+	'show terminal' / 'show term'
+	'>' / last doesn't set the last message at the top of the screen now
+	implemented _followlast as an unsupported feature
+	include 'default' in the 'show colors' list
+	added help for 'zpunt' and 'zunpunt'
+	changed the bug address in the startup message
+	can now do 'show status'
+	can now do 'show version'
+	'status' / 'show status' includes the owl version number now
+	'show terminal' includes whether the terminal can change colors
+	fixed off by one bugs in paging / scrolling viewwin
+	don't downcase the sender when getting the log name for personals
+	support @owl::fields as well as @fields
+	downcase class/inst filter names in auto filters
+
+1.1.2
+	Fixed memory mishandling bug
+	Fixed bug in redfining the filter attached to the current view
+	M-n will narrow to message, instance on non-personal, class
+	     MESSAGE messages
+	M-N behavies like M-n except that on class messages it narrows
+	    to class and instance
+	line wrap earlier, to account for tabbing
+	fixed typo in help
+	'status' command now displays info on terminal color support
+	zephyr @ formatting is now case independant
+	added support for color terminals
+	zephyr @color(foo) now works
+	'D' for deleted messages is now not bold, unless it's the current
+  	  message
+	F1 displays the help screen
+	added filter colors
+	added the 'colorview' command
+	added the 'show colors' command
+	users who don't have a .zephyr.subs get a simpler format for
+  	  incoming messages
+        If colors are available 'show filters' will show a filter in the
+	  color associated with it.
+	Added the zpunt and zunpunt commands
+	Lines in the subs file starting with '-' are zpunted
+	Include login/logout messages in auto user filters
+	'V' changes to the home view ('all' by default)
+	
+1.1.1
+	Fixed perl, aperl, and pperl commands to deal with quoting 
+	      and spaces in a saner manner.
+	Removed all owl_get_* methods for booleans and switched
+	      cases where they were used to owl_is_* 
+	Changes to owlconf.erik to use some new features.
+	Increased the size of the help buffer (as it 
+	      was overflowing and truncating the help message).
+	Variables prefixed with a _ are not shown in help
+	      or by printallvars (and prefixed Not Yet Implemented 
+	      variables with this).
+	Fix typo in help
+	include stdio.h in functions.c
+	remove stale "q to quit" from bottom of info message
+	fix downward scrolling more than a page
+	use authentication for zlocate, by default
+	fixed buffer over run in info command on long messages
+	call 'perl <file>' from Makefile to avoid hardcoding perl paths
+	in Makefile don't build owl_prototypes.h unless necessary
+	store the time for admin messages
+	display admin message time in 'info' command
+	fixed an editwin M-> last character bug
+		
+1.1
+	reply is a normal function now
+	'R' does reply to sender
+	'T' tells you how many messages were marked for deletion
+	local realm removed from login / logout messages
+	added command history
+	better runtime / starttime reporting in 'status' command
+	leave the pointer near the current message after expunge
+	C-l recenters editwin
+	implemented zlocate
+	@italic works the same as @i
+	on reply only quote class / instance when necessary
+	C-r allows you to edit the reply line
+	don't use unecessary options in reply line
+	display 'info' errors in msgwin, not popup
+	impelemnted aexec, pexec commands
+	the zsig now goes through ztext formatting
+	messages have id numbers now
+	'info' prints the msgid
+	added the 'filter' command
+	added the 'view' command
+	added the 'show filter' command
+	added the 'viewclass' (and 'vc') commands
+	added the 'viewuser' (and 'vu') commands
+	M-n will filter to the current class or user
+	'v' starts a view command
+	M-D will delete all messages in current view
+	added the 'delete' (and 'del') command
+	load-subs with no argument loads the default subs file
+	'<truncated>' is now when the *current* message is truncated
+	the reply-lockout filter (with default) specifices messages that
+           cannot be replied to.
+	in the configfile owl::receive_msg is run whenever a message is
+	  received
+	added the beep command
+	added the contributors file
+	declare ZGetSubscriptions and ZGetLocations since the includes
+          don't seem to
+	fixed bug in displaying last line in popwin if no final '\n'
+	'T' uses the 'trash' filter now
+	zaway_msg, zaway_msg_default and zaway are all user variables now.
+	zsig variable overrides zsigproc
+	If there's no appendtosepbar don't interfear with the sepbar
+	Changed: owl_message_get_numlines will return 0 of m is NULL
+	Added login messages to messages marked by owl_function_delete_automsgs
+	Added owl_function_delete_by_id(id) which acts independent of view
+	Added "-id <id>" option to delete command
+	Fixed an arg checking bug in delete command
+	Added owl::id to perl namespace with message id
+	Fixed a memory corruption bug in readconfig.c (where right 
+	      after the strdup to "out", we'd strcat a \n onto the end.
+	      This would be triggered whenever owl::format_msg returned
+	      a string not ending in a newline
+	Added 'X' keybinding which expunges and then switches to 
+	      a view defined by the variable "view_home" which defaults 
+	      to "all"
+	Consolidated readconfig.c somewhat to remove duplication.
+	      owl_config_execute now returns a string.
+	Added an example config file that does vt-style formatting.
+	      (examples/owlconf.vtformat)
+	Added the 'perl', 'aperl', and 'pperl' commands which will
+	      evaluate perl expressions.
+        Fixed bug where pclose zsigproc would cause zombies
+	Can set zsigproc or zsig to "" to disable
+	Added support for multiple browsers (galeon and none were added).
+	      Configure with the "webbrowser" variable.
+	Changing typewinsize height triggers resize event.
+	Added zsig variable which will be used if no zsigproc and non-empty.
+	Added "make test" rule to Makefile which will run regression tests,
+	      and added regression testing framework to tester
+	Fixed codelist.pl to ignore static declarations.
+	Added dict.c which contains string->ptr dictionary routines
+	      and the owl_dict type.
+	      These include regression tests.
+	Overhaul/rewrite of variable handling.  Variables are now managed
+	      in an owl_vardict (in g.vars) which contains a dictionary
+	      of owl_variable's.  Each owl_variable has dispatch functions
+	      for validating values, setting it and getting it,
+	      and for setting it to and from string values.
+	      The variable.c file contains the list of variables.
+	      Stubs for the owl_global_<varname>_get functions and friends
+	      are generated from variable.c by stubgen.pl.
+	      The help.c messages for variables now calls into variable.c
+	      so all information about most variables is in one place.   
+	Cleaned out code from global.c and command.c that was made obselete
+	      by variable overhaul.
+	The set command now takes a -q option to not log a message.
+	Fixed a bug where set and print with no arguments would
+	      print "Undefined variable" in addition 
+	      to running owl_function_printallvars.
+	debug is now a variable that can be turned on and off.
+	Fixed mail,inbox message parsing in examples/owlconf.erik
+	Made zaway_msg and zaway_msg_default into variables 
+	Changed owl_function_makemsg and owl_function_debugmsg 
+	       to use varargs (ie, so they can now take a format
+	       string with args).
+	Don't allow " and \ characters in URLs with the "w" command.
+	Removed lots of build warnings.
+	Popwins are wider by default so help messages fit better.
+	Added an atokenize_free function.
+        Fixes to work with an older version of libzephyr.
+	Added dependencies on header files to Makefile.in
+	Added pageup and pagedown key bindings to message list
+	Added pageup and pagedown to viewwin
+	Added configfile section to doc/intro.txt (from example config file)
+	Added appendtosepbar variable which may contain text which will
+	      be appended to the sepbar.  This allows the configfile
+	      to put information about pings and logins into
+	      the sepbar.  (It may be worth also providing a variable
+	      which enables this by default, but for now this allows
+	      for experimenting with what works well.)
+	Added doc/code.txt which gives a brief overview of the code.
+	Added tags makefile rule and added TAGS to distclean rule.
+	
+1.0.1
+	fix frees in loadsubs and loadloginsubs
+	don't return in owl_free
+	
+1.0
+	'print' and 'set' with no arguments prints all variables
+	Added the 'unsubscribe' and 'unsub' command
+	Renamed the 'unsub' command to 'unsuball'
+	Added the 'getsubs' command which is like zctl ret
+	Fixed bug in logging messages sent to more than one recipient
+	Support '-C', '-O', and '-n' options to zwrite
+	Fixed bug in owl_editwin_delete_char when there are no later chars
+	  after the cursor
+	Make "more" and "truncated" work in the status bar
+	enable printing of zsigproc and loginsubs variables
+	only allow message scrolling if the message is actually off the
+	  screen
+	'T' will mark all automated message for deletion
+	'P' will go to the next personal message
+	'M-P' will go to the previous personal message
+	replying to a login message goes to the user now
+	added a status command
+	added the intro doc to the release
+	fixed off by one bug in viewwin
+	added complete online help
+	pass $owl::realm in configfile
+	fixed editwin wordwrapping on the last line
+	fixed editwin problem with key_right past the last char
+	print an error and quit if the configfile can't be parsed
+	got rid of owl_mainwin_calculate_topmsg
+	fixed off by one error in calculating topmsg upwards
+	you can now reply to an admin message
+	don't display an error about keypress on window resize
+	
+0.11
+	fixed bug in viewing messages longer than the screen
+	indicate in the sepbar if there is a non zero vert offset
+	send on '.' on a line by itself
+	added disable-ctrl-d variable
+	fixed bug where C-k did not delete the last \n in the buffer
+	make non-character meta keys work
+	use ZSendNotice instead of ZSendList
+	implemented <, >, M-< and M-> in viewwin
+	removed the spaces at the bottom of viewwin
+	added 'about' command
+	fixed bug using 'M' with no current message
+	changed message object to use char *'s to save on memory
+	change malloc, realloc, strdup and free to use owl hooks so that
+	   debugging can be added
+		
+0.10.1
+	fixed a trailing space bug in the parser
+	impelemented the "burning ears" feature
+	have admin messages do ztext parsing
+	fixed bug in reporting which M- key was pressed
+	C-g will now cancel commands like C-c
+	
+0.10
+	implemented owl_function_full_redisplay().
+	C-l uses owl_function_full_redisplay().
+	when a popwin exists to a full redisplay.  (fixes bug)
+	improved the owl_editwin_process_char logic
+	removed all unnecessary wrefresh's and replaced with wnoutrefesh
+	owl_editwin_redisplay now takes an argument to optionally doupdate()
+	improved the cut-and-paste speed by not doing a usleep the first
+	  time through the loop after getting a keypress.
+	nuked typwin.c and associated stuff.  It's useless now.
+	added viewwin code for paging windows
+	curly braces work for zephyr formatting
+	@i in zephyr formatting will be displayed as underlined text
+	turned off idlok
+	implemented viewwin
+	implemented viewwi in popwin for pageable popwins
+	help, info now use pageable popwins
+	bound 'M' to bring the current message up in a popwin
+	return, space bar, 'b' and backspace now scroll within a message
+	turned off resize message
+	C-v and M-v page the main window
+	implemented owl_message_is_mail
+	some build cleanup
+
+	
+0.9
+	added owl_message_is_personal and have things use it
+	added owl_message_is_private
+	fixed 'print personalbell' and have 'set personalbell'
+	   print a message
+	bold only on message_is_personal
+	display the realm if not local
+	implemented M-f, M-b, M-d, M-<, M-> in editwin
+	implemnted word wrapping in editwin
+	implemented M-q (paragraph-fill) in editwin
+	fixed bug that caused owl to segfault logging a 'weird' class
+	M-x is a keysym for ':'
+	added smart bolding and userclue
+	fixed a bug causing pings to beep even if rxping is off
+	
+0.8.1
+	fixed bug in logging code
+	
+0.8
+	implemented personal logging
+	implemented class logging
+	implemented resize of typewin
+	fixed the backspace problem
+	-v command line option prints the version number
+	
+0.7
+	load-subs will report error opening file
+	skip comment lines in loadsubs and loadloginsubs
+	changed internal references to rxping and txping
+	fix replying to a blank instance
+	added subscribe command
+	subscribe to login messages from .anyone by default
+	'loginsubs' variarble controlls automated login messages
+	redisplay the editwin after a resize
+	leave the cursor in the editwin if active
+	fix problems in the build system
+	added displayoutgoing variable
+	temporarily removed error printing for zlog in / out
+	
+0.61
+	fixed bug in "message sent to <foo>" for zwrite
+	
+0.6
+	help updated
+	zaway key set to caps A
+	support zephyring other realms
+	rxping variable for receiving pings
+	txping variable for sending pings
+	function in place to resize typwin
+	C-l to refresh
+	personal bell variable
+	beta message now an admin message
+	
+0.5
+	Added the debug command and flag
+	Fixed bug in printing fields in info command
+	Added owl_fmtext_append_ztext and use it
+	Better formating for pings and login zephyrs
+	make tester depends on proto

@@ -1,0 +1,48 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
+#undef HAVE_SYS_WAIT_H
+
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
+/* Define if you have the <strings.h> header file.  */
+#undef HAVE_STRINGS_H
+
+/* Define if you have the <sys/ioctl.h> header file.  */
+#undef HAVE_SYS_IOCTL_H
+
+/* Define if you have the <unistd.h> header file.  */
+#undef HAVE_UNISTD_H
+
+/* Define if you have the com_err library (-lcom_err).  */
+#undef HAVE_LIBCOM_ERR
+
+/* Define if you have the des425 library (-ldes425).  */
+#undef HAVE_LIBDES425
+
+/* Define if you have the k5crypto library (-lk5crypto).  */
+#undef HAVE_LIBK5CRYPTO
+
+/* Define if you have the krb4 library (-lkrb4).  */
+#undef HAVE_LIBKRB4
+
+/* Define if you have the krb5 library (-lkrb5).  */
+#undef HAVE_LIBKRB5
+
+/* Define if you have the ncurses library (-lncurses).  */
+#undef HAVE_LIBNCURSES
+
+/* Define if you have the nsl library (-lnsl).  */
+#undef HAVE_LIBNSL
+
+/* Define if you have the socket library (-lsocket).  */
+#undef HAVE_LIBSOCKET
+
+/* Define if you have the zephyr library (-lzephyr).  */
+#undef HAVE_LIBZEPHYR
+
+/* Define if libzephyr contains ZInitLocationInfo */
+#undef HAVE_LIBZEPHYR_ZINITLOCATIONINFO
+
+#undef TERMINFO

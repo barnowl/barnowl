@@ -1,0 +1,98 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(owl.c)
+
+AC_CONFIG_HEADER(config.h)
+
+AC_PROG_CC
+
+dnl If we're using GCC, enable all warnings
+if test "$GCC" = yes; then
+     CFLAGS="$CFLAGS -Wall -g";
+fi
+
+dnl Check for Athena
+AC_MSG_CHECKING(for /usr/athena/include)
+if test -d /usr/athena/include; then
+	CFLAGS=${CFLAGS}\ -I/usr/athena/include
+	AC_MSG_RESULT(yes)
+else
+	AC_MSG_RESULT(no)
+fi
+AC_MSG_CHECKING(for /usr/athena/lib)
+if test -d /usr/athena/lib; then
+	LDFLAGS=-L/usr/athena/lib\ ${LDFLAGS}
+	AC_MSG_RESULT(yes)
+else
+	AC_MSG_RESULT(no)
+fi
+
+dnl A hack for myself to use gnu curses
+dnl AC_MSG_CHECKING(for mit gnu hack)
+dnl if test -d /mit/gnu/include; then
+dnl 	CFLAGS=${CFLAGS}\ -I/mit/gnu/include
+dnl 	AC_MSG_RESULT(yes)
+dnl else
+dnl 	AC_MSG_RESULT(no)
+dnl fi
+
+
+dnl Solaris ships with a broken curses.h
+dnl AC_MSG_CHECKING(for solaris broken curses.h)
+dnl if grep "Sun Microsystems" /usr/include/curses.h > /dev/null 2> /dev/null; then
+dnl   if test  "`grep -c getwc\(stdin\) /usr/include/widec.h`" = "2" ; then
+dnl     rm -rf includefix
+dnl     mkdir includefix
+dnl     sed -e 's/<widec.h>/\"widec.h\"/' /usr/include/curses.h > ./includefix/curses.h
+dnl  
+dnl     sed -e 's/<wchar.h>/\"wchar.h\"/' \
+dnl         -e 's/^#define.putwchar.*//' \
+dnl         -e 's/^#define.getwchar().*//' \
+dnl         -e 's/^#define.getwc(p).*//' \
+dnl         -e 's/^#define.putwc(x, p).*//' \
+dnl         /usr/include/widec.h > includefix/widec.h
+dnl     CFLAGS=-I./includefix\ ${CFLAGS}
+dnl     AC_MSG_RESULT(yes)
+dnl   fi
+dnl else
+dnl   AC_MSG_RESULT(no)
+dnl fi
+
+
+
+AC_CHECK_LIB(ncurses, initscr,,
+   AC_CHECK_LIB(curses, initscr,, AC_MSG_ERROR(No curses library found.)))
+AC_CHECK_LIB(com_err, com_err)
+AC_CHECK_LIB(nsl, gethostbyname)
+AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(k5crypto, krb5_derive_key)
+AC_CHECK_LIB(des425, des425_req_act_vno)
+AC_CHECK_LIB(krb5, krb5_get_credentials)
+AC_CHECK_LIB(krb4, krb_sendauth)
+AC_CHECK_LIB(zephyr, ZGetSender,, AC_MSG_ERROR(No zephyr library found.))
+AC_CHECK_LIB(zephyr, ZInitLocationInfo, AC_DEFINE(HAVE_LIBZEPHYR_ZINITLOCATIONINFO),)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS(strings.h sys/ioctl.h unistd.h)
+
+dnl Add CFLAGS for embeded perl
+FOO=`perl -MExtUtils::Embed -e ccopts`
+echo Adding perl CFLAGS ${FOO}
+CFLAGS=${CFLAGS}\ ${FOO}
+
+dnl Add LDFLAGS for embeded perl
+FOO=`perl -MExtUtils::Embed -e ldopts`
+echo Adding perl LDFLAGS ${FOO}
+LDFLAGS=${LDFLAGS}\ ${FOO}
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_CHECK_FILE(/usr/share/terminfo, AC_DEFINE(TERMINFO, "/usr/share/terminfo"),
+  AC_CHECK_FILE(/usr/share/lib/terminfo, AC_DEFINE(TERMINFO, "/usr/share/lib/terminfo"),
+  AC_MSG_ERROR(No terminfo found for this system)))
+
+dnl Checks for library functions.
+dnl AC_PROG_GCC_TRADITIONAL
+dnl AC_CHECK_FUNCS(gethostname strdup)
+
+AC_OUTPUT(Makefile)

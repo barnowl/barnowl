@@ -1,0 +1,227 @@
+Owl is a tty, curses-based zephyr client.  This is a quick guide to
+learning how to use it.
+
+====================
+OVERVIEW OF FEATURES
+====================
+o) As a tty client it can be run over telnet, rlogin or text ssh sessions
+
+o) It uses a perl configuration file for setting preferences and
+   formatting messages
+
+o) emacs style editing of messages
+
+o) It is easy to use and runs without a configfile.
+
+o) There will future support for AIM and ICQ
+
+o) There will be future support for advanced sorting of messages
+
+===============
+GETTING STARTED
+===============
+Owl will run happily without a configfile, so to get started just run
+it.  Owl will take over the terminal window it's started in.
+
+The Screen
+----------
+There are three main parts to the screen.  The large top portion of
+the screen is where zephyrs are displayed.  The status bar separates
+this area from the one below and displays some status information.
+The space below that is used to type in messages and is also used by
+owl to give warnings and information to the user.
+
+Sending a Zephyr
+----------------
+To send a zephyr to yourself hit the 'z' key.  This will start a
+zwrite command, which you can finish by typing the name of the user
+you wish to send to, followed by enter.  Begin typing your message.
+You will notice that most emacs-style editing is available.  When you
+are ready to send type Control-D.  If you wish to cancel type
+Control-C.
+
+If instead of a user you wish to send to class/instance simply supply
+-c and -i arguments to the zwrite command.
+
+Manipulating Messages
+---------------------
+When there are one or more zephyrs in the message window, one of them
+will be the 'current' message.  Owl will indicate which one it is with
+an arrow to the left of the message.  The following keys will move you
+between messages
+
+	n		move to the next non-deleted message
+	p		move to the previous non-deleted message
+	C-n , down	move to the next message
+	C-p , up	move to the previous message
+	<		move to the first message
+	>		move to the last message
+	right		scroll the screen to the right
+	left		scroll the screen to the left
+	P		move to the next personal message
+	M-P		move to the previous personal message
+	T		Mark all 'trash' messages for deletion
+
+When you are ready to delete a message you can mark it for deletion
+and a 'D' will appear to the left of the message.  Messages will not
+actually be removed until you perform an expunge.
+
+	d		mark a message for deletion
+	u		unmark a message for deletion
+	x		expunge deleted messages
+	T		mark all automated messages for deletion
+
+If you would like to respond to a zephyr sent to you there is a reply
+shortcut.  This will reply to a personal zephyr, or if the zephyr is
+sent to a zephyr class it will reply to the zephyr class.
+
+	r		reply to a zephyr
+
+You can scroll within the current message using:
+
+	SPACE		page down
+	b		page up
+	RETURN		line down
+	BACKSPACE	line up
+
+The pointer will change to indicate that the message is not starting
+at the first line.
+
+Two other keys that relate to the current message:
+
+	i 		print detailed information about the message
+	w 		instruct netscape to visit a URL in the message
+
+
+Other Functions
+----------------
+Some other funcions that can be performed with a single keystroke:
+
+	A		toggle zaway
+	h		print the help screen
+	C-l		refresh and resize the screen
+	C-z		suspend
+
+Command Mode
+------------
+Owl has a command mode where you can enter more detailed commands for
+owl to process.  To enter command mode:
+
+	:		begin command mode
+
+Owl will give you a command prompt and you can begin typing your
+command.  Type Enter to execute the command, Control-C to cancel.
+Currently support commands are:
+
+	quit , exit	exit owl
+	zwrite		send a zephyr
+	reply		reply to the current zephyr
+	set		set a variable
+	print		print a variable
+	zlog [in|out]	send a login or logout message
+	version		print the owl version number
+	subscribe	subscribe to a class, instance, recipient
+	unsubscribe	unsubscribe from a class, instance, recipient
+	unsuball	unsubscribe from all messagse
+	getsubs		print a list of current subscriptions
+	zlocate		locate a user
+	info		print detailed information about a message
+	help		print the help screen
+	next		move to the next message
+	prev		move to the previous message
+	next-notdel	move to the next non-deleted message
+	prev-notdel	move to the previous not-deleted message
+	expunge		expunge messages marked for deletion
+	first		move to the first message
+	last		move to the last message
+	resize		resize owl to the current window
+	suspend		suspend owl
+	exec		run a shell command
+	zaway [on|off|<msg>]  Turn zaway on, off, or set the message
+	load-subs	load subscriptions from a file
+	status		print info about owl status
+	about		print info about owl
+
+Variables
+---------
+The 'set' and 'print' commands let set and print the values of owl
+variables.  The currently supported variables are these:
+
+Variables:                                                                                        
+     name            settings  default      meaning                                                  
+     --------------- --------  -------      -------                                                  
+     appendtosepbar  <string>            string to append to the end of the sepbar                
+     bell            on,off    on        enable / disable the terminal bell                       
+     burningears     on,off    off       [NOT YET IMPLEMENTED] beep on messages matching patterns 
+     classlogging    on,off    off       turn class logging on or off                             
+     classpath       <path>    ~/zlog/class
+				         path for logging class zephyrs                           
+     debug           on,off    on        whether debugging is enabled                             
+     debug_file      <path>    /var/tmp/owldebug
+					 path for logging debug messages when debugging is enabled
+     disable-ctrl-d  on,off    off       don't send zephyrs on C-d                                
+												  
+     displayoutgoing on,off    on        display outgoing messages                                
+     logging         on,off    off       turn personal logging on or off                          
+     loginsubs       on,off    on        load logins from .anyone on startup                      
+     logpath         <path>    ~/zlog/people
+					 path for logging personal zephyrs                        
+     personalbell    on,off    off       ring the terminal bell when personal messages are receive
+     rxping          on,off    off       display received pings                                   
+     shutdownlogout  on,off    on        send a logout message when owl exits                     
+     startuplogin    on,off    on        send a login message when owl starts                     
+     summarymode     on,off    off       [NOT YET IMPLEMENTED]                                    
+     txping          on,off    on        send pings                                               
+     typewinsize     int > 0   8         number of lines in the typing window                     
+     webbrowser  none,netscape,galeon netscape web browser to use to launch URLs             
+     zaway_msg         <string>  "I'm sorry..."
+					   current zaway msg for responding to zephyrs when away    
+     zaway_msg_default <string>  "I'm sorry..."
+				           default zaway msg for responding to zephyrs when away  
+     zsig              <string>            zephyr signature                                         
+     zsigproc          <path>    <null>    name of a program to run that will generate zsigs        
+
+
+================
+THE CONFIG FILE
+================
+
+*** WARNING: This interface may change substantially in the near future ***
+
+This file is interpreted by the perl interpreter.
+If you wish to execute an owl command use the
+function owl::command().  i.e.
+
+     owl::command("set zsigproc \"/mit/kretch/bin/getzsig foo\"");
+
+will set the owl variable zsigproc.  Note that commands will currently
+be executed in order after the called configuration subroutine exits.
+
+Subroutines created with the names below will be executed at the
+specified times:
+
+    subroutine name    properties
+    ---------------    ----------
+    owl::startup()     run when owl first starts
+    owl::shutdown()    run when owl exits
+    owl::format_msg()  run when a new message arrives, the return
+                          value is used to display the message on the
+                          screen
+    owl::receive_msg() run when a message is received, and after
+		       it has been added to the message list
+
+
+The following variables will be set each time a message is recevied:
+
+    $owl::class, $owl::instance, $owl::recipient,
+    $owl::sender, $owl::opcode, $owl::zsig,
+    $owl::msg, $owl::time, $owl::host, @owl::fields, $owl::id
+
+The "appendtosepbar" variable may be set in owl::format_msg()
+to set text to be appended to sepbar that separates the received
+message list from the edit window.
+
+
+===================
+FURTHER INFORMATION
+===================

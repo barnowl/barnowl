@@ -1,0 +1,41 @@
+Owl was primarly written by James Kretchmar at the Massachusetts
+Institute of Technogloy.  The following people have also made major
+contributions.
+
+Erik Nygren
+   Complete overhaul of the variable system
+   perl, aperl and pperl commands
+   Multiple browser support
+   Support for older versions of lib zephyr
+   Many bug fixes and features
+   Code documentation
+   Example config files
+
+Stephen Gildea
+   Extensive testing and feedback
+
+Mark Eichin
+   Bug fixes
+   Debian packaging
+
+Greg Hudson
+   Hack to work around waiting for HMACKs
+
+David Resnick
+   Build fixes and cleanup
+ 
+Marc Horowitz
+   Embedded perl advice
+
+Jeremy Daniel
+   Bug fixes and patches
+   First version of color support
+
+Andy Ellis, Erin Panttaja, Gisele Proulx
+Ron Hoffmann, Jag Patel, Tara Holm
+Heather Wakefield, Emiliy Havens,
+Matt Braun, Jeff Schiller
+   Beta testing
+
+Anne LaVin
+   ASCII Art Owl
