@@ -2271,6 +2271,7 @@ void owl_function_search_helper(int mode, int direction) {
       i--;
     }
   }
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_function_makemsg("No matches found");
 }
 
