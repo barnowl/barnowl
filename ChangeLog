@@ -1,6 +1,6 @@
 $Id$
 
-2.1.5-pre-1
+2.1.5
 	Added a licence
 	The 'personalbell' variable can now be set to 'on' 'off' or
 	  the name of a filter to match against
