@@ -1766,6 +1766,34 @@ char *owl_function_fastuserfilt(char *user) {
   return filtname;
 }
 
+char *owl_function_fasttypefilt(char *type) {
+  owl_filter *f;
+  char *argbuff, *filtname;
+
+  /* name for the filter */
+  filtname=owl_sprintf("type-%s", type);
+
+  /* if it already exists then go with it.  This lets users override */
+  if (owl_global_get_filter(&g, filtname)) {
+    return filtname;
+  }
+
+  /* create the new-internal filter */
+  f=owl_malloc(sizeof(owl_filter));
+
+  argbuff = owl_sprintf("type ^%s$", type);
+
+  owl_filter_init_fromstring(f, filtname, argbuff);
+
+  /* add it to the global list */
+  owl_global_add_filter(&g, f);
+
+  /* free stuff */
+  owl_free(argbuff);
+
+  return filtname;
+}
+
 /* If flag is 1, marks for deletion.  If flag is 0,
  * unmarks for deletion. */
 void owl_function_delete_curview_msgs(int flag) {
@@ -1811,10 +1839,9 @@ char *owl_function_smartfilter(int type) {
     return NULL;
   }
 
-  /* for now we skip admin messages. */
+  /* very simple handling of admin messages for now */
   if (owl_message_is_admin(m)) {
-    owl_function_makemsg("Narrowing on an admin message has not been implemented yet.  Check back soon.");
-    return NULL;
+    return owl_function_fasttypefilt("admin");
   }
 
   /* narrow personal and login messages to the sender */

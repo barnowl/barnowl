@@ -48,6 +48,10 @@ $Id$
 	Outgoing zephyr logging now obeys the logpath variable.
 	The '~' character in logpath and classlogpath now gets
 	         replaced with the user's home directory.
+	Added simple implementation of smartnarrow-to-admin that
+	         creates a "type-admin" autofilter.
+		 This was done mostly so that M-C-n and M-C-p do something
+		 sane on admin messages.
 	
 1.2.1-pre-1
 	Added RCS Id strings to all files.
