@@ -300,9 +300,9 @@ int main(int argc, char **argv, char **env) {
     /* load normal subscriptions */
     ret=owl_zephyr_loadsubs(NULL);
     if (ret==-1) {
-      owl_function_adminmsg("", "Error loading subscriptions, file inaccessable");
+      owl_function_adminmsg("", "Error loading zephyr subscriptions, file inaccessable");
     } else if (ret!=0) {
-      owl_function_adminmsg("", "Error loading subscriptions");
+      owl_function_adminmsg("", "Error loading zephyr subscriptions");
     }
     
     if (ret!=-1) {
