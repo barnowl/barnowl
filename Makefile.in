@@ -42,8 +42,8 @@ AUTOGEN=$(GEN_C) $(GEN_H)
 owl: $(AUTOGEN) $(OBJS) owl.o libfaim
 	./athstatic $(CC) -o owl owl.o $(OBJS) $(LDFLAGS) $(LIBS)
 
-tester: $(OBJS) tester.o
-	$(CC) -o tester tester.o $(OBJS) $(LDFLAGS) $(LIBS)
+tester: $(AUTOGEN) $(OBJS) tester.o
+	./athstatic $(CC) -o tester tester.o $(OBJS) $(LDFLAGS) $(LIBS)
 
 test: tester
 	./tester reg

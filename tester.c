@@ -6,7 +6,8 @@ static const char fileIdent[] = "$Id$";
 
 owl_global g;
 
-void screeninit() {
+void screeninit()
+{
   char buff[1024];
   
   sprintf(buff, "TERMINFO=%s", TERMINFO);
@@ -25,7 +26,8 @@ void screeninit() {
   meta(stdscr, TRUE);
 }
 
-void test1() {
+void test1()
+{
   int j;
   owl_editwin e;
 
@@ -57,7 +59,8 @@ void test1() {
   printf("Had:\n%s", owl_editwin_get_text(&e));
 }
 
-void test2(char *in) {
+void test2(char *in)
+{
   owl_fmtext t;
 
   screeninit();
@@ -70,14 +73,16 @@ void test2(char *in) {
   endwin();
 }
 
-void test3() {
+void test3()
+{
   ZNotice_t *n;
 
   printf("%i\n", sizeof(n->z_uid.zuid_addr));
   /* gethostbyaddr((char *) &(n->z_uid.zuid_addr), sizeof(n->z_uid.zuid_addr), AF_INET); */
 }
 
-void colorinfo() {
+void colorinfo()
+{
   char buff[1024];
   
   screeninit();
@@ -88,7 +93,8 @@ void colorinfo() {
   endwin();  
 }
 
-void test4() {
+void test4()
+{
   int j;
   char buff[1024];
 
@@ -108,7 +114,8 @@ void test4() {
   endwin();
 }
 
-void test_keypress() {
+void test_keypress()
+{
   int j, rev;
   char buff[1024], buff2[64];
 
@@ -135,7 +142,8 @@ void test_keypress() {
 }
 
 
-int main(int argc, char **argv, char **env) {
+int main(int argc, char **argv, char **env)
+{
   int numfailures=0;
   if (argc==2 && 0==strcmp(argv[1],"reg")) {
     numfailures += owl_util_regtest();
@@ -158,4 +166,3 @@ int main(int argc, char **argv, char **env) {
   }
   return(0);
 }
-
