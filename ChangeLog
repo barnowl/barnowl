@@ -9,6 +9,7 @@ $Id$
 	Added the 'loopwrite' command
 	Added a timestamp to the default style
 	Zpunt now works with weird regex characters
+	Smart filters now work with weird regex characters
 	
 2.0.10
 	Allow 'hostname' in filters.

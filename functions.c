@@ -2393,7 +2393,7 @@ char *owl_function_classinstfilt(char *class, char *instance)
   }
   /* downcase it */
   downstr(filtname);
-  /* turn spaces into hyphens */
+  /* turn spaces into dots */
   owl_text_tr(filtname, ' ', '.');
   
   /* if it already exists then go with it.  This lets users override */
@@ -2403,11 +2403,9 @@ char *owl_function_classinstfilt(char *class, char *instance)
 
   /* create the new filter */
   argbuff=owl_malloc(len+20);
-  tmpclass=owl_strdup(class);
-  owl_text_tr(tmpclass, ' ', '.');
+  tmpclass=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   if (instance) {
-    tmpinstance=owl_strdup(instance);
-    owl_text_tr(tmpinstance, ' ', '.');
+    tmpinstance=owl_text_quote(instance, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   }
   sprintf(argbuff, "( class ^%s$ )", tmpclass);
   if (tmpinstance) {
@@ -2593,6 +2591,11 @@ char *owl_function_smartfilter(int type)
   /* very simple handling of admin messages for now */
   if (owl_message_is_type_admin(m)) {
     return(owl_function_typefilt("admin"));
+  }
+
+  /* very simple handling of loopback messages for now */
+  if (owl_message_is_type_loopback(m)) {
+    return(owl_function_typefilt("loopback"));
   }
 
   /* aim messages */
