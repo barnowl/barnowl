@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <netinet/in.h>
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
@@ -1557,7 +1558,7 @@ void owl_function_info()
 
       if (!owl_message_is_pseudo(m)) {
 	owl_fmtext_append_normal(&fm, "\n");
-	sprintf(buff, "  Port      : %i\n", n->z_port);
+	sprintf(buff, "  Port      : %i\n", ntohs(n->z_port));
 	owl_fmtext_append_normal(&fm, buff);
 
 	owl_fmtext_append_normal(&fm,    "  Auth      : ");

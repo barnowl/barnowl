@@ -579,7 +579,7 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
 void owl_stylefunc_vt(owl_fmtext *fm, owl_message *m)
 {
 #ifdef HAVE_LIBZEPHYR
-  char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
+  char *body, *indent, *ptr, frombuff[LINE];
   owl_fmtext fm_first, fm_other, fm_tmp;
   ZNotice_t *n;
 #endif
