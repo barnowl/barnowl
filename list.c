@@ -7,7 +7,8 @@ static const char fileIdent[] = "$Id$";
 #define GROWAT 2
 #define GROWBY 1.5
 
-int owl_list_create(owl_list *l) {
+int owl_list_create(owl_list *l)
+{
   l->size=0;
   l->list=(void **)owl_malloc(INITSIZE*sizeof(void *));
   l->avail=INITSIZE;
@@ -15,16 +16,19 @@ int owl_list_create(owl_list *l) {
   return(0);
 }
 
-int owl_list_get_size(owl_list *l) {
+int owl_list_get_size(owl_list *l)
+{
   return(l->size);
 }
 
-void *owl_list_get_element(owl_list *l, int n) {
+void *owl_list_get_element(owl_list *l, int n)
+{
   if (n>l->size-1) return(NULL);
   return(l->list[n]);
 }
 
-int owl_list_append_element(owl_list *l, void *element) {
+int owl_list_append_element(owl_list *l, void *element)
+{
   void *ptr;
   
   if ((l->size+1) > (l->avail/GROWAT)) {
@@ -39,7 +43,8 @@ int owl_list_append_element(owl_list *l, void *element) {
   return(0);
 }
 
-int owl_list_prepend_element(owl_list *l, void *element) {
+int owl_list_prepend_element(owl_list *l, void *element)
+{
   void *ptr;
   int i;
  
@@ -58,7 +63,8 @@ int owl_list_prepend_element(owl_list *l, void *element) {
   return(0);
 }
 
-int owl_list_remove_element(owl_list *l, int n) {
+int owl_list_remove_element(owl_list *l, int n)
+{
   int i;
 
   if (n>l->size-1) return(-1);
@@ -70,14 +76,16 @@ int owl_list_remove_element(owl_list *l, int n) {
 }
 
 /* todo: might leak memory */
-int owl_list_replace_element(owl_list *l, int n, void *element) {
+int owl_list_replace_element(owl_list *l, int n, void *element)
+{
   if (n>l->size-1) return(-1);
 
   l->list[n]=element;
   return(0);
 }
 
-void owl_list_free_all(owl_list *l, void (*elefree)(void *)) {
+void owl_list_free_all(owl_list *l, void (*elefree)(void *))
+{
   int i;
 
   for (i=0; i<l->size; i++) {
@@ -86,6 +94,7 @@ void owl_list_free_all(owl_list *l, void (*elefree)(void *)) {
   owl_free(l->list);
 }
 
-void owl_list_free_simple(owl_list *l) {
+void owl_list_free_simple(owl_list *l)
+{
   if (l->list) owl_free(l->list);
 }
