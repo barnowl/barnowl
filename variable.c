@@ -147,7 +147,7 @@ static owl_variable variables_to_init[] = {
 
   OWLVAR_ENUM( "webbrowser" /* %OwlVarStub */, OWL_WEBBROWSER_NETSCAPE,
 	       "web browser to use to launch URLs",
-	       "none,netscape,galeon" ),
+	       "none,netscape,galeon,opera" ),
 
   OWLVAR_BOOL( "_followlast" /* %OwlVarStub */, 0,
 	       "enable automatic following of the last zephyr" ),

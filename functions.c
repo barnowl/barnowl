@@ -704,6 +704,9 @@ void owl_function_openurl() {
   } else if (webbrowser == OWL_WEBBROWSER_GALEON) {
     snprintf(tmpbuff, LINE, "galeon \"%s\" > /dev/null 2> /dev/null &", url);
     system(tmpbuff); 
+  } else if (webbrowser == OWL_WEBBROWSER_OPERA) {
+    snprintf(tmpbuff, LINE, "opera \"%s\" > /dev/null 2> /dev/null &", url);
+    system(tmpbuff); 
   }
 }
 

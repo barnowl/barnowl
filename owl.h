@@ -78,6 +78,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_WEBBROWSER_NONE     0
 #define OWL_WEBBROWSER_NETSCAPE 1
 #define OWL_WEBBROWSER_GALEON   2
+#define OWL_WEBBROWSER_OPERA    3
 
 #define OWL_VARIABLE_OTHER      0
 #define OWL_VARIABLE_INT        1
