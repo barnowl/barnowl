@@ -6,6 +6,7 @@ $Id$
 	'set style' now works.  Possbile values at the moment are
 	   'default' 'basic' or 'perl', but the last only if a
 	   format_msg() function is found in .owlconf
+	Added the 'oneline' style
 	
 2.0.3
 	Don't ring the terminal bell on mail messages.
