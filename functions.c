@@ -1374,14 +1374,20 @@ void owl_function_info()
 }
 
 
+/* print the current message in a popup window.
+ * Use the 'default' style regardless of whatever
+ * style the user may be using
+ */
 void owl_function_curmsg_to_popwin()
 {
   owl_popwin *pw;
   owl_view *v;
   owl_message *m;
+  owl_style *s;
+  owl_fmtext fm;
 
-  v = owl_global_get_current_view(&g);
-
+  v=owl_global_get_current_view(&g);
+  s=owl_global_get_style_by_name(&g, "default");
   pw=owl_global_get_popwin(&g);
 
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
@@ -1391,7 +1397,11 @@ void owl_function_curmsg_to_popwin()
     return;
   }
 
-  owl_function_popless_fmtext(owl_message_get_fmtext(m));
+  owl_fmtext_init_null(&fm);
+  owl_style_get_formattext(s, &fm, m);
+
+  owl_function_popless_fmtext(&fm);
+  owl_fmtext_free(&fm);
 }
 
 

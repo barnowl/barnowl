@@ -24,6 +24,9 @@ int owl_style_matches_name(owl_style *s, char *name)
   return(0);
 }
 
+/* Use style 's' to format message 'm' into fmtext 'fm'.
+ * 'fm' should already be be initialzed
+ */
 void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, owl_message *m)
 {
   if (s->type==OWL_STYLE_TYPE_INTERNAL) {

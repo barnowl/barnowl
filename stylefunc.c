@@ -2,6 +2,10 @@
 
 static const char fileIdent[] = "$Id$";
 
+/* In all of these functions, 'fm' is expected to already be
+ * initialized.
+ */
+   
 void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
 {
   char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
@@ -108,7 +112,6 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
     
     indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
     owl_text_indent(indent, text, OWL_MSGTAB);
-    owl_fmtext_init_null(fm);
     owl_fmtext_append_normal(fm, OWL_TABSTR);
     owl_fmtext_append_normal(fm, "To: ");
     foo=short_zuser(owl_message_get_recipient(m));
@@ -133,7 +136,6 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
     char *indent;
     
     if (owl_message_is_loginout(m)) {
-      owl_fmtext_init_null(fm);
       owl_fmtext_append_normal(fm, OWL_TABSTR);
       if (owl_message_is_login(m)) {
 	owl_fmtext_append_bold(fm, "AIM LOGIN");
@@ -146,7 +148,6 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
     } else if (owl_message_is_direction_in(m)) {
       indent=owl_malloc(strlen(owl_message_get_body(m))+owl_text_num_lines(owl_message_get_body(m))*OWL_MSGTAB+10);
       owl_text_indent(indent, owl_message_get_body(m), OWL_MSGTAB);
-      owl_fmtext_init_null(fm);
       owl_fmtext_append_bold(fm, OWL_TABSTR);
       owl_fmtext_append_bold(fm, "AIM from ");
       owl_fmtext_append_bold(fm, owl_message_get_sender(m));
@@ -159,7 +160,6 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
     } else if (owl_message_is_direction_out(m)) {
       indent=owl_malloc(strlen(owl_message_get_body(m))+owl_text_num_lines(owl_message_get_body(m))*OWL_MSGTAB+10);
       owl_text_indent(indent, owl_message_get_body(m), OWL_MSGTAB);
-      owl_fmtext_init_null(fm);
       owl_fmtext_append_normal(fm, OWL_TABSTR);
       owl_fmtext_append_normal(fm, "AIM sent to ");
       owl_fmtext_append_normal(fm, owl_message_get_recipient(m));
@@ -178,7 +178,6 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
     
     indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
     owl_text_indent(indent, text, OWL_MSGTAB);
-    owl_fmtext_init_null(fm);
     owl_fmtext_append_normal(fm, OWL_TABSTR);
     owl_fmtext_append_bold(fm, "OWL ADMIN ");
     owl_fmtext_append_ztext(fm, header);
@@ -221,7 +220,6 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     }
     
     /* set the message for printing */
-    owl_fmtext_init_null(fm);
     owl_fmtext_append_normal(fm, OWL_TABSTR);
     
     if (owl_message_is_ping(m) && owl_message_is_private(m)) {
@@ -300,7 +298,6 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     
     indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
     owl_text_indent(indent, text, OWL_MSGTAB);
-    owl_fmtext_init_null(fm);
     owl_fmtext_append_normal(fm, OWL_TABSTR);
     owl_fmtext_append_normal(fm, "Zephyr sent to ");
     foo=short_zuser(owl_message_get_recipient(m));
@@ -325,7 +322,6 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     char *indent;
     
     if (owl_message_is_loginout(m)) {
-      owl_fmtext_init_null(fm);
       owl_fmtext_append_normal(fm, OWL_TABSTR);
       if (owl_message_is_login(m)) {
 	owl_fmtext_append_bold(fm, "AIM LOGIN");
@@ -338,7 +334,6 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     } else if (owl_message_is_direction_in(m)) {
       indent=owl_malloc(strlen(owl_message_get_body(m))+owl_text_num_lines(owl_message_get_body(m))*OWL_MSGTAB+10);
       owl_text_indent(indent, owl_message_get_body(m), OWL_MSGTAB);
-      owl_fmtext_init_null(fm);
       owl_fmtext_append_bold(fm, OWL_TABSTR);
       owl_fmtext_append_bold(fm, "AIM from ");
       owl_fmtext_append_bold(fm, owl_message_get_sender(m));
@@ -351,7 +346,6 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     } else if (owl_message_is_direction_out(m)) {
       indent=owl_malloc(strlen(owl_message_get_body(m))+owl_text_num_lines(owl_message_get_body(m))*OWL_MSGTAB+10);
       owl_text_indent(indent, owl_message_get_body(m), OWL_MSGTAB);
-      owl_fmtext_init_null(fm);
       owl_fmtext_append_normal(fm, OWL_TABSTR);
       owl_fmtext_append_normal(fm, "AIM sent to ");
       owl_fmtext_append_normal(fm, owl_message_get_recipient(m));
@@ -370,7 +364,6 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     
     indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
     owl_text_indent(indent, text, OWL_MSGTAB);
-    owl_fmtext_init_null(fm);
     owl_fmtext_append_normal(fm, OWL_TABSTR);
     owl_fmtext_append_bold(fm, "OWL ADMIN ");
     owl_fmtext_append_ztext(fm, header);
