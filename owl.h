@@ -16,8 +16,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.4-pre-1
-#define OWL_VERSION_STRING "2.0.4-pre-1"
+#define OWL_VERSION         2.0.4-pre-2
+#define OWL_VERSION_STRING "2.0.4-pre-2"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
@@ -122,7 +122,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 
 #define OWL_CMD_ALIAS_SUMMARY_PREFIX "command alias to: "
 
-#if defined(HAVE_DES_STRING_TO_KEY) && defined(HAVE_DES_KEY_SCHED) && defined(HAVE_DES_ECB_ENCRYPT)
+#if defined(HAVE_DES_STRING_TO_KEY) && defined(HAVE_DES_KEY_SCHED) && defined(HAVE_DES_ECB_ENCRYPT_PROTO)
 #define OWL_ENABLE_ZCRYPT 1
 #endif
 

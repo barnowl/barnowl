@@ -725,6 +725,8 @@ void owl_function_makemsg(char *fmt, ...)
   va_list ap;
   char buff[2048];
 
+  if (!owl_global_get_curs_msgwin(&g)) return;
+
   va_start(ap, fmt);
   werase(owl_global_get_curs_msgwin(&g));
   
@@ -740,6 +742,8 @@ void owl_function_errormsg(char *fmt, ...)
 {
   va_list ap;
   char buff[2048];
+
+  if (!owl_global_get_curs_msgwin(&g)) return;
 
   va_start(ap, fmt);
   werase(owl_global_get_curs_msgwin(&g));

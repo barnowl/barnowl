@@ -1,5 +1,13 @@
 $Id$
 
+2.0.4-pre-2
+	Added filter field 'login' which can take the values 'login'
+	   'logout' or 'none'
+	Added the perl variable $owl::login, just as above
+	Updated the 'login' and 'trash' filters appropriately
+	Fix for checking for DES
+	Bug fix in using makemsg when no curses window present
+
 2.0.4-pre-1
 	Make command line option -n actualy work
 

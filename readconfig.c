@@ -85,6 +85,7 @@ int owl_readconfig(char *file) {
   perl_get_sv("owl::msg", TRUE);
   perl_get_sv("owl::time", TRUE);
   perl_get_sv("owl::host", TRUE);
+  perl_get_sv("owl::login", TRUE);
   perl_get_av("owl::fields", TRUE);
   
   /* perl bootstrapping code */
@@ -177,6 +178,15 @@ char *owl_config_getmsg(owl_message *m, char *funcname) {
     sv_setpv(perl_get_sv("owl::direction", TRUE), "none");
   } else {
     sv_setpv(perl_get_sv("owl::direction", TRUE), "unknown");
+  }
+
+  /* set owl::login */
+  if (owl_message_is_login(m)) {
+    sv_setpv(perl_get_sv("owl::login", TRUE), "login");
+  } else if (owl_message_is_logout(m)) {
+    sv_setpv(perl_get_sv("owl::login", TRUE), "logout");
+  } else {
+    sv_setpv(perl_get_sv("owl::login", TRUE), "none");
   }
 
   /* set everything else */

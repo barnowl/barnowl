@@ -459,11 +459,11 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
       owl_fmtext_append_normal(fm, tmp);
       owl_fmtext_append_normal(fm, "\n");
       if (tmp) owl_free(tmp);
-    }
 
-    /* make personal messages bold for smaat users */
-    if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
-      owl_fmtext_addattr(fm, OWL_FMTEXT_ATTR_BOLD);
+      /* make personal messages bold for smaat users */
+      if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
+	owl_fmtext_addattr(fm, OWL_FMTEXT_ATTR_BOLD);
+      }
     }
   } else if (owl_message_is_type_admin(m)) {
     owl_fmtext_append_spaces(fm, OWL_TAB);

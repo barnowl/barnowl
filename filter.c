@@ -64,7 +64,8 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv) {
 	  !strcasecmp(argv[i], "opcode") ||
 	  !strcasecmp(argv[i], "realm") ||
 	  !strcasecmp(argv[i], "type") ||
-	  !strcasecmp(argv[i], "direction")) {
+	  !strcasecmp(argv[i], "direction") ||
+	  !strcasecmp(argv[i], "login")) {
 	regexstr=owl_util_substitute(argv[i+1], "%me%", ZGetSender());
 	owl_filterelement_create_re(fe, argv[i], regexstr);
 	owl_free(regexstr);
@@ -159,6 +160,14 @@ int owl_filter_message_match(owl_filter *f, owl_message *m) {
 	match="none";
       } else {
 	match="";
+      }
+    } else if (!strcasecmp(field, "login")) {
+      if (owl_message_is_login(m)) {
+	match="login";
+      } else if (owl_message_is_logout(m)) {
+	match="logout";
+      } else {
+	match="none";
       }
     }
     
