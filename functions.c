@@ -459,7 +459,7 @@ void owl_function_loopwrite()
    * an incoming message */
   m=owl_malloc(sizeof(owl_message));
   owl_message_create_loopback(m, owl_editwin_get_text(owl_global_get_typwin(&g)));
-  owl_message_set_direction_out(m);
+  owl_message_set_direction_in(m);
   owl_global_messagequeue_addmsg(&g, m);
 
   /* display the message as an outgoing message in the receive window */

@@ -684,8 +684,8 @@ void owl_message_create_loopback(owl_message *m, char *text)
   owl_message_init(m);
   owl_message_set_type_loopback(m);
   owl_message_set_body(m, text);
-  owl_message_set_sender(m, "loopback-sender");
-  owl_message_set_recipient(m, "loopback-recipient");
+  owl_message_set_sender(m, "loopsender");
+  owl_message_set_recipient(m, "looprecip");
   owl_message_set_isprivate(m);
 }
 

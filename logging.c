@@ -294,9 +294,9 @@ void owl_log_incoming(owl_message *m)
       if (owl_message_is_login(m)) fprintf(allfile, "LOGIN\n\n");
       if (owl_message_is_logout(m)) fprintf(allfile, "LOGOUT\n\n");
     } else {
-      fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
-      fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
-      fprintf(file, "%s\n\n", owl_message_get_body(m));
+      fprintf(allfile, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
+      fprintf(allfile, "Time: %s\n\n", owl_message_get_timestr(m));
+      fprintf(allfile, "%s\n\n", owl_message_get_body(m));
     }
     fclose(allfile);
   }
