@@ -390,6 +390,7 @@ typedef struct _owl_global {
   int colorpairs;
   int searchactive;
   int newmsgproc_pid;
+  int malloced, freed;
   char *searchstring;
   owl_filterelement fe_true;
   owl_filterelement fe_false;

@@ -1533,7 +1533,11 @@ void owl_function_status() {
   } else {
     strcat(buff, "Color: No.\n");
   }
-  
+
+  sprintf(buff, "%sMemory Malloced: %i\n", buff, owl_global_get_malloced(&g));
+  sprintf(buff, "%sMemory Freed: %i\n", buff, owl_global_get_freed(&g));
+  sprintf(buff, "%sMemory In Use: %i\n", buff, owl_global_get_meminuse(&g));
+
   owl_function_popless_text(buff);
 }
 

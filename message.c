@@ -867,4 +867,3 @@ void owl_message_free(owl_message *m) {
  
   owl_fmtext_free(&(m->fmtext));
 }
-

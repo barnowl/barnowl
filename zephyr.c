@@ -9,6 +9,8 @@
 
 static const char fileIdent[] = "$Id$";
 
+Code_t ZResetAuthentication();
+
 int owl_zephyr_loadsubs(char *filename) {
   /* return 0  on success
    *        -1 on file error
@@ -27,7 +29,8 @@ int owl_zephyr_loadsubs(char *filename) {
   } else {
     strcpy(subsfile, filename);
   }
-  
+
+  ZResetAuthentication();
   /* need to redo this to do chunks, not just bail after 3000 */
   count=0;
   file=fopen(subsfile, "r");
@@ -94,6 +97,7 @@ int owl_zephyr_loadloginsubs(char *filename) {
     strcpy(subsfile, filename);
   }
 
+  ZResetAuthentication();
   /* need to redo this to do chunks, not just bag out after 3000 */
   count=0;
   file=fopen(subsfile, "r");
@@ -136,7 +140,8 @@ int owl_zephyr_loadloginsubs(char *filename) {
 
 void unsuball() {
   int ret;
-  
+
+  ZResetAuthentication();
   ret=ZCancelSubscriptions(0);
   if (ret != ZERR_NONE) {
     com_err("owl",ret,"while unsubscribing");
@@ -151,6 +156,7 @@ int owl_zephyr_sub(char *class, char *inst, char *recip) {
   subs[0].zsub_classinst=inst;
   subs[0].zsub_recipient=recip;
 
+  ZResetAuthentication();
   if (ZSubscribeTo(subs,1,0) != ZERR_NONE) {
     fprintf(stderr, "Error subbing\n");
     ret=-2;
@@ -167,6 +173,7 @@ int owl_zephyr_unsub(char *class, char *inst, char *recip) {
   subs[0].zsub_classinst=inst;
   subs[0].zsub_recipient=recip;
 
+  ZResetAuthentication();
   if (ZUnsubscribeTo(subs,1,0) != ZERR_NONE) {
     fprintf(stderr, "Error unsubbing\n");
     ret=-2;
@@ -245,6 +252,8 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
     
   memset(&notice, 0, sizeof(notice));
 
+  ZResetAuthentication();
+  
   notice.z_kind=ACKED;
   notice.z_port=0;
   notice.z_class=class;
@@ -388,7 +397,7 @@ void owl_zephyr_zlocate(char *user, char *out, int auth) {
   char *myuser;
   
   strcpy(out, "");
-
+  ZResetAuthentication();
   ret=ZLocateUser(user,&numlocs,auth?ZAUTH:ZNOAUTH);
   if (ret != ZERR_NONE) {
     owl_function_makemsg("Error locating user");

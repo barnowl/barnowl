@@ -18,6 +18,9 @@ void owl_global_init(owl_global *g) {
   struct hostent *hent;
   char hostname[MAXHOSTNAMELEN];
 
+  g->malloced=0;
+  g->freed=0;
+
   gethostname(hostname, MAXHOSTNAMELEN);
   hent=gethostbyname(hostname);
   if (!hent) {
@@ -606,3 +609,22 @@ int owl_global_get_newmsgproc_pid(owl_global *g) {
   return(g->newmsgproc_pid);
 }
 
+void owl_global_add_to_malloced(owl_global *g, int i) {
+  g->malloced+=i;
+}
+
+void owl_global_add_to_freed(owl_global *g, int i) {
+  g->freed+=1;
+}
+
+int owl_global_get_malloced(owl_global *g) {
+  return(g->malloced);
+}
+
+int owl_global_get_freed(owl_global *g) {
+  return(g->freed);
+}
+
+int owl_global_get_meminuse(owl_global *g) {
+  return(g->malloced-g->freed);
+}
