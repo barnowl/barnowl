@@ -1,35 +1,21 @@
 $Id$
 
-2.0.8-pre-7
-	Small fixes to keep zephyrless build working
+2.0.8
 	Increased size of screen name field in buddy listing
-	
-2.0.8-pre-6
-	On an offgoing message, don't create an AIM logout
-	  message unless the buddy was already logged in.
-	
-2.0.8-pre-5	
 	Fixed bug with idle times causing broken pipes.
 	New libfaim
-
-2.0.8-pre-4
 	Added the 'source' command.
-	Fix to make 'default' style the default again.
-	
-2.0.8-pre-3   
         Make sure that a newline is always at the end of messages
 	        returned by perl style formatting functions.
 	Add owl::login and owl::auth to legacy variables populated for format_msg.
 	Additions to intro.txt and advanced.txt documents.  (Still in progress.)
 	Add base methods for login_host and login_tty 
 	        and others that return undef.
-	
-2.0.8-pre-2
 	New API for perl message formatting functions.  
-	        Legacy variables are still supported for owl::format_msg
-		and owl::receive_msg, but these functions are now also 
-		passed an owl::Message object which contains methods
-		for accessing the contents of the message.  See perlwrap.pm 
+		Legacy variables are still supported for owl::format_msg
+	        and owl::receive_msg, but these functions are now also 
+	        passed an owl::Message object which contains methods
+	        for accessing the contents of the message.  See perlwrap.pm 
 		(and docs TBD) for the available methods.
 		*** WARNING:  The exact API for owl::Message has
 		*** not yet stabilized.
@@ -51,15 +37,11 @@ $Id$
 	        owl::zephyr_getsender() -- returns the zephyr sender
 	Made owl::COMMAND("foo"); be syntactic sugar for 
 	        owl::command("COMMAND foo");
-		*** Is this a good or bad idea? 
-		*** This feature may be taken out before release.
 	Added perlwrap.pm to contain perl code to be compiled into 
 	        the binary.  This is transformed into perlwrap.c by
 		encapsulate.pl.
 	Renamed readconfig.c to perlconfig.c and changed variables accordingly.
 	Minor bugfixes in cmd.c and commands.c
-
-2.0.8-pre-1
 	Improved intro doc
 
 2.0.7
