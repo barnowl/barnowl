@@ -47,6 +47,14 @@ int owl_popwin_up(owl_popwin *pw)
     box(pw->borderwin, 0, 0);
   } else {
     box(pw->borderwin, '|', '-');
+    wmove(pw->borderwin, 0, 0);
+    waddch(pw->borderwin, '+');
+    wmove(pw->borderwin, pw->lines-1, 0);
+    waddch(pw->borderwin, '+');
+    wmove(pw->borderwin, pw->lines-1, pw->cols-1);
+    waddch(pw->borderwin, '+');
+    wmove(pw->borderwin, 0, pw->cols-1);
+    waddch(pw->borderwin, '+');
   }
     
   wnoutrefresh(pw->popwin);
