@@ -10,6 +10,7 @@ $Id$
 	Handle the case in aim_bstream_send where aim_send returns -1,
 	        although there is likely an underlying problem here
 		that would lead to this case.
+	Print the username on aim login failure, not something random like the password.  ;)
 	
 2.0.12
 	Command history now doesn't allow the last entry

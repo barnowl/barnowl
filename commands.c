@@ -2221,7 +2221,7 @@ char *owl_command_aimlogin(int argc, char **argv, char *buff)
 
   /* try to login */
   ret=owl_aim_login(argv[1], argv[2]);
-  if (ret) owl_function_makemsg("Warning: login for %s failed.\n");
+  if (ret) owl_function_makemsg("Warning: login for %s failed.\n", argv[1]);
 
   /* this is a test */
   return(NULL);
