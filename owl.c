@@ -196,9 +196,11 @@ int main(int argc, char **argv, char **env) {
   /* set the current view */
   owl_view_create(owl_global_get_current_view(&g), f);
 
+  /* AIM init */
+  owl_aim_init();
+
   /* process the startup file */
   owl_function_execstartup();
-
 
   /* read the config file */
   owl_context_set_readconfig(owl_global_get_context(&g));
@@ -238,9 +240,6 @@ int main(int argc, char **argv, char **env) {
   if (owl_global_is_startuplogin(&g)) {
     owl_zephyr_zlog_in();
   }
-
-  /* AIM init */
-  owl_aim_init();
 
   /* welcome message */
   strcpy(startupmsg, "-------------------------------------------------------------------------\n");
