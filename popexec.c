@@ -110,6 +110,7 @@ void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data) {
   /* the viewwin has closed */
   if (pe->rfd<0 && !pe->pid && !pe->winactive) {
     owl_muxevents_remove(owl_global_get_muxevents(&g), handle);
+    owl_function_debugmsg("unref of %p from input handler at A", pe);
     owl_popexec_unref(pe);
     return;
   }
@@ -132,6 +133,7 @@ void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data) {
       pe->rfd = -1;
     }
     owl_muxevents_remove(owl_global_get_muxevents(&g), handle);
+    owl_function_debugmsg("unref of %p from input handler at B", pe);
     owl_popexec_unref(pe);
     return;
   }
@@ -179,12 +181,15 @@ void owl_popexec_viewwin_onclose(owl_viewwin *vwin, void *data) {
     owl_function_debugmsg("waidpid returned %d, status %d", rv, status);
     pe->pid = 0;
   }
+  owl_function_debugmsg("unref of %p from onclose", pe);
   owl_popexec_unref(pe);
 }
 
 void owl_popexec_unref(owl_popexec *pe) {
+  owl_function_debugmsg("unref of %p was %d", pe, pe->refcount);
   pe->refcount--;
   if (pe->refcount<=0) {
+    owl_function_debugmsg("doing free of %p", pe);
     owl_free(pe);
   }
 }

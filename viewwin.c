@@ -147,6 +147,8 @@ void owl_viewwin_free(owl_viewwin *v)
 {
   if (v->onclose_hook) {
     v->onclose_hook(v, v->onclose_hook_data);
+    v->onclose_hook = NULL;
+    v->onclose_hook_data = NULL;
   }
   owl_fmtext_free(&(v->fmtext));
 }
