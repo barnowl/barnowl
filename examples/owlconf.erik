@@ -124,7 +124,9 @@ sub owl::startup {
     owl::command("bindkey recv M-l command ( expunge ; view all )");
     owl::command("bindkey recv M-K command ( smartnarrow ; delete view ; expunge ; view all )");
 
-    # toggle between a view and a smartnarrow with TAB
+    # Toggle between a view and a smartnarrow with TAB.
+    # Note that you probably want to use something other than TAB as 
+    # it will have another binding in a future version of owl.
     owl::command("alias swapview perl swapview();");
     owl::command("bindkey recv C-i command swapview");
 

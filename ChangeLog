@@ -30,7 +30,10 @@ $Id$
 		matching current"
 	Added variables edit:maxfillcols and edit:maxwrapcols which 
 	        will limit how wide editing paragraphs may get before
-		they get wrapped.  Default is 70 columns each.
+		they get wrapped.  This is a max and may be narrower
+		depending on the current size of the window.
+		If 0, the max is unlimited.  Default is 70 columns for
+		edit:maxfillcols and unlimited for edit:maxwrapcols.
 	Added smartzpunt command with key binding of "C-x k".
 	        This starts a zpunt command filled in with 
 		the proposed zpunt.
