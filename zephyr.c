@@ -421,10 +421,10 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
     } else if (!strcasecmp(retnotice->z_class, "message") &&
 	       !strcasecmp(retnotice->z_class_inst, "personal")) {
       tmp=short_zuser(retnotice->z_recipient);
-      owl_function_error("Message sent to %s.", tmp);
+      owl_function_makemsg("Message sent to %s.", tmp);
       free(tmp);
     } else {
-      owl_function_error("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
+      owl_function_makemsg("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
     }
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
     if (strcasecmp(retnotice->z_class, "message")) {
