@@ -1,27 +1,18 @@
 $Id$
 
-2.0.13-pre-4
+2.0.12
 	Command history now doesn't allow the last entry
 	   to be repeated
 	If format_msg returns "" print "<unformatted message>"
-
-2.0.12-pre-3
 	Better align oneline admin and loopback messages
 	Print an admin message indicating when subscriptions can
 	   not be loaded on startup
-	Fixed bug causing problems with invalid @ colors
-	
-2.0.12-pre-2
 	Set aim_ignorelogin_timer to 15 by default
 	Admin message on login/logout of AIM
 	Fixed double quoting in smartzpunt
 	Added timestamp to login/logout messages
-	Turned history duplicates off, it's not exactly what we want
-	
-2.0.12-pre-1
 	Fixed replies to loopback messages
 	Fixed smartnarrow on classes/instances with spaces
-	Don't allow duplicates in command history
 	Added the 'loggingdirection' variable
 	All loopback messages log to 'loopback' now
 	Print an error message if trying an invalid color for a filter
