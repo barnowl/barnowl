@@ -1,5 +1,39 @@
 $Id$
 
+1.2.1-pre-3
+	Variables now have a summary and a long description.
+	        Only the summary is shown with help.
+		The long description is shown with "show variable foo".
+        Fix the scrolling bug where we would sometimes fail to scroll
+             the screen down, leaving the current message off 
+             the bottom of the screen.
+        Added a 'scrollmode' variable which determines how the screen
+	     will scroll as the cursor moves.  The default behaves
+	     identically to previous versions of owl.
+             The following modes are supported:
+	     normal      - This is the owl default.  Scrolling happens
+	                   when it needs to, and an attempt is made to
+	                   keep the current message roughly near
+	                   the middle of the screen.  (default)
+	     top         - The current message will always be the
+	                   the top message displayed.
+	     neartop     - The current message will be one down
+	                   from the top message displayed,
+	                   where possible.
+	     center      - An attempt is made to keep the current
+	                   message near the center of the screen.
+	     paged       - The top message displayed only changes
+	                   when user moves the cursor to the top
+	                   or bottom of the screen.  When it moves,
+	                   the screen will be paged up or down and
+	                   the cursor will be near the top or
+	                   the bottom.
+	     pagedcenter - The top message displayed only changes
+	                   when user moves the cursor to the top
+	                   or bottom of the screen.  When it moves,
+	                   the screen will be paged up or down and
+	                   the cursor will be near the center.\n",
+
 1.2.1-pre-2
 	Refixed 'login or login' typo in help
 	Fixed M-u description

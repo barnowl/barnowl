@@ -104,12 +104,11 @@ void owl_help() {
   owl_fmtext_append_bold(&fm, 
 			 "Variables:\n");
   owl_variable_dict_get_names(owl_global_get_vardict(&g), &varnames);
-  owl_variable_get_summaryheader(&fm);
   numvarnames = owl_list_get_size(&varnames);
   for (i=0; i<numvarnames; i++) {
     varname = owl_list_get_element(&varnames, i);
     if (varname && varname[0]!='_') {
-      owl_variable_get_summary(owl_global_get_vardict(&g), varname, &fm);
+      owl_variable_describe(owl_global_get_vardict(&g), varname, &fm);
     }
   }
   owl_variable_dict_namelist_free(&varnames);

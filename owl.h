@@ -11,8 +11,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         1.2.1-pre-1
-#define OWL_VERSION_STRING "1.2.1-pre-1"
+#define OWL_VERSION         1.2.1-pre-3
+#define OWL_VERSION_STRING "1.2.1-pre-3"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
@@ -45,6 +45,14 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_DIRECTION_NONE      0
 #define OWL_DIRECTION_DOWNWARDS 1
 #define OWL_DIRECTION_UPWARDS   2
+
+#define OWL_SCROLLMODE_NORMAL   0
+#define OWL_SCROLLMODE_TOP      1
+#define OWL_SCROLLMODE_NEARTOP  2
+#define OWL_SCROLLMODE_CENTER   3
+#define OWL_SCROLLMODE_PAGED    4
+#define OWL_SCROLLMODE_PAGEDCENTER 5
+
 
 #define OWL_TAB               3  /* This *HAS* to be the size of TABSTR below */
 #define OWL_TABSTR        "   "
@@ -113,7 +121,8 @@ typedef struct _owl_variable {
   void *pval_default;  /* for types other and string */
   int   ival_default;  /* for types int and bool     */
   char *validsettings;		/* documentation of valid settings */
-  char *docstring;		/* documentation of valid settings */
+  char *summary;		/* summary of usage */
+  char *description;		/* detailed description */
   void *val;                    /* current value */
   int  (*validate_fn)(struct _owl_variable *v, void *newval);
                                 /* returns 1 if newval is valid */

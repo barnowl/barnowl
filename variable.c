@@ -9,42 +9,42 @@ static const char fileIdent[] = "$Id$";
 
 static int in_regtest = 0;
 
-#define OWLVAR_BOOL(name,default,docstring) \
-        { name, OWL_VARIABLE_BOOL, NULL, default, "on,off", docstring, NULL, \
+#define OWLVAR_BOOL(name,default,summary,description) \
+        { name, OWL_VARIABLE_BOOL, NULL, default, "on,off", summary,description, NULL, \
         NULL, NULL, NULL, NULL, NULL }
 
-#define OWLVAR_BOOL_FULL(name,default,docstring,validate,set,get) \
-        { name, OWL_VARIABLE_BOOL, NULL, default, "on,off", docstring, NULL, \
+#define OWLVAR_BOOL_FULL(name,default,summary,description,validate,set,get) \
+        { name, OWL_VARIABLE_BOOL, NULL, default, "on,off", summary,description, NULL, \
         validate, set, NULL, get, NULL }
 
-#define OWLVAR_INT(name,default,docstring) \
-        { name, OWL_VARIABLE_INT, NULL, default, "<int>", docstring, NULL, \
+#define OWLVAR_INT(name,default,summary,description) \
+        { name, OWL_VARIABLE_INT, NULL, default, "<int>", summary,description, NULL, \
         NULL, NULL, NULL, NULL, NULL, NULL }
 
-#define OWLVAR_INT_FULL(name,default,docstring,validset,validate,set,get) \
-        { name, OWL_VARIABLE_INT, NULL, default, validset, docstring, NULL, \
+#define OWLVAR_INT_FULL(name,default,summary,description,validset,validate,set,get) \
+        { name, OWL_VARIABLE_INT, NULL, default, validset, summary,description, NULL, \
         validate, set, NULL, get, NULL, NULL }
 
-#define OWLVAR_PATH(name,default,docstring) \
-        { name, OWL_VARIABLE_STRING, default, 0, "<path>", docstring,  NULL, \
+#define OWLVAR_PATH(name,default,summary,description) \
+        { name, OWL_VARIABLE_STRING, default, 0, "<path>", summary,description,  NULL, \
         NULL, NULL, NULL, NULL, NULL, NULL }
 
-#define OWLVAR_STRING(name,default,docstring) \
-        { name, OWL_VARIABLE_STRING, default, 0, "<string>", docstring, NULL, \
+#define OWLVAR_STRING(name,default,summary,description) \
+        { name, OWL_VARIABLE_STRING, default, 0, "<string>", summary,description, NULL, \
         NULL, NULL, NULL, NULL, NULL, NULL }
 
 /* enums are really integers, but where validset is a comma-separated
  * list of strings which can be specified.  The tokens, starting at 0,
  * correspond to the values that may be specified. */
-#define OWLVAR_ENUM(name,default,docstring,validset) \
-        { name, OWL_VARIABLE_INT, NULL, default, validset, docstring, NULL, \
+#define OWLVAR_ENUM(name,default,summary,description,validset) \
+        { name, OWL_VARIABLE_INT, NULL, default, validset, summary,description, NULL, \
         owl_variable_enum_validate, \
         NULL, owl_variable_enum_set_fromstring, \
         NULL, owl_variable_enum_get_tostring, \
         NULL }
 
-#define OWLVAR_ENUM_FULL(name,default,docstring,validset,validate, set, get) \
-        { name, OWL_VARIABLE_INT, NULL, default, validset, docstring, NULL, \
+#define OWLVAR_ENUM_FULL(name,default,summary,description,validset,validate, set, get) \
+        { name, OWL_VARIABLE_INT, NULL, default, validset, summary,description, NULL, \
         validate, \
         set, owl_variable_enum_set_fromstring, \
         get, owl_variable_enum_get_tostring, \
@@ -53,107 +53,197 @@ static int in_regtest = 0;
 static owl_variable variables_to_init[] = {
 
   OWLVAR_BOOL( "personalbell" /* %OwlVarStub */, 0,
-	       "ring the terminal bell when personal messages are received" ),
+	       "ring the terminal bell when personal messages are received",
+	       "" ),
 
   OWLVAR_BOOL( "bell" /* %OwlVarStub */, 1,
-	       "enable / disable the terminal bell" ),
+	       "enable / disable the terminal bell", "" ),
 
   OWLVAR_BOOL_FULL( "debug" /* %OwlVarStub */, OWL_DEBUG,
 		    "whether debugging is enabled",
+		    "If set to 'on', debugging messages are logged to the\n"
+		    "file specified by the debugfile variable.\n",
 		    NULL, owl_variable_debug_set, NULL),
 
   OWLVAR_BOOL( "startuplogin" /* %OwlVarStub */, 1,
-	       "send a login message when owl starts" ),
+	       "send a login message when owl starts", "" ),
 
   OWLVAR_BOOL( "shutdownlogout" /* %OwlVarStub */, 1,
-	       "send a logout message when owl exits" ),
+	       "send a logout message when owl exits", "" ),
 
   OWLVAR_BOOL( "rxping" /* %OwlVarStub */, 0,
-	       "display received pings" ),
+	       "display received pings", "" ),
 
   OWLVAR_BOOL( "txping" /* %OwlVarStub */, 1,
-	       "send pings" ),
+	       "send pings", "" ),
 
   OWLVAR_BOOL( "displayoutgoing" /* %OwlVarStub */, 1,
-	       "display outgoing messages" ),
+	       "display outgoing messages", "" ),
 
   OWLVAR_BOOL( "loginsubs" /* %OwlVarStub */, 1,
-	       "load logins from .anyone on startup" ),
+	       "load logins from .anyone on startup", "" ),
 
   OWLVAR_BOOL( "logging" /* %OwlVarStub */, 0,
-	       "turn personal logging on or off" ),
+	       "turn personal logging on or off", 
+	       "If this is set to on, personal messages are\n"
+	       "logged in the directory specified\n"
+	       "by the 'logpath' variable.  The filename in that\n"
+	       "directory is derived from the sender of the message.\n" ),
 
   OWLVAR_BOOL( "classlogging" /* %OwlVarStub */, 0,
-	       "turn class logging on or off" ),
+	       "turn class logging on or off",
+	       "If this is set to on, class messages are\n"
+	       "logged in the directory specified\n"
+	       "by the 'classlogpath' variable.\n" 
+	       "The filename in that directory is derived from\n"
+	       "the name of the class to which the message was sent.\n" ),
 
   OWLVAR_BOOL( "colorztext" /* %OwlVarStub */, 1,
-	       "allow @color() in zephyrs to change color" ),
+	       "allow @color() in zephyrs to change color",
+	       "Note that only messages received after this variable\n"
+	       "is set will be affected." ),
 
   OWLVAR_ENUM_FULL( "disable-ctrl-d" /* %OwlVarStub:lockout_ctrld */, 1,
-		    "don't send zephyrs on C-d (or disable if in the middle of the message if set to 'middle')", "off,middle,on",
+		    "don't send zephyrs on C-d",
+		    "If set to 'off', C-d won't send a zephyr from the edit\n"
+		    "window.  If set to 'on', C-d will always send a zephyr\n"
+		    "being composed in the edit window.  If set to 'middle',\n"
+		    "C-d will only ever send a zephyr if the cursor is at\n"
+		    "the end of the message being composed.\n\n"
+		    "Note that this works by changing the C-d keybinding\n"
+		    "in the editmulti keymap.\n",
+		    "off,middle,on",
 		    NULL, owl_variable_disable_ctrl_d_set, NULL),
 
   OWLVAR_BOOL( "_burningears" /* %OwlVarStub:burningears */, 0,
-	       "[NOT YET IMPLEMENTED] beep on messages matching patterns" ),
+	       "[NOT YET IMPLEMENTED] beep on messages matching patterns", "" ),
 
   OWLVAR_BOOL( "_summarymode" /* %OwlVarStub:summarymode */, 0,
-	       "[NOT YET IMPLEMENTED]" ),
+	       "[NOT YET IMPLEMENTED]", "" ),
 
   OWLVAR_PATH( "logpath" /* %OwlVarStub */, "~/zlog/people",
-	       "path for logging personal zephyrs" ),
+	       "path for logging personal zephyrs", 
+	       "Specifies a directory which must exist.\n"
+	       "Files will be created in the directory for each sender.\n"),
 
   OWLVAR_PATH( "classlogpath" /* %OwlVarStub:classlogpath */, "~/zlog/class",
-	       "path for logging class zephyrs" ),
+	       "path for logging class zephyrs",
+	       "Specifies a directory which must exist.\n"
+	       "Files will be created in the directory for each class.\n"),
 
   OWLVAR_PATH( "debug_file" /* %OwlVarStub */, OWL_DEBUG_FILE,
-	       "path for logging debug messages when debugging is enabled" ),
+	       "path for logging debug messages when debugging is enabled",
+	       "This file will be logged to if 'debug' is set to 'on'.\n"),
   
   OWLVAR_PATH( "zsigproc" /* %OwlVarStub:zsig_exec */, NULL,
-	       "name of a program to run that will generate zsigs" ),
+	       "name of a program to run that will generate zsigs",
+	       "This program should produce a zsig on stdout when run.\n"
+	       "Note that it is important that this program not block.\n" ),
 
   OWLVAR_STRING( "zsig" /* %OwlVarStub */, "",
-	         "zephyr signature" ),
+	         "zephyr signature", 
+		 "If 'zsigproc' is not set, this string will be used\n"
+		 "as a zsig.  If this is also unset, the 'zwrite-signature'\n"
+		 "zephyr variable will be used instead.\n"),
 
   OWLVAR_STRING( "appendtosepbar" /* %OwlVarStub */, "",
-	         "string to append to the end of the sepbar" ),
+	         "string to append to the end of the sepbar",
+		 "The sepbar is the bar separating the top and bottom\n"
+		 "of the owl screen.  Any string specified here will\n"
+		 "be displayed on the right of the sepbar\n"),
 
   OWLVAR_BOOL( "zaway" /* %OwlVarStub */, 0,
-	       "turn zaway on or off" ),
+	       "turn zaway on or off", "" ),
 
   OWLVAR_STRING( "zaway_msg" /* %OwlVarStub */, 
 		 OWL_DEFAULT_ZAWAYMSG,
-	         "zaway msg for responding to zephyrs when away" ),
+	         "zaway msg for responding to zephyrs when away", "" ),
 
   OWLVAR_STRING( "zaway_msg_default" /* %OwlVarStub */, 
 		 OWL_DEFAULT_ZAWAYMSG,
-	         "default zaway message" ),
+	         "default zaway message", "" ),
 
   OWLVAR_STRING( "view_home" /* %OwlVarStub */, "all",
-	         "home view to switch to after 'X'" ),
+	         "home view to switch to after 'X' and 'V'", 
+		 "SEE ALSO: view, filter\n" ),
 
   OWLVAR_INT(    "edit:maxfillcols" /* %OwlVarStub:edit_maxfillcols */, 70,
-	         "maximum number of columns for M-q to fill text to (or unlimited if 0)" ),
+	         "maximum number of columns for M-q to fill text to",
+		 "This specifies the maximum number of columns for M-q\n"
+		 "to fill text to.  If set to 0, ther will be no maximum\n"
+		 "limit.  In all cases, the current width of the screen\n"
+		 "will also be taken into account.  It will be used instead\n"
+		 "if it is narrower than the maximum, or if this\n"
+		 "is set to 0.\n" ),
 
   OWLVAR_INT(    "edit:maxwrapcols" /* %OwlVarStub:edit_maxwrapcols */, 0,
-	         "maximum number of columns for line-wrapping (or unlimited if 0)" ),
+	         "maximum number of columns for line-wrapping",
+		 "This specifies the maximum number of columns for\n"
+		 "auto-line-wrapping.  If set to 0, ther will be no maximum\n"
+		 "limit.  In all cases, the current width of the screen\n"
+		 "will also be taken into account.  It will be used instead\n"
+		 "if it is narrower than the maximum, or if this\n"
+		 "is set to 0.\n\n"
+		 "It is recommended that outgoing messages be no wider\n"
+		 "than 60 columns, as a courtesy to recipients.\n"),
 
   OWLVAR_INT_FULL( "typewinsize" /* %OwlVarStub:typwin_lines */, 
 		   OWL_TYPWIN_SIZE,
-		  "number of lines in the typing window", "int > 0",
+		  "number of lines in the typing window", 
+		   "This specifies the height of the window at the\n"
+		   "bottom of the screen where commands are entered\n"
+		   "and where messages are composed.\n",
+		   "int > 0",
 		   owl_variable_int_validate_gt0,
 		   owl_variable_typewinsize_set,
 		   NULL /* use default for get */
 		   ),
 
+  OWLVAR_ENUM( "scrollmode" /* %OwlVarStub */, OWL_SCROLLMODE_NORMAL,
+	       "how to scroll up and down",
+	       "This controls how the screen is scrolled as the\n"
+	       "cursor moves between messages being displayed.\n"
+	       "The following modes are supported:\n\n"
+	       "   normal      - This is the owl default.  Scrolling happens\n"
+	       "                 when it needs to, and an attempt is made to\n"
+	       "                 keep the current message roughly near\n"
+	       "                 the middle of the screen.\n"
+	       "   top         - The current message will always be the\n"
+	       "                 the top message displayed.\n"
+	       "   neartop     - The current message will be one down\n"
+	       "                 from the top message displayed,\n"
+	       "                 where possible.\n"
+	       "   center      - An attempt is made to keep the current\n"
+	       "                 message near the center of the screen.\n"
+	       "   paged       - The top message displayed only changes\n"
+	       "                 when user moves the cursor to the top\n"
+	       "                 or bottom of the screen.  When it moves,\n"
+	       "                 the screen will be paged up or down and\n"
+	       "                 the cursor will be near the top or\n"
+	       "                 the bottom.\n"
+	       "   pagedcenter - The top message displayed only changes\n"
+	       "                 when user moves the cursor to the top\n"
+	       "                 or bottom of the screen.  When it moves,\n"
+	       "                 the screen will be paged up or down and\n"
+	       "                 the cursor will be near the center.\n",
+	       "normal,top,neartop,center,paged,pagedcenter" ),
+
   OWLVAR_ENUM( "webbrowser" /* %OwlVarStub */, OWL_WEBBROWSER_NETSCAPE,
 	       "web browser to use to launch URLs",
+	       "When the 'w' key is pressed, this browser is used\n"
+	       "to display the requested URL.\n",
 	       "none,netscape,galeon,opera" ),
 
   OWLVAR_BOOL( "_followlast" /* %OwlVarStub */, 0,
-	       "enable automatic following of the last zephyr" ),
+	       "enable automatic following of the last zephyr",
+	       "If the cursor is at the last message, it will\n"
+	       "continue to follow the last message if this is set.\n"
+	       "Note that this is currently risky as you might accidentally\n"
+	       "delete a message right as it came in.\n" ),
 
   /* This MUST be last... */
-  { NULL, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+  { NULL, 0, NULL, 0, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL }
 
 };
 
@@ -299,8 +389,12 @@ void owl_variable_free(owl_variable *v) {
 }
 
 
-char *owl_variable_get_docstring(owl_variable *v) {
-  return v->docstring;
+char *owl_variable_get_description(owl_variable *v) {
+  return v->description;
+}
+
+char *owl_variable_get_summary(owl_variable *v) {
+  return v->summary;
 }
 
 char *owl_variable_get_validsettings(owl_variable *v) {
@@ -419,20 +513,8 @@ int owl_variable_get_bool(owl_vardict *d, char *name) {
   return(*pi);
 }
 
-#define OWL_VARIABLE_HELP_FMT "     %-15s %-9s %-9s %s\n"
-
-/* appends to the end of the fmtext */
-void owl_variable_get_summaryheader(owl_fmtext *fm) {
-  char tmpbuff[512];
-  snprintf(tmpbuff, 512,  
-	   OWL_VARIABLE_HELP_FMT OWL_VARIABLE_HELP_FMT,
-	   "name",            "settings", "default", "meaning",
-	   "---------------", "--------", "-------", "-------");
-  owl_fmtext_append_bold(fm, tmpbuff);
-}
-
-void owl_variable_get_summary(owl_vardict *d, char *name, owl_fmtext *fm) {
-  char defaultbuf[10];
+void owl_variable_describe(owl_vardict *d, char *name, owl_fmtext *fm) {
+  char defaultbuf[50];
   char buf[1024];
   int buflen = 1023;
   owl_variable *v;
@@ -445,15 +527,13 @@ void owl_variable_get_summary(owl_vardict *d, char *name, owl_fmtext *fm) {
     return;
   }
   if (v->type == OWL_VARIABLE_INT || v->type == OWL_VARIABLE_BOOL) {
-    v->get_tostring_fn(v, defaultbuf, 10, &(v->ival_default));
+    v->get_tostring_fn(v, defaultbuf, 50, &(v->ival_default));
   } else {
-    v->get_tostring_fn(v, defaultbuf, 10, v->pval_default);
+    v->get_tostring_fn(v, defaultbuf, 50, v->pval_default);
   }
-  snprintf(buf, buflen, OWL_VARIABLE_HELP_FMT, 
+  snprintf(buf, buflen, OWL_TABSTR "%-20s - %s (default: '%s')\n", 
 		  v->name, 
-		  owl_variable_get_validsettings(v),
-		  defaultbuf,
-		  owl_variable_get_docstring(v));
+		  owl_variable_get_summary(v), defaultbuf);
   owl_fmtext_append_normal(fm, buf);
 }
 
@@ -473,7 +553,7 @@ void owl_variable_get_help(owl_vardict *d, char *name, owl_fmtext *fm) {
   owl_fmtext_append_normal(fm, OWL_TABSTR);
   owl_fmtext_append_normal(fm, name);
   owl_fmtext_append_normal(fm, " - ");
-  owl_fmtext_append_normal(fm, v->docstring);
+  owl_fmtext_append_normal(fm, v->summary);
   owl_fmtext_append_normal(fm, "\n\n");
 
   owl_fmtext_append_normal(fm, "Current:        ");
@@ -494,6 +574,12 @@ void owl_variable_get_help(owl_vardict *d, char *name, owl_fmtext *fm) {
   owl_fmtext_append_normal(fm, "Valid Settings: ");
   owl_fmtext_append_normal(fm, owl_variable_get_validsettings(v));
   owl_fmtext_append_normal(fm, "\n\n");
+
+  if (v->description && *v->description) {
+    owl_fmtext_append_normal(fm, "Description:\n");
+    owl_fmtext_append_normal(fm, owl_variable_get_description(v));
+    owl_fmtext_append_normal(fm, "\n\n");
+  }
 }
 
 

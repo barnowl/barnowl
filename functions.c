@@ -711,20 +711,123 @@ void owl_function_openurl() {
 }
 
 void owl_function_calculate_topmsg(int direction) {
-  int recwinlines, y, savey, i, j, topmsg, curmsg, foo;
-  owl_mainwin *mw;
+  int recwinlines, topmsg, curmsg;
   owl_view *v;
 
-  mw=owl_global_get_mainwin(&g);
-
-  topmsg=owl_global_get_topmsg(&g);
-  curmsg=owl_global_get_curmsg(&g);
   v=owl_global_get_current_view(&g);
+  curmsg=owl_global_get_curmsg(&g);
+  topmsg=owl_global_get_topmsg(&g);
   recwinlines=owl_global_get_recwin_lines(&g);
 
   if (owl_view_get_size(v) < 1) {
     return;
   }
+
+  switch (owl_global_get_scrollmode(&g)) {
+  case OWL_SCROLLMODE_TOP:
+    topmsg = owl_function_calculate_topmsg_top(direction, v, curmsg,
+					       topmsg, recwinlines);
+    break;
+  case OWL_SCROLLMODE_NEARTOP:
+    topmsg = owl_function_calculate_topmsg_neartop(direction, v, curmsg, 
+						   topmsg, recwinlines);
+    break;
+  case OWL_SCROLLMODE_CENTER:
+    topmsg = owl_function_calculate_topmsg_center(direction, v, curmsg,
+						  topmsg, recwinlines);
+    break;
+  case OWL_SCROLLMODE_PAGED:
+    topmsg = owl_function_calculate_topmsg_paged(direction, v, curmsg, 
+						 topmsg, recwinlines, 0);
+    break;
+  case OWL_SCROLLMODE_PAGEDCENTER:
+    topmsg = owl_function_calculate_topmsg_paged(direction, v, curmsg, 
+						 topmsg, recwinlines, 1);
+    break;
+  case OWL_SCROLLMODE_NORMAL:
+  default:
+    topmsg = owl_function_calculate_topmsg_normal(direction, v, curmsg,
+						  topmsg, recwinlines);
+  }
+  owl_global_set_topmsg(&g, topmsg);
+}
+
+/* Returns what the new topmsg should be.  
+ * Passed the last direction of movement, 
+ * the current view,
+ * the current message number in the view,
+ * the top message currently being displayed,
+ * and the number of lines in the recwin.
+ */
+int owl_function_calculate_topmsg_top(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines) {
+  return curmsg;
+}
+
+int owl_function_calculate_topmsg_neartop(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines) {
+  if (curmsg>0 
+      && (owl_message_get_numlines(owl_view_get_element(v, curmsg-1))
+	  <  recwinlines/2)) {
+    return curmsg-1;
+  } else {
+    return curmsg;
+  }
+}
+  
+int owl_function_calculate_topmsg_center(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines) {
+  int i, last, lines;
+
+  last = curmsg;
+  lines = 0;
+  for (i=curmsg-1; i>=0; i--) {
+    lines += owl_message_get_numlines(owl_view_get_element(v, i));
+    if (lines > recwinlines/2) break;
+    last = i;
+  }
+  return last;
+}
+  
+int owl_function_calculate_topmsg_paged(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines, int center_on_page) {
+  int i, last, lines, savey;
+  
+  /* If we're off the top of the screen, scroll up such that the 
+   * curmsg is near the botton of the screen. */
+  if (curmsg < topmsg) {
+    last = curmsg;
+    lines = 0;
+    for (i=curmsg; i>=0; i--) {
+      lines += owl_message_get_numlines(owl_view_get_element(v, i));
+      if (lines > recwinlines) break;
+    last = i;
+    }
+    if (center_on_page) {
+      return owl_function_calculate_topmsg_center(direction, v, curmsg, 0, recwinlines);
+    } else {
+      return last;
+    }
+  }
+
+  /* Find number of lines from top to bottom of curmsg (store in savey) */
+  savey=0;
+  for (i=topmsg; i<=curmsg; i++) {
+    savey+=owl_message_get_numlines(owl_view_get_element(v, i));
+  }
+
+  /* if we're off the bottom of the screen, scroll down */
+  if (savey > recwinlines) {
+    if (center_on_page) {
+      return owl_function_calculate_topmsg_center(direction, v, curmsg, 0, recwinlines);
+    } else {
+      return curmsg;
+    }
+  }
+
+  /* else just stay as we are... */
+  return topmsg;
+}
+
+
+int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines) {
+  int savey, j, i, foo, y;
   
   /* Find number of lines from top to bottom of curmsg (store in savey) */
   savey=0;
@@ -760,8 +863,7 @@ void owl_function_calculate_topmsg(int direction) {
 	if (y > (recwinlines / 2)) break;
       }
       if (j<0) j=0;
-      owl_global_set_topmsg(&g, j);
-      return;
+      return j;
     }
   }
 
@@ -777,10 +879,11 @@ void owl_function_calculate_topmsg(int direction) {
       if (j==curmsg) {
 	j--;
       }
-      owl_global_set_topmsg(&g, j+1);
-      return;
+      return j+1;
     }
   }
+
+  return topmsg;
 }
 
 
@@ -1218,12 +1321,11 @@ void owl_function_show_variables() {
   owl_fmtext_append_bold(&fm, 
       "Variables: (use 'show variable <name>' for details)\n");
   owl_variable_dict_get_names(owl_global_get_vardict(&g), &varnames);
-  owl_variable_get_summaryheader(&fm);
   numvarnames = owl_list_get_size(&varnames);
   for (i=0; i<numvarnames; i++) {
     varname = owl_list_get_element(&varnames, i);
     if (varname && varname[0]!='_') {
-      owl_variable_get_summary(owl_global_get_vardict(&g), varname, &fm);
+      owl_variable_describe(owl_global_get_vardict(&g), varname, &fm);
     }
   }
   owl_variable_dict_namelist_free(&varnames);
