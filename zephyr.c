@@ -544,75 +544,27 @@ void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip)
 void owl_zephyr_delsub(char *filename, char *class, char *inst, char *recip)
 {
 #ifdef HAVE_LIBZEPHYR
-  char *line, subsfile[LINE], buff[LINE], *text;
-  char backupfilename[LINE];
-  FILE *file, *backupfile;
-  int size;
+  char *line, *subsfile;
   
   line=owl_zephyr_makesubline(class, inst, recip);
+  line[strlen(line)-1]='\0';
 
-  /* open the subsfile for reading */
-  if (filename==NULL) {
-    sprintf(subsfile, "%s/%s", owl_global_get_homedir(&g), ".zephyr.subs");
+  if (!filename) {
+    subsfile=owl_sprintf("%s/.zephyr.subs", owl_global_get_homedir(&g));
   } else {
-    strcpy(subsfile, filename);
+    subsfile=owl_strdup(filename);
   }
-  file=fopen(subsfile, "r");
-  if (!file) {
-    owl_function_makemsg("Error opening file %s", subsfile);
-    owl_free(line);
-    return;
-  }
-
-  /* open the backup file for writing */
-  sprintf(backupfilename, "%s.backup", subsfile);
-  backupfile=fopen(backupfilename, "w");
-  if (!backupfile) {
-    owl_function_makemsg("Error opening file %s for writing", backupfilename);
-    owl_free(line);
-    return;
-  }
-
-  /* we'll read the entire file into memory, minus the line we don't want and
-   * and at the same time create a backup file */
-  text=owl_malloc(LINE);
-  strcpy(text, "");
-  size=LINE;
-  while (fgets(buff, LINE, file)!=NULL) {
-    /* if we don't match the line, add to text */
-    if (strcasecmp(buff, line)) {
-      size+=LINE;
-      text=owl_realloc(text, size);
-      strcat(text, buff);
-    }
-
-    /* write to backupfile */
-    fputs(buff, backupfile);
-  }
-  fclose(backupfile);
-  fclose(file);
-
-  /* now open the original subs file for writing and write out the
-   * subs */
-  file=fopen(subsfile, "w");
-  if (!file) {
-    owl_function_makemsg("WARNING: Error opening %s to rewrite subscriptions.  Use %s to restore", subsfile, backupfilename);
-    owl_function_beep();
-    owl_free(line);
-    return;
-  }
-
-  fputs(text, file);
-  fclose(file);
+  
+  owl_util_file_deleteline(subsfile, line, 1);
+  owl_free(subsfile);
   owl_free(line);
-
   owl_function_makemsg("Subscription removed");
 #endif
 }
 
+/* caller must free the return */
 char *owl_zephyr_makesubline(char *class, char *inst, char *recip)
 {
-  /* caller must free the return */
   char *out;
 
   out=owl_malloc(strlen(class)+strlen(inst)+strlen(recip)+30);
