@@ -280,9 +280,9 @@ sub format_msg_custom {
 	}
 	$out.=" for \@bold($sender) on ".$m->type;
 	if ($m->is_zephyr) {
-	    $out.=" at ".($m->login_host)." on ".($m->login_tty)."\n";
+	    $out.=" at ".($m->login_host)." on ".($m->login_tty);
 	}
-	return($out);
+	return("$out\n");
     }
 
     if (!$m->is_zephyr && !$m->is_aim) { 
@@ -297,7 +297,7 @@ sub format_msg_custom {
 	}
 	$out = sprintf "\@bold([outgoing %s to %s]) / %s\n", $m->type, $target, $m->time;
 	$out.=indent4($m->body);
-	return $out;
+	return "$out\n";
     }
 
     if ($m->is_zephyr && $m->is_ping) {
@@ -307,7 +307,7 @@ sub format_msg_custom {
 	if ($m->body =~ /^From:\s+(.+)\s*$/m) { $out .= "From $1 "; }
 	if ($m->body =~ /^To:\s+(.+)\s*$/m) { $out .= "To $1 "; }
 	if ($m->body =~ /^Subject:\s+(.+)\s*$/m) { $out .= "Subject $1 "; }
-	return($out);
+	return("$out\n");
     }
 
     if ($m->is_zephyr) {
