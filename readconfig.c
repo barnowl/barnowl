@@ -6,12 +6,13 @@
 #include <errno.h>
 #include "owl.h"
 #include <perl.h>
+#include "XSUB.h"
 
 static const char fileIdent[] = "$Id$";
 
 
 
-EXTERN_C void boot_owl (pTHX_ CV* cv);
+extern XS(boot_owl);
 
 static void owl_perl_xs_init(pTHX) {
   char *file = __FILE__;

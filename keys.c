@@ -180,7 +180,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
 	"Main window / message list",
         owl_keys_default_invalid, owl_keys_recwin_prealways, NULL);
   owl_keymap_set_submap(km_mainwin, km_global);
-  BIND_CMD("C-x C-c", "quit",           "");
+  BIND_CMD("C-x C-c", "start-command quit", "");
   BIND_CMD("F1",      "help",           "");
   BIND_CMD("h",       "help",           "");
   BIND_CMD("HELP",    "help",           "");

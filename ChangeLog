@@ -12,6 +12,8 @@ $Id$
 	     been in, the new current message position will attempt
 	     to be close to the current position from the last 
 	     time we visited that view.
+	Fixed bug in readconfig.c that prevented building under perl 5.005.
+	Switched "C-x C-x" to only "startcommand quit"
 	
 1.2.1
         New framework for command handling.
