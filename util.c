@@ -724,6 +724,18 @@ int owl_util_common_strings_in_lists(owl_list *a, owl_list *b)
   return(0);
 }
 
+int owl_util_max(int a, int b)
+{
+  if (a>b) return(a);
+  return(b);
+}
+
+int owl_util_min(int a, int b)
+{
+  if (a<b) return(a);
+  return(b);
+}
+
 /**************************************************************************/
 /************************* REGRESSION TESTS *******************************/
 /**************************************************************************/

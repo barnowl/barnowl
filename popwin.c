@@ -18,20 +18,12 @@ int owl_popwin_up(owl_popwin *pw)
   /* calculate the size of the popwin */
   glines=owl_global_get_lines(&g);
   gcols=owl_global_get_cols(&g);
-  if (glines > 24) {
-    pw->lines=glines/2;
-    startline=glines/4;
-  } else {
-    pw->lines=(glines*3)/4;
-    startline=glines/8;
-  }
 
-  pw->cols=(gcols*15)/16;
-  startcol=gcols/32;
-  if (pw->cols > 100) {
-    pw->cols=100;
-    startcol=(gcols-100)/2;
-  }
+  pw->lines = owl_util_min(glines,24)*3/4 + owl_util_max(glines-24,0)/2;
+  startline = (glines-pw->lines)/2;
+
+  pw->cols = owl_util_min(gcols,100)*15/16 + owl_util_max(gcols-100,0)/2;
+  startcol = (gcols-pw->cols)/2;
 
   pw->borderwin=newwin(pw->lines, pw->cols, startline, startcol);
   pw->popwin=newwin(pw->lines-2, pw->cols-2, startline+1, startcol+1);

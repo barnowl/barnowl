@@ -350,8 +350,7 @@ char *owl_zephyr_get_message(ZNotice_t *n)
   }
 
   /* deal with MIT Athena OLC messages */
-  if (!strcasecmp(n->z_class, "olc") &&
-      !strcasecmp(n->z_sender, "olc.matisse@ATHENA.MIT.EDU")) {
+  if (!strcasecmp(n->z_sender, "olc.matisse@ATHENA.MIT.EDU")) {
     return(owl_zephyr_get_field(n, 1));
   }
 
@@ -371,8 +370,7 @@ char *owl_zephyr_get_zsig(ZNotice_t *n, int *k)
   }
 
   /* No zsig for OLC messages */
-  if (!strcasecmp(n->z_class, "olc") &&
-      !strcasecmp(n->z_sender, "olc.matisse@ATHENA.MIT.EDU")) {
+  if (!strcasecmp(n->z_sender, "olc.matisse@ATHENA.MIT.EDU")) {
     return("");
   }
 
