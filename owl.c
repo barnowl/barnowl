@@ -343,7 +343,7 @@ int main(int argc, char **argv, char **env)
   strcat(startupmsg, buff);
   strcat(startupmsg, "                                                                       \n");
   strcat(startupmsg, "If you would like to receive release announcements about Owl you can   \n");
-  strcat(startupmsg, "join the owl-users  mailing list at http://www.ktools.org/             \n");
+  strcat(startupmsg, "join the owl-users mailing list at http://www.ktools.org/              \n");
   strcat(startupmsg, "                                                                 ^ ^   \n");
   strcat(startupmsg, "                                                                 OvO   \n");
   strcat(startupmsg, "Please report any bugs or suggestions to bug-owl@ktools.org     (   )  \n");

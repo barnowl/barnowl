@@ -1,6 +1,6 @@
 $Id$
 
-2.1.7-pre-1
+2.1.7
 	The colorclass command is added, to make colorization easy
 	Handle MIT Athena OLC zephyrs correctly
 	Updated ktools website / bug address
