@@ -25,7 +25,6 @@ $Id$
 
 2.0.4-pre-1
 	Make command line option -n actualy work
-
 	'set style' now works.  Possbile values at the moment are
 	   'default' 'basic' or 'perl', but the last only if a
 	   format_msg() function is found in .owlconf

@@ -95,11 +95,12 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       z->message=owl_strdup("");
       while (myargc) {
 	z->message=realloc(z->message, strlen(z->message)+strlen(myargv[0])+5);
-	strcat(z->message, " ");
 	strcat(z->message, myargv[0]);
+	strcat(z->message, " ");
 	myargc--;
 	myargv++;
       }
+      z->message[strlen(z->message)-1]='\0'; /* remove last space */
       break;
     } else if (!strcmp(myargv[0], "-C")) {
       z->cc=1;
