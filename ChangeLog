@@ -2,6 +2,8 @@ $Id$
 1.2.4
 	'zlog in' will now take an optional thrid argument to set the
 	     'tty' variable before setting the zlocation
+	There is now a 'zlist' command that acts like 'znol -l'
+	'l' is bound to 'zlist'
 	
 1.2.3
 	Added filters "ping", "auto" and "login" by default.

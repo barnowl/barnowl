@@ -2390,3 +2390,88 @@ char *owl_function_ztext_stylestrip(char *zt) {
   owl_fmtext_free(&fm);
   return(plaintext);
 }
+
+/* popup a znol listing.  If file is NULL use the default .anyone */
+/* this doesn't obey 'elapsed' or 'timesort' yet */
+void owl_function_zlist(char *file, int elapsed, int timesort) {
+  char *ourfile, *tmp, buff[LINE], *line;
+  FILE *f;
+  int numlocs, ret, i;
+  ZLocations_t location[200];
+  owl_fmtext fm;
+
+  if (file==NULL) {
+    tmp=owl_global_get_homedir(&g);
+    if (!tmp) {
+      owl_function_makemsg("Could not determine home directory");
+      return;
+    }
+    ourfile=owl_malloc(strlen(tmp)+50);
+    sprintf(ourfile, "%s/.anyone", owl_global_get_homedir(&g));
+  } else {
+    ourfile=owl_strdup(file);
+  }
+
+  f=fopen(ourfile, "r");
+  if (!f) {
+    owl_function_makemsg("Error opening file %s", ourfile);
+    return;
+  }
+
+  owl_fmtext_init_null(&fm);
+    
+  while (fgets(buff, LINE, f)!=NULL) {
+    /* ignore comments, blank lines etc. */
+    if (buff[0]=='#') continue;
+    if (buff[0]=='\n') continue;
+    if (buff[0]=='\0') continue;
+
+    /* strip the \n */
+    buff[strlen(buff)-1]='\0';
+
+    /* ingore from # on */
+    tmp=strchr(buff, '#');
+    if (tmp) tmp[0]='\0';
+
+    /* ingore from SPC */
+    tmp=strchr(buff, ' ');
+    if (tmp) tmp[0]='\0';
+
+    /* stick on the local realm. */
+    if (!strchr(buff, '@')) {
+      strcat(buff, "@");
+      strcat(buff, ZGetRealm());
+    }
+
+    ret=ZLocateUser(buff, &numlocs, ZAUTH);
+    if (ret!=ZERR_NONE) {
+      owl_function_makemsg("Error getting location for %s", buff);
+      continue;
+    }
+
+    numlocs=200;
+    ret=ZGetLocations(location, &numlocs);
+    if (ret==0) {
+      for (i=0; i<numlocs; i++) {
+	line=malloc(strlen(location[i].host)+strlen(location[i].time)+strlen(location[i].tty)+100);
+	tmp=short_zuser(buff);
+	sprintf(line, "%-10.10s %-24.24s %-12.12s  %20.20s\n",
+		tmp,
+		location[i].host,
+		location[i].tty,
+		location[i].time);
+	owl_fmtext_append_normal(&fm, line);
+	owl_free(tmp);
+      }
+      if (numlocs>=200) {
+	owl_fmtext_append_normal(&fm, "Too many locations found for this user, truncating.\n");
+      }
+    }
+  }
+  fclose(f);
+
+  owl_function_popless_fmtext(&fm);
+  owl_fmtext_free(&fm);
+
+  owl_free(ourfile);
+}

@@ -184,6 +184,11 @@ owl_cmd commands_to_init[]
   OWLCMD_ARGS("help", owl_command_help, OWL_CTX_INTERACTIVE,
 	      "display help on using owl",
 	      "help [command]", ""),
+
+  OWLCMD_ARGS("zlist", owl_command_zlist, OWL_CTX_INTERACTIVE,
+	      "List users logged in",
+	      "znol [-f file]",
+	      "Print a znol-style listing of users logged in"),
   
   OWLCMD_VOID("recv:shiftleft", owl_command_shift_left, OWL_CTX_INTERACTIVE,
 	      "scrolls receive window to the left", "", ""),
@@ -716,6 +721,38 @@ char *owl_command_help(int argc, char **argv, char *buff) {
   
   owl_function_help_for_command(argv[1]);
   return NULL;
+}
+
+char *owl_command_zlist(int argc, char **argv) {
+  int elapsed=0, timesort=0;
+  char *file=NULL;
+
+  argc--;
+  argv++;
+  while (argc) {
+    if (!strcmp(argv[0], "-e")) {
+      elapsed=1;
+      argc--;
+      argv++;
+    } else if (!strcmp(argv[0], "-t")) {
+      timesort=1;
+      argc--;
+      argv++;
+    } else if (!strcmp(argv[0], "-f")) {
+      if (argc==1) {
+	owl_function_makemsg("zlist: -f needs an argument");
+	return(NULL);
+      }
+      file=argv[1];
+      argc-=2;
+      argv+=2;
+    } else {
+      owl_function_makemsg("zlist: unknown argument");
+      return(NULL);
+    }
+  }
+  owl_function_zlist(file, elapsed, timesort);
+  return(NULL);
 }
 
 void owl_command_about() {

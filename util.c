@@ -147,9 +147,10 @@ char **atokenize(char *buffer, char *sep, int *i) {
   return(args);
 }
 
-/* skips n tokens and returns where that would be.
- * TODO: handle quotes more sanely. */
 char *skiptokens(char *buff, int n) {
+  /* skips n tokens and returns where that would be.
+   * TODO: handle quotes more sanely. */
+  
   int inquotes=0;
   while (*buff && n>0) {
       while (*buff == ' ') buff++;
@@ -287,6 +288,7 @@ void downstr(char *foo) {
 }
 
 char *stristr(char *a, char *b) {
+  /* exactly like strstr but it's case insensitive */
   char *x, *y, *ret;
 
   if ((x=owl_strdup(a))==NULL) return(NULL);
@@ -305,13 +307,14 @@ char *stristr(char *a, char *b) {
   return(ret);
 }
 
-/* Caller must free response. 
-   Takes in strings which are space-separated lists of tokens
-   and returns a single string containing no token more than once.
-   If prohibit is non-null, no token may start with a character
-   in prohibit.
-*/
 char *owl_util_uniq(char *A, char *B, char *prohibit) {
+  /* Caller must free response. 
+     Takes in strings which are space-separated lists of tokens
+     and returns a single string containing no token more than once.
+     If prohibit is non-null, no token may start with a character
+     in prohibit.
+  */
+  
   char *cat, **tok;
   int toklen, i, j, first=1;
   cat = owl_malloc(strlen(A)+strlen(B)+3);
@@ -337,16 +340,17 @@ char *owl_util_uniq(char *A, char *B, char *prohibit) {
   return(cat);
 }
 
-
-
-/* returns if a string is only whitespace */
 int only_whitespace(char *s) {
+  /* returns if a string is only whitespace */
+
   int i;
   for (i=0; s[i]; i++) {
     if (!isspace((int) s[i])) return(0);
   }
   return(1);
 }
+
+/* hooks for doing memory allocation et. al. in owl */
 
 void *owl_malloc(size_t size) {
   return(malloc(size));
@@ -364,16 +368,16 @@ void *owl_realloc(void *ptr, size_t size) {
   return(realloc(ptr, size));
 }
 
-/* allocates memory and returns the string or null.
- * caller must free the string. 
- * from Linux sprintf man page. 
- */
 char *owl_sprintf(const char *fmt, ...) {
+  /* allocates memory and returns the string or null.
+   * caller must free the string. 
+   * from Linux sprintf man page. 
+   */
+  
   int n, size = 100;
   char *p;
   va_list ap;
-  if ((p = owl_malloc (size)) == NULL)
-    return NULL;
+  if ((p = owl_malloc (size)) == NULL) return (NULL);
   while (1) {
     /* Try to print in the allocated space. */
     va_start(ap, fmt);
@@ -426,11 +430,12 @@ char *owl_getquoting(char *line) {
   return("");
 }
 
-/* Caller must free returned string.
- * Returns a string with any occurances of 'from' replaced with 'to'.
- * Does not currently handle backslash quoting, but may in the future.
- */
 char *owl_util_substitute(char *in, char *from, char *to) {
+  /* Caller must free returned string.
+   * Returns a string with any occurances of 'from' replaced with 'to'.
+   * Does not currently handle backslash quoting, but may in the future.
+   */
+  
   char *out;
   int   outlen, tolen, fromlen, inpos=0, outpos=0;
 
