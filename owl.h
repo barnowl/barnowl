@@ -13,8 +13,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.3-pre-1
-#define OWL_VERSION_STRING "2.0.3-pre-1"
+#define OWL_VERSION         2.0.3
+#define OWL_VERSION_STRING "2.0.3"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
@@ -246,7 +246,7 @@ typedef struct _owl_message {
   ZNotice_t notice;
   owl_fmtext fmtext;
   int delete;
-  char hostname[MAXHOSTNAMELEN];
+  char hostname[MAXHOSTNAMELEN+1];
   owl_list attributes;            /* this is a list of pairs */
   char *time;
   char *zwriteline;
