@@ -1,6 +1,6 @@
 $Id$
 
-2.0.14-pre-1
+2.0.14-pre-2
 	Fixed missing word in startup message
 	Better 'status' command
 	Use '+' for popwin corners when 'fancylines' is off
@@ -9,6 +9,7 @@ $Id$
 	  debugging file
 	Do ~ expansion in 'dump' command.
 	Current directory added to 'status' command
+	Massive changes to libfaim and aim
 	
 2.0.13
 	Changed startup message for new mailing list
