@@ -142,6 +142,11 @@ owl_cmd commands_to_init[]
 	      "Print the value of the named variable.  If no arugments\n"
 	      "are used print the value of all variables.\n"),
 
+  OWLCMD_ARGS("get", owl_command_get_variable, OWL_CTX_ANY,
+	      "returns a variable value",
+	      "get <variable>",
+	      "Returns the value of the named variable as a string.\n"),
+
   OWLCMD_VOID("version", owl_command_version, OWL_CTX_ANY,
 	      "print the version of the running owl", "", ""),
 
@@ -1043,6 +1048,26 @@ char *owl_command_print(int argc, char **argv, char *buff) {
     owl_function_makemsg("Unknown variable '%s'.", var);
   }
   return NULL;
+}
+
+char *owl_command_get_variable(int argc, char **argv, char *buff) {
+  char *var;
+  char valbuff[1024];
+
+ if (argc!=2) {
+    owl_function_makemsg("Wrong number of arguments for get command");
+    return NULL;
+  }
+
+  var=argv[1];
+    
+  if (0 == owl_variable_get_tostring(owl_global_get_vardict(&g), 
+				     var, valbuff, 1024)) {
+    return owl_strdup(valbuff);
+  } else {
+    owl_function_makemsg("Unknown variable '%s'.", var);
+    return NULL;
+  }
 }
 
 
