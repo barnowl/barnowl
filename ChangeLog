@@ -42,6 +42,8 @@ $Id$
 	added the 'term' command which takes the 'raise' and 'deiconify'
 	  options.  It assumes xterm for now.
 	only 'make distclean' will nuke core and ~ files now
+	fixes to owl_function_do_newmsgproc from Stephen
+	converted functions.c to new code style, which I'm giving a shot
 	
 1.2.8
 	Class pings are displayed differently now
