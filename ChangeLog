@@ -1,8 +1,8 @@
 $Id$
 
 2.0.1-pre-1
-	Moved the (broken) newmsgproc stuff it a function procedure
-	Added thew 'newlinestrip' variable, on by default, that strips
+	Moved the (broken) newmsgproc stuff to a function procedure
+	Added the 'newlinestrip' variable, on by default, that strips
 	  leading and trailing newlines from incoming messages.
 	Fixed a case sensitivity probelm in owl_message_is_personal and
 	   owl_message_is_private
