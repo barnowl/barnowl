@@ -1,8 +1,9 @@
 $Id$
 
 2.0.9-pre-1
-	Added errqueue.
-	Added command "show errors".
+	Added errqueue
+	Added command "show errors"
+	Fixed bug removing newlines in backup files
 	
 2.0.8
 	Increased size of screen name field in buddy listing

@@ -764,7 +764,10 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
     }
 
     /* write to backupfile if necessary */
-    if (backup) fputs(buff, backupfile);
+    if (backup) {
+      fputs(buff, backupfile);
+      if (newline) fputs("\n", backupfile);
+    }
   }
   if (backup) fclose(backupfile);
   fclose(file);
