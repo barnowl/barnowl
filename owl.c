@@ -276,10 +276,8 @@ int main(int argc, char **argv, char **env) {
   if (owl_global_is_config_format(&g)) {
     owl_global_set_default_style(&g, "perl");
   } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
-    owl_function_debugmsg("Here with default style\n");
     owl_global_set_default_style(&g, "default");
   } else {
-    owl_function_debugmsg("Here with basic style\n");
     owl_global_set_default_style(&g, "basic");
   }
 
