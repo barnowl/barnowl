@@ -176,12 +176,41 @@ int owl_aim_send_im(char *to, char *msg)
 
 void owl_aim_addbuddy(char *screenname)
 {
-  aim_add_buddy(owl_global_get_aimsess(&g), owl_global_get_waitingconn(&g), screenname);
+  const char **foo;
+  
+  /*
+  aim_bos_setbuddylist(owl_global_get_aimsess(&g),
+		       aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
+		       foo);
+  */
+
+  /*
+  aim_add_buddy(owl_global_get_aimsess(&g),
+		aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
+		screenname);
+  */
+
+  foo=(char *) owl_malloc(30);
+  foo[0]=screenname;
+  aim_ssi_addbuddies(owl_global_get_aimsess(&g),
+		     aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
+		     "Buddies", foo, 1);
+  owl_free(foo);
+
 }
 
 void owl_aim_delbuddy(char *screenname)
 {
-  aim_remove_buddy(owl_global_get_aimsess(&g), NULL, screenname);
+  /*
+  aim_remove_buddy(owl_global_get_aimsess(&g),
+		   aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
+		   screenname);
+  */
+
+  aim_ssi_delbuddies(owl_global_get_aimsess(&g),
+		     aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
+		     "Buddies", &screenname, 1);
+
 }
 
 void owl_aim_chat_join(char *chatroom)
@@ -285,7 +314,8 @@ static void faimtest_debugcb(aim_session_t *sess, int level, const char *format,
 static int faimtest_parse_login(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
-  struct client_info_s info = AIM_CLIENTINFO_KNOWNGOOD;
+  struct client_info_s info = CLIENTINFO_AIM_KNOWNGOOD;
+    
   char *key;
   va_list ap;
 
@@ -433,12 +463,13 @@ on them.", priv->ohcaptainmycaptain);
   snprintf(buddies, sizeof(buddies), "Buddy1&Buddy2&");
   snprintf(profile, sizeof(profile), "Hello.<br>This is a test");
   */
+  strcpy(profile, "");
 
   aim_reqpersonalinfo(sess, fr->conn);
   aim_bos_reqlocaterights(sess, fr->conn);
 
-  /*aim_bos_setprofile(sess, fr->conn, profile, awaymsg, AIM_CAPS_BUDDYICON | AIM_CAPS_CHAT | AIM_CAPS_GETFILE | AIM_CAPS_SENDFILE | AIM_CAPS_IMIMAGE | AIM_CAPS_GAMES | AIM_CAPS_SAVESTOCKS | AIM_CAPS_SENDBUDDYLIST | AIM_CAPS_ICQ | AIM_CAPS_ICQUNKNOWN | AIM_CAPS_ICQRTF | AIM_CAPS_ICQSERVERRELAY | AIM_CAPS_TRILLIANCRYPT); */
-  aim_bos_setprofile(sess, fr->conn, profile, "", AIM_CAPS_SENDBUDDYLIST | AIM_CAPS_CHAT );
+  /* aim_bos_setprofile(sess, fr->conn, profile, awaymsg, AIM_CAPS_BUDDYICON | AIM_CAPS_CHAT | AIM_CAPS_GETFILE | AIM_CAPS_SENDFILE | AIM_CAPS_IMIMAGE | AIM_CAPS_GAMES | AIM_CAPS_SAVESTOCKS | AIM_CAPS_SENDBUDDYLIST | AIM_CAPS_ICQ | AIM_CAPS_ICQUNKNOWN | AIM_CAPS_ICQRTF | AIM_CAPS_ICQSERVERRELAY | AIM_CAPS_TRILLIANCRYPT); */
+  aim_bos_setprofile(sess, fr->conn, "", "", AIM_CAPS_SENDBUDDYLIST );
   aim_bos_reqbuddyrights(sess, fr->conn);
 
   /* send the buddy list and profile (required, even if empty) */
@@ -2086,15 +2117,15 @@ static int directim_incoming(aim_session_t *sess, aim_frame_t *fr, ...)
       for (z = 0; z < i; z++)
 	newbuf[z] = (z % 10)+0x30;
       newbuf[i] = '\0';
-      aim_send_im_direct(sess, fr->conn, newbuf);
+      aim_send_im_direct(sess, fr->conn, newbuf, strlen(newbuf), 0);
       free(newbuf);
     }
   } else if (strstr(msg, "goodday")) {
-    aim_send_im_direct(sess, fr->conn, "Good day to you, too");
+    aim_send_im_direct(sess, fr->conn, "Good day to you, too", 18, 0);
   } else {
     char newmsg[1024];
     snprintf(newmsg, sizeof(newmsg), "unknown (%s)\n", msg);
-    aim_send_im_direct(sess, fr->conn, newmsg);
+    aim_send_im_direct(sess, fr->conn, newmsg, strlen(newmsg), 0);
   }
 
   return 1;
@@ -2128,7 +2159,7 @@ static int faimtest_directim_initiate(aim_session_t *sess, aim_frame_t *fr, ...)
   aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_DIRECTIMINCOMING, directim_incoming, 0);
   aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_DIRECTIMTYPING, directim_typing, 0);
   
-  aim_send_im_direct(sess, newconn, "goodday");
+  aim_send_im_direct(sess, newconn, "goodday", 8, 0);
   
   /* printf("OFT: DirectIM: connected to %s\n", aim_directim_getsn(newconn)); */
   
@@ -2300,7 +2331,7 @@ static int faimtest_getfile_listing(aim_session_t *sess, aim_frame_t *fr, ...)
   
   /* printf("requesting %d %s(%d long)\n", namelen, filename, filesize); */
   
-  aim_oft_getfile_request(sess, conn, filename, filesize);
+  /* aim_oft_getfile_request(sess, conn, filename, filesize); */
   
   free(filename);
   free(sizec);
@@ -2360,12 +2391,15 @@ static int faimtest_getfile_listingreq(aim_session_t *sess, aim_frame_t *fr, ...
 
 static int faimtest_getfile_receive(aim_session_t *sess, aim_frame_t *fr, ...)
 {
+  /* needs ot be fixed --kretch */
+#if 0
   va_list ap;
   aim_conn_t *conn;
   struct aim_filetransfer_priv *ft;
   unsigned char data;
   int pos;
-  
+
+
   va_start(ap, fr);
   conn = va_arg(ap, aim_conn_t *);
   ft = va_arg(ap, struct aim_filetransfer_priv *);
@@ -2381,6 +2415,7 @@ static int faimtest_getfile_receive(aim_session_t *sess, aim_frame_t *fr, ...)
   /* printf("\n"); */
 
   aim_oft_getfile_end(sess, conn);
+#endif
   return 0;
 }
 
@@ -2412,7 +2447,8 @@ static int faimtest_getfile_initiate(aim_session_t *sess, aim_frame_t *fr, ...)
   
   aim_conn_close(listenerconn);
   aim_conn_kill(sess, &listenerconn);
-  
+
+  /*   This doesn't work with the new libfaim */
   aim_conn_addhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILEFILEREQ,  faimtest_getfile_filereq, 0);
   aim_conn_addhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILEFILESEND, faimtest_getfile_filesend, 0);
   aim_conn_addhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILECOMPLETE, faimtest_getfile_complete, 0);      
@@ -2497,7 +2533,7 @@ void directim_requested(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *u
     aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_DIRECTIMINCOMING, directim_incoming, 0);
     aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_DIRECTIMTYPING, directim_typing, 0);
     /* printf("OFT: DirectIM: connected to %s\n", userinfo->sn); */
-    aim_send_im_direct(sess, newconn, "goodday");
+    aim_send_im_direct(sess, newconn, "goodday", 7, 0);
   }
 }
 
