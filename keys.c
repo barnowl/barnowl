@@ -69,6 +69,8 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
 
   BIND_CMD("C-k",         "edit:delete-to-line-end", "");
 
+  BIND_CMD("C-t",         "edit:transpose-chars", "");
+
   BIND_CMD("M-q",         "edit:fill-paragraph", "");
 
   BIND_CMD("C-l",         "( edit:recenter ; redisplay )", "");

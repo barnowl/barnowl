@@ -1245,7 +1245,11 @@ void owl_function_mainwin_pagedown() {
 
   i=owl_mainwin_get_last_msg(owl_global_get_mainwin(&g));
   if (i<0) return;
-
+  if (owl_mainwin_is_last_msg_truncated(owl_global_get_mainwin(&g))
+      && (owl_global_get_curmsg(&g) < i)
+      && (i>0)) {
+    i--;
+  }
   owl_global_set_curmsg(&g, i);
   owl_function_nextmsg();
 }

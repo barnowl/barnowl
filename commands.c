@@ -571,6 +571,11 @@ owl_cmd commands_to_init[]
 		  "deletes all of the contents of the buffer",
 		  "", ""),
 
+  OWLCMD_VOID_CTX("edit:transpose-chars", owl_editwin_transpose_chars,
+		  OWL_CTX_EDIT,
+		  "Interchange characters around point, moving forward one character.",
+		  "", ""),
+
   OWLCMD_VOID_CTX("edit:fill-paragraph", owl_editwin_fill_paragraph, 
 		  OWL_CTX_EDIT,
 		  "fills the current paragraph to line-wrap well",

@@ -367,6 +367,37 @@ void owl_editwin_delete_char(owl_editwin *e) {
   e->buff[e->bufflen]='\0';
 }
 
+void owl_editwin_transpose_chars(owl_editwin *e) {
+  /* Swap the character at point with the character at point-1 and
+   * advance the pointer.  If point is at beginning of buffer do
+   * nothing.  If point is after the last character swap point-1 with
+   * point-2.  (Behaves as observed in tcsh and emacs).  
+   */
+
+  int z;
+  char tmp;
+
+  if (e->bufflen==0) return;
+  
+  /* get the cursor point */
+  z=_owl_editwin_get_index_from_xy(e);
+
+  if (z==e->bufflen) {
+    /* point is after last character */
+    z--;
+  }  
+
+  if (z-1 < e->lock) {
+    /* point is at beginning of buffer, do nothing */
+    return;
+  }
+
+  tmp=e->buff[z];
+  e->buff[z]=e->buff[z-1];
+  e->buff[z-1]=tmp;
+  owl_editwin_key_right(e);
+}
+
 void owl_editwin_insert_string(owl_editwin *e, char *string) {
   /* insert 'string' at the current point, later text is shifted
    * right

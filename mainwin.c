@@ -40,6 +40,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw) {
   /* write the messages out */
   isfull=0;
   mw->curtruncated=0;
+  mw->lasttruncated=0;
   j=owl_view_get_size(v);
   for (i=topmsg; i<j; i++) {
     if (isfull) break;
@@ -71,6 +72,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw) {
 
     /* if we'll fill the screen print a partial message */
     if ((y+lines > recwinlines) && (i==owl_global_get_curmsg(&g))) mw->curtruncated=1;
+    if (y+lines > recwinlines) mw->lasttruncated=1;
     if (y+lines > recwinlines-1) {
       isfull=1;
       owl_message_curs_waddstr(m, owl_global_get_curs_recwin(&g),
@@ -126,6 +128,11 @@ void owl_mainwin_redisplay(owl_mainwin *mw) {
 
 int owl_mainwin_is_curmsg_truncated(owl_mainwin *mw) {
   if (mw->curtruncated) return(1);
+  return(0);
+}
+
+int owl_mainwin_is_last_msg_truncated(owl_mainwin *mw) {
+  if (mw->lasttruncated) return(1);
   return(0);
 }
 

@@ -1,5 +1,9 @@
 $Id$
 
+1.2.1-pre-4
+	Page-down will not skip past the last message if its truncated.
+	Added C-t binding for transposing characters.  (from jdaniel)
+	
 1.2.1-pre-3
 	Variables now have a summary and a long description.
 	        Only the summary is shown with help.
@@ -32,7 +36,7 @@ $Id$
 	                   when user moves the cursor to the top
 	                   or bottom of the screen.  When it moves,
 	                   the screen will be paged up or down and
-	                   the cursor will be near the center.\n",
+	                   the cursor will be near the center.
 
 1.2.1-pre-2
 	Refixed 'login or login' typo in help
