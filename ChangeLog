@@ -5,6 +5,8 @@ $Id$
 	Display CC: in outgoing CC messages
 	More AIM logout detection
 	Don't proclaim "interfaces changed" on first build.
+	Added the 'loopback' message type
+	Added the 'loopwrite' command
 	
 2.0.10
 	Allow 'hostname' in filters.

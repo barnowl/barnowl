@@ -2,12 +2,14 @@
 
 static const char fileIdent[] = "$Id$";
 
-void owl_mainwin_init(owl_mainwin *mw) {
+void owl_mainwin_init(owl_mainwin *mw)
+{
   mw->curtruncated=0;
   mw->lastdisplayed=-1;
 }
 
-void owl_mainwin_redisplay(owl_mainwin *mw) {
+void owl_mainwin_redisplay(owl_mainwin *mw)
+{
   owl_message *m;
   int i, p, q, lines, isfull, viewsize;
   int x, y, savey, recwinlines, start;
@@ -135,17 +137,20 @@ void owl_mainwin_redisplay(owl_mainwin *mw) {
 }
 
 
-int owl_mainwin_is_curmsg_truncated(owl_mainwin *mw) {
+int owl_mainwin_is_curmsg_truncated(owl_mainwin *mw)
+{
   if (mw->curtruncated) return(1);
   return(0);
 }
 
-int owl_mainwin_is_last_msg_truncated(owl_mainwin *mw) {
+int owl_mainwin_is_last_msg_truncated(owl_mainwin *mw)
+{
   if (mw->lasttruncated) return(1);
   return(0);
 }
 
-int owl_mainwin_get_last_msg(owl_mainwin *mw) {
+int owl_mainwin_get_last_msg(owl_mainwin *mw)
+{
   /* return the number of the last message displayed. -1 if none */
   return(mw->lastdisplayed);
 }

@@ -54,12 +54,54 @@ void owl_log_outgoing_zephyr(char *to, char *text)
   owl_free(tobuff);
 }
 
-void owl_log_outgoing_aim(char *to, char *text) {
+void owl_log_outgoing_aim(char *to, char *text)
+{
   FILE *file;
   char filename[MAXPATHLEN], *logpath;
   char *tobuff;
 
   tobuff=owl_sprintf("aim:%s", to);
+
+  /* expand ~ in path names */
+  logpath = owl_util_substitute(owl_global_get_logpath(&g), "~", 
+				owl_global_get_homedir(&g));
+
+  snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
+  file=fopen(filename, "a");
+  if (!file) {
+    owl_function_error("Unable to open file for outgoing logging");
+    owl_free(logpath);
+    return;
+  }
+  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
+  if (text[strlen(text)-1]!='\n') {
+    fprintf(file, "\n");
+  }
+  fclose(file);
+
+  snprintf(filename, MAXPATHLEN, "%s/all", logpath);
+  owl_free(logpath);
+  file=fopen(filename, "a");
+  if (!file) {
+    owl_function_error("Unable to open file for outgoing logging");
+    return;
+  }
+  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
+  if (text[strlen(text)-1]!='\n') {
+    fprintf(file, "\n");
+  }
+  fclose(file);
+
+  owl_free(tobuff);
+}
+
+void owl_log_outgoing_loopback(char *text)
+{
+  FILE *file;
+  char filename[MAXPATHLEN], *logpath;
+  char *tobuff;
+
+  tobuff=owl_sprintf("loopback:%s", "loppback");
 
   /* expand ~ in path names */
   logpath = owl_util_substitute(owl_global_get_logpath(&g), "~", 
@@ -141,6 +183,8 @@ void owl_log_incoming(owl_message *m)
   } else if (owl_message_is_type_aim(m)) {
     /* we do not yet handle chat rooms */
     from=frombuff=owl_sprintf("aim:%s", owl_message_get_sender(m));
+  } else if (owl_message_is_type_loopback(m)) {
+    from=frombuff=owl_strdup("loopback");
   } else {
     from=frombuff=owl_strdup("unknown");
   }
@@ -219,7 +263,12 @@ void owl_log_incoming(owl_message *m)
     fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
     if (owl_message_is_login(m)) fprintf(file, "LOGIN\n\n");
     if (owl_message_is_logout(m)) fprintf(file, "LOGOUT\n\n");
+  } else {
+    fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
+    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
+    fprintf(file, "%s\n\n", owl_message_get_body(m));
   }
+
   fclose(file);
 
   /* if it's a personal message, also write to the 'all' file */
@@ -244,6 +293,10 @@ void owl_log_incoming(owl_message *m)
       fprintf(allfile, "Time: %s\n\n", owl_message_get_timestr(m));
       if (owl_message_is_login(m)) fprintf(allfile, "LOGIN\n\n");
       if (owl_message_is_logout(m)) fprintf(allfile, "LOGOUT\n\n");
+    } else {
+      fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
+      fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
+      fprintf(file, "%s\n\n", owl_message_get_body(m));
     }
     fclose(allfile);
   }

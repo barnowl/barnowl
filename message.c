@@ -312,6 +312,11 @@ void owl_message_set_type_admin(owl_message *m)
   m->type=OWL_MESSAGE_TYPE_ADMIN;
 }
 
+void owl_message_set_type_loopback(owl_message *m)
+{
+  m->type=OWL_MESSAGE_TYPE_LOOPBACK;
+}
+
 void owl_message_set_type_zephyr(owl_message *m)
 {
   m->type=OWL_MESSAGE_TYPE_ZEPHYR;
@@ -325,6 +330,12 @@ void owl_message_set_type_aim(owl_message *m)
 int owl_message_is_type_admin(owl_message *m)
 {
   if (m->type==OWL_MESSAGE_TYPE_ADMIN) return(1);
+  return(0);
+}
+
+int owl_message_is_type_loopback(owl_message *m)
+{
+  if (m->type==OWL_MESSAGE_TYPE_LOOPBACK) return(1);
   return(0);
 }
 
@@ -344,18 +355,6 @@ int owl_message_is_type_generic(owl_message *m)
 {
   if (m->type==OWL_MESSAGE_TYPE_GENERIC) return(1);
   return(0);
-}
-
-char *owl_message_type_to_string(owl_message *m)
-{
-  if (m->type==OWL_MESSAGE_TYPE_ADMIN) return("admin");
-  if (m->type==OWL_MESSAGE_TYPE_GENERIC) return("generic");
-  if (m->type==OWL_MESSAGE_TYPE_ZEPHYR) return("zephyr");
-  if (m->type==OWL_MESSAGE_TYPE_AIM) return("aim");
-  if (m->type==OWL_MESSAGE_TYPE_JABBER) return("jabber");
-  if (m->type==OWL_MESSAGE_TYPE_ICQ) return("icq");
-  if (m->type==OWL_MESSAGE_TYPE_MSN) return("msn");
-  return("unknown");
 }
 
 char *owl_message_get_text(owl_message *m)
@@ -448,7 +447,6 @@ char *owl_message_get_hostname(owl_message *m)
 {
   return(m->hostname);
 }
-
 
 void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline, int acol, int bcol, int color)
 {
@@ -596,6 +594,8 @@ char *owl_message_get_type(owl_message *m) {
     return("yahoo");
   case OWL_MESSAGE_TYPE_MSN:
     return("msn");
+  case OWL_MESSAGE_TYPE_LOOPBACK:
+    return("loopback");
   default:
     return("unknown");
   }
@@ -676,6 +676,17 @@ void owl_message_create_admin(owl_message *m, char *header, char *text)
   owl_message_set_type_admin(m);
   owl_message_set_body(m, text);
   owl_message_set_attribute(m, "adminheader", header); /* just a hack for now */
+}
+
+/* caller should set the direction */
+void owl_message_create_loopback(owl_message *m, char *text)
+{
+  owl_message_init(m);
+  owl_message_set_type_loopback(m);
+  owl_message_set_body(m, text);
+  owl_message_set_sender(m, "loopback-sender");
+  owl_message_set_recipient(m, "loopback-recipient");
+  owl_message_set_isprivate(m);
 }
 
 #ifdef HAVE_LIBZEPHYR
@@ -815,7 +826,6 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
 
   owl_zwrite_free(&z);
 }
-
 
 void owl_message_pretty_zsig(owl_message *m, char *buff)
 {

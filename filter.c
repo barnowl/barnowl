@@ -161,7 +161,7 @@ int owl_filter_message_match(owl_filter *f, owl_message *m)
     } else if (!strcasecmp(field, "realm")) {
       match=owl_message_get_realm(m);
     } else if (!strcasecmp(field, "type")) {
-      match=owl_message_type_to_string(m);
+      match=owl_message_get_type(m);
     } else if (!strcasecmp(field, "hostname")) {
       match=owl_message_get_hostname(m);
     } else if (!strcasecmp(field, "direction")) {

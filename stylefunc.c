@@ -198,6 +198,27 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
     }
     
     owl_free(indent);
+  } else {
+    char *text, *header, *indent;
+    
+    text=owl_message_get_body(m);
+    header=owl_sprintf("%s from: %s to: %s",
+		       owl_message_get_type(m),
+		       owl_message_get_sender(m),
+		       owl_message_get_recipient(m));
+    
+    indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
+    owl_text_indent(indent, text, OWL_MSGTAB);
+    owl_fmtext_append_normal(fm, OWL_TABSTR);
+    owl_fmtext_append_normal(fm, header);
+    owl_fmtext_append_normal(fm, "\n");
+    owl_fmtext_append_normal(fm, indent);
+    if (text[strlen(text)-1]!='\n') {
+      owl_fmtext_append_normal(fm, "\n");
+    }
+    
+    owl_free(indent);
+    owl_free(header);
   }
 }
 
@@ -394,6 +415,27 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     }
     
     owl_free(indent);
+  } else {
+    char *text, *header, *indent;
+    
+    text=owl_message_get_body(m);
+    header=owl_sprintf("%s from: %s to: %s",
+		       owl_message_get_type(m),
+		       owl_message_get_sender(m),
+		       owl_message_get_recipient(m));
+    
+    indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
+    owl_text_indent(indent, text, OWL_MSGTAB);
+    owl_fmtext_append_normal(fm, OWL_TABSTR);
+    owl_fmtext_append_normal(fm, header);
+    owl_fmtext_append_normal(fm, "\n");
+    owl_fmtext_append_normal(fm, indent);
+    if (text[strlen(text)-1]!='\n') {
+      owl_fmtext_append_normal(fm, "\n");
+    }
+    
+    owl_free(indent);
+    owl_free(header);
   }
 }
 
@@ -525,7 +567,16 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
     owl_fmtext_append_normal(fm, tmp);
     owl_fmtext_append_normal(fm, "\n");
     if (tmp) owl_free(tmp);
-  }
+  } else {
+    owl_fmtext_append_spaces(fm, OWL_TAB);
+    owl_fmtext_append_normal(fm, "< LOOPBACK                                     ");
+    
+    tmp=owl_strdup(owl_message_get_body(m));
+    owl_util_tr(tmp, '\n', ' ');
+    owl_fmtext_append_normal(fm, tmp);
+    owl_fmtext_append_normal(fm, "\n");
+    if (tmp) owl_free(tmp);
+  }    
 
 }
 
@@ -735,5 +786,7 @@ void owl_stylefunc_vt(owl_fmtext *fm, owl_message *m)
     }
     
     owl_free(indent);
+  } else {
+
   }
 }

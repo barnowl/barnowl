@@ -207,6 +207,34 @@ int owl_function_make_outgoing_aim(char *body, char *to)
   return(0);
 }
 
+int owl_function_make_outgoing_loopback(char *body)
+{
+  owl_message *m;
+  int followlast;
+
+  followlast=owl_global_should_followlast(&g);
+
+  /* create the message */
+  m=owl_malloc(sizeof(owl_message));
+  owl_message_create_loopback(m, body);
+  owl_message_set_direction_out(m);
+
+  /* add it to the global list and current view */
+  owl_messagelist_append_element(owl_global_get_msglist(&g), m);
+  owl_view_consider_message(owl_global_get_current_view(&g), m);
+
+  if (followlast) owl_function_lastmsg_noredisplay();
+
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
+    owl_popwin_refresh(owl_global_get_popwin(&g));
+  }
+  
+  wnoutrefresh(owl_global_get_curs_recwin(&g));
+  owl_global_set_needrefresh(&g);
+  return(0);
+}
+
 void owl_function_zwrite_setup(char *line)
 {
   owl_editwin *e;
@@ -279,6 +307,30 @@ void owl_function_aimwrite_setup(char *line)
   owl_global_set_typwin_active(&g);
 
   owl_global_set_buffercommand(&g, line);
+}
+
+void owl_function_loopwrite_setup()
+{
+  owl_editwin *e;
+
+  /* create and setup the editwin */
+  e=owl_global_get_typwin(&g);
+  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE, owl_global_get_msg_history(&g));
+
+  if (!owl_global_get_lockout_ctrld(&g)) {
+    owl_function_makemsg("Type your message below.  End with ^D or a dot on a line by itself.  ^C will quit.");
+  } else {
+    owl_function_makemsg("Type your message below.  End with a dot on a line by itself.  ^C will quit.");
+  }
+
+  owl_editwin_clear(e);
+  owl_editwin_set_dotsend(e);
+  owl_editwin_set_locktext(e, "----> loopwrite\n");
+
+  /* make it active */
+  owl_global_set_typwin_active(&g);
+
+  owl_global_set_buffercommand(&g, "loopwrite");
 }
 
 /* send, log and display an outgoing zephyr.  If 'msg' is NULL
@@ -396,6 +448,31 @@ void owl_function_aimwrite(char *to)
   /* log it if we have logging turned on */
   if (owl_global_is_logging(&g)) {
     owl_log_outgoing_aim(to, owl_editwin_get_text(owl_global_get_typwin(&g)));
+  }
+}
+
+void owl_function_loopwrite()
+{
+  owl_message *m;
+
+  /* create a message and put it on the message queue.  This simulates
+   * an incoming message */
+  m=owl_malloc(sizeof(owl_message));
+  owl_message_create_loopback(m, owl_editwin_get_text(owl_global_get_typwin(&g)));
+  owl_message_set_direction_out(m);
+  owl_global_messagequeue_addmsg(&g, m);
+
+  /* display the message as an outgoing message in the receive window */
+  if (owl_global_is_displayoutgoing(&g)) {
+    owl_function_make_outgoing_loopback(owl_editwin_get_text(owl_global_get_typwin(&g)));
+  }
+
+  /* fake a makemsg */
+  owl_function_makemsg("loopback message sent");
+
+  /* log it if we have logging turned on */
+  if (owl_global_is_logging(&g)) {
+    owl_log_outgoing_loopback(owl_editwin_get_text(owl_global_get_typwin(&g)));
   }
 }
 
@@ -1078,10 +1155,14 @@ void owl_function_run_buffercommand()
     owl_function_zcrypt(buff, owl_editwin_get_text(owl_global_get_typwin(&g)));
   } else if (!strncmp(buff, "aimwrite ", 9)) {
     owl_function_aimwrite(buff+9);
+  } else if (!strncmp(buff, "loopwrite", 9) || !strncmp(buff, "loopwrite ", 10)) {
+    owl_function_loopwrite();
   } else if (!strncmp(buff, "aimlogin ", 9)) {
     ptr=owl_sprintf("%s %s", buff, owl_global_get_response(&g));
     owl_function_command(ptr);
     owl_free(ptr);
+  } else {
+    owl_function_error("Internal error: invalid buffercommand %s", buff);
   }
 }
 
@@ -1281,7 +1362,7 @@ void owl_function_info()
   owl_fmtext_append_normal(&fm, "\n");
 
   owl_fmtext_append_normal(&fm, "  Type      : ");
-  owl_fmtext_append_bold(&fm, owl_message_type_to_string(m));
+  owl_fmtext_append_bold(&fm, owl_message_get_type(m));
   owl_fmtext_append_normal(&fm, "\n");
 
   if (owl_message_is_direction_in(m)) {
@@ -1945,7 +2026,6 @@ void owl_function_start_command(char *line)
 
   owl_context_set_editline(owl_global_get_context(&g), tw);
   owl_function_activate_keymap("editline");
-    
 }
 
 void owl_function_start_question(char *line)

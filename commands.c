@@ -134,6 +134,11 @@ owl_cmd commands_to_init[]
 	      "aimzwrite <user>",
 	      "Send an aim message to a user.\n"),
 
+  OWLCMD_ARGS("loopwrite", owl_command_loopwrite, OWL_CTX_INTERACTIVE,
+	      "send a loopback message",
+	      "loopwrite",
+	      "Send a local message.\n"),
+
   OWLCMD_ARGS("zcrypt", owl_command_zcrypt, OWL_CTX_INTERACTIVE,
 	      "send an encrypted zephyr",
 	      "zcrypt [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcde] [-m <message...>]\n",
@@ -1724,6 +1729,12 @@ char *owl_command_aimwrite(int argc, char **argv, char *buff)
     
   owl_function_aimwrite_setup(newbuff);
   owl_free(newbuff);
+  return(NULL);
+}
+
+char *owl_command_loopwrite(int argc, char **argv, char *buff)
+{
+  owl_function_loopwrite_setup();
   return(NULL);
 }
 
