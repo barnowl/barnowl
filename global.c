@@ -778,7 +778,7 @@ char *owl_global_get_response(owl_global *g)
 void owl_global_set_response(owl_global *g, char *resp)
 {
   if (g->response) owl_free(g->response);
-  g->response=resp;
+  g->response=owl_strdup(resp);
 }
 
 
