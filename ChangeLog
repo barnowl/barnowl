@@ -8,6 +8,8 @@ $Id$
 	viewwin will now say "End" instead of "More" when at the end
 	Added a debugging message indicating the result of topmsg
 	  calculations
+	You can now use %me% in filters
+	The built-in personal filter is updated to do so
 	
 1.2.3
 	Added filters "ping", "auto" and "login" by default.

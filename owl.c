@@ -135,7 +135,7 @@ int main(int argc, char **argv, char **env) {
 
   /* setup the default filters */
   f=malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "personal", "( class ^message$ and instance ^personal$ ) or ( type ^admin$ and recipient .+ )"); /* fix to use admintype */
+  owl_filter_init_fromstring(f, "personal", "class ^message$ and instance ^personal$ and ( recipient ^%me%$ or sender ^%me%$ )"); /* fix to use admintype */
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   f=malloc(sizeof(owl_filter));

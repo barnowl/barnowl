@@ -16,13 +16,14 @@ int owl_filter_init_fromstring(owl_filter *f, char *name, char *string) {
 int owl_filter_init(owl_filter *f, char *name, int argc, char **argv) {
   int i, error;
   owl_filterelement *fe;
+  char *regexstr;
    
   f->name=owl_strdup(name);
   f->polarity=0;
   f->color=OWL_COLOR_DEFAULT;
   f->cachedmsgid=-1;
   owl_list_create(&(f->fes));
-
+  
   /* first take arguments that have to come first */
   /* set the color */
   if (argc>=2 && !strcmp(argv[0], "-c")) {
@@ -30,12 +31,12 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv) {
     argc-=2;
     argv+=2;
   }
-
+  
   /* then deal with the expression */
   for (i=0; i<argc; i++) {
     error=0;
     fe=owl_malloc(sizeof(owl_filterelement));
-
+    
     /* all the 0 argument possibilities */
     if (!strcmp(argv[i], "(")) {
       owl_filterelement_create_openbrace(fe);
@@ -47,7 +48,7 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv) {
       owl_filterelement_create_or(fe);
     } else if (!strcasecmp(argv[i], "not")) {
       owl_filterelement_create_not(fe);
-
+      
     } else if (i==argc-1) {
       error=1;
     } else {
@@ -60,7 +61,9 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv) {
 	  !strcasecmp(argv[i], "realm") ||
 	  !strcasecmp(argv[i], "type") ||
 	  !strcasecmp(argv[i], "direction")) {
-	owl_filterelement_create_re(fe, argv[i], argv[i+1]);
+	regexstr=owl_util_substitute(argv[i+1], "%me%", ZGetSender());
+	owl_filterelement_create_re(fe, argv[i], regexstr);
+	owl_free(regexstr);
 	i++;
       } else {
 	error=1;

@@ -54,6 +54,7 @@ void owl_help() {
      "\n"
      "    M-n           View zephyrs to selected conversation\n"
      "    M-N           View zephyrs to selected converstaion by instance\n"
+     "    V             Change to back to home view ('all' by default)\n"
      "    v             Start a view command\n"
      "\n"
      "    A             Toggle zaway\n"
