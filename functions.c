@@ -2870,7 +2870,7 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
       } else {
 	timestr=owl_strdup("");
       }
-      foo=owl_sprintf("  %-10.10s %-10.10s\n",
+      foo=owl_sprintf("  %-15.15s %-12.12s\n",
 		      owl_buddylist_get_buddy(b, i),
 		      timestr);
       owl_fmtext_append_normal(&fm, foo);
