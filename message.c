@@ -360,7 +360,7 @@ void owl_message_create_admin(owl_message *m, char *header, char *text) {
 void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
   struct hostent *hent;
   int k, ret;
-  char *ptr;
+  char *ptr, *tmp;
 
   m->id=owl_global_get_nextmsgid(&g);
   owl_message_set_type_zephyr(m);
@@ -396,9 +396,15 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
 
   /* set the body */
   ptr=owl_zephyr_get_message(n, &k);
-  m->body=owl_malloc(k+10);
-  memcpy(m->body, ptr, k);
-  m->body[k]='\0';
+  tmp=owl_malloc(k+10);
+  memcpy(tmp, ptr, k);
+  tmp[k]='\0';
+  if (owl_global_is_newlinestrip(&g)) {
+    m->body=owl_util_stripnewlines(tmp);
+    owl_free(tmp);
+  } else {
+    m->body=tmp;
+  }
 
   /* if zcrypt is enabled try to decrypt the message */
   if (owl_global_is_zcrypt(&g) && !strcasecmp(n->z_opcode, "crypt")) {

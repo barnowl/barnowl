@@ -84,6 +84,9 @@ static owl_variable variables_to_init[] = {
   OWLVAR_BOOL( "smartstrip" /* %OwlVarStub */, 1,
 	       "strip kerberos instance for reply", ""),
 
+  OWLVAR_BOOL( "newlinestrip" /* %OwlVarStub */, 1,
+	       "strip leading and trailing newlines", ""),
+
   OWLVAR_BOOL( "displayoutgoing" /* %OwlVarStub */, 1,
 	       "display outgoing messages", "" ),
 

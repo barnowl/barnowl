@@ -615,6 +615,27 @@ void owl_hack_animate() {
   }
 }
 
+char *owl_util_stripnewlines(char *in) {
+  /* strip leading and trailing new lines.
+     caller must free the return */
+  
+  char  *tmp, *ptr1, *ptr2, *out;
+
+  ptr1=tmp=owl_strdup(in);
+  while (ptr1[0]=='\n') {
+    ptr1++;
+  }
+  ptr2=ptr1+strlen(ptr1)-1;
+  while (ptr2[0]=='\n' && ptr2>ptr1) {
+    ptr2[0]='\0';
+    ptr2--;
+  }
+
+  out=owl_strdup(ptr1);
+  owl_free(tmp);
+  return(out);
+}
+
 /**************************************************************************/
 /************************* REGRESSION TESTS *******************************/
 /**************************************************************************/
