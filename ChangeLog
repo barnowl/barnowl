@@ -1,5 +1,9 @@
 $Id$
 
+2.0.14-pre-1
+	Fixed missing word in startup message
+	Better 'status' command
+	
 2.0.13
 	Changed startup message for new mailing list
 	blist now prints AIM info even if .anyone is unreadable

@@ -305,7 +305,7 @@ int main(int argc, char **argv, char **env)
   strcat(startupmsg, buff);
   strcat(startupmsg, "                                                                       \n");
   strcat(startupmsg, "If you would like to receive release announcements about Owl you can   \n");
-  strcat(startupmsg, "join the owl-users@mit.edu mailing at http://web.mit.edu/ktools/       \n");
+  strcat(startupmsg, "join the owl-users@mit.edu mailing list at http://web.mit.edu/ktools/  \n");
   strcat(startupmsg, "                                                                 ^ ^   \n");
   strcat(startupmsg, "                                                                 OvO   \n");
   strcat(startupmsg, "Please report any bugs or suggestions to bug-owl@mit.edu        (   )  \n");

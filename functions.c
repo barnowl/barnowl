@@ -1776,19 +1776,17 @@ void owl_function_status()
 
   start=owl_global_get_starttime(&g);
 
-  owl_fmtext_append_normal(&fm, "Version: ");
+  owl_fmtext_append_normal(&fm, "General Information:\n");
+
+  owl_fmtext_append_normal(&fm, "  Version: ");
   owl_fmtext_append_normal(&fm, OWL_VERSION_STRING);
   owl_fmtext_append_normal(&fm, "\n");
 
-  sprintf(buff, "Screen size: %i lines, %i columns\n", owl_global_get_lines(&g), owl_global_get_cols(&g));
-  owl_fmtext_append_normal(&fm, buff);
-
-  owl_fmtext_append_normal(&fm, "Startup Arugments: ");
+  owl_fmtext_append_normal(&fm, "  Startup Arugments: ");
   owl_fmtext_append_normal(&fm, owl_global_get_startupargs(&g));
   owl_fmtext_append_normal(&fm, "\n");
-  sprintf(buff, "Startup Time: %s", ctime(&start));
+  sprintf(buff, "  Startup Time: %s", ctime(&start));
   owl_fmtext_append_normal(&fm, buff);
-  
 
   up=owl_global_get_runtime(&g);
   days=up/86400;
@@ -1797,34 +1795,51 @@ void owl_function_status()
   up-=hours*3600;
   minutes=up/60;
   up-=minutes*60;
-  sprintf(buff, "Run Time: %i days %2.2i:%2.2i:%2.2i\n", days, hours, minutes, up);
+  sprintf(buff, "  Run Time: %i days %2.2i:%2.2i:%2.2i\n", days, hours, minutes, up);
   owl_fmtext_append_normal(&fm, buff);
 
-  if (owl_global_get_hascolors(&g)) {
-    sprintf(buff, "Color: Yes, %i color pairs.\n", owl_global_get_colorpairs(&g));
+  owl_fmtext_append_normal(&fm, "\nProtocol Options:\n");
+  owl_fmtext_append_normal(&fm, "  Zephyr included    : ");
+  if (owl_global_is_havezephyr(&g)) {
+    owl_fmtext_append_normal(&fm, "yes\n");
   } else {
-    sprintf(buff, "Color: No.\n");
+    owl_fmtext_append_normal(&fm, "no\n");
   }
-  owl_fmtext_append_normal(&fm, buff);
+  owl_fmtext_append_normal(&fm, "  AIM included       : yes\n");
+  owl_fmtext_append_normal(&fm, "  Loopback included  : yes\n");
 
+
+  owl_fmtext_append_normal(&fm, "\nBuild Options:\n");
+  owl_fmtext_append_normal(&fm, "  Stderr redirection : ");
+#if OWL_STDERR_REDIR
+  owl_fmtext_append_normal(&fm, "yes\n");
+#else
+  owl_fmtext_append_normal(&fm, "no\n");
+#endif
+  
+
+  owl_fmtext_append_normal(&fm, "\nMemory Usage:\n");
+  owl_fmtext_append_normal(&fm, "  Not currently available.\n");
   /*
   sprintf(buff, "%sMemory Malloced: %i\n", buff, owl_global_get_malloced(&g));
   sprintf(buff, "%sMemory Freed: %i\n", buff, owl_global_get_freed(&g));
   sprintf(buff, "%sMemory In Use: %i\n", buff, owl_global_get_meminuse(&g));
   */
 
-  owl_fmtext_append_normal(&fm, "\n");
+  owl_fmtext_append_normal(&fm, "\nAIM Status:\n");
+  owl_fmtext_append_normal(&fm, "  Logged in: ");
   if (owl_global_is_aimloggedin(&g)) {
-    owl_fmtext_append_normal(&fm, "AIM: logged in as ");
     owl_fmtext_append_normal(&fm, owl_global_get_aim_screenname(&g));
     owl_fmtext_append_normal(&fm, "\n");
   } else {
-    owl_fmtext_append_normal(&fm, "AIM: not logged in\n");
+    owl_fmtext_append_normal(&fm, "(not logged in)\n");
   }
+
+  owl_fmtext_append_normal(&fm, "  Processing events: ");
   if (owl_global_is_doaimevents(&g)) {
-    owl_fmtext_append_normal(&fm, "AIM: processing events\n ");
+    owl_fmtext_append_normal(&fm, "yes\n");
   } else {
-    owl_fmtext_append_normal(&fm, "AIM: not processing events\n ");
+    owl_fmtext_append_normal(&fm, "no\n");
   }
 
   owl_function_popless_fmtext(&fm);
