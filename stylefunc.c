@@ -387,31 +387,36 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
 void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
 {
   char *tmp;
+  char *baseformat="%s %-13.13s %-11.11s %-12.12s ";
+  char *sender, *recip;
 
+  sender=short_zuser(owl_message_get_sender(m));
+  recip=short_zuser(owl_message_get_recipient(m));
+  
   if (owl_message_is_type_zephyr(m)) {
     owl_fmtext_append_spaces(fm, OWL_TAB);
     if (owl_message_is_login(m)) {
-      tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "LOGIN", "", owl_message_get_sender(m));
+      tmp=owl_sprintf(baseformat, "<", "LOGIN", "", sender);
       owl_fmtext_append_normal(fm, tmp);
       owl_fmtext_append_normal(fm, "\n");
-      if (tmp) owl_free(tmp);
+      owl_free(tmp);
     } else if (owl_message_is_logout(m)) {
-      tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "LOGOUT", "", owl_message_get_sender(m));
+      tmp=owl_sprintf(baseformat, "<", "LOGOUT", "", sender);
       owl_fmtext_append_normal(fm, tmp);
       owl_fmtext_append_normal(fm, "\n");
-      if (tmp) owl_free(tmp);
+      owl_free(tmp);
     } else if (owl_message_is_ping(m)) {
-      tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "PING", "", owl_message_get_sender(m));
+      tmp=owl_sprintf(baseformat, "<", "PING", "", sender);
       owl_fmtext_append_normal(fm, tmp);
       owl_fmtext_append_normal(fm, "\n");
-      if (tmp) owl_free(tmp);
+      owl_free(tmp);
     } else {
       if (owl_message_is_direction_in(m)) {
-	tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", owl_message_get_class(m), owl_message_get_instance(m), owl_message_get_sender(m));
+	tmp=owl_sprintf(baseformat, "<", owl_message_get_class(m), owl_message_get_instance(m), sender);
       } else if (owl_message_is_direction_out(m)) {
-	tmp=owl_sprintf("> %-15.15s %-15.15s %-12.12s ", owl_message_get_class(m), owl_message_get_instance(m), owl_message_get_recipient(m));
+	tmp=owl_sprintf(baseformat, ">", owl_message_get_class(m), owl_message_get_instance(m), recip);
       } else {
-	tmp=owl_sprintf("- %-15.15s %-15.15s %-12.12s ", owl_message_get_class(m), owl_message_get_instance(m), owl_message_get_sender(m));
+	tmp=owl_sprintf(baseformat, "-", owl_message_get_class(m), owl_message_get_instance(m), sender);
       }
       owl_fmtext_append_normal(fm, tmp);
       if (tmp) owl_free(tmp);
@@ -427,26 +432,29 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
     if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES) && owl_message_is_personal(m)) {
       owl_fmtext_addattr(fm, OWL_FMTEXT_ATTR_BOLD);
     }
+
+    owl_free(sender);
+    owl_free(recip);
     
   } else if (owl_message_is_type_aim(m)) {
     owl_fmtext_append_spaces(fm, OWL_TAB);
     if (owl_message_is_login(m)) {
-      tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "AIM LOGIN", "", owl_message_get_sender(m));
+      tmp=owl_sprintf(baseformat, "<", "AIM LOGIN", "", owl_message_get_sender(m));
       owl_fmtext_append_normal(fm, tmp);
       owl_fmtext_append_normal(fm, "\n");
       if (tmp) owl_free(tmp);
     } else if (owl_message_is_logout(m)) {
-      tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "AIM LOGOUT", "", owl_message_get_sender(m));
+      tmp=owl_sprintf(baseformat, "<", "AIM LOGOUT", "", owl_message_get_sender(m));
       owl_fmtext_append_normal(fm, tmp);
       owl_fmtext_append_normal(fm, "\n");
       if (tmp) owl_free(tmp);
     } else {
       if (owl_message_is_direction_in(m)) {
-	tmp=owl_sprintf("< %-15.15s %-15.15s %-12.12s ", "AIM", "", owl_message_get_sender(m));
+	tmp=owl_sprintf(baseformat, "<", "AIM", "", owl_message_get_sender(m));
 	owl_fmtext_append_normal(fm, tmp);
 	if (tmp) owl_free(tmp);
       } else if (owl_message_is_direction_out(m)) {
-	tmp=owl_sprintf("> %-15.15s %-15.15s %-12.12s ", "AIM", "", owl_message_get_recipient(m));
+	tmp=owl_sprintf(baseformat, ">", "AIM", "", owl_message_get_recipient(m));
 	owl_fmtext_append_normal(fm, tmp);
 	if (tmp) owl_free(tmp);
       }
