@@ -33,7 +33,7 @@
 ### The following variables will be set each time a message is recevied
 ### and when owl::format_msg() and owl::receive_msg() are run.
 ###
-###     $owl::class, $owl::instance, $owl::recipient,
+###     $owl::class, $owl::instance, $owl::recipient, $owl::direction,
 ###     $owl::sender, $owl::opcode, $owl::zsig,
 ###     $owl::msg, $owl::time, $owl::host, @owl::fields, $owl::id
 ###    
@@ -164,6 +164,8 @@ sub owl::format_msg {
     ## Strip out noise from the sender string.
     $owl::sender=~s/\@ATHENA\.MIT\.EDU$//;
     $owl::sender=~s/\@local-realm$//;
+    $owl::recipient=~s/\@ATHENA\.MIT\.EDU$//;
+    $owl::recipient=~s/\@local-realm$//;
 
     ## Format ping, login, and mail messages.
     ## uc(foo) upcases the string and "eq" does string comparison.
@@ -188,6 +190,7 @@ sub owl::format_msg {
     }
 
     ## The remainder formats normal messages (eg, to classes and instances).
+    ## Outgoing messages have different headers than incoming messages.
     ## Note that:
     ##   $out .= "foo";  appends "foo" to the end of the variable $out.
     ##   lc(bar) will convert bar to lowercase.    
@@ -195,18 +198,39 @@ sub owl::format_msg {
     ##   sprintf fills in the %s's with the arguments later on the line.
     ##   "foo"."bar" will append the two strings together.
 
-    $out = sprintf "[mit,%s,%s] / %s / %s", lc($owl::class), 
-                   lc($owl::instance), $owl::time, lc($owl::host);
-    if ($owl::opcode ne "") {$out.=" op:$owl::opcode";}
-    $out.="\n";
-    $out.= "  \@bold($owl::sender)> ";
-    if ($owl::zsig ne "") {
-	my $zsig = $owl::zsig;
-	$zsig =~ s/(\n.*)+$/ [...]/;
-	if (length($zsig)+5+length($owl::sender) > 70) {
-	    $out.="# ...";
-	} else {
-	    $out.="# $zsig";
+
+    if ($owl::direction eq "out") {
+	# Outgoing messages
+
+	$out .= sprintf "[outgoing to %s] / %s", $owl::recipient, $owl::time;
+	if ($owl::opcode ne "") {$out.=" op:$owl::opcode";}
+	$out.="\n";
+	$out.= "  \@bold($owl::sender)> ";
+	if ($owl::zsig ne "") {
+	    my $zsig = $owl::zsig;
+	    $zsig =~ s/(\n.*)+$/ [...]/;
+	    if (length($zsig)+5+length($owl::sender) > 70) {
+		$out.="# ...";
+	    } else {
+		$out.="# $zsig";
+	    }
+	}
+    } else {
+	# Incoming messages
+
+	$out .= sprintf "[mit,%s,%s] / %s / %s", lc($owl::class), 
+	                lc($owl::instance), $owl::time, lc($owl::host);
+	if ($owl::opcode ne "") {$out.=" op:$owl::opcode";}
+	$out.="\n";
+	$out.= "  \@bold($owl::sender)> ";
+	if ($owl::zsig ne "") {
+	    my $zsig = $owl::zsig;
+	    $zsig =~ s/(\n.*)+$/ [...]/;
+	    if (length($zsig)+5+length($owl::sender) > 70) {
+		$out.="# ...";
+	    } else {
+		$out.="# $zsig";
+	    }
 	}
     }
     $out.="\n";		
@@ -219,7 +243,8 @@ sub owl::format_msg {
 
     # This makes personal messages bold.
     if (uc($owl::class) eq "MESSAGE" &&
-	uc($owl::instance) eq "PERSONAL") {
+	uc($owl::instance) eq "PERSONAL" &&
+       $owl::direction eq "in") {
 	$out="\@bold{".$out."}";
     }
 
