@@ -141,6 +141,9 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_WEBZEPHYR_CLASS     "webzephyr"
 #define OWL_WEBZEPHYR_OPCODE    "webzephyr"
 
+#define OWL_REGEX_QUOTECHARS    "+*.?[]^\\"
+#define OWL_REGEX_QUOTEWITH     "\\"
+
 #if defined(HAVE_DES_STRING_TO_KEY) && defined(HAVE_DES_KEY_SCHED) && defined(HAVE_DES_ECB_ENCRYPT)
 #define OWL_ENABLE_ZCRYPT 1
 #endif

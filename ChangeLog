@@ -8,6 +8,7 @@ $Id$
 	Added the 'loopback' message type
 	Added the 'loopwrite' command
 	Added a timestamp to the default style
+	Zpunt now works with weird regex characters
 	
 2.0.10
 	Allow 'hostname' in filters.

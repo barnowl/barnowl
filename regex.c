@@ -38,6 +38,16 @@ int owl_regex_create(owl_regex *re, char *string)
   return(0);
 }
 
+int owl_regex_create_quoted(owl_regex *re, char *string)
+{
+  char *quoted;
+  
+  quoted=owl_text_quote(string, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+  owl_regex_create(re, quoted);
+  owl_free(quoted);
+  return(0);
+}
+
 int owl_regex_compare(owl_regex *re, char *string)
 {
   int out, ret;

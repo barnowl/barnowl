@@ -2659,8 +2659,8 @@ void owl_function_smartzpunt(int type)
     return;
   }
 
-  mclass = owl_message_get_class(m);
-  minst = owl_message_get_instance(m);
+  mclass = owl_text_quote(owl_message_get_class(m), OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+  minst = owl_text_quote(owl_message_get_instance(m), OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   if (!mclass || !*mclass || *mclass==' '
       || (!strcasecmp(mclass, "message") && !strcasecmp(minst, "personal"))
       || (type && (!minst || !*minst|| *minst==' '))) {
@@ -2680,6 +2680,8 @@ void owl_function_smartzpunt(int type)
     owl_function_command(cmd);
     owl_free(cmd);
   }
+  owl_free(mclass);
+  owl_free(minst);
 }
 
 void owl_function_color_current_filter(char *color)
@@ -2733,6 +2735,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   owl_filter *f;
   owl_list *fl;
   char *buff;
+  char *quoted;
   int ret, i, j;
 
   fl=owl_global_get_puntlist(&g);
@@ -2744,15 +2747,21 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   if (!strcmp(class, "*")) {
     strcat(buff, " .*");
   } else {
-    sprintf(buff, "%s ^%s$", buff, class);
+    quoted=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+    sprintf(buff, "%s ^%s$", buff, quoted);
+    owl_free(quoted);
   }
   if (!strcmp(inst, "*")) {
     strcat(buff, " and instance .*");
   } else {
-    sprintf(buff, "%s and instance ^%s$", buff, inst);
+    quoted=owl_text_quote(inst, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+    sprintf(buff, "%s and instance ^%s$", buff, quoted);
+    owl_free(quoted);
   }
   if (strcmp(recip, "*")) {
-    sprintf(buff, "%s and recipient ^%s$", buff, recip);
+    quoted=owl_text_quote(recip, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+    sprintf(buff, "%s and recipient ^%s$", buff, quoted);
+    owl_free(quoted);
   }
   
   owl_function_debugmsg("About to filter %s", buff);
