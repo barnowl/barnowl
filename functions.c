@@ -249,7 +249,6 @@ void owl_function_prevmsg_full(char *filter, int skip_deleted, int first_if_none
   found=0;
 
   /* just check to make sure we're in bounds... */
-  if (curmsg>viewsize-1) curmsg=viewsize-1;
   if (curmsg<0) curmsg=0;
 
   for (i=curmsg-1; i>=0; i--) {
