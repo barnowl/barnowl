@@ -11,6 +11,9 @@ $Id$
 	  messages that are not these"
 	Added the 'ignorelogins' variable
 	Log when outgoing personal message fails
+	Removed file descriptor from sigpipe catcher printer just for now,
+	  since the field does not exist on OSX
+	Added an ifndef for socklen_t in libfaim/ft.c
 	
 2.1.1-pre-2
 	Added the 'aim search' command.  The popup on callback may be
