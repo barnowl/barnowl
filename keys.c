@@ -57,6 +57,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("C-a",         "edit:move-to-line-start", "");
   BIND_CMD("C-e",         "edit:move-to-line-end", "");
 
+  BIND_CMD("M-BACKSPACE", "edit:delete-prev-word", "");
   BIND_CMD("M-DELETE",    "edit:delete-prev-word", "");
   BIND_CMD("M-d",         "edit:delete-next-word", "");
   BIND_CMD("M-[ 3 ; 3 ~", "edit:delete-next-word", "");
