@@ -137,6 +137,8 @@ int main(int argc, char **argv, char **env)
     }
   }
 
+  owl_function_debugmsg("startup: Finished parsing arguments");
+
 #ifdef HAVE_LIBZEPHYR
   /* zephyr init */
   ret=owl_zephyr_initialize();
@@ -227,23 +229,19 @@ int main(int argc, char **argv, char **env)
   /* setup the built-in styles */
   owl_function_debugmsg("startup: creating built-in styles");
   s=owl_malloc(sizeof(owl_style));
-  owl_style_create_internal(s, "default", &owl_stylefunc_default,
-			    "Default message formatting");
+  owl_style_create_internal(s, "default", &owl_stylefunc_default, "Default message formatting");
   owl_global_add_style(&g, s);
 
   s=owl_malloc(sizeof(owl_style));
-  owl_style_create_internal(s, "basic", &owl_stylefunc_basic,
-			    "Basic message formatting.");
+  owl_style_create_internal(s, "basic", &owl_stylefunc_basic, "Basic message formatting.");
   owl_global_add_style(&g, s);
 #if 0
   s=owl_malloc(sizeof(owl_style));
-  owl_style_create_internal(s, "vt", &owl_stylefunc_vt,
-			    "VT message formatting.");
+  owl_style_create_internal(s, "vt", &owl_stylefunc_vt, "VT message formatting.");
   owl_global_add_style(&g, s);
 #endif
   s=owl_malloc(sizeof(owl_style));
-  owl_style_create_internal(s, "oneline", &owl_stylefunc_oneline,
-			    "Formats for one-line-per-message");
+  owl_style_create_internal(s, "oneline", &owl_stylefunc_oneline, "Formats for one-line-per-message");
   owl_global_add_style(&g, s);
 
   /* setup the default filters */

@@ -18,7 +18,7 @@ int owl_keybinding_init(owl_keybinding *kb, char *keyseq, char *command, void (*
   char **ktokens;
   int    nktokens, i;
   
-  owl_function_debugmsg("creating binding for <%s> with desc: <%s>\n", keyseq, desc);
+  owl_function_debugmsg("owl_keybinding_init: creating binding for <%s> with desc: <%s>", keyseq, desc);
   if (command && !function_fn) {
     kb->type = OWL_KEYBINDING_COMMAND;
   } else if (!command && function_fn) {

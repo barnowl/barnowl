@@ -119,20 +119,18 @@ void _owl_global_setup_windows(owl_global *g) {
 
   /* set the new window sizes */
   g->recwinlines=g->lines-(typwin_lines+2);
-  if (g->recwinlines<1) {
-    /* this will screw things up.  I'm not sure what to do yet,
-       but this is better than nothing */
-    /* g->recwinlines=1; */
+  if (g->recwinlines<0) {
+    /* gotta deal with this */
+    g->recwinlines=0;
   }
+
+  owl_function_debugmsg("_owl_global_setup_windows: about to call newwin(%i, %i, 0, 0)\n", g->recwinlines, cols);
 
   /* create the new windows */
   g->recwin=newwin(g->recwinlines, cols, 0, 0);
   if (g->recwin==NULL) {
-    owl_function_debugmsg("\n\nI just received an error on creating a new receive window\n");
-    owl_function_debugmsg("newwin was called with arguments (%i, %i, 0, 0) and returned NULL\n",
-	   g->recwinlines, cols);
+    owl_function_debugmsg("_owl_global_setup_windows: newwin returned NULL\n", g->recwinlines, cols);
     endwin();
-
     exit(50);
   }
       

@@ -19,6 +19,7 @@ $Id$
 	Relatively substantial changes made under the hood to support
 	  filter logging.  Now have more consistent interfaces to
 	  creating messages etc.  Still needs more work though.
+	Deal gracefully with being resized as small as 1x1 [BZ 3]
 
 2.1.10
 	Fix a new problem finding libdes425
