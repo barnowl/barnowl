@@ -36,6 +36,7 @@ int main(int argc, char **argv, char **env) {
   struct sigaction sigact;
   char *configfile, *tty, *perlout, **argvsave, buff[LINE], startupmsg[LINE];
   owl_filter *f;
+  owl_style *s;
   time_t nexttime, now;
   struct tm *today;
   char *dir;
@@ -45,6 +46,7 @@ int main(int argc, char **argv, char **env) {
   configfile=NULL;
   tty=NULL;
   debug=0;
+  initialsubs=1;
   if (argc>0) {
     argv++;
     argc--;
@@ -127,7 +129,7 @@ int main(int argc, char **argv, char **env) {
   }
 
     
-  /* owl init */
+  /* owl global init */
   owl_global_init(&g);
   if (debug) owl_global_set_debug_on(&g);
   owl_global_set_startupargs(&g, argcsave, argvsave);
@@ -144,53 +146,62 @@ int main(int argc, char **argv, char **env) {
     owl_global_set_tty(&g, owl_util_get_default_tty());
   }
 
+  /* setup the built-in styles */
+  s=owl_malloc(sizeof(owl_style));
+  owl_style_create_internal(s, "default", &owl_stylefunc_default);
+  owl_global_add_style(&g, s);
+
+  s=owl_malloc(sizeof(owl_style));
+  owl_style_create_internal(s, "basic", &owl_stylefunc_basic);
+  owl_global_add_style(&g, s);
+
   /* setup the default filters */
   /* the personal filter will need to change again when AIM chat's are
    *  included.  Also, there should be an %aimme% */
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "personal", "( type ^zephyr$ "
 			     "and class ^message$ and instance ^personal$ "
 			     "and ( recipient ^%me%$ or sender ^%me%$ ) ) "
 			     "or ( type ^aim$ )");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "trash", "class ^mail$ or opcode ^ping$ or type ^admin$ or class ^login$");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "ping", "opcode ^ping$");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "auto", "opcode ^auto$");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "login", "class ^login$");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "reply-lockout", "class ^noc or class ^mail$");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "out", "direction ^out$");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "aim", "type ^aim$");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "zephyr", "type ^zephyr$");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "none", "false");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "all", "true");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
@@ -212,6 +223,14 @@ int main(int argc, char **argv, char **env) {
     exit(1);
   }
 
+  /* if the config defaults a formatting function, add 'perl' as a style */
+  if (owl_global_is_config_format(&g)) {
+    owl_function_debugmsg("Found perl formatting");
+    s=owl_malloc(sizeof(owl_style));
+    owl_style_create_perl(s, "perl", "owl::format_msg");
+    owl_global_add_style(&g, s);
+  }
+
   /* execute the startup function in the configfile */
   perlout = owl_config_execute("owl::startup();");
   if (perlout) owl_free(perlout);
@@ -227,19 +246,32 @@ int main(int argc, char **argv, char **env) {
   wrefresh(sepwin);
 
   /* load zephyr subs */
-  ret=owl_zephyr_loadsubs(NULL);
-  if (ret!=-1) {
-    owl_global_add_userclue(&g, OWL_USERCLUE_CLASSES);
-  }
+  if (initialsubs) {
+    /* load normal subscriptions */
+    ret=owl_zephyr_loadsubs(NULL);
+    if (ret!=-1) {
+      owl_global_add_userclue(&g, OWL_USERCLUE_CLASSES);
+    }
 
-  /* load login subs */
-  if (owl_global_is_loginsubs(&g)) {
-    owl_function_loadloginsubs(NULL);
+    /* load login subscriptions */
+    if (owl_global_is_loginsubs(&g)) {
+      owl_function_loadloginsubs(NULL);
+    }
   }
 
   /* zlog in if we need to */
   if (owl_global_is_startuplogin(&g)) {
     owl_zephyr_zlog_in();
+  }
+
+  /* set the default style, based on userclue and presence of a
+   *  formatting function */
+  if (owl_global_is_config_format(&g)) {
+    owl_global_set_style(&g, "perl");
+  } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
+    owl_global_set_style(&g, "default");
+  } else {
+    owl_global_set_style(&g, "basic");
   }
 
   /* welcome message */
@@ -274,7 +306,6 @@ int main(int argc, char **argv, char **env) {
     typwin=owl_global_get_curs_typwin(&g);
 
     followlast=owl_global_should_followlast(&g);
-
     
     /* If we're logged into AIM, do AIM stuff */
     if (owl_global_is_aimloggedin(&g)) {
@@ -305,7 +336,8 @@ int main(int argc, char **argv, char **env) {
       struct sockaddr_in from;
       owl_message *m;
       owl_filter *f;
-
+      
+      /* grab the new message, stick it in 'm' */
       if (ZPending()) {
 	/* grab a zephyr notice, but if we've done 20 without stopping,
 	   take a break to process keystrokes etc. */
@@ -331,7 +363,7 @@ int main(int argc, char **argv, char **env) {
 	m=owl_global_messageuque_popmsg(&g);
       }
       
-      /* if it's on the puntlist then, nuke it and continue */
+      /* if this message it on the puntlist, nuke it and continue */
       if (owl_global_message_is_puntable(&g, m)) {
 	owl_message_free(m);
 	continue;
@@ -342,7 +374,7 @@ int main(int argc, char **argv, char **env) {
       newmsgs=1;
 
       /* let the config know the new message has been received */
-      owl_config_getmsg(m, 0);
+      owl_config_getmsg(m, "owl::receive_msg();");
 
       /* add it to any necessary views; right now there's only the current view */
       owl_view_consider_message(owl_global_get_current_view(&g), m);
@@ -431,10 +463,9 @@ int main(int argc, char **argv, char **env) {
       owl_global_set_noneedrefresh(&g);
     }
 
-    /* Handle all keypresses.
-     * If no key has been pressed sleep for a little bit, but
-     * otherwise do not, this lets input be grabbed as quickly
-     * as possbile */
+    /* Handle all keypresses.  If no key has been pressed, sleep for a
+     * little bit, but otherwise do not.  This lets input be grabbed
+     * as quickly as possbile */
     j=wgetch(typwin);
     if (j==ERR) {
       usleep(10);
@@ -470,7 +501,9 @@ int main(int argc, char **argv, char **env) {
 
 void sig_handler(int sig) {
   if (sig==SIGWINCH) {
-    /* we can't inturrupt a malloc here, so it just sets a flag */
+    /* we can't inturrupt a malloc here, so it just sets a flag
+     * schedulding a resize for later
+     */
     owl_function_resize();
   }
 }

@@ -23,6 +23,7 @@ void owl_message_init(owl_message *m)
   m->delete=0;
   strcpy(m->hostname, "");
   m->zwriteline=strdup("");
+  m->invalid_format=1;
 
   owl_list_create(&(m->attributes));
   
@@ -30,6 +31,7 @@ void owl_message_init(owl_message *m)
   t=time(NULL);
   m->time=owl_strdup(ctime(&t));
   m->time[strlen(m->time)-1]='\0';
+  owl_fmtext_init_null(&(m->fmtext));
 }
 
 void owl_message_set_attribute(owl_message *m, char *attrname, char *attrvalue)
@@ -97,8 +99,25 @@ void owl_message_attributes_tofmtext(owl_message *m, owl_fmtext *fm) {
   }
 }
 
+void owl_message_invalidate_format(owl_message *m)
+{
+  m->invalid_format=1;
+}
+
 owl_fmtext *owl_message_get_fmtext(owl_message *m)
 {
+  owl_style *s;
+
+  /* if the format is invalid, regenerate the text based on the
+   * current style
+   */
+  if (m->invalid_format) {
+    owl_fmtext_free(&(m->fmtext));
+    owl_fmtext_init_null(&(m->fmtext));
+    s=owl_global_get_current_style(&g);
+    owl_style_get_formattext(s, &(m->fmtext), m);
+    m->invalid_format=0;
+  }
   return(&(m->fmtext));
 }
 
@@ -370,6 +389,7 @@ int owl_message_is_direction_none(owl_message *m)
 int owl_message_get_numlines(owl_message *m)
 {
   if (m == NULL) return(0);
+  (void) owl_message_get_fmtext(m);
   return(owl_fmtext_num_lines(&(m->fmtext)));
 }
 
@@ -416,6 +436,9 @@ char *owl_message_get_hostname(owl_message *m)
 void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline, int acol, int bcol, int color)
 {
   owl_fmtext a, b;
+
+  /* this will ensure that our cached copy is up to date */
+  (void) owl_message_get_fmtext(m);
 
   owl_fmtext_init_null(&a);
   owl_fmtext_init_null(&b);
@@ -537,35 +560,18 @@ int owl_message_get_id(owl_message *m)
 {
   return(m->id);
 }
-					
+
+/* return 1 if the message contains "string", 0 otherwise.  This is
+ * case insensitive because the functions it uses are
+ */
 int owl_message_search(owl_message *m, char *string)
 {
-  /* return 1 if the message contains "string", 0 otherwise.  This is
-   * case insensitive because the functions it uses are */
 
+  (void) owl_message_get_fmtext(m); /* is this necessary? */
+  
   return (owl_fmtext_search(&(m->fmtext), string));
 }
 
-void owl_message_create(owl_message *m, char *header, char *text)
-{
-  char *indent;
-
-  owl_message_init(m);
-  owl_message_set_body(m, text);
-
-  indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
-  owl_text_indent(indent, text, OWL_MSGTAB);
-  owl_fmtext_init_null(&(m->fmtext));
-  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
-  owl_fmtext_append_ztext(&(m->fmtext), header);
-  owl_fmtext_append_normal(&(m->fmtext), "\n");
-  owl_fmtext_append_ztext(&(m->fmtext), indent);
-  if (text[strlen(text)-1]!='\n') {
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-  }
-
-  owl_free(indent);
-}
 
 /* if loginout == -1 it's a logout message
  *                 0 it's not a login/logout message
@@ -595,83 +601,14 @@ void owl_message_create_aim(owl_message *m, char *sender, char *recipient, char 
   } else if (loginout==1) {
     owl_message_set_islogin(m);
   }
-
-  /* create the formatted message */
-  if (owl_global_is_config_format(&g)) {
-    _owl_message_make_text_from_config(m);
-  } else {
-    _owl_message_make_text_from_aim(m);
-  }
-}
-
-void _owl_message_make_text_from_aim(owl_message *m)
-{
-  char *indent;
-
-  if (owl_message_is_loginout(m)) {
-    owl_fmtext_init_null(&(m->fmtext));
-    owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
-    if (owl_message_is_login(m)) {
-      owl_fmtext_append_bold(&(m->fmtext), "AIM LOGIN");
-    } else {
-      owl_fmtext_append_bold(&(m->fmtext), "AIM LOGOUT");
-    }
-    owl_fmtext_append_normal(&(m->fmtext), " for ");
-    owl_fmtext_append_normal(&(m->fmtext), owl_message_get_sender(m));
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-  } else if (owl_message_is_direction_in(m)) {
-    indent=owl_malloc(strlen(owl_message_get_body(m))+owl_text_num_lines(owl_message_get_body(m))*OWL_MSGTAB+10);
-    owl_text_indent(indent, owl_message_get_body(m), OWL_MSGTAB);
-    owl_fmtext_init_null(&(m->fmtext));
-    owl_fmtext_append_bold(&(m->fmtext), OWL_TABSTR);
-    owl_fmtext_append_bold(&(m->fmtext), "AIM from ");
-    owl_fmtext_append_bold(&(m->fmtext), owl_message_get_sender(m));
-    owl_fmtext_append_bold(&(m->fmtext), "\n");
-    owl_fmtext_append_bold(&(m->fmtext), indent);
-    if (indent[strlen(indent)-1]!='\n') {
-      owl_fmtext_append_normal(&(m->fmtext), "\n");
-    }
-    owl_free(indent);
-  } else if (owl_message_is_direction_out(m)) {
-    indent=owl_malloc(strlen(owl_message_get_body(m))+owl_text_num_lines(owl_message_get_body(m))*OWL_MSGTAB+10);
-    owl_text_indent(indent, owl_message_get_body(m), OWL_MSGTAB);
-    owl_fmtext_init_null(&(m->fmtext));
-    owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
-    owl_fmtext_append_normal(&(m->fmtext), "AIM sent to ");
-    owl_fmtext_append_normal(&(m->fmtext), owl_message_get_recipient(m));
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-    owl_fmtext_append_ztext(&(m->fmtext), indent);
-    if (indent[strlen(indent)-1]!='\n') {
-      owl_fmtext_append_normal(&(m->fmtext), "\n");
-    }
-    owl_free(indent);
-  }
 }
 
 void owl_message_create_admin(owl_message *m, char *header, char *text)
 {
-  char *indent;
-
   owl_message_init(m);
   owl_message_set_type_admin(m);
-
   owl_message_set_body(m, text);
-
-  /* do something to make it clear the notice shouldn't be used for now */
-
-  indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
-  owl_text_indent(indent, text, OWL_MSGTAB);
-  owl_fmtext_init_null(&(m->fmtext));
-  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
-  owl_fmtext_append_bold(&(m->fmtext), "OWL ADMIN ");
-  owl_fmtext_append_ztext(&(m->fmtext), header);
-  owl_fmtext_append_normal(&(m->fmtext), "\n");
-  owl_fmtext_append_ztext(&(m->fmtext), indent);
-  if (text[strlen(text)-1]!='\n') {
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-  }
-
-  owl_free(indent);
+  owl_message_set_attribute(m, "adminheader", header); /* just a hack for now */
 }
 
 void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
@@ -769,16 +706,6 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   /* save the time */
   m->time=owl_strdup(ctime((time_t *) &n->z_time.tv_sec));
   m->time[strlen(m->time)-1]='\0';
-
-  /* create the formatted message */
-  if (owl_global_is_config_format(&g)) {
-    _owl_message_make_text_from_config(m);
-  } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
-    _owl_message_make_text_from_notice_standard(m);
-  } else {
-    _owl_message_make_text_from_notice_simple(m);
-  }
-
 }
 
 void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, char *zsig)
@@ -811,302 +738,9 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
     strcpy(m->hostname, "localhost");
   }
 
-  /* create the formatted message */
-  if (owl_global_is_config_format(&g)) {
-    _owl_message_make_text_from_config(m);
-  } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
-    _owl_message_make_text_from_zwriteline_standard(m);
-  } else {
-    _owl_message_make_text_from_zwriteline_simple(m);
-  }
-
   owl_zwrite_free(&z);
 }
 
-void _owl_message_make_text_from_config(owl_message *m)
-{
-  char *body, *indent;
-
-  owl_fmtext_init_null(&(m->fmtext));
-
-  /* get body from the config */
-  body=owl_config_getmsg(m, 1);
-  
-  /* indent */
-  indent=owl_malloc(strlen(body)+owl_text_num_lines(body)*OWL_TAB+10);
-  owl_text_indent(indent, body, OWL_TAB);
-
-  /* fmtext_append.  This needs to change */
-  owl_fmtext_append_ztext(&(m->fmtext), indent);
-
-  owl_free(indent);
-  owl_free(body);
-}
-
-void _owl_message_make_text_from_zwriteline_standard(owl_message *m)
-{
-  char *indent, *text, *zsigbuff, *foo;
-
-  text=owl_message_get_body(m);
-
-  indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
-  owl_text_indent(indent, text, OWL_MSGTAB);
-  owl_fmtext_init_null(&(m->fmtext));
-  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
-  owl_fmtext_append_normal(&(m->fmtext), "Zephyr sent to ");
-  foo=short_zuser(owl_message_get_recipient(m));
-  owl_fmtext_append_normal(&(m->fmtext), foo);
-  owl_free(foo);
-  owl_fmtext_append_normal(&(m->fmtext), "  (Zsig: ");
-
-  zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m))+30);
-  owl_message_pretty_zsig(m, zsigbuff);
-  owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
-  owl_free(zsigbuff);
-  
-  owl_fmtext_append_normal(&(m->fmtext), ")");
-  owl_fmtext_append_normal(&(m->fmtext), "\n");
-  owl_fmtext_append_ztext(&(m->fmtext), indent);
-  if (text[strlen(text)-1]!='\n') {
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-  }
-
-  owl_free(indent);
-}
-
-void _owl_message_make_text_from_zwriteline_simple(owl_message *m)
-{
-  char *indent, *text, *zsigbuff, *foo;
-
-  text=owl_message_get_body(m);
-
-  indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
-  owl_text_indent(indent, text, OWL_MSGTAB);
-  owl_fmtext_init_null(&(m->fmtext));
-  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
-  owl_fmtext_append_normal(&(m->fmtext), "To: ");
-  foo=short_zuser(owl_message_get_recipient(m));
-  owl_fmtext_append_normal(&(m->fmtext), foo);
-  owl_free(foo);
-  owl_fmtext_append_normal(&(m->fmtext), "  (Zsig: ");
-
-  zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m))+30);
-  owl_message_pretty_zsig(m, zsigbuff);
-  owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
-  owl_free(zsigbuff);
-  
-  owl_fmtext_append_normal(&(m->fmtext), ")");
-  owl_fmtext_append_normal(&(m->fmtext), "\n");
-  owl_fmtext_append_ztext(&(m->fmtext), indent);
-  if (text[strlen(text)-1]!='\n') {
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-  }
-
-  owl_free(indent);
-}
-
-void _owl_message_make_text_from_notice_standard(owl_message *m)
-{
-  char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
-  ZNotice_t *n;
-
-  n=&(m->notice);
-  
-  /* get the body */
-  body=owl_malloc(strlen(owl_message_get_body(m))+30);
-  strcpy(body, owl_message_get_body(m));
-
-  /* add a newline if we need to */
-  if (body[0]!='\0' && body[strlen(body)-1]!='\n') {
-    strcat(body, "\n");
-  }
-
-  /* do the indenting into indent */
-  indent=owl_malloc(strlen(body)+owl_text_num_lines(body)*OWL_MSGTAB+10);
-  owl_text_indent(indent, body, OWL_MSGTAB);
-
-  /* edit the from addr for printing */
-  strcpy(frombuff, owl_message_get_sender(m));
-  ptr=strchr(frombuff, '@');
-  if (ptr && !strncmp(ptr+1, ZGetRealm(), strlen(ZGetRealm()))) {
-    *ptr='\0';
-  }
-
-  /* set the message for printing */
-  owl_fmtext_init_null(&(m->fmtext));
-  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
-
-  if (!strcasecmp(owl_message_get_opcode(m), "ping") && owl_message_is_private(m)) {
-    owl_fmtext_append_bold(&(m->fmtext), "PING");
-    owl_fmtext_append_normal(&(m->fmtext), " from ");
-    owl_fmtext_append_bold(&(m->fmtext), frombuff);
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-  } else if (!strcasecmp(n->z_class, "login")) {
-    char *ptr, host[LINE], tty[LINE];
-    int len;
-
-    ptr=owl_zephyr_get_field(n, 1, &len);
-    strncpy(host, ptr, len);
-    host[len]='\0';
-    ptr=owl_zephyr_get_field(n, 3, &len);
-    strncpy(tty, ptr, len);
-    tty[len]='\0';
-    
-    if (!strcasecmp(n->z_opcode, "user_login")) {
-      owl_fmtext_append_bold(&(m->fmtext), "LOGIN");
-    } else if (!strcasecmp(n->z_opcode, "user_logout")) {
-      owl_fmtext_append_bold(&(m->fmtext), "LOGOUT");
-    }
-    owl_fmtext_append_normal(&(m->fmtext), " for ");
-    ptr=short_zuser(n->z_class_inst);
-    owl_fmtext_append_bold(&(m->fmtext), ptr);
-    owl_free(ptr);
-    owl_fmtext_append_normal(&(m->fmtext), " at ");
-    owl_fmtext_append_normal(&(m->fmtext), host);
-    owl_fmtext_append_normal(&(m->fmtext), " ");
-    owl_fmtext_append_normal(&(m->fmtext), tty);
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-  } else {
-    owl_fmtext_append_normal(&(m->fmtext), owl_message_get_class(m));
-    owl_fmtext_append_normal(&(m->fmtext), " / ");
-    owl_fmtext_append_normal(&(m->fmtext), owl_message_get_instance(m));
-    owl_fmtext_append_normal(&(m->fmtext), " / ");
-    owl_fmtext_append_bold(&(m->fmtext), frombuff);
-    if (strcasecmp(owl_message_get_realm(m), ZGetRealm())) {
-      owl_fmtext_append_normal(&(m->fmtext), " {");
-      owl_fmtext_append_normal(&(m->fmtext), owl_message_get_realm(m));
-      owl_fmtext_append_normal(&(m->fmtext), "} ");
-    }
-    if (n->z_opcode[0]!='\0') {
-      owl_fmtext_append_normal(&(m->fmtext), " [");
-      owl_fmtext_append_normal(&(m->fmtext), owl_message_get_opcode(m));
-      owl_fmtext_append_normal(&(m->fmtext), "] ");
-    }
-
-    /* stick on the zsig */
-    zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m))+30);
-    owl_message_pretty_zsig(m, zsigbuff);
-    owl_fmtext_append_normal(&(m->fmtext), "    (");
-    owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
-    owl_fmtext_append_normal(&(m->fmtext), ")");
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-    owl_free(zsigbuff);
-
-    /* then the indented message */
-    owl_fmtext_append_ztext(&(m->fmtext), indent);
-
-    /* make private messages bold for smaat users */
-    if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
-      if (owl_message_is_personal(m)) {
-	owl_fmtext_addattr((&m->fmtext), OWL_FMTEXT_ATTR_BOLD);
-      }
-    }
-  }
-
-  owl_free(body);
-  owl_free(indent);
-}
-
-void _owl_message_make_text_from_notice_simple(owl_message *m)
-{
-  char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
-  ZNotice_t *n;
-
-  n=&(m->notice);
-
-  /* get the body */
-  body=owl_strdup(owl_message_get_body(m));
-  body=realloc(body, strlen(body)+30);
-
-  /* add a newline if we need to */
-  if (body[0]!='\0' && body[strlen(body)-1]!='\n') {
-    strcat(body, "\n");
-  }
-
-  /* do the indenting into indent */
-  indent=owl_malloc(strlen(body)+owl_text_num_lines(body)*OWL_MSGTAB+10);
-  owl_text_indent(indent, body, OWL_MSGTAB);
-
-  /* edit the from addr for printing */
-  strcpy(frombuff, owl_message_get_sender(m));
-  ptr=strchr(frombuff, '@');
-  if (ptr && !strncmp(ptr+1, ZGetRealm(), strlen(ZGetRealm()))) {
-    *ptr='\0';
-  }
-
-  /* set the message for printing */
-  owl_fmtext_init_null(&(m->fmtext));
-  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
-
-  if (!strcasecmp(owl_message_get_opcode(m), "ping")) {
-    owl_fmtext_append_bold(&(m->fmtext), "PING");
-    owl_fmtext_append_normal(&(m->fmtext), " from ");
-    owl_fmtext_append_bold(&(m->fmtext), frombuff);
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-  } else if (!strcasecmp(owl_message_get_class(m), "login")) {
-    char *ptr, host[LINE], tty[LINE];
-    int len;
-
-    ptr=owl_zephyr_get_field(n, 1, &len);
-    strncpy(host, ptr, len);
-    host[len]='\0';
-    ptr=owl_zephyr_get_field(n, 3, &len);
-    strncpy(tty, ptr, len);
-    tty[len]='\0';
-    
-    if (!strcasecmp(owl_message_get_opcode(m), "user_login")) {
-      owl_fmtext_append_bold(&(m->fmtext), "LOGIN");
-    } else if (!strcasecmp(owl_message_get_opcode(m), "user_logout")) {
-      owl_fmtext_append_bold(&(m->fmtext), "LOGOUT");
-    }
-    owl_fmtext_append_normal(&(m->fmtext), " for ");
-    ptr=short_zuser(owl_message_get_instance(m));
-    owl_fmtext_append_bold(&(m->fmtext), ptr);
-    owl_free(ptr);
-    owl_fmtext_append_normal(&(m->fmtext), " at ");
-    owl_fmtext_append_normal(&(m->fmtext), host);
-    owl_fmtext_append_normal(&(m->fmtext), " ");
-    owl_fmtext_append_normal(&(m->fmtext), tty);
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-  } else {
-    owl_fmtext_append_normal(&(m->fmtext), "From: ");
-    if (strcasecmp(owl_message_get_class(m), "message")) {
-      owl_fmtext_append_normal(&(m->fmtext), "Class ");
-      owl_fmtext_append_normal(&(m->fmtext), owl_message_get_class(m));
-      owl_fmtext_append_normal(&(m->fmtext), " / Instance ");
-      owl_fmtext_append_normal(&(m->fmtext), owl_message_get_instance(m));
-      owl_fmtext_append_normal(&(m->fmtext), " / ");
-    }
-    owl_fmtext_append_normal(&(m->fmtext), frombuff);
-    if (strcasecmp(owl_message_get_realm(m), ZGetRealm())) {
-      owl_fmtext_append_normal(&(m->fmtext), " {");
-      owl_fmtext_append_normal(&(m->fmtext), owl_message_get_realm(m));
-      owl_fmtext_append_normal(&(m->fmtext), "} ");
-    }
-
-    /* stick on the zsig */
-    zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m))+30);
-    owl_message_pretty_zsig(m, zsigbuff);
-    owl_fmtext_append_normal(&(m->fmtext), "    (");
-    owl_fmtext_append_ztext(&(m->fmtext), zsigbuff);
-    owl_fmtext_append_normal(&(m->fmtext), ")");
-    owl_fmtext_append_normal(&(m->fmtext), "\n");
-    owl_free(zsigbuff);
-
-    /* then the indented message */
-    owl_fmtext_append_ztext(&(m->fmtext), indent);
-
-    /* make personal messages bold for smaat users */
-    if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
-      if (owl_message_is_personal(m)) {
-	owl_fmtext_addattr((&m->fmtext), OWL_FMTEXT_ATTR_BOLD);
-      }
-    }
-  }
-
-  owl_free(body);
-  owl_free(indent);
-}
 
 void owl_message_pretty_zsig(owl_message *m, char *buff)
 {

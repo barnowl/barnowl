@@ -13,13 +13,13 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.3
-#define OWL_VERSION_STRING "2.0.3"
+#define OWL_VERSION         2.0.4-pre-1
+#define OWL_VERSION_STRING "2.0.4-pre-1"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
 
-#define OWL_CONFIG_DIR "/.owl"           /* this is relative to the user's home directory */
+#define OWL_CONFIG_DIR "/.owl"             /* this is relative to the user's home directory */
 #define OWL_STARTUP_FILE "/.owl/startup"   /* this is relative to the user's home directory */
 
 #define OWL_FMTEXT_ATTR_NONE      0
@@ -63,6 +63,9 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_SCROLLMODE_CENTER      3
 #define OWL_SCROLLMODE_PAGED       4
 #define OWL_SCROLLMODE_PAGEDCENTER 5
+
+#define OWL_STYLE_TYPE_INTERNAL  0
+#define OWL_STYLE_TYPE_PERL      1
 
 #define OWL_TAB               3  /* This *HAS* to be the size of TABSTR below */
 #define OWL_TABSTR        "   "
@@ -244,13 +247,21 @@ typedef struct _owl_message {
   int type;
   int direction;
   ZNotice_t notice;
-  owl_fmtext fmtext;
+  owl_fmtext fmtext;              /* this is now only a CACHED copy */
+  int invalid_format;             /* indicates whether fmtext needs to be regenerated */
   int delete;
   char hostname[MAXHOSTNAMELEN+1];
   owl_list attributes;            /* this is a list of pairs */
   char *time;
   char *zwriteline;
 } owl_message;
+
+typedef struct _owl_style {
+  char *name;
+  int type;
+  char *perlfuncname;
+  void (*formatfunc) (owl_fmtext *fm, owl_message *m);
+} owl_style;
 
 typedef struct _owl_mainwin {
   int curtruncated;
@@ -414,10 +425,11 @@ typedef struct _owl_global {
   aim_conn_t waitingconn;
   owl_timer aim_noop_timer;
   owl_timer aim_ignorelogin_timer;
-  int aim_loggedin;
-  char *aim_screenname;
-  owl_buddylist buddylist;
-  owl_list messagequeue; /* for queueing up aim and other messages */
+  int aim_loggedin;         /* true if currently logged into AIM */
+  char *aim_screenname;     /* currently logged in AIM screen name */
+  owl_buddylist buddylist;  /* list of logged in AIM buddies */
+  owl_list messagequeue;    /* for queueing up aim and other messages */
+  owl_list stylelist;       /* global list of available styles */
 } owl_global;
 
 /* globals */

@@ -467,7 +467,7 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
 
   for (i=0; i<lines; i++) {
     offset=ptr1-in->textbuff;
-    ptr2=strchr(ptr1, '\n'); /* this is a valgrind suspicious line */
+    ptr2=strchr(ptr1, '\n');
     if (!ptr2) {
       _owl_fmtext_append_fmtext(out, in, offset, (in->textlen)-1);
       return(-1);
@@ -577,7 +577,7 @@ void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src)
     mallocsize=src->textlen+2;
   }
   dst->textlen=src->textlen;
-  dst->textbuff=owl_malloc(mallocsize); /* valgrind suspcious line */
+  dst->textbuff=owl_malloc(mallocsize);
   dst->fmbuff=owl_malloc(mallocsize);
   dst->colorbuff=owl_malloc(mallocsize);
   memcpy(dst->textbuff, src->textbuff, src->textlen+1);

@@ -51,6 +51,7 @@ void owl_global_init(owl_global *g) {
   owl_list_create(&(g->filterlist));
   owl_list_create(&(g->puntlist));
   owl_list_create(&(g->messagequeue));
+  owl_list_create(&(g->stylelist));
   g->curmsg_vert_offset=0;
   g->resizepending=0;
   g->typwinactive=0;
@@ -727,3 +728,29 @@ owl_buddylist *owl_global_get_buddylist(owl_global *g)
   return(&(g->buddylist));
 }
   
+/* style */
+
+/* Return the style with name 'name'.  If it does not exist return
+ * NULL */
+owl_style *owl_global_get_style_by_name(owl_global *g, char *name)
+{
+  int i, j;
+  owl_style *s;
+  
+  j=owl_list_get_size(&(g->stylelist));
+  for (i=0; i<j; i++) {
+    s=owl_list_get_element(&(g->stylelist), i);
+    if (owl_style_matches_name(s, name)) {
+      return(s);
+    }
+  }
+  return(NULL);
+}
+
+owl_style *owl_global_get_current_style(owl_global *g) {
+  return(owl_global_get_style_by_name(g, owl_global_get_style(g)));
+}
+
+void owl_global_add_style(owl_global *g, owl_style *s) {
+  owl_list_append_element(&(g->stylelist), s);
+}

@@ -197,7 +197,10 @@ static owl_variable variables_to_init[] = {
 
   OWLVAR_STRING_FULL( "tty" /* %OwlVarStub */, "", "tty name for zephyr location", "",
 		      NULL, owl_variable_tty_set, NULL),
-  
+
+  OWLVAR_STRING_FULL( "style" /* %OwlVarStub */, "default", "name of the current formatting style", "",
+		      NULL, owl_variable_style_set, NULL),
+
   OWLVAR_INT(    "edit:maxfillcols" /* %OwlVarStub:edit_maxfillcols */, 70,
 	         "maximum number of columns for M-q to fill text to",
 		 "This specifies the maximum number of columns for M-q\n"
@@ -346,6 +349,24 @@ int owl_variable_disable_ctrl_d_set(owl_variable *v, void *newval) {
 int owl_variable_tty_set(owl_variable *v, void *newval) {
   ZInitLocationInfo(owl_global_get_hostname(&g), newval);
   return(owl_variable_string_set_default(v, newval));
+}
+
+int owl_variable_style_set(owl_variable *v, void *newval) {
+  /* Invalidate all message formats first */
+  int ret;
+  owl_style *s;
+
+  s=owl_global_get_style_by_name(&g, newval);
+  if (!s) {
+    /* this message won't get seen, we'll need to deal with that later */
+    owl_function_makemsg("No style named '%s' exists.", newval);
+    return(0);
+  }
+  
+  owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
+  ret=owl_variable_string_set_default(v, newval);
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  return(ret);
 }
 
 

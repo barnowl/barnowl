@@ -130,16 +130,10 @@ char *owl_config_execute(char *line) {
   return(out);
 }
 
-char *owl_config_getmsg(owl_message *m, int mode) {
-  /* if mode==1 we are doing message formatting.  The returned
-   * formatted message needs to be freed by the caller.
-   *
-   * if mode==0 we are just doing the message-has-been-received
-   * thing.
-  */
-
+char *owl_config_getmsg(owl_message *m, char *funcname) {
   int i, j, len;
   char *ptr, *ptr2;
+  char runstr[LINE];
 
   if (!owl_global_have_config(&g)) return("");
 
@@ -235,12 +229,7 @@ char *owl_config_getmsg(owl_message *m, int mode) {
   }
 
   /* run the procedure corresponding to the mode */
-  if (mode==1) {
-    return(owl_config_execute("owl::format_msg();"));
-  } else {
-    ptr=owl_config_execute("owl::receive_msg();");
-    if (ptr) owl_free(ptr);
-    return(NULL);
-  }
+  sprintf(runstr, "%s();", funcname);
+  return(owl_config_execute(runstr));
 }
 
