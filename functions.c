@@ -2385,7 +2385,7 @@ void owl_function_create_filter(int argc, char **argv)
   ret=owl_filter_init(f, argv[1], argc-2, argv+2);
   if (ret==-1) {
     owl_free(f);
-    owl_function_error("Invalid filter syntax");
+    owl_function_error("Invalid filter");
     return;
   }
 

@@ -19,8 +19,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.1.1-pre-2
-#define OWL_VERSION_STRING "2.1.1-pre-2"
+#define OWL_VERSION         2.1.1-pre-3
+#define OWL_VERSION_STRING "2.1.1-pre-3"
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */
@@ -338,6 +338,7 @@ typedef struct _owl_filterelement {
   int type;
   char *field;
   owl_regex re;
+  char *filtername;  /* for maching on another filter */
 } owl_filterelement;
 
 typedef struct _owl_filter {

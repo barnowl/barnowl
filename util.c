@@ -696,6 +696,34 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
   fclose(file);
 }
 
+/* add the string 'str' to the list 'list' of strings, only if it
+ * is not already present
+ */
+void owl_util_list_add_unique_string(owl_list *list, char *str)
+{
+  int i, j;
+
+  j=owl_list_get_size(list);
+  for (i=0; i<j; i++) {
+    if (!strcmp(str, owl_list_get_element(list, i))) return;
+  }
+  owl_list_append_element(list, owl_strdup(str));
+}
+
+int owl_util_common_strings_in_lists(owl_list *a, owl_list *b)
+{
+  int i, j, x, y;
+
+  j=owl_list_get_size(a);
+  for (i=0; i<j; i++) {
+    y=owl_list_get_size(b);
+    for (x=0; x<y; x++) {
+      if (!strcmp(owl_list_get_element(a, i), owl_list_get_element(b, x))) return(1);
+    }
+  }
+  return(0);
+}
+
 /**************************************************************************/
 /************************* REGRESSION TESTS *******************************/
 /**************************************************************************/

@@ -1,5 +1,8 @@
 $Id$
 
+2.1.1-pre-3
+	Filters of filters now work.
+	
 2.1.1-pre-2
 	Added the 'aim search' command.  The popup on callback may be
 	  dangerous, should switch to an admin msg for results, or add a

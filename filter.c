@@ -3,6 +3,10 @@
 
 static const char fileIdent[] = "$Id$";
 
+#define OWL_FILTER_MAXRECURSE 20
+
+int filter_depth;
+
 int owl_filter_init_fromstring(owl_filter *f, char *name, char *string)
 {
   char **argv;
@@ -16,9 +20,10 @@ int owl_filter_init_fromstring(owl_filter *f, char *name, char *string)
 
 int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
 {
-  int i, error;
+  int i, j, error;
   owl_filterelement *fe;
   char *regexstr;
+  owl_list list;
    
   f->name=owl_strdup(name);
   f->polarity=0;
@@ -59,7 +64,7 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
     } else if (!strcasecmp(argv[i], "false")) {
       owl_filterelement_create_false(fe);
       
-    } else if (i==argc-1) {
+    } else if (i==argc-1) { /* we need more than one arg at this point */
       error=1;
     } else {
       if (!strcasecmp(argv[i], "class") ||
@@ -77,6 +82,9 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
 	owl_filterelement_create_re(fe, argv[i], regexstr);
 	owl_free(regexstr);
 	i++;
+      } else if (!strcasecmp(argv[i], "filter")) {
+	owl_filterelement_create_filter(fe, argv[i+1]);
+	i++;
       } else {
 	error=1;
       }
@@ -89,8 +97,29 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
       owl_filter_free(f);
       return(-1);
     }
-
   }
+  
+  /* Are we trying to use the filter we're creating?  Bad. */
+  owl_list_create(&list);
+  _owl_filter_get_subfilter_names(f, &list);
+  j=owl_list_get_size(&list);
+  for (i=0; i<j; i++) {
+    if (!strcasecmp(name, owl_list_get_element(&list, i))) {
+      owl_function_error("Filter loop.");
+      owl_filter_free(f);
+      owl_list_free_all(&list, owl_free);
+      return(-1);
+    }
+  }
+  owl_list_free_all(&list, owl_free);
+
+  /* Now check for more subtle recursion. */
+  if (owl_filter_is_toodeep(f)) {
+    owl_function_error("Filter loop or exceeds recursion depth");
+    owl_filter_free(f);
+    return(-1);
+  }
+  
   return(0);
 }
 
@@ -187,9 +216,29 @@ int owl_filter_message_match(owl_filter *f, owl_message *m)
 	match="none";
       }
     }
-    
+
     tmp=owl_regex_compare(owl_filterelement_get_re(fe), match);
     if (!tmp) {
+      owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_true(&g));
+    } else {
+      owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_false(&g));
+    }
+  }
+
+  /* now subfilters */
+  for (i=0; i<j; i++) {
+    owl_filter *subfilter;
+			   
+    fe=owl_list_get_element(&work_fes, i);
+    if (!owl_filterelement_is_filter(fe)) continue;
+
+    subfilter=owl_global_get_filter(&g, owl_filterelement_get_filtername(fe));
+    if (!subfilter) {
+      /* the filter does not exist, maybe because it was deleted.
+       * Default to not matching
+       */
+      owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_false(&g));
+    } else if (owl_filter_message_match(subfilter, m)) {
       owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_true(&g));
     } else {
       owl_list_replace_element(&work_fes, i, owl_global_get_filterelement_false(&g));
@@ -399,6 +448,7 @@ void owl_filter_print(owl_filter *f, char *out)
   strcat(out, "\n");
 }
 
+/* Return 1 if the filters 'a' and 'b' are equivalent, 0 otherwise */
 int owl_filter_equiv(owl_filter *a, owl_filter *b)
 {
   char buff[LINE], buff2[LINE];
@@ -407,6 +457,151 @@ int owl_filter_equiv(owl_filter *a, owl_filter *b)
   owl_filter_print(b, buff2);
 
   if (!strcmp(buff, buff2)) return(1);
+  return(0);
+}
+
+/* Private
+ * 'list' should already be allocated and initialized
+ * This function places into list the string names of all filters
+ * used in the filter expression for 'f'.
+ * Caller must do a full free on 'list', including elements.
+ */
+void _owl_filter_get_subfilter_names(owl_filter *f, owl_list *list)
+{
+  int i, j;
+  owl_filterelement *fe;
+
+  j=owl_list_get_size(&(f->fes));
+  for (i=0; i<j; i++) {
+    fe=owl_list_get_element(&(f->fes), i);
+    if (owl_filterelement_is_filter(fe)) {
+      owl_list_append_element(list, owl_strdup(owl_filterelement_get_filtername(fe)));
+    }
+  }
+}
+
+int owl_filter_is_toodeep(owl_filter *f)
+{
+  owl_list seen, tocheck, tmp;
+  int i, j, x, y;
+  owl_filter *subfilter;
+
+  owl_list_create(&seen);
+  owl_list_create(&tocheck);
+  owl_list_create(&tmp);
+
+  /* seed 'tocheck' with the first set of filters */
+  _owl_filter_get_subfilter_names(f, &tmp);
+  j=owl_list_get_size(&tmp);
+  for (i=0; i<j; i++) {
+    owl_util_list_add_unique_string(&tocheck, owl_list_get_element(&tmp, i));
+  }
+  owl_list_free_all(&tmp, owl_free);
+  owl_list_create(&tmp);
+
+  /* add this list to the 'seen' list */
+  owl_list_append_element(&seen, owl_strdup(owl_filter_get_name(f)));
+
+  for (i=0; i<OWL_FILTER_MAXRECURSE; i++) {
+    /* if anything in 'tocheck' is in 'seen' we have a loop */
+    if (owl_util_common_strings_in_lists(&tocheck, &seen)) {
+      owl_list_free_all(&tmp, owl_free);
+      owl_list_free_all(&tocheck, owl_free);
+      owl_list_free_all(&seen, owl_free);
+      return(1);
+    }
+
+    /* if there's nothing to check, we're done */
+    y=owl_list_get_size(&tocheck);
+    if (y==0) {
+      owl_list_free_all(&tmp, owl_free);
+      owl_list_free_all(&tocheck, owl_free);
+      owl_list_free_all(&seen, owl_free);
+      return(0);
+    }
+
+    /* add everything in 'tocheck' to the 'seen' list */
+    /* y=owl_list_get_size(&tocheck); */
+    for (x=0; x<y; x++) {
+      owl_list_append_element(&seen, owl_strdup(owl_list_get_element(&tocheck, x)));
+    }
+
+    /* make a new list into 'tmp' with the children of 'tocheck' */
+    /* y=owl_list_get_size(&tocheck); */
+    for (x=0; x<y; x++) {
+      subfilter=owl_global_get_filter(&g, owl_list_get_element(&tocheck, x));
+      if (!subfilter) return(0);
+      _owl_filter_get_subfilter_names(subfilter, &tmp);
+    }
+
+    /* clean out 'tocheck' */
+    owl_list_free_all(&tocheck, owl_free);
+    owl_list_create(&tocheck);
+
+    /* put 'tmp' into 'tocheck' */
+    y=owl_list_get_size(&tmp);
+    for (x=0; x<y; x++) {
+      owl_util_list_add_unique_string(&tocheck, owl_list_get_element(&tmp, x));
+    }
+
+    /* clean out 'tmp' */
+    owl_list_free_all(&tmp, owl_free);
+    owl_list_create(&tmp);
+  }
+
+  owl_list_free_all(&tmp, owl_free);
+  owl_list_free_all(&tocheck, owl_free);
+  owl_list_free_all(&seen, owl_free);
+
+  return(1);
+}
+
+/* If the filter exceeds the max recursion depth, due to filters of
+ * filters with possible loops, return 1.  Otherwise, return 0.
+ */
+int owl_filter_is_toodeep_old(owl_filter *f)
+{
+  int ret;
+
+  owl_function_debugmsg("owl_filter_is_toodeep: checking depth");
+  filter_depth=0;
+  ret=_owl_filter_toodeep_recurse(f);
+  if (ret || (filter_depth>OWL_FILTER_MAXRECURSE)) {
+    owl_function_debugmsg("owl_filter_is_toodeep: too deep");
+    return(1);
+  }
+  owl_function_debugmsg("owl_filter_is_toodeep: ok");
+  return(0);
+}
+
+int _owl_filter_toodeep_recurse(owl_filter *f)
+{
+  owl_list list;
+  owl_filter *subfilter;
+  int i, j;
+
+  owl_function_debugmsg("_owl_filter_toodeep_recurse: filter_depth on entrance is  %i", filter_depth);
+
+  owl_list_create(&list);
+  _owl_filter_get_subfilter_names(f, &list);
+  j=owl_list_get_size(&list);
+  if (j>0) {
+    filter_depth++;
+    if (filter_depth>OWL_FILTER_MAXRECURSE) {
+      owl_list_free_all(&list, owl_free);
+      return(1);
+    }
+    for (i=0; i<j; i++) {
+      subfilter=owl_global_get_filter(&g, owl_list_get_element(&list, i));
+      if (!subfilter) {
+	owl_function_error("_owl_filter_toodeep_recurse: subfilter %s does not exist",
+			   owl_list_get_element(&list, i));
+	return(1);
+      }
+      return(_owl_filter_toodeep_recurse(subfilter));
+    }
+  }
+  owl_list_free_all(&list, owl_free);
   return(0);
 }
 

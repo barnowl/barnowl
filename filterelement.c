@@ -11,66 +11,76 @@ static const char fileIdent[] = "$Id$";
 #define OWL_FILTERELEMENT_OR          6
 #define OWL_FILTERELEMENT_NOT         7
 #define OWL_FILTERELEMENT_RE          8
-
+#define OWL_FILTERELEMENT_FILTER      9
 
 void owl_filterelement_create_null(owl_filterelement *fe)
 {
   fe->type=OWL_FILTERELEMENT_NULL;
   fe->field=NULL;
+  fe->filtername=NULL;
 }
 
 void owl_filterelement_create_openbrace(owl_filterelement *fe)
 {
+  owl_filterelement_create_null(fe);
   fe->type=OWL_FILTERELEMENT_OPENBRACE;
-  fe->field=NULL;
 }
 
 void owl_filterelement_create_closebrace(owl_filterelement *fe)
 {
+  owl_filterelement_create_null(fe);
   fe->type=OWL_FILTERELEMENT_CLOSEBRACE;
-  fe->field=NULL;
 }
 
 void owl_filterelement_create_and(owl_filterelement *fe)
 {
+  owl_filterelement_create_null(fe);
   fe->type=OWL_FILTERELEMENT_AND;
-  fe->field=NULL;
 }
 
 void owl_filterelement_create_or(owl_filterelement *fe)
 {
+  owl_filterelement_create_null(fe);
   fe->type=OWL_FILTERELEMENT_OR;
-  fe->field=NULL;
 }
 
 void owl_filterelement_create_not(owl_filterelement *fe)
 {
+  owl_filterelement_create_null(fe);
   fe->type=OWL_FILTERELEMENT_NOT;
-  fe->field=NULL;
 }
 
 void owl_filterelement_create_true(owl_filterelement *fe)
 {
+  owl_filterelement_create_null(fe);
   fe->type=OWL_FILTERELEMENT_TRUE;
-  fe->field=NULL;
 }
 
 void owl_filterelement_create_false(owl_filterelement *fe)
 {
+  owl_filterelement_create_null(fe);
   fe->type=OWL_FILTERELEMENT_FALSE;
-  fe->field=NULL;
 }
 
 void owl_filterelement_create_re(owl_filterelement *fe, char *field, char *re)
 {
+  owl_filterelement_create_null(fe);
   fe->type=OWL_FILTERELEMENT_RE;
   fe->field=owl_strdup(field);
   owl_regex_create(&(fe->re), re);
 }
 
+void owl_filterelement_create_filter(owl_filterelement *fe, char *name)
+{
+  owl_filterelement_create_null(fe);
+  fe->type=OWL_FILTERELEMENT_FILTER;
+  fe->filtername=owl_strdup(name);
+}
+
 void owl_filterelement_free(owl_filterelement *fe)
 {
   if (fe->field) owl_free(fe->field);
+  if (fe->filtername) owl_free(fe->filtername);
 }
 
 int owl_filterelement_is_null(owl_filterelement *fe)
@@ -132,26 +142,38 @@ owl_regex *owl_filterelement_get_re(owl_filterelement *fe)
   return(&(fe->re));
 }
 
+int owl_filterelement_is_filter(owl_filterelement *fe)
+{
+  if (fe->type==OWL_FILTERELEMENT_FILTER) return(1);
+  return(0);
+}
+
 char *owl_filterelement_get_field(owl_filterelement *fe)
 {
-  return(fe->field);
+  if (fe->field) return(fe->field);
+  return("unknown-field");
+}
+
+char *owl_filterelement_get_filtername(owl_filterelement *fe)
+{
+  if (fe->filtername) return(fe->filtername);
+  return("unknown-filter");
 }
 
 int owl_filterelement_is_value(owl_filterelement *fe)
 {
   if ( (fe->type==OWL_FILTERELEMENT_TRUE) ||
        (fe->type==OWL_FILTERELEMENT_FALSE) ||
-       (fe->type==OWL_FILTERELEMENT_RE) ) {
+       (fe->type==OWL_FILTERELEMENT_RE) ||
+       (fe->type==OWL_FILTERELEMENT_FILTER)) {
     return(1);
   }
   return(0);
 }
 
-
+/* caller must free the return */
 char *owl_filterelement_to_string(owl_filterelement *fe)
 {
-  /* return must be freed by caller */
-  
   if (owl_filterelement_is_openbrace(fe)) {
     return(owl_strdup("( "));
   } else if (owl_filterelement_is_closebrace(fe)) {
@@ -167,10 +189,10 @@ char *owl_filterelement_to_string(owl_filterelement *fe)
   } else if (owl_filterelement_is_false(fe)) {
     return(owl_strdup("false "));
   } else if (owl_filterelement_is_re(fe)) {
-    char *buff;
-    buff=owl_malloc(LINE);
-    sprintf(buff, "%s %s ", fe->field, owl_regex_get_string(&(fe->re)));
-    return(buff);
+    return(owl_sprintf("%s %s ", fe->field, owl_regex_get_string(&(fe->re))));
+  } else if (owl_filterelement_is_filter(fe)) {
+    return(owl_sprintf("filter %s ", fe->filtername));
   }
-  return(owl_strdup(""));
+
+  return(owl_strdup("?"));
 }
