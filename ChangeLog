@@ -10,6 +10,8 @@ $Id$
   	  prep. for supporting new messaging protocols
 	owl_function_info now uses fmtext instead of one staticly sized
 	  buffer
+	in owl_message_get_cc() require that the colon be present after
+	  cc.
 
 1.2.8
 	Class pings are displayed differently now

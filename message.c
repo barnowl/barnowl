@@ -359,7 +359,7 @@ char *owl_message_get_cc(owl_message *m) {
 
   cur = owl_message_get_body(m);
   while (*cur && *cur==' ') cur++;
-  if (strncasecmp(cur, "cc:", 2)) return(NULL);
+  if (strncasecmp(cur, "cc:", 3)) return(NULL);
   cur+=3;
   while (*cur && *cur==' ') cur++;
   out = owl_strdup(cur);
