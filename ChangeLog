@@ -27,7 +27,6 @@ $Id$
 	Added a 'loadsubs' command to eventually phase out the 'load-subs'
 	  command
 	Made M-n work on classes and instances with spaces in them
-	
 
 1.2.8
 	Class pings are displayed differently now
