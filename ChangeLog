@@ -4,6 +4,7 @@ $Id$
 	Don't allow zwrite if zephyr isn't present
 	There is now a zcrypt command
 	Replies to zcrypted messages now work
+	Failed AIM logins are now correctly reported
 	
 2.0.7-pre-1
 	Owl should build now without zephyr, enabling it to act as a

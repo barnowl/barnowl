@@ -157,7 +157,6 @@ int owl_aim_login(char *screenname, char *password)
   }
   owl_global_set_aimloggedin(&g, screenname);
 
-  owl_buddylist_request_idletimes(owl_global_get_buddylist(&g));
   return(0);
 }
 
@@ -165,6 +164,13 @@ void owl_aim_logout(void)
 {
   /* need to check if it's connected first, I think */
   logout(owl_global_get_aimsess(&g));
+  owl_global_set_aimnologgedin(&g);
+}
+
+void owl_aim_login_error(void)
+{
+  owl_function_makemsg("Authentication error on login");
+  owl_function_beep();
   owl_global_set_aimnologgedin(&g);
 }
 
@@ -367,7 +373,8 @@ static int faimtest_parse_authresp(aim_session_t *sess, aim_frame_t *fr, ...)
     printf("Login Error Code 0x%04x\n", info->errorcode);
     printf("Error URL: %s\n", info->errorurl);
     */
-    aim_conn_kill(sess, &fr->conn);
+    owl_aim_login_error();
+    /* aim_conn_kill(sess, &fr->conn); */
     return 1;
   }
 
@@ -389,6 +396,7 @@ static int faimtest_parse_authresp(aim_session_t *sess, aim_frame_t *fr, ...)
   }
   addcb_bos(sess, bosconn);
   aim_sendcookie(sess, bosconn, info->cookie);
+  owl_function_makemsg("%s logged in", info->sn);
   return 1;
 }
 
