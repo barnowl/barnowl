@@ -734,7 +734,7 @@ void owl_function_calculate_topmsg(int direction) {
   if (direction == OWL_DIRECTION_DOWNWARDS) {
     if (savey > recwinlines) {
       topmsg=curmsg;
-      savey=owl_message_get_numlines(owl_view_get_element(v, curmsg));
+      savey=owl_message_get_numlines(owl_view_get_element(v, i));
       direction=OWL_DIRECTION_UPWARDS;
     }
   }
