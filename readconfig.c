@@ -86,6 +86,7 @@ int owl_readconfig(char *file) {
   perl_get_sv("owl::time", TRUE);
   perl_get_sv("owl::host", TRUE);
   perl_get_sv("owl::login", TRUE);
+  perl_get_sv("owl::auth", TRUE);
   perl_get_av("owl::fields", TRUE);
   
   /* perl bootstrapping code */
