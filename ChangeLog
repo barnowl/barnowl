@@ -34,6 +34,18 @@ $Id$
 	Added smartzpunt command with key binding of "C-x k".
 	        This starts a zpunt command filled in with 
 		the proposed zpunt.
+	Fixed a memory reference bug in delete and undelete commands.
+	Added support for perl to call directly back into owl.
+	Changed the implementation of owl::command("...") to immediately
+	        call back into owl.  This allows perl to get the return
+		value of strings returned by owl commands.
+	Added the getview command which returns the name of the current 
+	        view's filter.  
+	Added the getvar command which returns the value of a variable.
+	Added an example to examples/owlconf.erik which uses TAB to 
+		narrow and restore the view.  
+	Added an example to examples/owlconf.erik which uses M-c to 
+		color messages matching the current one green.
 	
 1.2.0-pre-erikdevel-17
 	Integrated change to fix problem with popup blinking on new zephyrs.

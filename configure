@@ -1560,6 +1560,15 @@ FOO=`perl -MExtUtils::Embed -e ccopts`
 echo Adding perl CFLAGS ${FOO}
 CFLAGS=${CFLAGS}\ ${FOO}
 
+echo $ac_n "checking for the perl xsubpp precompiler""... $ac_c" 1>&6
+echo "configure:1565: checking for the perl xsubpp precompiler" >&5
+XSUBPPDIR="`(perl -MExtUtils::MakeMaker -e 'print ExtUtils::MakeMaker->new({NAME => qw(owl)})->tool_xsubpp;') | grep ^XSUBPPDIR | sed -e 's/XSUBPPDIR = //g;'`"
+if test -n "${XSUBPPDIR}"; then
+   echo "$ac_t""${XSUBPPDIR}" 1>&6
+else
+   { echo "configure: error: not found" 1>&2; exit 1; }
+fi
+
 FOO=`perl -MExtUtils::Embed -e ldopts`
 echo Adding perl LDFLAGS ${FOO}
 LDFLAGS=${LDFLAGS}\ ${FOO}
@@ -1567,7 +1576,7 @@ LDFLAGS=${LDFLAGS}\ ${FOO}
 
 ac_safe=`echo "/usr/share/terminfo" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for /usr/share/terminfo""... $ac_c" 1>&6
-echo "configure:1571: checking for /usr/share/terminfo" >&5
+echo "configure:1580: checking for /usr/share/terminfo" >&5
 if eval "test \"`echo '$''{'ac_cv_file_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1592,7 +1601,7 @@ else
 
 ac_safe=`echo "/usr/share/lib/terminfo" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for /usr/share/lib/terminfo""... $ac_c" 1>&6
-echo "configure:1596: checking for /usr/share/lib/terminfo" >&5
+echo "configure:1605: checking for /usr/share/lib/terminfo" >&5
 if eval "test \"`echo '$''{'ac_cv_file_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1618,6 +1627,8 @@ else
 fi
 
 fi
+
+
 
 
 
@@ -1755,6 +1766,7 @@ s%@infodir@%$infodir%g
 s%@mandir@%$mandir%g
 s%@CC@%$CC%g
 s%@CPP@%$CPP%g
+s%@XSUBPPDIR@%$XSUBPPDIR%g
 
 CEOF
 EOF

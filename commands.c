@@ -485,6 +485,14 @@ owl_cmd commands_to_init[]
 	      "prints a message into the debug log",
 	      "debug <message>", ""),
 
+  OWLCMD_ARGS("getview", owl_command_getview, OWL_CTX_INTERACTIVE,
+	      "returns the name of the filter for the current view",
+	      "", ""),
+
+  OWLCMD_ARGS("getvar", owl_command_getvar, OWL_CTX_INTERACTIVE,
+	      "returns the value of a variable",
+	      "getvar <varname>", ""),
+
   /****************************************************************/
   /************************* EDIT-SPECIFIC ************************/
   /****************************************************************/
@@ -1273,7 +1281,7 @@ void owl_command_openurl(void) {
 char *owl_command_delete(int argc, char **argv, char *buff) {
   int move_after = 1;
 
-  if (!strcmp(argv[1], "--no-move")) {
+  if (argc>1 && !strcmp(argv[1], "--no-move")) {
     move_after = 0;
     argc--; 
     argv++;
@@ -1306,7 +1314,7 @@ char *owl_command_delete(int argc, char **argv, char *buff) {
 char *owl_command_undelete(int argc, char **argv, char *buff) {
   int move_after = 1;
 
-  if (!strcmp(argv[1], "--no-move")) {
+  if (argc>1 && !strcmp(argv[1], "--no-move")) {
     move_after = 0;
     argc--; 
     argv++;
@@ -1402,7 +1410,29 @@ char *owl_command_smartzpunt(int argc, char **argv, char *buff) {
   return NULL;
 }
 
+char *owl_command_getview(int argc, char **argv, char *buff) {
+  char *filtname;
+  if (argc != 1) {
+    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
+    return NULL;
+  }
+  filtname = owl_view_get_filtname(owl_global_get_current_view(&g));
+  if (filtname) filtname = owl_strdup(filtname);
+  return filtname;
+}
 
+char *owl_command_getvar(int argc, char **argv, char *buff) {
+  char tmpbuff[1024];
+  if (argc != 2) {
+    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
+    return NULL;
+  }
+  if (owl_variable_get_tostring(owl_global_get_vardict(&g), 
+				argv[1], tmpbuff, 1024)) {
+    return NULL;
+  }
+  return owl_strdup(tmpbuff); 
+}
 
 /*********************************************************************/
 /************************** EDIT SPECIFIC ****************************/

@@ -67,6 +67,33 @@ sub sepbartokens_set {
     owl::command(sprintf "set -q appendtosepbar \"%s\"", (join " ", @sepbartokens));
 }
 
+my $restoreview = undef;
+sub swapview {
+    my $curview = owl::command("getview");
+    if ($restoreview) {
+        owl::command("view $restoreview");
+	$restoreview = undef;
+    } else {
+	$restoreview = $curview;
+	owl::command("smartnarrow");
+    }
+}
+
+my $lastcolored = undef;
+sub colorthread {
+    if ($lastcolored) {
+        owl::command("filter $lastcolored -c default");
+    }
+    my $smartfilt = owl::command("smartfilter");
+    if (!$smartfilt or $smartfilt eq $lastcolored) {
+        owl::command("filter $lastcolored -c default");
+        $lastcolored = undef;
+    } else {
+        owl::command("filter $smartfilt -c green");
+	$lastcolored = $smartfilt;
+    }
+}
+
 sub owl::startup {
     owl::command("set -q logging off");
     owl::command("set -q zsigproc /home/nygren/bin/owlzsigs");
@@ -96,6 +123,14 @@ sub owl::startup {
     owl::command("bindkey recv M-k command ( smartnarrow ; delete view )");
     owl::command("bindkey recv M-l command ( expunge ; view all )");
     owl::command("bindkey recv M-K command ( smartnarrow ; delete view ; expunge ; view all )");
+
+    # toggle between a view and a smartnarrow with TAB
+    owl::command("alias swapview perl swapview();");
+    owl::command("bindkey recv C-i command swapview");
+
+    # color the current thread
+    owl::command("alias colorthread perl colorthread();");
+    owl::command("bindkey recv M-c command colorthread");
 
     # Make 'M-s' insert a <scritchscritchscritch> sequence with a random
     # number of scritches.

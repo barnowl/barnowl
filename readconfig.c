@@ -9,10 +9,23 @@
 
 static const char fileIdent[] = "$Id$";
 
+
+
+EXTERN_C void boot_owl (pTHX_ CV* cv);
+
+static void owl_perl_xs_init(pTHX) {
+  char *file = __FILE__;
+  dXSUB_SYS;
+  {
+    newXS("owl::bootstrap", boot_owl, file);
+  }
+}
+
+
 int owl_readconfig(char *file) {
   int ret;
   PerlInterpreter *p;
-  char buff[1024], filename[1024];
+  char *codebuff, filename[1024];
   char *embedding[5];
   struct stat statbuff;
 
@@ -21,7 +34,6 @@ int owl_readconfig(char *file) {
   } else {
     strcpy(filename, file);
   }
-
   embedding[0]="";
   embedding[1]=filename;
   embedding[2]=0;
@@ -38,7 +50,7 @@ int owl_readconfig(char *file) {
     return(0);
   }
 
-  ret=perl_parse(p, NULL, 2, embedding, NULL);
+  ret=perl_parse(p, owl_perl_xs_init, 2, embedding, NULL);
   if (ret) return(-1);
 
   ret=perl_run(p);
@@ -60,12 +72,16 @@ int owl_readconfig(char *file) {
   perl_get_sv("owl::host", TRUE);
   perl_get_av("owl::fields", TRUE);
   
-  /* load in owl_command() */
-  strcpy(buff, "sub owl::command {                           \n");
-  strcat(buff, "  my $command = shift;                       \n");
-  strcat(buff, "  push @owl::commands, $command;             \n");
-  strcat(buff, "}                                            \n");
-  perl_eval_pv(buff, FALSE);
+  /* perl bootstrapping code*/
+  codebuff = 
+    "                                             \n"
+    "package owl;                                 \n"
+    "                                             \n"
+    "bootstrap owl 0.01;                          \n"
+    "                                             \n"
+    "package main;                                \n";
+
+  perl_eval_pv(codebuff, FALSE);
 
 
   /* check if we have the formatting function */
@@ -78,10 +94,8 @@ int owl_readconfig(char *file) {
 
 /* caller is responsible for freeing returned string */
 char *owl_config_execute(char *line) {
-  STRLEN n_a;
-  SV *command, *response;
-  AV *commands;
-  int numcommands, i;
+  STRLEN len;
+  SV *response;
   char *out, *preout;
 
   if (!owl_global_have_config(&g)) return NULL;
@@ -89,22 +103,14 @@ char *owl_config_execute(char *line) {
   /* execute the subroutine */
   response = perl_eval_pv(line, FALSE);
 
-  preout=SvPV(response, n_a);
+  preout=SvPV(response, len);
   /* leave enough space in case we have to add a newline */
   out = owl_malloc(strlen(preout)+2);
-  strcpy(out, preout);
+  strncpy(out, preout, len);
+  out[len] = '\0';
   if (!strlen(out) || out[strlen(out)-1]!='\n') {
     strcat(out, "\n");
   }
-
-  /* execute all the commands, cleaning up the arrays as we go */
-  commands=perl_get_av("owl::commands", TRUE);
-  numcommands=av_len(commands)+1;
-  for (i=0; i<numcommands; i++) {
-    command=av_shift(commands);
-    owl_function_command_norv(SvPV(command, n_a));
-  }
-  av_undef(commands);
 
   return(out);
 }
@@ -213,3 +219,4 @@ char *owl_config_getmsg(owl_message *m, int mode) {
     return(NULL);
   }
 }
+
