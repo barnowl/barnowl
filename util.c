@@ -585,6 +585,13 @@ void owl_hack_animate() {
     owl_fmtext_set_char(fm, place+2, '-');
 
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+    if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
+      owl_popwin_refresh(owl_global_get_popwin(&g));
+      /* TODO: this is a broken kludge */
+      if (owl_global_get_viewwin(&g)) {
+	owl_viewwin_redisplay(owl_global_get_viewwin(&g), 0);
+      }
+    }
     owl_global_set_needrefresh(&g);
     return;
   }
@@ -596,6 +603,13 @@ void owl_hack_animate() {
     owl_fmtext_set_char(fm, place+2, 'O');
 
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+    if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
+      owl_popwin_refresh(owl_global_get_popwin(&g));
+      /* TODO: this is a broken kludge */
+      if (owl_global_get_viewwin(&g)) {
+	owl_viewwin_redisplay(owl_global_get_viewwin(&g), 0);
+      }
+    }
     owl_global_set_needrefresh(&g);
     return;
   }

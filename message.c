@@ -359,7 +359,7 @@ void owl_message_create_admin(owl_message *m, char *header, char *text) {
 
 void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
   struct hostent *hent;
-  int k;
+  int k, ret;
   char *ptr;
 
   m->id=owl_global_get_nextmsgid(&g);
@@ -405,9 +405,13 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
     char *out;
 
     out=owl_malloc(strlen(m->body)*16+20);
-    zcrypt_decrypt(out, m->body, m->class, m->inst);
-    owl_free(m->body);
-    m->body=out;
+    ret=zcrypt_decrypt(out, m->body, m->class, m->inst);
+    if (ret==0) {
+      owl_free(m->body);
+      m->body=out;
+    } else {
+      owl_free(out);
+    }
   }
 
   /* save the hostname */

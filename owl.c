@@ -35,7 +35,8 @@ int main(int argc, char **argv, char **env) {
   struct sigaction sigact;
   char *configfile, *tty, *perlout, **argvsave, buff[LINE], startupmsg[LINE];
   owl_filter *f;
-  time_t nexttime;
+  time_t nexttime, now;
+  struct tm *today;
 
   argcsave=argc;
   argvsave=argv;
@@ -222,7 +223,7 @@ int main(int argc, char **argv, char **env) {
   
   owl_context_set_interactive(owl_global_get_context(&g));
 
-  nexttimediff=20;
+  nexttimediff=10;
   nexttime=time(NULL);
 
   /* main loop */
@@ -240,10 +241,12 @@ int main(int argc, char **argv, char **env) {
     followlast=owl_global_should_followlast(&g);
 
     /* little hack */
-    if (0 && owl_global_get_runtime(&g)<300) {
+    now=time(NULL);
+    today=localtime(&now);
+    if (today->tm_mon==9 && today->tm_mday==31 && owl_global_get_runtime(&g)<600) {
       if (time(NULL)>nexttime) {
 	if (nexttimediff==1) {
-	  nexttimediff=20;
+	  nexttimediff=10;
 	} else {
 	  nexttimediff=1;
 	}

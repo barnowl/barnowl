@@ -14,6 +14,7 @@ $Id$
   	  messages are decrypted
 	'reply' is disabled for zcrypt until sending zcrypt works
 	Started implementing zcrypt command
+	More updates to the intro doc
 	
 1.2.6
 	Started adding code for newmsgproc.  It doesn't fully work yet!
