@@ -1921,6 +1921,27 @@ void owl_function_start_command(char *line)
     owl_editwin_process_char(tw, line[i]);
   }
   owl_editwin_redisplay(tw, 0);
+
+  owl_context_set_editline(owl_global_get_context(&g), tw);
+  owl_function_activate_keymap("editline");
+    
+}
+
+void owl_function_start_question(char *line)
+{
+  owl_editwin *tw;
+
+  tw=owl_global_get_typwin(&g);
+  owl_global_set_typwin_active(&g);
+  owl_editwin_new_style(tw, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
+
+  owl_editwin_set_locktext(tw, line);
+  owl_global_set_needrefresh(&g);
+
+  owl_editwin_redisplay(tw, 0);
+
+  owl_context_set_editresponse(owl_global_get_context(&g), tw);
+  owl_function_activate_keymap("editresponse");
 }
 
 char *owl_function_exec(int argc, char **argv, char *buff, int type)

@@ -92,3 +92,9 @@ void owl_context_set_editline(owl_context *ctx, owl_editwin *ew)
   SET_ACTIVE(ctx, OWL_CTX_EDITLINE);
 }
 
+void owl_context_set_editresponse(owl_context *ctx, owl_editwin *ew)
+{
+  ctx->data = (void*)ew;
+  SET_ACTIVE(ctx, OWL_CTX_EDITRESPONSE);
+}
+

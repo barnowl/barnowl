@@ -8,11 +8,11 @@ static const char fileIdent[] = "$Id$";
 
 #define INCR 5000
 
+/* initialize the editwin e.
+ * 'win' is an already initialzed curses window that will be used by editwin
+ */
 void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, int style, owl_history *hist)
 {
-  /* initialize the editwin e.
-   * 'win' is an already initialzed curses window that will be used by editwin
-   */
   e->buff=owl_malloc(INCR);  
   e->buff[0]='\0';
   e->bufflen=0;
@@ -23,10 +23,8 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->topline=0;
   e->winlines=winlines;
   e->wincols=wincols;
-  e->fillcol=owl_editwin_limit_maxcols(wincols-1, 
-				       owl_global_get_edit_maxfillcols(&g));
-  e->wrapcol=owl_editwin_limit_maxcols(wincols-1, 
-				       owl_global_get_edit_maxwrapcols(&g));
+  e->fillcol=owl_editwin_limit_maxcols(wincols-1, owl_global_get_edit_maxfillcols(&g));
+  e->wrapcol=owl_editwin_limit_maxcols(wincols-1, owl_global_get_edit_maxwrapcols(&g));
   e->curswin=win;
   e->style=style;
   if ((style!=OWL_EDITWIN_STYLE_MULTILINE) &&
@@ -44,10 +42,8 @@ void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincol
   e->curswin=w;
   e->winlines=winlines;
   e->wincols=wincols;
-  e->fillcol=owl_editwin_limit_maxcols(wincols-1, 
-				       owl_global_get_edit_maxfillcols(&g));
-  e->wrapcol=owl_editwin_limit_maxcols(wincols-1, 
-				       owl_global_get_edit_maxwrapcols(&g));
+  e->fillcol=owl_editwin_limit_maxcols(wincols-1, owl_global_get_edit_maxfillcols(&g));
+  e->wrapcol=owl_editwin_limit_maxcols(wincols-1, owl_global_get_edit_maxwrapcols(&g));
 }
 
 /* echo the character 'ch' for each normal character keystroke,
@@ -204,7 +200,7 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
 {
   
   char *ptr1, *ptr2, *ptr3, *buff;
-  int i, j;
+  int i;
 
   werase(e->curswin);
   wmove(e->curswin, 0, 0);
@@ -854,7 +850,7 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
   }
 }
 
-/* returns if only whitespace remains */
+/* returns true if only whitespace remains */
 int owl_editwin_is_at_end(owl_editwin *e)
 {
   int cur=_owl_editwin_get_index_from_xy(e);

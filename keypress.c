@@ -130,7 +130,8 @@ static struct _owl_keypress_specialmap {
 /* OWL_META is definied in owl.h */
 
 /* returns 0 on success */
-int owl_keypress_tostring(int j, int esc, char *buff, int bufflen) {
+int owl_keypress_tostring(int j, int esc, char *buff, int bufflen)
+{
   char kb[64], kb2[2];
   struct _owl_keypress_specialmap *sm;
 
@@ -172,7 +173,8 @@ int owl_keypress_tostring(int j, int esc, char *buff, int bufflen) {
 
 
 /* returns ERR on failure, else a keycode */
-int owl_keypress_fromstring(char *kb) {
+int owl_keypress_fromstring(char *kb)
+{
   struct _owl_keypress_specialmap *sm;
   int ismeta=0, isctrl=0;
   int j = ERR;

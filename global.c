@@ -95,6 +95,7 @@ void owl_global_init(owl_global *g) {
   owl_timer_create_countdown(&(g->aim_noop_timer), 30);
   owl_timer_create_countdown(&(g->aim_ignorelogin_timer), 0);
   owl_buddylist_init(&(g->buddylist));
+  g->response=NULL;
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -761,6 +762,19 @@ owl_style *owl_global_get_style_by_name(owl_global *g, char *name)
   return(NULL);
 }
 
-void owl_global_add_style(owl_global *g, owl_style *s) {
+void owl_global_add_style(owl_global *g, owl_style *s)
+{
   owl_list_append_element(&(g->stylelist), s);
+}
+
+char *owl_global_get_response(owl_global *g)
+{
+  if (g->response==NULL) return("");
+  return(g->response);
+}
+
+void owl_global_set_response(owl_global *g, char *resp)
+{
+  if (g->response) owl_free(g->response);
+  g->response=resp;
 }

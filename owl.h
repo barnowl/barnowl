@@ -16,8 +16,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.6-pre-1
-#define OWL_VERSION_STRING "2.0.6-pre-1"
+#define OWL_VERSION         2.0.6-pre-2
+#define OWL_VERSION_STRING "2.0.6-pre-2"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
@@ -90,9 +90,10 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_CTX_RECWIN       0x0f00
 #define OWL_CTX_RECV         0x0100
 #define OWL_CTX_TYPWIN       0xf000
-#define OWL_CTX_EDIT         0x3000
+#define OWL_CTX_EDIT         0x7000
 #define OWL_CTX_EDITLINE     0x1000
 #define OWL_CTX_EDITMULTI    0x2000
+#define OWL_CTX_EDITRESPONSE 0x4000
 
 #define OWL_USERCLUE_NONE       0
 #define OWL_USERCLUE_CLASSES    1
@@ -443,6 +444,7 @@ typedef struct _owl_global {
   owl_buddylist buddylist;  /* list of logged in AIM buddies */
   owl_list messagequeue;    /* for queueing up aim and other messages */
   owl_list stylelist;       /* global list of available styles */
+  char *response;           /* response to the last question asked */
 } owl_global;
 
 /* globals */

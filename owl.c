@@ -487,8 +487,10 @@ int main(int argc, char **argv, char **env) {
       owl_function_activate_keymap("popless");
     } else if (owl_global_is_typwin_active(&g) 
 	       && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_ONELINE) {
+      /*
       owl_context_set_editline(owl_global_get_context(&g), tw);
       owl_function_activate_keymap("editline");
+      */
     } else if (owl_global_is_typwin_active(&g) 
 	       && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_MULTILINE) {
       owl_context_set_editmulti(owl_global_get_context(&g), tw);

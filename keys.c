@@ -125,6 +125,21 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("LF",          "editline:done", "executes the command");
   BIND_CMD("CR",          "editline:done", "executes the command");
 
+  
+  /****************************************************************/
+  /**************************** EDITRESPONSE **********************/
+  /****************************************************************/
+
+  km_ew_onel = km = owl_keyhandler_create_and_add_keymap(kh, "editresponse",
+       "Single-line response to question", 
+       owl_keys_editwin_default, NULL, owl_keys_editwin_postalways);
+  owl_keymap_set_submap(km_ew_onel, km_editwin);
+
+  BIND_CMD("C-u",         "edit:delete-all", "Clears the entire line");
+
+  BIND_CMD("LF",          "editresponse:done", "executes the command");
+  BIND_CMD("CR",          "editresponse:done", "executes the command");
+
 
   /****************************************************************/
   /**************************** POPLESS ***************************/
