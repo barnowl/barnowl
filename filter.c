@@ -159,6 +159,9 @@ int owl_filter_get_cachedmsgid(owl_filter *f)
   return(f->cachedmsgid);
 }
 
+/* return 1 if the message matches the given filter, otherwise
+ * return 0.
+ */
 int owl_filter_message_match(owl_filter *f, owl_message *m)
 {
   int i, j, tmp;

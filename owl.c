@@ -588,9 +588,7 @@ int main(int argc, char **argv, char **env)
       }
 
       /* log the message if we need to */
-      if (owl_global_is_logging(&g) || owl_global_is_classlogging(&g)) {
-	owl_log_incoming(m);
-      }
+      owl_log_message(m);
     }
 
     /* is it time to check zbuddies? */

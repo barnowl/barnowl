@@ -163,72 +163,94 @@ void owl_function_show_license()
   owl_function_popless_text(text);
 }
 
-void owl_function_adminmsg(char *header, char *body)
-{
-  owl_message *m;
-  int followlast;
 
-  followlast=owl_global_should_followlast(&g);
-  m=owl_malloc(sizeof(owl_message));
-  owl_message_create_admin(m, header, body);
+/* Add the given message to Owl's internal queue.  If displayoutgoing
+ * is disabled, the message is NOT added to any internal queue, -1 is
+ * returned and THE CALLER IS EXPECTED TO FREE THE GIVEN MESSAGE.
+ * Otherwise 0 is returned and the caller need do nothing more
+ */
+int owl_function_add_message(owl_message *m)
+{
+  /* if displayoutgoing is disabled, nuke the message and move on */
+  if (! owl_global_is_displayoutgoing(&g)) {
+    return(-1);
+  }
+
+  /* add it to the global list and current view */
   owl_messagelist_append_element(owl_global_get_msglist(&g), m);
   owl_view_consider_message(owl_global_get_current_view(&g), m);
 
-  if (followlast) owl_function_lastmsg_noredisplay();
+  /* do followlast if necessary */
+  if (owl_global_should_followlast(&g)) owl_function_lastmsg_noredisplay();
 
+  /* redisplay etc. */
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
     owl_popwin_refresh(owl_global_get_popwin(&g));
   }
+  wnoutrefresh(owl_global_get_curs_recwin(&g));
+  owl_global_set_needrefresh(&g);
+  return(0);
+}
+
+/* Create an admin message, append it to the global list of messages
+ * and redisplay if necessary.
+ */
+void owl_function_adminmsg(char *header, char *body)
+{
+  owl_message *m;
+
+  m=owl_malloc(sizeof(owl_message));
+  owl_message_create_admin(m, header, body);
   
+  /* add it to the global list and current view */
+  owl_messagelist_append_element(owl_global_get_msglist(&g), m);
+  owl_view_consider_message(owl_global_get_current_view(&g), m);
+
+  /* do followlast if necessary */
+  if (owl_global_should_followlast(&g)) owl_function_lastmsg_noredisplay();
+
+  /* redisplay etc. */
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
+    owl_popwin_refresh(owl_global_get_popwin(&g));
+  }
   wnoutrefresh(owl_global_get_curs_recwin(&g));
   owl_global_set_needrefresh(&g);
 }
 
-void owl_function_make_outgoing_zephyr(char *body, char *zwriteline, char *zsig)
+/* Create an outgoing zephyr message and return a pointer to it.  Does
+ * not put it on the global queue, use owl_function_add_message() for
+ * that.
+ */
+owl_message *owl_function_make_outgoing_zephyr(char *body, char *zwriteline, char *zsig)
 {
   owl_message *m;
-  int followlast;
   owl_zwrite z;
   
-  followlast=owl_global_should_followlast(&g);
-
   /* create a zwrite for the purpose of filling in other message fields */
   owl_zwrite_create_from_line(&z, zwriteline);
 
   /* create the message */
   m=owl_malloc(sizeof(owl_message));
   owl_message_create_from_zwriteline(m, zwriteline, body, zsig);
-
-  /* add it to the global list and current view */
-  owl_messagelist_append_element(owl_global_get_msglist(&g), m);
-  owl_view_consider_message(owl_global_get_current_view(&g), m);
-
-  if (followlast) owl_function_lastmsg_noredisplay();
-
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
-    owl_popwin_refresh(owl_global_get_popwin(&g));
-  }
-  
-  wnoutrefresh(owl_global_get_curs_recwin(&g));
-  owl_global_set_needrefresh(&g);
   owl_zwrite_free(&z);
+
+  return(m);
 }
 
-int owl_function_make_outgoing_aim(char *body, char *to)
+/* Create an outgoing AIM message, returns a pointer to the created
+ * message or NULL if we're not logged into AIM (and thus unable to
+ * create the message).  Does not put it on the global queue.  Use
+ * owl_function_add_message() for that .
+ */
+owl_message *owl_function_make_outgoing_aim(char *body, char *to)
 {
   owl_message *m;
-  int followlast;
 
-
-  if (!owl_global_is_aimloggedin(&g)) {
-    return(-1);
-  }
+  /* error if we're not logged into aim */
+  if (!owl_global_is_aimloggedin(&g)) return(NULL);
   
-  followlast=owl_global_should_followlast(&g);
-
-  /* create the message */
   m=owl_malloc(sizeof(owl_message));
   owl_message_create_aim(m,
 			 owl_global_get_aim_screenname(&g),
@@ -236,49 +258,23 @@ int owl_function_make_outgoing_aim(char *body, char *to)
 			 body,
 			 OWL_MESSAGE_DIRECTION_OUT,
 			 0);
-
-  /* add it to the global list and current view */
-  owl_messagelist_append_element(owl_global_get_msglist(&g), m);
-  owl_view_consider_message(owl_global_get_current_view(&g), m);
-
-  if (followlast) owl_function_lastmsg_noredisplay();
-
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
-    owl_popwin_refresh(owl_global_get_popwin(&g));
-  }
-  
-  wnoutrefresh(owl_global_get_curs_recwin(&g));
-  owl_global_set_needrefresh(&g);
-  return(0);
+  return(m);
 }
 
-int owl_function_make_outgoing_loopback(char *body)
+/* Create an outgoing loopback message and return a pointer to it.
+ * Does not append it to the global queue, use
+ * owl_function_add_message() for that.
+ */
+owl_message *owl_function_make_outgoing_loopback(char *body)
 {
   owl_message *m;
-  int followlast;
-
-  followlast=owl_global_should_followlast(&g);
 
   /* create the message */
   m=owl_malloc(sizeof(owl_message));
   owl_message_create_loopback(m, body);
   owl_message_set_direction_out(m);
 
-  /* add it to the global list and current view */
-  owl_messagelist_append_element(owl_global_get_msglist(&g), m);
-  owl_view_consider_message(owl_global_get_current_view(&g), m);
-
-  if (followlast) owl_function_lastmsg_noredisplay();
-
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
-    owl_popwin_refresh(owl_global_get_popwin(&g));
-  }
-  
-  wnoutrefresh(owl_global_get_curs_recwin(&g));
-  owl_global_set_needrefresh(&g);
-  return(0);
+  return(m);
 }
 
 void owl_function_zwrite_setup(char *line)
@@ -385,30 +381,31 @@ void owl_function_loopwrite_setup()
 void owl_function_zwrite(char *line, char *msg)
 {
   owl_zwrite z;
-  int i, j;
   char *mymsg;
+  owl_message *m;
 
   /* create the zwrite and send the message */
   owl_zwrite_create_from_line(&z, line);
   if (msg) {
     owl_zwrite_set_message(&z, msg);
   }
-
   owl_zwrite_send_message(&z);
   owl_function_makemsg("Waiting for ack...");
 
-  mymsg=owl_zwrite_get_message(&z);
+  /* If it's personal */
+  if (owl_zwrite_is_personal(&z)) {
+    /* create the outgoing message */
+    mymsg=owl_zwrite_get_message(&z);
+    m=owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
 
-  /* display the message as an outgoing message in the receive window */
-  if (owl_global_is_displayoutgoing(&g) && owl_zwrite_is_personal(&z)) {
-    owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
-  }
+    /* log it */
+    owl_log_message(m);
 
-  /* log it if we have logging turned on */
-  if (owl_global_is_logging(&g) && owl_zwrite_is_personal(&z)) {
-    j=owl_zwrite_get_numrecips(&z);
-    for (i=0; i<j; i++) {
-      owl_log_outgoing_zephyr(owl_zwrite_get_recip_n(&z, i), mymsg);
+    /* add it or nuke it */
+    if (owl_global_is_displayoutgoing(&g)) {
+      owl_function_add_message(m);
+    } else {
+      owl_message_free(m);
     }
   }
 
@@ -422,9 +419,9 @@ void owl_function_zwrite(char *line, char *msg)
 void owl_function_zcrypt(char *line, char *msg)
 {
   owl_zwrite z;
-  int i, j;
   char *mymsg;
   char *cryptmsg;
+  owl_message *m;
 #ifdef OWL_ENABLE_ZCRYPT
   int ret;
 #endif
@@ -456,16 +453,20 @@ void owl_function_zcrypt(char *line, char *msg)
   owl_zwrite_send_message(&z);
   owl_function_makemsg("Waiting for ack...");
 
-  /* display the message as an outgoing message in the receive window */
-  if (owl_global_is_displayoutgoing(&g) && owl_zwrite_is_personal(&z)) {
-    owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
-  }
-
-  /* log it if we have logging turned on */
-  if (owl_global_is_logging(&g) && owl_zwrite_is_personal(&z)) {
-    j=owl_zwrite_get_numrecips(&z);
-    for (i=0; i<j; i++) {
-      owl_log_outgoing_zephyr(owl_zwrite_get_recip_n(&z, i), mymsg);
+  /* If it's personal */
+  if (owl_zwrite_is_personal(&z)) {
+    /* create the outgoing message */
+    mymsg=owl_zwrite_get_message(&z);
+    m=owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
+    
+    /* log it */
+    owl_log_message(m);
+    
+    /* add it or nuke it */
+    if (owl_global_is_displayoutgoing(&g)) {
+      owl_function_add_message(m);
+    } else {
+      owl_message_free(m);
     }
   }
 
@@ -478,6 +479,7 @@ void owl_function_aimwrite(char *to)
 {
   int ret;
   char *msg, *format_msg;
+  owl_message *m;
 
   /* make a formatted copy of the message */
   msg=owl_editwin_get_text(owl_global_get_typwin(&g));
@@ -492,14 +494,17 @@ void owl_function_aimwrite(char *to)
     owl_function_error("Could not send AIM message.");
   }
 
-  /* display the message as an outgoing message in the receive window */
-  if (owl_global_is_displayoutgoing(&g)) {
-    owl_function_make_outgoing_aim(msg, to);
-  }
+  /* create the outgoing message */
+  m=owl_function_make_outgoing_aim(msg, to);
 
-  /* log it if we have logging turned on */
-  if (owl_global_is_logging(&g)) {
-    owl_log_outgoing_aim(to, msg);
+  /* log it */
+  owl_log_message(m);
+
+  /* display it or nuke it */
+  if (owl_global_is_displayoutgoing(&g)) {
+    owl_function_add_message(m);
+  } else {
+    owl_message_free(m);
   }
 
   owl_free(format_msg);
@@ -509,6 +514,7 @@ void owl_function_send_aimawymsg(char *to, char *msg)
 {
   int ret;
   char *format_msg;
+  owl_message *m;
 
   /* make a formatted copy of the message */
   format_msg=owl_strdup(msg);
@@ -522,42 +528,45 @@ void owl_function_send_aimawymsg(char *to, char *msg)
     owl_function_error("Could not send AIM message.");
   }
 
-  /* display the message as an outgoing message in the receive window */
-  if (owl_global_is_displayoutgoing(&g)) {
-    owl_function_make_outgoing_aim(msg, to);
-  }
+  /* create the message */
+  m=owl_function_make_outgoing_aim(msg, to);
+  if (m) {
+    /* log it */
+    owl_log_message(m);
 
-  /* log it if we have logging turned on */
-  if (owl_global_is_logging(&g)) {
-    owl_log_outgoing_aim(to, msg);
+    /* display it or nuke it */
+    if (owl_global_is_displayoutgoing(&g)) {
+      owl_function_add_message(m);
+    } else {
+      owl_message_free(m);
+    }
+  } else {
+    owl_function_error("Could not create AIM message");
   }
-
   owl_free(format_msg);
 }
 
 void owl_function_loopwrite()
 {
-  owl_message *m;
+  owl_message *min, *mout;
 
   /* create a message and put it on the message queue.  This simulates
    * an incoming message */
-  m=owl_malloc(sizeof(owl_message));
-  owl_message_create_loopback(m, owl_editwin_get_text(owl_global_get_typwin(&g)));
-  owl_message_set_direction_in(m);
-  owl_global_messagequeue_addmsg(&g, m);
+  min=owl_malloc(sizeof(owl_message));
+  owl_message_create_loopback(min, owl_editwin_get_text(owl_global_get_typwin(&g)));
+  owl_message_set_direction_in(min);
+  owl_global_messagequeue_addmsg(&g, min);
 
-  /* display the message as an outgoing message in the receive window */
+  mout=owl_function_make_outgoing_loopback(owl_editwin_get_text(owl_global_get_typwin(&g)));
+  owl_log_message(mout);
   if (owl_global_is_displayoutgoing(&g)) {
-    owl_function_make_outgoing_loopback(owl_editwin_get_text(owl_global_get_typwin(&g)));
+    owl_function_add_message(mout);
+  } else {
+    owl_message_free(mout);
   }
 
   /* fake a makemsg */
   owl_function_makemsg("loopback message sent");
-
-  /* log it if we have logging turned on */
-  if (owl_global_is_logging(&g)) {
-    owl_log_outgoing_loopback(owl_editwin_get_text(owl_global_get_typwin(&g)));
-  }
 }
 
 /* If filter is non-null, looks for the next message matching

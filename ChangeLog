@@ -10,6 +10,15 @@ $Id$
 	  that case only print an error if the file exists but isn't
 	  readable.  Still prints an error either way if zephyr reports a
 	  failure. [BZ 19]
+	Fixed some small memory leaks in logging if files unwriteable
+	If the variable logfilter is set it names a filter.  Any messages
+	  matching this filter are logged.  This is an independent
+	  mechanism from the other logging variables.  If you want to
+	  control all logging with logfilter the other variables must be
+	  set to their default (off) settings. [BZ 37]
+	Relatively substantial changes made under the hood to support
+	  filter logging.  Now have more consistent interfaces to
+	  creating messages etc.  Still needs more work though.
 
 2.1.10
 	Fix a new problem finding libdes425

@@ -150,6 +150,15 @@ static owl_variable variables_to_init[] = {
 	       "for AIM, zephyr, or other protocols.  If disabled Owl will not print\n"
 	       "login or logout notifications.\n"),
 
+  OWLVAR_STRING( "logfilter" /* %OwlVarStub */, "",
+		 "name of a filter controlling which messages to log",
+
+		 "If non empty, any messages matching the given filter will be logged.\n"
+		 "This is a completely separate mechanisim from the other logging\n"
+		 "variables like logging, classlogging, loglogins, loggingdirection,\n"
+		 "etc.  If you want this variable to control all logging, make sure\n"
+		 "all other logging variables are in their default state.\n"),
+
   OWLVAR_BOOL( "loglogins" /* %OwlVarStub */, 0,
 	       "Enable logging of login notifications",
 	       "When this is enabled, Owl will login login and logout notifications\n"
