@@ -2892,13 +2892,28 @@ void owl_function_show_colors()
   owl_fmtext fm;
 
   owl_fmtext_init_null(&fm);
+  owl_fmtext_append_normal(&fm, "default: ");
   owl_fmtext_append_normal_color(&fm, "default\n", OWL_COLOR_DEFAULT);
+
+  owl_fmtext_append_normal(&fm,"red:      ");
   owl_fmtext_append_normal_color(&fm, "red\n", OWL_COLOR_RED);
+
+  owl_fmtext_append_normal(&fm,"green:    ");
   owl_fmtext_append_normal_color(&fm, "green\n", OWL_COLOR_GREEN);
+
+  owl_fmtext_append_normal(&fm,"yellow:   ");
   owl_fmtext_append_normal_color(&fm, "yellow\n", OWL_COLOR_YELLOW);
+
+  owl_fmtext_append_normal(&fm,"blue:     ");
   owl_fmtext_append_normal_color(&fm, "blue\n", OWL_COLOR_BLUE);
+
+  owl_fmtext_append_normal(&fm,"magenta:  ");
   owl_fmtext_append_normal_color(&fm, "magenta\n", OWL_COLOR_MAGENTA);
+
+  owl_fmtext_append_normal(&fm,"cyan:     ");
   owl_fmtext_append_normal_color(&fm, "cyan\n", OWL_COLOR_CYAN);
+
+  owl_fmtext_append_normal(&fm,"white:    ");
   owl_fmtext_append_normal_color(&fm, "white\n", OWL_COLOR_WHITE);
 
   owl_function_popless_fmtext(&fm);
