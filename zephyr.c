@@ -219,7 +219,6 @@ int owl_zephyr_sub(char *class, char *inst, char *recip)
 {
 #ifdef HAVE_LIBZEPHYR
   ZSubscription_t subs[5];
-  int ret;
 
   subs[0].zsub_class=class;
   subs[0].zsub_classinst=inst;
@@ -241,7 +240,6 @@ int owl_zephyr_unsub(char *class, char *inst, char *recip)
 {
 #ifdef HAVE_LIBZEPHYR
   ZSubscription_t subs[5];
-  int ret;
 
   subs[0].zsub_class=class;
   subs[0].zsub_classinst=inst;

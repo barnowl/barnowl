@@ -53,8 +53,10 @@ void owl_history_store(owl_history *h, char *line)
   size=owl_list_get_size(&(h->hist));
 
   /* if repeats are disallowed, check if the line is present already */
-  for (i=0; i<size; i++) {
-    if (!strcmp(line, owl_list_get_element(&(h->hist), i))) return;
+  if (!h->repeats) {
+    for (i=0; i<size; i++) {
+      if (!strcmp(line, owl_list_get_element(&(h->hist), i))) return;
+    }
   }
 
   /* if partial is set, remove the first entry first */
