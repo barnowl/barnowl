@@ -329,13 +329,13 @@ Section 6: THE CONFIG FILE
 
 *** WARNING: This interface may change substantially in the near future ***
 
-This file is interpreted by the perl interpreter.
-If you wish to execute an owl command use the
-function owl::command().  i.e.
+The ~/.owlconf file is interpreted by the perl interpreter.  You may
+specify an alternate file by running owl with "owl -c <configfile>".
 
-     owl::command("set zsigproc \"/mit/kretch/bin/getzsig foo\"");
+If you wish to execute an owl command from .owlconf use the function
+owl::command().  i.e.:
 
-will set the owl variable zsigproc.  
+     owl::command('set zsigproc "/mit/kretch/bin/getzsig foo"');
 
 Subroutines created with the names below will be executed at the
 specified times:
@@ -350,14 +350,13 @@ specified times:
     owl::receive_msg() run when a message is received, and after
 		       it has been added to the message list
 
-Both owl::format_msg and owl::receive_msg are passed
-perl owl::Message objects which contain attributes of the message.
-Please see the advanced.txt file for further documentation
-of the Perl extension API.
+Both owl::format_msg and owl::receive_msg are passed perl owl::Message
+objects which contain attributes of the message.  Please see the
+advanced.txt file for further documentation of the Perl extension API.
 
-The "appendtosepbar" variable may be set in owl::format_msg()
-to set text to be appended to sepbar that separates the received
-message list from the edit window.
+The "appendtosepbar" variable may be set in owl::format_msg() to set
+text to be appended to sepbar that separates the received message list
+from the edit window.
 
 
 ==========================================
