@@ -247,6 +247,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("A",   "zaway toggle",     "toggles zaway on and off");
 
   BIND_CMD("z",   "start-command zwrite ", "start a zwrite command");
+  BIND_CMD("a",   "start-command aimwrite ", "start an aimwrite command");
   BIND_CMD("r",   "reply",            "reply to the current message");
   BIND_CMD("R",   "reply sender",     "reply to sender of the current message");
   BIND_CMD("C-r", "reply -e",         "reply to the current message, but allow editing of recipient");

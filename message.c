@@ -408,12 +408,13 @@ void owl_message_create(owl_message *m, char *header, char *text) {
   owl_free(indent);
 }
 
-void owl_message_create_aim(owl_message *m, char *sender, char *text) {
+void owl_message_create_aim(owl_message *m, char *sender, char *recipient, char *text) {
   char *indent;
 
   owl_message_init(m);
   owl_message_set_body(m, text);
   owl_message_set_sender(m, sender);
+  owl_message_set_recipient(m, recipient);
   owl_message_set_type_aim(m);
 
   indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
@@ -422,6 +423,8 @@ void owl_message_create_aim(owl_message *m, char *sender, char *text) {
   owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
   owl_fmtext_append_normal(&(m->fmtext), "AIM: ");
   owl_fmtext_append_normal(&(m->fmtext), sender);
+  owl_fmtext_append_normal(&(m->fmtext), " -> ");
+  owl_fmtext_append_normal(&(m->fmtext), recipient);
   owl_fmtext_append_normal(&(m->fmtext), "\n");
   owl_fmtext_append_ztext(&(m->fmtext), indent);
   if (text[strlen(text)-1]!='\n') {

@@ -166,7 +166,7 @@ void owl_aim_logout(void)
 
 int owl_aim_send_im(char *to, char *msg)
 {
-  aim_send_im(owl_global_get_aimsess(&g), to, AIM_IMFLAGS_ACK, "msg");
+  aim_send_im(owl_global_get_aimsess(&g), to, AIM_IMFLAGS_ACK, msg);
 }
 
 void owl_aim_chat_join(char *chatroom)
@@ -1240,7 +1240,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
 
   /* create a message, and put it on the message queue */
   m=owl_malloc(sizeof(owl_message));
-  owl_message_create_aim(m, userinfo->sn, realmsg);
+  owl_message_create_aim(m, userinfo->sn, owl_global_get_aim_screenname(&g), realmsg);
   owl_message_set_direction_in(m);
   owl_global_messagequeue_addmsg(&g, m);
   

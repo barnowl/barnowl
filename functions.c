@@ -133,8 +133,7 @@ void owl_function_make_outgoing_aim(char *body, char *to)
 
   /* create the message */
   m=owl_malloc(sizeof(owl_message));
-  owl_message_create_aim(m, owl_global_get_aim_screenname(&g), body);
-  owl_message_set_recipient(m, to);
+  owl_message_create_aim(m, owl_global_get_aim_screenname(&g), to, body);
   owl_message_set_direction_out(m);
 
   /* add it to the global list and current view */
@@ -1845,9 +1844,13 @@ void owl_function_reply(int type, int enter)
 
     /* aim */
     if (owl_message_is_type_aim(m)) {
-      buff=owl_sprintf("aimwrite %s", owl_message_get_sender(m));
+      if (owl_message_is_direction_out(m)) {
+	buff=owl_sprintf("aimwrite %s", owl_message_get_recipient(m));
+      } else {
+	buff=owl_sprintf("aimwrite %s", owl_message_get_sender(m));
+      }
     }
-
+    
     if (enter) {
       owl_history *hist = owl_global_get_cmd_history(&g);
       owl_history_store(hist, buff);
