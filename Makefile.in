@@ -1,38 +1,45 @@
-
 # $Id$
 
 srcdir = @srcdir@
 VPATH = @srcdir@
-
 prefix = @prefix@
 exec_prefix = @exec_prefix@
-
 datadir = @datadir@
 bindir = @bindir@
 mandir = @mandir@
 
 CC=@CC@
 LIBS=@LIBS@
-#CFLAGS=@CFLAGS@ @DEFS@
 CFLAGS=@CFLAGS@ -DDATADIR=\"${datadir}\"
 LDFLAGS=@LDFLAGS@
 XSUBPPDIR=@XSUBPPDIR@
-INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-INSTALL_DATA = @INSTALL_DATA@
+INSTALL=@INSTALL@
+INSTALL_PROGRAM=@INSTALL_PROGRAM@
+INSTALL_DATA=@INSTALL_DATA@
 
-OBJS=list.o message.o mainwin.o popwin.o zephyr.o messagelist.o commands.o \
-     global.o text.o fmtext.o editwin.o util.o logging.o readconfig.o keys.o \
-     functions.o zwrite.o viewwin.o help.o filter.o regex.o history.o view.o \
-     dict.o variable.o varstubs.o filterelement.o pair.o \
-     keypress.o keymap.o keybinding.o cmd.o context.o perlglue.o zcrypt.o
+BASE_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
+     commands.c global.c text.c fmtext.c editwin.c util.c logging.c \
+     readconfig.c keys.c functions.c zwrite.c viewwin.c help.c filter.c \
+     regex.c history.c view.c dict.c variable.c filterelement.c pair.c \
+     keypress.c keymap.c keybinding.c cmd.c context.c zcrypt.c
+OWL_SRC = owl.c
+TESTER_SRC = tester.c
 
-AUTOGEN=owl_prototypes.h varstubs.c perlglue.c
+BASE_OBJS = $(BASE_SRCS:.c=.o)
+
+GEN_C = varstubs.c perlglue.c
+GEN_H = owl_prototypes.h 
+GEN_O = $(GEN_C:.c=.o)
+
+OBJS = $(BASE_OBJS) $(GEN_O)
+
+AUTOGEN=$(GEN_C) $(GEN_H)
+
 
 owl: $(AUTOGEN) $(OBJS) owl.o
 	./athstatic $(CC) -o owl owl.o $(OBJS) $(LDFLAGS) $(LIBS)
 
-tester: $(AUTOGEN) $(OBJS) tester.o
+tester: $(OBJS) tester.o
 	$(CC) -o tester tester.o $(OBJS) $(LDFLAGS) $(LIBS)
 
 test: tester
@@ -52,22 +59,29 @@ perlglue.c: perlglue.xs
 varstubs.c: variable.c stubgen.pl
 	perl stubgen.pl > varstubs.c
 
+# Only move owl_prototypes.h into place if the new one is different
+owl_prototypes.h: codelist.pl varstubs.c $(BASE_SRCS)
+	perl codelist.pl | grep -v ZWRITEOPTIONS > owl_prototypes.h.new
+	@cmp -s owl_prototypes.h.new $@ || { \
+	 echo 'Interfaces changed!'; \
+	 echo mv -f owl_prototypes.h.new $@; \
+	      mv -f owl_prototypes.h.new $@; }
+
+.PHONY: tags clean distclean proto test
+
+tags: TAGS
+
+TAGS: $(BASE_SRCS) $(OWL_SRC) $(TESTER_SRC) $(GEN_C) owl.h $(GEN_H)
+	etags $(BASE_SRCS) $(OWL_SRC) $(TESTER_SRC) $(GEN_C) owl.h $(GEN_H)
+
+$(BASE_OBJS) varstubs.h:: owl.h config.h owl_prototypes.h
+
 all: owl
 
 install: all installdirs
 	${INSTALL_PROGRAM} owl ${bindir}/owl
 	${INSTALL_DATA} doc/owl.1 ${mandir}/man1/owl.1
 
+
 installdirs: mkinstalldirs
 	${srcdir}/mkinstalldirs ${bindir} ${mandir}/man1 ${datadir}/owl
-
-# Only move owl_prototypes.h into place if the new one is different
-owl_prototypes.h: codelist.pl varstubs.c $(OBJS:.o=.c)
-	perl codelist.pl | grep -v ZWRITEOPTIONS > owl_prototypes.h.new
-	@cmp -s owl_prototypes.h.new owl_prototypes.h || echo 'Interfaces changed!'
-	@cmp -s owl_prototypes.h.new owl_prototypes.h || mv -f owl_prototypes.h.new owl_prototypes.h
-
-tags:
-	etags *.[ch]
-
-*.o:: owl.h config.h owl_prototypes.h
