@@ -464,6 +464,12 @@ int main(int argc, char **argv, char **env)
 	continue;
       }
 
+      /*  login or logout that should be ignored? */
+      if (owl_global_is_ignorelogins(&g) && owl_message_is_loginout(m)) {
+	owl_message_free(m);
+	continue;
+      }
+
       /* otherwise add it to the global list */
       owl_messagelist_append_element(owl_global_get_msglist(&g), m);
       newmsgs=1;

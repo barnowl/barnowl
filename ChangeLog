@@ -9,6 +9,7 @@ $Id$
 	The '!' key (bound to 'view -r') now creates a negative version of
 	  the current view and switches to it.  i.e. "show me all the
 	  messages that are not these"
+	Added the 'ignorelogins' variable
 	
 2.1.1-pre-2
 	Added the 'aim search' command.  The popup on callback may be
