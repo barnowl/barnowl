@@ -141,7 +141,7 @@ char *owl_text_htmlstrip(char *in) {
     /* look for an open bracket */
     ptr2=strchr(ptr1, '<');
 
-    /* if not, copy in from here to end and exit */
+    /* if none, copy in from here to end and exit */
     if (ptr2==NULL) {
       strcat(out, ptr1);
       return(out);
@@ -163,7 +163,7 @@ char *owl_text_htmlstrip(char *in) {
 
     /* look for things we know */
     if (!strncasecmp(ptr2, "<BODY ", 6) ||
-	!strncasecmp(ptr2, "<FONT ", 6) ||
+	!strncasecmp(ptr2, "<FONT", 5) ||
 	!strncasecmp(ptr2, "<HTML", 5) ||
 	!strncasecmp(ptr2, "</FONT", 6) ||
 	!strncasecmp(ptr2, "</HTML", 6) ||

@@ -354,6 +354,7 @@ int main(int argc, char **argv, char **env) {
       /* ring the bell if it's a personal */
       if (owl_global_is_personalbell(&g) &&
 	  !owl_message_is_loginout(m) &&
+	  !owl_message_is_mail(m) &&
 	  owl_message_is_private(m)) {
 	owl_function_beep();
       }
