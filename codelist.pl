@@ -19,7 +19,10 @@ foreach $file (@ARGV) {
 	    && !/^static/
 	    && !/^system/
 	    && !/^XS/
-	    && !/\/\*/) {
+	    && !/\/\*/
+	    && !/ZWRITEOPTIONS/
+	    && !/owlfaim_priv/) 
+	{
 	    s/\s+\{/\;/;
 	    s/\)[ \t]*$/\)\;/;
 	    print "extern ";

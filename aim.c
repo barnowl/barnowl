@@ -25,6 +25,7 @@ struct owlfaim_priv {
   fu16_t buddyiconsum;
 };
 
+/*
 static char *msgerrreasons[] = {
 	"Invalid error",
 	"Invalid SNAC",
@@ -53,6 +54,7 @@ static char *msgerrreasons[] = {
 	"Not while on AOL",
 };
 static int msgerrreasonslen = 25;
+*/
 
 static void faimtest_debugcb(aim_session_t *sess, int level, const char *format, va_list va);
 static int faimtest_parse_login(aim_session_t *sess, aim_frame_t *fr, ...);
@@ -167,6 +169,9 @@ void owl_aim_logout(void)
 int owl_aim_send_im(char *to, char *msg)
 {
   aim_send_im(owl_global_get_aimsess(&g), to, AIM_IMFLAGS_ACK, msg);
+
+  /* I don't know how to check for an error yet */
+  return(0);
 }
 
 void owl_aim_chat_join(char *chatroom)
@@ -179,10 +184,10 @@ void owl_aim_chat_leave(char *chatroom)
 
 int owl_aim_chat_sendmsg(char *chatroom, char *msg)
 {
+  return(0);
 }
 
 int owl_aim_process_events() {
-  int ret;
   aim_session_t *aimsess;
   aim_conn_t *waitingconn = NULL;
   struct timeval tv;
@@ -240,6 +245,7 @@ int owl_aim_process_events() {
   }
   /* free(priv->buddyicon); */
   /* exit(0); */
+  return(0);
 }
 
 static void faimtest_debugcb(aim_session_t *sess, int level, const char *format, va_list va)
@@ -385,7 +391,6 @@ void addcb_bos(aim_session_t *sess, aim_conn_t *bosconn)
 
 static int conninitdone_bos(aim_session_t *sess, aim_frame_t *fr, ...)
 {
-  struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
   char buddies[128]; /* this is the new buddy list */
   char profile[256]; /* this is the new profile */
   char awaymsg[] = {"blah blah blah Ole! blah blah blah"};
@@ -405,7 +410,7 @@ on them.", priv->ohcaptainmycaptain);
   aim_bos_reqlocaterights(sess, fr->conn);
 
   /*aim_bos_setprofile(sess, fr->conn, profile, awaymsg, AIM_CAPS_BUDDYICON | AIM_CAPS_CHAT | AIM_CAPS_GETFILE | AIM_CAPS_SENDFILE | AIM_CAPS_IMIMAGE | AIM_CAPS_GAMES | AIM_CAPS_SAVESTOCKS | AIM_CAPS_SENDBUDDYLIST | AIM_CAPS_ICQ | AIM_CAPS_ICQUNKNOWN | AIM_CAPS_ICQRTF | AIM_CAPS_ICQSERVERRELAY | AIM_CAPS_TRILLIANCRYPT); */
-  aim_bos_setprofile(sess, fr->conn, profile, awaymsg, AIM_CAPS_SENDBUDDYLIST | AIM_CAPS_CHAT | AIM_CAPS_ICQ | AIM_CAPS_ICQUNKNOWN | AIM_CAPS_ICQRTF | AIM_CAPS_ICQSERVERRELAY | AIM_CAPS_TRILLIANCRYPT);
+  aim_bos_setprofile(sess, fr->conn, profile, awaymsg, AIM_CAPS_SENDBUDDYLIST | AIM_CAPS_CHAT );
   aim_bos_reqbuddyrights(sess, fr->conn);
 
   /* send the buddy list and profile (required, even if empty) */
@@ -472,8 +477,6 @@ static int conninitdone_admin(aim_session_t *sess, aim_frame_t *fr, ...)
 
 int logout(aim_session_t *sess)
 {
-  struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
-
   aim_session_kill(sess);
 
   /* kretch
@@ -673,6 +676,10 @@ static int faimtest_reportinterval(aim_session_t *sess, aim_frame_t *fr, ...)
 
 static int faimtest_parse_motd(aim_session_t *sess, aim_frame_t *fr, ...)
 {
+  char *msg;
+  fu16_t id;
+  va_list ap;
+  /* static int codeslen = 5;
   static char *codes[] = {
     "Unknown",
     "Mandatory upgrade",
@@ -680,11 +687,8 @@ static int faimtest_parse_motd(aim_session_t *sess, aim_frame_t *fr, ...)
     "System bulletin",
     "Top o' the world!"
   };
-  static int codeslen = 5;
-  char *msg;
-  fu16_t id;
-  va_list ap;
-  
+  */
+
   return 1;
   
   va_start(ap, fr);
@@ -1461,6 +1465,7 @@ static int faimtest_parse_locerr(aim_session_t *sess, aim_frame_t *fr, ...)
 
 static int faimtest_parse_misses(aim_session_t *sess, aim_frame_t *fr, ...)
 {
+  /*
   static char *missedreasons[] = {
     "Invalid (0)",
     "Message too large",
@@ -1468,7 +1473,7 @@ static int faimtest_parse_misses(aim_session_t *sess, aim_frame_t *fr, ...)
     "Evil Sender",
     "Evil Receiver"
   };
-  static int missedreasonslen = 5;
+  static int missedreasonslen = 5; */
   
   va_list ap;
   fu16_t chan, nummissed, reason;
@@ -1507,6 +1512,7 @@ static int faimtest_parse_msgack(aim_session_t *sess, aim_frame_t *fr, ...)
 
 static int faimtest_parse_ratechange(aim_session_t *sess, aim_frame_t *fr, ...)
 {
+  /*
   static char *codes[5] = {
     "invalid",
     "change",
@@ -1514,6 +1520,7 @@ static int faimtest_parse_ratechange(aim_session_t *sess, aim_frame_t *fr, ...)
     "limit",
     "limit cleared"
   };
+  */
   va_list ap;
   fu16_t code, rateclass;
   fu32_t windowsize, clear, alert, limit, disconnect;
@@ -1586,7 +1593,8 @@ static int faimtest_parse_searchreply(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   va_list ap;
   char *address, *SNs;
-  int i, num;
+  int num;
+  /* int i; */
   
   va_start(ap, fr);
   address = va_arg(ap, char *);
@@ -1747,7 +1755,8 @@ static int faimtest_chat_join(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   va_list ap;
   aim_userinfo_t *userinfo;
-  int count, i;
+  int count;
+  /* int i; */
   
   va_start(ap, fr);
   count = va_arg(ap, int);
@@ -1764,9 +1773,11 @@ static int faimtest_chat_join(aim_session_t *sess, aim_frame_t *fr, ...)
 
 static int faimtest_chat_leave(aim_session_t *sess, aim_frame_t *fr, ...)
 {
-  va_list ap;
   aim_userinfo_t *userinfo;
-  int count , i;
+  va_list ap;
+  int count;
+  /* int i; */
+
   
   va_start(ap, fr);
   count = va_arg(ap, int);
@@ -1788,11 +1799,12 @@ static int faimtest_chat_infoupdate(aim_session_t *sess, aim_frame_t *fr, ...)
   aim_userinfo_t *userinfo;
   struct aim_chat_roominfo *roominfo;
   char *roomname;
-  int usercount, i;
+  int usercount;
   char *roomdesc;
   fu16_t flags, unknown_d2, unknown_d5, maxmsglen, maxvisiblemsglen;
   fu32_t creationtime;
   const char *croomname;
+  /* int i; */
   
   croomname = aim_chat_getname(fr->conn);
   
@@ -1874,7 +1886,8 @@ static int faimtest_chatnav_info(aim_session_t *sess, aim_frame_t *fr, ...)
   if (type == 0x0002) {
     int maxrooms;
     struct aim_chat_exchangeinfo *exchanges;
-    int exchangecount, i;
+    int exchangecount;
+    /* int i; */
     
     maxrooms = va_arg(ap, int);
     exchangecount = va_arg(ap, int);

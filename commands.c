@@ -1375,7 +1375,7 @@ char *owl_command_zwrite(int argc, char **argv, char *buff) {
 }
 
 char *owl_command_aimwrite(int argc, char **argv, char *buff) {
-  char *tmpbuff, *pos, *cmd, *msg;
+  char *tmpbuff;
 
   if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the aimwrite command.");
