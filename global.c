@@ -52,7 +52,7 @@ void owl_global_init(owl_global *g) {
   owl_list_create(&(g->filterlist));
   owl_list_create(&(g->puntlist));
   owl_list_create(&(g->messagequeue));
-  owl_list_create(&(g->stylelist));
+  owl_dict_create(&(g->styledict));
   g->curmsg_vert_offset=0;
   g->resizepending=0;
   g->typwinactive=0;
@@ -388,6 +388,9 @@ void owl_global_resize(owl_global *g, int x, int y) {
 
   /* re-initialize the windows */
   _owl_global_setup_windows(g);
+
+  /* in case any styles rely on the current width */
+  owl_messagelist_invalidate_formats(owl_global_get_msglist(g));
 
   /* refresh stuff */
   g->needrefresh=1;
@@ -773,22 +776,19 @@ owl_buddylist *owl_global_get_buddylist(owl_global *g)
  * NULL */
 owl_style *owl_global_get_style_by_name(owl_global *g, char *name)
 {
-  int i, j;
-  owl_style *s;
-  
-  j=owl_list_get_size(&(g->stylelist));
-  for (i=0; i<j; i++) {
-    s=owl_list_get_element(&(g->stylelist), i);
-    if (owl_style_matches_name(s, name)) {
-      return(s);
-    }
-  }
-  return(NULL);
+  return owl_dict_find_element(&(g->styledict), name);
+}
+
+/* creates a list and fills it in with keys.  duplicates the keys, 
+ * so they will need to be freed by the caller. */
+int owl_global_get_style_names(owl_global *g, owl_list *l) {
+  return owl_dict_get_keys(&(g->styledict), l);
 }
 
 void owl_global_add_style(owl_global *g, owl_style *s)
 {
-  owl_list_append_element(&(g->stylelist), s);
+  owl_dict_insert_element(&(g->styledict), owl_style_get_name(s), 
+			  s, (void(*)(void*))owl_style_free);
 }
 
 char *owl_global_get_response(owl_global *g)

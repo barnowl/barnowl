@@ -282,7 +282,7 @@ char **owl_parseline(char *line, int *argc)
 /* caller must free the return */
 char *owl_util_minutes_to_timestr(int in)
 {
-  int days, minutes, hours;
+  int days, hours;
   long run;
   char *out;
 

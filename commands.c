@@ -101,6 +101,14 @@ owl_cmd commands_to_init[]
 	      "Use 'show keymaps' to see the existing keymaps.\n"
 	      "Key sequences may be things like M-C-t or NPAGE.\n"),
 
+  OWLCMD_ARGS("style", owl_command_style, OWL_CTX_ANY,
+	      "creates a new style",
+	      "style <name> perl <function_name>",
+	      "Creates a new style for formatting messages.\n"
+	      "A style named <name> will be created that will\n"
+	      "format messages using the perl function <function_name>.\n\n"
+	      "SEE ALSO: show styles, view -s, filter -s\n"),
+
   OWLCMD_ARGS("zwrite", owl_command_zwrite, OWL_CTX_INTERACTIVE,
 	      "send a zephyr",
 	      "zwrite [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcde] [<user> ...] [-m <message...>]",
@@ -566,6 +574,7 @@ owl_cmd commands_to_init[]
 	      "show subs\n"
 	      "show subscriptions\n"
 	      "show zpunts\n"
+	      "show styles\n"
 	      "show colors\n"
 	      "show terminal\n"
 	      "show version\n"
@@ -582,6 +591,8 @@ owl_cmd commands_to_init[]
 	      "Show keymap <keymap> will show the key bindings in a keymap.\n\n"
 	      "Show commands will list the names of all keymaps.\n"
 	      "Show command <command> will provide information about a command.\n\n"
+	      "Show styles will list the names of all styles available\n"
+	      "for formatting messages.\n\n"
 	      "Show variables will list the names of all variables.\n\n"
 	      "SEE ALSO: filter, view, alias, bindkey, help\n"),
   
@@ -1412,7 +1423,7 @@ char *owl_command_bindkey(int argc, char **argv, char *buff)
   int ret;
 
   if (argc < 5 || strcmp(argv[3], "command")) {
-    owl_function_makemsg("Usage: bindkey <keymap> <binding> command <cmd>", argv[3], argc);
+    owl_function_makemsg("Usage: bindkey <keymap> <binding> command <cmd>");
     return NULL;
   }
   km = owl_keyhandler_get_keymap(owl_global_get_keyhandler(&g), argv[1]);
@@ -1429,6 +1440,27 @@ char *owl_command_bindkey(int argc, char **argv, char *buff)
   }
   return NULL;
 }
+
+char *owl_command_style(int argc, char **argv, char *buff) {
+  owl_style *s;
+
+  /* Usage: style <name> perl <function> */
+  if (argc != 4 || strcmp(argv[2], "perl")) {
+    owl_function_makemsg("Usage: style <name> perl <function>");
+    return NULL;
+  }
+  if (!owl_perlconfig_is_function(argv[3])) {
+    owl_function_makemsg("Unable to create style '%s': no perl function '%s'",
+			 argv[1], argv[3]);
+    return NULL;
+  }
+  s=owl_malloc(sizeof(owl_style));
+  owl_style_create_perl(s, argv[1], argv[3], NULL);
+  owl_global_add_style(&g, s);
+
+  return NULL;
+}
+
 
 void owl_command_quit()
 {
@@ -1863,6 +1895,8 @@ char *owl_command_show(int argc, char **argv, char *buff)
     }
   } else if (!strcmp(argv[1], "colors")) {
     owl_function_show_colors();
+  } else if (!strcmp(argv[1], "styles")) {
+    owl_function_show_styles();
   } else if (!strcmp(argv[1], "subs") || !strcmp(argv[1], "subscriptions")) {
     owl_function_getsubs();
   } else if (!strcmp(argv[1], "terminal") || !strcmp(argv[1], "term")) {
@@ -2114,7 +2148,7 @@ char *owl_command_aimlogin(int argc, char **argv, char *buff)
   /* if we get two arguments, ask for the password */
   if (argc==2) {
     owl_global_set_buffercommand(&g, buff);
-    owl_function_start_password("Password: ");
+    owl_function_start_password("AIM Password: ");
     return(NULL);
   }
 

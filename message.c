@@ -573,6 +573,56 @@ int owl_message_get_id(owl_message *m)
   return(m->id);
 }
 
+char *owl_message_get_type(owl_message *m) {
+  switch (m->type) {
+  case OWL_MESSAGE_TYPE_ADMIN:
+    return("admin");
+  case OWL_MESSAGE_TYPE_ZEPHYR:
+    return("zephyr");
+  case OWL_MESSAGE_TYPE_GENERIC:
+    return("generic");
+  case OWL_MESSAGE_TYPE_AIM:
+    return("aim");
+  case OWL_MESSAGE_TYPE_JABBER:
+    return("jabber");
+  case OWL_MESSAGE_TYPE_ICQ:
+    return("icq");
+  case OWL_MESSAGE_TYPE_YAHOO:
+    return("yahoo");
+  case OWL_MESSAGE_TYPE_MSN:
+    return("msn");
+  default:
+    return("unknown");
+  }
+}
+
+char *owl_message_get_direction(owl_message *m) {
+  switch (m->direction) {
+  case OWL_MESSAGE_DIRECTION_IN:
+    return("in");
+  case OWL_MESSAGE_DIRECTION_OUT:
+    return("out");
+  case OWL_MESSAGE_DIRECTION_NONE:
+    return("none");
+  default:
+    return("unknown");
+  }
+}
+
+char *owl_message_get_login(owl_message *m) {
+  if (owl_message_is_login(m)) {
+    return "login";
+  } else if (owl_message_is_logout(m)) {
+    return "logout";
+  } else {
+    return "none";
+  }
+}
+
+char *owl_message_get_header(owl_message *m) {
+  return owl_message_get_attribute_value(m, "adminheader");
+}
+
 /* return 1 if the message contains "string", 0 otherwise.  This is
  * case insensitive because the functions it uses are
  */
@@ -797,3 +847,5 @@ void owl_message_free(owl_message *m)
  
   owl_fmtext_free(&(m->fmtext));
 }
+
+

@@ -20,8 +20,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.8-pre-1
-#define OWL_VERSION_STRING "2.0.8-pre-1"
+#define OWL_VERSION         2.0.8-pre-2
+#define OWL_VERSION_STRING "2.0.8-pre-2"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
@@ -273,6 +273,7 @@ typedef struct _owl_message {
 
 typedef struct _owl_style {
   char *name;
+  char *description;
   int type;
   char *perlfuncname;
   void (*formatfunc) (owl_fmtext *fm, owl_message *m);
@@ -450,7 +451,7 @@ typedef struct _owl_global {
   char *aim_screenname;     /* currently logged in AIM screen name */
   owl_buddylist buddylist;  /* list of logged in AIM buddies */
   owl_list messagequeue;    /* for queueing up aim and other messages */
-  owl_list stylelist;       /* global list of available styles */
+  owl_dict styledict;       /* global dictionary of available styles */
   char *response;           /* response to the last question asked */
   int havezephyr;
   int haveaim;

@@ -95,10 +95,10 @@ int owl_cmd_create_from_template(owl_cmd *cmd, owl_cmd *templ) {
   *cmd = *templ;
   if (!templ->name) return(-1);
   cmd->name = owl_strdup(templ->name);
-  if (cmd->summary)     cmd->summary     = owl_strdup(templ->summary);
-  if (cmd->usage)       cmd->usage       = owl_strdup(templ->usage);
-  if (cmd->description) cmd->description = owl_strdup(templ->description);
-  if (cmd->cmd_aliased_to) cmd->cmd_aliased_to = owl_strdup(templ->cmd_aliased_to);
+  if (templ->summary)     cmd->summary     = owl_strdup(templ->summary);
+  if (templ->usage)       cmd->usage       = owl_strdup(templ->usage);
+  if (templ->description) cmd->description = owl_strdup(templ->description);
+  if (templ->cmd_aliased_to) cmd->cmd_aliased_to = owl_strdup(templ->cmd_aliased_to);
   return(0);
 }
 

@@ -68,6 +68,10 @@ owl_style *owl_view_get_style(owl_view *v)
   return(v->style);
 }
 
+char *owl_view_get_style_name(owl_view *v) {
+  return(owl_style_get_name(v->style));
+}
+
 owl_message *owl_view_get_element(owl_view *v, int index)
 {
   return(owl_messagelist_get_element(&(v->ml), index));

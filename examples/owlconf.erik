@@ -1,6 +1,6 @@
 ### The owlconf config file   -*- perl -*-  
 ###  $Id$
-
+###
 ### !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!!
 ### This is an example file intended to demonstrate how to use 
 ### various features of owl.  Some of the key bindings, in particular,
@@ -8,7 +8,7 @@
 ### Make sure to read through it first and understand it before just using it.
 ### Don't blame me if anything in here ends up vaporizing your dog.
 ### !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!!
-
+###
 ###
 ### This file is interpreted by the perl interpreter.
 ### If you wish to execute an owl command use the
@@ -23,18 +23,13 @@
 ###     ---------------    ----------
 ###     owl::startup()     run when owl first starts
 ###     owl::shutdown()    run when owl exits
-###     owl::format_msg()  run when a new message arrives, the return
-###                           value is used to display the message on the
-###                           screen
+###     owl::format_msg()  formats messages that are passed to it
 ###     owl::receive_msg() run when a message is received, and after
 ###	  	           it has been added to the message list
 ###
+### The format_msg and receive_msg functions are passed owl::Message objects.
+### The message attributes may be dereferenced with $m->attribute
 ###
-### The following variables will be set each time a message is recevied:
-###
-###     $owl::class, $owl::instance, $owl::recipient,
-###     $owl::sender, $owl::opcode, $owl::zsig,
-###     $owl::msg, $owl::time, $owl::host, @owl::fields, $owl::id
 ###    
 
 # tokens for sepbar are:
@@ -45,6 +40,37 @@
 #    M         = mail received
 my @sepbartokens = ();
 
+# Map for mail messages from msg id to pop msg id
+my %mail_id_map = ();
+
+# (originally from jdaniel)
+sub mail_add_message ($) {
+    my ($m) = @_;
+    my $from = `from -t`;
+    # example value:
+    # You have 188 messages (667593 bytes) on PO11.MIT.EDU.
+    my ($msg_num) = $from =~ m/(\d+)/;
+    $mail_id_map{$m->id} = $msg_num;
+}
+
+
+sub mail_pop_curmsg () {
+    my $m = owl::getcurmsg();
+    if (!$m->is_mail || !defined $mail_id_map{$m->id}) {
+	&owl::command("pop-message");
+    } else {
+	&owl::command(sprintf 'pexec pop -request c -request "retr %d" -request q',
+		      $mail_id_map{$m->id});
+    }
+}
+
+sub zlocatesender {
+    my $m = owl::getcurmsg();
+    if ($m->{"type"} eq "zephyr") {
+	my $sender = $m->{"sender"};
+        owl::command("zlocate $sender");
+    }
+}
 
 # adds a sepbartoken and also updates the appendtosepbar variable
 sub sepbartokens_add {
@@ -62,9 +88,11 @@ sub sepbartokens_trim {
     sepbartokens_set();
 }
 
+my $loopctr=0;
+
 # trims a sepbartoken from the list also updates the appendtosepbar variable
 sub sepbartokens_set {
-    owl::command(sprintf "set -q appendtosepbar \"%s\"", (join " ", @sepbartokens));
+    owl::command(sprintf "set -q appendtosepbar \"%s %s %s\"", (scalar localtime), (join " ", @sepbartokens));
 }
 
 my $restoreview = undef;
@@ -72,10 +100,10 @@ sub swapview {
     my $curview = owl::command("getview");
     if ($restoreview) {
         owl::command("view $restoreview");
-	$restoreview = undef;
+        $restoreview = undef;
     } else {
-	$restoreview = $curview;
-	owl::command("smartnarrow");
+        $restoreview = $curview;
+        owl::command("smartnarrow");
     }
 }
 
@@ -90,43 +118,50 @@ sub colorthread {
         $lastcolored = undef;
     } else {
         owl::command("filter $smartfilt -c green");
-	$lastcolored = $smartfilt;
+        $lastcolored = $smartfilt;
+    }
+}
+
+# Load in things which don't belong in an owlconf 
+# that people might use as an example...
+sub personal_startup {
+    my $personalconf = $ENV{"HOME"}."/.owl/personalconf";
+    if (-f $personalconf) {
+	my $b = "";
+	open INB, $personalconf;
+	for (<INB>) { $b .= $_; }
+	close INB;
+	eval $b;
     }
 }
 
 sub owl::startup {
-    owl::command("set -q logging off");
-    owl::command("set -q zsigproc /home/nygren/bin/owlzsigs");
+    owl::command("set -q logging on");
+    owl::command("set -q logpath ~/.zlog/owl/personal");
+    owl::command("set -q classlogpath ~/.zlog/owl/class");
+    owl::command("set -q logging on");
     owl::command("set -q startuplogin off");
     owl::command("set -q shutdownlogout off");
     #owl::command("set personalbell on");
+    owl::command("set -q _burningears on");
     owl::command("set -q rxping on");
     owl::command("set -q typewinsize 5");
-    if ($ENV{"DISPLAY"} eq ":0") {
+    if ($ENV{"DISPLAY"} eq ":0.0") {
       owl::command("set -q webbrowser galeon");	
     }
-    owl::command("filter me recipient ".$ENV{"USER"});
-    owl::command("filter help class help");
-    owl::command("filter quiet not ( class ^greed|geek|help|login$ or instance white-magic )");    
+    owl::command("filter me recipient %me% or ( sender %me% and class message and instance personal ) or class mail or type aim");
+    owl::command("filter owl instance ^owl.*");
+
+    owl::command(q(alias finger pperl $x=owl::getcurmsg()->hostname; `finger \@$x`;));
+    owl::command("bindkey recv f command finger");
 
     owl::command("alias z zwrite");
-    owl::command("alias zc zwrite -c");
+    owl::command("alias zw zwrite");
+    owl::command("alias v view");
 
-    # Send zephyrs with "C-c C-c".  
-    # Note that this will cause "C-c" to not work...
-    owl::command("bindkey editmulti \"C-c C-c\" command editmulti:done");
+    owl::command("alias popmail perl mail_pop_curmsg();");
 
-    # Make "d" ignore current movement direction
-    owl::command("bindkey recv d command ( delete --no-move ; next --skip-deleted )");
-
-    # Useful keys for reading and deleting by class/instance
-    owl::command("bindkey recv M-k command ( smartnarrow ; delete view )");
-    owl::command("bindkey recv M-l command ( expunge ; view all )");
-    owl::command("bindkey recv M-K command ( smartnarrow ; delete view ; expunge ; view all )");
-
-    # Toggle between a view and a smartnarrow with TAB.
-    # Note that you probably want to use something other than TAB as 
-    # it will have another binding in a future version of owl.
+    # toggle between a view and a smartnarrow with TAB
     owl::command("alias swapview perl swapview();");
     owl::command("bindkey recv C-i command swapview");
 
@@ -134,106 +169,311 @@ sub owl::startup {
     owl::command("alias colorthread perl colorthread();");
     owl::command("bindkey recv M-c command colorthread");
 
-    # Make 'M-s' insert a <scritchscritchscritch> sequence with a random
-    # number of scritches.
-    owl::command(q(bindkey edit M-s command perl owl::command("edit:insert-text <".("scritch"x int(1+rand(5))).">")));
+    # zlocate current sender
+    owl::command("bindkey recv L command perl zlocatesender();");
 
+    # Declare styles
+    &owl::command("style vt     perl format_msg_vt");
+    &owl::command("style brief  perl format_msg_brief");
+    &owl::command("style custom perl format_msg_custom");
+    &owl::command("style debug  perl format_msg_debug");
+    &owl::command("set -q default_style custom");
+
+    # Change to different view styles
+    owl::command("bindkey recv \"C-s v\" command view -s vt");
+    owl::command("bindkey recv \"C-s c\" command view -s custom");
+    owl::command("bindkey recv \"C-s b\" command view -s brief");
+    owl::command("bindkey recv \"C-s d\" command view -s debug");
+    owl::command("bindkey recv \"C-s o\" command view -s standard");
+
+    # For fast-reading of zephyrs
+    owl::command("bindkey recv M-k command ( smartnarrow ; delete view )");
+    owl::command("bindkey recv M-l command ( expunge ; view all )");
+    owl::command("bindkey recv M-K command ( smartnarrow ; delete view ; expunge ; view all )");
+
+    # Support for scroll mice
+    &owl::command("bindkey recv \"M-[ A\" command recv:prev");
+    &owl::command("bindkey recv \"M-[ B\" command recv:next");
+
+    # This overrides the default "M" keybinding
+    owl::command("bindkey recv M command popmail");
+
+    sepbartokens_add("...");
+
+    personal_startup();
 }
 
 sub owl::shutdown {
 #    not doing anything at the moment...
 }
 
+
+# run when a message is received, and after
+# it has been added to the message list.
+sub owl::receive_msg {
+    my ($m) = @_;
+    my ($out, $tmp);
+
+    if ($m->is_admin && !$m->is_outgoing) {
+	$m->delete();
+	return 1;
+    }
+
+    return 0 if (!$m->is_zephyr && !$m->is_aim);
+
+    my $sender = $m->pretty_sender;
+
+    if ($m->is_ping) {
+	sepbartokens_add(".$sender");
+        $m->delete();
+    } elsif ($m->is_loginout) {
+        $m->delete();
+	if ($m->is_login) {
+	    sepbartokens_add(">$sender");
+	    sepbartokens_trim("<$sender");
+	} elsif ($m->is_logout) {
+	    sepbartokens_add("<$sender");
+	    sepbartokens_trim(">$sender");
+	} 
+    } elsif ($m->is_mail) {
+	mail_add_message($m);
+        $m->delete();
+	sepbartokens_add("M");
+    }
+
+    if ($m->is_personal) {
+	sepbartokens_trim(".$sender");
+	sepbartokens_add(":$sender");
+    }
+
+    return 1;
+}
+
+sub indent4 {
+    my ($b) = @_;
+    $b=~s/^/    /g;
+    $b=~s/\n/\n    /g;    
+    return $b;
+}
+
 # run to format a message
-sub owl::format_msg {
-    my $out, $tmp;
+sub format_msg_custom {
+    my ($m) = @_;
+    my ($out, $tmp);
 
-    $owl::sender=~s/\@ATHENA\.MIT\.EDU$//;
-    $owl::sender=~s/\@local-realm$//;
+    if ($m->is_admin) {
+	$out = "\@bold([owl admin]) ".$m->header."\n";
+	$out.=indent4($m->body);
+	return $out."\n";
+    }
 
-    if (uc($owl::opcode) eq "PING") {
-	return("\@bold(PING) from \@bold($owl::sender)\n");
-    } elsif (uc($owl::class) eq "LOGIN") {
-	if (uc($owl::opcode) eq "USER_LOGIN") {
+    my $sender=$m->pretty_sender;
+
+    if (($m->is_aim or $m->is_zephyr) && $m->is_loginout) {
+
+	if ($m->is_login) {
 	    $out="\@bold(LOGIN)";
-	} elsif (uc($owl::opcode) eq "USER_LOGOUT") {
+	} elsif ($m->is_logout) {
 	    $out="\@bold(LOGOUT)";
 	} else {
 	    $out="\@bold(UNKNOWN)";
 	}
-	$out.=" for \@bold($owl::sender) at $fields[0] on $fields[2]\n";
-	return($out);
-    } elsif (uc($owl::class) eq "MAIL" and uc($owl::instance) eq "INBOX") {
-	$out = "\@bold(MAIL) ";
-	if ($owl::msg =~ /^From:\s+(.+)\s*$/m) { $out .= "From $1 "; }
-	if ($owl::msg =~ /^To:\s+(.+)\s*$/m) { $out .= "To $1 "; }
-	if ($owl::msg =~ /^Subject:\s+(.+)\s*$/m) { $out .= "Subject $1 "; }
-	return($out."\n");
-    }
-
-    $out = sprintf "[mit,%s,%s] / %s / %s", lc($owl::class), 
-                   lc($owl::instance), $owl::time, lc($owl::host);
-    if ($owl::opcode ne "") {$out.=" op:$owl::opcode";}
-    $out.="\n";
-    $out.= "  \@bold($owl::sender)> ";
-    if ($owl::zsig ne "") {
-	my $zsig = $owl::zsig;
-	$zsig =~ s/(\n.*)+$/ [...]/;
-	if (length($zsig)+5+length($owl::sender) > 70) {
-	    $out.="# ...";
-	} else {
-	    $out.="# $zsig";
+	$out.=" for \@bold($sender) on ".$m->type;
+	if ($m->is_zephyr) {
+	    $out.=" at ".($m->login_host)." on ".($m->login_tty)."\n";
 	}
+	return($out);
     }
-    $out.="\n";		
 
-    # indent it
-    $tmp=$owl::msg;
-    $tmp=~s/^/    /g;
-    $tmp=~s/\n/\n    /g;
-    $out.=$tmp;
+    if (!$m->is_zephyr && !$m->is_aim) { 
+	return "Unknown message type: ".$m->type."\n";
+    }
+
+    if ($m->is_outgoing) {
+	my $target = $m->recipient;
+	if ($m->is_zephyr) {
+	    $target = $m->zwriteline;
+	    $target =~ s/^zwrite //;
+	}
+	$out = sprintf "\@bold([outgoing %s to %s]) / %s\n", $m->type, $target, $m->time;
+	$out.=indent4($m->body);
+	return $out;
+    }
+
+    if ($m->is_zephyr && $m->is_ping) {
+	return("\@bold(PING) from \@bold($sender)\n");
+    } elsif ($m->is_zephyr && $m->is_mail) {
+	$out = "\@bold(MAIL) ";
+	if ($m->body =~ /^From:\s+(.+)\s*$/m) { $out .= "From $1 "; }
+	if ($m->body =~ /^To:\s+(.+)\s*$/m) { $out .= "To $1 "; }
+	if ($m->body =~ /^Subject:\s+(.+)\s*$/m) { $out .= "Subject $1 "; }
+	return($out);
+    }
+
+    if ($m->is_zephyr) {
+	$out = sprintf "[mit,%s,%s] / %s / %s", lc($m->class), 
+	lc($m->instance), $m->time, lc($m->host);
+	if ($m->opcode ne "") {$out.=" op:".$m->opcode;}
+	$out.="\n";
+	$out.= "  \@bold($sender)> ";
+	if ($m->zsig ne "") {
+	    my $zsig = $m->zsig;
+	    $zsig =~ s/(\n.*)+$/ [...]/;
+	    if (length($zsig)+5+length($sender) > 70) {
+		$out.="# ...";
+	    } else {
+		$out.="# $zsig";
+	    }
+	}
+	$out.="\n";		
+    } else {
+	$out = sprintf "[%s] / %s\n", lc($m->type), $m->time;
+	$out.= "  \@bold($sender)> ";
+	$out.="\n";		
+    }
+
+    $out.=indent4($m->body);
 
     # make personal messages bold
-    if (uc($owl::class) eq "MESSAGE" &&
-	uc($owl::instance) eq "PERSONAL") {
+    if ($m->is_personal) {
 	$out="\@bold{".$out."}";
     }
 
     return($out."\n");
 }
 
-# run when a message is received, and after
-# it has been added to the message list.
-sub owl::receive_msg() {
-    my $out, $tmp;
+sub format_msg_debug {
+    my ($m) = @_;
+    return "\@bold(-------------MESSAGE-------------)\n".($m->serialize).".\n";
+}
 
-    $owl::sender=~s/\@ATHENA\.MIT\.EDU$//;
-    $owl::sender=~s/\@local-realm$//;
+sub format_msg_brief {
+    my ($m) = @_;
+    my $out = format_msg_vt($m);
+    $out =~ s/\n/ /g;
+    $out =~ s/                        / /g;
+    return($out."\n");
+}
 
-    if (uc($owl::opcode) eq "PING") {
-	sepbartokens_add(".$owl::sender");
-        owl::command("delete -id $owl::id");
-    } elsif (uc($owl::class) eq "LOGIN") {
-        owl::command("delete -id $owl::id");
-	if (uc($owl::opcode) eq "USER_LOGIN") {
-	    sepbartokens_add(">$owl::sender");
-	    sepbartokens_trim("<$owl::sender");
-	} elsif (uc($owl::opcode) eq "USER_LOGOUT") {
-	    sepbartokens_add("<$owl::sender");
-	    sepbartokens_trim(">$owl::sender");
-	} 
-    } elsif (uc($owl::class) eq "MAIL") {
-        owl::command("delete -id $owl::id");
-	sepbartokens_add("M");
+
+sub format_msg_vt {
+    my ($m) = @_;
+    my ($out, $tmp);
+
+    if ($m->is_admin) {
+	$out = sprintf "%-29s \@i(%s)", "\@bold(OWL ADMIN)", $m->header;
+	$tmp=$m->body;
+	$tmp=~s/^/                       /g;
+	$tmp=~s/\n/\n                       /g;
+	$out.="\n".$tmp;
+	return $out;
     }
 
+    my $sender=$m->pretty_sender;
+
+    if ($m->is_outgoing) {
+	my $target = $m->recipient;
+	if ($m->is_zephyr) {
+	    $target = $m->zwriteline;
+	    $target =~ s/^zwrite //;
+	}
+	$out = sprintf "%-15s %-13s", "\@bold(OUTGOING)", "to $target via ".$m->type.": ";
+	my $pagewidth = owl::getnumcols()-6;
+	$out .= fill_text($m->body, $pagewidth, 22, 1);
+	return $out;
+    }
+
+    if (!$m->is_zephyr && !$m->is_aim) { 
+	return "Unknown message type: ".$m->type."\n";
+    }
+
+    if ($m->is_zephyr && $m->is_ping) {
+	return (sprintf "%-15s %-13s\n", "\@bold(PING)", $sender);
+    } elsif ($m->is_loginout) {
+	my $state;
+	if ($m->is_login) {
+	    $state="\@bold(LOGIN)";
+	} elsif ($m->is_logout) {
+	    $state="\@bold(LOGOUT)";
+	} else {
+	    $state="\@bold(UNKNOWN)";
+	}
+	my $out = sprintf "%-15s %-13s ", $state, $sender;
+	if ($m->is_zephyr) {
+	    $out .= sprintf "via %s on %s at %s", $m->type, $m->login_host, $m->login_tty;
+	} else {
+	    $out .= sprintf "via %s", $m->type;
+	}
+	return "$out\n";
+		
+    } elsif ($m->is_zephyr && $m->is_mail) {
+	my $body = $m->body;
+	$out = sprintf "%-15s %-13s ", "\@bold(MAIL)", "";
+	if ($body =~ /^From:\s+(.+)\s*$/m) { $out .= "From $1 "; }
+	if ($body =~ /^To:\s+(.+)\s*$/m) { $out .= "To $1 "; }
+	if ($body =~ /^Subject:\s+(.+)\s*$/m) { $out .= "Subject $1 "; }
+	return($out."\n");
+    }
+
+    my $channel = "";
+    my $body = $m->body;
+    
+    if ($m->is_zephyr) {
+	my $inst = $m->instance;
+	$channel = $m->class;
+	if (lc($m->class) ne "message" and lc($m->instance) eq "personal") {
+	    $inst = "";
+	}
+	$channel .= "[".$inst."]";
+	$channel = substr($channel,0,13);
+    } else {
+	$channel = "[".$m->type."]";
+    }
+
+    $header = sprintf "%-8s %-13s ", lc($sender), lc($channel);
+
+    if ($body =~ /=/) {
+	# indent it
+	$out.=$header."\n".indent4($body);
+    } else {
+	# fill it
+	my $pagewidth = owl::getnumcols()-6;
+	$out .= $header;
+	$out .= fill_text($body, $pagewidth, 22, 1);
+    }
+
+    # note: no zsig added in this version
 
     # make personal messages bold
-    if (uc($owl::class) eq "MESSAGE" &&
-	uc($owl::instance) eq "PERSONAL") {
-	sepbartokens_trim(".$owl::sender");
-	sepbartokens_add(":$owl::sender");
+    if ($m->is_personal) {
+	$out="\@bold{".$out."}";
     }
+    return($out);
+}
 
-    return 1;
+sub fill_text {
+    my ($in, $width, $indent, $unindent_first) = @_;
+    $indent = 0 if (@_ < 3);
+    my $unindent = $indent if ($unindent_first);
+    my @words = split " ", $in;
+    my $out = "";
+    my $outline = "";
+    if (!$unindent_first) {
+	my $outline = " "x$indent;
+    }
+    for my $w (@words) {
+	if (($outline ne "") 
+	    && (length($outline)+length($w) > $width-$unindent)) {
+	    $out .= $outline."\n";
+	    $outline = " "x$indent;
+	    $unindent = 0;
+	}
+	if ($outline =~ /.*\.$/) {
+	    $outline .= "  ";
+	} elsif ($outline ne "") {
+	    $outline .= " ";
+	}
+	$outline .= $w;
+    }
+    $out .= $outline . "\n";    
 }

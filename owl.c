@@ -32,7 +32,7 @@ int main(int argc, char **argv, char **env) {
   int j, ret, initialsubs, debug, argcsave, followlast;
   int newmsgs, zpendcount, nexttimediff;
   struct sigaction sigact;
-  char *configfile, *tty, *perlout, **argvsave, buff[LINE], startupmsg[LINE];
+  char *configfile, *tty, *perlout, *perlerr, **argvsave, buff[LINE], startupmsg[LINE];
   owl_filter *f;
   owl_style *s;
   time_t nexttime, now;
@@ -151,15 +151,18 @@ int main(int argc, char **argv, char **env) {
 
   /* setup the built-in styles */
   s=owl_malloc(sizeof(owl_style));
-  owl_style_create_internal(s, "default", &owl_stylefunc_default);
+  owl_style_create_internal(s, "default", &owl_stylefunc_default,
+			    "Default message formatting");
   owl_global_add_style(&g, s);
 
   s=owl_malloc(sizeof(owl_style));
-  owl_style_create_internal(s, "basic", &owl_stylefunc_basic);
+  owl_style_create_internal(s, "basic", &owl_stylefunc_basic,
+			    "Basic message formatting.");
   owl_global_add_style(&g, s);
 
   s=owl_malloc(sizeof(owl_style));
-  owl_style_create_internal(s, "oneline", &owl_stylefunc_oneline);
+  owl_style_create_internal(s, "oneline", &owl_stylefunc_oneline,
+			    "Formats for one-line-per-message");
   owl_global_add_style(&g, s);
 
   /* setup the default filters */
@@ -223,10 +226,10 @@ int main(int argc, char **argv, char **env) {
 
   /* read the config file */
   owl_context_set_readconfig(owl_global_get_context(&g));
-  ret=owl_readconfig(configfile);
-  if (ret) {
+  perlerr=owl_perlconfig_readconfig(configfile);
+  if (perlerr) {
     endwin();
-    printf("\nError parsing configfile\n");
+    fprintf(stderr, "\nError parsing configfile: %s\n", perlerr);
     exit(1);
   }
 
@@ -234,13 +237,25 @@ int main(int argc, char **argv, char **env) {
   if (owl_global_is_config_format(&g)) {
     owl_function_debugmsg("Found perl formatting");
     s=owl_malloc(sizeof(owl_style));
-    owl_style_create_perl(s, "perl", "owl::format_msg");
+    owl_style_create_perl(s, "perl", "owl::_format_msg_legacy_wrap",
+			  "User-defined perl style that calls owl::format_msg"
+			  "with legacy global variable support");
     owl_global_add_style(&g, s);
     owl_global_set_default_style(&g, "perl");
   }
 
+  /* set the startup and default style, based on userclue and presence of a
+   * formatting function */
+  if (owl_global_is_config_format(&g)) {
+    owl_global_set_default_style(&g, "perl");
+  } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
+    owl_global_set_default_style(&g, "default");
+  } else {
+    owl_global_set_default_style(&g, "basic");
+  }
+
   /* execute the startup function in the configfile */
-  perlout = owl_config_execute("owl::startup();");
+  perlout = owl_perlconfig_execute("owl::startup();");
   if (perlout) owl_free(perlout);
   owl_function_debugmsg("-- Owl Startup --");
   
@@ -272,22 +287,12 @@ int main(int argc, char **argv, char **env) {
     owl_zephyr_zlog_in();
   }
 
-  /* set the startup and default style, based on userclue and presence of a
-   * formatting function */
-  if (owl_global_is_config_format(&g)) {
-    owl_view_set_style(owl_global_get_current_view(&g), owl_global_get_style_by_name(&g, "perl"));
-    owl_global_set_default_style(&g, "perl");
-  } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
-    owl_view_set_style(owl_global_get_current_view(&g), owl_global_get_style_by_name(&g, "default"));
-    owl_global_set_default_style(&g, "default");
-  } else {
-    owl_view_set_style(owl_global_get_current_view(&g), owl_global_get_style_by_name(&g, "basic"));
-    owl_global_set_default_style(&g, "basic");
-  }
+  owl_view_set_style(owl_global_get_current_view(&g), 
+		     owl_global_get_style_by_name(&g, owl_global_get_default_style(&g)));   
 
   /* welcome message */
   strcpy(startupmsg, "-------------------------------------------------------------------------\n");
-  sprintf(buff,      "Welcome to Owl version %s.  Press 'h' for on line help. \n", OWL_VERSION_STRING);
+  sprintf(buff,      "Welcome to Owl version %s.  Press 'h' for on-line help. \n", OWL_VERSION_STRING);
   strcat(startupmsg, buff);
   strcat(startupmsg, "                                                                         \n");
   strcat(startupmsg, "If you would like to receive release announcements about owl you can join \n");
@@ -394,7 +399,7 @@ int main(int argc, char **argv, char **env) {
       newmsgs=1;
 
       /* let the config know the new message has been received */
-      owl_config_getmsg(m, "owl::receive_msg();");
+      owl_perlconfig_getmsg(m, 0, NULL);
 
       /* add it to any necessary views; right now there's only the current view */
       owl_view_consider_message(owl_global_get_current_view(&g), m);

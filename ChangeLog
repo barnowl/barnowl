@@ -1,5 +1,40 @@
 $Id$
 
+2.0.8-pre-2
+	New API for perl message formatting functions.  
+	        Legacy variables are still supported for owl::format_msg
+		and owl::receive_msg, but these functions are now also 
+		passed an owl::Message object which contains methods
+		for accessing the contents of the message.  See perlwrap.pm 
+		(and docs TBD) for the available methods.
+		*** WARNING:  The exact API for owl::Message has
+		*** not yet stabilized.
+	Added "style" command for creating new styles.
+	        Usage:  style <name> perl <function_name>
+	Added support for "show styles".  Changed global style table
+	        from list to dictionary.
+	Changed AIM password prompt from "Password:" to "AIM Password:".
+	Messages are reformatted after a window resize to allow styles
+	        to take into account the width of the window.
+	When perl throws an error, the message is put in the msgwin
+	        if possible.
+	Added perl functions for:	
+	        owl::getcurmsg() -- returns an owl::Message object for
+		                    the active message
+		                    in the current view.
+	        owl::getnumcols() -- returns the column width of the window
+		owl::zephyr_getrealm() -- returns the zephyr realm
+	        owl::zephyr_getsender() -- returns the zephyr sender
+	Made owl::COMMAND("foo"); be syntactic sugar for 
+	        owl::command("COMMAND foo");
+		*** Is this a good or bad idea? 
+		*** This feature may be taken out before release.
+	Added perlwrap.pm to contain perl code to be compiled into 
+	        the binary.  This is transformed into perlwrap.c by
+		encapsulate.pl.
+	Renamed readconfig.c to perlconfig.c and changed variables accordingly.
+	Minor bugfixes in cmd.c and commands.c
+
 2.0.8-pre-1
 	Improved intro doc
 

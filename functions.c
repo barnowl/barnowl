@@ -77,6 +77,34 @@ void owl_function_show_view(char *viewname)
   owl_fmtext_free(&fm);
 }
 
+void owl_function_show_styles() {
+  owl_list l;
+  owl_fmtext fm;
+
+  owl_fmtext_init_null(&fm);
+  owl_fmtext_append_bold(&fm, "Styles:\n");
+  owl_global_get_style_names(&g, &l);
+  owl_fmtext_append_list(&fm, &l, "\n", owl_function_style_describe);
+  owl_fmtext_append_normal(&fm, "\n");
+  owl_function_popless_fmtext(&fm);
+  owl_list_free_all(&l, owl_free);
+  owl_fmtext_free(&fm);
+}
+
+char *owl_function_style_describe(void *name) {
+  char *desc, *s;
+  owl_style *style;
+  style = owl_global_get_style_by_name(&g, name);
+  if (style) {
+    desc = owl_style_get_description(style);
+  } else {
+    desc = "???";
+  }
+  s = owl_sprintf("%-20s - %s%s", name, 
+		  0==owl_style_validate(style)?"":"[INVALID] ",
+		  desc);
+  return s;
+}
 
 char *owl_function_cmd_describe(void *name)
 {
@@ -740,7 +768,7 @@ void owl_function_quit()
   }
 
   /* execute the commands in shutdown */
-  ret = owl_config_execute("owl::shutdown();");
+  ret = owl_perlconfig_execute("owl::shutdown();");
   if (ret) owl_free(ret);
 
   /* signal our child process, if any */
@@ -2050,7 +2078,7 @@ char *owl_function_perl(int argc, char **argv, char *buff, int type)
   /* consume first token (argv[0]) */
   buff = skiptokens(buff, 1);
 
-  perlout = owl_config_execute(buff);
+  perlout = owl_perlconfig_execute(buff);
   if (perlout) { 
     if (type==1) {
       owl_function_popless_text(perlout);

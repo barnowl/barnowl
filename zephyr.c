@@ -730,7 +730,6 @@ char *owl_zephyr_get_authstr(void *n)
 }
 #endif
 
-
 /* returns a buffer of subscriptions or an error message.
  * Caller must free the return.
  */

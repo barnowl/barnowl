@@ -203,9 +203,16 @@ static owl_variable variables_to_init[] = {
 
   OWLVAR_STRING( "default_style" /* %OwlVarStub */, "default",
 		 "name of the default formatting style",
-		 "This sets the default message formatting style. Possbile\n"
-		 "values include 'default' 'basic' 'oneline' and if\n"
-		 "available, 'perl'\n" ),
+		 "This sets the default message formatting style.\n"
+		 "Styles may be created with the 'style' command.\n"
+		 "Some built-in styles include:\n"
+		 "   default  - the default owl formatting\n"
+		 "   basic    - simple formatting\n"
+		 "   oneline  - one line per-message\n"
+		 "   perl     - legacy perl interface\n"
+		 "\nSEE ALSO: style, show styles, view -s <style>\n"
+		 ),
+
 
   OWLVAR_INT(    "edit:maxfillcols" /* %OwlVarStub:edit_maxfillcols */, 70,
 	         "maximum number of columns for M-q to fill text to",
@@ -355,25 +362,6 @@ int owl_variable_disable_ctrl_d_set(owl_variable *v, void *newval) {
 int owl_variable_tty_set(owl_variable *v, void *newval) {
   owl_zephyr_set_locationinfo(owl_global_get_hostname(&g), newval);
   return(owl_variable_string_set_default(v, newval));
-}
-
-int owl_variable_style_set(owl_variable *v, void *newval) {
-  /* Invalidate all message formats first */
-  int ret;
-  owl_style *s;
-
-  s=owl_global_get_style_by_name(&g, newval);
-  if (!s) {
-    /* this message won't get seen, we'll need to deal with that later */
-    owl_function_makemsg("No style named '%s' exists.", newval);
-    return(0);
-  }
-  
-  owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
-  ret=owl_variable_string_set_default(v, newval);
-  owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  return(ret);
 }
 
 
