@@ -1,44 +1,40 @@
 $Id$
 
-2.0.4-pre-2
+2.0.4
+	Made command line option -n actually work
+
+	Implemented styles, including the 'default' 'basic' and 'oneline'
+	  styles.  A 'perl' style is available if a format_msg() function
+	  is found in .owlconf
+	Added the 'default_style' variable
+	Added the 'toggle-oneline' command
+	The 'o' key is bound to 'toggle-oneline'
+	Internally, the one view now has a name, 'main', and message
+	  recalcuations are done in place when its filter is changed.
 	Added filter field 'login' which can take the values 'login'
 	   'logout' or 'none'
 	Added the perl variable $owl::login, just as above
 	Updated the 'login' and 'trash' filters appropriately
-	Fix for checking for DES
-	Bug fix in using makemsg when no curses window present
-	$owl::auth now works
-	Use new function to delete zephyr subs from file
-	New 'sepbar_disable' variable can turn off sepbar info
+	Fix for checking for DES in build system
+	Bug fix in using makemsg when no curses window is present
+	The variable $owl::auth now exists in perl
+	Use new internal function to delete zephyr subs from file
+	New 'sepbar_disable' variable can turn off sepbar info display
 	Updated contributor info
-	added the 'show view' command.
-	removed 'set style'
-	A style is now part of a view, the view command has been revamped
+	Added the 'show view' command
 	Bug fix in owl_regex
 	Fixed personal aim messages logging to class directory
-	Log "LOGIN" or "LOGOUT" for AIM buddy messages message
-	zwrite -m now logs and displays an outgoing message
+	Log "LOGIN" or "LOGOUT" for AIM buddy messages
+	zwrite -m now correctly displays an outgoing message and logs
 	zwrite -s now works
-	Don't allow sending to AIM users with spaces
+	Strip spaces in AIM usernames on aimwrite send
 	Removed libfaim/config.log from CVS
 	Fixed some easy fixed-length buffers
-	Wordwrap incoming AIM messages.
+	Wordwrap incoming AIM messages
 	Fixed bug causing buddies not to be added to buddy list during
 	  ingorelogin timer
 	Translate &lt; &gt; &amp; &quot; &nbsp; &ensp, &emsp, &endash and
 	   &emdash
-
-2.0.4-pre-1
-	Make command line option -n actualy work
-	'set style' now works.  Possbile values at the moment are
-	   'default' 'basic' or 'perl', but the last only if a
-	   format_msg() function is found in .owlconf
-	Added the 'oneline' style
-	Added the 'default_style' variable
-	Added the 'toggle-oneline' command
-	the 'o' key is bound to 'toggle-oneline'
-	Really use just one view now, named 'main' and recalculate
-	  messages when its filter is changed
 	
 2.0.3
 	Don't ring the terminal bell on mail messages.
