@@ -301,27 +301,36 @@ void owl_function_zcrypt_setup(char *line)
   owl_global_set_typwin_active(&g);
 }
 
-void owl_function_zwrite(char *line)
+/* send, log and display an outgoing zephyr.  If 'msg' is NULL
+ * the message is expected to be set from the zwrite line itself
+ */
+void owl_function_zwrite(char *line, char *msg)
 {
   owl_zwrite z;
   int i, j;
+  char *mymsg;
 
   /* create the zwrite and send the message */
   owl_zwrite_create_from_line(&z, line);
-  owl_zwrite_send_message(&z, owl_editwin_get_text(owl_global_get_typwin(&g)));
+  if (msg) {
+    owl_zwrite_set_message(&z, msg);
+  }
+
+  owl_zwrite_send_message(&z);
   owl_function_makemsg("Waiting for ack...");
+
+  mymsg=owl_zwrite_get_message(&z);
 
   /* display the message as an outgoing message in the receive window */
   if (owl_global_is_displayoutgoing(&g) && owl_zwrite_is_personal(&z)) {
-    owl_function_make_outgoing_zephyr(owl_editwin_get_text(owl_global_get_typwin(&g)), line, owl_zwrite_get_zsig(&z));
+    owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
   }
 
   /* log it if we have logging turned on */
   if (owl_global_is_logging(&g) && owl_zwrite_is_personal(&z)) {
     j=owl_zwrite_get_numrecips(&z);
     for (i=0; i<j; i++) {
-      owl_log_outgoing_zephyr(owl_zwrite_get_recip_n(&z, i),
-		       owl_editwin_get_text(owl_global_get_typwin(&g)));
+      owl_log_outgoing_zephyr(owl_zwrite_get_recip_n(&z, i), mymsg);
     }
   }
 
@@ -1072,7 +1081,7 @@ void owl_function_run_buffercommand()
 
   buff=owl_global_get_buffercommand(&g);
   if (!strncmp(buff, "zwrite ", 7)) {
-    owl_function_zwrite(buff);
+    owl_function_zwrite(buff, owl_editwin_get_text(owl_global_get_typwin(&g)));
   } else if (!strncmp(buff, "aimwrite ", 9)) {
     owl_function_aimwrite(buff+9);
   }

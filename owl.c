@@ -282,7 +282,7 @@ int main(int argc, char **argv, char **env) {
   sprintf(buff,      "Welcome to Owl version %s.  Press 'h' for on line help. \n", OWL_VERSION_STRING);
   strcat(startupmsg, buff);
   strcat(startupmsg, "                                                                         \n");
-  strcat(startupmsg, "If you would like to receive release announcments about owl you can join \n");
+  strcat(startupmsg, "If you would like to receive release announcements about owl you can join \n");
   strcat(startupmsg, "the owl-users@mit.edu mailing list.  MIT users can add themselves,       \n");
   strcat(startupmsg, "otherwise send a request to owner-owl-users@mit.edu.               ^ ^   \n");
   strcat(startupmsg, "                                                                   OvO   \n");

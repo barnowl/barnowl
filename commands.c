@@ -1525,35 +1525,26 @@ void owl_command_status() {
 }
 
 char *owl_command_zwrite(int argc, char **argv, char *buff) {
-  char *tmpbuff, *pos, *cmd, *msg;
+  owl_zwrite z;
 
   /* check for a zwrite -m */
-  for (pos = buff; *pos; pos = skiptokens(pos, 1)) {
-    if (!strncmp(pos, "-m ", 3)) {
-      cmd = owl_strdup(buff);
-      msg = cmd+(pos-buff);
-      *msg = '\0';
-      msg += 3;
-      owl_zwrite_create_and_send_from_line(cmd, msg);
-      owl_free(cmd);
-      return NULL;
-    }
+  owl_zwrite_create_from_line(&z, buff);
+  if (owl_zwrite_is_message_set(&z)) {
+    owl_function_zwrite(buff, NULL);
+    owl_zwrite_free(&z);
+    return (NULL);
   }
 
   if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the zwrite command.");
   } else {
-    tmpbuff = owl_strdup(buff);
-    owl_function_zwrite_setup(tmpbuff);
-    owl_global_set_buffercommand(&g, tmpbuff);
-    owl_free(tmpbuff);
+    owl_function_zwrite_setup(buff);
+    owl_global_set_buffercommand(&g, buff);
   }
-  return NULL;
+  return(NULL);
 }
 
 char *owl_command_aimwrite(int argc, char **argv, char *buff) {
-  char *tmpbuff;
-
   if (!owl_global_is_aimloggedin(&g)) {
     owl_function_makemsg("You are not logged in to AIM.");
     return(NULL);
@@ -1564,36 +1555,28 @@ char *owl_command_aimwrite(int argc, char **argv, char *buff) {
     return(NULL);
   }
 
-  tmpbuff=owl_strdup(buff);
-  owl_function_aimwrite_setup(tmpbuff);
-  owl_global_set_buffercommand(&g, tmpbuff);
-  owl_free(tmpbuff);
+  owl_function_aimwrite_setup(buff);
+  owl_global_set_buffercommand(&g, buff);
   return(NULL);
 }
 
 char *owl_command_zcrypt(int argc, char **argv, char *buff) {
-  char *tmpbuff, *pos, *cmd, *msg;
-  
+  owl_zwrite z;
+
   /* check for a zwrite -m */
-  for (pos = buff; *pos; pos = skiptokens(pos, 1)) {
-    if (!strncmp(pos, "-m ", 3)) {
-      cmd = owl_strdup(buff);
-      msg = cmd+(pos-buff);
-      *msg = '\0';
-      msg += 3;
-      owl_zwrite_create_and_send_from_line(cmd, msg);
-      owl_free(cmd);
-      return NULL;
-    }
+  owl_zwrite_create_from_line(&z, buff);
+  if (owl_zwrite_is_message_set(&z)) {
+    owl_zwrite_send_message(&z);
+    owl_function_make_outgoing_zephyr(owl_zwrite_get_message(&z), buff, owl_zwrite_get_zsig(&z));
+    owl_zwrite_free(&z);
+    return (NULL);
   }
 
   if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the zcrypt command.");
   } else {
-    tmpbuff = owl_strdup(buff);
-    owl_function_zwrite_setup(tmpbuff);
-    owl_global_set_buffercommand(&g, tmpbuff);
-    owl_free(tmpbuff);
+    owl_function_zwrite_setup(buff);
+    owl_global_set_buffercommand(&g, buff);
   }
   return(NULL);
 }

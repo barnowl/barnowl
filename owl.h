@@ -230,11 +230,12 @@ typedef struct _owl_cmd {	/* command */
 
 
 typedef struct _owl_zwrite {
-  char class[LINE];
-  char inst[LINE];
-  char realm[LINE];
-  char opcode[LINE];
+  char *class;
+  char *inst;
+  char *realm;
+  char *opcode;
   char *zsig;
+  char *message;
   owl_list recips;
   int cc;
   int noping;
