@@ -1587,19 +1587,22 @@ void owl_function_reply(int type, int enter) {
   }
 }
 
-void owl_function_zlocate(char *user, int auth) {
-  char buff[LINE], myuser[LINE];
-  char *ptr;
+void owl_function_zlocate(int argc, char **argv, int auth) {
+  owl_fmtext fm;
+  char *ptr, buff[LINE];
+  int i;
 
-  strcpy(myuser, user);
-  ptr=strchr(myuser, '@');
-  if (!ptr) {
-    strcat(myuser, "@");
-    strcat(myuser, ZGetRealm());
+  owl_fmtext_init_null(&fm);
+
+  for (i=0; i<argc; i++) {
+    ptr=long_zuser(argv[i]);
+    owl_zephyr_zlocate(ptr, buff, auth);
+    owl_fmtext_append_normal(&fm, buff);
+    owl_free(ptr);
   }
 
-  owl_zephyr_zlocate(myuser, buff, auth);
-  owl_function_popless_text(buff);
+  owl_function_popless_fmtext(&fm);
+  owl_fmtext_free(&fm);
 }
 
 void owl_function_start_command(char *line) {

@@ -365,9 +365,9 @@ owl_cmd commands_to_init[]
   
   OWLCMD_ARGS("zlocate", owl_command_zlocate, OWL_CTX_INTERACTIVE,
 	      "locate a user",
-	      "zlocate [-d] <user>", 
-	      "Performs a zlocate on a user and puts the result into\n"
-	      "a popwin.  If -d is specified, does not authenticate\n"
+	      "zlocate [-d] <user> ...", 
+	      "Performs a zlocate on one ore more users and puts the result\n"
+	      "int a popwin.  If -d is specified, does not authenticate\n"
 	      "the lookup request.\n"),
   
   OWLCMD_ARGS("filter", owl_command_filter, OWL_CTX_ANY,
@@ -1334,19 +1334,28 @@ char *owl_command_filter(int argc, char **argv, char *buff) {
 }
 
 char *owl_command_zlocate(int argc, char **argv, char *buff) {
-  if (argc==2) {
-    owl_function_zlocate(argv[1], 1);
-  } else if (argc==3) {
-    if (!strcmp(argv[1], "-d")) {
-      owl_function_zlocate(argv[2], 0);
-    } else {
-      owl_function_makemsg("Invalid option to the zlocate command");
-      return NULL;
-    }
-  } else {
-    owl_function_makemsg("Wrong number of arguments for zlocate command");
+  int auth;
+  
+  if (argc<2) {
+    owl_function_makemsg("Too few arguments for zlocate command");
     return NULL;
   }
+
+  auth=1;
+  if (!strcmp(argv[1], "-d")) {
+    if (argc>2) {
+      auth=0;
+      argc--;
+      argv++;
+    } else {
+      owl_function_makemsg("Missing arguments for zlocate command");
+      return NULL;
+    }
+  }
+
+  argc--;
+  argv++;
+  owl_function_zlocate(argc, argv, auth);
   return NULL;
 }
 
