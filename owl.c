@@ -33,6 +33,8 @@ int main(int argc, char **argv, char **env) {
   char buff[LINE], startupmsg[LINE];
   char **argvsave;
   owl_filter *f;
+  time_t nexttime;
+  int nexttimediff;
 
   argcsave=argc;
   argvsave=argv;
@@ -216,6 +218,9 @@ int main(int argc, char **argv, char **env) {
   
   owl_context_set_interactive(owl_global_get_context(&g));
 
+  nexttimediff=20;
+  nexttime=time(NULL);
+
   /* main loop */
   while (1) {
 
@@ -229,6 +234,19 @@ int main(int argc, char **argv, char **env) {
     typwin=owl_global_get_curs_typwin(&g);
 
     followlast=owl_global_should_followlast(&g);
+
+    /* little hack */
+    if (0 && owl_global_get_runtime(&g)<300) {
+      if (time(NULL)>nexttime) {
+	if (nexttimediff==1) {
+	  nexttimediff=20;
+	} else {
+	  nexttimediff=1;
+	}
+	nexttime+=nexttimediff;
+	owl_hack_animate();
+      }
+    }
 
     /* grab incoming zephyrs */
     newzephyrs=0;

@@ -21,7 +21,7 @@ char *owl_function_command(char *cmdbuff) {
 
 void owl_function_command_norv(char *cmdbuff) {
   char *rv;
-  rv = owl_function_command(cmdbuff);
+  rv=owl_function_command(cmdbuff);
   if (rv) owl_free(rv);
 }
 
@@ -79,14 +79,42 @@ void owl_function_adminmsg(char *header, char *body) {
   owl_global_set_needrefresh(&g);
 }
 
-void owl_function_adminmsg_outgoing(char *header, char *body, char *zwriteline) {
+void owl_function_make_outgoing_zephyr(char *header, char *body, char *zwriteline) {
   owl_message *m;
   int followlast;
+  owl_zwrite z;
+  char *tobuff, *recip;
   
   followlast=owl_global_should_followlast(&g);
+
+  /* create a zwrite for the purpose of filling in other message fields */
+  owl_zwrite_create_from_line(&z, zwriteline);
+
+  /* in 'tobuff' place the "Message sent to foo" string.
+   * Right now this only works for one recipient */
+  tobuff=owl_malloc(strlen(owl_zwrite_get_recip_n(&z, 0))+100);
+  sprintf(tobuff, "Zephyr sent to %s", owl_zwrite_get_recip_n(&z, 0));
+
+  /* create the message */
   m=owl_malloc(sizeof(owl_message));
-  owl_message_create_admin(m, header, body);
-  owl_message_set_admin_outgoing(m, zwriteline);
+  owl_message_create(m,  tobuff, body);
+  owl_message_set_direction_out(m);
+  owl_message_set_type_zephyr(m);
+
+  /* set zwriteline */
+  owl_message_set_zwriteline(m, zwriteline);
+
+  owl_message_set_class(m, owl_zwrite_get_class(&z));
+  owl_message_set_instance(m, owl_zwrite_get_instance(&z));
+  owl_message_set_opcode(m, owl_zwrite_get_opcode(&z));
+  owl_message_set_realm(m, owl_zwrite_get_realm(&z));
+  owl_message_set_sender(m, ZGetSender());
+  /* this only gets the first recipient for now, must fix */
+  recip=long_zuser(owl_zwrite_get_recip_n(&z, 0));
+  owl_message_set_recipient(m, recip);
+  owl_free(recip);
+
+  /* add it to the global list */
   owl_messagelist_append_element(owl_global_get_msglist(&g), m);
   owl_view_consider_message(owl_global_get_current_view(&g), m);
 
@@ -99,6 +127,7 @@ void owl_function_adminmsg_outgoing(char *header, char *body, char *zwriteline) 
   
   wnoutrefresh(owl_global_get_curs_recwin(&g));
   owl_global_set_needrefresh(&g);
+  owl_free(tobuff);
 }
 
 void owl_function_zwrite_setup(char *line) {
@@ -157,7 +186,7 @@ void owl_function_zwrite(char *line) {
   if (owl_global_is_displayoutgoing(&g) && owl_zwrite_is_personal(&z)) {
     owl_zwrite_get_recipstr(&z, buff);
     tmpbuff = owl_sprintf("Message sent to %s", buff);
-    owl_function_adminmsg_outgoing(tmpbuff, owl_editwin_get_text(owl_global_get_typwin(&g)), line);
+    owl_function_make_outgoing_zephyr(tmpbuff, owl_editwin_get_text(owl_global_get_typwin(&g)), line);
     owl_free(tmpbuff);
   }
 
@@ -288,7 +317,6 @@ void owl_function_prevmsg() {
 void owl_function_nextmsg_notdeleted() {
   owl_function_nextmsg_full(NULL, 1, 1);
 }
-
 
 void owl_function_prevmsg_notdeleted() {
   owl_function_prevmsg_full(NULL, 1, 1);
@@ -1058,35 +1086,63 @@ void owl_function_about() {
 void owl_function_info() {
   owl_message *m;
   ZNotice_t *n;
-  char buff[2048], tmpbuff[1024];
+  char buff[5000], tmpbuff[1024];
   char *ptr;
   int i, j, fields, len;
   owl_view *v;
 
   v=owl_global_get_current_view(&g);
-  
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
-
   if (!m || owl_view_get_size(v)==0) {
     owl_function_makemsg("No message selected\n");
     return;
   }
 
-  if (!owl_message_is_zephyr(m)) {
-    sprintf(buff,   "Owl Message Id: %i\n", owl_message_get_id(m));
-    sprintf(buff, "%sTime          : %s\n", buff, owl_message_get_timestr(m));
+  sprintf(buff,     "Msg Id    : %i\n", owl_message_get_id(m));
+  if (owl_message_is_type_zephyr(m)) {
+    sprintf(buff, "%sType      : zephyr\n", buff);
+  } else if (owl_message_is_type_admin(m)) {
+    sprintf(buff, "%sType      : admin\n", buff);
+  } else if (owl_message_is_type_generic(m)) {
+    sprintf(buff, "%sType      : generic\n", buff);
+  } else {
+    sprintf(buff, "%sType      : unknown\n", buff);
+  }
+  if (owl_message_is_direction_in(m)) {
+    sprintf(buff, "%sDirection : in\n", buff);
+  } else if (owl_message_is_direction_out(m)) {
+    sprintf(buff, "%sDirection : out\n", buff);
+  } else if (owl_message_is_direction_none(m)) {
+    sprintf(buff, "%sDirection : none\n", buff);
+  } else {
+    sprintf(buff, "%sDirection : unknown\n", buff);
+  }
+  sprintf(buff, "%sTime      : %s\n", buff, owl_message_get_timestr(m));
+
+  if (!owl_message_is_type_zephyr(m)) {
+    owl_function_popless_text(buff);
+    return;
+  }
+
+
+  if (owl_message_is_direction_out(m)) {
+    sprintf(buff, "%sClass     : %s\n", buff, owl_message_get_class(m));
+    sprintf(buff, "%sInstance  : %s\n", buff, owl_message_get_instance(m));
+    sprintf(buff, "%sSender    : %s\n", buff, owl_message_get_sender(m));
+    sprintf(buff, "%sRecip     : %s\n", buff, owl_message_get_recipient(m));
+    sprintf(buff, "%sOpcode    : %s\n", buff, owl_message_get_opcode(m));
+    
     owl_function_popless_text(buff);
     return;
   }
 
   n=owl_message_get_notice(m);
 
-  sprintf(buff,   "Owl Msg ID: %i\n", owl_message_get_id(m));
-  sprintf(buff, "%sClass     : %s\n", buff, n->z_class);
-  sprintf(buff, "%sInstance  : %s\n", buff, n->z_class_inst);
-  sprintf(buff, "%sSender    : %s\n", buff, n->z_sender);
-  sprintf(buff, "%sRecip     : %s\n", buff, n->z_recipient);
-  sprintf(buff, "%sOpcode    : %s\n", buff, n->z_opcode);
+  sprintf(buff, "%sClass     : %s\n", buff, owl_message_get_class(m));
+  sprintf(buff, "%sInstance  : %s\n", buff, owl_message_get_instance(m));
+  sprintf(buff, "%sSender    : %s\n", buff, owl_message_get_sender(m));
+  sprintf(buff, "%sRecip     : %s\n", buff, owl_message_get_recipient(m));
+  sprintf(buff, "%sOpcode    : %s\n", buff, owl_message_get_opcode(m));
   strcat(buff,    "Kind      : ");
   if (n->z_kind==UNSAFE) {
     strcat(buff, "UNSAFE\n");
@@ -1504,14 +1560,12 @@ void owl_function_reply(int type, int enter) {
 	return;
       }
     }
-    
-    if (owl_message_is_admin(m)) {
-      if (owl_message_get_admintype(m)==OWL_MESSAGE_ADMINTYPE_OUTGOING) {
-	owl_function_zwrite_setup(owl_message_get_zwriteline(m));
-	owl_global_set_buffercommand(&g, owl_message_get_zwriteline(m));
-      } else {
-	owl_function_makemsg("You cannot reply to this admin message");
-      }
+
+    if (owl_message_is_direction_out(m)) {
+      owl_function_zwrite_setup(owl_message_get_zwriteline(m));
+      owl_global_set_buffercommand(&g, owl_message_get_zwriteline(m));
+    } else if (owl_message_is_type_admin(m)) {
+      owl_function_makemsg("You cannot reply to this admin message");
     } else {
       if (owl_message_is_login(m)) {
 	class="MESSAGE";
@@ -1547,14 +1601,14 @@ void owl_function_reply(int type, int enter) {
       }
       if (*to != '\0') {
 	char *tmp, *oldtmp;
-	tmp=pretty_sender(to);
+	tmp=short_zuser(to);
 	if (cc) {
 	  tmp = owl_util_uniq(oldtmp=tmp, cc, "-");
 	  owl_free(oldtmp);
 	  buff = owl_sprintf("%s -C %s", oldbuff=buff, tmp);
 	  owl_free(oldbuff);
 	} else {
-	  tmp=pretty_sender(to);
+	  tmp=short_zuser(to);
 	  buff = owl_sprintf("%s %s", oldbuff=buff, tmp);
 	  owl_free(oldbuff);
 	}
@@ -1901,8 +1955,8 @@ char *owl_function_fastuserfilt(char *user) {
   char *argbuff, *longuser, *shortuser, *filtname;
 
   /* stick the local realm on if it's not there */
-  longuser=long_sender(user);
-  shortuser=pretty_sender(user);
+  longuser=long_zuser(user);
+  shortuser=short_zuser(user);
 
   /* name for the filter */
   filtname=owl_malloc(strlen(shortuser)+20);
@@ -1916,10 +1970,10 @@ char *owl_function_fastuserfilt(char *user) {
   /* create the new-internal filter */
   f=owl_malloc(sizeof(owl_filter));
 
-  argbuff=owl_malloc(strlen(longuser)+200);
-  sprintf(argbuff, "( ( class ^message$ ) and ( instance ^personal$ ) and ( sender ^%s$ ) )", longuser);
-  sprintf(argbuff, "%s or ( ( type ^admin$ ) and ( recipient %s ) )", argbuff, shortuser);
-  sprintf(argbuff, "%s or ( ( class ^login$ ) and ( sender ^%s$ ) )", argbuff, longuser);
+  argbuff=owl_malloc(strlen(longuser)+1000);
+  sprintf(argbuff, "( type ^zephyr$ and ( class ^message$ and instance ^personal$ and ");
+  sprintf(argbuff, "%s ( ( direction ^in$ and sender ^%s$ ) or ( direction ^out$ and recipient ^%s$ ) ) )", argbuff, longuser, longuser);
+  sprintf(argbuff, "%s or ( ( class ^login$ ) and ( sender ^%s$ ) ) )", argbuff, longuser);
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
@@ -1997,46 +2051,50 @@ char *owl_function_smartfilter(int type) {
    */
   owl_view *v;
   owl_message *m;
-  char *sender, *filtname=NULL;
+  char *zperson, *filtname=NULL;
   
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
 
   if (!m || owl_view_get_size(v)==0) {
     owl_function_makemsg("No message selected\n");
-    return NULL;
+    return(NULL);
   }
 
   /* very simple handling of admin messages for now */
-  if (owl_message_is_admin(m)) {
-    return owl_function_fasttypefilt("admin");
+  if (owl_message_is_type_admin(m)) {
+    return(owl_function_fasttypefilt("admin"));
   }
 
-  /* narrow personal and login messages to the sender */
+  /* narrow personal and login messages to the sender or recip as appropriate */
   if (owl_message_is_personal(m) || owl_message_is_login(m)) {
-    if (owl_message_is_zephyr(m)) {
-      sender=pretty_sender(owl_message_get_sender(m));
-      filtname = owl_function_fastuserfilt(sender);
-      owl_free(sender);
-      return filtname;
+    if (owl_message_is_type_zephyr(m)) {
+      if (owl_message_is_direction_in(m)) {
+	zperson=short_zuser(owl_message_get_sender(m));
+      } else {
+	zperson=short_zuser(owl_message_get_recipient(m));
+      }
+      filtname=owl_function_fastuserfilt(zperson);
+      owl_free(zperson);
+      return(filtname);
     }
-    return NULL;
+    return(NULL);
   }
 
   /* narrow class MESSAGE, instance foo, recip * messages to class, inst */
   if (!strcasecmp(owl_message_get_class(m), "message") &&
       !owl_message_is_personal(m)) {
-    filtname = owl_function_fastclassinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
-    return filtname;
+    filtname=owl_function_fastclassinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
+    return(filtname);
   }
 
   /* otherwise narrow to the class */
   if (type==0) {
-    filtname = owl_function_fastclassinstfilt(owl_message_get_class(m), NULL);
+    filtname=owl_function_fastclassinstfilt(owl_message_get_class(m), NULL);
   } else if (type==1) {
-    filtname = owl_function_fastclassinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
+    filtname=owl_function_fastclassinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
   }
-  return filtname;
+  return(filtname);
 }
 
 void owl_function_smartzpunt(int type) {
@@ -2055,9 +2113,9 @@ void owl_function_smartzpunt(int type) {
   }
 
   /* for now we skip admin messages. */
-  if (owl_message_is_admin(m)
+  if (owl_message_is_type_admin(m)
       || owl_message_is_login(m)
-      || !owl_message_is_zephyr(m)) {
+      || !owl_message_is_type_zephyr(m)) {
     owl_function_makemsg("smartzpunt doesn't support this message type.");
     return;
   }
@@ -2239,7 +2297,6 @@ void owl_function_show_keymap(char *name) {
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);
 }
-
 
 void owl_function_help_for_command(char *cmdname) {
   owl_fmtext fm;

@@ -58,7 +58,8 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv) {
 	  !strcasecmp(argv[i], "body") ||
 	  !strcasecmp(argv[i], "opcode") ||
 	  !strcasecmp(argv[i], "realm") ||
-	  !strcasecmp(argv[i], "type")) {
+	  !strcasecmp(argv[i], "type") ||
+	  !strcasecmp(argv[i], "direction")) {
 	owl_filterelement_create_re(fe, argv[i], argv[i+1]);
 	i++;
       } else {
@@ -141,10 +142,20 @@ int owl_filter_message_match(owl_filter *f, owl_message *m) {
     } else if (!strcasecmp(field, "realm")) {
       match=owl_message_get_realm(m);
     } else if (!strcasecmp(field, "type")) {
-      if (owl_message_is_zephyr(m)) {
+      if (owl_message_is_type_zephyr(m)) {
 	match="zephyr";
-      } else if (owl_message_is_admin(m)) {
+      } else if (owl_message_is_type_admin(m)) {
 	match="admin";
+      } else {
+	match="";
+      }
+    } else if (!strcasecmp(field, "direction")) {
+      if (owl_message_is_direction_out(m)) {
+	match="out";
+      } else if (owl_message_is_direction_in(m)) {
+	match="in";
+      } else if (owl_message_is_direction_none(m)) {
+	match="none";
       } else {
 	match="";
       }

@@ -158,9 +158,9 @@ char *owl_config_getmsg(owl_message *m, int mode) {
   }
 
   /* set owl::type */
-  if (owl_message_is_zephyr(m)) {
+  if (owl_message_is_type_zephyr(m)) {
     sv_setpv(perl_get_sv("owl::type", TRUE), "zephyr");
-  } else if (owl_message_is_admin(m)) {
+  } else if (owl_message_is_type_admin(m)) {
     sv_setpv(perl_get_sv("owl::type", TRUE), "admin");
   } else {
     sv_setpv(perl_get_sv("owl::type", TRUE), "unknown");

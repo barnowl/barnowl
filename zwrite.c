@@ -181,6 +181,10 @@ char *owl_zwrite_get_instance(owl_zwrite *z) {
   return(z->inst);
 }
 
+char *owl_zwrite_get_opcode(owl_zwrite *z) {
+  return(z->opcode);
+}
+
 char *owl_zwrite_get_realm(owl_zwrite *z) {
   return(z->realm);
 }
@@ -218,7 +222,6 @@ int owl_zwrite_is_personal(owl_zwrite *z) {
   return(0);
 }
   
-
 void owl_zwrite_free(owl_zwrite *z) {
   owl_list_free_all(&(z->recips), &owl_free);
 }

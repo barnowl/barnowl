@@ -1,12 +1,20 @@
 $Id$
 
-1.2.4-pre
-	Temporary fix to bug where C-SPACE would cause
-	     the key handler to lock up.
-	
 1.2.3
 	Added filters "ping", "auto" and "login" by default.
 	Added "body" as a valid field to match on in a filter.
+	Temporary fix to bug where C-SPACE would cause the key handler to
+	     lock up.
+	Messages now have a direciton (in, out or none).  Filters can
+             this direction
+	Outbound messages are no longer type 'admin' but are of the
+	     appropriate message type (i.e. 'zephyr') and are direction
+	     'out'.
+	Smartnarrow now works on outgoing messages
+	'info' updated to show more information for admin and outgoing
+	     messages
+	Renamed pretty_sender to short_zuser and renamed long_sender to
+             long_zuser
 	
 1.2.2
 	Added the 'search' command.

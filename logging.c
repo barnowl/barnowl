@@ -130,7 +130,7 @@ void owl_log_incoming(owl_message *m) {
     }
   }
 
-  tmp=pretty_sender(owl_message_get_sender(m));
+  tmp=short_zuser(owl_message_get_sender(m));
   
   fprintf(file, "Class: %s Instance: %s", owl_message_get_class(m), owl_message_get_instance(m));
   if (strcmp(owl_message_get_opcode(m), "")) fprintf(file, " Opcode: %s", owl_message_get_opcode(m));

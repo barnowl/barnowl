@@ -35,12 +35,13 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_EDITWIN_STYLE_MULTILINE 0
 #define OWL_EDITWIN_STYLE_ONELINE   1
 
-#define OWL_MESSAGE_TYPE_ADMIN  0
-#define OWL_MESSAGE_TYPE_ZEPHYR 1
+#define OWL_MESSAGE_TYPE_ADMIN      0
+#define OWL_MESSAGE_TYPE_GENERIC    1
+#define OWL_MESSAGE_TYPE_ZEPHYR     2
 
-#define OWL_MESSAGE_ADMINTYPE_GENERIC  0
-#define OWL_MESSAGE_ADMINTYPE_OUTGOING 1
-#define OWL_MESSAGE_ADMINTYPE_NOTADMIN 2
+#define OWL_MESSAGE_DIRECTION_NONE  0
+#define OWL_MESSAGE_DIRECTION_IN    1
+#define OWL_MESSAGE_DIRECTION_OUT   2
 
 #define OWL_DIRECTION_NONE      0
 #define OWL_DIRECTION_DOWNWARDS 1
@@ -52,7 +53,6 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_SCROLLMODE_CENTER   3
 #define OWL_SCROLLMODE_PAGED    4
 #define OWL_SCROLLMODE_PAGEDCENTER 5
-
 
 #define OWL_TAB               3  /* This *HAS* to be the size of TABSTR below */
 #define OWL_TABSTR        "   "
@@ -95,14 +95,14 @@ static const char owl_h_fileIdent[] = "$Id$";
 
 #define OWL_FILTER_MAX_DEPTH    300
 
-#define OWL_KEYMAP_MAXSTACK 20
+#define OWL_KEYMAP_MAXSTACK     20
 
-#define OWL_KEYBINDING_COMMAND   1 /* command string */
-#define OWL_KEYBINDING_FUNCTION  2 /* function taking no args */
+#define OWL_KEYBINDING_COMMAND  1   /* command string */
+#define OWL_KEYBINDING_FUNCTION 2   /* function taking no args */
 
-#define OWL_DEFAULT_ZAWAYMSG "I'm sorry, but I am currently away from the terminal and am\nnot able to receive your message.\n"
+#define OWL_DEFAULT_ZAWAYMSG    "I'm sorry, but I am currently away from the terminal and am\nnot able to receive your message.\n"
 
-#define OWL_INCLUDE_REG_TESTS  1  /* whether to build in regression tests */
+#define OWL_INCLUDE_REG_TESTS   1  /* whether to build in regression tests */
 
 #define OWL_CMD_ALIAS_SUMMARY_PREFIX "command alias to: "
 
@@ -226,7 +226,7 @@ typedef struct _owl_zwrite {
 typedef struct _owl_message {
   int id;
   int type;
-  int admintype;
+  int direction;
   ZNotice_t notice;
   owl_fmtext fmtext;
   int delete;

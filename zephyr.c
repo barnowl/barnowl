@@ -358,7 +358,7 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice) {
       return;
     } else if (!strcasecmp(retnotice->z_class, "message") &&
 	       !strcasecmp(retnotice->z_class_inst, "personal")) {
-      tmp=pretty_sender(retnotice->z_recipient);
+      tmp=short_zuser(retnotice->z_recipient);
       owl_function_makemsg("Message sent to %s.", tmp);
       free(tmp);
     } else {
@@ -369,7 +369,7 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice) {
       owl_function_makemsg("Not logged in or not subscribing to class %s, instance %s",
 	      retnotice->z_class, retnotice->z_class_inst);
     } else {
-      tmp = pretty_sender(retnotice->z_recipient);
+      tmp = short_zuser(retnotice->z_recipient);
       owl_function_makemsg("%s: Not logged in or subscribing to messages.", 
 			   tmp);
       owl_free(tmp);
@@ -445,7 +445,7 @@ void owl_zephyr_zlocate(char *user, char *out, int auth) {
     
   for (;numlocs;numlocs--) {
     ZGetLocations(&locations,&one);
-    myuser=pretty_sender(user);
+    myuser=short_zuser(user);
     sprintf(out, "%s%s: %s\t%s\t%s\n", out, myuser, locations.host, locations.tty, locations.time);
     owl_free(myuser);
   }

@@ -391,7 +391,7 @@ char *owl_sprintf(const char *fmt, ...) {
   }
 }
 
-char *pretty_sender(char *in) {
+char *short_zuser(char *in) {
   char *out, *ptr;
   
   /* the caller must free the return */
@@ -405,7 +405,7 @@ char *pretty_sender(char *in) {
   return(out);
 }
 
-char *long_sender(char *in) {
+char *long_zuser(char *in) {
   char *ptr;
 
   /* the caller must free the return */
@@ -493,6 +493,44 @@ char *owl_util_color_to_string(int color) {
   return("Unknown color");
 }
 
+void owl_hack_animate() {
+  owl_messagelist *ml;
+  owl_message *m;
+  owl_fmtext *fm;
+  char *text, *ptr;
+  int place;
+
+  /* grab the first message and make sure its id is 0 */
+  ml=owl_global_get_msglist(&g);
+  m=owl_messagelist_get_element(ml, 0);
+  if (!m) return;
+  if (owl_message_get_id(m)!=0) return;
+
+  fm=owl_message_get_fmtext(m);
+  text=owl_fmtext_get_text(fm);
+
+  ptr=strstr(text, "OvO");
+  if (ptr) {
+    place=ptr-text;
+    owl_fmtext_set_char(fm, place, '-');
+    owl_fmtext_set_char(fm, place+2, '-');
+
+    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+    owl_global_set_needrefresh(&g);
+    return;
+  }
+
+  ptr=strstr(text, "-v-");
+  if (ptr) {
+    place=ptr-text;
+    owl_fmtext_set_char(fm, place, 'O');
+    owl_fmtext_set_char(fm, place+2, 'O');
+
+    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+    owl_global_set_needrefresh(&g);
+    return;
+  }
+}
 
 /**************************************************************************/
 /************************* REGRESSION TESTS *******************************/

@@ -493,6 +493,13 @@ char *owl_fmtext_get_text(owl_fmtext *f) {
   return(f->textbuff);
 }
 
+void owl_fmtext_set_char(owl_fmtext *f, int index, int ch) {
+  /* set the charater at 'index' to be 'char'.  If index is out of
+   * bounds don't do anything */
+  if ((index < 0) || (index > f->textlen-1)) return;
+  f->textbuff[index]=ch;
+}
+
 void owl_fmtext_free(owl_fmtext *f) {
   if (f->textbuff) owl_free(f->textbuff);
   if (f->fmbuff) owl_free(f->fmbuff);
