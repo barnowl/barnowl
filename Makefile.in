@@ -68,7 +68,7 @@ perlwrap.c: perlwrap.pm encapsulate.pl
 owl_prototypes.h: codelist.pl varstubs.c $(BASE_SRCS)
 	perl codelist.pl > owl_prototypes.h.new
 	@cmp -s owl_prototypes.h.new $@ || { \
-	 echo 'Interfaces changed!'; \
+	 test -f $@ && echo 'Interfaces changed!'; \
 	 echo mv -f owl_prototypes.h.new $@; \
 	      mv -f owl_prototypes.h.new $@; }
 #owl_prototypes.h:

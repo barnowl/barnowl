@@ -747,6 +747,7 @@ void owl_function_zaway_toggle()
 void owl_function_zaway_on()
 {
   owl_global_set_zaway_on(&g);
+  owl_aim_set_awaymsg(owl_global_get_zaway_msg(&g));
   owl_function_makemsg("zaway set (%s)", owl_global_get_zaway_msg(&g));
 }
 

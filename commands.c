@@ -245,6 +245,13 @@ owl_cmd commands_to_init[]
 	      "such as zephyr, will also be able to use this command.  For now the\n"
 	      "only available protocol is 'aim', specified as the first argument.\n"),
 
+#if 0
+  OWLCMD_ARGS("join", owl_command_join, OWL_CTX_INTERACTIVE,
+	      "join a chat group",
+	      "join aim <groupname> [exchange]",
+	      "Join the AIM chatroom with 'groupname'.\n"),
+#endif
+
   OWLCMD_ARGS("smartzpunt", owl_command_smartzpunt, OWL_CTX_INTERACTIVE,
 	      "creates a zpunt based on the current message",
 	      "smartzpunt [-i | --instance]",
@@ -991,10 +998,6 @@ char *owl_command_delbuddy(int argc, char **argv, char *buff)
       owl_function_makemsg("delbuddy: You must be logged into aim to use this command.");
       return(NULL);
     }
-    /*
-    owl_function_makemsg("This function is not yet operational.  Stay tuned.");
-    return(NULL);
-    */
     owl_aim_delbuddy(argv[2]);
     owl_function_makemsg("%s deleted as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
   } else if (!strcasecmp(argv[1], "zephyr")) {
@@ -1004,7 +1007,30 @@ char *owl_command_delbuddy(int argc, char **argv, char *buff)
     owl_function_makemsg("delbuddy: currently the only supported protocols are 'zephyr' and 'aim'");
   }
 
+  return(NULL);
+}
 
+char *owl_command_join(int argc, char **argv, char *buff)
+{
+  if (argc!=3 && argc!=4) {
+    owl_function_makemsg("usage: join <protocol> <buddyname> [exchange]");
+    return(NULL);
+  }
+
+  if (!strcasecmp(argv[1], "aim")) {
+    if (!owl_global_is_aimloggedin(&g)) {
+      owl_function_makemsg("join aim: You must be logged into aim to use this command.");
+      return(NULL);
+    }
+    if (argc==3) {
+      owl_aim_chat_join(argv[2], 4);
+    } else {
+      owl_aim_chat_join(argv[2], atoi(argv[3]));
+    }
+    /* owl_function_makemsg("%s deleted as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g)); */
+  } else {
+    owl_function_makemsg("join: currently the only supported protocol is 'aim'");
+  }
   return(NULL);
 }
 

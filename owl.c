@@ -155,7 +155,6 @@ int main(int argc, char **argv, char **env) {
   newstderr = stderr_replace();
 #endif   
 
-  
   /* create the owl directory, in case it does not exist */
   dir=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_CONFIG_DIR);
   mkdir(dir, S_IRWXU);
