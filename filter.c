@@ -55,6 +55,7 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv) {
 	  !strcasecmp(argv[i], "instance") ||
 	  !strcasecmp(argv[i], "sender") ||
 	  !strcasecmp(argv[i], "recipient") ||
+	  !strcasecmp(argv[i], "body") ||
 	  !strcasecmp(argv[i], "opcode") ||
 	  !strcasecmp(argv[i], "realm") ||
 	  !strcasecmp(argv[i], "type")) {
@@ -133,6 +134,8 @@ int owl_filter_message_match(owl_filter *f, owl_message *m) {
       match=owl_message_get_sender(m);
     } else if (!strcasecmp(field, "recipient")) {
       match=owl_message_get_recipient(m);
+    } else if (!strcasecmp(field, "body")) {
+      match=owl_message_get_body(m);
     } else if (!strcasecmp(field, "opcode")) {
       match=owl_message_get_opcode(m);
     } else if (!strcasecmp(field, "realm")) {
@@ -156,7 +159,7 @@ int owl_filter_message_match(owl_filter *f, owl_message *m) {
   }
 
   
-  /* call the recursive helper */
+  /* call the recrsive helper */
   i=_owl_filter_message_match_recurse(f, m, &work_fes, 0, owl_list_get_size(&(f->fes))-1);
 
   tmp=0;

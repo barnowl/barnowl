@@ -2,6 +2,7 @@ $Id$
 
 1.2.3
 	Added filters "ping", "auto" and "login" by default.
+	Added "body" as a valid field to match on in a filter.
 	
 1.2.2
 	Added the 'search' command.
