@@ -276,9 +276,9 @@ int main(int argc, char **argv, char **env)
   if (perlerr) {
     endwin();
     owl_function_error("Error parsing configfile\n");
-    fprintf(stderr, "\nError parsing configfile.  Possibly exists but not readable. (%s)\n", perlerr);
+    fprintf(stderr, "\nError parsing configfile. (%s)\n", perlerr);
     fflush(stderr);
-    printf("\nError parsing configfile.  Possibly exists but not readable. (%s)\n", perlerr);
+    printf("\nError parsing configfile. (%s)\n", perlerr);
     fflush(stdout);
     exit(1);
   }

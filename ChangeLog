@@ -2,6 +2,8 @@ $Id$
 
 2.1.1-pre-3
 	Filters of filters now work.
+	Removed the "possibly not readable" part of the config parsing
+  	  error
 	
 2.1.1-pre-2
 	Added the 'aim search' command.  The popup on callback may be
