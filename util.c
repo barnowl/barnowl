@@ -23,6 +23,12 @@ void sepbar(char *in) {
   wattron(sepwin, A_REVERSE);
   whline(sepwin, ACS_HLINE, owl_global_get_cols(&g));
 
+  if (owl_global_is_sepbar_disable(&g)) {
+    getyx(sepwin, y, x);
+    wmove(sepwin, y, owl_global_get_cols(&g)-1);
+    return;
+  }
+
   wmove(sepwin, 0, 2);  
 
   if (owl_messagelist_get_size(ml)==0) {

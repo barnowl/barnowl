@@ -2,47 +2,30 @@
 $Id$
 
 Owl was primarly written by James Kretchmar at the Massachusetts
-Institute of Technogloy.  The following people have also made major
-contributions.
+Institute of Technogloy.  Erik Nygren has also made substantial
+contributions and improvemnts to the program.
 
-Erik Nygren
-   Complete overhaul of the variable system
-   Substantial changes to how commands are handled
-   Substantial changes to how key presses are handled   
-   Command aliases
-   User keybindings
-   perl, aperl and pperl commands   
-   Multiple browser support
-   Support for older versions of lib zephyr
-   Many bug fixes and features
-   Code documentation
-   Example config files
+The following people have provided patches and other techincal
+support:
 
-Stephen Gildea
-   Extensive testing and feedback
+  Stephen Gildea
+  Greg Hudson
+  David Resnick
+  Marc Horowitz
+  Jeremy Daniel
+  Roman Mitz
+  Derrick J Brashear
+  David Glasser
+  Mark Eichin
 
-Mark Eichin
-   Bug fixes
-   Debian packaging
+Mark Eichin is also maintaining the debian package of Owl.
 
-Greg Hudson
-   Hack to work around waiting for HMACKs
+The following people helped with beta testing the earliest versions of
+Owl:
 
-David Resnick
-   Build fixes and cleanup
- 
-Marc Horowitz
-   Embedded perl advice
+  Andy Ellis, Erin Panttaja, Gisele Proulx
+  Ron Hoffmann, Jag Patel, Tara Holm
+  Heather Wakefield, Emiliy Havens,
+  Matt Braun, Jeff Schiller
 
-Jeremy Daniel
-   Bug fixes and patches
-   First version of color support
-
-Andy Ellis, Erin Panttaja, Gisele Proulx
-Ron Hoffmann, Jag Patel, Tara Holm
-Heather Wakefield, Emiliy Havens,
-Matt Braun, Jeff Schiller
-   Beta testing
-
-Anne LaVin
-   ASCII Art Owl
+The ASCII art owl was created by Anne LaVin.

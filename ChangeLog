@@ -9,6 +9,8 @@ $Id$
 	Bug fix in using makemsg when no curses window present
 	$owl::auth now works
 	Use new function to delete zephyr subs from file
+	New 'sepbar_disable' variable can turn off sepbar info
+	Updated contributor info
 
 2.0.4-pre-1
 	Make command line option -n actualy work

@@ -81,6 +81,9 @@ static owl_variable variables_to_init[] = {
   OWLVAR_BOOL( "txping" /* %OwlVarStub */, 1,
 	       "send pings", "" ),
 
+  OWLVAR_BOOL( "sepbar_disable" /* %OwlVarStub */, 0,
+	       "disable printing information in the seperator bar", "" ),
+
   OWLVAR_BOOL( "smartstrip" /* %OwlVarStub */, 1,
 	       "strip kerberos instance for reply", ""),
 
