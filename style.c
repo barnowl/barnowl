@@ -53,15 +53,20 @@ void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, owl_message *m)
   if (s->type==OWL_STYLE_TYPE_INTERNAL) {
     (* s->formatfunc)(fm, m);
   } else if (s->type==OWL_STYLE_TYPE_PERL) {
-    char *body, *indent;
+    char *body, *indent, curlen;
 
     /* run the perl function */
     body=owl_perlconfig_getmsg(m, 1, s->perlfuncname);
     
-    /* indent */
-    indent=owl_malloc(strlen(body)+owl_text_num_lines(body)*OWL_TAB+10);
+    /* indent and ensure ends with a newline */
+    indent=owl_malloc(strlen(body)+(owl_text_num_lines(body))*OWL_TAB+10);
     owl_text_indent(indent, body, OWL_TAB);
-    
+    curlen = strlen(indent);
+    if (curlen==0 || indent[curlen-1] != '\n') {
+      indent[curlen] = '\n';
+      indent[curlen+1] = '\0';
+    }
+
     /* fmtext_append.  This needs to change */
     owl_fmtext_append_ztext(fm, indent);
     

@@ -122,6 +122,7 @@ sub legacy_populate_global {
     $owl::msg        = $m->body      ;
     $owl::time       = $m->time      ;
     $owl::host       = $m->host      ;
+    $owl::login      = $m->login     ;
     if ($m->fields) {
 	@owl::fields = @{$m->fields};
 	@main::fields = @{$m->fields};
