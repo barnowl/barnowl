@@ -4,6 +4,7 @@ $Id$
 	Fixed missing word in startup message
 	Better 'status' command
 	Use '+' for popwin corners when 'fancylines' is off
+	Allow TERMINFO to be overridden in the envrionment
 	
 2.0.13
 	Changed startup message for new mailing list

@@ -57,9 +57,6 @@ int main(int argc, char **argv, char **env)
   int newstderr;
 #endif
 
-  owl_function_debugmsg("startup: it's the very best place to start");
-
-  owl_function_debugmsg("startup: processing command line arguments");
   argcsave=argc;
   argvsave=argv;
   configfile=NULL;
@@ -109,7 +106,6 @@ int main(int argc, char **argv, char **env)
 
 #ifdef HAVE_LIBZEPHYR
   /* zephyr init */
-  owl_function_debugmsg("startup: initializing zephyr");
   ret=owl_zephyr_initialize();
   if (ret) {
     exit(1);
@@ -117,7 +113,6 @@ int main(int argc, char **argv, char **env)
 #endif
   
   /* signal handler */
-  owl_function_debugmsg("startup: setting up signal handler");
   /*sigact.sa_handler=sig_handler;*/
   sigact.sa_sigaction=sig_handler;
   sigemptyset(&sigact.sa_mask);
@@ -127,9 +122,13 @@ int main(int argc, char **argv, char **env)
   sigaction(SIGPIPE, &sigact, NULL);
 
   /* screen init */
-  owl_function_debugmsg("startup: initializing screen");
-  sprintf(buff, "TERMINFO=%s", TERMINFO);
-  putenv(buff);
+  if (!getenv("TERMINFO")) {
+    sprintf(buff, "TERMINFO=%s", TERMINFO);
+    putenv(buff);
+    owl_function_debugmsg("startup: setting TERMINFO to %s", TERMINFO);
+  } else {
+    owl_function_debugmsg("startup: leaving TERMINFO as %s from envrionment", getenv("TERMINFO"));
+  }
   initscr();
   start_color();
 #ifdef HAVE_USE_DEFAULT_COLORS
@@ -151,9 +150,9 @@ int main(int argc, char **argv, char **env)
   }
 
   /* owl global init */
-  owl_function_debugmsg("startup: doing owl global initialization");
   owl_global_init(&g);
   if (debug) owl_global_set_debug_on(&g);
+  owl_function_debugmsg("startup: first available debugging message");
   owl_global_set_startupargs(&g, argcsave, argvsave);
 #ifdef HAVE_LIBZEPHYR
   owl_global_set_havezephyr(&g);
