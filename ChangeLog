@@ -7,6 +7,7 @@ $Id$
 	Special cased replies for webzephyr users on classes and
 	  login notifications for webzephyr users
 	Fixed bug that caused a crash on zpunt with '*' for an instance
+	AIM logout and then login now works.
 	
 2.0.4
 	Made command line option -n actually work

@@ -162,7 +162,7 @@ int owl_aim_login(char *screenname, char *password)
 void owl_aim_logout(void)
 {
   /* need to check if it's connected first, I think */
-  aim_session_kill(owl_global_get_aimsess(&g));
+  logout(owl_global_get_aimsess(&g));
   owl_global_set_aimnologgedin(&g);
 }
 
