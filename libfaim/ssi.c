@@ -38,54 +38,54 @@
  */
 static struct aim_ssi_item *aim_ssi_itemlist_rebuildgroup(struct aim_ssi_item *list, const char *name)
 {
-	int newlen;
-	struct aim_ssi_item *cur, *group;
-
-	if (!list)
-		return NULL;
-
-	/* Find the group */
-	if (!(group = aim_ssi_itemlist_finditem(list, name, NULL, AIM_SSI_TYPE_GROUP)))
-		return NULL;
-
-	/* Free the old data */
-	aim_freetlvchain(&group->data);
-	group->data = NULL;
-
-	/* Find the length for the new additional data */
-	newlen = 0;
-	if (group->gid == 0x0000) {
-		for (cur=list; cur; cur=cur->next)
-			if ((cur->type == AIM_SSI_TYPE_GROUP) && (cur->gid != 0x0000))
-				newlen += 2;
-	} else {
-		for (cur=list; cur; cur=cur->next)
-			if ((cur->gid == group->gid) && (cur->type == AIM_SSI_TYPE_BUDDY))
-				newlen += 2;
-	}
-
-	/* Build the new TLV list */
-	if (newlen > 0) {
-		fu8_t *newdata;
-
-		if (!(newdata = (fu8_t *)malloc((newlen)*sizeof(fu8_t))))
-			return NULL;
-		newlen = 0;
-		if (group->gid == 0x0000) {
-			for (cur=list; cur; cur=cur->next)
-				if ((cur->type == AIM_SSI_TYPE_GROUP) && (cur->gid != 0x0000))
-						newlen += aimutil_put16(newdata+newlen, cur->gid);
-		} else {
-			for (cur=list; cur; cur=cur->next)
-				if ((cur->gid == group->gid) && (cur->type == AIM_SSI_TYPE_BUDDY))
-						newlen += aimutil_put16(newdata+newlen, cur->bid);
-		}
-		aim_addtlvtochain_raw(&group->data, 0x00c8, newlen, newdata);
-
-		free(newdata);
-	}
-
-	return group;
+  int newlen;
+  struct aim_ssi_item *cur, *group;
+  
+  if (!list)
+    return NULL;
+  
+  /* Find the group */
+  if (!(group = aim_ssi_itemlist_finditem(list, name, NULL, AIM_SSI_TYPE_GROUP)))
+    return NULL;
+  
+  /* Free the old data */
+  aim_freetlvchain(&group->data);
+  group->data = NULL;
+  
+  /* Find the length for the new additional data */
+  newlen = 0;
+  if (group->gid == 0x0000) {
+    for (cur=list; cur; cur=cur->next)
+      if ((cur->type == AIM_SSI_TYPE_GROUP) && (cur->gid != 0x0000))
+	newlen += 2;
+  } else {
+    for (cur=list; cur; cur=cur->next)
+      if ((cur->gid == group->gid) && (cur->type == AIM_SSI_TYPE_BUDDY))
+	newlen += 2;
+  }
+  
+  /* Build the new TLV list */
+  if (newlen > 0) {
+    fu8_t *newdata;
+    
+    if (!(newdata = (fu8_t *)malloc((newlen)*sizeof(fu8_t))))
+      return NULL;
+    newlen = 0;
+    if (group->gid == 0x0000) {
+      for (cur=list; cur; cur=cur->next)
+	if ((cur->type == AIM_SSI_TYPE_GROUP) && (cur->gid != 0x0000))
+	  newlen += aimutil_put16(newdata+newlen, cur->gid);
+    } else {
+      for (cur=list; cur; cur=cur->next)
+	if ((cur->gid == group->gid) && (cur->type == AIM_SSI_TYPE_BUDDY))
+	  newlen += aimutil_put16(newdata+newlen, cur->bid);
+    }
+    aim_addtlvtochain_raw(&group->data, 0x00c8, newlen, newdata);
+    
+    free(newdata);
+  }
+  
+  return group;
 }
 
 /**
@@ -102,68 +102,67 @@ static struct aim_ssi_item *aim_ssi_itemlist_rebuildgroup(struct aim_ssi_item *l
  */
 static struct aim_ssi_item *aim_ssi_itemlist_add(struct aim_ssi_item **list, const char *name, fu16_t gid, fu16_t bid, fu16_t type, aim_tlvlist_t *data)
 {
-	int i;
-	struct aim_ssi_item *cur, *new;
+  int i;
+  struct aim_ssi_item *cur, *new;
+  
+  if (!list) return(NULL);
+  
+  if (!(new = (struct aim_ssi_item *)malloc(sizeof(struct aim_ssi_item)))) return(NULL);
+  
+  /* Set the name */
+  if (name) {
+    new->name = (char *)malloc((strlen(name)+1)*sizeof(char));
+    strcpy(new->name, name);
+  } else {
+    new->name = NULL;
+  }
+  
+  /* Set the group ID# and buddy ID# */
+  new->gid = gid;
+  new->bid = bid;
+  if (type == AIM_SSI_TYPE_GROUP) {
+    if ((new->gid == 0xFFFF) && name) {
+      do {
+	new->gid += 0x0001;
+	for (cur=*list, i=0; ((cur) && (!i)); cur=cur->next)
+	  if ((cur->type == AIM_SSI_TYPE_GROUP) && (cur->gid == new->gid))
+	    i=1;
+      } while (i);
+    }
+  } else {
+    if (new->bid == 0xFFFF) {
+      do {
+	new->bid += 0x0001;
+	for (cur=*list, i=0; ((cur) && (!i)); cur=cur->next)
+	  if ((cur->bid == new->bid) && (cur->gid == new->gid))
+	    i=1;
+      } while (i);
+    }
+  }
+  
+  /* Set the type */
+  new->type = type;
+  
+  /* Set the TLV list */
+  new->data = aim_tlvlist_copy(data);
+  
+  /* Add the item to the list in the correct numerical position.  Fancy, eh? */
+  if (*list) {
+    if ((new->gid < (*list)->gid) || ((new->gid == (*list)->gid) && (new->bid < (*list)->bid))) {
+      new->next = *list;
+      *list = new;
+    } else {
+      struct aim_ssi_item *prev;
+      for ((prev=*list, cur=(*list)->next); (cur && ((new->gid > cur->gid) || ((new->gid == cur->gid) && (new->bid > cur->bid)))); prev=cur, cur=cur->next);
+      new->next = prev->next;
+      prev->next = new;
+    }
+  } else {
+    new->next = *list;
+    *list = new;
+  }
 
-	if (!list)
-		return NULL;
-
-	if (!(new = (struct aim_ssi_item *)malloc(sizeof(struct aim_ssi_item))))
-		return NULL;
-
-	/* Set the name */
-	if (name) {
-		new->name = (char *)malloc((strlen(name)+1)*sizeof(char));
-		strcpy(new->name, name);
-	} else
-		new->name = NULL;
-
-	/* Set the group ID# and buddy ID# */
-	new->gid = gid;
-	new->bid = bid;
-	if (type == AIM_SSI_TYPE_GROUP) {
-		if ((new->gid == 0xFFFF) && name) {
-			do {
-				new->gid += 0x0001;
-				for (cur=*list, i=0; ((cur) && (!i)); cur=cur->next)
-					if ((cur->type == AIM_SSI_TYPE_GROUP) && (cur->gid == new->gid))
-						i=1;
-			} while (i);
-		}
-	} else {
-		if (new->bid == 0xFFFF) {
-			do {
-				new->bid += 0x0001;
-				for (cur=*list, i=0; ((cur) && (!i)); cur=cur->next)
-					if ((cur->bid == new->bid) && (cur->gid == new->gid))
-						i=1;
-			} while (i);
-		}
-	}
-
-	/* Set the type */
-	new->type = type;
-
-	/* Set the TLV list */
-	new->data = aim_tlvlist_copy(data);
-
-	/* Add the item to the list in the correct numerical position.  Fancy, eh? */
-	if (*list) {
-		if ((new->gid < (*list)->gid) || ((new->gid == (*list)->gid) && (new->bid < (*list)->bid))) {
-			new->next = *list;
-			*list = new;
-		} else {
-			struct aim_ssi_item *prev;
-			for ((prev=*list, cur=(*list)->next); (cur && ((new->gid > cur->gid) || ((new->gid == cur->gid) && (new->bid > cur->bid)))); prev=cur, cur=cur->next);
-			new->next = prev->next;
-			prev->next = new;
-		}
-	} else {
-		new->next = *list;
-		*list = new;
-	}
-
-	return new;
+  return(new);
 }
 
 /**
@@ -175,25 +174,23 @@ static struct aim_ssi_item *aim_ssi_itemlist_add(struct aim_ssi_item **list, con
  */
 static int aim_ssi_itemlist_del(struct aim_ssi_item **list, struct aim_ssi_item *del)
 {
-	if (!list || !(*list) || !del)
-		return -EINVAL;
+  if (!list || !(*list) || !del) return -EINVAL;
 
-	/* Remove the item from the list */
-	if (*list == del) {
-		*list = (*list)->next;
-	} else {
-		struct aim_ssi_item *cur;
-		for (cur=*list; (cur->next && (cur->next!=del)); cur=cur->next);
-		if (cur->next)
-			cur->next = cur->next->next;
-	}
+  /* Remove the item from the list */
+  if (*list == del) {
+    *list = (*list)->next;
+  } else {
+    struct aim_ssi_item *cur;
+    for (cur=*list; (cur->next && (cur->next!=del)); cur=cur->next);
+    if (cur->next) cur->next=cur->next->next;
+  }
 
-	/* Free the deleted item */
-	free(del->name);
-	aim_freetlvchain(&del->data);
-	free(del);
+  /* Free the deleted item */
+  free(del->name);
+  aim_freetlvchain(&del->data);
+  free(del);
 
-	return 0;
+  return(0);
 }
 
 /**
@@ -205,46 +202,46 @@ static int aim_ssi_itemlist_del(struct aim_ssi_item **list, struct aim_ssi_item 
  */
 static int aim_ssi_itemlist_cmp(struct aim_ssi_item *cur1, struct aim_ssi_item *cur2)
 {
-	if (!cur1 || !cur2)
-		return 1;
-
-	if (cur1->data && !cur2->data)
-		return 2;
-
-	if (!cur1->data && cur2->data)
-		return 3;
-
-	if ((cur1->data && cur2->data) && (aim_tlvlist_cmp(cur1->data, cur2->data)))
-			return 4;
-
-	if (cur1->name && !cur2->name)
-		return 5;
-
-	if (!cur1->name && cur2->name)
-		return 6;
-
-	if (cur1->name && cur2->name && aim_sncmp(cur1->name, cur2->name))
-		return 7;
-
-	if (cur1->gid != cur2->gid)
-		return 8;
-
-	if (cur1->bid != cur2->bid)
-		return 9;
-
-	if (cur1->type != cur2->type)
-		return 10;
-
-	return 0;
+  if (!cur1 || !cur2)
+    return 1;
+  
+  if (cur1->data && !cur2->data)
+    return 2;
+  
+  if (!cur1->data && cur2->data)
+    return 3;
+  
+  if ((cur1->data && cur2->data) && (aim_tlvlist_cmp(cur1->data, cur2->data)))
+    return 4;
+  
+  if (cur1->name && !cur2->name)
+    return 5;
+  
+  if (!cur1->name && cur2->name)
+    return 6;
+  
+  if (cur1->name && cur2->name && aim_sncmp(cur1->name, cur2->name))
+    return 7;
+  
+  if (cur1->gid != cur2->gid)
+    return 8;
+  
+  if (cur1->bid != cur2->bid)
+    return 9;
+  
+  if (cur1->type != cur2->type)
+    return 10;
+  
+  return 0;
 }
 
 faim_export int aim_ssi_itemlist_valid(struct aim_ssi_item *list, struct aim_ssi_item *item)
 {
-	struct aim_ssi_item *cur;
-	for (cur=list; cur; cur=cur->next)
-		if (cur == item)
-			return 1;
-	return 0;
+  struct aim_ssi_item *cur;
+  for (cur=list; cur; cur=cur->next)
+    if (cur == item)
+      return 1;
+  return 0;
 }
 
 /**
@@ -257,11 +254,11 @@ faim_export int aim_ssi_itemlist_valid(struct aim_ssi_item *list, struct aim_ssi
  */
 faim_export struct aim_ssi_item *aim_ssi_itemlist_find(struct aim_ssi_item *list, fu16_t gid, fu16_t bid)
 {
-	struct aim_ssi_item *cur;
-	for (cur=list; cur; cur=cur->next)
-		if ((cur->gid == gid) && (cur->bid == bid))
-			return cur;
-	return NULL;
+  struct aim_ssi_item *cur;
+  for (cur=list; cur; cur=cur->next)
+    if ((cur->gid == gid) && (cur->bid == bid))
+      return cur;
+  return NULL;
 }
 
 /**
@@ -276,40 +273,40 @@ faim_export struct aim_ssi_item *aim_ssi_itemlist_find(struct aim_ssi_item *list
  */
 faim_export struct aim_ssi_item *aim_ssi_itemlist_finditem(struct aim_ssi_item *list, const char *gn, const char *sn, fu16_t type)
 {
-	struct aim_ssi_item *cur;
-	if (!list)
-		return NULL;
-
-	if (gn && sn) { /* For finding buddies in groups */
-		for (cur=list; cur; cur=cur->next)
-			if ((cur->type == type) && (cur->name) && !(aim_sncmp(cur->name, sn))) {
-				struct aim_ssi_item *curg;
-				for (curg=list; curg; curg=curg->next)
-					if ((curg->type == AIM_SSI_TYPE_GROUP) && (curg->gid == cur->gid) && (curg->name) && !(aim_sncmp(curg->name, gn)))
-						return cur;
-			}
-
-	} else if (gn) { /* For finding groups */
-		for (cur=list; cur; cur=cur->next) {
-			if ((cur->type == type) && (cur->bid == 0x0000) && (cur->name) && !(aim_sncmp(cur->name, gn))) {
-				return cur;
-			}
-		}
-
-	} else if (sn) { /* For finding permits, denies, and ignores */
-		for (cur=list; cur; cur=cur->next) {
-			if ((cur->type == type) && (cur->name) && !(aim_sncmp(cur->name, sn))) {
-				return cur;
-			}
-		}
-
-	/* For stuff without names--permit deny setting, visibility mask, etc. */
-	} else for (cur=list; cur; cur=cur->next) {
-		if ((cur->type == type) && (!cur->name))
-			return cur;
-	}
-
-	return NULL;
+  struct aim_ssi_item *cur;
+  if (!list)
+    return NULL;
+  
+  if (gn && sn) { /* For finding buddies in groups */
+    for (cur=list; cur; cur=cur->next)
+      if ((cur->type == type) && (cur->name) && !(aim_sncmp(cur->name, sn))) {
+	struct aim_ssi_item *curg;
+	for (curg=list; curg; curg=curg->next)
+	  if ((curg->type == AIM_SSI_TYPE_GROUP) && (curg->gid == cur->gid) && (curg->name) && !(aim_sncmp(curg->name, gn)))
+	    return cur;
+      }
+    
+  } else if (gn) { /* For finding groups */
+    for (cur=list; cur; cur=cur->next) {
+      if ((cur->type == type) && (cur->bid == 0x0000) && (cur->name) && !(aim_sncmp(cur->name, gn))) {
+	return cur;
+      }
+    }
+    
+  } else if (sn) { /* For finding permits, denies, and ignores */
+    for (cur=list; cur; cur=cur->next) {
+      if ((cur->type == type) && (cur->name) && !(aim_sncmp(cur->name, sn))) {
+	return cur;
+      }
+    }
+    
+    /* For stuff without names--permit deny setting, visibility mask, etc. */
+  } else for (cur=list; cur; cur=cur->next) {
+    if ((cur->type == type) && (!cur->name))
+      return cur;
+  }
+  
+  return NULL;
 }
 
 /**
@@ -321,13 +318,13 @@ faim_export struct aim_ssi_item *aim_ssi_itemlist_finditem(struct aim_ssi_item *
  */
 faim_export struct aim_ssi_item *aim_ssi_itemlist_exists(struct aim_ssi_item *list, const char *sn)
 {
-	struct aim_ssi_item *cur;
-	if (!list || !sn)
-		return NULL;
-	for (cur=list; cur; cur=cur->next)
-		if ((cur->type == AIM_SSI_TYPE_BUDDY) && (cur->name) && (!aim_sncmp(cur->name, sn)))
-			return cur;
-	return NULL;
+  struct aim_ssi_item *cur;
+  if (!list || !sn)
+    return NULL;
+  for (cur=list; cur; cur=cur->next)
+    if ((cur->type == AIM_SSI_TYPE_BUDDY) && (cur->name) && (!aim_sncmp(cur->name, sn)))
+      return cur;
+  return NULL;
 }
 
 /**
@@ -339,14 +336,14 @@ faim_export struct aim_ssi_item *aim_ssi_itemlist_exists(struct aim_ssi_item *li
  */
 faim_export char *aim_ssi_itemlist_findparentname(struct aim_ssi_item *list, const char *sn)
 {
-	struct aim_ssi_item *cur, *curg;
-	if (!list || !sn)
-		return NULL;
-	if (!(cur = aim_ssi_itemlist_exists(list, sn)))
-		return NULL;
-	if (!(curg = aim_ssi_itemlist_find(list, cur->gid, 0x0000)))
-		return NULL;
-	return curg->name;
+  struct aim_ssi_item *cur, *curg;
+  if (!list || !sn)
+    return NULL;
+  if (!(cur = aim_ssi_itemlist_exists(list, sn)))
+    return NULL;
+  if (!(curg = aim_ssi_itemlist_find(list, cur->gid, 0x0000)))
+    return NULL;
+  return curg->name;
 }
 
 /**
@@ -357,16 +354,16 @@ faim_export char *aim_ssi_itemlist_findparentname(struct aim_ssi_item *list, con
  */
 faim_export int aim_ssi_getpermdeny(struct aim_ssi_item *list)
 {
-	struct aim_ssi_item *cur = aim_ssi_itemlist_finditem(list, NULL, NULL, AIM_SSI_TYPE_PDINFO);
-	if (cur) {
-		aim_tlvlist_t *tlvlist = cur->data;
-		if (tlvlist) {
-			aim_tlv_t *tlv = aim_gettlv(tlvlist, 0x00ca, 1);
-			if (tlv && tlv->value)
-				return aimutil_get8(tlv->value);
-		}
-	}
-	return 0;
+  struct aim_ssi_item *cur = aim_ssi_itemlist_finditem(list, NULL, NULL, AIM_SSI_TYPE_PDINFO);
+  if (cur) {
+    aim_tlvlist_t *tlvlist = cur->data;
+    if (tlvlist) {
+      aim_tlv_t *tlv = aim_gettlv(tlvlist, 0x00ca, 1);
+      if (tlv && tlv->value)
+	return aimutil_get8(tlv->value);
+    }
+  }
+  return 0;
 }
 
 /**
@@ -379,16 +376,16 @@ faim_export int aim_ssi_getpermdeny(struct aim_ssi_item *list)
  */
 faim_export fu32_t aim_ssi_getpresence(struct aim_ssi_item *list)
 {
-	struct aim_ssi_item *cur = aim_ssi_itemlist_finditem(list, NULL, NULL, AIM_SSI_TYPE_PRESENCEPREFS);
-	if (cur) {
-		aim_tlvlist_t *tlvlist = cur->data;
-		if (tlvlist) {
-			aim_tlv_t *tlv = aim_gettlv(tlvlist, 0x00c9, 1);
-			if (tlv && tlv->length)
-				return aimutil_get32(tlv->value);
-		}
-	}
-	return 0xFFFFFFFF;
+  struct aim_ssi_item *cur = aim_ssi_itemlist_finditem(list, NULL, NULL, AIM_SSI_TYPE_PRESENCEPREFS);
+  if (cur) {
+    aim_tlvlist_t *tlvlist = cur->data;
+    if (tlvlist) {
+      aim_tlv_t *tlv = aim_gettlv(tlvlist, 0x00c9, 1);
+      if (tlv && tlv->length)
+	return aimutil_get32(tlv->value);
+    }
+  }
+  return 0xFFFFFFFF;
 }
 
 /**
@@ -403,20 +400,20 @@ faim_export fu32_t aim_ssi_getpresence(struct aim_ssi_item *list)
  */
 faim_export char *aim_ssi_getalias(struct aim_ssi_item *list, const char *gn, const char *sn)
 {
-	struct aim_ssi_item *cur = aim_ssi_itemlist_finditem(list, gn, sn, AIM_SSI_TYPE_BUDDY);
-	if (cur) {
-		aim_tlvlist_t *tlvlist = cur->data;
-		if (tlvlist) {
-			aim_tlv_t *tlv = aim_gettlv(tlvlist, 0x0131, 1);
-			if (tlv && tlv->length) {
-				char *alias = (char *)malloc((tlv->length+1)*sizeof(char));
-				strncpy(alias, tlv->value, tlv->length);
-				alias[tlv->length] = 0;
-				return alias;
-			}
-		}
-	}
-	return NULL;
+  struct aim_ssi_item *cur = aim_ssi_itemlist_finditem(list, gn, sn, AIM_SSI_TYPE_BUDDY);
+  if (cur) {
+    aim_tlvlist_t *tlvlist = cur->data;
+    if (tlvlist) {
+      aim_tlv_t *tlv = aim_gettlv(tlvlist, 0x0131, 1);
+      if (tlv && tlv->length) {
+	char *alias = (char *)malloc((tlv->length+1)*sizeof(char));
+	strncpy(alias, tlv->value, tlv->length);
+	alias[tlv->length] = 0;
+	return alias;
+      }
+    }
+  }
+  return NULL;
 }
 
 /**
@@ -431,14 +428,14 @@ faim_export char *aim_ssi_getalias(struct aim_ssi_item *list, const char *gn, co
  */
 faim_export int aim_ssi_waitingforauth(struct aim_ssi_item *list, const char *gn, const char *sn)
 {
-	struct aim_ssi_item *cur = aim_ssi_itemlist_finditem(list, gn, sn, AIM_SSI_TYPE_BUDDY);
-	if (cur) {
-		aim_tlvlist_t *tlvlist = cur->data;
-		if (tlvlist)
-			if (aim_gettlv(tlvlist, 0x0066, 1))
-				return 1;
-	}
-	return 0;
+  struct aim_ssi_item *cur = aim_ssi_itemlist_finditem(list, gn, sn, AIM_SSI_TYPE_BUDDY);
+  if (cur) {
+    aim_tlvlist_t *tlvlist = cur->data;
+    if (tlvlist)
+      if (aim_gettlv(tlvlist, 0x0066, 1))
+	return 1;
+  }
+  return 0;
 }
 
 /**
@@ -450,97 +447,97 @@ faim_export int aim_ssi_waitingforauth(struct aim_ssi_item *list, const char *gn
  */
 static int aim_ssi_sync(aim_session_t *sess)
 {
-	struct aim_ssi_item *cur1, *cur2;
-	struct aim_ssi_tmp *cur, *new;
-
-	if (!sess)
-		return -EINVAL;
-
-	/* If we're waiting for an ack, we shouldn't do anything else */
-	if (sess->ssi.waiting_for_ack)
-		return 0;
-
-	/*
-	 * Compare the 2 lists and create an aim_ssi_tmp for each difference.  
-	 * We should only send either additions, modifications, or deletions 
-	 * before waiting for an acknowledgement.  So first do deletions, then 
-	 * additions, then modifications.  Also, both the official and the local 
-	 * list should be in ascending numerical order for the group ID#s and the 
-	 * buddy ID#s, which makes things more efficient.  I think.
-	 */
-
-	/* Additions */
-	if (!sess->ssi.pending) {
-		for (cur1=sess->ssi.local; cur1; cur1=cur1->next) {
-			if (!aim_ssi_itemlist_find(sess->ssi.official, cur1->gid, cur1->bid)) {
-				new = (struct aim_ssi_tmp *)malloc(sizeof(struct aim_ssi_tmp));
-				new->action = AIM_CB_SSI_ADD;
-				new->ack = 0xffff;
-				new->name = NULL;
-				new->item = cur1;
-				new->next = NULL;
-				if (sess->ssi.pending) {
-					for (cur=sess->ssi.pending; cur->next; cur=cur->next);
-					cur->next = new;
-				} else
-					sess->ssi.pending = new;
-			}
-		}
-	}
-
-	/* Deletions */
-	if (!sess->ssi.pending) {
-		for (cur1=sess->ssi.official; cur1; cur1=cur1->next) {
-			if (!aim_ssi_itemlist_find(sess->ssi.local, cur1->gid, cur1->bid)) {
-				new = (struct aim_ssi_tmp *)malloc(sizeof(struct aim_ssi_tmp));
-				new->action = AIM_CB_SSI_DEL;
-				new->ack = 0xffff;
-				new->name = NULL;
-				new->item = cur1;
-				new->next = NULL;
-				if (sess->ssi.pending) {
-					for (cur=sess->ssi.pending; cur->next; cur=cur->next);
-					cur->next = new;
-				} else
-					sess->ssi.pending = new;
-			}
-		}
-	}
-
-	/* Modifications */
-	if (!sess->ssi.pending) {
-		for (cur1=sess->ssi.local; cur1; cur1=cur1->next) {
-			cur2 = aim_ssi_itemlist_find(sess->ssi.official, cur1->gid, cur1->bid);
-			if (cur2 && (aim_ssi_itemlist_cmp(cur1, cur2))) {
-				new = (struct aim_ssi_tmp *)malloc(sizeof(struct aim_ssi_tmp));
-				new->action = AIM_CB_SSI_MOD;
-				new->ack = 0xffff;
-				new->name = NULL;
-				new->item = cur1;
-				new->next = NULL;
-				if (sess->ssi.pending) {
-					for (cur=sess->ssi.pending; cur->next; cur=cur->next);
-					cur->next = new;
-				} else
-					sess->ssi.pending = new;
-			}
-		}
-	}
-
-	/* We're out of stuff to do, so tell the AIM servers we're done and exit */
-	if (!sess->ssi.pending) {
-		aim_ssi_modend(sess);
-		return 0;
-	}
-
-	/* Make sure we don't send anything else between now 
-	 * and when we receive the ack for the following operation */
-	sess->ssi.waiting_for_ack = 1;
-
-	/* Now go mail off our data and wait 4 to 6 weeks */
-	aim_ssi_addmoddel(sess);
-
-	return 0;
+  struct aim_ssi_item *cur1, *cur2;
+  struct aim_ssi_tmp *cur, *new;
+  
+  if (!sess)
+    return -EINVAL;
+  
+  /* If we're waiting for an ack, we shouldn't do anything else */
+  if (sess->ssi.waiting_for_ack)
+    return 0;
+  
+  /*
+   * Compare the 2 lists and create an aim_ssi_tmp for each difference.  
+   * We should only send either additions, modifications, or deletions 
+   * before waiting for an acknowledgement.  So first do deletions, then 
+   * additions, then modifications.  Also, both the official and the local 
+   * list should be in ascending numerical order for the group ID#s and the 
+   * buddy ID#s, which makes things more efficient.  I think.
+   */
+  
+  /* Additions */
+  if (!sess->ssi.pending) {
+    for (cur1=sess->ssi.local; cur1; cur1=cur1->next) {
+      if (!aim_ssi_itemlist_find(sess->ssi.official, cur1->gid, cur1->bid)) {
+	new = (struct aim_ssi_tmp *)malloc(sizeof(struct aim_ssi_tmp));
+	new->action = AIM_CB_SSI_ADD;
+	new->ack = 0xffff;
+	new->name = NULL;
+	new->item = cur1;
+	new->next = NULL;
+	if (sess->ssi.pending) {
+	  for (cur=sess->ssi.pending; cur->next; cur=cur->next);
+	  cur->next = new;
+	} else
+	  sess->ssi.pending = new;
+      }
+    }
+  }
+  
+  /* Deletions */
+  if (!sess->ssi.pending) {
+    for (cur1=sess->ssi.official; cur1; cur1=cur1->next) {
+      if (!aim_ssi_itemlist_find(sess->ssi.local, cur1->gid, cur1->bid)) {
+	new = (struct aim_ssi_tmp *)malloc(sizeof(struct aim_ssi_tmp));
+	new->action = AIM_CB_SSI_DEL;
+	new->ack = 0xffff;
+	new->name = NULL;
+	new->item = cur1;
+	new->next = NULL;
+	if (sess->ssi.pending) {
+	  for (cur=sess->ssi.pending; cur->next; cur=cur->next);
+	  cur->next = new;
+	} else
+	  sess->ssi.pending = new;
+      }
+    }
+  }
+  
+  /* Modifications */
+  if (!sess->ssi.pending) {
+    for (cur1=sess->ssi.local; cur1; cur1=cur1->next) {
+      cur2 = aim_ssi_itemlist_find(sess->ssi.official, cur1->gid, cur1->bid);
+      if (cur2 && (aim_ssi_itemlist_cmp(cur1, cur2))) {
+	new = (struct aim_ssi_tmp *)malloc(sizeof(struct aim_ssi_tmp));
+	new->action = AIM_CB_SSI_MOD;
+	new->ack = 0xffff;
+	new->name = NULL;
+	new->item = cur1;
+	new->next = NULL;
+	if (sess->ssi.pending) {
+	  for (cur=sess->ssi.pending; cur->next; cur=cur->next);
+	  cur->next = new;
+	} else
+	  sess->ssi.pending = new;
+      }
+    }
+  }
+  
+  /* We're out of stuff to do, so tell the AIM servers we're done and exit */
+  if (!sess->ssi.pending) {
+    aim_ssi_modend(sess);
+    return 0;
+  }
+  
+  /* Make sure we don't send anything else between now 
+   * and when we receive the ack for the following operation */
+  sess->ssi.waiting_for_ack = 1;
+  
+  /* Now go mail off our data and wait 4 to 6 weeks */
+  aim_ssi_addmoddel(sess);
+  
+  return 0;
 }
 
 /**
@@ -553,41 +550,41 @@ static int aim_ssi_sync(aim_session_t *sess)
  */
 static int aim_ssi_freelist(aim_session_t *sess)
 {
-	struct aim_ssi_item *cur, *del;
-	struct aim_ssi_tmp *curtmp, *deltmp;
-
-	cur = sess->ssi.official;
-	while (cur) {
-		del = cur;
-		cur = cur->next;
-		free(del->name);
-		aim_freetlvchain(&del->data);
-		free(del);
-	}
-
-	cur = sess->ssi.local;
-	while (cur) {
-		del = cur;
-		cur = cur->next;
-		free(del->name);
-		aim_freetlvchain(&del->data);
-		free(del);
-	}
-
-	curtmp = sess->ssi.pending;
-	while (curtmp) {
-		deltmp = curtmp;
-		curtmp = curtmp->next;
-		free(deltmp);
-	}
-
-	sess->ssi.numitems = 0;
-	sess->ssi.official = NULL;
-	sess->ssi.local = NULL;
-	sess->ssi.pending = NULL;
-	sess->ssi.timestamp = (time_t)0;
-
-	return 0;
+  struct aim_ssi_item *cur, *del;
+  struct aim_ssi_tmp *curtmp, *deltmp;
+  
+  cur = sess->ssi.official;
+  while (cur) {
+    del = cur;
+    cur = cur->next;
+    free(del->name);
+    aim_freetlvchain(&del->data);
+    free(del);
+  }
+  
+  cur = sess->ssi.local;
+  while (cur) {
+    del = cur;
+    cur = cur->next;
+    free(del->name);
+    aim_freetlvchain(&del->data);
+    free(del);
+  }
+  
+  curtmp = sess->ssi.pending;
+  while (curtmp) {
+    deltmp = curtmp;
+    curtmp = curtmp->next;
+    free(deltmp);
+  }
+  
+  sess->ssi.numitems = 0;
+  sess->ssi.official = NULL;
+  sess->ssi.local = NULL;
+  sess->ssi.pending = NULL;
+  sess->ssi.timestamp = (time_t)0;
+  
+  return 0;
 }
 
 /**
@@ -598,26 +595,25 @@ static int aim_ssi_freelist(aim_session_t *sess)
  */
 faim_export int aim_ssi_deletelist(aim_session_t *sess)
 {
-	struct aim_ssi_item *cur, *del;
-
-	if (!sess)
-		return -EINVAL;
-
-	/* Free the local list */
-	cur = sess->ssi.local;
-	while (cur) {
-		del = cur;
-		cur = cur->next;
-		free(del->name);
-		aim_freetlvchain(&del->data);
-		free(del);
-	}
-	sess->ssi.local = NULL;
-
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
-
-	return 0;
+  struct aim_ssi_item *cur, *del;
+  
+  if (!sess) return (-EINVAL);
+  
+  /* Free the local list */
+  cur = sess->ssi.local;
+  while (cur) {
+    del = cur;
+    cur = cur->next;
+    free(del->name);
+    aim_freetlvchain(&del->data);
+    free(del);
+  }
+  sess->ssi.local = NULL;
+  
+  /* Sync our local list with the server list */
+  aim_ssi_sync(sess);
+  
+  return 0;
 }
 
 /**
@@ -631,50 +627,49 @@ faim_export int aim_ssi_deletelist(aim_session_t *sess)
  */
 faim_export int aim_ssi_cleanlist(aim_session_t *sess)
 {
-	struct aim_ssi_item *cur, *next;
+  struct aim_ssi_item *cur, *next;
+  
+  if (!sess) return -EINVAL;
 
-	if (!sess)
-		return -EINVAL;
-
-	/* Delete any buddies, permits, or denies with empty names. */
-	/* If there are any buddies directly in the master group, add them to a real group. */
-	/* DESTROY any buddies that are directly in the master group. */
-	/* Do the same for buddies that are in a non-existant group. */
-	/* This will kind of mess up if you hit the item limit, but this function isn't too critical */
-	cur = sess->ssi.local;
-	while (cur) {
-		next = cur->next;
-		if (!cur->name) {
-			if (cur->type == AIM_SSI_TYPE_BUDDY)
-				aim_ssi_delbuddy(sess, NULL, NULL);
-			else if (cur->type == AIM_SSI_TYPE_PERMIT)
-				aim_ssi_delpermit(sess, NULL);
-			else if (cur->type == AIM_SSI_TYPE_DENY)
-				aim_ssi_deldeny(sess, NULL);
-		} else if ((cur->type == AIM_SSI_TYPE_BUDDY) && ((cur->gid == 0x0000) || (!aim_ssi_itemlist_find(sess->ssi.local, cur->gid, 0x0000)))) {
-			aim_ssi_addbuddy(sess, cur->name, "orphans", NULL, NULL, NULL, 0);
-			aim_ssi_delbuddy(sess, cur->name, NULL);
-		}
-		cur = next;
-	}
-
-	/* Check if there are empty groups and delete them */
-	cur = sess->ssi.local;
-	while (cur) {
-		next = cur->next;
-		if (cur->type == AIM_SSI_TYPE_GROUP) {
-			aim_tlv_t *tlv = aim_gettlv(cur->data, 0x00c8, 1);
-			if (!tlv || !tlv->length)
-				aim_ssi_itemlist_del(&sess->ssi.local, cur);
-		}
-		cur = next;
-	}
-
-	/* Check if the master group is empty */
-	if ((cur = aim_ssi_itemlist_find(sess->ssi.local, 0x0000, 0x0000)) && (!cur->data))
-		aim_ssi_itemlist_del(&sess->ssi.local, cur);
-
-	return 0;
+  /* Delete any buddies, permits, or denies with empty names. */
+  /* If there are any buddies directly in the master group, add them to a real group. */
+  /* DESTROY any buddies that are directly in the master group. */
+  /* Do the same for buddies that are in a non-existant group. */
+  /* This will kind of mess up if you hit the item limit, but this function isn't too critical */
+  cur = sess->ssi.local;
+  while (cur) {
+    next = cur->next;
+    if (!cur->name) {
+      if (cur->type == AIM_SSI_TYPE_BUDDY)
+	aim_ssi_delbuddy(sess, NULL, NULL);
+      else if (cur->type == AIM_SSI_TYPE_PERMIT)
+	aim_ssi_delpermit(sess, NULL);
+      else if (cur->type == AIM_SSI_TYPE_DENY)
+	aim_ssi_deldeny(sess, NULL);
+    } else if ((cur->type == AIM_SSI_TYPE_BUDDY) && ((cur->gid == 0x0000) || (!aim_ssi_itemlist_find(sess->ssi.local, cur->gid, 0x0000)))) {
+      aim_ssi_addbuddy(sess, cur->name, "orphans", NULL, NULL, NULL, 0);
+      aim_ssi_delbuddy(sess, cur->name, NULL);
+    }
+    cur = next;
+  }
+  
+  /* Check if there are empty groups and delete them */
+  cur = sess->ssi.local;
+  while (cur) {
+    next = cur->next;
+    if (cur->type == AIM_SSI_TYPE_GROUP) {
+      aim_tlv_t *tlv = aim_gettlv(cur->data, 0x00c8, 1);
+      if (!tlv || !tlv->length)
+	aim_ssi_itemlist_del(&sess->ssi.local, cur);
+    }
+    cur = next;
+  }
+  
+  /* Check if the master group is empty */
+  if ((cur = aim_ssi_itemlist_find(sess->ssi.local, 0x0000, 0x0000)) && (!cur->data))
+    aim_ssi_itemlist_del(&sess->ssi.local, cur);
+  
+  return 0;
 }
 
 /**
@@ -690,47 +685,45 @@ faim_export int aim_ssi_cleanlist(aim_session_t *sess)
  */
 faim_export int aim_ssi_addbuddy(aim_session_t *sess, const char *name, const char *group, const char *alias, const char *comment, const char *smsnum, int needauth)
 {
-	struct aim_ssi_item *parent;
-	aim_tlvlist_t *data = NULL;
+  struct aim_ssi_item *parent;
+  aim_tlvlist_t *data = NULL;
+  
+  if (!sess || !name || !group) return (-EINVAL);
 
-	if (!sess || !name || !group)
-		return -EINVAL;
-
-	/* Find the parent */
-	if (!(parent = aim_ssi_itemlist_finditem(sess->ssi.local, group, NULL, AIM_SSI_TYPE_GROUP))) {
-		/* Find the parent's parent (the master group) */
-		if (!(parent = aim_ssi_itemlist_find(sess->ssi.local, 0x0000, 0x0000)))
-			if (!(parent = aim_ssi_itemlist_add(&sess->ssi.local, NULL, 0x0000, 0x0000, AIM_SSI_TYPE_GROUP, NULL)))
-				return -ENOMEM;
-		/* Add the parent */
-		if (!(parent = aim_ssi_itemlist_add(&sess->ssi.local, group, 0xFFFF, 0x0000, AIM_SSI_TYPE_GROUP, NULL)))
-			return -ENOMEM;
-
-		/* Modify the parent's parent (the master group) */
-		aim_ssi_itemlist_rebuildgroup(sess->ssi.local, NULL);
-	}
-
-	/* Create a TLV list for the new buddy */
-	if (needauth)
-		aim_addtlvtochain_noval(&data, 0x0066);
-	if (alias)
-		aim_addtlvtochain_raw(&data, 0x0131, strlen(alias), alias);
-	if (smsnum)
-		aim_addtlvtochain_raw(&data, 0x013a, strlen(smsnum), smsnum);
-	if (comment)
-		aim_addtlvtochain_raw(&data, 0x013c, strlen(comment), comment);
-
-	/* Add that bad boy */
-	aim_ssi_itemlist_add(&sess->ssi.local, name, parent->gid, 0xFFFF, AIM_SSI_TYPE_BUDDY, data);
-	aim_freetlvchain(&data);
-
-	/* Modify the parent group */
-	aim_ssi_itemlist_rebuildgroup(sess->ssi.local, group);
-
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
-
-	return 0;
+  /* Find the parent */
+  if (!(parent = aim_ssi_itemlist_finditem(sess->ssi.local, group, NULL, AIM_SSI_TYPE_GROUP))) {
+    /* Find the parent's parent (the master group) */
+    if (!(parent = aim_ssi_itemlist_find(sess->ssi.local, 0x0000, 0x0000))) {
+      if (!(parent = aim_ssi_itemlist_add(&sess->ssi.local, NULL, 0x0000, 0x0000, AIM_SSI_TYPE_GROUP, NULL))) {
+	return -ENOMEM;
+      }
+    }
+    /* Add the parent */
+    if (!(parent = aim_ssi_itemlist_add(&sess->ssi.local, group, 0xFFFF, 0x0000, AIM_SSI_TYPE_GROUP, NULL))) {
+      return -ENOMEM;
+    }
+    
+    /* Modify the parent's parent (the master group) */
+    aim_ssi_itemlist_rebuildgroup(sess->ssi.local, NULL);
+  }
+  
+  /* Create a TLV list for the new buddy */
+  if (needauth) aim_addtlvtochain_noval(&data, 0x0066);
+  if (alias) aim_addtlvtochain_raw(&data, 0x0131, strlen(alias), alias);
+  if (smsnum) aim_addtlvtochain_raw(&data, 0x013a, strlen(smsnum), smsnum);
+  if (comment) aim_addtlvtochain_raw(&data, 0x013c, strlen(comment), comment);
+  
+  /* Add that bad boy */
+  aim_ssi_itemlist_add(&sess->ssi.local, name, parent->gid, 0xFFFF, AIM_SSI_TYPE_BUDDY, data);
+  aim_freetlvchain(&data);
+  
+  /* Modify the parent group */
+  aim_ssi_itemlist_rebuildgroup(sess->ssi.local, group);
+  
+  /* Sync our local list with the server list */
+  aim_ssi_sync(sess);
+  
+  return(0);
 }
 
 /**
@@ -743,16 +736,15 @@ faim_export int aim_ssi_addbuddy(aim_session_t *sess, const char *name, const ch
 faim_export int aim_ssi_addpermit(aim_session_t *sess, const char *name)
 {
 
-	if (!sess || !name)
-		return -EINVAL;
+  if (!sess || !name) return -EINVAL;
 
-	/* Add that bad boy */
-	aim_ssi_itemlist_add(&sess->ssi.local, name, 0x0000, 0xFFFF, AIM_SSI_TYPE_PERMIT, NULL);
+  /* Add that bad boy */
+  aim_ssi_itemlist_add(&sess->ssi.local, name, 0x0000, 0xFFFF, AIM_SSI_TYPE_PERMIT, NULL);
 
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
+  /* Sync our local list with the server list */
+  aim_ssi_sync(sess);
 
-	return 0;
+  return(0);
 }
 
 /**
@@ -765,16 +757,15 @@ faim_export int aim_ssi_addpermit(aim_session_t *sess, const char *name)
 faim_export int aim_ssi_adddeny(aim_session_t *sess, const char *name)
 {
 
-	if (!sess || !name)
-		return -EINVAL;
+  if (!sess || !name) return (-EINVAL);
 
-	/* Add that bad boy */
-	aim_ssi_itemlist_add(&sess->ssi.local, name, 0x0000, 0xFFFF, AIM_SSI_TYPE_DENY, NULL);
-
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
-
-	return 0;
+  /* Add that bad boy */
+  aim_ssi_itemlist_add(&sess->ssi.local, name, 0x0000, 0xFFFF, AIM_SSI_TYPE_DENY, NULL);
+  
+  /* Sync our local list with the server list */
+  aim_ssi_sync(sess);
+  
+  return(0);
 }
 
 /**
@@ -787,38 +778,42 @@ faim_export int aim_ssi_adddeny(aim_session_t *sess, const char *name)
  */
 faim_export int aim_ssi_delbuddy(aim_session_t *sess, const char *name, const char *group)
 {
-	struct aim_ssi_item *del;
+  struct aim_ssi_item *del;
 
-	if (!sess)
-		return -EINVAL;
-
-	/* Find the buddy */
-	if (!(del = aim_ssi_itemlist_finditem(sess->ssi.local, group, name, AIM_SSI_TYPE_BUDDY)))
-		return -EINVAL;
-
-	/* Remove the item from the list */
-	aim_ssi_itemlist_del(&sess->ssi.local, del);
-
-	/* Modify the parent group */
-	aim_ssi_itemlist_rebuildgroup(sess->ssi.local, group);
-
-	/* Check if we should delete the parent group */
-	if ((del = aim_ssi_itemlist_finditem(sess->ssi.local, group, NULL, AIM_SSI_TYPE_GROUP)) && (!del->data)) {
-		aim_ssi_itemlist_del(&sess->ssi.local, del);
-
-		/* Modify the parent group */
-		aim_ssi_itemlist_rebuildgroup(sess->ssi.local, NULL);
-
-		/* Check if we should delete the parent's parent (the master group) */
-		if ((del = aim_ssi_itemlist_find(sess->ssi.local, 0x0000, 0x0000)) && (!del->data)) {
-			aim_ssi_itemlist_del(&sess->ssi.local, del);
-		}
-	}
-
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
-
-	return 0;
+  owl_function_debugmsg("aim_ssi_delbuddy: here");
+  if (!sess) return -EINVAL;
+  
+  /* Find the buddy */
+  owl_function_debugmsg("aim_ssi_delbuddy: here too");
+  del=aim_ssi_itemlist_finditem(sess->ssi.local, group, name, AIM_SSI_TYPE_BUDDY);
+  if (!del) return(-EINVAL);
+  
+  /* Remove the item from the list */
+  owl_function_debugmsg("aim_ssi_delbuddy: removing buddy %s group %s", name, group);
+  aim_ssi_itemlist_del(&sess->ssi.local, del);
+  
+  /* Modify the parent group */
+  aim_ssi_itemlist_rebuildgroup(sess->ssi.local, group);
+  
+  /* Check if we should delete the parent group */
+  if ((del = aim_ssi_itemlist_finditem(sess->ssi.local, group, NULL, AIM_SSI_TYPE_GROUP)) && (!del->data)) {
+    owl_function_debugmsg("aim_ssi_delbuddy: deleting parent group");
+    aim_ssi_itemlist_del(&sess->ssi.local, del);
+    
+    /* Modify the parent group */
+    aim_ssi_itemlist_rebuildgroup(sess->ssi.local, NULL);
+    
+    /* Check if we should delete the parent's parent (the master group) */
+    if ((del = aim_ssi_itemlist_find(sess->ssi.local, 0x0000, 0x0000)) && (!del->data)) {
+      aim_ssi_itemlist_del(&sess->ssi.local, del);
+    }
+  }
+  
+  /* Sync our local list with the server list */
+  owl_function_debugmsg("aim_ssi_delbuddy: syncing");
+  aim_ssi_sync(sess);
+  
+  return(0);
 }
 
 /**
@@ -830,22 +825,22 @@ faim_export int aim_ssi_delbuddy(aim_session_t *sess, const char *name, const ch
  */
 faim_export int aim_ssi_delpermit(aim_session_t *sess, const char *name)
 {
-	struct aim_ssi_item *del;
-
-	if (!sess)
-		return -EINVAL;
-
-	/* Find the item */
-	if (!(del = aim_ssi_itemlist_finditem(sess->ssi.local, NULL, name, AIM_SSI_TYPE_PERMIT)))
-		return -EINVAL;
-
-	/* Remove the item from the list */
-	aim_ssi_itemlist_del(&sess->ssi.local, del);
-
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
-
-	return 0;
+  struct aim_ssi_item *del;
+  
+  if (!sess)
+    return -EINVAL;
+  
+  /* Find the item */
+  if (!(del = aim_ssi_itemlist_finditem(sess->ssi.local, NULL, name, AIM_SSI_TYPE_PERMIT)))
+    return -EINVAL;
+  
+  /* Remove the item from the list */
+  aim_ssi_itemlist_del(&sess->ssi.local, del);
+  
+  /* Sync our local list with the server list */
+  aim_ssi_sync(sess);
+  
+  return 0;
 }
 
 /**
@@ -857,22 +852,22 @@ faim_export int aim_ssi_delpermit(aim_session_t *sess, const char *name)
  */
 faim_export int aim_ssi_deldeny(aim_session_t *sess, const char *name)
 {
-	struct aim_ssi_item *del;
-
-	if (!sess)
-		return -EINVAL;
-
-	/* Find the item */
-	if (!(del = aim_ssi_itemlist_finditem(sess->ssi.local, NULL, name, AIM_SSI_TYPE_DENY)))
-		return -EINVAL;
-
-	/* Remove the item from the list */
-	aim_ssi_itemlist_del(&sess->ssi.local, del);
-
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
-
-	return 0;
+  struct aim_ssi_item *del;
+  
+  if (!sess)
+    return -EINVAL;
+  
+  /* Find the item */
+  if (!(del = aim_ssi_itemlist_finditem(sess->ssi.local, NULL, name, AIM_SSI_TYPE_DENY)))
+    return -EINVAL;
+  
+  /* Remove the item from the list */
+  aim_ssi_itemlist_del(&sess->ssi.local, del);
+  
+  /* Sync our local list with the server list */
+  aim_ssi_sync(sess);
+  
+  return 0;
 }
 
 /**
@@ -887,9 +882,9 @@ faim_export int aim_ssi_deldeny(aim_session_t *sess, const char *name)
  */
 faim_export int aim_ssi_movebuddy(aim_session_t *sess, const char *oldgn, const char *newgn, const char *sn)
 {
-	aim_ssi_addbuddy(sess, sn, newgn, aim_ssi_getalias(sess->ssi.local, oldgn, sn), NULL, NULL, aim_ssi_waitingforauth(sess->ssi.local, oldgn, sn));
-	aim_ssi_delbuddy(sess, sn, oldgn);
-	return 0;
+  aim_ssi_addbuddy(sess, sn, newgn, aim_ssi_getalias(sess->ssi.local, oldgn, sn), NULL, NULL, aim_ssi_waitingforauth(sess->ssi.local, oldgn, sn));
+  aim_ssi_delbuddy(sess, sn, oldgn);
+  return 0;
 }
 
 /**
@@ -903,29 +898,29 @@ faim_export int aim_ssi_movebuddy(aim_session_t *sess, const char *oldgn, const 
  */
 faim_export int aim_ssi_aliasbuddy(aim_session_t *sess, const char *gn, const char *sn, const char *alias)
 {
-	struct aim_ssi_item *tmp;
-	aim_tlvlist_t *data = NULL;
-
-	if (!sess || !gn || !sn)
-		return -EINVAL;
-
-	if (!(tmp = aim_ssi_itemlist_finditem(sess->ssi.local, gn, sn, AIM_SSI_TYPE_BUDDY)))
-		return -EINVAL;
-
-	if (alias && !strlen(alias))
-		alias = NULL;
-
-	/* Need to add the x0131 TLV to the TLV chain */
-	if (alias)
-		aim_addtlvtochain_raw(&data, 0x0131, strlen(alias), alias);
-
-	aim_freetlvchain(&tmp->data);
-	tmp->data = data;
-
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
-
-	return 0;
+  struct aim_ssi_item *tmp;
+  aim_tlvlist_t *data = NULL;
+  
+  if (!sess || !gn || !sn)
+    return -EINVAL;
+  
+  if (!(tmp = aim_ssi_itemlist_finditem(sess->ssi.local, gn, sn, AIM_SSI_TYPE_BUDDY)))
+    return -EINVAL;
+  
+  if (alias && !strlen(alias))
+    alias = NULL;
+  
+  /* Need to add the x0131 TLV to the TLV chain */
+  if (alias)
+    aim_addtlvtochain_raw(&data, 0x0131, strlen(alias), alias);
+  
+  aim_freetlvchain(&tmp->data);
+  tmp->data = data;
+  
+  /* Sync our local list with the server list */
+  aim_ssi_sync(sess);
+  
+  return 0;
 }
 
 /**
@@ -938,22 +933,22 @@ faim_export int aim_ssi_aliasbuddy(aim_session_t *sess, const char *gn, const ch
  */
 faim_export int aim_ssi_rename_group(aim_session_t *sess, const char *oldgn, const char *newgn)
 {
-	struct aim_ssi_item *group;
-
-	if (!sess || !oldgn || !newgn)
-		return -EINVAL;
-
-	if (!(group = aim_ssi_itemlist_finditem(sess->ssi.local, oldgn, NULL, AIM_SSI_TYPE_GROUP)))
-		return -EINVAL;
-
-	free(group->name);
-	group->name = (char *)malloc((strlen(newgn)+1)*sizeof(char));
-	strcpy(group->name, newgn);
-
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
-
-	return 0;
+  struct aim_ssi_item *group;
+  
+  if (!sess || !oldgn || !newgn)
+    return -EINVAL;
+  
+  if (!(group = aim_ssi_itemlist_finditem(sess->ssi.local, oldgn, NULL, AIM_SSI_TYPE_GROUP)))
+    return -EINVAL;
+  
+  free(group->name);
+  group->name = (char *)malloc((strlen(newgn)+1)*sizeof(char));
+  strcpy(group->name, newgn);
+  
+  /* Sync our local list with the server list */
+  aim_ssi_sync(sess);
+  
+  return 0;
 }
 
 /**
@@ -972,30 +967,30 @@ faim_export int aim_ssi_rename_group(aim_session_t *sess, const char *oldgn, con
  */
 faim_export int aim_ssi_setpermdeny(aim_session_t *sess, fu8_t permdeny, fu32_t vismask)
 {
-	struct aim_ssi_item *tmp;
-	aim_tlvlist_t *data = NULL;
-
-	if (!sess)
-		return -EINVAL;
-
-	/* Need to add the x00ca TLV to the TLV chain */
-	aim_addtlvtochain8(&data, 0x00ca, permdeny);
-
-	/* Need to add the x00cb TLV to the TLV chain */
-	aim_addtlvtochain32(&data, 0x00cb, vismask);
-
-	if ((tmp = aim_ssi_itemlist_finditem(sess->ssi.local, NULL, NULL, AIM_SSI_TYPE_PDINFO))) {
-		aim_freetlvchain(&tmp->data);
-		tmp->data = data;
-	} else {
-		tmp = aim_ssi_itemlist_add(&sess->ssi.local, NULL, 0x0000, 0xFFFF, AIM_SSI_TYPE_PDINFO, data);
-		aim_freetlvchain(&data);
-	}
-
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
-
-	return 0;
+  struct aim_ssi_item *tmp;
+  aim_tlvlist_t *data = NULL;
+  
+  if (!sess)
+    return -EINVAL;
+  
+  /* Need to add the x00ca TLV to the TLV chain */
+  aim_addtlvtochain8(&data, 0x00ca, permdeny);
+  
+  /* Need to add the x00cb TLV to the TLV chain */
+  aim_addtlvtochain32(&data, 0x00cb, vismask);
+  
+  if ((tmp = aim_ssi_itemlist_finditem(sess->ssi.local, NULL, NULL, AIM_SSI_TYPE_PDINFO))) {
+    aim_freetlvchain(&tmp->data);
+    tmp->data = data;
+  } else {
+    tmp = aim_ssi_itemlist_add(&sess->ssi.local, NULL, 0x0000, 0xFFFF, AIM_SSI_TYPE_PDINFO, data);
+    aim_freetlvchain(&data);
+  }
+  
+  /* Sync our local list with the server list */
+  aim_ssi_sync(sess);
+  
+  return 0;
 }
 
 /**
@@ -1008,44 +1003,44 @@ faim_export int aim_ssi_setpermdeny(aim_session_t *sess, fu8_t permdeny, fu32_t 
  */
 faim_export int aim_ssi_seticon(aim_session_t *sess, fu8_t *iconsum, fu16_t iconsumlen)
 {
-	struct aim_ssi_item *tmp;
-	aim_tlvlist_t *data = NULL;
-	fu8_t *csumdata;
-
-	if (!sess || !iconsum || !iconsumlen)
-		return -EINVAL;
-
-	if (!(csumdata = (fu8_t *)malloc((iconsumlen+2)*sizeof(fu8_t))))
-		return -ENOMEM;
-	csumdata[0] = 0x00;
-	csumdata[1] = 0x10;
-	memcpy(&csumdata[2], iconsum, iconsumlen);
-
-	/* Need to add the x00d5 TLV to the TLV chain */
-	aim_addtlvtochain_raw(&data, 0x00d5, (iconsumlen+2) * sizeof(fu8_t), csumdata);
-
-	/* This TLV is added to cache the icon. */
-	aim_addtlvtochain_noval(&data, 0x0131);
-
-	if ((tmp = aim_ssi_itemlist_finditem(sess->ssi.local, NULL, "1", AIM_SSI_TYPE_ICONINFO))) {
-		/* If the new tlvchain and oldtlvchain are the same, then do nothing */
-		if (!aim_tlvlist_cmp(tmp->data, data)) {
-			/* The new tlvlist is the identical to the old one */
-			aim_freetlvchain(&data);
-			free(csumdata);
-			return 0;
-		}
-		aim_freetlvchain(&tmp->data);
-		tmp->data = data;
-	} else {
-		tmp = aim_ssi_itemlist_add(&sess->ssi.local, "1", 0x0000, 0x51F4, AIM_SSI_TYPE_ICONINFO, data);
-		aim_freetlvchain(&data);
-	}
-
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
-	free(csumdata);
-	return 0;
+  struct aim_ssi_item *tmp;
+  aim_tlvlist_t *data = NULL;
+  fu8_t *csumdata;
+  
+  if (!sess || !iconsum || !iconsumlen)
+    return -EINVAL;
+  
+  if (!(csumdata = (fu8_t *)malloc((iconsumlen+2)*sizeof(fu8_t))))
+    return -ENOMEM;
+  csumdata[0] = 0x00;
+  csumdata[1] = 0x10;
+  memcpy(&csumdata[2], iconsum, iconsumlen);
+  
+  /* Need to add the x00d5 TLV to the TLV chain */
+  aim_addtlvtochain_raw(&data, 0x00d5, (iconsumlen+2) * sizeof(fu8_t), csumdata);
+  
+  /* This TLV is added to cache the icon. */
+  aim_addtlvtochain_noval(&data, 0x0131);
+  
+  if ((tmp = aim_ssi_itemlist_finditem(sess->ssi.local, NULL, "1", AIM_SSI_TYPE_ICONINFO))) {
+    /* If the new tlvchain and oldtlvchain are the same, then do nothing */
+    if (!aim_tlvlist_cmp(tmp->data, data)) {
+      /* The new tlvlist is the identical to the old one */
+      aim_freetlvchain(&data);
+      free(csumdata);
+      return 0;
+    }
+    aim_freetlvchain(&tmp->data);
+    tmp->data = data;
+  } else {
+    tmp = aim_ssi_itemlist_add(&sess->ssi.local, "1", 0x0000, 0x51F4, AIM_SSI_TYPE_ICONINFO, data);
+    aim_freetlvchain(&data);
+  }
+  
+  /* Sync our local list with the server list */
+  aim_ssi_sync(sess);
+  free(csumdata);
+  return 0;
 }
 
 /**
@@ -1057,27 +1052,27 @@ faim_export int aim_ssi_seticon(aim_session_t *sess, fu8_t *iconsum, fu16_t icon
  * @return Return 0 if no errors, otherwise return the error number.
  */
 faim_export int aim_ssi_setpresence(aim_session_t *sess, fu32_t presence) {
-	struct aim_ssi_item *tmp;
-	aim_tlvlist_t *data = NULL;
-
-	if (!sess)
-		return -EINVAL;
-
-	/* Need to add the x00c9 TLV to the TLV chain */
-	aim_addtlvtochain32(&data, 0x00c9, presence);
-
-	if ((tmp = aim_ssi_itemlist_finditem(sess->ssi.local, NULL, NULL, AIM_SSI_TYPE_PRESENCEPREFS))) {
-		aim_freetlvchain(&tmp->data);
-		tmp->data = data;
-	} else {
-		tmp = aim_ssi_itemlist_add(&sess->ssi.local, NULL, 0x0000, 0xFFFF, AIM_SSI_TYPE_PRESENCEPREFS, data);
-		aim_freetlvchain(&data);
-	}
-
-	/* Sync our local list with the server list */
-	aim_ssi_sync(sess);
-
-	return 0;
+  struct aim_ssi_item *tmp;
+  aim_tlvlist_t *data = NULL;
+  
+  if (!sess)
+    return -EINVAL;
+  
+  /* Need to add the x00c9 TLV to the TLV chain */
+  aim_addtlvtochain32(&data, 0x00c9, presence);
+  
+  if ((tmp = aim_ssi_itemlist_finditem(sess->ssi.local, NULL, NULL, AIM_SSI_TYPE_PRESENCEPREFS))) {
+    aim_freetlvchain(&tmp->data);
+    tmp->data = data;
+  } else {
+    tmp = aim_ssi_itemlist_add(&sess->ssi.local, NULL, 0x0000, 0xFFFF, AIM_SSI_TYPE_PRESENCEPREFS, data);
+    aim_freetlvchain(&data);
+  }
+  
+  /* Sync our local list with the server list */
+  aim_ssi_sync(sess);
+  
+  return 0;
 }
 
 /*
@@ -1085,12 +1080,12 @@ faim_export int aim_ssi_setpresence(aim_session_t *sess, fu32_t presence) {
  */
 faim_export int aim_ssi_reqrights(aim_session_t *sess)
 {
-	aim_conn_t *conn;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
-		return -EINVAL;
-
-	return aim_genericreq_n(sess, conn, AIM_CB_FAM_SSI, AIM_CB_SSI_REQRIGHTS);
+  aim_conn_t *conn;
+  
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
+    return -EINVAL;
+  
+  return aim_genericreq_n(sess, conn, AIM_CB_FAM_SSI, AIM_CB_SSI_REQRIGHTS);
 }
 
 /*
@@ -1098,39 +1093,39 @@ faim_export int aim_ssi_reqrights(aim_session_t *sess)
  */
 static int parserights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-	int ret = 0, i;
-	aim_rxcallback_t userfunc;
-	aim_tlvlist_t *tlvlist;
-	aim_tlv_t *tlv;
-	aim_bstream_t bstream;
-	fu16_t *maxitems;
-
-	/* This SNAC is made up of a bunch of TLVs */
-	tlvlist = aim_readtlvchain(bs);
-
-	/* TLV 0x0004 contains the maximum number of each item */
-	if (!(tlv = aim_gettlv(tlvlist, 0x0004, 1))) {
-		aim_freetlvchain(&tlvlist);
-		return 0;
-	}
-
-	aim_bstream_init(&bstream, tlv->value, tlv->length);
-
-	if (!(maxitems = (fu16_t *)malloc((tlv->length/2)*sizeof(fu16_t)))) {
-		aim_freetlvchain(&tlvlist);
-		return 0;
-	}
-
-	for (i=0; i<(tlv->length/2); i++)
-		maxitems[i] = aimbs_get16(&bstream);
-
-	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		ret = userfunc(sess, rx, tlv->length/2, maxitems);
-
-	aim_freetlvchain(&tlvlist);
-	free(maxitems);
-
-	return ret;
+  int ret = 0, i;
+  aim_rxcallback_t userfunc;
+  aim_tlvlist_t *tlvlist;
+  aim_tlv_t *tlv;
+  aim_bstream_t bstream;
+  fu16_t *maxitems;
+  
+  /* This SNAC is made up of a bunch of TLVs */
+  tlvlist = aim_readtlvchain(bs);
+  
+  /* TLV 0x0004 contains the maximum number of each item */
+  if (!(tlv = aim_gettlv(tlvlist, 0x0004, 1))) {
+    aim_freetlvchain(&tlvlist);
+    return 0;
+  }
+  
+  aim_bstream_init(&bstream, tlv->value, tlv->length);
+  
+  if (!(maxitems = (fu16_t *)malloc((tlv->length/2)*sizeof(fu16_t)))) {
+    aim_freetlvchain(&tlvlist);
+    return 0;
+  }
+  
+  for (i=0; i<(tlv->length/2); i++)
+    maxitems[i] = aimbs_get16(&bstream);
+  
+  if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+    ret = userfunc(sess, rx, tlv->length/2, maxitems);
+  
+  aim_freetlvchain(&tlvlist);
+  free(maxitems);
+  
+  return ret;
 }
 
 /*
@@ -1140,15 +1135,15 @@ static int parserights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
  */
 faim_export int aim_ssi_reqdata(aim_session_t *sess)
 {
-	aim_conn_t *conn;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
-		return -EINVAL;
-
-	/* Free any current data, just in case */
-	aim_ssi_freelist(sess);
-
-	return aim_genericreq_n_snacid(sess, conn, AIM_CB_FAM_SSI, AIM_CB_SSI_REQDATA);
+  aim_conn_t *conn;
+  
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
+    return -EINVAL;
+  
+  /* Free any current data, just in case */
+  aim_ssi_freelist(sess);
+  
+  return aim_genericreq_n_snacid(sess, conn, AIM_CB_FAM_SSI, AIM_CB_SSI_REQDATA);
 }
 
 /*
@@ -1163,28 +1158,28 @@ faim_export int aim_ssi_reqdata(aim_session_t *sess)
  */
 faim_export int aim_ssi_reqifchanged(aim_session_t *sess, time_t timestamp, fu16_t numitems)
 {
-	aim_conn_t *conn;
-	aim_frame_t *fr;
-	aim_snacid_t snacid;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
-		return -EINVAL;
-
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+4+2)))
-		return -ENOMEM;
-
-	snacid = aim_cachesnac(sess, AIM_CB_FAM_SSI, AIM_CB_SSI_REQIFCHANGED, 0x0000, NULL, 0);
-
-	aim_putsnac(&fr->data, AIM_CB_FAM_SSI, AIM_CB_SSI_REQIFCHANGED, 0x0000, snacid);
-	aimbs_put32(&fr->data, timestamp);
-	aimbs_put16(&fr->data, numitems);
-
-	aim_tx_enqueue(sess, fr);
-
-	/* Free any current data, just in case */
-	aim_ssi_freelist(sess);
-
-	return 0;
+  aim_conn_t *conn;
+  aim_frame_t *fr;
+  aim_snacid_t snacid;
+  
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
+    return -EINVAL;
+  
+  if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+4+2)))
+    return -ENOMEM;
+  
+  snacid = aim_cachesnac(sess, AIM_CB_FAM_SSI, AIM_CB_SSI_REQIFCHANGED, 0x0000, NULL, 0);
+  
+  aim_putsnac(&fr->data, AIM_CB_FAM_SSI, AIM_CB_SSI_REQIFCHANGED, 0x0000, snacid);
+  aimbs_put32(&fr->data, timestamp);
+  aimbs_put16(&fr->data, numitems);
+  
+  aim_tx_enqueue(sess, fr);
+  
+  /* Free any current data, just in case */
+  aim_ssi_freelist(sess);
+  
+  return 0;
 }
 
 /*
@@ -1192,47 +1187,47 @@ faim_export int aim_ssi_reqifchanged(aim_session_t *sess, time_t timestamp, fu16
  */
 static int parsedata(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-	int ret = 0;
-	aim_rxcallback_t userfunc;
-	fu8_t fmtver; /* guess */
-	fu16_t namelen, gid, bid, type;
-	char *name;
-	aim_tlvlist_t *data;
-
-	fmtver = aimbs_get8(bs); /* Version of ssi data.  Should be 0x00 */
-	sess->ssi.numitems += aimbs_get16(bs); /* # of items in this SSI SNAC */
-
-	/* Read in the list */
-	while (aim_bstream_empty(bs) > 4) { /* last four bytes are timestamp */
-		if ((namelen = aimbs_get16(bs)))
-			name = aimbs_getstr(bs, namelen);
-		else
-			name = NULL;
-		gid = aimbs_get16(bs);
-		bid = aimbs_get16(bs);
-		type = aimbs_get16(bs);
-		data = aim_readtlvchain_len(bs, aimbs_get16(bs));
-		aim_ssi_itemlist_add(&sess->ssi.official, name, gid, bid, type, data);
-		free(name);
-		aim_freetlvchain(&data);
-	}
-
-	/* Read in the timestamp */
-	sess->ssi.timestamp = aimbs_get32(bs);
-
-	if (!(snac->flags & 0x0001)) {
-		/* Make a copy of the list */
-		struct aim_ssi_item *cur;
-		for (cur=sess->ssi.official; cur; cur=cur->next)
-			aim_ssi_itemlist_add(&sess->ssi.local, cur->name, cur->gid, cur->bid, cur->type, cur->data);
-
-		sess->ssi.received_data = 1;
-
-		if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-			ret = userfunc(sess, rx, fmtver, sess->ssi.numitems, sess->ssi.official, sess->ssi.timestamp);
-	}
-
-	return ret;
+  int ret = 0;
+  aim_rxcallback_t userfunc;
+  fu8_t fmtver; /* guess */
+  fu16_t namelen, gid, bid, type;
+  char *name;
+  aim_tlvlist_t *data;
+  
+  fmtver = aimbs_get8(bs); /* Version of ssi data.  Should be 0x00 */
+  sess->ssi.numitems += aimbs_get16(bs); /* # of items in this SSI SNAC */
+  
+  /* Read in the list */
+  while (aim_bstream_empty(bs) > 4) { /* last four bytes are timestamp */
+    if ((namelen = aimbs_get16(bs)))
+      name = aimbs_getstr(bs, namelen);
+    else
+      name = NULL;
+    gid = aimbs_get16(bs);
+    bid = aimbs_get16(bs);
+    type = aimbs_get16(bs);
+    data = aim_readtlvchain_len(bs, aimbs_get16(bs));
+    aim_ssi_itemlist_add(&sess->ssi.official, name, gid, bid, type, data);
+    free(name);
+    aim_freetlvchain(&data);
+  }
+  
+  /* Read in the timestamp */
+  sess->ssi.timestamp = aimbs_get32(bs);
+  
+  if (!(snac->flags & 0x0001)) {
+    /* Make a copy of the list */
+    struct aim_ssi_item *cur;
+    for (cur=sess->ssi.official; cur; cur=cur->next)
+      aim_ssi_itemlist_add(&sess->ssi.local, cur->name, cur->gid, cur->bid, cur->type, cur->data);
+    
+    sess->ssi.received_data = 1;
+    
+    if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+      ret = userfunc(sess, rx, fmtver, sess->ssi.numitems, sess->ssi.official, sess->ssi.timestamp);
+  }
+  
+  return ret;
 }
 
 /*
@@ -1246,12 +1241,12 @@ static int parsedata(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, ai
  */
 faim_export int aim_ssi_enable(aim_session_t *sess)
 {
-	aim_conn_t *conn;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
-		return -EINVAL;
-
-	return aim_genericreq_n(sess, conn, AIM_CB_FAM_SSI, 0x0007);
+  aim_conn_t *conn;
+  
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
+    return -EINVAL;
+  
+  return aim_genericreq_n(sess, conn, AIM_CB_FAM_SSI, 0x0007);
 }
 
 /*
@@ -1264,46 +1259,46 @@ faim_export int aim_ssi_enable(aim_session_t *sess)
  */
 faim_export int aim_ssi_addmoddel(aim_session_t *sess)
 {
-	aim_conn_t *conn;
-	aim_frame_t *fr;
-	aim_snacid_t snacid;
-	int snaclen;
-	struct aim_ssi_tmp *cur;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)) || !sess->ssi.pending || !sess->ssi.pending->item)
-		return -EINVAL;
-
-	/* Calculate total SNAC size */
-	snaclen = 10; /* For family, subtype, flags, and SNAC ID */
-	for (cur=sess->ssi.pending; cur; cur=cur->next) {
-		snaclen += 10; /* For length, GID, BID, type, and length */
-		if (cur->item->name)
-			snaclen += strlen(cur->item->name);
-		if (cur->item->data)
-			snaclen += aim_sizetlvchain(&cur->item->data);
-	}
-
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, snaclen)))
-		return -ENOMEM;
-
-	snacid = aim_cachesnac(sess, AIM_CB_FAM_SSI, sess->ssi.pending->action, 0x0000, NULL, 0);
-	aim_putsnac(&fr->data, AIM_CB_FAM_SSI, sess->ssi.pending->action, 0x0000, snacid);
-
-	for (cur=sess->ssi.pending; cur; cur=cur->next) {
-		aimbs_put16(&fr->data, cur->item->name ? strlen(cur->item->name) : 0);
-		if (cur->item->name)
-			aimbs_putraw(&fr->data, cur->item->name, strlen(cur->item->name));
-		aimbs_put16(&fr->data, cur->item->gid);
-		aimbs_put16(&fr->data, cur->item->bid);
-		aimbs_put16(&fr->data, cur->item->type);
-		aimbs_put16(&fr->data, cur->item->data ? aim_sizetlvchain(&cur->item->data) : 0);
-		if (cur->item->data)
-			aim_writetlvchain(&fr->data, &cur->item->data);
-	}
-
-	aim_tx_enqueue(sess, fr);
-
-	return 0;
+  aim_conn_t *conn;
+  aim_frame_t *fr;
+  aim_snacid_t snacid;
+  int snaclen;
+  struct aim_ssi_tmp *cur;
+  
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)) || !sess->ssi.pending || !sess->ssi.pending->item)
+    return -EINVAL;
+  
+  /* Calculate total SNAC size */
+  snaclen = 10; /* For family, subtype, flags, and SNAC ID */
+  for (cur=sess->ssi.pending; cur; cur=cur->next) {
+    snaclen += 10; /* For length, GID, BID, type, and length */
+    if (cur->item->name)
+      snaclen += strlen(cur->item->name);
+    if (cur->item->data)
+      snaclen += aim_sizetlvchain(&cur->item->data);
+  }
+  
+  if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, snaclen)))
+    return -ENOMEM;
+  
+  snacid = aim_cachesnac(sess, AIM_CB_FAM_SSI, sess->ssi.pending->action, 0x0000, NULL, 0);
+  aim_putsnac(&fr->data, AIM_CB_FAM_SSI, sess->ssi.pending->action, 0x0000, snacid);
+  
+  for (cur=sess->ssi.pending; cur; cur=cur->next) {
+    aimbs_put16(&fr->data, cur->item->name ? strlen(cur->item->name) : 0);
+    if (cur->item->name)
+      aimbs_putraw(&fr->data, cur->item->name, strlen(cur->item->name));
+    aimbs_put16(&fr->data, cur->item->gid);
+    aimbs_put16(&fr->data, cur->item->bid);
+    aimbs_put16(&fr->data, cur->item->type);
+    aimbs_put16(&fr->data, cur->item->data ? aim_sizetlvchain(&cur->item->data) : 0);
+    if (cur->item->data)
+      aim_writetlvchain(&fr->data, &cur->item->data);
+  }
+  
+  aim_tx_enqueue(sess, fr);
+  
+  return 0;
 }
 
 /*
@@ -1313,37 +1308,37 @@ faim_export int aim_ssi_addmoddel(aim_session_t *sess)
  */
 static int parseadd(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-	int ret = 0;
-	aim_rxcallback_t userfunc;
-	char *name;
-	fu16_t len, gid, bid, type;
-	aim_tlvlist_t *data;
-
-	while (aim_bstream_empty(bs)) {
-		if ((len = aimbs_get16(bs)))
-			name = aimbs_getstr(bs, len);
-		else
-			name = NULL;
-		gid = aimbs_get16(bs);
-		bid = aimbs_get16(bs);
-		type = aimbs_get16(bs);
-		if ((len = aimbs_get16(bs)))
-			data = aim_readtlvchain_len(bs, len);
-		else
-			data = NULL;
-
-		aim_ssi_itemlist_add(&sess->ssi.local, name, gid, bid, type, data);
-		aim_ssi_itemlist_add(&sess->ssi.official, name, gid, bid, type, data);
-		free(name);
-		aim_freetlvchain(&data);
-
-		if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-			ret = userfunc(sess, rx);
-
-		free(name);
-	}
-
-	return ret;
+  int ret = 0;
+  aim_rxcallback_t userfunc;
+  char *name;
+  fu16_t len, gid, bid, type;
+  aim_tlvlist_t *data;
+  
+  while (aim_bstream_empty(bs)) {
+    if ((len = aimbs_get16(bs)))
+      name = aimbs_getstr(bs, len);
+    else
+      name = NULL;
+    gid = aimbs_get16(bs);
+    bid = aimbs_get16(bs);
+    type = aimbs_get16(bs);
+    if ((len = aimbs_get16(bs)))
+      data = aim_readtlvchain_len(bs, len);
+    else
+      data = NULL;
+    
+    aim_ssi_itemlist_add(&sess->ssi.local, name, gid, bid, type, data);
+    aim_ssi_itemlist_add(&sess->ssi.official, name, gid, bid, type, data);
+    free(name);
+    aim_freetlvchain(&data);
+    
+    if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+      ret = userfunc(sess, rx);
+    
+    free(name);
+  }
+  
+  return ret;
 }
 
 /*
@@ -1353,59 +1348,59 @@ static int parseadd(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
  */
 static int parsemod(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-	int ret = 0;
-	aim_rxcallback_t userfunc;
-	char *name;
-	fu16_t len, gid, bid, type;
-	aim_tlvlist_t *data;
-	struct aim_ssi_item *item;
-
-	while (aim_bstream_empty(bs)) {
-		if ((len = aimbs_get16(bs)))
-			name = aimbs_getstr(bs, len);
-		else
-			name = NULL;
-		gid = aimbs_get16(bs);
-		bid = aimbs_get16(bs);
-		type = aimbs_get16(bs);
-		if ((len = aimbs_get16(bs)))
-			data = aim_readtlvchain_len(bs, len);
-		else
-			data = NULL;
-
-		/* Replace the 2 local items with the given one */
-		if ((item = aim_ssi_itemlist_find(sess->ssi.local, gid, bid))) {
-			item->type = type;
-			free(item->name);
-			if (name) {
-				item->name = (char *)malloc((strlen(name)+1)*sizeof(char));
-				strcpy(item->name, name);
-			} else
-				item->name = NULL;
-			aim_freetlvchain(&item->data);
-			item->data = aim_tlvlist_copy(data);
-		}
-
-		if ((item = aim_ssi_itemlist_find(sess->ssi.official, gid, bid))) {
-			item->type = type;
-			free(item->name);
-			if (name) {
-				item->name = (char *)malloc((strlen(name)+1)*sizeof(char));
-				strcpy(item->name, name);
-			} else
-				item->name = NULL;
-			aim_freetlvchain(&item->data);
-			item->data = aim_tlvlist_copy(data);
-		}
-
-		if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-			ret = userfunc(sess, rx);
-
-		free(name);
-		aim_freetlvchain(&data);
-	}
-
-	return ret;
+  int ret = 0;
+  aim_rxcallback_t userfunc;
+  char *name;
+  fu16_t len, gid, bid, type;
+  aim_tlvlist_t *data;
+  struct aim_ssi_item *item;
+  
+  while (aim_bstream_empty(bs)) {
+    if ((len = aimbs_get16(bs)))
+      name = aimbs_getstr(bs, len);
+    else
+      name = NULL;
+    gid = aimbs_get16(bs);
+    bid = aimbs_get16(bs);
+    type = aimbs_get16(bs);
+    if ((len = aimbs_get16(bs)))
+      data = aim_readtlvchain_len(bs, len);
+    else
+      data = NULL;
+    
+    /* Replace the 2 local items with the given one */
+    if ((item = aim_ssi_itemlist_find(sess->ssi.local, gid, bid))) {
+      item->type = type;
+      free(item->name);
+      if (name) {
+	item->name = (char *)malloc((strlen(name)+1)*sizeof(char));
+	strcpy(item->name, name);
+      } else
+	item->name = NULL;
+      aim_freetlvchain(&item->data);
+      item->data = aim_tlvlist_copy(data);
+    }
+    
+    if ((item = aim_ssi_itemlist_find(sess->ssi.official, gid, bid))) {
+      item->type = type;
+      free(item->name);
+      if (name) {
+	item->name = (char *)malloc((strlen(name)+1)*sizeof(char));
+	strcpy(item->name, name);
+      } else
+	item->name = NULL;
+      aim_freetlvchain(&item->data);
+      item->data = aim_tlvlist_copy(data);
+    }
+    
+    if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+      ret = userfunc(sess, rx);
+    
+    free(name);
+    aim_freetlvchain(&data);
+  }
+  
+  return ret;
 }
 
 /*
@@ -1415,28 +1410,28 @@ static int parsemod(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
  */
 static int parsedel(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-	int ret = 0;
-	aim_rxcallback_t userfunc;
-	fu16_t gid, bid;
-	struct aim_ssi_item *del;
-
-	while (aim_bstream_empty(bs)) {
-		aim_bstream_advance(bs, aimbs_get16(bs));
-		gid = aimbs_get16(bs);
-		bid = aimbs_get16(bs);
-		aimbs_get16(bs);
-		aim_bstream_advance(bs, aimbs_get16(bs));
-
-		if ((del = aim_ssi_itemlist_find(sess->ssi.local, gid, bid)))
-			aim_ssi_itemlist_del(&sess->ssi.local, del);
-		if ((del = aim_ssi_itemlist_find(sess->ssi.official, gid, bid)))
-			aim_ssi_itemlist_del(&sess->ssi.official, del);
-
-		if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-			ret = userfunc(sess, rx);
-	}
-
-	return ret;
+  int ret = 0;
+  aim_rxcallback_t userfunc;
+  fu16_t gid, bid;
+  struct aim_ssi_item *del;
+  
+  while (aim_bstream_empty(bs)) {
+    aim_bstream_advance(bs, aimbs_get16(bs));
+    gid = aimbs_get16(bs);
+    bid = aimbs_get16(bs);
+    aimbs_get16(bs);
+    aim_bstream_advance(bs, aimbs_get16(bs));
+    
+    if ((del = aim_ssi_itemlist_find(sess->ssi.local, gid, bid)))
+      aim_ssi_itemlist_del(&sess->ssi.local, del);
+    if ((del = aim_ssi_itemlist_find(sess->ssi.official, gid, bid)))
+      aim_ssi_itemlist_del(&sess->ssi.official, del);
+    
+    if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+      ret = userfunc(sess, rx);
+  }
+  
+  return ret;
 }
 
 /*
@@ -1447,121 +1442,121 @@ static int parsedel(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
  */
 static int parseack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-	int ret = 0;
-	aim_rxcallback_t userfunc;
-	struct aim_ssi_tmp *cur, *del;
-
-	/* Read in the success/failure flags from the ack SNAC */
-	cur = sess->ssi.pending;
-	while (cur && (aim_bstream_empty(bs)>0)) {
-		cur->ack = aimbs_get16(bs);
-		cur = cur->next;
+  int ret = 0;
+  aim_rxcallback_t userfunc;
+  struct aim_ssi_tmp *cur, *del;
+  
+  /* Read in the success/failure flags from the ack SNAC */
+  cur = sess->ssi.pending;
+  while (cur && (aim_bstream_empty(bs)>0)) {
+    cur->ack = aimbs_get16(bs);
+    cur = cur->next;
+  }
+  
+  /*
+   * If outcome is 0, then add the item to the item list, or replace the other item, 
+   * or remove the old item.  If outcome is non-zero, then remove the item from the 
+   * local list, or unmodify it, or add it.
+   */
+  for (cur=sess->ssi.pending; (cur && (cur->ack != 0xffff)); cur=cur->next) {
+    if (cur->item) {
+      if (cur->ack) {
+	/* Our action was unsuccessful, so change the local list back to how it was */
+	if (cur->action == AIM_CB_SSI_ADD) {
+	  /* Remove the item from the local list */
+	  /* Make sure cur->item is still valid memory */
+	  if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
+	    if (cur->item->name) {
+	      cur->name = (char *)malloc((strlen(cur->item->name)+1)*sizeof(char));
+	      strcpy(cur->name, cur->item->name);
+	    }
+	    aim_ssi_itemlist_del(&sess->ssi.local, cur->item);
+	  }
+	  cur->item = NULL;
+	  
+	} else if (cur->action == AIM_CB_SSI_MOD) {
+	  /* Replace the local item with the item from the official list */
+	  if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
+	    struct aim_ssi_item *cur1;
+	    if ((cur1 = aim_ssi_itemlist_find(sess->ssi.official, cur->item->gid, cur->item->bid))) {
+	      free(cur->item->name);
+	      if (cur1->name) {
+		cur->item->name = (char *)malloc((strlen(cur1->name)+1)*sizeof(char));
+		strcpy(cur->item->name, cur1->name);
+	      } else
+		cur->item->name = NULL;
+	      aim_freetlvchain(&cur->item->data);
+	      cur->item->data = aim_tlvlist_copy(cur1->data);
+	    }
+	  } else
+	    cur->item = NULL;
+	  
+	} else if (cur->action == AIM_CB_SSI_DEL) {
+	  /* Add the item back into the local list */
+	  if (aim_ssi_itemlist_valid(sess->ssi.official, cur->item)) {
+	    aim_ssi_itemlist_add(&sess->ssi.local, cur->item->name, cur->item->gid, cur->item->bid, cur->item->type, cur->item->data);
+	  } else
+	    cur->item = NULL;
 	}
-
-	/*
-	 * If outcome is 0, then add the item to the item list, or replace the other item, 
-	 * or remove the old item.  If outcome is non-zero, then remove the item from the 
-	 * local list, or unmodify it, or add it.
-	 */
-	for (cur=sess->ssi.pending; (cur && (cur->ack != 0xffff)); cur=cur->next) {
-	if (cur->item) {
-		if (cur->ack) {
-			/* Our action was unsuccessful, so change the local list back to how it was */
-			if (cur->action == AIM_CB_SSI_ADD) {
-				/* Remove the item from the local list */
-				/* Make sure cur->item is still valid memory */
-				if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
-					if (cur->item->name) {
-						cur->name = (char *)malloc((strlen(cur->item->name)+1)*sizeof(char));
-						strcpy(cur->name, cur->item->name);
-					}
-					aim_ssi_itemlist_del(&sess->ssi.local, cur->item);
-				}
-				cur->item = NULL;
-
-			} else if (cur->action == AIM_CB_SSI_MOD) {
-				/* Replace the local item with the item from the official list */
-				if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
-					struct aim_ssi_item *cur1;
-					if ((cur1 = aim_ssi_itemlist_find(sess->ssi.official, cur->item->gid, cur->item->bid))) {
-						free(cur->item->name);
-						if (cur1->name) {
-							cur->item->name = (char *)malloc((strlen(cur1->name)+1)*sizeof(char));
-							strcpy(cur->item->name, cur1->name);
-						} else
-							cur->item->name = NULL;
-						aim_freetlvchain(&cur->item->data);
-						cur->item->data = aim_tlvlist_copy(cur1->data);
-					}
-				} else
-					cur->item = NULL;
-
-			} else if (cur->action == AIM_CB_SSI_DEL) {
-				/* Add the item back into the local list */
-				if (aim_ssi_itemlist_valid(sess->ssi.official, cur->item)) {
-					aim_ssi_itemlist_add(&sess->ssi.local, cur->item->name, cur->item->gid, cur->item->bid, cur->item->type, cur->item->data);
-				} else
-					cur->item = NULL;
-			}
-
-		} else {
-			/* Do the exact opposite */
-			if (cur->action == AIM_CB_SSI_ADD) {
-			/* Add the local item to the official list */
-				if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
-					aim_ssi_itemlist_add(&sess->ssi.official, cur->item->name, cur->item->gid, cur->item->bid, cur->item->type, cur->item->data);
-				} else
-					cur->item = NULL;
-
-			} else if (cur->action == AIM_CB_SSI_MOD) {
-				/* Replace the official item with the item from the local list */
-				if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
-					struct aim_ssi_item *cur1;
-					if ((cur1 = aim_ssi_itemlist_find(sess->ssi.official, cur->item->gid, cur->item->bid))) {
-						free(cur1->name);
-						if (cur->item->name) {
-							cur1->name = (char *)malloc((strlen(cur->item->name)+1)*sizeof(char));
-							strcpy(cur1->name, cur->item->name);
-						} else
-							cur1->name = NULL;
-						aim_freetlvchain(&cur1->data);
-						cur1->data = aim_tlvlist_copy(cur->item->data);
-					}
-				} else
-					cur->item = NULL;
-
-			} else if (cur->action == AIM_CB_SSI_DEL) {
-				/* Remove the item from the official list */
-				if (aim_ssi_itemlist_valid(sess->ssi.official, cur->item))
-					aim_ssi_itemlist_del(&sess->ssi.official, cur->item);
-				cur->item = NULL;
-			}
-
-		}
-	} /* End if (cur->item) */
-	} /* End for loop */
-
-	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		ret = userfunc(sess, rx, sess->ssi.pending);
-
-	/* Free all aim_ssi_tmp's with an outcome */
-	cur = sess->ssi.pending;
-	while (cur && (cur->ack != 0xffff)) {
-		del = cur;
-		cur = cur->next;
-		free(del->name);
-		free(del);
+	
+      } else {
+	/* Do the exact opposite */
+	if (cur->action == AIM_CB_SSI_ADD) {
+	  /* Add the local item to the official list */
+	  if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
+	    aim_ssi_itemlist_add(&sess->ssi.official, cur->item->name, cur->item->gid, cur->item->bid, cur->item->type, cur->item->data);
+	  } else
+	    cur->item = NULL;
+	  
+	} else if (cur->action == AIM_CB_SSI_MOD) {
+	  /* Replace the official item with the item from the local list */
+	  if (aim_ssi_itemlist_valid(sess->ssi.local, cur->item)) {
+	    struct aim_ssi_item *cur1;
+	    if ((cur1 = aim_ssi_itemlist_find(sess->ssi.official, cur->item->gid, cur->item->bid))) {
+	      free(cur1->name);
+	      if (cur->item->name) {
+		cur1->name = (char *)malloc((strlen(cur->item->name)+1)*sizeof(char));
+		strcpy(cur1->name, cur->item->name);
+	      } else
+		cur1->name = NULL;
+	      aim_freetlvchain(&cur1->data);
+	      cur1->data = aim_tlvlist_copy(cur->item->data);
+	    }
+	  } else
+	    cur->item = NULL;
+	  
+	} else if (cur->action == AIM_CB_SSI_DEL) {
+	  /* Remove the item from the official list */
+	  if (aim_ssi_itemlist_valid(sess->ssi.official, cur->item))
+	    aim_ssi_itemlist_del(&sess->ssi.official, cur->item);
+	  cur->item = NULL;
 	}
-	sess->ssi.pending = cur;
-
-	/* If we're not waiting for any more acks, then send more SNACs */
-	if (!sess->ssi.pending) {
-		sess->ssi.pending = NULL;
-		sess->ssi.waiting_for_ack = 0;
-		aim_ssi_sync(sess);
-	}
-
-	return ret;
+	
+      }
+    } /* End if (cur->item) */
+  } /* End for loop */
+  
+  if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+    ret = userfunc(sess, rx, sess->ssi.pending);
+  
+  /* Free all aim_ssi_tmp's with an outcome */
+  cur = sess->ssi.pending;
+  while (cur && (cur->ack != 0xffff)) {
+    del = cur;
+    cur = cur->next;
+    free(del->name);
+    free(del);
+  }
+  sess->ssi.pending = cur;
+  
+  /* If we're not waiting for any more acks, then send more SNACs */
+  if (!sess->ssi.pending) {
+    sess->ssi.pending = NULL;
+    sess->ssi.waiting_for_ack = 0;
+    aim_ssi_sync(sess);
+  }
+  
+  return ret;
 }
 
 /*
@@ -1573,15 +1568,15 @@ static int parseack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
  */
 static int parsedataunchanged(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-	int ret = 0;
-	aim_rxcallback_t userfunc;
-
-	sess->ssi.received_data = 1;
-
-	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		ret = userfunc(sess, rx);
-
-	return ret;
+  int ret = 0;
+  aim_rxcallback_t userfunc;
+  
+  sess->ssi.received_data = 1;
+  
+  if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+    ret = userfunc(sess, rx);
+  
+  return ret;
 }
 
 /*
@@ -1592,12 +1587,12 @@ static int parsedataunchanged(aim_session_t *sess, aim_module_t *mod, aim_frame_
  */
 faim_export int aim_ssi_modbegin(aim_session_t *sess)
 {
-	aim_conn_t *conn;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
-		return -EINVAL;
-
-	return aim_genericreq_n(sess, conn, AIM_CB_FAM_SSI, AIM_CB_SSI_EDITSTART);
+  aim_conn_t *conn;
+  
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
+    return -EINVAL;
+  
+  return aim_genericreq_n(sess, conn, AIM_CB_FAM_SSI, AIM_CB_SSI_EDITSTART);
 }
 
 /*
@@ -1608,12 +1603,12 @@ faim_export int aim_ssi_modbegin(aim_session_t *sess)
  */
 faim_export int aim_ssi_modend(aim_session_t *sess)
 {
-	aim_conn_t *conn;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
-		return -EINVAL;
-
-	return aim_genericreq_n(sess, conn, AIM_CB_FAM_SSI, AIM_CB_SSI_EDITSTOP);
+  aim_conn_t *conn;
+  
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)))
+    return -EINVAL;
+  
+  return aim_genericreq_n(sess, conn, AIM_CB_FAM_SSI, AIM_CB_SSI_EDITSTOP);
 }
 
 /*
@@ -1624,36 +1619,36 @@ faim_export int aim_ssi_modend(aim_session_t *sess)
  */
 faim_export int aim_ssi_sendauth(aim_session_t *sess, char *sn, char *msg)
 {
-	aim_conn_t *conn;
-	aim_frame_t *fr;
-	aim_snacid_t snacid;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)) || !sn)
-		return -EINVAL;
-
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+1+strlen(sn)+2+(msg ? strlen(msg)+1 : 0)+2)))
-		return -ENOMEM;
-
-	snacid = aim_cachesnac(sess, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTH, 0x0000, NULL, 0);
-	aim_putsnac(&fr->data, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTH, 0x0000, snacid);
-
-	/* Screen name */
-	aimbs_put8(&fr->data, strlen(sn));
-	aimbs_putraw(&fr->data, sn, strlen(sn));
-
-	/* Message (null terminated) */
-	aimbs_put16(&fr->data, msg ? strlen(msg) : 0);
-	if (msg) {
-		aimbs_putraw(&fr->data, msg, strlen(msg));
-		aimbs_put8(&fr->data, 0x00);
-	}
-
-	/* Unknown */
-	aimbs_put16(&fr->data, 0x0000);
-
-	aim_tx_enqueue(sess, fr);
-
-	return 0;
+  aim_conn_t *conn;
+  aim_frame_t *fr;
+  aim_snacid_t snacid;
+  
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)) || !sn)
+    return -EINVAL;
+  
+  if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+1+strlen(sn)+2+(msg ? strlen(msg)+1 : 0)+2)))
+    return -ENOMEM;
+  
+  snacid = aim_cachesnac(sess, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTH, 0x0000, NULL, 0);
+  aim_putsnac(&fr->data, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTH, 0x0000, snacid);
+  
+  /* Screen name */
+  aimbs_put8(&fr->data, strlen(sn));
+  aimbs_putraw(&fr->data, sn, strlen(sn));
+  
+  /* Message (null terminated) */
+  aimbs_put16(&fr->data, msg ? strlen(msg) : 0);
+  if (msg) {
+    aimbs_putraw(&fr->data, msg, strlen(msg));
+    aimbs_put8(&fr->data, 0x00);
+  }
+  
+  /* Unknown */
+  aimbs_put16(&fr->data, 0x0000);
+  
+  aim_tx_enqueue(sess, fr);
+  
+  return 0;
 }
 
 /*
@@ -1661,33 +1656,33 @@ faim_export int aim_ssi_sendauth(aim_session_t *sess, char *sn, char *msg)
  */
 static int receiveauthgrant(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-	int ret = 0;
-	aim_rxcallback_t userfunc;
-	fu16_t tmp;
-	char *sn, *msg;
-
-	/* Read screen name */
-	if ((tmp = aimbs_get8(bs)))
-		sn = aimbs_getstr(bs, tmp);
-	else
-		sn = NULL;
-
-	/* Read message (null terminated) */
-	if ((tmp = aimbs_get16(bs)))
-		msg = aimbs_getstr(bs, tmp);
-	else
-		msg = NULL;
-
-	/* Unknown */
-	tmp = aimbs_get16(bs);
-
-	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		ret = userfunc(sess, rx, sn, msg);
-
-	free(sn);
-	free(msg);
-
-	return ret;
+  int ret = 0;
+  aim_rxcallback_t userfunc;
+  fu16_t tmp;
+  char *sn, *msg;
+  
+  /* Read screen name */
+  if ((tmp = aimbs_get8(bs)))
+    sn = aimbs_getstr(bs, tmp);
+  else
+    sn = NULL;
+  
+  /* Read message (null terminated) */
+  if ((tmp = aimbs_get16(bs)))
+    msg = aimbs_getstr(bs, tmp);
+  else
+    msg = NULL;
+  
+  /* Unknown */
+  tmp = aimbs_get16(bs);
+  
+  if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+    ret = userfunc(sess, rx, sn, msg);
+  
+  free(sn);
+  free(msg);
+  
+  return ret;
 }
 
 /*
@@ -1699,36 +1694,36 @@ static int receiveauthgrant(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
  */
 faim_export int aim_ssi_sendauthrequest(aim_session_t *sess, char *sn, char *msg)
 {
-	aim_conn_t *conn;
-	aim_frame_t *fr;
-	aim_snacid_t snacid;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)) || !sn)
-		return -EINVAL;
-
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+1+strlen(sn)+2+(msg ? strlen(msg)+1 : 0)+2)))
-		return -ENOMEM;
-
-	snacid = aim_cachesnac(sess, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTHREQ, 0x0000, NULL, 0);
-	aim_putsnac(&fr->data, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTHREQ, 0x0000, snacid);
-
-	/* Screen name */
-	aimbs_put8(&fr->data, strlen(sn));
-	aimbs_putraw(&fr->data, sn, strlen(sn));
-
-	/* Message (null terminated) */
-	aimbs_put16(&fr->data, msg ? strlen(msg) : 0);
-	if (msg) {
-		aimbs_putraw(&fr->data, msg, strlen(msg));
-		aimbs_put8(&fr->data, 0x00);
-	}
-
-	/* Unknown */
-	aimbs_put16(&fr->data, 0x0000);
-
-	aim_tx_enqueue(sess, fr);
-
-	return 0;
+  aim_conn_t *conn;
+  aim_frame_t *fr;
+  aim_snacid_t snacid;
+  
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)) || !sn)
+    return -EINVAL;
+  
+  if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+1+strlen(sn)+2+(msg ? strlen(msg)+1 : 0)+2)))
+    return -ENOMEM;
+  
+  snacid = aim_cachesnac(sess, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTHREQ, 0x0000, NULL, 0);
+  aim_putsnac(&fr->data, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTHREQ, 0x0000, snacid);
+  
+  /* Screen name */
+  aimbs_put8(&fr->data, strlen(sn));
+  aimbs_putraw(&fr->data, sn, strlen(sn));
+  
+  /* Message (null terminated) */
+  aimbs_put16(&fr->data, msg ? strlen(msg) : 0);
+  if (msg) {
+    aimbs_putraw(&fr->data, msg, strlen(msg));
+    aimbs_put8(&fr->data, 0x00);
+  }
+  
+  /* Unknown */
+  aimbs_put16(&fr->data, 0x0000);
+  
+  aim_tx_enqueue(sess, fr);
+  
+  return 0;
 }
 
 /*
@@ -1736,33 +1731,33 @@ faim_export int aim_ssi_sendauthrequest(aim_session_t *sess, char *sn, char *msg
  */
 static int receiveauthrequest(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-	int ret = 0;
-	aim_rxcallback_t userfunc;
-	fu16_t tmp;
-	char *sn, *msg;
-
-	/* Read screen name */
-	if ((tmp = aimbs_get8(bs)))
-		sn = aimbs_getstr(bs, tmp);
-	else
-		sn = NULL;
-
-	/* Read message (null terminated) */
-	if ((tmp = aimbs_get16(bs)))
-		msg = aimbs_getstr(bs, tmp);
-	else
-		msg = NULL;
-
-	/* Unknown */
-	tmp = aimbs_get16(bs);
-
-	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		ret = userfunc(sess, rx, sn, msg);
-
-	free(sn);
-	free(msg);
-
-	return ret;
+  int ret = 0;
+  aim_rxcallback_t userfunc;
+  fu16_t tmp;
+  char *sn, *msg;
+  
+  /* Read screen name */
+  if ((tmp = aimbs_get8(bs)))
+    sn = aimbs_getstr(bs, tmp);
+  else
+    sn = NULL;
+  
+  /* Read message (null terminated) */
+  if ((tmp = aimbs_get16(bs)))
+    msg = aimbs_getstr(bs, tmp);
+  else
+    msg = NULL;
+  
+  /* Unknown */
+  tmp = aimbs_get16(bs);
+  
+  if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+    ret = userfunc(sess, rx, sn, msg);
+  
+  free(sn);
+  free(msg);
+  
+  return ret;
 }
 
 /*
@@ -1777,39 +1772,39 @@ static int receiveauthrequest(aim_session_t *sess, aim_module_t *mod, aim_frame_
  */
 faim_export int aim_ssi_sendauthreply(aim_session_t *sess, char *sn, fu8_t reply, char *msg)
 {
-	aim_conn_t *conn;
-	aim_frame_t *fr;
-	aim_snacid_t snacid;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)) || !sn)
-		return -EINVAL;
-
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10 + 1+strlen(sn) + 1 + 2+(msg ? strlen(msg)+1 : 0) + 2)))
-		return -ENOMEM;
-
-	snacid = aim_cachesnac(sess, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTHREP, 0x0000, NULL, 0);
-	aim_putsnac(&fr->data, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTHREP, 0x0000, snacid);
-
-	/* Screen name */
-	aimbs_put8(&fr->data, strlen(sn));
-	aimbs_putraw(&fr->data, sn, strlen(sn));
-
-	/* Grant or deny */
-	aimbs_put8(&fr->data, reply);
-
-	/* Message (null terminated) */
-	aimbs_put16(&fr->data, msg ? (strlen(msg)+1) : 0);
-	if (msg) {
-		aimbs_putraw(&fr->data, msg, strlen(msg));
-		aimbs_put8(&fr->data, 0x00);
-	}
-
-	/* Unknown */
-	aimbs_put16(&fr->data, 0x0000);
-
-	aim_tx_enqueue(sess, fr);
-
-	return 0;
+  aim_conn_t *conn;
+  aim_frame_t *fr;
+  aim_snacid_t snacid;
+  
+  if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_SSI)) || !sn)
+    return -EINVAL;
+  
+  if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10 + 1+strlen(sn) + 1 + 2+(msg ? strlen(msg)+1 : 0) + 2)))
+    return -ENOMEM;
+  
+  snacid = aim_cachesnac(sess, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTHREP, 0x0000, NULL, 0);
+  aim_putsnac(&fr->data, AIM_CB_FAM_SSI, AIM_CB_SSI_SENDAUTHREP, 0x0000, snacid);
+  
+  /* Screen name */
+  aimbs_put8(&fr->data, strlen(sn));
+  aimbs_putraw(&fr->data, sn, strlen(sn));
+  
+  /* Grant or deny */
+  aimbs_put8(&fr->data, reply);
+  
+  /* Message (null terminated) */
+  aimbs_put16(&fr->data, msg ? (strlen(msg)+1) : 0);
+  if (msg) {
+    aimbs_putraw(&fr->data, msg, strlen(msg));
+    aimbs_put8(&fr->data, 0x00);
+  }
+  
+  /* Unknown */
+  aimbs_put16(&fr->data, 0x0000);
+  
+  aim_tx_enqueue(sess, fr);
+  
+  return 0;
 }
 
 /*
@@ -1819,37 +1814,37 @@ faim_export int aim_ssi_sendauthreply(aim_session_t *sess, char *sn, fu8_t reply
  */
 static int receiveauthreply(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-	int ret = 0;
-	aim_rxcallback_t userfunc;
-	fu16_t tmp;
-	fu8_t reply;
-	char *sn, *msg;
-
-	/* Read screen name */
-	if ((tmp = aimbs_get8(bs)))
-		sn = aimbs_getstr(bs, tmp);
-	else
-		sn = NULL;
-
-	/* Read reply */
-	reply = aimbs_get8(bs);
-
-	/* Read message (null terminated) */
-	if ((tmp = aimbs_get16(bs)))
-		msg = aimbs_getstr(bs, tmp);
-	else
-		msg = NULL;
-
-	/* Unknown */
-	tmp = aimbs_get16(bs);
-
-	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		ret = userfunc(sess, rx, sn, reply, msg);
-
-	free(sn);
-	free(msg);
-
-	return ret;
+  int ret = 0;
+  aim_rxcallback_t userfunc;
+  fu16_t tmp;
+  fu8_t reply;
+  char *sn, *msg;
+  
+  /* Read screen name */
+  if ((tmp = aimbs_get8(bs)))
+    sn = aimbs_getstr(bs, tmp);
+  else
+    sn = NULL;
+  
+  /* Read reply */
+  reply = aimbs_get8(bs);
+  
+  /* Read message (null terminated) */
+  if ((tmp = aimbs_get16(bs)))
+    msg = aimbs_getstr(bs, tmp);
+  else
+    msg = NULL;
+  
+  /* Unknown */
+  tmp = aimbs_get16(bs);
+  
+  if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+    ret = userfunc(sess, rx, sn, reply, msg);
+  
+  free(sn);
+  free(msg);
+  
+  return ret;
 }
 
 /*
@@ -1857,72 +1852,71 @@ static int receiveauthreply(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
  */
 static int receiveadded(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-	int ret = 0;
-	aim_rxcallback_t userfunc;
-	fu16_t tmp;
-	char *sn;
-
-	/* Read screen name */
-	if ((tmp = aimbs_get8(bs)))
-		sn = aimbs_getstr(bs, tmp);
-	else
-		sn = NULL;
-
-	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		ret = userfunc(sess, rx, sn);
-
-	free(sn);
-
-	return ret;
+  int ret = 0;
+  aim_rxcallback_t userfunc;
+  fu16_t tmp;
+  char *sn;
+  
+  /* Read screen name */
+  if ((tmp = aimbs_get8(bs))) {
+    sn = aimbs_getstr(bs, tmp);
+  } else {
+    sn = NULL;
+  }
+  
+  if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype))) {
+    ret = userfunc(sess, rx, sn);
+  }
+  
+  free(sn);
+  return(ret);
 }
 
 static int snachandler(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
-
-	if (snac->subtype == AIM_CB_SSI_RIGHTSINFO)
-		return parserights(sess, mod, rx, snac, bs);
-	else if (snac->subtype == AIM_CB_SSI_LIST)
-		return parsedata(sess, mod, rx, snac, bs);
-	else if (snac->subtype == AIM_CB_SSI_ADD)
-		return parseadd(sess, mod, rx, snac, bs);
-	else if (snac->subtype == AIM_CB_SSI_MOD)
-		return parsemod(sess, mod, rx, snac, bs);
-	else if (snac->subtype == AIM_CB_SSI_DEL)
-		return parsedel(sess, mod, rx, snac, bs);
-	else if (snac->subtype == AIM_CB_SSI_SRVACK)
-		return parseack(sess, mod, rx, snac, bs);
-	else if (snac->subtype == AIM_CB_SSI_NOLIST)
-		return parsedataunchanged(sess, mod, rx, snac, bs);
-	else if (snac->subtype == AIM_CB_SSI_RECVAUTH)
-		return receiveauthgrant(sess, mod, rx, snac, bs);
-	else if (snac->subtype == AIM_CB_SSI_RECVAUTHREQ)
-		return receiveauthrequest(sess, mod, rx, snac, bs);
-	else if (snac->subtype == AIM_CB_SSI_RECVAUTHREP)
-		return receiveauthreply(sess, mod, rx, snac, bs);
-	else if (snac->subtype == AIM_CB_SSI_ADDED)
-		return receiveadded(sess, mod, rx, snac, bs);
-
-	return 0;
+  if (snac->subtype == AIM_CB_SSI_RIGHTSINFO) {
+    return parserights(sess, mod, rx, snac, bs);
+  } else if (snac->subtype == AIM_CB_SSI_LIST) {
+    return parsedata(sess, mod, rx, snac, bs);
+  } else if (snac->subtype == AIM_CB_SSI_ADD) {
+    return parseadd(sess, mod, rx, snac, bs);
+  } else if (snac->subtype == AIM_CB_SSI_MOD) {
+    return parsemod(sess, mod, rx, snac, bs);
+  } else if (snac->subtype == AIM_CB_SSI_DEL) {
+    return parsedel(sess, mod, rx, snac, bs);
+  } else if (snac->subtype == AIM_CB_SSI_SRVACK) {
+    return parseack(sess, mod, rx, snac, bs);
+  } else if (snac->subtype == AIM_CB_SSI_NOLIST) {
+    return parsedataunchanged(sess, mod, rx, snac, bs);
+  } else if (snac->subtype == AIM_CB_SSI_RECVAUTH) {
+    return receiveauthgrant(sess, mod, rx, snac, bs);
+  } else if (snac->subtype == AIM_CB_SSI_RECVAUTHREQ) {
+    return receiveauthrequest(sess, mod, rx, snac, bs);
+  } else if (snac->subtype == AIM_CB_SSI_RECVAUTHREP) {
+    return receiveauthreply(sess, mod, rx, snac, bs);
+  } else if (snac->subtype == AIM_CB_SSI_ADDED) {
+    return receiveadded(sess, mod, rx, snac, bs);
+  }
+  return(0);
 }
 
 static void ssi_shutdown(aim_session_t *sess, aim_module_t *mod)
 {
-	aim_ssi_freelist(sess);
-
-	return;
+  aim_ssi_freelist(sess);
+  return;
 }
 
 faim_internal int ssi_modfirst(aim_session_t *sess, aim_module_t *mod)
 {
-
-	mod->family = AIM_CB_FAM_SSI;
-	mod->version = 0x0004;
-	mod->toolid = 0x0110;
-	mod->toolversion = 0x0629;
-	mod->flags = 0;
-	strncpy(mod->name, "ssi", sizeof(mod->name));
-	mod->snachandler = snachandler;
-	mod->shutdown = ssi_shutdown;
-
-	return 0;
+  
+  mod->family = AIM_CB_FAM_SSI;
+  mod->version = 0x0004;
+  mod->toolid = 0x0110;
+  mod->toolversion = 0x0629;
+  mod->flags = 0;
+  strncpy(mod->name, "ssi", sizeof(mod->name));
+  mod->snachandler = snachandler;
+  mod->shutdown = ssi_shutdown;
+  
+  return 0;
 }
