@@ -2674,8 +2674,8 @@ void owl_function_smartzpunt(int type)
     return;
   }
 
-  mclass = owl_text_quote(owl_message_get_class(m), OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
-  minst = owl_text_quote(owl_message_get_instance(m), OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+  mclass = owl_message_get_class(m);
+  minst = owl_message_get_instance(m);
   if (!mclass || !*mclass || *mclass==' '
       || (!strcasecmp(mclass, "message") && !strcasecmp(minst, "personal"))
       || (type && (!minst || !*minst|| *minst==' '))) {
@@ -2683,20 +2683,22 @@ void owl_function_smartzpunt(int type)
 			 mclass, minst);
   } else {
     cmdprefix = "start-command zpunt ";
-    cmd = owl_malloc(strlen(cmdprefix)+strlen(mclass)+strlen(minst)+3);
+    cmd = owl_malloc(strlen(cmdprefix)+strlen(mclass)+strlen(minst)+10);
     strcpy(cmd, cmdprefix);
+    strcat(cmd, owl_getquoting(mclass));
     strcat(cmd, mclass);
+    strcat(cmd, owl_getquoting(mclass));
     if (type) {
       strcat(cmd, " ");
+      strcat(cmd, owl_getquoting(minst));
       strcat(cmd, minst);
+      strcat(cmd, owl_getquoting(minst));
     } else {
       strcat(cmd, " *");
     }
     owl_function_command(cmd);
     owl_free(cmd);
   }
-  owl_free(mclass);
-  owl_free(minst);
 }
 
 void owl_function_color_current_filter(char *color)
@@ -2767,6 +2769,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
     strcat(buff, " .*");
   } else {
     quoted=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+    owl_text_tr(quoted, ' ', '.');
     sprintf(buff, "%s ^%s$", buff, quoted);
     owl_free(quoted);
   }
@@ -2774,11 +2777,13 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
     strcat(buff, " and instance .*");
   } else {
     quoted=owl_text_quote(inst, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+    owl_text_tr(quoted, ' ', '.');
     sprintf(buff, "%s and instance ^%s$", buff, quoted);
     owl_free(quoted);
   }
   if (strcmp(recip, "*")) {
     quoted=owl_text_quote(recip, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+    owl_text_tr(quoted, ' ', '.');
     sprintf(buff, "%s and recipient ^%s$", buff, quoted);
     owl_free(quoted);
   }

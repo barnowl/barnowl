@@ -1,5 +1,7 @@
 $Id$
-
+2.0.12-pre-2
+	Fixed double quoting in smartzpunt
+	
 2.0.12-pre-1
 	Fixed replies to loopback messages
 	Fixed smartnarrow on classes/instances with spaces
