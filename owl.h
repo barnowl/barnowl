@@ -350,6 +350,11 @@ typedef struct _owl_keyhandler {
   int       kpstackpos;		/* location in stack (-1 = none) */
 } owl_keyhandler;
 
+typedef struct _owl_buddylist {
+  owl_list buddies;
+} owl_buddylist;
+
+
 typedef struct _owl_global {
   owl_mainwin mw;
   owl_popwin pw;
@@ -402,6 +407,7 @@ typedef struct _owl_global {
   time_t aim_lastnop;
   int aim_loggedin;
   char *aim_screenname;
+  owl_buddylist buddylist;
   owl_list messagequeue; /* for queueing up aim and other messages */
 } owl_global;
 

@@ -124,10 +124,15 @@ void owl_function_make_outgoing_zephyr(char *body, char *zwriteline, char *zsig)
   owl_zwrite_free(&z);
 }
 
-void owl_function_make_outgoing_aim(char *body, char *to)
+int owl_function_make_outgoing_aim(char *body, char *to)
 {
   owl_message *m;
   int followlast;
+
+
+  if (!owl_global_is_aimloggedin(&g)) {
+    return(-1);
+  }
   
   followlast=owl_global_should_followlast(&g);
 
@@ -148,6 +153,7 @@ void owl_function_make_outgoing_aim(char *body, char *to)
   
   wnoutrefresh(owl_global_get_curs_recwin(&g));
   owl_global_set_needrefresh(&g);
+  return(0);
 }
 
 void owl_function_zwrite_setup(char *line)
@@ -2688,92 +2694,107 @@ char *owl_function_ztext_stylestrip(char *zt)
   return(plaintext);
 }
 
-/* popup a znol listing.  If file is NULL use the default .anyone */
-/* this doesn't obey 'elapsed' or 'timesort' yet */
-void owl_function_zlist(char *file, int elapsed, int timesort)
+/* Popup a buddylisting.  If file is NULL use the default .anyone */
+void owl_function_buddylist(int aim, int zephyr, char *file)
 {
   char *ourfile, *tmp, buff[LINE], *line;
   FILE *f;
-  int numlocs, ret, i;
+  int numlocs, ret, i, j;
   ZLocations_t location[200];
   owl_fmtext fm;
-
-  if (file==NULL) {
-    tmp=owl_global_get_homedir(&g);
-    if (!tmp) {
-      owl_function_makemsg("Could not determine home directory");
-      return;
-    }
-    ourfile=owl_malloc(strlen(tmp)+50);
-    sprintf(ourfile, "%s/.anyone", owl_global_get_homedir(&g));
-  } else {
-    ourfile=owl_strdup(file);
-  }
-
-  f=fopen(ourfile, "r");
-  if (!f) {
-    owl_function_makemsg("Error opening file %s: %s",
-			 ourfile,
-			 strerror(errno) ? strerror(errno) : "");
-    return;
-  }
+  owl_buddylist *b;
 
   owl_fmtext_init_null(&fm);
-    
-  while (fgets(buff, LINE, f)!=NULL) {
-    /* ignore comments, blank lines etc. */
-    if (buff[0]=='#') continue;
-    if (buff[0]=='\n') continue;
-    if (buff[0]=='\0') continue;
 
-    /* strip the \n */
-    buff[strlen(buff)-1]='\0';
+  if (aim && owl_global_is_aimloggedin(&g)) {
+    b=owl_global_get_buddylist(&g);
 
-    /* ingore from # on */
-    tmp=strchr(buff, '#');
-    if (tmp) tmp[0]='\0';
-
-    /* ingore from SPC */
-    tmp=strchr(buff, ' ');
-    if (tmp) tmp[0]='\0';
-
-    /* stick on the local realm. */
-    if (!strchr(buff, '@')) {
-      strcat(buff, "@");
-      strcat(buff, ZGetRealm());
-    }
-
-    ret=ZLocateUser(buff, &numlocs, ZAUTH);
-    if (ret!=ZERR_NONE) {
-      owl_function_makemsg("Error getting location for %s", buff);
-      continue;
-    }
-
-    numlocs=200;
-    ret=ZGetLocations(location, &numlocs);
-    if (ret==0) {
-      for (i=0; i<numlocs; i++) {
-	line=malloc(strlen(location[i].host)+strlen(location[i].time)+strlen(location[i].tty)+100);
-	tmp=short_zuser(buff);
-	sprintf(line, "%-10.10s %-24.24s %-12.12s  %20.20s\n",
-		tmp,
-		location[i].host,
-		location[i].tty,
-		location[i].time);
-	owl_fmtext_append_normal(&fm, line);
-	owl_free(tmp);
-      }
-      if (numlocs>=200) {
-	owl_fmtext_append_normal(&fm, "Too many locations found for this user, truncating.\n");
-      }
+    owl_fmtext_append_bold(&fm, "AIM users logged in:\n");
+    j=owl_buddylist_get_size(b);
+    for (i=0; i<j; i++) {
+      owl_fmtext_append_normal(&fm, "  ");
+      owl_fmtext_append_normal(&fm, owl_buddylist_get_buddy(b, i));
+      owl_fmtext_append_normal(&fm, "\n");
     }
   }
-  fclose(f);
 
+  if (zephyr) {
+    if (file==NULL) {
+      tmp=owl_global_get_homedir(&g);
+      if (!tmp) {
+	owl_function_makemsg("Could not determine home directory");
+	return;
+      }
+      ourfile=owl_malloc(strlen(tmp)+50);
+      sprintf(ourfile, "%s/.anyone", owl_global_get_homedir(&g));
+    } else {
+      ourfile=owl_strdup(file);
+    }
+    
+    f=fopen(ourfile, "r");
+    if (!f) {
+      owl_function_makemsg("Error opening file %s: %s",
+			   ourfile,
+			   strerror(errno) ? strerror(errno) : "");
+      return;
+    }
+    
+    owl_fmtext_append_bold(&fm, "Zephyr users logged in:\n");
+    
+    while (fgets(buff, LINE, f)!=NULL) {
+      /* ignore comments, blank lines etc. */
+      if (buff[0]=='#') continue;
+      if (buff[0]=='\n') continue;
+      if (buff[0]=='\0') continue;
+      
+      /* strip the \n */
+      buff[strlen(buff)-1]='\0';
+      
+      /* ingore from # on */
+      tmp=strchr(buff, '#');
+      if (tmp) tmp[0]='\0';
+      
+      /* ingore from SPC */
+      tmp=strchr(buff, ' ');
+      if (tmp) tmp[0]='\0';
+      
+      /* stick on the local realm. */
+      if (!strchr(buff, '@')) {
+	strcat(buff, "@");
+	strcat(buff, ZGetRealm());
+      }
+      
+      ret=ZLocateUser(buff, &numlocs, ZAUTH);
+      if (ret!=ZERR_NONE) {
+	owl_function_makemsg("Error getting location for %s", buff);
+	continue;
+      }
+      
+      numlocs=200;
+      ret=ZGetLocations(location, &numlocs);
+      if (ret==0) {
+	for (i=0; i<numlocs; i++) {
+	  line=malloc(strlen(location[i].host)+strlen(location[i].time)+strlen(location[i].tty)+100);
+	  tmp=short_zuser(buff);
+	  sprintf(line, "  %-10.10s %-24.24s %-12.12s  %20.20s\n",
+		  tmp,
+		  location[i].host,
+		  location[i].tty,
+		  location[i].time);
+	  owl_fmtext_append_normal(&fm, line);
+	  owl_free(tmp);
+	}
+	if (numlocs>=200) {
+	  owl_fmtext_append_normal(&fm, "  Too many locations found for this user, truncating.\n");
+	}
+      }
+    }
+    fclose(f);
+    owl_free(ourfile);
+  }
+  
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);
-
-  owl_free(ourfile);
 }
 
 void owl_function_dump(char *filename) 

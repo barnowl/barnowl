@@ -21,6 +21,14 @@ extern void getfile_requested(aim_session_t *sess, aim_conn_t *conn, aim_userinf
 extern void directim_start(aim_session_t *sess, const char *sn);
 extern void directim_requested(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, struct aim_incomingim_ch2_args *args);
 
+/* -------------------------------- buddylist.c -------------------------------- */
+extern void owl_buddylist_init(owl_buddylist *b);
+extern void owl_buddylist_oncoming(owl_buddylist *b, char *screenname);
+extern void owl_buddylist_offgoing(owl_buddylist *b, char *screenname);
+extern int owl_buddylist_get_size(owl_buddylist *b);
+extern char *owl_buddylist_get_buddy(owl_buddylist *b, int n);
+extern void owl_buddylist_clear(owl_buddylist *b);
+
 /* -------------------------------- cmd.c -------------------------------- */
 extern int owl_cmddict_setup(owl_cmddict *cd);
 extern int owl_cmddict_init(owl_cmddict *cd);
@@ -44,6 +52,8 @@ extern void owl_command_info();
 extern void owl_command_nop();
 extern char *owl_command_help(int argc, char **argv, char *buff);
 extern char *owl_command_zlist(int argc, char **argv, char *buff);
+extern char *owl_command_alist();
+extern char *owl_command_blist();
 extern void owl_command_about();
 extern void owl_command_version();
 extern char *owl_command_dump(int argc, char **argv, char *buff);
@@ -279,7 +289,7 @@ extern char *owl_function_cmd_describe(void *name);
 extern void owl_function_show_command(char *name);
 extern void owl_function_adminmsg(char *header, char *body);
 extern void owl_function_make_outgoing_zephyr(char *body, char *zwriteline, char *zsig);
-extern void owl_function_make_outgoing_aim(char *body, char *to);
+extern int owl_function_make_outgoing_aim(char *body, char *to);
 extern void owl_function_zwrite_setup(char *line);
 extern void owl_function_aimwrite_setup(char *line);
 extern void owl_function_zcrypt_setup(char *line);
@@ -375,7 +385,7 @@ extern void owl_function_search_start(char *string, int direction);
 extern void owl_function_search_continue(int direction);
 extern void owl_function_search_helper(int mode, int direction);
 extern char *owl_function_ztext_stylestrip(char *zt);
-extern void owl_function_zlist(char *file, int elapsed, int timesort);
+extern void owl_function_buddylist(int aim, int zephyr, char *file);
 extern void owl_function_dump(char *filename);
 extern void owl_function_do_newmsgproc(void);
 extern void owl_function_xterm_raise(void);
@@ -478,6 +488,7 @@ extern void owl_global_aimnop_sent(owl_global *g);
 extern void owl_global_messagequeue_addmsg(owl_global *g, owl_message *m);
 extern owl_message *owl_global_messageuque_popmsg(owl_global *g);
 extern int owl_global_messagequeue_pending(owl_global *g);
+extern owl_buddylist *owl_global_get_buddylist(owl_global *g);
 
 /* -------------------------------- help.c -------------------------------- */
 extern void owl_help();
@@ -613,6 +624,7 @@ extern int owl_message_search(owl_message *m, char *string);
 extern void owl_message_create(owl_message *m, char *header, char *text);
 extern void owl_message_create_incoming_aim(owl_message *m, char *sender, char *recipient, char *text);
 extern void owl_message_create_outgoing_aim(owl_message *m, char *sender, char *recipient, char *text);
+extern void owl_message_create_aim_login(owl_message *m, int direction, char *screenname);
 extern void owl_message_create_admin(owl_message *m, char *header, char *text);
 extern void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n);
 extern void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, char *zsig);

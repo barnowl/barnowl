@@ -366,42 +366,42 @@ void addcb_bos(aim_session_t *sess, aim_conn_t *bosconn)
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNCOMPLETE, faimtest_conncomplete, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNINITDONE, conninitdone_bos, 0);
 
-  aim_conn_addhandler(sess, bosconn, 0x0013, 0x0003, ssirights, 0);
-  aim_conn_addhandler(sess, bosconn, 0x0013, 0x0006, ssidata, 0);
-  aim_conn_addhandler(sess, bosconn, 0x0013, 0x000f, ssidatanochange, 0);
-  aim_conn_addhandler(sess, bosconn, 0x0008, 0x0002, handlepopup, 0);
-  aim_conn_addhandler(sess, bosconn, 0x0009, 0x0003, faimtest_bosrights, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_GEN, AIM_CB_GEN_REDIRECT, faimtest_handleredirect, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_STS, AIM_CB_STS_SETREPORTINTERVAL, faimtest_reportinterval, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_BUD, AIM_CB_BUD_RIGHTSINFO, faimtest_parse_buddyrights, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_GEN, AIM_CB_GEN_MOTD, faimtest_parse_motd, 0);
-  aim_conn_addhandler(sess, bosconn, 0x0004, 0x0005, faimtest_icbmparaminfo, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNERR, faimtest_parse_connerr, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOC, AIM_CB_LOC_RIGHTSINFO, faimtest_locrights, 0);
-  aim_conn_addhandler(sess, bosconn, 0x0001, 0x001f, faimtest_memrequest, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_BUD, AIM_CB_BUD_ONCOMING, faimtest_parse_oncoming, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_BUD, AIM_CB_BUD_OFFGOING, faimtest_parse_offgoing, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_INCOMING, faimtest_parse_incoming_im, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOC, AIM_CB_LOC_ERROR, faimtest_parse_locerr, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_MISSEDCALL, faimtest_parse_misses, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_GEN, AIM_CB_GEN_RATECHANGE, faimtest_parse_ratechange, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_GEN, AIM_CB_GEN_EVIL, faimtest_parse_evilnotify, 0);
-  aim_conn_addhandler(sess, bosconn, 0x000a, 0x0001, faimtest_parse_searcherror, 0);
-  aim_conn_addhandler(sess, bosconn, 0x000a, 0x0003, faimtest_parse_searchreply, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_ERROR, faimtest_parse_msgerr, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOC, AIM_CB_LOC_USERINFO, faimtest_parse_userinfo, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_ACK, faimtest_parse_msgack, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0013,         0x0003,                        ssirights, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0013,         0x0006,                        ssidata, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0013,         0x000f,                        ssidatanochange, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0008,         0x0002,                        handlepopup, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0009,         0x0003,                        faimtest_bosrights, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_GEN, AIM_CB_GEN_REDIRECT,           faimtest_handleredirect, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_STS, AIM_CB_STS_SETREPORTINTERVAL,  faimtest_reportinterval, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_BUD, AIM_CB_BUD_RIGHTSINFO,         faimtest_parse_buddyrights, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_GEN, AIM_CB_GEN_MOTD,               faimtest_parse_motd, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0004,         0x0005,                        faimtest_icbmparaminfo, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNERR,    faimtest_parse_connerr, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOC, AIM_CB_LOC_RIGHTSINFO,         faimtest_locrights, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0001,         0x001f,                        faimtest_memrequest, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_BUD, AIM_CB_BUD_ONCOMING,           faimtest_parse_oncoming, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_BUD, AIM_CB_BUD_OFFGOING,           faimtest_parse_offgoing, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_INCOMING,           faimtest_parse_incoming_im, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOC, AIM_CB_LOC_ERROR,              faimtest_parse_locerr, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_MISSEDCALL,         faimtest_parse_misses, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_GEN, AIM_CB_GEN_RATECHANGE,         faimtest_parse_ratechange, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_GEN, AIM_CB_GEN_EVIL,               faimtest_parse_evilnotify, 0);
+  aim_conn_addhandler(sess, bosconn, 0x000a,         0x0001,                        faimtest_parse_searcherror, 0);
+  aim_conn_addhandler(sess, bosconn, 0x000a,         0x0003,                        faimtest_parse_searchreply, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_ERROR,              faimtest_parse_msgerr, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOC, AIM_CB_LOC_USERINFO,           faimtest_parse_userinfo, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_ACK,                faimtest_parse_msgack, 0);
 
-  aim_conn_addhandler(sess, bosconn, 0x0001, 0x0001, faimtest_parse_genericerr, 0);
-  aim_conn_addhandler(sess, bosconn, 0x0003, 0x0001, faimtest_parse_genericerr, 0);
-  aim_conn_addhandler(sess, bosconn, 0x0009, 0x0001, faimtest_parse_genericerr, 0);
-  aim_conn_addhandler(sess, bosconn, 0x0001, 0x000b, serverpause, 0);
-  aim_conn_addhandler(sess, bosconn, 0x0001, 0x0012, migrate, 0);
-  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_ICQ, AIM_CB_ICQ_OFFLINEMSG, offlinemsg, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0001,         0x0001,                        faimtest_parse_genericerr, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0003,         0x0001,                        faimtest_parse_genericerr, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0009,         0x0001,                        faimtest_parse_genericerr, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0001,         0x000b,                        serverpause, 0);
+  aim_conn_addhandler(sess, bosconn, 0x0001,         0x0012,                        migrate, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_ICQ, AIM_CB_ICQ_OFFLINEMSG,         offlinemsg, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_ICQ, AIM_CB_ICQ_OFFLINEMSGCOMPLETE, offlinemsgdone, 0);
 
   #ifdef MID_REWROTE_ALL_THE_CRAP
-  aim_conn_addhandler(sess, bosconn, 0xffff, 0xffff, faimtest_parse_unknown, 0);
+  aim_conn_addhandler(sess, bosconn, 0xffff,         0xffff,                        faimtest_parse_unknown, 0);
   #endif
 
   return;
@@ -420,7 +420,7 @@ on them.", priv->ohcaptainmycaptain);
   */
 
   /*
-  snprintf(buddies, sizeof(buddies), "jagworks&jkretch76&");
+  snprintf(buddies, sizeof(buddies), "Buddy1&Buddy2&");
   snprintf(profile, sizeof(profile), "Hello.<br>This is a test");
   */
 
@@ -1386,11 +1386,14 @@ static int faimtest_parse_incoming_im(aim_session_t *sess, aim_frame_t *fr, ...)
 static int faimtest_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   aim_userinfo_t *userinfo;
-  
+
   va_list ap;
   va_start(ap, fr);
   userinfo = va_arg(ap, aim_userinfo_t *);
   va_end(ap);
+
+  owl_buddylist_oncoming(owl_global_get_buddylist(&g), userinfo->sn);
+  
   /*
     printf("%ld  %s is now online (flags: %04x = %s%s%s%s%s%s%s%s) (caps = %s = 0x%08lx)\n",
     time(NULL),
@@ -1406,7 +1409,7 @@ static int faimtest_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...)
     (userinfo->present & AIM_USERINFO_PRESENT_CAPABILITIES) ? "present" : "not present",
     userinfo->capabilities);
   */
-  return 1;
+  return(1);
 }
 
 static int faimtest_parse_offgoing(aim_session_t *sess, aim_frame_t *fr, ...)
@@ -1417,6 +1420,8 @@ static int faimtest_parse_offgoing(aim_session_t *sess, aim_frame_t *fr, ...)
   va_start(ap, fr);
   userinfo = va_arg(ap, aim_userinfo_t *);
   va_end(ap);
+
+  owl_buddylist_offgoing(owl_global_get_buddylist(&g), userinfo->sn);
 
   /*
   printf("%ld  %s is now offline (flags: %04x = %s%s%s%s%s%s%s%s) (caps = %s = 0x%08lx)\n",
@@ -2467,3 +2472,71 @@ void directim_requested(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *u
     aim_send_im_direct(sess, newconn, "goodday");
   }
 }
+
+
+/****************************************/
+
+/*
+static int gaim_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...) {
+        struct gaim_connection *gc = sess->aux_data;
+        struct oscar_data *od = gc->proto_data;
+        aim_userinfo_t *info;
+        time_t time_idle = 0, signon = 0;
+        int type = 0;
+        int caps = 0;
+        char *tmp;
+
+        va_list ap;
+        va_start(ap, fr);
+        info = va_arg(ap, aim_userinfo_t *);
+        va_end(ap);
+
+        if (info->present & AIM_USERINFO_PRESENT_CAPABILITIES)
+                caps = info->capabilities;
+        if (info->flags & AIM_FLAG_ACTIVEBUDDY)
+                type |= UC_AB;
+
+        if ((!od->icq) && (info->present & AIM_USERINFO_PRESENT_FLAGS)) {
+                        if (info->flags & AIM_FLAG_UNCONFIRMED)
+                                type |= UC_UNCONFIRMED;
+                        if (info->flags & AIM_FLAG_ADMINISTRATOR)
+                                type |= UC_ADMIN;
+                        if (info->flags & AIM_FLAG_AOL)
+                                type |= UC_AOL;
+                        if (info->flags & AIM_FLAG_FREE)
+                                type |= UC_NORMAL;
+                        if (info->flags & AIM_FLAG_AWAY)
+                                type |= UC_UNAVAILABLE;
+                        if (info->flags & AIM_FLAG_WIRELESS)
+                                type |= UC_WIRELESS;
+        }
+        if (info->present & AIM_USERINFO_PRESENT_ICQEXTSTATUS) {
+                type = (info->icqinfo.status << 16);
+                if (!(info->icqinfo.status & AIM_ICQ_STATE_CHAT) &&
+                      (info->icqinfo.status != AIM_ICQ_STATE_NORMAL)) {
+                        type |= UC_UNAVAILABLE;
+                }
+        }
+
+        if (caps & AIM_CAPS_ICQ)
+                caps ^= AIM_CAPS_ICQ;
+
+        if (info->present & AIM_USERINFO_PRESENT_IDLE) {
+                time(&time_idle);
+                time_idle -= info->idletime*60;
+        }
+
+        if (info->present & AIM_USERINFO_PRESENT_SESSIONLEN)
+                signon = time(NULL) - info->sessionlen;
+
+        tmp = g_strdup(normalize(gc->username));
+        if (!strcmp(tmp, normalize(info->sn)))
+                g_snprintf(gc->displayname, sizeof(gc->displayname), "%s", info->sn);
+        g_free(tmp);
+
+        serv_got_update(gc, info->sn, 1, info->warnlevel/10, signon,
+                        time_idle, type, caps);
+
+        return 1;
+}
+*/

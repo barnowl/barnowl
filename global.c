@@ -91,6 +91,8 @@ void owl_global_init(owl_global *g) {
   g->aim_screenname=NULL;
   g->aim_loggedin=0;
   g->aim_lastnop=0;
+
+  owl_buddylist_init(&(g->buddylist));
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -716,3 +718,8 @@ int owl_global_messagequeue_pending(owl_global *g) {
   if (owl_list_get_size(&(g->messagequeue))==0) return(0);
   return(1);
 }
+
+owl_buddylist *owl_global_get_buddylist(owl_global *g) {
+  return(&(g->buddylist));
+}
+  

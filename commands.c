@@ -232,7 +232,17 @@ owl_cmd commands_to_init[]
 	      "List users logged in",
 	      "znol [-f file]",
 	      "Print a znol-style listing of users logged in"),
-  
+
+  OWLCMD_ARGS("alist", owl_command_alist, OWL_CTX_INTERACTIVE,
+	      "List AIM users logged in",
+	      "alist",
+	      "Print a listing of AIM users logged in"),
+
+  OWLCMD_ARGS("blist", owl_command_blist, OWL_CTX_INTERACTIVE,
+	      "List all buddies logged in",
+	      "alist",
+	      "Print a listing of buddies logged in, regardless of protocol."),
+
   OWLCMD_VOID("recv:shiftleft", owl_command_shift_left, OWL_CTX_INTERACTIVE,
 	      "scrolls receive window to the left", "", ""),
 
@@ -817,7 +827,17 @@ char *owl_command_zlist(int argc, char **argv, char *buff) {
       return(NULL);
     }
   }
-  owl_function_zlist(file, elapsed, timesort);
+  owl_function_buddylist(0, 1, file);
+  return(NULL);
+}
+
+char *owl_command_alist() {
+  owl_function_buddylist(1, 0, NULL);
+  return(NULL);
+}
+
+char *owl_command_blist() {
+  owl_function_buddylist(1, 1, NULL);
   return(NULL);
 }
 
@@ -1377,15 +1397,21 @@ char *owl_command_zwrite(int argc, char **argv, char *buff) {
 char *owl_command_aimwrite(int argc, char **argv, char *buff) {
   char *tmpbuff;
 
+  if (!owl_global_is_aimloggedin(&g)) {
+    owl_function_makemsg("You are not logged in to AIM.");
+    return(NULL);
+  }
+
   if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the aimwrite command.");
-  } else {
-    tmpbuff=owl_strdup(buff);
-    owl_function_aimwrite_setup(tmpbuff);
-    owl_global_set_buffercommand(&g, tmpbuff);
-    owl_free(tmpbuff);
+    return(NULL);
   }
-  return NULL;
+
+  tmpbuff=owl_strdup(buff);
+  owl_function_aimwrite_setup(tmpbuff);
+  owl_global_set_buffercommand(&g, tmpbuff);
+  owl_free(tmpbuff);
+  return(NULL);
 }
 
 char *owl_command_zcrypt(int argc, char **argv, char *buff) {
@@ -1771,11 +1797,16 @@ char *owl_command_search(int argc, char **argv, char *buff) {
 
 char *owl_command_aimlogin(int argc, char **argv, char *buff) {
   int ret;
-
+  
   if (argc!=3) {
     owl_function_makemsg("Wrong number of arguments to aimlogin command");
     return(NULL);
   }
+
+  /* clear the buddylist */
+  owl_buddylist_clear(owl_global_get_buddylist(&g));
+
+  /* try to login */
   ret=owl_aim_login(argv[1], argv[2]);
   if (!ret) {
     owl_function_makemsg("%s logged in.\n", argv[1]);
@@ -1787,6 +1818,9 @@ char *owl_command_aimlogin(int argc, char **argv, char *buff) {
 }
 
 char *owl_command_aimlogout(int argc, char **argv, char *buff) {
+  /* clear the buddylist */
+  owl_buddylist_clear(owl_global_get_buddylist(&g));
+
   owl_aim_logout();
   return(NULL);
 }

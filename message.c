@@ -580,6 +580,30 @@ void owl_message_create_outgoing_aim(owl_message *m, char *sender, char *recipie
   owl_free(indent);
 }
 
+/* For login direction == 0
+ * For logout direction == 1
+ */
+void owl_message_create_aim_login(owl_message *m, int direction, char *screenname)
+{
+  owl_message_init(m);
+  owl_message_set_body(m, "");
+  owl_message_set_sender(m, screenname);
+  owl_message_set_recipient(m, owl_global_get_aim_screenname(&g));
+  owl_message_set_type_aim(m);
+  owl_message_set_direction_in(m);
+
+  owl_fmtext_init_null(&(m->fmtext));
+  owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
+  if (direction==0) {
+    owl_fmtext_append_bold(&(m->fmtext), "AIM LOGIN");
+  } else if (direction==1) {
+    owl_fmtext_append_bold(&(m->fmtext), "AIM LOGOUT");
+  }
+  owl_fmtext_append_normal(&(m->fmtext), " for ");
+  owl_fmtext_append_normal(&(m->fmtext), screenname);
+  owl_fmtext_append_normal(&(m->fmtext), "\n");
+}
+
 void owl_message_create_admin(owl_message *m, char *header, char *text)
 {
   char *indent;
