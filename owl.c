@@ -475,7 +475,9 @@ int main(int argc, char **argv, char **env)
 	if (owl_message_is_type_zephyr(m)) {
 	  owl_zephyr_zaway(m);
 	} else if (owl_message_is_type_aim(m)) {
-	  owl_function_send_aimawymsg(owl_message_get_sender(m), owl_global_get_zaway_msg(&g));
+	  if (owl_message_is_private(m)) {
+	    owl_function_send_aimawymsg(owl_message_get_sender(m), owl_global_get_zaway_msg(&g));
+	  }
 	}
       }
 
