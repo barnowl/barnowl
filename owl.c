@@ -14,7 +14,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zephyr/zephyr.h>
 #include <com_err.h>
 #include <signal.h>
 #include <time.h>
@@ -40,7 +39,9 @@ int main(int argc, char **argv, char **env) {
   time_t nexttime, now;
   struct tm *today;
   char *dir;
+#ifdef HAVE_LIBZEPHYR
   ZNotice_t notice;
+#endif
 
   argcsave=argc;
   argvsave=argv;
@@ -132,7 +133,11 @@ int main(int argc, char **argv, char **env) {
   owl_global_init(&g);
   if (debug) owl_global_set_debug_on(&g);
   owl_global_set_startupargs(&g, argcsave, argvsave);
-
+#ifdef HAVE_LIBZEPHYR
+  owl_global_set_havezephyr(&g);
+#endif
+  owl_global_set_haveaim(&g);
+  
   /* create the owl directory, in case it does not exist */
   dir=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_CONFIG_DIR);
   mkdir(dir, S_IRWXU);
@@ -339,12 +344,15 @@ int main(int argc, char **argv, char **env) {
     newmsgs=0;
     zpendcount=0;
     while(owl_zephyr_zpending() || owl_global_messagequeue_pending(&g)) {
+#ifdef HAVE_LIBZEPHYR
       struct sockaddr_in from;
+#endif
       owl_message *m;
       owl_filter *f;
-      
+
       /* grab the new message, stick it in 'm' */
       if (owl_zephyr_zpending()) {
+#ifdef HAVE_LIBZEPHYR
 	/* grab a zephyr notice, but if we've done 20 without stopping,
 	   take a break to process keystrokes etc. */
 	if (zpendcount>20) break;
@@ -365,6 +373,7 @@ int main(int argc, char **argv, char **env) {
 	/* create the new message */
 	m=owl_malloc(sizeof(owl_message));
 	owl_message_create_from_znotice(m, &notice);
+#endif
       } else if (owl_global_messagequeue_pending(&g)) {
 	m=owl_global_messageuque_popmsg(&g);
       }

@@ -16,7 +16,7 @@ void owl_log_outgoing_zephyr(char *to, char *text) {
 
   /* chop off a local realm */
   ptr=strchr(tobuff, '@');
-  if (ptr && !strncmp(ptr+1, ZGetRealm(), strlen(ZGetRealm()))) {
+  if (ptr && !strncmp(ptr+1, owl_zephyr_get_realm(), strlen(owl_zephyr_get_realm()))) {
     *ptr='\0';
   }
 
@@ -128,7 +128,7 @@ void owl_log_incoming(owl_message *m) {
       if (owl_message_is_type_zephyr(m)) {
 	from=frombuff=owl_strdup(owl_message_get_sender(m));
 	ptr=strchr(frombuff, '@');
-	if (ptr && !strncmp(ptr+1, ZGetRealm(), strlen(ZGetRealm()))) {
+	if (ptr && !strncmp(ptr+1, owl_zephyr_get_realm(), strlen(owl_zephyr_get_realm()))) {
 	  *ptr='\0';
 	}
       }

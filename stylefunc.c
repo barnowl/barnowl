@@ -8,12 +8,15 @@ static const char fileIdent[] = "$Id$";
    
 void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
 {
+#ifdef HAVE_LIBZEPHYR
   char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
   ZNotice_t *n;
+#endif
 
   if (owl_message_is_type_zephyr(m) && owl_message_is_direction_in(m)) {
+#ifdef HAVE_LIBZEPHYR
     n=owl_message_get_notice(m);
-
+  
     /* get the body */
     body=owl_strdup(owl_message_get_body(m));
     body=realloc(body, strlen(body)+30);
@@ -30,7 +33,7 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
     /* edit the from addr for printing */
     strcpy(frombuff, owl_message_get_sender(m));
     ptr=strchr(frombuff, '@');
-    if (ptr && !strncmp(ptr+1, ZGetRealm(), strlen(ZGetRealm()))) {
+    if (ptr && !strncmp(ptr+1, owl_zephyr_get_realm(), strlen(owl_zephyr_get_realm()))) {
       *ptr='\0';
     }
     
@@ -83,7 +86,7 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
 	owl_fmtext_append_normal(fm, " / ");
       }
       owl_fmtext_append_normal(fm, frombuff);
-      if (strcasecmp(owl_message_get_realm(m), ZGetRealm())) {
+      if (strcasecmp(owl_message_get_realm(m), owl_zephyr_get_realm()) {
 	owl_fmtext_append_normal(fm, " {");
 	owl_fmtext_append_normal(fm, owl_message_get_realm(m));
 	owl_fmtext_append_normal(fm, "} ");
@@ -111,6 +114,7 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
     
     owl_free(body);
     owl_free(indent);
+#endif
   } else if (owl_message_is_type_zephyr(m) && owl_message_is_direction_out(m)) {
     char *indent, *text, *zsigbuff, *foo;
       
@@ -199,12 +203,15 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
 
 void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
 {
+#ifdef HAVE_LIBZEPHYR
   char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
   ZNotice_t *n;
+#endif
 
   if (owl_message_is_type_zephyr(m) && owl_message_is_direction_in(m)) {
+#ifdef HAVE_LIBZEPHYR
     n=owl_message_get_notice(m);
-  
+
     /* get the body */
     body=owl_malloc(strlen(owl_message_get_body(m))+30);
     strcpy(body, owl_message_get_body(m));
@@ -221,7 +228,7 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     /* edit the from addr for printing */
     strcpy(frombuff, owl_message_get_sender(m));
     ptr=strchr(frombuff, '@');
-    if (ptr && !strncmp(ptr+1, ZGetRealm(), strlen(ZGetRealm()))) {
+    if (ptr && !strncmp(ptr+1, owl_zephyr_get_realm(), strlen(owl_zephyr_get_realm()))) {
       *ptr='\0';
     }
     
@@ -253,7 +260,7 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
 	owl_fmtext_append_bold(fm, "LOGOUT");
       }
       owl_fmtext_append_normal(fm, " for ");
-      ptr=short_zuser(n->z_class_inst);
+      ptr=short_zuser(owl_zephyr_get_instance(m));
       owl_fmtext_append_bold(fm, ptr);
       owl_free(ptr);
       owl_fmtext_append_normal(fm, " at ");
@@ -275,7 +282,7 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
 	owl_fmtext_append_normal(fm, owl_message_get_realm(m));
 	owl_fmtext_append_normal(fm, "} ");
       }
-      if (n->z_opcode[0]!='\0') {
+      if (strccmp(owl_zephyr_get_opcode(m), "")) {
 	owl_fmtext_append_normal(fm, " [");
 	owl_fmtext_append_normal(fm, owl_message_get_opcode(m));
 	owl_fmtext_append_normal(fm, "] ");
@@ -303,6 +310,7 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     
     owl_free(body);
     owl_free(indent);
+#endif
   } else if (owl_message_is_type_zephyr(m) && owl_message_is_direction_out(m)) {
     char *indent, *text, *zsigbuff, *foo;
     
@@ -394,13 +402,15 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
   char *tmp;
   char *baseformat="%s %-13.13s %-11.11s %-12.12s ";
   char *sender, *recip;
+#ifdef HAVE_LIBZEPHYR
   ZNotice_t *n;
-
+#endif
 
   sender=short_zuser(owl_message_get_sender(m));
   recip=short_zuser(owl_message_get_recipient(m));
   
   if (owl_message_is_type_zephyr(m)) {
+#ifdef HAVE_LIBZEPHYR
     n=owl_message_get_notice(m);
     
     owl_fmtext_append_spaces(fm, OWL_TAB);
@@ -471,7 +481,7 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
 
     owl_free(sender);
     owl_free(recip);
-    
+#endif
   } else if (owl_message_is_type_aim(m)) {
     owl_fmtext_append_spaces(fm, OWL_TAB);
     if (owl_message_is_login(m)) {

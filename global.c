@@ -96,6 +96,8 @@ void owl_global_init(owl_global *g) {
   owl_timer_create_countdown(&(g->aim_ignorelogin_timer), 0);
   owl_buddylist_init(&(g->buddylist));
   g->response=NULL;
+  g->havezephyr=0;
+  g->haveaim=0;
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -777,4 +779,27 @@ void owl_global_set_response(owl_global *g, char *resp)
 {
   if (g->response) owl_free(g->response);
   g->response=resp;
+}
+
+
+void owl_global_set_haveaim(owl_global *g)
+{
+  g->haveaim=1;
+}
+
+int owl_global_is_haveaim(owl_global *g)
+{
+  if (g->haveaim) return(1);
+  return(0);
+}
+
+void owl_global_set_havezephyr(owl_global *g)
+{
+  g->havezephyr=1;
+}
+
+int owl_global_is_havezephyr(owl_global *g)
+{
+  if (g->havezephyr) return(1);
+  return(0);
 }

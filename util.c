@@ -426,7 +426,7 @@ char *short_zuser(char *in)
   out=owl_strdup(in);
   ptr=strchr(out, '@');
   if (ptr) {
-    if (!strcasecmp(ptr+1, ZGetRealm())) {
+    if (!strcasecmp(ptr+1, owl_zephyr_get_realm())) {
       *ptr='\0';
     }
   }
@@ -443,7 +443,7 @@ char *long_zuser(char *in)
   if (NULL != (ptr=strchr(in, '@'))) {
     return owl_strdup(in);
   } else {
-    return owl_sprintf("%s@%s", in, ZGetRealm());
+    return owl_sprintf("%s@%s", in, owl_zephyr_get_realm());
   }
 }
 

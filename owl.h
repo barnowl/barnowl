@@ -10,14 +10,15 @@
 #include <libfaim/aim.h>
 #include "config.h"
 #ifdef HAVE_LIBZEPHYR
-#include <zephyr/zephyr.h>
+#undef HAVE_LIBZEPHYR
+/* #include <zephyr/zephyr.h> */ /* this is to simulate not having zephyr */
 #endif
 
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.6
-#define OWL_VERSION_STRING "2.0.6"
+#define OWL_VERSION         2.0.7-pre-1
+#define OWL_VERSION_STRING "2.0.7-pre-1"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
@@ -445,6 +446,8 @@ typedef struct _owl_global {
   owl_list messagequeue;    /* for queueing up aim and other messages */
   owl_list stylelist;       /* global list of available styles */
   char *response;           /* response to the last question asked */
+  int havezephyr;
+  int haveaim;
 } owl_global;
 
 /* globals */

@@ -3,16 +3,18 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
-#include <zephyr/zephyr.h>
 #include <com_err.h>
 #include "owl.h"
 
 static const char fileIdent[] = "$Id$";
 
+#ifdef HAVE_LIBZEPHYR
 Code_t ZResetAuthentication();
+#endif
 
 int owl_zephyr_initialize()
 {
+#ifdef HAVE_LIBZEPHYR
   int ret;
   
   if ((ret = ZInitialize()) != ZERR_NONE) {
@@ -23,6 +25,17 @@ int owl_zephyr_initialize()
     com_err("owl",ret,"while opening port");
     return(1);
   }
+#endif
+  return(0);
+}
+
+
+int owl_zephyr_shutdown()
+{
+#ifdef HAVE_LIBZEPHYR
+  unsuball();
+  ZClosePort();
+#endif
   return(0);
 }
 
@@ -32,6 +45,24 @@ int owl_zephyr_zpending()
   return(ZPending());
 #else
   return(0);
+#endif
+}
+
+char *owl_zephyr_get_realm()
+{
+#ifdef HAVE_LIBZEPHYR
+  return(ZGetRealm());
+#else
+  return("");
+#endif
+}
+
+char *owl_zephyr_get_sender()
+{
+#ifdef HAVE_LIBZEPHYR
+  return(ZGetSender());
+#else
+  return("");
 #endif
 }
 
@@ -257,6 +288,11 @@ char *owl_zephyr_get_field(ZNotice_t *n, int j, int *k)
   *k=0;
   return("");
 }
+#else
+char *owl_zephyr_get_field(void *n, int j, int *k)
+{
+  return("");
+}
 #endif
 
 #ifdef HAVE_LIBZEPHYR
@@ -270,6 +306,11 @@ int owl_zephyr_get_num_fields(ZNotice_t *n)
   }
   
   return(fields);
+}
+#else
+int owl_zephyr_get_num_fields(void *n)
+{
+  return(0);
 }
 #endif
 
@@ -297,6 +338,11 @@ char *owl_zephyr_get_zsig(ZNotice_t *n, int *k)
   }
   *k=strlen(n->z_message);
   return(n->z_message);
+}
+#else
+char *owl_zephyr_get_zsig(void *n, int *k)
+{
+  return("");
 }
 #endif
 
@@ -395,6 +441,10 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
     owl_function_makemsg("Internal error on ack (%s)", retnotice->z_message);
   }
 }
+#else
+void owl_zephyr_handle_ack(void *retnotice)
+{
+}
 #endif
 
 #ifdef HAVE_LIBZEPHYR
@@ -404,6 +454,11 @@ int owl_zephyr_notice_is_ack(ZNotice_t *n)
     if (!strcasecmp(n->z_class, LOGIN_CLASS)) return(0);
     return(1);
   }
+  return(0);
+}
+#else
+int owl_zephyr_notice_is_ack(void *n)
+{
   return(0);
 }
 #endif
@@ -653,6 +708,7 @@ void owl_zephyr_delbuddy(char *name)
 }
 
 /* return auth string */
+#ifdef HAVE_LIBZEPHYR
 char *owl_zephyr_get_authstr(ZNotice_t *n)
 {
 
@@ -668,5 +724,68 @@ char *owl_zephyr_get_authstr(ZNotice_t *n)
     return ("UNKNOWN");
   }           
 }
+#else
+char *owl_zephyr_get_authstr(void *n)
+{
+  return("");
+}
+#endif
 
 
+/* returns a buffer of subscriptions or an error message.
+ * Caller must free the return.
+ */
+char *owl_zephyr_getsubs()
+{
+#ifdef HAVE_LIBZEPHYR
+  int ret, num, i, one;
+  ZSubscription_t sub;
+  char *out, *tmpbuff;
+  one=1;
+
+  ret=ZRetrieveSubscriptions(0, &num);
+  if (ret==ZERR_TOOMANYSUBS) {
+    out=owl_strdup("Zephyr: too many subscriptions\n");
+    return(out);
+  }
+
+  out=owl_malloc(num*500);
+  tmpbuff=owl_malloc(num*500);
+  strcpy(out, "");
+  for (i=0; i<num; i++) {
+    if ((ret = ZGetSubscriptions(&sub, &one)) != ZERR_NONE) {
+      owl_free(out);
+      owl_free(tmpbuff);
+      ZFlushSubscriptions();
+      out=owl_strdup("Error while getting subscriptions\n");
+      return(out);
+    } else {
+      sprintf(tmpbuff, "<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, buff);
+      strcpy(out, tmpbuff);
+    }
+  }
+
+  owl_free(tmpbuff);
+  ZFlushSubscriptions();
+  return(out);
+#else
+  return("");
+#endif
+}
+
+char *owl_zephyr_get_variable(char *var)
+{
+#ifdef HAVE_LIBZEPHYR
+  return(ZGetVariable(var));
+#else
+  return("");
+#endif
+}
+
+void owl_zephyr_set_locationinfo(char *host, char *val)
+{
+#ifdef HAVE_LIBZEPHYR
+  ZInitLocationInfo(host, val);
+#endif
+}
+  

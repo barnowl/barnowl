@@ -142,7 +142,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
   if (z->zsig==NULL) {
     zsigproc = owl_global_get_zsigproc(&g);
     zsigowlvar = owl_global_get_zsig(&g);
-    zsigzvar = ZGetVariable("zwrite-signature");
+    zsigzvar = owl_zephyr_get_variable("zwrite-signature");
 
     if (zsigowlvar && *zsigowlvar) {
       z->zsig=owl_strdup(zsigowlvar);

@@ -1,4 +1,3 @@
-#include <zephyr/zephyr.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -433,6 +432,11 @@ ZNotice_t *owl_message_get_notice(owl_message *m)
 {
   return(&(m->notice));
 }
+#else
+void *owl_message_get_notice(owl_message *m)
+{
+  return(NULL);
+}
 #endif
 
 char *owl_message_get_hostname(owl_message *m)
@@ -472,8 +476,8 @@ int owl_message_is_personal(owl_message *m)
   if (owl_message_is_type_zephyr(m)) {
     if (strcasecmp(owl_message_get_class(m), "message")) return(0);
     if (strcasecmp(owl_message_get_instance(m), "personal")) return(0);
-    if (!strcasecmp(owl_message_get_recipient(m), ZGetSender()) ||
-	!strcasecmp(owl_message_get_sender(m), ZGetSender())) {
+    if (!strcasecmp(owl_message_get_recipient(m), owl_zephyr_get_sender()) ||
+	!strcasecmp(owl_message_get_sender(m), owl_zephyr_get_sender())) {
       return(1);
     }
   }
@@ -483,7 +487,7 @@ int owl_message_is_personal(owl_message *m)
 int owl_message_is_from_me(owl_message *m)
 {
   if (owl_message_is_type_zephyr(m)) {
-    if (!strcasecmp(owl_message_get_sender(m), ZGetSender())) {
+    if (!strcasecmp(owl_message_get_sender(m), owl_zephyr_get_sender())) {
       return(1);
     } else {
       return(0);
@@ -533,7 +537,7 @@ int owl_message_is_burningears(owl_message *m)
   if (owl_message_is_from_me(m) || owl_message_is_private(m)) return(0);
 
   if (owl_message_is_type_zephyr(m)) {
-    strcpy(sender, ZGetSender());
+    strcpy(sender, owl_zephyr_get_sender());
     ptr=strchr(sender, '@');
     if (ptr) *ptr='\0';
   } else if (owl_message_is_type_aim(m)) {
@@ -619,6 +623,7 @@ void owl_message_create_admin(owl_message *m, char *header, char *text)
   owl_message_set_attribute(m, "adminheader", header); /* just a hack for now */
 }
 
+#ifdef HAVE_LIBZEPHYR
 void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 {
   struct hostent *hent;
@@ -653,7 +658,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   if ((ptr=strchr(n->z_recipient, '@'))!=NULL) {
     owl_message_set_realm(m, ptr+1);
   } else {
-    owl_message_set_realm(m, ZGetRealm());
+    owl_message_set_realm(m, owl_zephyr_get_realm());
   }
 
   /* Set the "isloginout" attribute if it's a login message */
@@ -666,7 +671,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   }
 
   /* is the "isprivate" attribute if it's a private zephyr */
-  if (!strcasecmp(n->z_recipient, ZGetSender())) {
+  if (!strcasecmp(n->z_recipient, owl_zephyr_get_sender())) {
     owl_message_set_isprivate(m);
   }
 
@@ -715,6 +720,11 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   m->time=owl_strdup(ctime((time_t *) &n->z_time.tv_sec));
   m->time[strlen(m->time)-1]='\0';
 }
+#else
+void owl_message_create_from_znotice(owl_message *m, void *n)
+{
+}
+#endif
 
 void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, char *zsig)
 {
@@ -729,7 +739,7 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   /* set things */
   owl_message_set_direction_out(m);
   owl_message_set_type_zephyr(m);
-  owl_message_set_sender(m, ZGetSender());
+  owl_message_set_sender(m, owl_zephyr_get_sender());
   owl_message_set_class(m, owl_zwrite_get_class(&z));
   owl_message_set_instance(m, owl_zwrite_get_instance(&z));
   owl_message_set_recipient(m,
@@ -764,10 +774,11 @@ void owl_message_free(owl_message *m)
 {
   int i, j;
   owl_pair *p;
-    
+#ifdef HAVE_LIBZEPHYR    
   if (owl_message_is_type_zephyr(m) && owl_message_is_direction_in(m)) {
     ZFreeNotice(&(m->notice));
   }
+#endif
   if (m->time) owl_free(m->time);
   if (m->zwriteline) owl_free(m->zwriteline);
 

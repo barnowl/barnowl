@@ -68,7 +68,7 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
 	  !strcasecmp(argv[i], "type") ||
 	  !strcasecmp(argv[i], "direction") ||
 	  !strcasecmp(argv[i], "login")) {
-	regexstr=owl_util_substitute(argv[i+1], "%me%", ZGetSender());
+	regexstr=owl_util_substitute(argv[i+1], "%me%", owl_zephyr_get_sender());
 	owl_filterelement_create_re(fe, argv[i], regexstr);
 	owl_free(regexstr);
 	i++;

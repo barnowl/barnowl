@@ -21,11 +21,14 @@ foreach $file (@ARGV) {
 	    && !/^XS/
 	    && !/\/\*/
 	    && !/ZWRITEOPTIONS/
-	    && !/owlfaim_priv/) 
+	    && !/owlfaim_priv/)
 	{
+
 	    s/\s+\{/\;/;
 	    s/\)[ \t]*$/\)\;/;
 	    print "extern ";
+	    print;
+	} elsif (/^#if/ || /^#else/ || /^#endif/) {
 	    print;
 	}
 	    

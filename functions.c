@@ -747,8 +747,7 @@ void owl_function_quit()
   }
 
   /* final clean up */
-  unsuball();
-  ZClosePort();
+  owl_zephyr_shutdown();
   endwin();
   owl_function_debugmsg("Quitting Owl");
   exit(0);
@@ -1255,11 +1254,11 @@ void owl_function_info()
 {
   owl_message *m;
   owl_fmtext fm, attrfm;
-  ZNotice_t *n;
-  char buff[10000], tmpbuff[1024];
-  char *ptr;
-  int i, j, fields, len;
+  char buff[10000];
   owl_view *v;
+#ifdef HAVE_LIBZEPHYR
+  ZNotice_t *n;
+#endif
 
   owl_fmtext_init_null(&fm);
   
@@ -1320,8 +1319,11 @@ void owl_function_info()
     owl_fmtext_append_normal(&fm, "  Time      : ");
     owl_fmtext_append_normal(&fm, owl_message_get_timestr(m));
     owl_fmtext_append_normal(&fm, "\n");
-
+#ifdef HAVE_LIBZEPHYR
     if (owl_message_is_direction_in(m)) {
+      char *ptr, tmpbuff[1024];
+      int i, j, fields, len;
+
       n=owl_message_get_notice(m);
 
       owl_fmtext_append_normal(&fm, "  Kind      : ");
@@ -1393,6 +1395,7 @@ void owl_function_info()
       owl_fmtext_append_normal(&fm, "  Default Fm:");
       owl_fmtext_append_normal(&fm, n->z_default_format);
     }
+#endif    
   }
 
   if (owl_message_is_type_aim(m)) {
@@ -1540,38 +1543,17 @@ void owl_function_mainwin_pageup()
 
 void owl_function_getsubs()
 {
-  int ret, num, i, one;
-  ZSubscription_t sub;
-  char *buff, *tmpbuff;
+  char *buff;
 
-  one = 1;
+  buff=owl_zephyr_getsubs();
 
-  ret=ZRetrieveSubscriptions(0, &num);
-  if (ret == ZERR_TOOMANYSUBS) {
-    owl_function_makemsg("Zephyr: too many subscriptions");
-    return;
+  if (buff) {
+    owl_function_popless_text(buff);
+  } else {
+    owl_function_popless_text("Error getting subscriptions");
   }
-
-  buff=owl_malloc(num*500);
-  tmpbuff=owl_malloc(num*500);
-  strcpy(buff, "");
-  for (i=0; i<num; i++) {
-    if ((ret = ZGetSubscriptions(&sub, &one)) != ZERR_NONE) {
-      owl_function_makemsg("Error while getting subscriptions");
-      owl_free(buff);
-      owl_free(tmpbuff);
-      ZFlushSubscriptions();
-      return;
-    } else {
-      sprintf(tmpbuff, "<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, buff);
-      strcpy(buff, tmpbuff);
-    }
-  }
-
-  owl_function_popless_text(buff);
+	   
   owl_free(buff);
-  owl_free(tmpbuff);
-  ZFlushSubscriptions();
 }
 
 #define PABUFLEN 5000
@@ -2862,12 +2844,15 @@ char *owl_function_ztext_stylestrip(char *zt)
 /* Popup a buddylisting.  If file is NULL use the default .anyone */
 void owl_function_buddylist(int aim, int zephyr, char *file)
 {
-  char *ourfile, *tmp, buff[LINE], *line;
-  FILE *f;
-  int numlocs, ret, i, j;
-  ZLocations_t location[200];
+  int i, j;
   owl_fmtext fm;
   owl_buddylist *b;
+#ifdef HAVE_LIBZEPHYR
+  char *ourfile, *tmp, buff[LINE], *line;
+  ZLocations_t location[200];
+  FILE *f;
+  int numlocs, ret;
+#endif
 
   owl_fmtext_init_null(&fm);
 
@@ -2883,6 +2868,7 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
     }
   }
 
+#ifdef HAVE_LIBZEPHYR
   if (zephyr) {
     if (file==NULL) {
       tmp=owl_global_get_homedir(&g);
@@ -2903,7 +2889,7 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
 			   strerror(errno) ? strerror(errno) : "");
       return;
     }
-    
+
     owl_fmtext_append_bold(&fm, "Zephyr users logged in:\n");
     
     while (fgets(buff, LINE, f)!=NULL) {
@@ -2957,6 +2943,7 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
     fclose(f);
     owl_free(ourfile);
   }
+#endif
   
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);

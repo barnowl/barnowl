@@ -25,7 +25,6 @@ static const char fileIdent[] = "$Id$";
 #include <unistd.h>
 #include <sys/types.h>
 #include <des.h>
-#include <zephyr/zephyr.h>
 
 #define MAX_KEY 128
 
