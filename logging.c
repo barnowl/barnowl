@@ -201,6 +201,9 @@ void owl_log_incoming(owl_message *m)
   int len, ch, i, personal;
 
   if (owl_global_get_loggingdirection(&g)==OWL_LOGGING_DIRECTION_OUT) return;
+
+  /* skip login/logout messages if appropriate */
+  if (!owl_global_is__loglogins(&g) && owl_message_is_loginout(m)) return;
       
   /* check for nolog */
   if (!strcasecmp(owl_message_get_opcode(m), "nolog") ||

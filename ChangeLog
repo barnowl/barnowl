@@ -4,6 +4,10 @@ $Id$
 	Added a licence
 	The 'personalbell' variable can now be set to 'on' 'off' or
 	  the name of a filter to match against
+	The 'loglogins' variable now controls whether login/logout
+	  messages are logged.  It is off by default.  For now this
+	  affects only AIM messages, later zephyr login/logout messages
+	  will also be logged if this is set to 'on'
 	
 2.1.4
 	Normalize and downcase AIM names for logging
