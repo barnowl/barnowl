@@ -206,7 +206,7 @@ void owl_log_incoming(owl_message *m) {
     memcpy(buff, ptr, i);
     buff[i]='\0';
     fprintf(file, "From: %s <%s>\n\n", buff, tmp);
-    fprintf(file, "%s\n", owl_message_get_body(m));
+    fprintf(file, "%s\n\n", owl_message_get_body(m));
     owl_free(tmp);
   } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
     fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
@@ -231,7 +231,7 @@ void owl_log_incoming(owl_message *m) {
       fprintf(allfile, "\n");
       fprintf(allfile, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
       fprintf(allfile, "From: %s <%s>\n\n", buff, tmp);
-      fprintf(allfile, "%s\n", owl_message_get_body(m));
+      fprintf(allfile, "%s\n\n", owl_message_get_body(m));
       owl_free(tmp);
     } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
       fprintf(allfile, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));

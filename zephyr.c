@@ -429,10 +429,8 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
     if (strcasecmp(retnotice->z_class, "message")) {
       char buff[1024];
-      owl_function_error("Not logged in or not subscribing to class %s, instance %s",
-			   retnotice->z_class, retnotice->z_class_inst);
-
-      sprintf(buff, "Could not send message to %s: not logged in or subscribing to messages.\n", tmp);
+      owl_function_error("No one subscribed to class class %s", retnotice->z_class);
+      sprintf(buff, "Could not send message to class %s: no one subscribed.\n", retnotice->z_class);
       owl_function_adminmsg("", buff);
     } else {
       char buff[1024];

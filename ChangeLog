@@ -2,6 +2,8 @@ $Id$
 
 2.0.10-pre-1
 	Allow 'hostname' in filters.
+	Fixed bug in reporting when no one is subbed to a class
+	Added an extral newline in logging incoming zephyrs
 	
 2.0.9
 	Added the 'fancylines' variable.
