@@ -122,6 +122,8 @@ static const char owl_h_fileIdent[] = "$Id$";
 
 #define OWL_CMD_ALIAS_SUMMARY_PREFIX "command alias to: "
 
+#define OWL_WEBZEPHYR_PRINCIPAL "daemon.webzephyr"
+
 #if defined(HAVE_DES_STRING_TO_KEY) && defined(HAVE_DES_KEY_SCHED) && defined(HAVE_DES_ECB_ENCRYPT)
 #define OWL_ENABLE_ZCRYPT 1
 #endif

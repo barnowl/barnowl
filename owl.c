@@ -515,5 +515,13 @@ void sig_handler(int sig) {
 }
 
 void usage() {
-  fprintf(stderr, "Usage: owl [-n] [-d] [-v] [-c <configfile>] [-t <ttyname>]\n");
+  fprintf(stderr, "Owl version %s\n", OWL_VERSION_STRING);
+  fprintf(stderr, "Usage: owl [-n] [-d] [-v] [-h] [-c <configfile>] [-t <ttyname>]\n");
+  fprintf(stderr, "  -n      don't load zephyr subscriptions\n");
+  fprintf(stderr, "  -d      enable debugging\n");
+  fprintf(stderr, "  -v      print the Owl version number and exit\n");
+  fprintf(stderr, "  -h      print this help message\n");
+  fprintf(stderr, "  -c      specify an alternate config file\n");
+  fprintf(stderr, "  -t      set the tty name\n");
+  
 }

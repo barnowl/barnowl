@@ -1743,13 +1743,13 @@ void owl_function_show_term()
 }
 
 
+/* if type = 0 then normal reply.
+ * if type = 1 then it's a reply to sender
+ * if enter = 0 then allow the command to be edited
+ * if enter = 1 then don't wait for editing
+ */
 void owl_function_reply(int type, int enter)
 {
-  /* if type = 0 then normal reply.
-   * if type = 1 then it's a reply to sender
-   * if enter = 0 then allow the command to be edited
-   * if enter = 1 then don't wait for editing
-   */
   char *buff, *oldbuff;
   owl_message *m;
   owl_filter *f;
@@ -1789,10 +1789,26 @@ void owl_function_reply(int type, int enter)
 	return;
       }
 
+      /* if it's a zephyr we sent, send it out the same way again */
       if (owl_message_is_direction_out(m)) {
 	owl_function_zwrite_setup(owl_message_get_zwriteline(m));
 	owl_global_set_buffercommand(&g, owl_message_get_zwriteline(m));
 	return;
+      }
+
+      /* Special case a personal reply to a webzephyr user on a class */
+      if ((type==1) && !strcasecmp(owl_message_get_opcode(m), "webzephyr")) {
+	class="webzephyr";
+	inst=owl_message_get_sender(m);
+	to=OWL_WEBZEPHYR_PRINCIPAL;
+      }
+
+      /* Special case LOGIN/LOGOUT notifications on class "webzephyr" */
+      if (!strcasecmp(owl_message_get_class(m), "webzephyr") &&
+	  owl_message_is_loginout(m)) {
+	class="webzephyr";
+	inst=owl_message_get_instance(m);
+	to=OWL_WEBZEPHYR_PRINCIPAL;
       }
       
       if (owl_message_is_loginout(m)) {

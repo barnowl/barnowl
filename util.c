@@ -468,7 +468,7 @@ char *owl_util_smartstripped_user(char *in)
     /* There's a '.' but it's in the realm */
     return(out);
   }
-  if (!strncasecmp(in, "daemon.webzephyr", strlen("daemon.webzephyr"))) {
+  if (!strncasecmp(in, OWL_WEBZEPHYR_PRINCIPAL, strlen(OWL_WEBZEPHYR_PRINCIPAL))) {
     return(out);
   }
 
