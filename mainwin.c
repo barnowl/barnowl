@@ -9,7 +9,7 @@ void owl_mainwin_init(owl_mainwin *mw) {
 
 void owl_mainwin_redisplay(owl_mainwin *mw) {
   owl_message *m;
-  int i, j, p, q, lines, isfull;
+  int i, p, q, lines, isfull, viewsize;
   int x, y, savey, recwinlines, start;
   int topmsg, curmsg, color;
   WINDOW *recwin;
@@ -26,10 +26,14 @@ void owl_mainwin_redisplay(owl_mainwin *mw) {
 
   recwinlines=owl_global_get_recwin_lines(&g);
   topmsg=owl_global_get_topmsg(&g);
+  viewsize=owl_view_get_size(v);
 
-  /* if there are no messages, just draw a blank screen */
-  if (owl_view_get_size(v)==0) {
-    owl_global_set_topmsg(&g, 0);
+  /* if there are no messages or if topmsg is past the end of the messages,
+   * just draw a blank screen */
+  if (viewsize==0 || topmsg>=viewsize) {
+    if (viewsize==0) {
+      owl_global_set_topmsg(&g, 0);
+    }
     mw->curtruncated=0;
     mw->lastdisplayed=-1;
     wnoutrefresh(recwin);
@@ -41,8 +45,8 @@ void owl_mainwin_redisplay(owl_mainwin *mw) {
   isfull=0;
   mw->curtruncated=0;
   mw->lasttruncated=0;
-  j=owl_view_get_size(v);
-  for (i=topmsg; i<j; i++) {
+
+  for (i=topmsg; i<viewsize; i++) {
     if (isfull) break;
     m=owl_view_get_element(v, i);
 

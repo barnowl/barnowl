@@ -154,7 +154,7 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("smartzpunt", owl_command_smartzpunt, OWL_CTX_INTERACTIVE,
 	      "creates a zpunt based on the current message",
-	      "smartnarrow [-i | --instance]",
+	      "smartzpunt [-i | --instance]",
 	      "Starts a zpunt command based on the current message's class\n"
 	      "(and instance if -i is specified).\n"),
 
@@ -247,7 +247,12 @@ owl_cmd commands_to_init[]
   OWLCMD_ALIAS("recv:first", "first"),
 
   OWLCMD_VOID("last", owl_command_last, OWL_CTX_INTERACTIVE,
-	      "move the pointer to the last message", "", ""),
+	      "move the pointer to the last message", "", 
+	      "Moves the pointer to the last message in the view.\n"
+	      "If we are already at the last message in the view,\n"
+	      "blanks the screen and moves just past the end of the view\n"
+	      "so that new messages will appear starting at the top\n"
+	      "of the screen.\n"),
   OWLCMD_ALIAS("recv:last", "last"),
 
   OWLCMD_VOID("expunge", owl_command_expunge, OWL_CTX_INTERACTIVE,

@@ -15,7 +15,16 @@ $Id$
 	Fixed bug in readconfig.c that prevented building under perl 5.005.
 	Switched "C-x C-x" to only "startcommand quit"
 	'getsubs' prints closer to the order you sub in.
-	
+	Modified the behavior of last so that "> >" will clear the screen.
+	The new behavior of last is:
+	      Moves the pointer to the last message in the view.
+	      If we are already at the last message in the view,
+	      blanks the screen and moves just past the end of the view
+	      so that new messages will appear starting at the top
+	      of the screen.
+	Fixed a typo in the help for smartzpunt.
+	Fixed functions to handle curmsg being past the end of the view.
+
 1.2.1
         New framework for command handling.
         New framework for keymap handling.

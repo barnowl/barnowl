@@ -375,6 +375,10 @@ void owl_function_expunge() {
   v=owl_global_get_current_view(&g);
   ml=owl_global_get_msglist(&g);
 
+  /* just check to make sure we're in bounds... */
+  if (curmsg>owl_view_get_size(v)-1) curmsg=owl_view_get_size(v)-1;
+  if (curmsg<0) curmsg=0;
+
   /* first try to move to an undeleted message in the view*/
   m=owl_view_get_element(v, curmsg);
   if (owl_message_is_delete(m)) {
@@ -388,7 +392,6 @@ void owl_function_expunge() {
     }
 
     /* if we weren't successful try to find one backwards */
-    curmsg=owl_global_get_curmsg(&g);
     if (owl_message_is_delete(owl_view_get_element(v, curmsg))) {
       for (i=curmsg; i>0; i--) {
 	if (!owl_message_is_delete(owl_view_get_element(v, i))) {
@@ -430,15 +433,22 @@ void owl_function_firstmsg() {
 }
 
 void owl_function_lastmsg_noredisplay() {
-  int curmsg;
+  int oldcurmsg, curmsg;
   owl_view *v;
 
   v=owl_global_get_current_view(&g);
-  
-  curmsg=owl_view_get_size(v)-1;
+  oldcurmsg=owl_global_get_curmsg(&g);
+  curmsg=owl_view_get_size(v)-1;  
   if (curmsg<0) curmsg=0;
   owl_global_set_curmsg(&g, curmsg);
-  owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
+  if (oldcurmsg < curmsg) {
+    owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
+  } else if (curmsg<owl_view_get_size(v)) {
+    /* If already at the end, blank the screen and move curmsg
+     * past the end of the messages. */
+    owl_global_set_topmsg(&g, curmsg+1);
+    owl_global_set_curmsg(&g, curmsg+1);
+  } 
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_global_set_direction_downwards(&g);
 }
@@ -630,12 +640,13 @@ void owl_function_openurl() {
 
   v=owl_global_get_current_view(&g);
   
-  if (owl_view_get_size(v)==0) {
+  m=owl_view_get_element(v, owl_global_get_curmsg(&g));
+
+  if (!m || owl_view_get_size(v)==0) {
     owl_function_makemsg("No current message selected");
     return;
   }
 
-  m=owl_view_get_element(v, owl_global_get_curmsg(&g));
   text=owl_message_get_text(m);
 
   /* First look for a good URL */  
@@ -1055,12 +1066,13 @@ void owl_function_info() {
 
   v=owl_global_get_current_view(&g);
   
-  if (owl_view_get_size(v)==0) {
+  m=owl_view_get_element(v, owl_global_get_curmsg(&g));
+
+  if (!m || owl_view_get_size(v)==0) {
     owl_function_makemsg("No message selected\n");
     return;
   }
 
-  m=owl_view_get_element(v, owl_global_get_curmsg(&g));
   if (!owl_message_is_zephyr(m)) {
     sprintf(buff,   "Owl Message Id: %i\n", owl_message_get_id(m));
     sprintf(buff, "%sTime          : %s\n", buff, owl_message_get_timestr(m));
@@ -1157,12 +1169,13 @@ void owl_function_curmsg_to_popwin() {
 
   pw=owl_global_get_popwin(&g);
 
-  if (owl_view_get_size(v)==0) {
+  m=owl_view_get_element(v, owl_global_get_curmsg(&g));
+
+  if (!m || owl_view_get_size(v)==0) {
     owl_function_makemsg("No current message");
     return;
   }
 
-  m=owl_view_get_element(v, owl_global_get_curmsg(&g));
   owl_function_popless_fmtext(owl_message_get_fmtext(m));
 }
 
@@ -1176,9 +1189,9 @@ void owl_function_page_curmsg(int step) {
 
   offset=owl_global_get_curmsg_vert_offset(&g);
   v=owl_global_get_current_view(&g);
-  if (owl_view_get_size(v)==0) return;
   curmsg=owl_global_get_curmsg(&g);
   m=owl_view_get_element(v, curmsg);
+  if (!m || owl_view_get_size(v)==0) return;
   lines=owl_message_get_numlines(m);
 
   if (offset==0) {
@@ -1478,6 +1491,11 @@ void owl_function_reply(int type, int enter) {
     char *class, *inst, *to, *cc=NULL;
     
     m=owl_view_get_element(owl_global_get_current_view(&g), owl_global_get_curmsg(&g));
+    if (!m) {
+      owl_function_makemsg("No message selected");
+      return;
+    }
+
 
     /* first check if we catch the reply-lockout filter */
     f=owl_global_get_filter(&g, "reply-lockout");
@@ -1985,7 +2003,7 @@ char *owl_function_smartfilter(int type) {
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
 
-  if (owl_view_get_size(v)==0) {
+  if (!m || owl_view_get_size(v)==0) {
     owl_function_makemsg("No message selected\n");
     return NULL;
   }
@@ -2032,7 +2050,7 @@ void owl_function_smartzpunt(int type) {
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
 
-  if (owl_view_get_size(v)==0) {
+  if (!m || owl_view_get_size(v)==0) {
     owl_function_makemsg("No message selected\n");
     return;
   }
