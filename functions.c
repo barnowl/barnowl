@@ -59,6 +59,26 @@ void owl_function_show_commands()
   owl_fmtext_free(&fm);
 }
 
+
+void owl_function_show_view(char *viewname)
+{
+  owl_view *v;
+  owl_fmtext fm;
+
+  /* we only have the one view right now */
+  v=owl_global_get_current_view(&g);
+  if (viewname && strcmp(viewname, owl_view_get_name(v))) {
+    owl_function_makemsg("No view named '%s'", viewname);
+    return;
+  }
+
+  owl_fmtext_init_null(&fm);
+  owl_view_to_fmtext(v, &fm);
+  owl_function_popless_fmtext(&fm);
+  owl_fmtext_free(&fm);
+}
+
+
 char *owl_function_cmd_describe(void *name)
 {
   owl_cmd *cmd = owl_cmddict_find(owl_global_get_cmddict(&g), name);
@@ -3018,15 +3038,31 @@ void owl_function_execstartup(void)
   fclose(file);
 }
 
+
+void owl_function_change_style(owl_view *v, char *stylename)
+{
+  owl_view_set_style(v, owl_global_get_style_by_name(&g, stylename));
+  owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
+  owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  
+}
+
 void owl_function_toggleoneline()
 {
-  char *style;
+  owl_view *v;
+  owl_style *s;
 
-  style=owl_global_get_style(&g);
+  v=owl_global_get_current_view(&g);
+  s=owl_view_get_style(v);
 
-  if (strcmp(style, "oneline")) {
-    owl_global_set_style(&g, "oneline");
+  if (!owl_style_matches_name(s, "oneline")) {
+    owl_function_change_style(v, "oneline");
   } else {
-    owl_global_set_style(&g, owl_global_get_default_style(&g));
+    owl_function_change_style(v, owl_global_get_default_style(&g));
   }
+
+  owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
+  owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }

@@ -485,19 +485,23 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("view", owl_command_view, OWL_CTX_INTERACTIVE,
 	      "view messages matching a filter",
+	      "view [<viewname>] [-f <filter> | --home ] [-s <style>]\n"
 	      "view <filter>\n"
 	      "view -d <expression>\n"
 	      "view --home",
-	      "In the first usage, The view command sets the current view to\n"
-	      "the specified filter.   This causes only messages matching\n"
-	      "that filter to be displayed.\n"
+	      "The view command sets information associated with a particular view,\n"
+	      "such as view's filter or style.  In the first general usage listed\n"
+	      "above <viewname> is the name of the view to be changed.  If not\n"
+	      "specified the default view 'main' will be used.  A filter can be set\n"
+	      "for the view by listing a named filter after the -f argument.  If\n"
+	      "the --home argument is used the filter will be set to the filter named\n"
+	      "by the\n 'view_home' variable.  The style can be set by listing the\n"
+              "name style after the -s argument.\n"
 	      "\n"
-	      "In the second usage a filter expression\n"
-	      "and be specified directly\n"
-	      "after -d.  Owl will build an internal filter based on this\n"
-	      "filter and change the current view to use it.\n\n"
-	      "If --home is specified, switches to the view specified by\n"
-	      "the 'view_home' variable.\n\n"
+	      "The other usages listed above are abbreivated forms that simply set\n"
+	      "the filter of the current view. The -d option allows you to write a\n"
+              "filter expression that will be dynamically created by owl and then\n"
+              "applied as the view's filter\n"
 	      "SEE ALSO: filter, viewclass, viewuser\n"),
 
   OWLCMD_ARGS("smartnarrow", owl_command_smartnarrow, OWL_CTX_INTERACTIVE,
@@ -557,6 +561,7 @@ owl_cmd commands_to_init[]
 	      "show colors\n"
 	      "show terminal\n"
 	      "show version\n"
+	      "show view [<view>]\n"
 	      "show status\n",
 
 	      "Show colors will display a list of valid colors for the\n"
@@ -1650,18 +1655,28 @@ char *owl_command_zlocate(int argc, char **argv, char *buff) {
 }
 
 char *owl_command_view(int argc, char **argv, char *buff) {
-  if (argc<2) {
-    owl_function_makemsg("Wrong number of arguments to view command");
-    return NULL;
-  }
 
+  /* Backwards compatability has made this kind of complicated:
+   * view [<viewname>] [-f <filter> | -d <expression> | --home ] [-s <style>]
+   * view <filter>
+   * view -d <expression>
+   * view --home
+   */
+
+  /* First take the 'view --home' case */
   if (argc == 2 && !strcmp(argv[1], "--home")) {
     owl_function_change_view(owl_global_get_view_home(&g));
-    return NULL;
+    return(NULL);
   }
 
-  /* is it a dynamic filter? */
-  if (!strcmp(argv[1], "-d")) {
+  /* Now look for 'view <filter>' */
+  if (argc==2) {
+    owl_function_change_view(argv[1]);
+    return(NULL);
+  }
+
+  /* Now get 'view -d <expression>' */
+  if (argc==3 && !strcmp(argv[1], "-d")) {
     char **myargv;
     int i;
 
@@ -1677,13 +1692,49 @@ char *owl_command_view(int argc, char **argv, char *buff) {
     return NULL;
   }
 
-  /* otherwise it's a normal view command */
-  if (argc>2) {
-    owl_function_makemsg("Wrong number of arguments to view command");
-    return NULL;
+  /* Finally handle the general case */
+  if (argc<3) {
+    owl_function_makemsg("Too few arguments to the view command.");
+    return(NULL);
   }
-  owl_function_change_view(argv[1]);
-  return NULL;
+  argc--;
+  argv++;
+  if (strcmp(argv[0], "-f") && strcmp(argv[0], "-d") && strcmp(argv[0], "--home") && strcmp(argv[0], "-s")) {
+    if (strcmp(argv[0], "main")) {
+      owl_function_makemsg("No view named '%s'", argv[0]);
+      return(NULL);
+    }
+    argc--;
+    argv++;
+  }
+  while (argc) {
+    if (!strcmp(argv[0], "-f")) {
+      if (argc<2) {
+	owl_function_makemsg("Too few argments to the view command");
+	return(NULL);
+      }
+      owl_function_change_view(argv[1]);
+      argc-=2;
+      argv+=2;
+    } else if (!strcmp(argv[0], "--home")) {
+      owl_function_change_view(owl_global_get_view_home(&g));
+      argc--;
+      argv++;
+    } else if (!strcmp(argv[0], "-s")) {
+      if (argc<2) {
+	owl_function_makemsg("Too few argments to the view command");
+	return(NULL);
+      }
+      owl_function_change_style(owl_global_get_current_view(&g), argv[1]);
+      argc-=2;
+      argv+=2;
+    } else {
+      owl_function_makemsg("Too few argments to the view command");
+      return(NULL);
+    }
+    
+  }
+  return(NULL);
 }
 
 
@@ -1720,6 +1771,12 @@ char *owl_command_show(int argc, char **argv, char *buff) {
       owl_function_show_keymaps();
     } else {
       owl_function_show_keymap(argv[2]);
+    }
+  } else if (!strcmp(argv[1], "view")) {
+    if (argc==3) {
+      owl_function_show_view(argv[2]);
+    } else {
+      owl_function_show_view(NULL);
     }
   } else if (!strcmp(argv[1], "colors")) {
     owl_function_show_colors();

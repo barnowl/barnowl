@@ -12,6 +12,10 @@ void owl_view_create(owl_view *v, char *name, owl_filter *f, owl_style *s)
   owl_view_recalculate(v);
 }
 
+char *owl_view_get_name(owl_view *v)
+{
+  return(v->name);
+}
 
 /* if the message matches the filter then add to view */
 void owl_view_consider_message(owl_view *v, owl_message *m)
@@ -57,6 +61,11 @@ void owl_view_new_filter(owl_view *v, owl_filter *f)
 void owl_view_set_style(owl_view *v, owl_style *s)
 {
   v->style=s;
+}
+
+owl_style *owl_view_get_style(owl_view *v)
+{
+  return(v->style);
 }
 
 owl_message *owl_view_get_element(owl_view *v, int index)
@@ -110,6 +119,22 @@ int owl_view_get_nearest_to_saved(owl_view *v)
 void owl_view_save_curmsgid(owl_view *v, int curid)
 {
   owl_filter_set_cachedmsgid(v->filter, curid);
+}
+
+/* fmtext should already be initialized */
+void owl_view_to_fmtext(owl_view *v, owl_fmtext *fm)
+{
+  owl_fmtext_append_normal(fm, "Name: ");
+  owl_fmtext_append_normal(fm, v->name);
+  owl_fmtext_append_normal(fm, "\n");
+
+  owl_fmtext_append_normal(fm, "Filter: ");
+  owl_fmtext_append_normal(fm, owl_filter_get_name(v->filter));
+  owl_fmtext_append_normal(fm, "\n");
+
+  owl_fmtext_append_normal(fm, "Style: ");
+  owl_fmtext_append_normal(fm, owl_style_get_name(v->style));
+  owl_fmtext_append_normal(fm, "\n");
 }
 
 char *owl_view_get_filtname(owl_view *v)

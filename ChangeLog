@@ -11,6 +11,9 @@ $Id$
 	Use new function to delete zephyr subs from file
 	New 'sepbar_disable' variable can turn off sepbar info
 	Updated contributor info
+	added the 'show view' command.
+	removed 'set style'
+	A style is now part of a view, the view command has been revamped
 
 2.0.4-pre-1
 	Make command line option -n actualy work

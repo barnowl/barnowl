@@ -113,11 +113,15 @@ owl_fmtext *owl_message_get_fmtext(owl_message *m)
 void owl_message_format(owl_message *m)
 {
   owl_style *s;
+  owl_view *v;
 
   if (m->invalid_format) {
+    /* for now we assume there's jsut the one view and use that style */
+    v=owl_global_get_current_view(&g);
+    s=owl_view_get_style(v);
+
     owl_fmtext_free(&(m->fmtext));
     owl_fmtext_init_null(&(m->fmtext));
-    s=owl_global_get_current_style(&g);
     owl_style_get_formattext(s, &(m->fmtext), m);
     m->invalid_format=0;
   }

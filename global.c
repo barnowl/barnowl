@@ -747,10 +747,6 @@ owl_style *owl_global_get_style_by_name(owl_global *g, char *name)
   return(NULL);
 }
 
-owl_style *owl_global_get_current_style(owl_global *g) {
-  return(owl_global_get_style_by_name(g, owl_global_get_style(g)));
-}
-
 void owl_global_add_style(owl_global *g, owl_style *s) {
   owl_list_append_element(&(g->stylelist), s);
 }

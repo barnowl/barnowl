@@ -24,6 +24,11 @@ int owl_style_matches_name(owl_style *s, char *name)
   return(0);
 }
 
+char *owl_style_get_name(owl_style *s)
+{
+  return(s->name);
+}
+
 /* Use style 's' to format message 'm' into fmtext 'fm'.
  * 'fm' should already be be initialzed
  */
@@ -47,11 +52,6 @@ void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, owl_message *m)
     owl_free(indent);
     owl_free(body);
   }
-}
-
-char *owl_style_get_name(owl_style *s)
-{
-  return(s->name);
 }
 
 void owl_style_free(owl_style *s)

@@ -270,11 +270,11 @@ int main(int argc, char **argv, char **env) {
   /* set the default style, based on userclue and presence of a
    *  formatting function */
   if (owl_global_is_config_format(&g)) {
-    owl_global_set_style(&g, "perl");
+    owl_view_set_style(owl_global_get_current_view(&g), owl_global_get_style_by_name(&g, "perl"));
   } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
-    owl_global_set_style(&g, "default");
+    owl_view_set_style(owl_global_get_current_view(&g), owl_global_get_style_by_name(&g, "default"));
   } else {
-    owl_global_set_style(&g, "basic");
+    owl_view_set_style(owl_global_get_current_view(&g), owl_global_get_style_by_name(&g, "basic"));
   }
 
   /* welcome message */
