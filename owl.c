@@ -21,6 +21,8 @@
 #include <sys/param.h>
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 int main(int argc, char **argv, char **env) {
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
   owl_editwin *tw;

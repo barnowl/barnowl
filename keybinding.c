@@ -2,6 +2,7 @@
 #include <string.h>
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
 
 /*
  * TODO: Idea for allowing functions to be user-specified --- 

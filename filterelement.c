@@ -1,5 +1,7 @@
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 #define OWL_FILTERELEMENT_NULL        0
 #define OWL_FILTERELEMENT_TRUE        1
 #define OWL_FILTERELEMENT_FALSE       2

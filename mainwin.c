@@ -1,5 +1,7 @@
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 void owl_mainwin_init(owl_mainwin *mw) {
   mw->curtruncated=0;
   mw->lastdisplayed=-1;

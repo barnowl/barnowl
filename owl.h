@@ -9,6 +9,8 @@
 #include <regex.h>
 #include "config.h"
 
+static const char owl_h_fileIdent[] = "$Id$";
+
 #define OWL_VERSION         1.2.1-pre-1
 #define OWL_VERSION_STRING "1.2.1-pre-1"
 

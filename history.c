@@ -1,5 +1,7 @@
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 void owl_history_init(owl_history *h) {
   owl_list_create(&(h->hist));
   h->cur=0;

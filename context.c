@@ -1,5 +1,7 @@
-#include "owl.h"
 #include <string.h>
+#include "owl.h"
+
+static const char fileIdent[] = "$Id$";
 
 #define SET_ACTIVE(ctx, new) ctx->mode = ((ctx->mode)&~OWL_CTX_ACTIVE_BITS)|new
 #define SET_MODE(ctx, new) ctx->mode = ((ctx->mode)&~OWL_CTX_MODE_BITS)|new

@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include <sys/param.h>
 
+static const char fileIdent[] = "$Id$";
+
 void owl_log_outgoing(char *to, char *text) {
   FILE *file;
   char filename[MAXPATHLEN];

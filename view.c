@@ -1,5 +1,7 @@
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 void owl_view_create(owl_view *v, owl_filter *f) {
   v->filter=f;
   owl_messagelist_create(&(v->ml));

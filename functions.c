@@ -7,6 +7,8 @@
 #include <time.h>
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 void owl_function_noop(void) {
   return;
 }
@@ -1962,13 +1964,28 @@ void owl_function_activate_keymap(char *keymap) {
 void owl_function_show_keymaps() {
   owl_list l;
   owl_fmtext fm;
+  owl_keymap *km;
+  owl_keyhandler *kh;
+  int i, numkm;
+  char *kmname;
 
+  kh = owl_global_get_keyhandler(&g);
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_bold(&fm, "Keymaps:   ");
   owl_fmtext_append_normal(&fm, "(use 'show keymap <name>' for details)\n");
-  owl_keyhandler_get_keymap_names(owl_global_get_keyhandler(&g), &l);
+  owl_keyhandler_get_keymap_names(kh, &l);
   owl_fmtext_append_list(&fm, &l, "\n", owl_function_keymap_summary);
   owl_fmtext_append_normal(&fm, "\n");
+
+  numkm = owl_list_get_size(&l);
+  for (i=0; i<numkm; i++) {
+    kmname = owl_list_get_element(&l, i);
+    km = owl_keyhandler_get_keymap(kh, kmname);
+    owl_fmtext_append_bold(&fm, "\n\n----------------------------------------------------------------------------------------------------\n\n");
+    owl_keymap_get_details(km, &fm);    
+  }
+  owl_fmtext_append_normal(&fm, "\n");
+  
   owl_function_popless_fmtext(&fm);
   owl_keyhandler_keymap_namelist_free(&l);
   owl_fmtext_free(&fm);

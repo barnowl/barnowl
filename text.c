@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 int owl_text_truncate_lines(char *out, char *in, int aline, int lines) {
   /* start with line aline (where the first line is 1) and print
    *  'lines' lines

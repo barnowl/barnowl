@@ -1,3 +1,6 @@
+
+# $Id$
+
 CC=@CC@
 LIBS=@LIBS@
 #CFLAGS=@CFLAGS@ @DEFS@

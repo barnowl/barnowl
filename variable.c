@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 #define OWLVAR_BOOL(name,default,docstring) \
         { name, OWL_VARIABLE_BOOL, NULL, default, "on,off", docstring, NULL, \
         NULL, NULL, NULL, NULL, NULL }

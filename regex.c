@@ -1,6 +1,8 @@
 #include <string.h>
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 void owl_regex_init(owl_regex *re) {
   re->negate=0;
   re->string=NULL;

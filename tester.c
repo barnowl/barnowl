@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+static const char fileIdent[] = "$Id$";
+
 void screeninit() {
   char buff[1024];
   

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+static const char fileIdent[] = "$Id$";
+
 void owl_fmtext_init_null(owl_fmtext *f) {
   f->textlen=0;
   f->textbuff=owl_strdup("");

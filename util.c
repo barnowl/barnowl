@@ -4,6 +4,8 @@
 #include <malloc.h>
 #include <ctype.h>
 
+static const char fileIdent[] = "$Id$";
+
 void sepbar(char *in) {
   char buff[1024];
   WINDOW *sepwin;

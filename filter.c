@@ -1,6 +1,8 @@
 #include <string.h>
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 int owl_filter_init_fromstring(owl_filter *f, char *name, char *string) {
   char **argv;
   int argc, out;

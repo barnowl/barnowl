@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+static const char fileIdent[] = "$Id$";
+
 int owl_messagelist_create(owl_messagelist *ml) {
   owl_list_create(&(ml->list));
   return(0);

@@ -1,6 +1,8 @@
 #include <string.h>
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 #define BOTTOM_OFFSET 1
 
 void owl_viewwin_init_text(owl_viewwin *v, WINDOW *win, int winlines, int wincols, char *text) {

@@ -8,6 +8,8 @@
 #include <pwd.h>
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 int owl_zephyr_loadsubs(char *filename) {
   /* return 0  on success
    *        -1 on file error

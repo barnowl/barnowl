@@ -7,6 +7,8 @@
 #include "owl.h"
 #include <perl.h>
 
+static const char fileIdent[] = "$Id$";
+
 int owl_readconfig(char *file) {
   int ret;
   PerlInterpreter *p;

@@ -1,3 +1,10 @@
+
+$Id$
+
+1.2.1-pre
+	Added RCS Id strings to all files.
+	'show keymaps' shows details of all keymaps after summary list.
+	
 1.2.0-pre-erikdevel-17
 	Integrated change to fix problem with popup blinking on new zephyrs.
 	C-l and resizes will now refresh an open viewwin (eg, help).

@@ -10,6 +10,8 @@
 #include <time.h>
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 void owl_message_create_admin(owl_message *m, char *header, char *text) {
   char *indent;
   time_t t;

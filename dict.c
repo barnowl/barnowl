@@ -5,10 +5,13 @@
  * O(n) on searches, although it should switch to a binary search for O(log n)
  */
 
-#include "owl.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "owl.h"
+
+static const char fileIdent[] = "$Id$";
+
 
 #define INITSIZE 30
 #define GROWAT 2

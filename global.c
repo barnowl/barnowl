@@ -8,6 +8,8 @@
 #include <time.h>
 #include "owl.h"
 
+static const char fileIdent[] = "$Id$";
+
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 256
 #endif

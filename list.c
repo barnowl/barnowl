@@ -1,6 +1,8 @@
 #include "owl.h"
 #include <stdlib.h>
 
+static const char fileIdent[] = "$Id$";
+
 #define INITSIZE 30
 #define GROWAT 2
 #define GROWBY 1.5

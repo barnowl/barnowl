@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <string.h>
 
+static const char fileIdent[] = "$Id$";
+
 #define INCR 5000
 
 void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, int style) {
