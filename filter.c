@@ -67,6 +67,7 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
 	  !strcasecmp(argv[i], "realm") ||
 	  !strcasecmp(argv[i], "type") ||
 	  !strcasecmp(argv[i], "direction") ||
+	  !strcasecmp(argv[i], "hostname") ||
 	  !strcasecmp(argv[i], "login")) {
 	regexstr=owl_util_substitute(argv[i+1], "%me%", owl_zephyr_get_sender());
 	owl_filterelement_create_re(fe, argv[i], regexstr);
@@ -161,6 +162,8 @@ int owl_filter_message_match(owl_filter *f, owl_message *m)
       match=owl_message_get_realm(m);
     } else if (!strcasecmp(field, "type")) {
       match=owl_message_type_to_string(m);
+    } else if (!strcasecmp(field, "hostname")) {
+      match=owl_message_get_hostname(m);
     } else if (!strcasecmp(field, "direction")) {
       if (owl_message_is_direction_out(m)) {
 	match="out";

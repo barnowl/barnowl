@@ -1,5 +1,8 @@
 $Id$
 
+2.0.10-pre-1
+	Allow 'hostname' in filters.
+	
 2.0.9
 	Added the 'fancylines' variable.
 	Added the 'show startup' command.

@@ -481,6 +481,7 @@ owl_cmd commands_to_init[]
 	      "    opcode     -  zephyr opcode\n"
 	      "    realm      -  zephyr realm\n"
 	      "    body       -  message body\n"
+	      "    hostname   -  hostname of sending host\n"
 	      "    type       -  message type (zephyr, aim, admin)\n"
 	      "    direction  -  either 'in' 'out' or 'none'\n"
 	      "    login      -  either 'login' 'logout' or 'none'\n" 
