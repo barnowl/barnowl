@@ -1,5 +1,9 @@
 $Id$
 
+1.2.4-pre
+	Temporary fix to bug where C-SPACE would cause
+	     the key handler to lock up.
+	
 1.2.3
 	Added filters "ping", "auto" and "login" by default.
 	Added "body" as a valid field to match on in a filter.

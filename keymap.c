@@ -196,7 +196,9 @@ int owl_keyhandler_process(owl_keyhandler *kh, int j) {
     owl_function_makemsg("No active keymap!!!");
     return(-1);
   }
-  if (j==ERR) {
+
+  /* temporarily disallow C-`/C-SPACE until we fix associated bugs */
+  if (j==ERR || j==0) {
 	return(-1);
   }
 
