@@ -54,6 +54,9 @@ void owl_viewwin_redisplay(owl_viewwin *v, int update) {
   werase(v->curswin);
   wmove(v->curswin, 0, 0);
 
+  owl_fmtext_init_null(&fm1);
+  owl_fmtext_init_null(&fm2);
+  
   owl_fmtext_truncate_lines(&(v->fmtext), v->topline, v->winlines-BOTTOM_OFFSET, &fm1);
   owl_fmtext_truncate_cols(&fm1, v->rightshift, v->wincols-1+v->rightshift, &fm2);
 
@@ -73,6 +76,9 @@ void owl_viewwin_redisplay(owl_viewwin *v, int update) {
   if (update==1) {
     doupdate();
   }
+
+  owl_fmtext_free(&fm1);
+  owl_fmtext_free(&fm2);
 }
 
 void owl_viewwin_pagedown(owl_viewwin *v) {

@@ -395,9 +395,6 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
    */
   char *ptr1, *ptr2;
   int i, offset;
-
-  /* initialize out */
-  owl_fmtext_init_null(out);
   
   /* find the starting line */
   ptr1=in->textbuff;
@@ -434,8 +431,6 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
   /* the first column is column 0 */
 
   /* the message is expected to end in a new line for now */
-
-  owl_fmtext_init_null(out);
 
   last=in->textbuff+in->textlen-1;
   ptr1=in->textbuff;
@@ -477,8 +472,10 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
 int owl_fmtext_num_lines(owl_fmtext *f) {
   int lines, i;
 
+  if (f->textlen==0) return(0);
+  
   lines=0;
-  for (i=0; f->textbuff[i]!='\0'; i++) {
+  for (i=0; i<f->textlen; i++) {
     if (f->textbuff[i]=='\n') lines++;
   }
 

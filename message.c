@@ -204,6 +204,9 @@ char *owl_message_get_hostname(owl_message *m) {
 void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline, int acol, int bcol, int color) {
   owl_fmtext a, b;
 
+  owl_fmtext_init_null(&a);
+  owl_fmtext_init_null(&b);
+  
   owl_fmtext_truncate_lines(&(m->fmtext), aline, bline-aline+1, &a);
   owl_fmtext_truncate_cols(&a, acol, bcol, &b);
   if (color!=OWL_COLOR_DEFAULT) {
