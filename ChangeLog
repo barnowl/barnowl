@@ -1,5 +1,8 @@
 $Id$
 
+2.1.1-pre-1
+	Only print forced AIM logout message once.
+	
 2.0.14
 	Fixed missing word in startup message
 	Better 'status' command

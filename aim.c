@@ -224,15 +224,14 @@ void owl_aim_logout(void)
   /* need to check if it's connected first, I think */
   logout(owl_global_get_aimsess(&g));
 
-  owl_function_adminmsg("", "Logged out of AIM");
-
+  if (owl_global_is_aimloggedin(&g)) owl_function_adminmsg("", "Logged out of AIM");
   owl_global_set_aimnologgedin(&g);
   owl_global_set_no_doaimevents(&g);
 }
 
 void owl_aim_logged_out()
 {
-  owl_function_adminmsg("", "You have been logged out of AIM");
+  if (owl_global_is_aimloggedin(&g)) owl_function_adminmsg("", "Logged out of AIM");
   owl_aim_logout();
 }
 
