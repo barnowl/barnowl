@@ -583,7 +583,7 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
     }
   } else if (owl_message_is_type_admin(m)) {
     owl_fmtext_append_spaces(fm, OWL_TAB);
-    owl_fmtext_append_normal(fm, "< ADMIN                                        ");
+    owl_fmtext_append_normal(fm, "< ADMIN                                  ");
     
     tmp=owl_strdup(owl_message_get_body(m));
     owl_text_tr(tmp, '\n', ' ');
@@ -592,7 +592,7 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
     if (tmp) owl_free(tmp);
   } else {
     owl_fmtext_append_spaces(fm, OWL_TAB);
-    owl_fmtext_append_normal(fm, "< LOOPBACK                                     ");
+    owl_fmtext_append_normal(fm, "< LOOPBACK                               ");
     
     tmp=owl_strdup(owl_message_get_body(m));
     owl_text_tr(tmp, '\n', ' ');

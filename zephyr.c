@@ -227,8 +227,8 @@ int owl_zephyr_sub(char *class, char *inst, char *recip)
 
   ZResetAuthentication();
   if (ZSubscribeTo(subs,1,0) != ZERR_NONE) {
-    fprintf(stderr, "Error subbing\n");
-    ret=-2;
+    owl_function_error("Error subbing to <%s,%s,%s>", class, inst, recip);
+    return(-2);
   }
   return(0);
 #else
@@ -249,8 +249,8 @@ int owl_zephyr_unsub(char *class, char *inst, char *recip)
 
   ZResetAuthentication();
   if (ZUnsubscribeTo(subs,1,0) != ZERR_NONE) {
-    fprintf(stderr, "Error unsubbing\n");
-    ret=-2;
+    owl_function_error("Error unsubbing from <%s,%s,%s>", class, inst, recip);
+    return(-2);
   }
   return(0);
 #else

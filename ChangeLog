@@ -1,6 +1,7 @@
 $Id$
 
 2.0.12-pre-3
+	Better align oneline admin and loopback messages
 	Print an admin message indicating when subscriptions can
 	   not be loaded on startup
 	Fixed bug causing problems with invalid @ colors
