@@ -1,5 +1,8 @@
 $Id$
 
+2.0.1
+	Hacked the Perl build stuff not to link with iconv
+
 2.0.1-pre-1
 	Moved newmsgproc stuff to a function procedure
 	Added the 'newlinestrip' variable, on by default, that strips
