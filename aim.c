@@ -253,7 +253,15 @@ int owl_aim_send_im(char *to, char *msg)
 
   ret=aim_im_sendch1(owl_global_get_aimsess(&g), to, NULL, msg);
     
-  /* aim_send_im(owl_global_get_aimsess(&g), to, AIM_IMFLAGS_ACK, msg); */
+  /* I don't know how to check for an error yet */
+  return(ret);
+}
+
+int owl_aim_send_awaymsg(char *to, char *msg)
+{
+  int ret;
+
+  ret=aim_im_sendch1(owl_global_get_aimsess(&g), to, AIM_IMFLAGS_AWAY, msg);
 
   /* I don't know how to check for an error yet */
   return(ret);
@@ -294,7 +302,21 @@ void owl_aim_search(char *email)
 
 int owl_aim_set_awaymsg(char *msg)
 {
+  int len;
+  char *foo;
   /* there is a max away message lentgh we should check against */
+
+  foo=owl_strdup(msg);
+  len=strlen(foo);
+  if (len>500) {
+    foo[500]='\0';
+    len=499;
+  }
+    
+  aim_locate_setprofile(owl_global_get_aimsess(&g),
+			NULL, NULL, 0,
+			"us-ascii", foo, len);
+  owl_free(foo);
 
   /*
   aim_bos_setprofile(owl_global_get_aimsess(&g),
@@ -331,7 +353,9 @@ void owl_aim_chat_join(char *name, int exchange)
     cr->name = g_strdup(name);
     od->create_rooms = g_slist_append(od->create_rooms, cr);
     */
-    /* aim_reqservice(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), AIM_CONN_TYPE_CHATNAV); */
+    aim_reqservice(owl_global_get_aimsess(&g),
+		   aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_CHATNAV),
+		   AIM_CONN_TYPE_CHATNAV);
     aim_reqservice(owl_global_get_aimsess(&g), NULL, AIM_CONN_TYPE_CHATNAV);
     aim_chatnav_createroom(owl_global_get_aimsess(&g), cur, name, exchange);
     ret=aim_chat_join(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), exchange, name, 0x0000);
@@ -1442,6 +1466,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
 			 wrapmsg,
 			 OWL_MESSAGE_DIRECTION_IN,
 			 0);
+  if (args->icbmflags & AIM_IMFLAGS_AWAY) owl_message_set_attribute(m, "isauto", "");
   owl_global_messagequeue_addmsg(&g, m);
   owl_free(stripmsg);
   owl_free(wrapmsg);

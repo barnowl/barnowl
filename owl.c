@@ -471,12 +471,11 @@ int main(int argc, char **argv, char **env)
       owl_view_consider_message(owl_global_get_current_view(&g), m);
 
       /* do we need to autoreply? */
-      if (owl_global_is_zaway(&g)) {
+      if (owl_global_is_zaway(&g) && !owl_message_get_attribute_value(m, "isauto")) {
 	if (owl_message_is_type_zephyr(m)) {
 	  owl_zephyr_zaway(m);
 	} else if (owl_message_is_type_aim(m)) {
-	  /* can't do this, there's no mechanism not to start a loop */
-	  /* owl_aim_send_im(owl_message_get_sender(m), owl_global_get_zaway_msg(&g)); */
+	  owl_function_send_aimawymsg(owl_message_get_sender(m), owl_global_get_zaway_msg(&g));
 	}
       }
 

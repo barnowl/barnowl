@@ -4,7 +4,16 @@ $Id$
 	Added the 'aim search' command.  The popup on callback may be
 	  dangerous, should switch to an admin msg for results, or add a
 	  new event queue
-	
+	First pass at AIM away messages.  It is a little different from
+	  what most clients seem to do, in that an away reply is sent for
+	  each message received.  Most clients only reply to the first one
+	  per away-session.  Also, it's completely tied to the zaway
+	  functions, it should probably be separated out into aaway
+	  functions with a new "away" function that will get everything.
+	  Loop detection stuff should work and has been tested, but I'm
+	  not completely sure I did this right ... so odd behavior should
+	  be reported.
+ 	
 2.1.1-pre-1
 	Only print forced AIM logout message once.
 	Don't bind F1 to help in edit context

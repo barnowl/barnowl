@@ -483,6 +483,7 @@ void owl_zephyr_zaway(owl_message *m)
   if (!strcasecmp(owl_message_get_opcode(m), "auto")) return;
   if (!strcasecmp(owl_message_get_zsig(m), "Automated reply:")) return;
   if (!strcasecmp(owl_message_get_sender(m), ZGetSender())) return;
+  if (owl_message_get_attribute_value(m, "isauto")) return;
 
   if (owl_global_is_smartstrip(&g)) {
     to=owl_zephyr_smartstripped_user(owl_message_get_sender(m));

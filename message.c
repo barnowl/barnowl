@@ -770,9 +770,15 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   }
 
   
-  /* is the "isprivate" attribute if it's a private zephyr */
+  /* set the "isprivate" attribute if it's a private zephyr */
   if (!strcasecmp(n->z_recipient, owl_zephyr_get_sender())) {
     owl_message_set_isprivate(m);
+  }
+
+  /* set the "isauto" attribute if it's an autoreply */
+  if (!strcasecmp(n->z_message, "Automated reply:") ||
+      !strcasecmp(n->z_opcode, "auto")) {
+    owl_message_set_attribute(m, "isauto", "");
   }
 
   m->zwriteline=strdup("");

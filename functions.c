@@ -459,6 +459,36 @@ void owl_function_aimwrite(char *to)
   owl_free(format_msg);
 }
 
+void owl_function_send_aimawymsg(char *to, char *msg)
+{
+  int ret;
+  char *format_msg;
+
+  /* make a formatted copy of the message */
+  format_msg=owl_strdup(msg);
+  owl_text_wordunwrap(format_msg);
+  
+  /* send the message */
+  ret=owl_aim_send_awaymsg(to, format_msg);
+  if (!ret) {
+    /* owl_function_makemsg("AIM message sent."); */
+  } else {
+    owl_function_error("Could not send AIM message.");
+  }
+
+  /* display the message as an outgoing message in the receive window */
+  if (owl_global_is_displayoutgoing(&g)) {
+    owl_function_make_outgoing_aim(msg, to);
+  }
+
+  /* log it if we have logging turned on */
+  if (owl_global_is_logging(&g)) {
+    owl_log_outgoing_aim(to, msg);
+  }
+
+  owl_free(format_msg);
+}
+
 void owl_function_loopwrite()
 {
   owl_message *m;
@@ -833,13 +863,14 @@ void owl_function_zaway_on()
 {
   owl_global_set_zaway_on(&g);
   owl_aim_set_awaymsg(owl_global_get_zaway_msg(&g));
-  owl_function_makemsg("zaway set (%s)", owl_global_get_zaway_msg(&g));
+  owl_function_makemsg("aim and zaway set (%s)", owl_global_get_zaway_msg(&g));
 }
 
 void owl_function_zaway_off()
 {
   owl_global_set_zaway_off(&g);
-  owl_function_makemsg("zaway off");
+  owl_aim_set_awaymsg("");
+  owl_function_makemsg("aim and zaway off");
 }
 
 void owl_function_quit()
