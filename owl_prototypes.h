@@ -60,6 +60,8 @@ extern void owl_command_about();
 extern void owl_command_version();
 extern char *owl_command_addbuddy(int argc, char **argv, char *buff);
 extern char *owl_command_delbuddy(int argc, char **argv, char *buff);
+extern char *owl_command_startup(int argc, char **argv, char *buff);
+extern char *owl_command_unstartup(int argc, char **argv, char *buff);
 extern char *owl_command_dump(int argc, char **argv, char *buff);
 extern char *owl_command_next(int argc, char **argv, char *buff);
 extern char *owl_command_prev(int argc, char **argv, char *buff);
@@ -394,6 +396,9 @@ extern void owl_function_dump(char *filename);
 extern void owl_function_do_newmsgproc(void);
 extern void owl_function_xterm_raise(void);
 extern void owl_function_xterm_deiconify(void);
+extern void owl_function_addstartup(char *buff);
+extern void owl_function_delstartup(char *buff);
+extern void owl_function_execstartup(void);
 
 /* -------------------------------- global.c -------------------------------- */
 extern void owl_global_init(owl_global *g);
@@ -739,6 +744,7 @@ extern char *owl_util_color_to_string(int color);
 extern char *owl_util_get_default_tty();
 extern void owl_hack_animate();
 extern char *owl_util_stripnewlines(char *in);
+extern void owl_util_file_deleteline(char *filename, char *line, int backup);
 extern int owl_util_regtest(void);
 
 /* -------------------------------- variable.c -------------------------------- */

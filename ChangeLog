@@ -81,7 +81,9 @@ $Id$
 	Started work on 'addbuddy' and 'delbuddy' command but they DO NOT
 	  WORK yet
 	Removed a bit of faim code that allowed commands to be executed.
-	
+	The 'B' key is now bound to 'alist'
+	Added the 'startup' and 'unstartup' commands
+	The $HOME/.owl directory is created on startup if it does not exist
 	
 1.2.8
 	Class pings are displayed differently now

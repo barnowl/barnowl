@@ -71,8 +71,6 @@ char *owl_buddylist_get_buddy(owl_buddylist *b, int n)
 }
 
 void owl_buddylist_clear(owl_buddylist *b) {
-  int i, j;
-
   owl_list_free_all(&(b->buddies), owl_free);
   owl_list_create(&(b->buddies));
 }

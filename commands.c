@@ -158,6 +158,19 @@ owl_cmd commands_to_init[]
 	      "Print the value of the named variable.  If no arugments\n"
 	      "are used print the value of all variables.\n"),
 
+  OWLCMD_ARGS("startup", owl_command_startup, OWL_CTX_ANY,
+	      "run a command and set it to be run at every Owl startup",
+	      "startup <commands> ...",
+	      "Everything on the command line after the startup command\n"
+	      "is executed as a normal owl command and is also placed in\n"
+	      "a file so that the command is executed every time owl\n"
+	      "is started"),
+
+  OWLCMD_ARGS("unstartup", owl_command_unstartup, OWL_CTX_ANY,
+	      "remove a command from the list of those to be run at Owl startup",
+	      "unstartup <commands> ...",
+	      ""),
+
   OWLCMD_VOID("version", owl_command_version, OWL_CTX_ANY,
 	      "print the version of the running owl", "", ""),
 
@@ -200,16 +213,16 @@ owl_cmd commands_to_init[]
   OWLCMD_ARGS("addbuddy", owl_command_addbuddy, OWL_CTX_INTERACTIVE,
 	      "add a buddy to a buddylist",
 	      "addbuddy aim <screenname>",
-	      "Add the named buddy to your buddylist.  Eventually other protocols,"
-	      "such as zephyr, will also be able to use this command.  For now the"
+	      "Add the named buddy to your buddylist.  Eventually other protocols,\n"
+	      "such as zephyr, will also be able to use this command.  For now the\n"
 	      "only available protocol is 'aim', specified as the first argument."),
 
   OWLCMD_ARGS("delbuddy", owl_command_delbuddy, OWL_CTX_INTERACTIVE,
 	      "delete a buddy from a buddylist",
 	      "delbuddy aim <screenname>",
-	      "Delete the named buddy to your buddylist.  Eventually other protocols,"
-	      "such as zephyr, will also be able to use this command.  For now the"
-	      "only available protocol is 'aim', specified as the first argument."),
+	      "Delete the named buddy to your buddylist.  Eventually other protocols,\n"
+	      "such as zephyr, will also be able to use this command.  For now the\n"
+	      "only available protocol is 'aim', specified as the first argument.\n"),
 
   OWLCMD_ARGS("smartzpunt", owl_command_smartzpunt, OWL_CTX_INTERACTIVE,
 	      "creates a zpunt based on the current message",
@@ -908,6 +921,53 @@ char *owl_command_delbuddy(int argc, char **argv, char *buff)
 
   owl_aim_delbuddy(argv[2]);
   owl_function_makemsg("%s deleted as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
+
+  return(NULL);
+}
+
+char *owl_command_startup(int argc, char **argv, char *buff)
+{
+  char *ptr;
+
+  if (argc<2) {
+    owl_function_makemsg("usage: %s <commands> ...", argv[0]);
+    return(NULL);
+  }
+
+  /* we'll be pedantic here, just in case this command gets another name
+   *  (or is aliased) start after the first space on the line
+   */
+  ptr=strchr(buff, ' ');
+  if (!ptr) {
+    owl_function_makemsg("Parse error finding command for startup");
+    return(NULL);
+  }
+
+  owl_function_command(ptr+1);
+  owl_function_addstartup(ptr+1);
+
+  return(NULL);
+}
+
+char *owl_command_unstartup(int argc, char **argv, char *buff)
+{
+  char *ptr;
+
+  if (argc<2) {
+    owl_function_makemsg("usage: %s <commands> ...", argv[0]);
+    return(NULL);
+  }
+
+  /* we'll be pedantic here, just in case this command gets another name
+   *  (or is aliased) start after the first space on the line
+   */
+  ptr=strchr(buff, ' ');
+  if (!ptr) {
+    owl_function_makemsg("Parse error finding command for unstartup");
+    return(NULL);
+  }
+
+  owl_function_delstartup(ptr+1);
 
   return(NULL);
 }

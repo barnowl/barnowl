@@ -647,6 +647,78 @@ char *owl_util_stripnewlines(char *in) {
   return(out);
 }
 
+/* Delete the line matching "line" from the named file.  If no such
+ * line is found the file is left intact.  If backup==1 then create a
+ * backupfile containing the original contents.  This is an
+ * inefficient impelementation which reads the entire file into
+ * memory.
+ */
+void owl_util_file_deleteline(char *filename, char *line, int backup)
+{
+  char buff[LINE], *text;
+  char *backupfilename;
+  FILE *file, *backupfile;
+  int size, newline;
+
+  /* open the file for reading */
+  file=fopen(filename, "r");
+  if (!file) {
+    owl_function_makemsg("Error opening file %s", filename);
+    return;
+  }
+  
+  /* open the backup file for writing */
+  if (backup) {
+    backupfilename=owl_sprintf("%s.backup", filename);
+    backupfile=fopen(backupfilename, "w");
+    owl_free(backupfilename);
+    if (!backupfile) {
+      owl_function_makemsg("Error opening file %s for writing", backupfilename);
+      return;
+    }
+  }
+
+  /* we'll read the entire file into memory, minus the line we don't want and
+   * and at the same time create the backup file if necessary
+   */
+  text=owl_malloc(LINE);
+  strcpy(text, "");
+  size=LINE;
+  while (fgets(buff, LINE, file)!=NULL) {
+    /* strip the newline */
+    newline=0;
+    if (buff[strlen(buff)-1]=='\n') {
+      buff[strlen(buff)-1]='\0';
+      newline=1;
+    }
+    
+    /* if we don't match the line, add to saved text in memory */
+    if (strcasecmp(buff, line)) {
+      size+=LINE;
+      text=owl_realloc(text, size);
+      strcat(text, buff);
+      if (newline) strcat(text, "\n");
+    }
+
+    /* write to backupfile if necessary */
+    if (backup) fputs(buff, backupfile);
+  }
+  fclose(backupfile);
+  fclose(file);
+
+  /* now rewrite the original file from memory */
+  file=fopen(filename, "w");
+  if (!file) {
+    owl_function_makemsg("WARNING: Error opening %s for writing.  Use %s to restore.", filename, backupfilename);
+    owl_function_beep();
+    owl_free(line);
+    return;
+  }
+
+  fputs(text, file);
+  fclose(file);
+}
+
 /**************************************************************************/
 /************************* REGRESSION TESTS *******************************/
 /**************************************************************************/

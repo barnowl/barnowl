@@ -2894,3 +2894,53 @@ void owl_function_xterm_deiconify(void)
 {
   printf("\033[1t");
 }
+
+/* Add the specified command to the startup file.  Eventually this
+ * should be clever, and rewriting settings that will obviosly
+ * override earlier settings with 'set' 'bindkey' and 'alias'
+ * commands.  For now though we just append to the startupfile.
+ */
+void owl_function_addstartup(char *buff)
+{
+  FILE *file;
+  char *filename;
+
+  filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
+  file=fopen(filename, "a");
+  owl_free(filename);
+  if (!file) {
+    owl_function_makemsg("Error opening startupfile for new command");
+    return;
+  }
+  fprintf(file, "%s\n", buff);
+  fclose(file);
+}
+
+/* Remove the specified command from the startup file. */
+void owl_function_delstartup(char *buff)
+{
+  char *filename;
+  filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
+  owl_util_file_deleteline(filename, buff, 1);
+  owl_free(filename);
+}
+
+void owl_function_execstartup(void)
+{
+  FILE *file;
+  char *filename;
+  char buff[LINE];
+
+  filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
+  file=fopen(filename, "r");
+  owl_free(filename);
+  if (!file) {
+    /* just fail silently if it doesn't exist */
+    return;
+  }
+  while (fgets(buff, LINE, file)!=NULL) {
+    buff[strlen(buff)-1]='\0';
+    owl_function_command(buff);
+  }
+  fclose(file);
+}

@@ -21,6 +21,7 @@
 #include <time.h>
 #include <sys/param.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include "owl.h"
 
 static const char fileIdent[] = "$Id$";
@@ -36,6 +37,7 @@ int main(int argc, char **argv, char **env) {
   owl_filter *f;
   time_t nexttime, now;
   struct tm *today;
+  char *dir;
 
   argcsave=argc;
   argvsave=argv;
@@ -122,12 +124,17 @@ int main(int argc, char **argv, char **env) {
     init_pair(OWL_COLOR_CYAN,    COLOR_CYAN,    -1);
     init_pair(OWL_COLOR_WHITE,   COLOR_WHITE,   -1);
   }
+
     
   /* owl init */
   owl_global_init(&g);
   if (debug) owl_global_set_debug_on(&g);
   owl_global_set_startupargs(&g, argcsave, argvsave);
-  owl_context_set_readconfig(owl_global_get_context(&g));
+
+  /* create the owl directory, in case it does not exist */
+  dir=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_CONFIG_DIR);
+  mkdir(dir, S_IRWXU);
+  owl_free(dir);
 
   /* set the tty, either from the command line, or by figuring it out */
   if (tty) {
@@ -137,7 +144,6 @@ int main(int argc, char **argv, char **env) {
   }
 
   /* setup the default filters */
-
   /* the personal filter will need to change again when AIM chat's are
    *  included.  Also, there should be an %aimme% */
   f=malloc(sizeof(owl_filter));
@@ -190,7 +196,12 @@ int main(int argc, char **argv, char **env) {
   /* set the current view */
   owl_view_create(owl_global_get_current_view(&g), f);
 
+  /* process the startup file */
+  owl_function_execstartup();
+
+
   /* read the config file */
+  owl_context_set_readconfig(owl_global_get_context(&g));
   ret=owl_readconfig(configfile);
   if (ret) {
     endwin();

@@ -19,6 +19,9 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
 
+#define OWL_CONFIG_DIR "/.owl"           /* this is relative to the user's home directory */
+#define OWL_STARTUP_FILE "/.owl/startup"   /* this is relative to the user's home directory */
+
 #define OWL_FMTEXT_ATTR_NONE      0
 #define OWL_FMTEXT_ATTR_BOLD      1
 #define OWL_FMTEXT_ATTR_REVERSE   2

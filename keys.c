@@ -241,6 +241,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
 
   BIND_CMD("i",   "info",             "");
   BIND_CMD("l",   "blist",            "");
+  BIND_CMD("B",   "alist",            "");
   BIND_CMD("M",   "pop-message",      "");
   BIND_CMD("T",   "delete trash",     "mark all 'trash' messages for deletion");
 
