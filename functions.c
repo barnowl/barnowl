@@ -1964,6 +1964,7 @@ char *owl_function_fastclassinstfilt(char *class, char *instance) {
   owl_list *fl;
   owl_filter *f;
   char *argbuff, *filtname;
+  char *tmpclass, *tmpinstance;
   int len;
 
   fl=owl_global_get_filterlist(&g);
@@ -1977,19 +1978,30 @@ char *owl_function_fastclassinstfilt(char *class, char *instance) {
   } else {
     sprintf(filtname, "class-%s-instance-%s", class, instance);
   }
+  /* downcase it */
   downstr(filtname);
-
+  /* turn spaces into hyphens */
+  owl_util_tr(filtname, ' ', '.');
+  
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
-    return filtname;
+    return(filtname);
   }
 
   /* create the new filter */
   argbuff=owl_malloc(len+20);
-  sprintf(argbuff, "( class ^%s$ )", class);
+  tmpclass=owl_strdup(class);
+  owl_util_tr(tmpclass, ' ', '.');
   if (instance) {
-    sprintf(argbuff, "%s and ( instance ^%s$ )", argbuff, instance);
+    tmpinstance=owl_strdup(instance);
+    owl_util_tr(tmpinstance, ' ', '.');
   }
+  sprintf(argbuff, "( class ^%s$ )", tmpclass);
+  if (instance) {
+    sprintf(argbuff, "%s and ( instance ^%s$ )", argbuff, tmpinstance);
+  }
+  owl_free(tmpclass);
+  if (instance) owl_free(tmpinstance);
 
   f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, filtname, argbuff);
@@ -1998,7 +2010,7 @@ char *owl_function_fastclassinstfilt(char *class, char *instance) {
   owl_global_add_filter(&g, f);
 
   owl_free(argbuff);
-  return filtname;
+  return(filtname);
 }
 
 char *owl_function_fastuserfilt(char *user) {
@@ -2015,7 +2027,7 @@ char *owl_function_fastuserfilt(char *user) {
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
-    return filtname;
+    return(filtname);
   }
 
   /* create the new-internal filter */
@@ -2036,7 +2048,7 @@ char *owl_function_fastuserfilt(char *user) {
   owl_free(longuser);
   owl_free(shortuser);
 
-  return filtname;
+  return(filtname);
 }
 
 char *owl_function_fasttypefilt(char *type) {

@@ -506,6 +506,17 @@ char *owl_util_substitute(char *in, char *from, char *to) {
   return(out);
 }
 
+void owl_util_tr(char *buff, char a, char b) {
+  /* replace all instances of character a in buff with the character
+     b.  buff must be null terminated */
+  int i;
+
+  owl_function_debugmsg("In: %s", buff);
+  for (i=0; buff[i]!='\0'; i++) {
+    if (buff[i]==a) buff[i]=b;
+  }
+  owl_function_debugmsg("Out: %s", buff);
+}
 
 int owl_util_string_to_color(char *color) {
   if (!strcasecmp(color, "black")) {
