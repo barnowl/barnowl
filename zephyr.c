@@ -428,12 +428,20 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
     }
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
     if (strcasecmp(retnotice->z_class, "message")) {
+      char buff[1024];
       owl_function_error("Not logged in or not subscribing to class %s, instance %s",
 			   retnotice->z_class, retnotice->z_class_inst);
+
+      sprintf(buff, "Could not send message to %s: not logged in or subscribing to messages.\n", tmp);
+      owl_function_adminmsg("", buff);
     } else {
+      char buff[1024];
       tmp = short_zuser(retnotice->z_recipient);
       owl_function_error("%s: Not logged in or subscribing to messages.", 
 			   tmp);
+
+      sprintf(buff, "Could not send message to %s: not logged in or subscribing to messages.\n", tmp);
+      owl_function_adminmsg("", buff);
       owl_free(tmp);
     }
   } else {

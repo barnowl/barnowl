@@ -6,6 +6,8 @@ $Id$
 		This feature is disabled by default.
 		Enable in owl.h with:  OWL_STDERR_REDIR 1
 	Reverted some error messages to makemsg's
+	Create an admin message explaning that a zephyr couldn't
+	   be sent
 	
 2.0.9-pre-2
 	Better reporting of perl errors (both into the errqueue
