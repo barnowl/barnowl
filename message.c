@@ -14,8 +14,6 @@ static const char fileIdent[] = "$Id$";
 
 void owl_message_init(owl_message *m)
 {
-  time_t t;
-
   m->id=owl_global_get_nextmsgid(&g);
   m->type=OWL_MESSAGE_TYPE_GENERIC;
   owl_message_set_direction_none(m);
@@ -27,9 +25,11 @@ void owl_message_init(owl_message *m)
   owl_list_create(&(m->attributes));
   
   /* save the time */
-  t=time(NULL);
-  m->time=owl_strdup(ctime(&t));
-  m->time[strlen(m->time)-1]='\0';
+  m->time=time(NULL);
+  m->timestr=owl_strdup(ctime(&(m->time)));
+  m->timestr[strlen(m->timestr)-1]='\0';
+
+  /* initialize the fmtext */
   owl_fmtext_init_null(&(m->fmtext));
 }
 
@@ -304,7 +304,20 @@ int owl_message_is_private(owl_message *m)
 
 char *owl_message_get_timestr(owl_message *m)
 {
-  return(m->time);
+  if (m->timestr) return(m->timestr);
+  return("");
+}
+
+/* caller must free the return */
+char *owl_message_get_shorttimestr(owl_message *m)
+{
+  struct tm *tmstruct;
+  char *out;
+
+  tmstruct=localtime(&(m->time));
+  out=owl_sprintf("%2.2i:%2.2i", tmstruct->tm_hour, tmstruct->tm_min);
+  if (out) return(out);
+  return("??:??");
 }
 
 void owl_message_set_type_admin(owl_message *m)
@@ -704,10 +717,18 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   /* first save the full notice */
   memcpy(&(m->notice), n, sizeof(ZNotice_t));
 
-  /* a little gross, we'll reaplace \r's with ' ' for now */
+  /* a little gross, we'll replace \r's with ' ' for now */
   owl_zephyr_hackaway_cr(&(m->notice));
   
   m->delete=0;
+
+  /* save the time, we need to nuke the string saved by message_init */
+  if (m->timestr) {
+    owl_free(m->timestr);
+  }
+  m->time=n->z_time.tv_sec;
+  m->timestr=owl_strdup(ctime(&(m->time)));
+  m->timestr[strlen(m->timestr)-1]='\0';
 
   /* set other info */
   owl_message_set_sender(m, n->z_sender);
@@ -781,10 +802,6 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   } else {
     strcpy(m->hostname, inet_ntoa(n->z_sender_addr));
   }
-
-  /* save the time */
-  m->time=owl_strdup(ctime((time_t *) &n->z_time.tv_sec));
-  m->time[strlen(m->time)-1]='\0';
 }
 #else
 void owl_message_create_from_znotice(owl_message *m, void *n)
@@ -846,7 +863,7 @@ void owl_message_free(owl_message *m)
     ZFreeNotice(&(m->notice));
   }
 #endif
-  if (m->time) owl_free(m->time);
+  if (m->timestr) owl_free(m->timestr);
   if (m->zwriteline) owl_free(m->zwriteline);
 
   /* free all the attributes */

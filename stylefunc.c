@@ -224,10 +224,13 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
 
 void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
 {
+  char *shorttimestr;
 #ifdef HAVE_LIBZEPHYR
   char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
   ZNotice_t *n;
 #endif
+
+  shorttimestr=owl_message_get_shorttimestr(m);
 
   if (owl_message_is_type_zephyr(m) && owl_message_is_direction_in(m)) {
 #ifdef HAVE_LIBZEPHYR
@@ -301,14 +304,17 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
       if (strcasecmp(owl_message_get_realm(m), ZGetRealm())) {
 	owl_fmtext_append_normal(fm, " {");
 	owl_fmtext_append_normal(fm, owl_message_get_realm(m));
-	owl_fmtext_append_normal(fm, "} ");
+	owl_fmtext_append_normal(fm, "}");
       }
       if (strcmp(owl_message_get_opcode(m), "")) {
 	owl_fmtext_append_normal(fm, " [");
 	owl_fmtext_append_normal(fm, owl_message_get_opcode(m));
-	owl_fmtext_append_normal(fm, "] ");
+	owl_fmtext_append_normal(fm, "]");
       }
-      
+
+      owl_fmtext_append_normal(fm, "  ");
+      owl_fmtext_append_normal(fm, shorttimestr);
+
       /* stick on the zsig */
       zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m))+30);
       owl_message_pretty_zsig(m, zsigbuff);
@@ -344,6 +350,10 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     foo=short_zuser(owl_message_get_recipient(m));
     owl_fmtext_append_normal(fm, foo);
     owl_free(foo);
+
+    owl_fmtext_append_normal(fm, "  ");
+    owl_fmtext_append_normal(fm, shorttimestr);
+
     owl_fmtext_append_normal(fm, "  (Zsig: ");
     
     zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m))+30);
@@ -378,6 +388,10 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
       owl_fmtext_append_bold(fm, OWL_TABSTR);
       owl_fmtext_append_bold(fm, "AIM from ");
       owl_fmtext_append_bold(fm, owl_message_get_sender(m));
+      
+      owl_fmtext_append_normal(fm, "  ");
+      owl_fmtext_append_normal(fm, shorttimestr);
+
       owl_fmtext_append_bold(fm, "\n");
       owl_fmtext_append_bold(fm, indent);
       if (indent[strlen(indent)-1]!='\n') {
@@ -390,6 +404,8 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
       owl_fmtext_append_normal(fm, OWL_TABSTR);
       owl_fmtext_append_normal(fm, "AIM sent to ");
       owl_fmtext_append_normal(fm, owl_message_get_recipient(m));
+      owl_fmtext_append_normal(fm, "  ");
+      owl_fmtext_append_normal(fm, shorttimestr);
       owl_fmtext_append_normal(fm, "\n");
       owl_fmtext_append_ztext(fm, indent);
       if (indent[strlen(indent)-1]!='\n') {
@@ -428,6 +444,8 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     owl_text_indent(indent, text, OWL_MSGTAB);
     owl_fmtext_append_normal(fm, OWL_TABSTR);
     owl_fmtext_append_normal(fm, header);
+    owl_fmtext_append_normal(fm, "  ");
+    owl_fmtext_append_normal(fm, shorttimestr);
     owl_fmtext_append_normal(fm, "\n");
     owl_fmtext_append_normal(fm, indent);
     if (text[strlen(text)-1]!='\n') {
@@ -437,6 +455,7 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     owl_free(indent);
     owl_free(header);
   }
+  owl_free(shorttimestr);
 }
 
 void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)

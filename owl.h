@@ -277,7 +277,8 @@ typedef struct _owl_message {
   int delete;
   char hostname[MAXHOSTNAMELEN+1];
   owl_list attributes;            /* this is a list of pairs */
-  char *time;
+  char *timestr;
+  time_t time;
   char *zwriteline;
 } owl_message;
 

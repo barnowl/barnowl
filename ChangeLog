@@ -7,6 +7,7 @@ $Id$
 	Don't proclaim "interfaces changed" on first build.
 	Added the 'loopback' message type
 	Added the 'loopwrite' command
+	Added a timestamp to the default style
 	
 2.0.10
 	Allow 'hostname' in filters.
