@@ -567,30 +567,32 @@ owl_cmd commands_to_init[]
   OWLCMD_ALIAS("vu", "viewuser"),
 
   OWLCMD_ARGS("show", owl_command_show, OWL_CTX_INTERACTIVE,
-	      "show information",
-	      "show variables\n"
-	      "show variable <variable>\n"
+	      "show information\n",
+	      "show colors\n"
+	      "show commands\n"
+	      "show command <command>\n"
+	      "show errors\n"
 	      "show filters\n"
 	      "show filter <filter>\n"
 	      "show keymaps\n"
 	      "show keymap <keymap>\n"
-	      "show commands\n"
-	      "show command <command>\n"
-	      "show subscriptions / show subs\n"
-	      "show zpunts\n"
+	      "show startup\n"
+	      "show status\n"
 	      "show styles\n"
-	      "show colors\n"
+	      "show subscriptions / show subs\n"
 	      "show terminal\n"
+	      "show variables\n"
+	      "show variable <variable>\n"
 	      "show version\n"
 	      "show view [<view>]\n"
-	      "show status\n"
-	      "show errors\n",
+	      "show zpunts\n",
 
 	      "Show colors will display a list of valid colors for the\n"
 	      "     terminal."
 	      "Show filters will list the names of all filters.\n"
 	      "Show filter <filter> will show the definition of a particular\n"
 	      "     filter.\n\n"
+	      "Show startup will display the custom startup config\n\n"
 	      "Show zpunts will show the active zpunt filters.\n\n"
 	      "Show keymaps will list the names of all keymaps.\n"
 	      "Show keymap <keymap> will show the key bindings in a keymap.\n\n"
@@ -1922,6 +1924,12 @@ char *owl_command_show(int argc, char **argv, char *buff)
     owl_function_about();
   } else if (!strcmp(argv[1], "status")) {
     owl_function_status();
+  } else if (!strcmp(argv[1], "startup")) {
+    char *filename;
+    
+    filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
+    owl_function_popless_file(filename);
+    owl_free(filename);
   } else if (!strcmp(argv[1], "errors")) {
     owl_function_showerrs();
   } else {

@@ -1205,6 +1205,29 @@ void owl_function_popless_fmtext(owl_fmtext *fm)
   owl_global_set_needrefresh(&g);
 }
 
+void owl_function_popless_file(char *filename)
+{
+  owl_fmtext fm;
+  FILE *file;
+  char buff[1024];
+
+  file=fopen(filename, "r");
+  if (!file) {
+    owl_function_error("Could not open file: %s", filename);
+    return;
+  }
+
+  owl_fmtext_init_null(&fm);
+  while (fgets(buff, 1024, file)) {
+    owl_fmtext_append_normal(&fm, buff);
+    owl_fmtext_append_normal(&fm, "\n");
+  }
+
+  owl_function_popless_fmtext(&fm);
+  owl_fmtext_free(&fm);
+  fclose(file);
+}
+
 void owl_function_about()
 {
   char buff[5000];

@@ -2,7 +2,8 @@ $Id$
 
 2.0.9-pre-4
 	Added the 'fancylines' variable.
-	Enabled OWL_STDERR_REDIR by default
+	Enabled OWL_STDERR_REDIR by default.
+	Added the 'show startup' command.
 	
 2.0.9-pre-3
 	Added testing feature for capturing stderr messages
