@@ -1,10 +1,5 @@
 $Id$
 
-1.2.8-pre
-	Added 'get <variable>' command which returns the value of the variable
-	   as a string.  This allows variable values to be retrieved from perl
-	   with the likes of:  if ("on" eq &owl::command('get zaway')) { ... }
-	
 1.2.7
 	Outgoing messages now go through the config for formatting
 	Zaway now makes an outgoing message, instead of an admin message
