@@ -424,7 +424,7 @@ char *long_zuser(char *in) {
 }
 
 
-char *smartstripped_user(char *in) {
+char *owl_util_smartstripped_user(char *in) {
   /* strip out the instance from a zsender's principal.  Preserves the
    * realm if present.  daemon.webzephyr is a special case.  The
    * caller must free the return */

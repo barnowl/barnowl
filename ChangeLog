@@ -27,6 +27,7 @@ $Id$
 	Added a 'loadsubs' command to eventually phase out the 'load-subs'
 	  command
 	Made M-n work on classes and instances with spaces in them
+	Zaway now obeys the smart strip variable
 
 	
 1.2.8

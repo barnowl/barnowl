@@ -1648,7 +1648,7 @@ void owl_function_reply(int type, int enter) {
 	} else {
 	  if (owl_global_is_smartstrip(&g)) {
 	    tmp2=tmp;
-	    tmp=smartstripped_user(tmp2);
+	    tmp=owl_util_smartstripped_user(tmp2);
 	    owl_free(tmp2);
 	  }
 	  buff = owl_sprintf("%s %s", oldbuff=buff, tmp);
