@@ -149,6 +149,7 @@ int owl_zephyr_loadsubs(char *filename)
 
 int owl_zephyr_loaddefaultsubs()
 {
+#ifdef HAVE_LIBZEPHYR
   ZSubscription_t subs[10];
     
   if (ZSubscribeTo(subs,0,0) != ZERR_NONE) {
@@ -156,6 +157,9 @@ int owl_zephyr_loaddefaultsubs()
     return(-1);
   }
   return(0);
+#else
+  return(0);
+#endif
 }
 
 int owl_zephyr_loadloginsubs(char *filename)
