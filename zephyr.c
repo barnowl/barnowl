@@ -315,11 +315,13 @@ int owl_zephyr_get_num_fields(void *n)
 #endif
 
 #ifdef HAVE_LIBZEPHYR
-/* return a pointer to the message, place the message length in k */
+/* return a pointer to the message, place the message length in k
+ * caller must free the return
+ */
 char *owl_zephyr_get_message(ZNotice_t *n)
 {
   if (!strcasecmp(n->z_opcode, "ping")) {
-    return("");
+    return(owl_strdup(""));
   }
 
   return(owl_zephyr_get_field(n, 2));

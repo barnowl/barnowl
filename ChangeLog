@@ -1,5 +1,9 @@
 $Id$
 
+2.1.2
+	removed unused filter_depth variable
+	Fixed memory bug on receiving pings
+	
 2.1.1
 	Filters of filters now work.
 	Removed the "possibly not readable" part of the config parsing

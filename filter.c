@@ -5,8 +5,6 @@ static const char fileIdent[] = "$Id$";
 
 #define OWL_FILTER_MAXRECURSE 20
 
-int filter_depth;
-
 int owl_filter_init_fromstring(owl_filter *f, char *name, char *string)
 {
   char **argv;
