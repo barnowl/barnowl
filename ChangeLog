@@ -20,12 +20,14 @@ $Id$
 	        message as having been sent.)
 	The "Not logged in or subscribing to messages" error 
 	        now includes the name of the recipient.
-	Fixed a bug in the "reply -e" command.
 	The "disable-ctrl-d" variable may also be set to "middle"
 	        which will result in ctrl-d only sending at the 
 		end of the message.  This is now the default.
 		This also added a command "editmulti:done-or-delete".
-		
+	Fixed a bug in the "reply -e" command.
+	Always clear the command buffer before executing the command.
+	        (So that interactive commands can sanely do start-command.)
+
 1.2.1-pre-1
 	Added RCS Id strings to all files.
 	'show keymaps' shows details of all keymaps after summary list.

@@ -1150,7 +1150,7 @@ char *owl_command_zwrite(int argc, char **argv, char *buff) {
 char *owl_command_reply(int argc, char **argv, char *buff) {
   int edit=0;
   
-  if (argc==2 && !strcmp("-e", argv[1])) {
+  if (argc>=2 && !strcmp("-e", argv[1])) {
     edit=1;
     argv++;
     argc--;
@@ -1531,18 +1531,16 @@ char *owl_command_edit_insert_text(owl_editwin *e, int argc, char **argv, char *
 
 void owl_command_editline_done(owl_editwin *e) {
   owl_history *hist=owl_global_get_history(&g);
-  char *rv;
+  char *rv, *cmd;
 
   owl_global_set_typwin_inactive(&g);
   owl_history_store(hist, owl_editwin_get_text(e));
   owl_history_reset(hist);
-  rv = owl_function_command(owl_editwin_get_text(e));
-  
-  /* if we're still in ONELINE mode we can clear the buffer */
-  if (owl_editwin_get_style(e)==OWL_EDITWIN_STYLE_ONELINE) {
-    owl_editwin_fullclear(e);
-  }
- 
+  cmd = owl_strdup(owl_editwin_get_text(e));
+  owl_editwin_fullclear(e);
+  rv = owl_function_command(cmd);
+  owl_free(cmd);
+
   wnoutrefresh(owl_editwin_get_curswin(e));
   owl_global_set_needrefresh(&g);
 
