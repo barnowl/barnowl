@@ -57,7 +57,7 @@ static int in_regtest = 0;
 static owl_variable variables_to_init[] = {
 
   OWLVAR_STRING( "personalbell" /* %OwlVarStub */, "off",
-		 "ring the terminal bell when personal messages are received\n",
+		 "ring the terminal bell when personal messages are received",
 		 "Can be set to 'on', 'off', or the name of a filter which\n"
 		 "messages need to match in order to ring the bell"),
 
