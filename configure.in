@@ -61,7 +61,7 @@ fi
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(strings.h sys/ioctl.h unistd.h com_err.h)
+AC_CHECK_HEADERS(strings.h sys/ioctl.h sys/filio.h unistd.h com_err.h)
 
 dnl Add CFLAGS for embeded perl
 FOO=`perl -MExtUtils::Embed -e ccopts`

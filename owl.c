@@ -22,7 +22,12 @@
 #include "owl.h"
 
 #if OWL_STDERR_REDIR
+#ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
+#endif
+#ifdef HAVE_SYS_FILIO_H
+#include <sys/filio.h>
+#endif
 int stderr_replace(void);
 void stderr_redirect(int rfd);
 #endif
