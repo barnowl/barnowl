@@ -108,11 +108,14 @@ void owl_log_outgoing_aim(char *to, char *text)
 {
   FILE *file;
   char filename[MAXPATHLEN], *logpath;
-  char *tobuff;
+  char *tobuff, *normalto;
 
   if (owl_global_get_loggingdirection(&g)==OWL_LOGGING_DIRECTION_IN) return;
 
-  tobuff=owl_sprintf("aim:%s", to);
+  normalto=owl_aim_normalize_screenname(to);
+  downstr(normalto);
+  tobuff=owl_sprintf("aim:%s", normalto);
+  owl_free(normalto);
 
   /* expand ~ in path names */
   logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", 
@@ -238,7 +241,11 @@ void owl_log_incoming(owl_message *m)
     }
   } else if (owl_message_is_type_aim(m)) {
     /* we do not yet handle chat rooms */
-    from=frombuff=owl_sprintf("aim:%s", owl_message_get_sender(m));
+    char *normalto;
+    normalto=owl_aim_normalize_screenname(owl_message_get_sender(m));
+    downstr(normalto);
+    from=frombuff=owl_sprintf("aim:%s", normalto);
+    owl_free(normalto);
   } else if (owl_message_is_type_loopback(m)) {
     from=frombuff=owl_strdup("loopback");
   } else {
