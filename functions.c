@@ -324,9 +324,12 @@ void owl_function_zwrite(char *line, char *msg)
 void owl_function_zcrypt(char *line, char *msg)
 {
   owl_zwrite z;
-  int i, j, ret;
+  int i, j;
   char *mymsg;
   char *cryptmsg;
+#ifdef OWL_ENABLE_ZCRYPT
+  int ret;
+#endif
 
   /* create the zwrite and send the message */
   owl_zwrite_create_from_line(&z, line);
@@ -2900,7 +2903,7 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
       } else {
 	timestr=owl_strdup("");
       }
-      foo=owl_sprintf("  %-15.15s %-12.12s\n",
+      foo=owl_sprintf("  %-20.20s %-12.12s\n",
 		      owl_buddy_get_name(b),
 		      timestr);
       owl_fmtext_append_normal(&fm, foo);

@@ -1,5 +1,9 @@
 $Id$
 
+2.0.8-pre-7
+	Small fixes to keep zephyrless build working
+	Increased size of screen name field in buddy listing
+	
 2.0.8-pre-6
 	On an offgoing message, don't create an AIM logout
 	  message unless the buddy was already logged in.

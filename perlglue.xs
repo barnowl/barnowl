@@ -1,6 +1,8 @@
 static const char fileIdent[] = "$Id$";
 
+#ifdef HAVE_LIBZEPHYR
 #include <zephyr/zephyr.h>
+#endif
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
@@ -44,14 +46,14 @@ getnumcols()
 char *
 zephyr_getrealm()
 	CODE:
-		RETVAL = ZGetRealm();
+		RETVAL = owl_zephyr_get_realm();
 	OUTPUT:
 		RETVAL
 
 char *
 zephyr_getsender()
 	CODE:
-		RETVAL = ZGetSender();
+		RETVAL = owl_zephyr_get_sender();
 	OUTPUT:
 		RETVAL
 
