@@ -374,6 +374,7 @@ int owl_variable_style_set(owl_variable *v, void *newval) {
   
   owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
   ret=owl_variable_string_set_default(v, newval);
+  owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   return(ret);
 }
