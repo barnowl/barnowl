@@ -22,7 +22,7 @@ void owl_log_outgoing_zephyr(char *to, char *text)
   }
 
   /* expand ~ in path names */
-  logpath = owl_util_substitute(owl_global_get_logpath(&g), "~", 
+  logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", 
 				owl_global_get_homedir(&g));
 
   snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
@@ -63,7 +63,7 @@ void owl_log_outgoing_aim(char *to, char *text)
   tobuff=owl_sprintf("aim:%s", to);
 
   /* expand ~ in path names */
-  logpath = owl_util_substitute(owl_global_get_logpath(&g), "~", 
+  logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", 
 				owl_global_get_homedir(&g));
 
   snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
@@ -104,7 +104,7 @@ void owl_log_outgoing_loopback(char *text)
   tobuff=owl_sprintf("loopback:%s", "loppback");
 
   /* expand ~ in path names */
-  logpath = owl_util_substitute(owl_global_get_logpath(&g), "~", 
+  logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", 
 				owl_global_get_homedir(&g));
 
   snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
@@ -209,13 +209,13 @@ void owl_log_incoming(owl_message *m)
 
   /* create the filename (expanding ~ in path names) */
   if (personal) {
-    logpath = owl_util_substitute(owl_global_get_logpath(&g), "~", 
+    logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", 
 				  owl_global_get_homedir(&g));
     snprintf(filename, MAXPATHLEN, "%s/%s", logpath, from);
     snprintf(allfilename, MAXPATHLEN, "%s/all", logpath);
 
   } else {
-    logpath = owl_util_substitute(owl_global_get_classlogpath(&g), "~", 
+    logpath = owl_text_substitute(owl_global_get_classlogpath(&g), "~", 
 				owl_global_get_homedir(&g));
 
     snprintf(filename, MAXPATHLEN, "%s/%s", logpath, from);

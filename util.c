@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <unistd.h>
 #include <ctype.h>
 
 static const char fileIdent[] = "$Id$";
@@ -305,7 +304,6 @@ char *owl_util_minutes_to_timestr(int in)
   return(out);
 }
 
-
 /* return the index of the last char before a change from the first one */
 int owl_util_find_trans(char *in, int len)
 {
@@ -316,7 +314,6 @@ int owl_util_find_trans(char *in, int len)
   return(i);
 }
 
-
 /* downcase the string 'foo' */
 void downstr(char *foo)
 {
@@ -324,27 +321,6 @@ void downstr(char *foo)
   for (i=0; foo[i]!='\0'; i++) {
     foo[i]=tolower(foo[i]);
   }
-}
-
-/* exactly like strstr but case insensitive */
-char *stristr(char *a, char *b)
-{
-  char *x, *y, *ret;
-
-  if ((x=owl_strdup(a))==NULL) return(NULL);
-  if ((y=owl_strdup(b))==NULL) return(NULL);
-  downstr(x);
-  downstr(y);
-  ret=strstr(x, y);
-  if (ret==NULL) {
-    owl_free(x);
-    owl_free(y);
-    return(NULL);
-  }
-  ret=ret-x+a;
-  owl_free(x);
-  owl_free(y);
-  return(ret);
 }
 
 /* Caller must free response. 
@@ -381,16 +357,6 @@ char *owl_util_uniq(char *A, char *B, char *prohibit)
   return(cat);
 }
 
-/* return 1 if a string is only whitespace, otherwise 0 */
-int only_whitespace(char *s)
-{
-  int i;
-  for (i=0; s[i]; i++) {
-    if (!isspace((int) s[i])) return(0);
-  }
-  return(1);
-}
-
 /* hooks for doing memory allocation et. al. in owl */
 
 void *owl_malloc(size_t size)
@@ -412,7 +378,6 @@ void *owl_realloc(void *ptr, size_t size)
 {
   return(realloc(ptr, size));
 }
-
 
 /* allocates memory and returns the string or null.
  * caller must free the string. 
@@ -441,139 +406,6 @@ char *owl_sprintf(const char *fmt, ...)
       return NULL;
   }
 }
-
-/* Strip a local realm fron the zephyr user name.
- * The caller must free the return
- */
-char *short_zuser(char *in)
-{
-  char *out, *ptr;
-
-  out=owl_strdup(in);
-  ptr=strchr(out, '@');
-  if (ptr) {
-    if (!strcasecmp(ptr+1, owl_zephyr_get_realm())) {
-      *ptr='\0';
-    }
-  }
-  return(out);
-}
-
-/* Append a local realm to the zephyr user name if necessary.
- * The caller must free the return.
- */
-char *long_zuser(char *in)
-{
-  char *ptr;
-
-  if (NULL != (ptr=strchr(in, '@'))) {
-    return owl_strdup(in);
-  } else {
-    return owl_sprintf("%s@%s", in, owl_zephyr_get_realm());
-  }
-}
-
-
-/* strip out the instance from a zsender's principal.  Preserves the
- * realm if present.  daemon.webzephyr is a special case.  The
- * caller must free the return
- */
-char *owl_util_smartstripped_user(char *in)
-{
-  char *ptr, *realm, *out;
-
-  out=owl_strdup(in);
-
-  /* bail immeaditly if we don't have to do any work */
-  ptr=strchr(in, '.');
-  if (!strchr(in, '/') && !ptr) {
-    /* no '/' and no '.' */
-    return(out);
-  }
-  if (ptr && strchr(in, '@') && (ptr > strchr(in, '@'))) {
-    /* There's a '.' but it's in the realm */
-    return(out);
-  }
-  if (!strncasecmp(in, OWL_WEBZEPHYR_PRINCIPAL, strlen(OWL_WEBZEPHYR_PRINCIPAL))) {
-    return(out);
-  }
-
-  /* remove the realm from ptr, but hold on to it */
-  realm=strchr(out, '@');
-  if (realm) realm[0]='\0';
-
-  /* strip */
-  ptr=strchr(out, '.');
-  if (!ptr) ptr=strchr(out, '/');
-  ptr[0]='\0';
-
-  /* reattach the realm if we had one */
-  if (realm) {
-    strcat(out, "@");
-    strcat(out, realm+1);
-  }
-
-  return(out);
-}
-
-char *owl_getquoting(char *line)
-{
-  if (line[0]=='\0') return("'");
-  if (strchr(line, '\'')) return("\"");
-  if (strchr(line, '"')) return("'");
-  if (strchr(line, ' ')) return("'");
-  return("");
-}
-
-
-
-/* Return a string with any occurances of 'from' replaced with 'to'.
- * Does not currently handle backslash quoting, but may in the future.
- * Caller must free returned string.
- */
-char *owl_util_substitute(char *in, char *from, char *to)
-{
-  
-  char *out;
-  int   outlen, tolen, fromlen, inpos=0, outpos=0;
-
-  if (!*from) return owl_strdup(in);
-
-  outlen = strlen(in)+1;
-  tolen  = strlen(to);
-  fromlen  = strlen(from);
-  out = malloc(outlen);
-
-  while (in[inpos]) {
-    if (!strncmp(in+inpos, from, fromlen)) {
-      outlen += tolen;
-      out = owl_realloc(out, outlen);
-      strcpy(out+outpos, to);
-      inpos += fromlen;
-      outpos += tolen;
-    } else {
-      out[outpos] = in[inpos];
-      inpos++; outpos++;
-    }
-  }
-  out[outpos] = '\0';
-  return(out);
-}
-
-/* replace all instances of character a in buff with the character
- * b.  buff must be null terminated.
- */
-void owl_util_tr(char *buff, char a, char b)
-{
-  int i;
-
-  owl_function_debugmsg("In: %s", buff);
-  for (i=0; buff[i]!='\0'; i++) {
-    if (buff[i]==a) buff[i]=b;
-  }
-  owl_function_debugmsg("Out: %s", buff);
-}
-
 
 /* Return the owl color associated with the named color */
 int owl_util_string_to_color(char *color)
@@ -804,13 +636,13 @@ int owl_util_regtest(void)
   printf("BEGIN testing owl_util\n");
 
   FAIL_UNLESS("owl_util_substitute 1",
-	      !strcmp("foo", owl_util_substitute("foo", "", "Y")));
-  FAIL_UNLESS("owl_util_substitute 2",
-	      !strcmp("fYZYZ", owl_util_substitute("foo", "o", "YZ")));
-  FAIL_UNLESS("owl_util_substitute 3",
-	      !strcmp("foo", owl_util_substitute("fYZYZ", "YZ", "o")));
-  FAIL_UNLESS("owl_util_substitute 4",
-	      !strcmp("/u/foo/meep", owl_util_substitute("~/meep", "~", "/u/foo")));
+	      !strcmp("foo", owl_text_substitute("foo", "", "Y")));
+  FAIL_UNLESS("owl_text_substitute 2",
+	      !strcmp("fYZYZ", owl_text_substitute("foo", "o", "YZ")));
+  FAIL_UNLESS("owl_text_substitute 3",
+	      !strcmp("foo", owl_text_substitute("fYZYZ", "YZ", "o")));
+  FAIL_UNLESS("owl_text_substitute 4",
+	      !strcmp("/u/foo/meep", owl_text_substitute("~/meep", "~", "/u/foo")));
 
   FAIL_UNLESS("skiptokens 1", 
 	      !strcmp("bar quux", skiptokens("foo bar quux", 1)));

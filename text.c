@@ -114,7 +114,6 @@ void owl_text_indent(char *out, char *in, int n)
   }
 }
 
-
 int owl_text_num_lines(char *in)
 {
   int lines, i;
@@ -189,23 +188,23 @@ char *owl_text_htmlstrip(char *in)
     ptr1=ptr3+1;
   }
 
-  out2=owl_util_substitute(out, "&lt;", "<");
+  out2=owl_text_substitute(out, "&lt;", "<");
   owl_free(out);
-  out=owl_util_substitute(out2, "&gt;", ">");
+  out=owl_text_substitute(out2, "&gt;", ">");
   owl_free(out2);
-  out2=owl_util_substitute(out, "&amp;", "&");
+  out2=owl_text_substitute(out, "&amp;", "&");
   owl_free(out);
-  out=owl_util_substitute(out2, "&quot;", "\"");
+  out=owl_text_substitute(out2, "&quot;", "\"");
   owl_free(out2);
-  out2=owl_util_substitute(out, "&nbsp;", " ");
+  out2=owl_text_substitute(out, "&nbsp;", " ");
   owl_free(out);
-  out=owl_util_substitute(out2, "&ensp;", "  ");
+  out=owl_text_substitute(out2, "&ensp;", "  ");
   owl_free(out2);
-  out2=owl_util_substitute(out, "&emsp;", "   ");
+  out2=owl_text_substitute(out, "&emsp;", "   ");
   owl_free(out);
-  out=owl_util_substitute(out2, "&endash;", "--");
+  out=owl_text_substitute(out2, "&endash;", "--");
   owl_free(out2);
-  out2=owl_util_substitute(out, "&emdash;", "---");
+  out2=owl_text_substitute(out, "&emdash;", "---");
   owl_free(out);
 
   return(out2);
@@ -254,5 +253,132 @@ char *owl_text_wordwrap(char *in, int col)
     cur++;
     continue;
   }
+  return(out);
+}
+
+/* exactly like strstr but case insensitive */
+char *stristr(char *a, char *b)
+{
+  char *x, *y, *ret;
+
+  if ((x=owl_strdup(a))==NULL) return(NULL);
+  if ((y=owl_strdup(b))==NULL) return(NULL);
+  downstr(x);
+  downstr(y);
+  ret=strstr(x, y);
+  if (ret==NULL) {
+    owl_free(x);
+    owl_free(y);
+    return(NULL);
+  }
+  ret=ret-x+a;
+  owl_free(x);
+  owl_free(y);
+  return(ret);
+}
+
+/* return 1 if a string is only whitespace, otherwise 0 */
+int only_whitespace(char *s)
+{
+  int i;
+  for (i=0; s[i]; i++) {
+    if (!isspace((int) s[i])) return(0);
+  }
+  return(1);
+}
+
+char *owl_getquoting(char *line)
+{
+  if (line[0]=='\0') return("'");
+  if (strchr(line, '\'')) return("\"");
+  if (strchr(line, '"')) return("'");
+  if (strchr(line, ' ')) return("'");
+  return("");
+}
+
+/* Return a string with any occurances of 'from' replaced with 'to'.
+ * Does not currently handle backslash quoting, but may in the future.
+ * Caller must free returned string.
+ */
+char *owl_text_substitute(char *in, char *from, char *to)
+{
+  
+  char *out;
+  int   outlen, tolen, fromlen, inpos=0, outpos=0;
+
+  if (!*from) return owl_strdup(in);
+
+  outlen = strlen(in)+1;
+  tolen  = strlen(to);
+  fromlen  = strlen(from);
+  out = malloc(outlen);
+
+  while (in[inpos]) {
+    if (!strncmp(in+inpos, from, fromlen)) {
+      outlen += tolen;
+      out = owl_realloc(out, outlen);
+      strcpy(out+outpos, to);
+      inpos += fromlen;
+      outpos += tolen;
+    } else {
+      out[outpos] = in[inpos];
+      inpos++; outpos++;
+    }
+  }
+  out[outpos] = '\0';
+  return(out);
+}
+
+/* replace all instances of character a in buff with the character
+ * b.  buff must be null terminated.
+ */
+void owl_text_tr(char *buff, char a, char b)
+{
+  int i;
+
+  owl_function_debugmsg("In: %s", buff);
+  for (i=0; buff[i]!='\0'; i++) {
+    if (buff[i]==a) buff[i]=b;
+  }
+  owl_function_debugmsg("Out: %s", buff);
+}
+
+/* Return a string which is like 'in' except that every instance of
+ * any character in 'toquote' found in 'in' is preceeded by the string
+ * 'quotestr'.  For example, owl_text_quote(in, "+*.", "\") would
+ * place a backslash before every '+', '*' or '.' in 'in'.  It is
+ * permissable for a character in 'quotestr' to be in 'toquote'.
+ * On success returns the string, on error returns NULL.
+ */
+char *owl_text_quote(char *in, char *toquote, char *quotestr)
+{
+  int i, x, r, place;
+  int in_len, toquote_len, quotestr_len;
+  char *out;
+
+  in_len=strlen(in);
+  toquote_len=strlen(toquote);
+  quotestr_len=strlen(quotestr);
+  out=owl_malloc((in_len*quotestr_len)+30);
+  place=0;
+  for (i=0; i<in_len; i++) {
+
+    /* check if it's a character that needs quoting */
+    for (x=0; x<toquote_len; x++) {
+      if (in[i]==toquote[x]) {
+	/* quote it */
+	for (r=0; r<quotestr_len; r++) {
+	  out[place+r]=quotestr[r];
+	}
+	place+=quotestr_len;
+	break;
+      }
+    }
+
+    /* either way, we now copy over the character */
+    out[place]=in[i];
+    place++;
+  }
+  out[place]='\0';
   return(out);
 }

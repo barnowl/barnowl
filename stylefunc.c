@@ -527,7 +527,7 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
       if (tmp) owl_free(tmp);
       
       tmp=owl_strdup(owl_message_get_body(m));
-      owl_util_tr(tmp, '\n', ' ');
+      owl_text_tr(tmp, '\n', ' ');
       owl_fmtext_append_ztext(fm, tmp);
       owl_fmtext_append_normal(fm, "\n");
       if (tmp) owl_free(tmp);
@@ -567,7 +567,7 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
       }
       
       tmp=owl_strdup(owl_message_get_body(m));
-      owl_util_tr(tmp, '\n', ' ');
+      owl_text_tr(tmp, '\n', ' ');
       owl_fmtext_append_normal(fm, tmp);
       owl_fmtext_append_normal(fm, "\n");
       if (tmp) owl_free(tmp);
@@ -582,7 +582,7 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
     owl_fmtext_append_normal(fm, "< ADMIN                                        ");
     
     tmp=owl_strdup(owl_message_get_body(m));
-    owl_util_tr(tmp, '\n', ' ');
+    owl_text_tr(tmp, '\n', ' ');
     owl_fmtext_append_normal(fm, tmp);
     owl_fmtext_append_normal(fm, "\n");
     if (tmp) owl_free(tmp);
@@ -591,7 +591,7 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
     owl_fmtext_append_normal(fm, "< LOOPBACK                                     ");
     
     tmp=owl_strdup(owl_message_get_body(m));
-    owl_util_tr(tmp, '\n', ' ');
+    owl_text_tr(tmp, '\n', ' ');
     owl_fmtext_append_normal(fm, tmp);
     owl_fmtext_append_normal(fm, "\n");
     if (tmp) owl_free(tmp);

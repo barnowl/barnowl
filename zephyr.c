@@ -484,7 +484,7 @@ void owl_zephyr_zaway(owl_message *m)
   if (!strcasecmp(owl_message_get_sender(m), ZGetSender())) return;
 
   if (owl_global_is_smartstrip(&g)) {
-    to=owl_util_smartstripped_user(owl_message_get_sender(m));
+    to=owl_zephyr_smartstripped_user(owl_message_get_sender(m));
   } else {
     to=owl_strdup(owl_message_get_sender(m));
   }
@@ -793,3 +793,78 @@ void owl_zephyr_set_locationinfo(char *host, char *val)
 #endif
 }
   
+
+
+/* Strip a local realm fron the zephyr user name.
+ * The caller must free the return
+ */
+char *short_zuser(char *in)
+{
+  char *out, *ptr;
+
+  out=owl_strdup(in);
+  ptr=strchr(out, '@');
+  if (ptr) {
+    if (!strcasecmp(ptr+1, owl_zephyr_get_realm())) {
+      *ptr='\0';
+    }
+  }
+  return(out);
+}
+
+/* Append a local realm to the zephyr user name if necessary.
+ * The caller must free the return.
+ */
+char *long_zuser(char *in)
+{
+  char *ptr;
+
+  if (NULL != (ptr=strchr(in, '@'))) {
+    return owl_strdup(in);
+  } else {
+    return owl_sprintf("%s@%s", in, owl_zephyr_get_realm());
+  }
+}
+
+
+/* strip out the instance from a zsender's principal.  Preserves the
+ * realm if present.  daemon.webzephyr is a special case.  The
+ * caller must free the return
+ */
+char *owl_zephyr_smartstripped_user(char *in)
+{
+  char *ptr, *realm, *out;
+
+  out=owl_strdup(in);
+
+  /* bail immeaditly if we don't have to do any work */
+  ptr=strchr(in, '.');
+  if (!strchr(in, '/') && !ptr) {
+    /* no '/' and no '.' */
+    return(out);
+  }
+  if (ptr && strchr(in, '@') && (ptr > strchr(in, '@'))) {
+    /* There's a '.' but it's in the realm */
+    return(out);
+  }
+  if (!strncasecmp(in, OWL_WEBZEPHYR_PRINCIPAL, strlen(OWL_WEBZEPHYR_PRINCIPAL))) {
+    return(out);
+  }
+
+  /* remove the realm from ptr, but hold on to it */
+  realm=strchr(out, '@');
+  if (realm) realm[0]='\0';
+
+  /* strip */
+  ptr=strchr(out, '.');
+  if (!ptr) ptr=strchr(out, '/');
+  ptr[0]='\0';
+
+  /* reattach the realm if we had one */
+  if (realm) {
+    strcat(out, "@");
+    strcat(out, realm+1);
+  }
+
+  return(out);
+}

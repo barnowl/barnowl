@@ -1954,7 +1954,7 @@ void owl_function_reply(int type, int enter)
 	} else {
 	  if (owl_global_is_smartstrip(&g)) {
 	    tmp2=tmp;
-	    tmp=owl_util_smartstripped_user(tmp2);
+	    tmp=owl_zephyr_smartstripped_user(tmp2);
 	    owl_free(tmp2);
 	  }
 	  buff = owl_sprintf("%s %s", oldbuff=buff, tmp);
@@ -2394,7 +2394,7 @@ char *owl_function_classinstfilt(char *class, char *instance)
   /* downcase it */
   downstr(filtname);
   /* turn spaces into hyphens */
-  owl_util_tr(filtname, ' ', '.');
+  owl_text_tr(filtname, ' ', '.');
   
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2404,10 +2404,10 @@ char *owl_function_classinstfilt(char *class, char *instance)
   /* create the new filter */
   argbuff=owl_malloc(len+20);
   tmpclass=owl_strdup(class);
-  owl_util_tr(tmpclass, ' ', '.');
+  owl_text_tr(tmpclass, ' ', '.');
   if (instance) {
     tmpinstance=owl_strdup(instance);
-    owl_util_tr(tmpinstance, ' ', '.');
+    owl_text_tr(tmpinstance, ' ', '.');
   }
   sprintf(argbuff, "( class ^%s$ )", tmpclass);
   if (tmpinstance) {
