@@ -440,7 +440,6 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   m->class=owl_strdup(owl_zwrite_get_class(&z));
   m->inst=owl_strdup(owl_zwrite_get_instance(&z));
   m->recip=long_zuser(owl_zwrite_get_recip_n(&z, 0)); /* only gets the first user, must fix */
-  owl_zwrite_get_recipstr(&z, m->recip);
   m->opcode=owl_strdup(owl_zwrite_get_opcode(&z));
   m->realm=owl_strdup(owl_zwrite_get_realm(&z)); /* also a hack, but not here */
   m->zwriteline=owl_strdup(line);
