@@ -21,6 +21,7 @@ $Id$
 	zwrite -s now works
 	Don't allow sending to AIM users with spaces
 	Removed libfaim/config.log from CVS
+	Fixed some easy fixed-length buffers
 
 2.0.4-pre-1
 	Make command line option -n actualy work

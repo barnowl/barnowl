@@ -24,9 +24,9 @@ void owl_global_init(owl_global *g) {
   gethostname(hostname, MAXHOSTNAMELEN);
   hent=gethostbyname(hostname);
   if (!hent) {
-    strcpy(g->thishost, "localhost");
+    g->thishost=owl_strdup("localhost");
   } else {
-    strcpy(g->thishost, hent->h_name);
+    g->thishost=owl_strdup(hent->h_name);
   }
 
   owl_context_init(&g->ctx);
@@ -34,6 +34,7 @@ void owl_global_init(owl_global *g) {
   g->curmsg=0;
   g->topmsg=0;
   g->needrefresh=1;
+  g->startupargs=NULL;
 
   owl_variable_dict_setup(&(g->vars));
   owl_cmddict_setup(&(g->cmds));
@@ -65,7 +66,7 @@ void owl_global_init(owl_global *g) {
   g->searchactive=0;
   g->searchstring=NULL;
   g->starttime=time(NULL); /* assumes we call init only a start time */
-  strcpy(g->buffercommand, "");
+  g->buffercommand=NULL;
   g->newmsgproc_pid=0;
   
   owl_global_set_config_format(g, 0);
@@ -83,7 +84,7 @@ void owl_global_init(owl_global *g) {
 
   /* Fill in some variables which don't have constant defaults */
   /* TODO: come back later and check passwd file first */
-  strcpy(g->homedir, getenv("HOME"));
+  g->homedir=owl_strdup(getenv("HOME"));
 
   owl_messagelist_create(&(g->msglist));
   owl_mainwin_init(&(g->mw));
@@ -227,11 +228,13 @@ owl_editwin *owl_global_get_typwin(owl_global *g) {
 /* buffercommand */
 
 void owl_global_set_buffercommand(owl_global *g, char *command) {
-  strcpy(g->buffercommand, command);
+  if (g->buffercommand) owl_free(g->buffercommand);
+  g->buffercommand=owl_strdup(command);
 }
 
 char *owl_global_get_buffercommand(owl_global *g) {
-  return(g->buffercommand);
+  if (g->buffercommand) return(g->buffercommand);
+  return("");
 }
 
 /* refresh */
@@ -293,7 +296,8 @@ void owl_global_set_resize_pending(owl_global *g) {
 }
 
 char *owl_global_get_homedir(owl_global *g) {
-  return(g->homedir);
+  if (g->homedir) return(g->homedir);
+  return("/");
 }
 
 int owl_global_get_direction(owl_global *g) {
@@ -427,7 +431,8 @@ void owl_global_get_runtime_string(owl_global *g, char *buff) {
 }
 
 char *owl_global_get_hostname(owl_global *g) {
-  return(g->thishost);
+  if (g->thishost) return(g->thishost);
+  return("");
 }
 
 /* userclue */
@@ -469,7 +474,15 @@ void owl_global_set_curmsg_vert_offset(owl_global *g, int i) {
 /* startup args */
 
 void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
-  int i;
+  int i, len;
+
+  if (g->startupargs) owl_free(g->startupargs);
+  
+  len=0;
+  for (i=0; i<argc; i++) {
+    len+=strlen(argv[i]+5);
+  }
+  g->startupargs=malloc(len+5);
 
   strcpy(g->startupargs, "");
   for (i=0; i<argc; i++) {
@@ -479,7 +492,8 @@ void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
 }
 
 char *owl_global_get_startupargs(owl_global *g) {
-  return(g->startupargs);
+  if (g->startupargs) return(g->startupargs);
+  return("");
 }
 
 /* history */
