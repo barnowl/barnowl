@@ -12,6 +12,8 @@ $Id$
 	  buffer
 	in owl_message_get_cc() require that the colon be present after
 	  cc.
+	Added some defenses against resize crashes, and put in debug
+	  messages if they're encountered
 
 1.2.8
 	Class pings are displayed differently now

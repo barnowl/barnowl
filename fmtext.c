@@ -343,6 +343,11 @@ void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w) {
   char *tmpbuff;
   int position, trans1, trans2, len, lastsame;
 
+  if (w==NULL) {
+    owl_function_debugmsg("Hit a null window in owl_fmtext_curs_waddstr.");
+    return;
+  }
+
   tmpbuff=owl_malloc(f->textlen+10);
 
   position=0;

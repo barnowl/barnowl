@@ -22,6 +22,11 @@ void owl_mainwin_redisplay(owl_mainwin *mw) {
   curmsg=owl_global_get_curmsg(&g);
   v=owl_global_get_current_view(&g);
 
+  if (v==NULL) {
+    owl_function_debugmsg("Hit a null window in owl_mainwin_redisplay.");
+    return;
+  }
+
   werase(recwin);
 
   recwinlines=owl_global_get_recwin_lines(&g);
