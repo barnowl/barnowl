@@ -2,6 +2,7 @@ $Id$
 
 2.0.5-pre-1
 	Fix in finding des for building zcrypt
+	Fixed description for alert_action variable
 	
 2.0.4
 	Made command line option -n actually work

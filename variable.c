@@ -195,7 +195,7 @@ static owl_variable variables_to_init[] = {
 		 "" ),
 
   OWLVAR_STRING( "alert_action" /* %OwlVarStub */, "nop",
-		 "filter on which to trigger alert actions",
+		 "owl command to execute for alert actions",
 		 "" ),
 
   OWLVAR_STRING_FULL( "tty" /* %OwlVarStub */, "", "tty name for zephyr location", "",
