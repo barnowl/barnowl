@@ -714,15 +714,19 @@ void owl_global_set_no_doaimevents(owl_global *g)
   g->aim_doprocessing=0;
 }
 
-
 aim_session_t *owl_global_get_aimsess(owl_global *g)
 {
   return(&(g->aimsess));
 }
 
-aim_conn_t *owl_global_get_waitingconn(owl_global *g)
+aim_conn_t *owl_global_get_bosconn(owl_global *g)
 {
-  return(&(g->waitingconn));
+  return(&(g->bosconn));
+}
+
+void owl_global_set_bossconn(owl_global *g, aim_conn_t *conn)
+{
+  g->bosconn=*conn;
 }
 
 int owl_global_is_aimnop_time(owl_global *g)

@@ -462,7 +462,7 @@ typedef struct _owl_global {
   owl_filterelement fe_false;
   owl_filterelement fe_null;
   aim_session_t aimsess;
-  aim_conn_t waitingconn;
+  aim_conn_t bosconn;
   owl_timer aim_noop_timer;
   owl_timer aim_ignorelogin_timer;
   owl_timer aim_buddyinfo_timer;

@@ -116,6 +116,12 @@ static owl_variable variables_to_init[] = {
 	       "Note that only messages received after this variable\n"
 	       "is set will be affected." ),
 
+  OWLVAR_BOOL( "fancylines" /* %OwlVarStub */, 1,
+	       "Use 'nice' line drawing on the terminal.",
+	       "If turned off, dashes, pipes and pluses will be used\n"
+	       "to draw lines on the screen.  Useful when the terminal\n"
+	       "is causing problems" ),
+
   OWLVAR_BOOL( "zcrypt" /* %OwlVarStub */, 1,
 	       "Do automatic zcrypt processing",
 	       "" ),

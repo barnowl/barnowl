@@ -113,6 +113,9 @@ void owl_aim_init(void)
 {
   aim_session_init(owl_global_get_aimsess(&g), AIM_SESS_FLAGS_NONBLOCKCONNECT, 0);
   aim_setdebuggingcb(owl_global_get_aimsess(&g), faimtest_debugcb);
+
+  /* an experiment to expose idle time */
+  aim_ssi_setpresence(owl_global_get_aimsess(&g), 0x00000400);
 }
 
 
@@ -140,6 +143,7 @@ int owl_aim_login(char *screenname, char *password)
     return(-1);
   }
   owl_global_set_doaimevents(&g);
+
   return(0);
 }
 
@@ -211,6 +215,8 @@ void owl_aim_successful_login(char *screenname)
   /* start the ingorelogin timer */
   owl_timer_reset_newstart(owl_global_get_aim_login_timer(&g),
 			   owl_global_get_aim_ignorelogin_timer(&g));
+
+  /* aim_bos_setidle(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), 5000); */
 }
 
 void owl_aim_logout(void)
@@ -436,6 +442,7 @@ static int faimtest_parse_authresp(aim_session_t *sess, aim_frame_t *fr, ...)
     aim_conn_kill(sess, &bosconn);
     return 1;
   }
+  owl_global_set_bossconn(&g, bosconn);
   owl_aim_successful_login(info->sn);
   addcb_bos(sess, bosconn);
   aim_sendcookie(sess, bosconn, info->cookielen, info->cookie);

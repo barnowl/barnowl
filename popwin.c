@@ -43,7 +43,12 @@ int owl_popwin_up(owl_popwin *pw)
 
   werase(pw->popwin);
   werase(pw->borderwin);
-  box(pw->borderwin, 0, 0);
+  if (owl_global_is_fancylines(&g)) {
+    box(pw->borderwin, 0, 0);
+  } else {
+    box(pw->borderwin, '|', '-');
+  }
+    
   wnoutrefresh(pw->popwin);
   wnoutrefresh(pw->borderwin);
   owl_global_set_needrefresh(&g);

@@ -22,7 +22,11 @@ void sepbar(char *in)
 
   werase(sepwin);
   wattron(sepwin, A_REVERSE);
-  whline(sepwin, ACS_HLINE, owl_global_get_cols(&g));
+  if (owl_global_is_fancylines(&g)) {
+    whline(sepwin, ACS_HLINE, owl_global_get_cols(&g));
+  } else {
+    whline(sepwin, '-', owl_global_get_cols(&g));
+  }
 
   if (owl_global_is_sepbar_disable(&g)) {
     getyx(sepwin, y, x);

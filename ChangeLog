@@ -1,5 +1,9 @@
 $Id$
 
+2.0.9-pre-4
+	Added the 'fancylines' variable.
+	Enabled OWL_STDERR_REDIR by default
+	
 2.0.9-pre-3
 	Added testing feature for capturing stderr messages
 	        from commands and displaying them in the errors buffer.
