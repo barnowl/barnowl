@@ -215,8 +215,25 @@ void owl_zwrite_send_ping(owl_zwrite *z)
 
 void owl_zwrite_set_message(owl_zwrite *z, char *msg)
 {
+  int i, j;
+  char toline[LINE];
+
   if (z->message) owl_free(z->message);
-  z->message=owl_strdup(msg);
+
+  j=owl_list_get_size(&(z->recips));
+  if (j>0 && z->cc) {
+    strcpy(toline, "CC: ");
+    for (i=0; i<j; i++) {
+      if (strcmp(z->realm, "")) {
+	sprintf(toline, "%s%s@%s ", toline, (char *) owl_list_get_element(&(z->recips), i), z->realm);
+      } else {
+	sprintf(toline, "%s%s ", toline, (char *) owl_list_get_element(&(z->recips), i));
+      }
+    }
+    z->message=owl_sprintf("%s\n%s", toline, msg);
+  } else {
+    z->message=owl_strdup(msg);
+  }
 }
 
 char *owl_zwrite_get_message(owl_zwrite *z)
@@ -240,36 +257,13 @@ int owl_zwrite_send_message(owl_zwrite *z)
 
   j=owl_list_get_size(&(z->recips));
   if (j>0) {
-    char *tmpmsg=NULL;
-    char toline[LINE];
-
-    if (z->cc) {
-      strcpy(toline, "CC: ");
-      for (i=0; i<j; i++) {
-	if (strcmp(z->realm, "")) {
-	  sprintf(toline, "%s%s@%s ", toline, (char *) owl_list_get_element(&(z->recips), i), z->realm);
-	} else {
-	  sprintf(toline, "%s%s ", toline, (char *) owl_list_get_element(&(z->recips), i));
-	}
-      }
-      tmpmsg=owl_malloc(strlen(z->message)+strlen(toline)+30);
-      sprintf(tmpmsg, "%s\n%s", toline, z->message);
-    }
-
     for (i=0; i<j; i++) {
       if (strcmp(z->realm, "")) {
 	sprintf(to, "%s@%s", (char *) owl_list_get_element(&(z->recips), i), z->realm);
       } else {
 	strcpy(to, owl_list_get_element(&(z->recips), i));
       }
-      if (z->cc) {
-	send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, tmpmsg);
-      } else {
-	send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
-      }
-    }
-    if (z->cc) {
-      owl_free(tmpmsg);
+      send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
     }
   } else {
     sprintf(to, "@%s", z->realm);
