@@ -159,6 +159,10 @@ int main(int argc, char **argv, char **env) {
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   f=malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "out", "direction ^out$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "all", "class .*");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 

@@ -246,7 +246,7 @@ void owl_function_nextmsg_full(char *filter, int skip_deleted, int last_if_none)
     owl_function_makemsg("already at last%s message%s%s",
 			 skip_deleted?" non-deleted":"",
 			 filter?" in ":"", filter?filter:"");
-    if (!skip_deleted) owl_function_beep();
+    /* if (!skip_deleted) owl_function_beep(); */
   }
 
   if (last_if_none || found) {
@@ -294,7 +294,7 @@ void owl_function_prevmsg_full(char *filter, int skip_deleted, int first_if_none
     owl_function_makemsg("already at first%s message%s%s",
 			 skip_deleted?" non-deleted":"",
 			 filter?" in ":"", filter?filter:"");
-    if (!skip_deleted) owl_function_beep();
+    /* if (!skip_deleted) owl_function_beep(); */
   }
 
   if (first_if_none || found) {

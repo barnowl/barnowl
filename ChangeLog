@@ -21,6 +21,10 @@ $Id$
 	The 'subscribe' and 'unsubscribe' commands (and their aliases) now
 	  update .zephyr.subs by default.  If either is given the '-t'
 	  (for "temporary") option the .zephyr.subs will not be updated
+	Turned off beeping for hitting the top or bottom of the list of
+	  messages
+	Made daemon.webzephyr a special case for smartstrip
+	Added 'out' as a default filter for outgoing messages
 	
 1.2.3
 	Added filters "ping", "auto" and "login" by default.

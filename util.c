@@ -424,9 +424,9 @@ char *long_zuser(char *in) {
 
 
 char *smartstripped_user(char *in) {
-  /* strip out the instance from a zsender's principal.
-   * Preserves the realm if present.
-   * the caller must free the return */
+  /* strip out the instance from a zsender's principal.  Preserves the
+   * realm if present.  daemon.webzephyr is a special case.  The
+   * caller must free the return */
 
   char *ptr, *realm, *out;
 
@@ -435,11 +435,17 @@ char *smartstripped_user(char *in) {
   /* bail immeaditly if we don't have to do any work */
   ptr=strchr(in, '.');
   if (!strchr(in, '/') && !ptr) {
+    /* no '/' and no '.' */
     return(out);
   }
   if (ptr && strchr(in, '@') && (ptr > strchr(in, '@'))) {
+    /* There's a '.' but it's in the realm */
     return(out);
   }
+  if (!strncasecmp(in, "daemon.webzephyr", strlen("daemon.webzephyr"))) {
+    return(out);
+  }
+
 
   /* remove the realm from ptr, but hold on to it */
   realm=strchr(out, '@');
