@@ -251,12 +251,10 @@ owl_cmd commands_to_init[]
 	      "such as zephyr, will also be able to use this command.  For now the\n"
 	      "only available protocol is 'aim', specified as the first argument.\n"),
 
-#if 0
   OWLCMD_ARGS("join", owl_command_join, OWL_CTX_INTERACTIVE,
 	      "join a chat group",
 	      "join aim <groupname> [exchange]",
 	      "Join the AIM chatroom with 'groupname'.\n"),
-#endif
 
   OWLCMD_ARGS("smartzpunt", owl_command_smartzpunt, OWL_CTX_INTERACTIVE,
 	      "creates a zpunt based on the current message",

@@ -62,6 +62,8 @@ int faimtest_conncomplete(aim_session_t *sess, aim_frame_t *fr, ...);
 void addcb_bos(aim_session_t *sess, aim_conn_t *bosconn);
 static int conninitdone_bos(aim_session_t *sess, aim_frame_t *fr, ...);
 static int conninitdone_admin(aim_session_t *sess, aim_frame_t *fr, ...);
+static int conninitdone_chatnav  (aim_session_t *, aim_frame_t *, ...);
+static int conninitdone_chat     (aim_session_t *, aim_frame_t *, ...);
 int logout(aim_session_t *sess);
 
 static int faimtest_parse_connerr(aim_session_t *sess, aim_frame_t *fr, ...);
@@ -120,15 +122,11 @@ void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir);
 
 void owl_aim_init(void)
 {
-  /* aim_session_init(owl_global_get_aimsess(&g), AIM_SESS_FLAGS_NONBLOCKCONNECT, 0); */
-
-  /*
-  aim_session_init(owl_global_get_aimsess(&g), TRUE, 0);
-  aim_setdebuggingcb(owl_global_get_aimsess(&g), faimtest_debugcb);
-  aim_tx_setenqueue(owl_global_get_aimsess(&g), AIM_TX_IMMEDIATE, NULL);
-  */
-  /* an experiment to expose idle time */
-  /* aim_ssi_setpresence(owl_global_get_aimsess(&g), 0x00000400); */
+  /* this has all been moved to owl_aim_login, but we'll leave the
+   * function here, in case there's stuff we want to init in the
+   * future.  It's still called by Owl.
+   */
+     
 }
 
 
@@ -216,6 +214,8 @@ void owl_aim_successful_login(char *screenname)
   owl_timer_reset_newstart(owl_global_get_aim_login_timer(&g),
 			   owl_global_get_aim_ignorelogin_timer(&g));
 
+  
+  /* aim_ssi_setpresence(owl_global_get_aimsess(&g), 0x00000400); */
   /* aim_bos_setidle(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), 5000); */
 }
 
@@ -284,18 +284,48 @@ int owl_aim_set_awaymsg(char *msg)
 {
   /* there is a max away message lentgh we should check against */
 
-  /*
   aim_bos_setprofile(owl_global_get_aimsess(&g),
 		     owl_global_get_bosconn(&g),
 		     NULL, NULL, 0, "us-ascii", msg, 
 		     strlen(msg), 0);
-  */
   return(0);
 }
 
-void owl_aim_chat_join(char *chatroom, int exchange)
+void owl_aim_chat_join(char *name, int exchange)
 {
   int ret;
+  aim_conn_t *cur;
+  /*
+  OscarData *od = (OscarData *)g->proto_data;
+  char *name, *exchange;
+  */
+
+  owl_function_debugmsg("Attempting to join chatroom %s exchange %i", name, exchange);
+
+  /*
+  name = g_hash_table_lookup(data, "room");
+  exchange = g_hash_table_lookup(data, "exchange");
+  */
+  if ((cur = aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_CHATNAV))) {
+    owl_function_debugmsg("owl_aim_chat_join: chatnav exists, creating room");
+    aim_chatnav_createroom(owl_global_get_aimsess(&g), cur, name, exchange);
+  } else {
+    /*    struct create_room *cr = g_new0(struct create_room, 1); */
+    owl_function_debugmsg("owl_aim_chat_join: chatnav does not exist, opening chatnav");
+    /*
+    cr->exchange = atoi(exchange);
+    cr->name = g_strdup(name);
+    od->create_rooms = g_slist_append(od->create_rooms, cr);
+    */
+    /* aim_reqservice(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), AIM_CONN_TYPE_CHATNAV); */
+    aim_reqservice(owl_global_get_aimsess(&g), NULL, AIM_CONN_TYPE_CHATNAV);
+    aim_chatnav_createroom(owl_global_get_aimsess(&g), cur, name, exchange);
+    ret=aim_chat_join(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), exchange, name, 0x0000);
+
+  }
+  return;
+  /******/
+
 
   /* ret=aim_chat_join(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), exchange, chatroom, 0x0000); */
   /*
@@ -305,10 +335,9 @@ void owl_aim_chat_join(char *chatroom, int exchange)
 
   aim_reqservice(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), AIM_CONN_TYPE_CHATNAV);
   ret = aim_chatnav_createroom(owl_global_get_aimsess(&g),
-			       aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_CHATNAV), chatroom, exchange);
-   ret=aim_chat_join(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), exchange, chatroom, 0x0000);
+			       aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_CHATNAV), name, exchange);
+   ret=aim_chat_join(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), exchange, name, 0x0000);
   
-  owl_function_debugmsg("Attempting to join chatroom %s exchange %i", chatroom, exchange);
 }
 
 void owl_aim_chat_leave(char *chatroom)
@@ -554,6 +583,11 @@ void addcb_bos(aim_session_t *sess, aim_conn_t *bosconn)
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_ICQ, AIM_CB_ICQ_OFFLINEMSGCOMPLETE, offlinemsgdone, 0);
 
   /*
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNERR,     gaim_connerr, 0);
+  aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNINITDONE, conninitdone_chatnav, 0);
+  */
+
+  /*
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_SSI, AIM_CB_SSI_ERROR,              faimtest_ssi_parseerr, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_SSI, AIM_CB_SSI_RIGHTSINFO,         faimtest_ssi_parserights, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_SSI, AIM_CB_SSI_LIST,               faimtest_ssi_parselist, 0);
@@ -674,6 +708,8 @@ static int faimtest_handleredirect(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   va_list ap;
   struct aim_redirect_data *redir;
+
+  owl_function_debugmsg("faimtest_handledirect:");
   
   va_start(ap, fr);
   redir = va_arg(ap, struct aim_redirect_data *);
@@ -682,6 +718,8 @@ static int faimtest_handleredirect(aim_session_t *sess, aim_frame_t *fr, ...)
     
   } else if (redir->group == 0x0007) {  /* Authorizer */
     aim_conn_t *tstconn;
+
+    owl_function_debugmsg("faimtest_handledirect: autorizer");
     
     tstconn = aim_newconn(sess, AIM_CONN_TYPE_AUTH, redir->ip);
     if (!tstconn || (tstconn->status & AIM_CONN_STATUS_RESOLVERR)) {
@@ -698,8 +736,10 @@ static int faimtest_handleredirect(aim_session_t *sess, aim_frame_t *fr, ...)
       owl_function_debugmsg("faimtest_handleredirect: sent cookie to authorizer host");
     }
   } else if (redir->group == 0x000d) {  /* ChatNav */
+    owl_function_debugmsg("faimtest_handledirect: chatnav");
     chatnav_redirect(sess, redir);
   } else if (redir->group == 0x000e) { /* Chat */
+    owl_function_debugmsg("faimtest_handledirect: chat");
     chat_redirect(sess, redir);
   } else {
     owl_function_debugmsg("faimtest_handleredirect: uh oh... got redirect for unknown service 0x%04x!!", redir->group);
@@ -2138,26 +2178,38 @@ static int faimtest_chatnav_info(aim_session_t *sess, aim_frame_t *fr, ...)
 
 static int conninitdone_chat(aim_session_t *sess, aim_frame_t *fr, ...)
 {
+  owl_function_debugmsg("faimtest_conninitdone_chat:");
 
-  owl_function_debugmsg("in faimtest_conninitdone_chat");
+  aim_conn_addhandler(sess, fr->conn, 0x000e, 0x0001, faimtest_parse_genericerr, 0);
+  aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CHT, AIM_CB_CHT_USERJOIN, faimtest_chat_join, 0);
+  aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CHT, AIM_CB_CHT_USERLEAVE, faimtest_chat_leave, 0);
+  aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CHT, AIM_CB_CHT_ROOMINFOUPDATE, faimtest_chat_infoupdate, 0);
+  aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CHT, AIM_CB_CHT_INCOMINGMSG, faimtest_chat_incomingmsg, 0);
   
   aim_clientready(sess, fr->conn);
   
-  if (fr->conn->type == AIM_CONN_TYPE_CHATNAV) {
-    /* printf("chatnav ready\n"); */
-    aim_conn_addhandler(sess, fr->conn, 0x000d, 0x0001, faimtest_parse_genericerr, 0);
-    aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CTN, AIM_CB_CTN_INFO, faimtest_chatnav_info, 0);
-    aim_chatnav_reqrights(sess, fr->conn);
-  } else if (fr->conn->type == AIM_CONN_TYPE_CHAT) {
-    /* printf("chat ready\n"); */
-    owl_function_debugmsg("Chat ready");
-    aim_conn_addhandler(sess, fr->conn, 0x000e, 0x0001, faimtest_parse_genericerr, 0);
-    aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CHT, AIM_CB_CHT_USERJOIN, faimtest_chat_join, 0);
-    aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CHT, AIM_CB_CHT_USERLEAVE, faimtest_chat_leave, 0);
-    aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CHT, AIM_CB_CHT_ROOMINFOUPDATE, faimtest_chat_infoupdate, 0);
-    aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CHT, AIM_CB_CHT_INCOMINGMSG, faimtest_chat_incomingmsg, 0);
-  }
-  return 1;
+  owl_function_debugmsg("Chat ready");
+
+  /*
+    chatcon = find_oscar_chat_by_conn(gc, fr->conn);
+    chatcon->id = id;
+    chatcon->cnv = serv_got_joined_chat(gc, id++, chatcon->show);
+  */
+  return(1);
+}
+
+static int conninitdone_chatnav(aim_session_t *sess, aim_frame_t *fr, ...)
+{
+  owl_function_debugmsg("faimtest_conninitdone_chatnav:");
+
+  aim_conn_addhandler(sess, fr->conn, 0x000d, 0x0001, gaim_parse_genericerr, 0);
+  aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CTN, AIM_CB_CTN_INFO, gaim_chatnav_info, 0);
+
+  aim_clientready(sess, fr->conn);
+
+  aim_chatnav_reqrights(sess, fr->conn);
+
+  return(1);
 }
 
 void chatnav_redirect(aim_session_t *sess, struct aim_redirect_data *redir)

@@ -32,9 +32,11 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
        "Text editing and command window", 
        owl_keys_editwin_default, NULL, owl_keys_editwin_postalways);
   owl_keymap_set_submap(km_editwin, km_global);
+  /*
   BIND_CMD("F1",          "help",            "");
   BIND_CMD("HELP",        "help",            "");
   BIND_CMD("M-[ 2 8 ~",   "help",            "");
+  */
 
   BIND_CMD("C-c",         "edit:cancel", "");
   BIND_CMD("C-g",         "edit:cancel", "");
