@@ -803,7 +803,7 @@ int owl_editwin_check_dotsend(owl_editwin *e) {
       e->buff[i] = '\0';
       return(1);
     }
-    if (!isspace(e->buff[i])) {
+    if (!isspace((int) e->buff[i])) {
       return(0);
     }
   }

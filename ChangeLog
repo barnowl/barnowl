@@ -1,4 +1,12 @@
 $Id$
+1.2.5
+	Patch to fix memory bug in replying to CC messages
+	If we're on Athena and have static krb (or other) libraries, use
+	  them
+	Added "athstatic" program to the release, which handles the above
+	Cast to an int for isspace, to make gcc -Wall quiet
+	Added 'zlist' and 'l' to basic help.
+	
 1.2.4
 	'zlog in' will now take an optional thrid argument to set the
 	     'tty' variable before setting the zlocation

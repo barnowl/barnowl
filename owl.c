@@ -207,16 +207,18 @@ int main(int argc, char **argv, char **env) {
   }
 
   /* welcome message */
-  sprintf(buff, "Welcome to owl version %s.\n", OWL_VERSION_STRING);
   strcpy(startupmsg, "-------------------------------------------------------------------------\n");
+  sprintf(buff,      "Welcome to owl version %s.  Press 'h' for on line help. \n", OWL_VERSION_STRING);
   strcat(startupmsg, buff);
-  strcat(startupmsg, "Press 'h' for on line help.                                   ^ ^        \n");
-  strcat(startupmsg, "                                                              OvO        \n");
-  strcat(startupmsg, "Please report any bugs or suggestions to bug-owl@mit.edu     (   )       \n");
-  strcat(startupmsg, "--------------------------------------------------------------m-m--------\n");
+  strcat(startupmsg, "                                                                         \n");
+  strcat(startupmsg, "If you would like to receive release announcments about owl you can join \n");
+  strcat(startupmsg, "the owl-users@mit.edu mailing list.  MIT users can add themselves,       \n");
+  strcat(startupmsg, "otherwise send a request to owner-owl-users@mit.edu.               ^ ^   \n");
+  strcat(startupmsg, "                                                                   OvO   \n");
+  strcat(startupmsg, "Please report any bugs or suggestions to bug-owl@mit.edu          (   )  \n");
+  strcat(startupmsg, "-------------------------------------------------------------------m-m---\n");
   
   owl_function_adminmsg("", startupmsg);
-  /* owl_function_makemsg(buff); */
   sepbar(NULL);
   
   owl_context_set_interactive(owl_global_get_context(&g));

@@ -762,7 +762,7 @@ fi
 echo $ac_n "checking for /usr/athena/lib""... $ac_c" 1>&6
 echo "configure:764: checking for /usr/athena/lib" >&5
 if test -d /usr/athena/lib; then
-	LDFLAGS=-L/usr/athena/lib\ -R/usr/athena/lib\ ${LDFLAGS}
+	LDFLAGS=-L/usr/athena/lib\ ${LDFLAGS}
 	echo "$ac_t""yes" 1>&6
 else
 	echo "$ac_t""no" 1>&6

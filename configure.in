@@ -21,7 +21,7 @@ else
 fi
 AC_MSG_CHECKING(for /usr/athena/lib)
 if test -d /usr/athena/lib; then
-	LDFLAGS=-L/usr/athena/lib\ -R/usr/athena/lib\ ${LDFLAGS}
+	LDFLAGS=-L/usr/athena/lib\ ${LDFLAGS}
 	AC_MSG_RESULT(yes)
 else
 	AC_MSG_RESULT(no)

@@ -1600,13 +1600,13 @@ void owl_function_reply(int type, int enter) {
       }
       if (*to != '\0') {
 	char *tmp, *oldtmp, *tmp2;
+	tmp=short_zuser(to);
 	if (cc) {
 	  tmp = owl_util_uniq(oldtmp=tmp, cc, "-");
 	  owl_free(oldtmp);
 	  buff = owl_sprintf("%s -C %s", oldbuff=buff, tmp);
 	  owl_free(oldbuff);
 	} else {
-	  tmp=short_zuser(to);
 	  if (owl_global_is_smartstrip(&g)) {
 	    tmp2=tmp;
 	    tmp=smartstripped_user(tmp2);
