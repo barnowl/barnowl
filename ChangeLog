@@ -10,6 +10,7 @@ $Id$
 	  calculations
 	You can now use %me% in filters
 	The built-in personal filter is updated to do so
+	Fixed a bug in moving the poiner after an expunge
 	
 1.2.3
 	Added filters "ping", "auto" and "login" by default.

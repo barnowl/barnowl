@@ -406,12 +406,12 @@ void owl_function_expunge() {
   if (curmsg>owl_view_get_size(v)-1) curmsg=owl_view_get_size(v)-1;
   if (curmsg<0) curmsg=0;
 
-  /* first try to move to an undeleted message in the view*/
+  /* first try to move to an undeleted message in the view */
   m=owl_view_get_element(v, curmsg);
   if (owl_message_is_delete(m)) {
     /* try to find the next undeleted message */
     j=owl_view_get_size(v);
-    for (i=curmsg; i<j; i++) {
+    for (i=curmsg+1; i<j; i++) {
       if (!owl_message_is_delete(owl_view_get_element(v, i))) {
 	owl_global_set_curmsg(&g, i);
 	break;
@@ -419,6 +419,7 @@ void owl_function_expunge() {
     }
 
     /* if we weren't successful try to find one backwards */
+    curmsg=owl_global_get_curmsg(&g);
     if (owl_message_is_delete(owl_view_get_element(v, curmsg))) {
       for (i=curmsg; i>0; i--) {
 	if (!owl_message_is_delete(owl_view_get_element(v, i))) {
