@@ -174,6 +174,16 @@ int owl_aim_send_im(char *to, char *msg)
   return(0);
 }
 
+void owl_aim_addbuddy(char *screenname)
+{
+  aim_add_buddy(owl_global_get_aimsess(&g), owl_global_get_waitingconn(&g), screenname);
+}
+
+void owl_aim_delbuddy(char *screenname)
+{
+  aim_remove_buddy(owl_global_get_aimsess(&g), NULL, screenname);
+}
+
 void owl_aim_chat_join(char *chatroom)
 {
 }
@@ -496,7 +506,8 @@ static int conninitdone_admin(aim_session_t *sess, aim_frame_t *fr, ...)
 int logout(aim_session_t *sess)
 {
   aim_session_kill(sess);
-
+  owl_aim_init();
+  
   /* kretch
   if (faimtest_init() == -1)
     printf("faimtest_init failed\n");
@@ -1268,6 +1279,8 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   owl_message_create_incoming_aim(m, userinfo->sn, owl_global_get_aim_screenname(&g), stripmsg);
   owl_global_messagequeue_addmsg(&g, m);
   owl_free(stripmsg);
+
+  return(1);
   
   /* printf("icbm: message: %s\n", realmsg); */
   
@@ -1290,7 +1303,8 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
     /* aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_BUDDYREQ, "You have an icon"); */
     /* printf("icbm: their icon: iconstamp = %ld, iconlen = 0x%08lx, iconsum = 0x%04x\n", args->iconstamp, args->iconlen, args->iconsum); */
   }
-  
+
+  /*
   if (realmsg) {
     int i = 0;
     while (realmsg[i] == '<') {
@@ -1303,6 +1317,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
     tmpstr = realmsg+i;
     faimtest_handlecmd(sess, conn, userinfo, tmpstr);
   }
+  */
   
   if (priv->buddyicon && (args->icbmflags & AIM_IMFLAGS_BUDDYREQ)) {
     aim_send_icon(sess, userinfo->sn, priv->buddyicon, priv->buddyiconlen, priv->buddyiconstamp, priv->buddyiconsum);
@@ -1343,7 +1358,8 @@ static int faimtest_parse_incoming_im_chan2(aim_session_t *sess, aim_conn_t *con
     */
     /* Automatically join room... */
     /* printf("chat invitiation: autojoining %s...\n", args->info.chat.roominfo.name); */
-    aim_chat_join(sess, conn, args->info.chat.roominfo.exchange, args->info.chat.roominfo.name, args->info.chat.roominfo.instance);
+
+    /* aim_chat_join(sess, conn, args->info.chat.roominfo.exchange, args->info.chat.roominfo.name, args->info.chat.roominfo.instance); */
   } else if (args->reqclass == AIM_CAPS_IMIMAGE) {
     directim_requested(sess, conn, userinfo, args);
   } else if (args->reqclass == AIM_CAPS_BUDDYICON) {

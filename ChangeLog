@@ -74,6 +74,14 @@ $Id$
 	   "aimlogout" commands
 	New built-in filters 'aim' and 'zephyr'.
 	Do ZResetAuthentication() before zlog_in and zlog_out as well.
+	Print AIM login / logout notifications
+	The 'alist' command prints a list of aim buddies logged in
+	The 'blist' command prints users from all protocols
+	The 'l' key is now bound to 'blist' instead of 'zlist'
+	Started work on 'addbuddy' and 'delbuddy' command but they DO NOT
+	  WORK yet
+	Removed a bit of faim code that allowed commands to be executed.
+	
 	
 1.2.8
 	Class pings are displayed differently now

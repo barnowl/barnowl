@@ -197,6 +197,20 @@ owl_cmd commands_to_init[]
 	      "dump <filename>",
 	      "Dump messages in current view to the named file."),
 
+  OWLCMD_ARGS("addbuddy", owl_command_addbuddy, OWL_CTX_INTERACTIVE,
+	      "add a buddy to a buddylist",
+	      "addbuddy aim <screenname>",
+	      "Add the named buddy to your buddylist.  Eventually other protocols,"
+	      "such as zephyr, will also be able to use this command.  For now the"
+	      "only available protocol is 'aim', specified as the first argument."),
+
+  OWLCMD_ARGS("delbuddy", owl_command_delbuddy, OWL_CTX_INTERACTIVE,
+	      "delete a buddy from a buddylist",
+	      "delbuddy aim <screenname>",
+	      "Delete the named buddy to your buddylist.  Eventually other protocols,"
+	      "such as zephyr, will also be able to use this command.  For now the"
+	      "only available protocol is 'aim', specified as the first argument."),
+
   OWLCMD_ARGS("smartzpunt", owl_command_smartzpunt, OWL_CTX_INTERACTIVE,
 	      "creates a zpunt based on the current message",
 	      "smartzpunt [-i | --instance]",
@@ -850,6 +864,52 @@ void owl_command_version() {
 
   sprintf(buff, "Owl version %s", OWL_VERSION_STRING);
   owl_function_makemsg(buff);
+}
+
+char *owl_command_addbuddy(int argc, char **argv, char *buff)
+{
+  if (!owl_global_is_aimloggedin(&g)) {
+    owl_function_makemsg("addbuddy: You must be logged into aim to use this command.");
+    return(NULL);
+  }
+
+  if (argc!=3) {
+    owl_function_makemsg("usage: addbuddy <protocol> <buddyname>");
+    return(NULL);
+  }
+
+  if (strcasecmp(argv[1], "aim")) {
+    owl_function_makemsg("addbuddy: currently the only supported protocol is 'aim'");
+    return(NULL);
+  }
+
+  owl_aim_addbuddy(argv[2]);
+  owl_function_makemsg("%s added as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
+
+  return(NULL);
+}
+
+char *owl_command_delbuddy(int argc, char **argv, char *buff)
+{
+  if (!owl_global_is_aimloggedin(&g)) {
+    owl_function_makemsg("delbuddy: You must be logged into aim to use this command.");
+    return(NULL);
+  }
+
+  if (argc!=3) {
+    owl_function_makemsg("usage: delbuddy <protocol> <buddyname>");
+    return(NULL);
+  }
+
+  if (strcasecmp(argv[1], "aim")) {
+    owl_function_makemsg("delbuddy: currently the only supported protocol is 'aim'");
+    return(NULL);
+  }
+
+  owl_aim_delbuddy(argv[2]);
+  owl_function_makemsg("%s deleted as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
+
+  return(NULL);
 }
 
 char *owl_command_dump(int argc, char **argv, char *buff) {
