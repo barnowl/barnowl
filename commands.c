@@ -158,12 +158,13 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("set", owl_command_set, OWL_CTX_ANY,
 	      "set a variable value",
-	      "set [-q] <variable> [<value>]\n"
+	      "set [-q] [<variable>] [<value>]\n"
 	      "set",
 	      "Set the named variable to the specified value.  If no\n"
-	      "arguments are used print the value of all variables.\n"
-	      "If value is unspecified and the variable is a boolean, will set it to 'on'.\n"
-	      "If -q is specified, is silent and doesn't print a message.\n"),
+	      "arguments are given, print the value of all variables.\n"
+	      "If the value is unspecified and the variable is a boolean, it will be\n"
+	      "set to 'on'.  If -q is used, set is silent and does not print a\n"
+	      "message.\n"),
 
   OWLCMD_ARGS("unset", owl_command_unset, OWL_CTX_ANY,
 	      "unset a boolean variable value",
