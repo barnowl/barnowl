@@ -3,8 +3,13 @@ $Id$
 2.1.11-pre-1
 	Don't crash doing zlocate with bad tickets. [BZ 12]
 	Metion the path for the owlconf in intro.txt [BZ 54]
-	Print Better error message if startup fails due to unreadable
+	Print better error message if startup fails due to unreadable
 	   .owlconf [BZ 57]
+	In load-subs: Print an error message if the file is unreadable or
+	  doesn't exist, UNLESS load-subs is called with no arguments.  In
+	  that case only print an error if the file exists but isn't
+	  readable.  Still prints an error either way if zephyr reports a
+	  failure. [BZ 19]
 
 2.1.10
 	Fix a new problem finding libdes425

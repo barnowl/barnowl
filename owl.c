@@ -372,7 +372,7 @@ int main(int argc, char **argv, char **env)
     ret=owl_zephyr_loaddefaultsubs();
     
     /* load subscriptions from subs file */
-    ret2=owl_zephyr_loadsubs(NULL);
+    ret2=owl_zephyr_loadsubs(NULL, 0);
 
     if (ret || ret2) {
       owl_function_adminmsg("", "Error loading zephyr subscriptions");

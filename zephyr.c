@@ -66,11 +66,15 @@ char *owl_zephyr_get_sender()
 #endif
 }
 
-/* return 0  on success
- *        -1 on file error
- *        -2 on subscription error
+/* Load zephyr subscriptions form 'filename'.  If 'filename' is NULL,
+ * the default file $HOME/.zephyr.subs will be used.
+ *
+ * Returns 0 on success.  If the file does not exist, return -1 if
+ * 'error_on_nofile' is 1, otherwise return 0.  Return -1 if the file
+ * exists but can not be read.  Return -2 if there is a failure from
+ * zephyr to load the subscriptions.
  */
-int owl_zephyr_loadsubs(char *filename)
+int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
 {
 #ifdef HAVE_LIBZEPHYR
   FILE *file;
@@ -87,48 +91,46 @@ int owl_zephyr_loadsubs(char *filename)
   }
 
   ret=stat(subsfile, &statbuff);
-  if (ret) return(0);
-
-  ret=0;
+  if (ret) {
+    if (error_on_nofile==1) return(-1);
+    return(0);
+  }
 
   ZResetAuthentication();
   /* need to redo this to do chunks, not just bail after 3000 */
   count=0;
   file=fopen(subsfile, "r");
-  if (file) {
-    while ( fgets(buffer, 1024, file)!=NULL ) {
-      if (buffer[0]=='#' || buffer[0]=='\n' || buffer[0]=='\n') continue;
-
-      if (buffer[0]=='-') {
-	start=buffer+1;
-      } else {
-	start=buffer;
-      }
-      
-      if (count >= 3000) break; /* also tell the user */
-
-      /* add it to the list of subs */
-      if ((tmp=(char *) strtok(start, ",\n\r"))==NULL) continue;
-      subs[count].zsub_class=owl_strdup(tmp);
-      if ((tmp=(char *) strtok(NULL, ",\n\r"))==NULL) continue;
-      subs[count].zsub_classinst=owl_strdup(tmp);
-      if ((tmp=(char *) strtok(NULL, " \t\n\r"))==NULL) continue;
-      subs[count].zsub_recipient=owl_strdup(tmp);
-
-      /* if it started with '-' then add it to the global punt list */
-      if (buffer[0]=='-') {
-	owl_function_zpunt(subs[count].zsub_class, subs[count].zsub_classinst, subs[count].zsub_recipient, 0);
-      }
-      
-      count++;
+  if (!file) return(-1);
+  while ( fgets(buffer, 1024, file)!=NULL ) {
+    if (buffer[0]=='#' || buffer[0]=='\n' || buffer[0]=='\n') continue;
+    
+    if (buffer[0]=='-') {
+      start=buffer+1;
+    } else {
+      start=buffer;
     }
-    fclose(file);
-  } else {
-    count=0;
-    ret=-1;
+    
+    if (count >= 3000) break; /* also tell the user */
+    
+    /* add it to the list of subs */
+    if ((tmp=(char *) strtok(start, ",\n\r"))==NULL) continue;
+    subs[count].zsub_class=owl_strdup(tmp);
+    if ((tmp=(char *) strtok(NULL, ",\n\r"))==NULL) continue;
+    subs[count].zsub_classinst=owl_strdup(tmp);
+    if ((tmp=(char *) strtok(NULL, " \t\n\r"))==NULL) continue;
+    subs[count].zsub_recipient=owl_strdup(tmp);
+    
+    /* if it started with '-' then add it to the global punt list */
+    if (buffer[0]=='-') {
+      owl_function_zpunt(subs[count].zsub_class, subs[count].zsub_classinst, subs[count].zsub_recipient, 0);
+    }
+    
+    count++;
   }
+  fclose(file);
 
   /* sub without defaults */
+  ret=0;
   if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
     owl_function_error("Error subscribing to zephyr notifications.");
     ret=-2;

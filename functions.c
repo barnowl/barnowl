@@ -853,22 +853,43 @@ void owl_function_unsuball()
   owl_function_makemsg("Unsubscribed from all messages.");
 }
 
+
+/* Load zephyr subscriptions from the named 'file' and load zephyr's
+ * default subscriptions as well.  An error message is printed if
+ * 'file' can't be opened or if zephyr reports an error in
+ * subscribing.
+ *
+ * If 'file' is NULL, this look for the default filename
+ * $HOME/.zephyr.subs.  If the file can not be opened in this case
+ * only, no error message is printed.
+ */
 void owl_function_loadsubs(char *file)
 {
   int ret, ret2;
+  char *foo;
 
-  ret=owl_zephyr_loadsubs(file);
+  if (file==NULL) {
+    ret=owl_zephyr_loadsubs(NULL, 0);
+  } else {
+    ret=owl_zephyr_loadsubs(file, 1);
+  }
 
   /* for backwards compatibility for now */
   ret2=owl_zephyr_loaddefaultsubs();
 
   if (!owl_context_is_interactive(owl_global_get_context(&g))) return;
-  if (ret==0) {
-    owl_function_makemsg("Subscribed to messages from file.");
+
+  foo=file?file:"file";
+  if (ret==0 && ret2==0) {
+    if (!file) {
+      owl_function_makemsg("Subscribed to messages.");
+    } else {
+      owl_function_makemsg("Subscribed to messages from %s", file);
+    }
   } else if (ret==-1) {
-    owl_function_error("Could not open file.");
+    owl_function_error("Could not read %s", foo);
   } else {
-    owl_function_error("Error subscribing to messages from file.");
+    owl_function_error("Error subscribing to messages");
   }
 }
 
