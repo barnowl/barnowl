@@ -2,6 +2,7 @@ $Id$
 
 1.2.8
 	Class pings are displayed differently now
+	Updated owlconf.simple example to format outgoing messages.
 	
 1.2.7
 	Outgoing messages now go through the config for formatting
