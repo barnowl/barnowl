@@ -191,11 +191,9 @@ static void connkill_real(aim_session_t *sess, aim_conn_t **deadconn)
 }
 
 /**
- * aim_connrst - Clears out connection list, killing remaining connections.
- * @sess: Session to be cleared
+ * Clears out connection list, killing remaining connections.
  *
- * Clears out the connection list and kills any connections left.
- *
+ * @param sess Session to be cleared
  */
 static void aim_connrst(aim_session_t *sess)
 {
@@ -217,11 +215,10 @@ static void aim_connrst(aim_session_t *sess)
 }
 
 /**
- * aim_conn_init - Reset a connection to default values.
- * @deadconn: Connection to be reset
- *
+ * Reset a connection to default values.
  * Initializes and/or resets a connection structure.
  *
+ * @param deadconn Connection to be reset
  */
 static void aim_conn_init(aim_conn_t *deadconn)
 {
@@ -532,11 +529,11 @@ static int aim_proxyconnect(aim_session_t *sess, const char *host, fu16_t port, 
 
 		fd = socket(hp->h_addrtype, SOCK_STREAM, 0);
 
-		if (sess->flags & AIM_SESS_FLAGS_NONBLOCKCONNECT)
+		if (sess->nonblocking)
 			fcntl(fd, F_SETFL, O_NONBLOCK); /* XXX save flags */
 
 		if (connect(fd, (struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0) {
-			if (sess->flags & AIM_SESS_FLAGS_NONBLOCKCONNECT) {
+			if (sess->nonblocking) {
 				if ((errno == EINPROGRESS) || (errno == EINTR)) {
 					if (statusret)
 						*statusret |= AIM_CONN_STATUS_INPROGRESS;
@@ -852,15 +849,14 @@ static void defaultdebugcb(aim_session_t *sess, int level, const char *format, v
 }
 
 /**
- * aim_session_init - Initializes a session structure
- * @sess: Session to initialize
- * @flags: Flags to use. Any of %AIM_SESS_FLAGS %OR'd together.
- * @debuglevel: Level of debugging output (zero is least)
+ * Initializes a session structure by setting the initial values 
+ * stuff in the aim_session_t struct.
  *
- * Sets up the initial values for a session.
- *
+ * @param sess Session to initialize.
+ * @param nonblocking Set to true if you want connections to be non-blocking.
+ * @param debuglevel Level of debugging output (zero is least).
  */
-faim_export void aim_session_init(aim_session_t *sess, fu32_t flags, int debuglevel)
+faim_export void aim_session_init(aim_session_t *sess, bool nonblocking, int debuglevel)
 {
 
 	if (!sess)
@@ -872,16 +868,16 @@ faim_export void aim_session_init(aim_session_t *sess, fu32_t flags, int debugle
 	sess->queue_incoming = NULL;
 	aim_initsnachash(sess);
 	sess->msgcookies = NULL;
-	sess->icq_info = NULL;
-	sess->oft_info = NULL;
-	sess->snacid_next = 0x00000001;
-
-	sess->flags = 0;
+	sess->nonblocking = nonblocking;
 	sess->debug = debuglevel;
 	sess->debugcb = defaultdebugcb;
-
 	sess->modlistv = NULL;
+	sess->snacid_next = 0x00000001;
 
+	sess->locate.userinfo = NULL;
+	sess->locate.torequest = NULL;
+	sess->locate.requested = NULL;
+	sess->locate.waiting_for_response = FALSE;
 	sess->ssi.received_data = 0;
 	sess->ssi.numitems = 0;
 	sess->ssi.official = NULL;
@@ -889,16 +885,10 @@ faim_export void aim_session_init(aim_session_t *sess, fu32_t flags, int debugle
 	sess->ssi.pending = NULL;
 	sess->ssi.timestamp = (time_t)0;
 	sess->ssi.waiting_for_ack = 0;
-
+	sess->icq_info = NULL;
 	sess->authinfo = NULL;
 	sess->emailinfo = NULL;
-
-	/*
-	 * Default to SNAC login unless XORLOGIN is explicitly set.
-	 */
-	if (!(flags & AIM_SESS_FLAGS_XORLOGIN))
-		sess->flags |= AIM_SESS_FLAGS_SNACLOGIN;
-	sess->flags |= flags;
+	sess->oft_info = NULL;
 
 	/*
 	 * This must always be set.  Default to the queue-based
@@ -906,12 +896,11 @@ faim_export void aim_session_init(aim_session_t *sess, fu32_t flags, int debugle
 	 */
 	aim_tx_setenqueue(sess, AIM_TX_QUEUED, NULL);
 
-
 	/*
 	 * Register all the modules for this session...
 	 */
 	aim__registermodule(sess, misc_modfirst); /* load the catch-all first */
-	aim__registermodule(sess, general_modfirst);
+	aim__registermodule(sess, service_modfirst);
 	aim__registermodule(sess, locate_modfirst);
 	aim__registermodule(sess, buddylist_modfirst);
 	aim__registermodule(sess, msg_modfirst);
@@ -925,8 +914,8 @@ faim_export void aim_session_init(aim_session_t *sess, fu32_t flags, int debugle
 	aim__registermodule(sess, translate_modfirst);
 	aim__registermodule(sess, chatnav_modfirst);
 	aim__registermodule(sess, chat_modfirst);
-	/*	aim__registermodule(sess, odir_modfirst); */ /* kretch */
-	/*	aim__registermodule(sess, bart_modfirst); */ /* kretch */
+	aim__registermodule(sess, odir_modfirst);
+	aim__registermodule(sess, bart_modfirst);
 	/* missing 0x11 - 0x12 */
 	aim__registermodule(sess, ssi_modfirst);
 	/* missing 0x14 */
@@ -1056,6 +1045,9 @@ faim_export int aim_flap_nop(aim_session_t *sess, aim_conn_t *conn)
 		return -ENOMEM;
 
 	aim_tx_enqueue(sess, fr);
+
+	/* clean out SNACs over 60sec old */
+	aim_cleansnacs(sess, 60);
 
 	return 0;
 }

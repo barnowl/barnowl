@@ -320,6 +320,99 @@ faim_export int aim_icq_sendxmlreq(aim_session_t *sess, const char *xml)
 	return 0;
 }
 
+/*
+ * Send an SMS message.  This is the non-US way.  The US-way is to IM 
+ * their cell phone number (+19195551234).
+ *
+ * We basically construct and send an XML message.  The format is:
+ * <icq_sms_message>
+ *   <destination>full_phone_without_leading_+</destination>
+ *   <text>message</text>
+ *   <codepage>1252</codepage>
+ *   <senders_UIN>self_uin</senders_UIN>
+ *   <senders_name>self_name</senders_name>
+ *   <delivery_receipt>Yes|No</delivery_receipt>
+ *   <time>Wkd, DD Mmm YYYY HH:MM:SS TMZ</time>
+ * </icq_sms_message>
+ *
+ * Yeah hi Peter, whaaaat's happening.  If there's any way to use 
+ * a codepage other than 1252 that would be great.  Thaaaanks.
+ */
+faim_export int aim_icq_sendsms(aim_session_t *sess, const char *name, const char *msg, const char *alias)
+{
+	aim_conn_t *conn;
+	aim_frame_t *fr;
+	aim_snacid_t snacid;
+	int bslen, xmllen;
+	char *xml, timestr[30];
+	time_t t;
+	struct tm *tm;
+
+	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0015)))
+		return -EINVAL;
+
+	if (!name || !msg || !alias)
+		return -EINVAL;
+
+	time(&t);
+	tm = gmtime(&t);
+	strftime(timestr, 30, "%a, %d %b %Y %T %Z", tm);
+
+	/* The length of xml included the null terminating character */
+	xmllen = 225 + strlen(name) + strlen(msg) + strlen(sess->sn) + strlen(alias) + strlen(timestr) + 1;
+
+	if (!(xml = (char *)malloc(xmllen*sizeof(char))))
+		return -ENOMEM;
+	snprintf(xml, xmllen, "<icq_sms_message>\n"
+		"\t<destination>%s</destination>\n"
+		"\t<text>%s</text>\n"
+		"\t<codepage>1252</codepage>\n"
+		"\t<senders_UIN>%s</senders_UIN>\n"
+		"\t<senders_name>%s</senders_name>\n"
+		"\t<delivery_receipt>Yes</delivery_receipt>\n"
+		"\t<time>%s</time>\n"
+		"</icq_sms_message>\n",
+		name, msg, sess->sn, alias, timestr);
+
+	bslen = 37 + xmllen;
+
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10 + 4 + bslen))) {
+		free(xml);
+		return -ENOMEM;
+	}
+
+	snacid = aim_cachesnac(sess, 0x0015, 0x0002, 0x0000, NULL, 0);
+	aim_putsnac(&fr->data, 0x0015, 0x0002, 0x0000, snacid);
+
+	/* For simplicity, don't bother using a tlvlist */
+	aimbs_put16(&fr->data, 0x0001);
+	aimbs_put16(&fr->data, bslen);
+
+	aimbs_putle16(&fr->data, bslen - 2);
+	aimbs_putle32(&fr->data, atoi(sess->sn));
+	aimbs_putle16(&fr->data, 0x07d0); /* I command thee. */
+	aimbs_putle16(&fr->data, snacid); /* eh. */
+
+	/* From libicq200-0.3.2/src/SNAC-SRV.cpp */
+	aimbs_putle16(&fr->data, 0x8214);
+	aimbs_put16(&fr->data, 0x0001);
+	aimbs_put16(&fr->data, 0x0016);
+	aimbs_put32(&fr->data, 0x00000000);
+	aimbs_put32(&fr->data, 0x00000000);
+	aimbs_put32(&fr->data, 0x00000000);
+	aimbs_put32(&fr->data, 0x00000000);
+
+	aimbs_put16(&fr->data, 0x0000);
+	aimbs_put16(&fr->data, xmllen);
+	aimbs_putraw(&fr->data, xml, xmllen);
+
+	aim_tx_enqueue(sess, fr);
+
+	free(xml);
+
+	return 0;
+}
+
 static void aim_icq_freeinfo(struct aim_icq_info *info) {
 	int i;
 
@@ -367,8 +460,8 @@ static int icqresponse(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 	fu32_t ouruin;
 	fu16_t cmdlen, cmd, reqid;
 
-	if (!(tl = aim_readtlvchain(bs)) || !(datatlv = aim_gettlv(tl, 0x0001, 1))) {
-		aim_freetlvchain(&tl);
+	if (!(tl = aim_tlvlist_read(bs)) || !(datatlv = aim_tlv_gettlv(tl, 0x0001, 1))) {
+		aim_tlvlist_free(&tl);
 		faimdprintf(sess, 0, "corrupt ICQ response\n");
 		return 0;
 	}
@@ -548,7 +641,7 @@ static int icqresponse(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 		}
 	}
 
-	aim_freetlvchain(&tl);
+	aim_tlvlist_free(&tl);
 
 	return ret;
 }

@@ -166,7 +166,7 @@ faim_export int aim_im_reqparams(aim_session_t *sess)
 	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0004)))
 		return -EINVAL;
 
-	return aim_genericreq_n(sess, conn, 0x0004, 0x0004);
+	return aim_genericreq_n_snacid(sess, conn, 0x0004, 0x0004);
 }
 
 /**
@@ -389,9 +389,8 @@ faim_export int aim_im_sendch1_ext(aim_session_t *sess, struct aim_sendimext_arg
 
 	aim_tx_enqueue(sess, fr);
 
-	/* Move this to receive aim_flap_nop and send aim_flap_nop */
-	if (!(sess->flags & AIM_SESS_FLAGS_DONTTIMEOUTONICBM))
-		aim_cleansnacs(sess, 60); /* clean out SNACs over 60sec old */
+	/* clean out SNACs over 60sec old */
+	aim_cleansnacs(sess, 60);
 
 	return 0;
 }
@@ -632,7 +631,7 @@ faim_export int aim_im_sendch2_odcrequest(aim_session_t *sess, fu8_t *cookie, co
 	/* ICBM header */
 	aim_im_puticbm(&fr->data, ck, 0x0002, sn);
 
-	aim_addtlvtochain_noval(&tl, 0x0003);
+	aim_tlvlist_add_noval(&tl, 0x0003);
 
 	hdrlen = 2+8+16+6+8+6+4;
 	hdr = malloc(hdrlen);
@@ -642,20 +641,20 @@ faim_export int aim_im_sendch2_odcrequest(aim_session_t *sess, fu8_t *cookie, co
 	aimbs_putraw(&hdrbs, ck, 8);
 	aim_putcap(&hdrbs, AIM_CAPS_DIRECTIM);
 
-	aim_addtlvtochain16(&itl, 0x000a, 0x0001);
-	aim_addtlvtochain_raw(&itl, 0x0003, 4, ip);
-	aim_addtlvtochain16(&itl, 0x0005, port);
-	aim_addtlvtochain_noval(&itl, 0x000f);
+	aim_tlvlist_add_16(&itl, 0x000a, 0x0001);
+	aim_tlvlist_add_raw(&itl, 0x0003, 4, ip);
+	aim_tlvlist_add_16(&itl, 0x0005, port);
+	aim_tlvlist_add_noval(&itl, 0x000f);
 	
-	aim_writetlvchain(&hdrbs, &itl);
+	aim_tlvlist_write(&hdrbs, &itl);
 
-	aim_addtlvtochain_raw(&tl, 0x0005, aim_bstream_curpos(&hdrbs), hdr);
+	aim_tlvlist_add_raw(&tl, 0x0005, aim_bstream_curpos(&hdrbs), hdr);
 
-	aim_writetlvchain(&fr->data, &tl);
+	aim_tlvlist_write(&fr->data, &tl);
 
 	free(hdr);
-	aim_freetlvchain(&itl);
-	aim_freetlvchain(&tl);
+	aim_tlvlist_free(&itl);
+	aim_tlvlist_free(&tl);
 
 	aim_tx_enqueue(sess, fr);
 
@@ -687,11 +686,11 @@ faim_export int aim_im_sendch2_sendfile_ask(aim_session_t *sess, struct aim_oft_
 		int buflen;
 		aim_bstream_t bs;
 
-		aim_addtlvtochain16(&subtl, 0x000a, 0x0001);
-		aim_addtlvtochain_noval(&subtl, 0x000f);
-/*		aim_addtlvtochain_raw(&subtl, 0x000e, 2, "en");
-		aim_addtlvtochain_raw(&subtl, 0x000d, 8, "us-ascii");
-		aim_addtlvtochain_raw(&subtl, 0x000c, 24, "Please accept this file."); */
+		aim_tlvlist_add_16(&subtl, 0x000a, 0x0001);
+		aim_tlvlist_add_noval(&subtl, 0x000f);
+/*		aim_tlvlist_add_raw(&subtl, 0x000e, 2, "en");
+		aim_tlvlist_add_raw(&subtl, 0x000d, 8, "us-ascii");
+		aim_tlvlist_add_raw(&subtl, 0x000c, 24, "Please accept this file."); */
 		if (oft_info->clientip) {
 			fu8_t ip[4];
 			char *nexttoken;
@@ -702,9 +701,9 @@ faim_export int aim_im_sendch2_sendfile_ask(aim_session_t *sess, struct aim_oft_
 				nexttoken = strtok(NULL, ".");
 				i++;
 			}
-			aim_addtlvtochain_raw(&subtl, 0x0003, 4, ip);
+			aim_tlvlist_add_raw(&subtl, 0x0003, 4, ip);
 		}
-		aim_addtlvtochain16(&subtl, 0x0005, oft_info->port);
+		aim_tlvlist_add_16(&subtl, 0x0005, oft_info->port);
 
 		/* TLV t(2711) */
 		buflen = 2+2+4+strlen(oft_info->fh.name)+1;
@@ -718,7 +717,7 @@ faim_export int aim_im_sendch2_sendfile_ask(aim_session_t *sess, struct aim_oft_
 		aimbs_putraw(&bs, oft_info->fh.name, strlen(oft_info->fh.name));
 		aimbs_put8(&bs, 0x00);
 
-		aim_addtlvtochain_raw(&subtl, 0x2711, bs.len, bs.data);
+		aim_tlvlist_add_raw(&subtl, 0x2711, bs.len, bs.data);
 		free(buf);
 	}
 
@@ -728,22 +727,22 @@ faim_export int aim_im_sendch2_sendfile_ask(aim_session_t *sess, struct aim_oft_
 		aim_bstream_t bs;
 
 		/* TLV t(0005) - Encompasses everything from above. Gee. */
-		buflen = 2+8+16+aim_sizetlvchain(&subtl);
+		buflen = 2+8+16+aim_tlvlist_size(&subtl);
 		buf = malloc(buflen);
 		aim_bstream_init(&bs, buf, buflen);
 		aimbs_put16(&bs, AIM_RENDEZVOUS_PROPOSE);
 		aimbs_putraw(&bs, oft_info->cookie, 8);
 		aim_putcap(&bs, AIM_CAPS_SENDFILE);
-		aim_writetlvchain(&bs, &subtl);
-		aim_freetlvchain(&subtl);
-		aim_addtlvtochain_raw(&tl, 0x0005, bs.len, bs.data);
+		aim_tlvlist_write(&bs, &subtl);
+		aim_tlvlist_free(&subtl);
+		aim_tlvlist_add_raw(&tl, 0x0005, bs.len, bs.data);
 		free(buf);
 
 		/* TLV t(0003) - Request an ack */
-		aim_addtlvtochain_noval(&tl, 0x0003);
+		aim_tlvlist_add_noval(&tl, 0x0003);
 	}
 
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10 + 11+strlen(oft_info->sn) + aim_sizetlvchain(&tl))))
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10 + 11+strlen(oft_info->sn) + aim_tlvlist_size(&tl))))
 		return -ENOMEM;
 
 	snacid = aim_cachesnac(sess, 0x0004, 0x0006, AIM_SNACFLAGS_DESTRUCTOR, oft_info->cookie, sizeof(oft_info->cookie));
@@ -753,8 +752,8 @@ faim_export int aim_im_sendch2_sendfile_ask(aim_session_t *sess, struct aim_oft_
 	aim_im_puticbm(&fr->data, oft_info->cookie, 0x0002, oft_info->sn);
 
 	/* All that crap from above (the 0x0005 TLV and the 0x0003 TLV) */
-	aim_writetlvchain(&fr->data, &tl);
-	aim_freetlvchain(&tl);
+	aim_tlvlist_write(&fr->data, &tl);
+	aim_tlvlist_free(&tl);
 
 	aim_tx_enqueue(sess, fr);
 
@@ -1032,14 +1031,14 @@ static int outgoingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	snlen = aimbs_get8(bs);
 	sn = aimbs_getstr(bs, snlen);
 
-	tlvlist = aim_readtlvchain(bs);
+	tlvlist = aim_tlvlist_read(bs);
 
-	if (aim_gettlv(tlvlist, 0x0003, 1))
+	if (aim_tlv_gettlv(tlvlist, 0x0003, 1))
 		icbmflags |= AIM_IMFLAGS_ACK;
-	if (aim_gettlv(tlvlist, 0x0004, 1))
+	if (aim_tlv_gettlv(tlvlist, 0x0004, 1))
 		icbmflags |= AIM_IMFLAGS_AWAY;
 
-	if ((msgblock = aim_gettlv(tlvlist, 0x0002, 1))) {
+	if ((msgblock = aim_tlv_gettlv(tlvlist, 0x0002, 1))) {
 		aim_bstream_t mbs;
 		int featurelen, msglen;
 
@@ -1064,7 +1063,7 @@ static int outgoingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 		ret = userfunc(sess, rx, channel, sn, msg, icbmflags, flag1, flag2);
 
 	free(sn);
-	aim_freetlvchain(&tlvlist);
+	aim_tlvlist_free(&tlvlist);
 
 	return ret;
 }
@@ -1654,7 +1653,7 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	/*
 	 * There's another block of TLVs embedded in the type 5 here. 
 	 */
-	block1 = aim_gettlv(tlvlist, 0x0005, 1);
+	block1 = aim_tlv_gettlv(tlvlist, 0x0005, 1);
 	aim_bstream_init(&bbs, block1->value, block1->length);
 
 	/*
@@ -1677,7 +1676,7 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	 * The next 16bytes are a capability block so we can
 	 * identify what type of rendezvous this is.
 	 */
-	args.reqclass = aim_getcap(sess, &bbs, 0x10);
+	args.reqclass = aim_locate_getcaps(sess, &bbs, 0x10);
 
 	/* 
 	 * What follows may be TLVs or nothing, depending on the
@@ -1685,19 +1684,19 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	 *
 	 * Ack packets for instance have nothing more to them.
 	 */
-	list2 = aim_readtlvchain(&bbs);
+	list2 = aim_tlvlist_read(&bbs);
 
 	/*
 	 * IP address to proxy the file transfer through.
 	 *
 	 * XXX - I don't like this.  Maybe just read in an int?  Or inet_ntoa...
 	 */
-	if (aim_gettlv(list2, 0x0002, 1)) {
+	if (aim_tlv_gettlv(list2, 0x0002, 1)) {
 		aim_tlv_t *iptlv;
 
-		iptlv = aim_gettlv(list2, 0x0002, 1);
+		iptlv = aim_tlv_gettlv(list2, 0x0002, 1);
 		if (iptlv->length == 4)
-			snprintf(proxyip, sizeof(proxyip), "%hhd.%hhd.%hhd.%hhd",
+			snprintf(proxyip, sizeof(proxyip), "%hhu.%hhu.%hhu.%hhu",
 				iptlv->value[0], iptlv->value[1],
 				iptlv->value[2], iptlv->value[3]);
 	}
@@ -1705,12 +1704,12 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	/*
 	 * IP address from the perspective of the client.
 	 */
-	if (aim_gettlv(list2, 0x0003, 1)) {
+	if (aim_tlv_gettlv(list2, 0x0003, 1)) {
 		aim_tlv_t *iptlv;
 
-		iptlv = aim_gettlv(list2, 0x0003, 1);
+		iptlv = aim_tlv_gettlv(list2, 0x0003, 1);
 		if (iptlv->length == 4)
-			snprintf(clientip, sizeof(clientip), "%hhd.%hhd.%hhd.%hhd",
+			snprintf(clientip, sizeof(clientip), "%hhu.%hhu.%hhu.%hhu",
 				iptlv->value[0], iptlv->value[1],
 				iptlv->value[2], iptlv->value[3]);
 	}
@@ -1720,12 +1719,12 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	 *
 	 * This is added by the server.
 	 */
-	if (aim_gettlv(list2, 0x0004, 1)) {
+	if (aim_tlv_gettlv(list2, 0x0004, 1)) {
 		aim_tlv_t *iptlv;
 
-		iptlv = aim_gettlv(list2, 0x0004, 1);
+		iptlv = aim_tlv_gettlv(list2, 0x0004, 1);
 		if (iptlv->length == 4)
-			snprintf(verifiedip, sizeof(verifiedip), "%hhd.%hhd.%hhd.%hhd",
+			snprintf(verifiedip, sizeof(verifiedip), "%hhu.%hhu.%hhu.%hhu",
 				iptlv->value[0], iptlv->value[1],
 				iptlv->value[2], iptlv->value[3]);
 	}
@@ -1733,47 +1732,47 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	/*
 	 * Port number for something.
 	 */
-	if (aim_gettlv(list2, 0x0005, 1))
-		args.port = aim_gettlv16(list2, 0x0005, 1);
+	if (aim_tlv_gettlv(list2, 0x0005, 1))
+		args.port = aim_tlv_get16(list2, 0x0005, 1);
 
 	/*
 	 * Something to do with ft -- two bytes
 	 * 0x0001 - "I want to send you this file"
 	 * 0x0002 - "I will accept this file from you"
 	 */
-	if (aim_gettlv(list2, 0x000a, 1))
+	if (aim_tlv_gettlv(list2, 0x000a, 1))
 		;
 
 	/*
 	 * Error code.
 	 */
-	if (aim_gettlv(list2, 0x000b, 1))
-		args.errorcode = aim_gettlv16(list2, 0x000b, 1);
+	if (aim_tlv_gettlv(list2, 0x000b, 1))
+		args.errorcode = aim_tlv_get16(list2, 0x000b, 1);
 
 	/*
 	 * Invitation message / chat description.
 	 */
-	if (aim_gettlv(list2, 0x000c, 1))
-		args.msg = aim_gettlv_str(list2, 0x000c, 1);
+	if (aim_tlv_gettlv(list2, 0x000c, 1))
+		args.msg = aim_tlv_getstr(list2, 0x000c, 1);
 
 	/*
 	 * Character set.
 	 */
-	if (aim_gettlv(list2, 0x000d, 1))
-		args.encoding = aim_gettlv_str(list2, 0x000d, 1);
+	if (aim_tlv_gettlv(list2, 0x000d, 1))
+		args.encoding = aim_tlv_getstr(list2, 0x000d, 1);
 	
 	/*
 	 * Language.
 	 */
-	if (aim_gettlv(list2, 0x000e, 1))
-		args.language = aim_gettlv_str(list2, 0x000e, 1);
+	if (aim_tlv_gettlv(list2, 0x000e, 1))
+		args.language = aim_tlv_getstr(list2, 0x000e, 1);
 
 	/*
 	 * Unknown -- no value
 	 *
 	 * Maybe means we should connect directly to transfer the file?
 	 */
-	if (aim_gettlv(list2, 0x000f, 1))
+	if (aim_tlv_gettlv(list2, 0x000f, 1))
 		;
 
 	/*
@@ -1781,7 +1780,7 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	 *
 	 * Maybe means we should proxy the file transfer through an AIM server?
 	 */
-	if (aim_gettlv(list2, 0x0010, 1))
+	if (aim_tlv_gettlv(list2, 0x0010, 1))
 		;
 
 	if (strlen(proxyip))
@@ -1797,7 +1796,7 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	 *
 	 * Service Data blocks are module-specific in format.
 	 */
-	if ((servdatatlv = aim_gettlv(list2, 0x2711 /* 10001 */, 1))) {
+	if ((servdatatlv = aim_tlv_gettlv(list2, 0x2711 /* 10001 */, 1))) {
 
 		aim_bstream_init(&sdbs, servdatatlv->value, servdatatlv->length);
 		sdbsptr = &sdbs;
@@ -1831,7 +1830,7 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	free((char *)args.encoding);
 	free((char *)args.language);
 
-	aim_freetlvchain(&list2);
+	aim_tlvlist_free(&list2);
 
 	return ret;
 }
@@ -1847,7 +1846,7 @@ static int incomingim_ch4(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	/*
 	 * Make a bstream for the meaty part.  Yum.  Meat.
 	 */
-	if (!(block = aim_gettlv(tlvlist, 0x0005, 1)))
+	if (!(block = aim_tlv_gettlv(tlvlist, 0x0005, 1)))
 		return -1;
 	aim_bstream_init(&meat, block->value, block->length);
 
@@ -1946,18 +1945,18 @@ static int incomingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 		 * Read block of TLVs (not including the userinfo data).  All 
 		 * further data is derived from what is parsed here.
 		 */
-		tlvlist = aim_readtlvchain(bs);
+		tlvlist = aim_tlvlist_read(bs);
 
 		ret = incomingim_ch2(sess, mod, rx, snac, channel, &userinfo, tlvlist, cookie);
 
-		aim_freetlvchain(&tlvlist);
+		aim_tlvlist_free(&tlvlist);
 
 	} else if (channel == 4) {
 		aim_tlvlist_t *tlvlist;
 
-		tlvlist = aim_readtlvchain(bs);
+		tlvlist = aim_tlvlist_read(bs);
 		ret = incomingim_ch4(sess, mod, rx, snac, channel, &userinfo, tlvlist, cookie);
-		aim_freetlvchain(&tlvlist);
+		aim_tlvlist_free(&tlvlist);
 
 	} else {
 		faimdprintf(sess, 0, "icbm: ICBM received on an unsupported channel.  Ignoring.  (chan = %04x)\n", channel);
@@ -2055,9 +2054,9 @@ faim_export int aim_im_denytransfer(aim_session_t *sess, const char *sender, con
 	aimbs_put8(&fr->data, strlen(sender));
 	aimbs_putraw(&fr->data, sender, strlen(sender));
 
-	aim_addtlvtochain16(&tl, 0x0003, code);
-	aim_writetlvchain(&fr->data, &tl);
-	aim_freetlvchain(&tl);
+	aim_tlvlist_add_16(&tl, 0x0003, code);
+	aim_tlvlist_write(&fr->data, &tl);
+	aim_tlvlist_free(&tl);
 
 	aim_tx_enqueue(sess, fr);
 

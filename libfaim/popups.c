@@ -22,18 +22,18 @@ static int parsepopup(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	char *msg, *url;
 	fu16_t width, height, delay;
 
-	tl = aim_readtlvchain(bs);
+	tl = aim_tlvlist_read(bs);
 
-	msg = aim_gettlv_str(tl, 0x0001, 1);
-	url = aim_gettlv_str(tl, 0x0002, 1);
-	width = aim_gettlv16(tl, 0x0003, 1);
-	height = aim_gettlv16(tl, 0x0004, 1);
-	delay = aim_gettlv16(tl, 0x0005, 1);
+	msg = aim_tlv_getstr(tl, 0x0001, 1);
+	url = aim_tlv_getstr(tl, 0x0002, 1);
+	width = aim_tlv_get16(tl, 0x0003, 1);
+	height = aim_tlv_get16(tl, 0x0004, 1);
+	delay = aim_tlv_get16(tl, 0x0005, 1);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, msg, url, width, height, delay);
 
-	aim_freetlvchain(&tl);
+	aim_tlvlist_free(&tl);
 	free(msg);
 	free(url);
 

@@ -108,19 +108,19 @@ static int redirect(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 
 	memset(&redir, 0, sizeof(redir));
 
-	tlvlist = aim_readtlvchain(bs);
+	tlvlist = aim_tlvlist_read(bs);
 
-	if (!aim_gettlv(tlvlist, 0x000d, 1) ||
-			!aim_gettlv(tlvlist, 0x0005, 1) ||
-			!aim_gettlv(tlvlist, 0x0006, 1)) {
-		aim_freetlvchain(&tlvlist);
+	if (!aim_tlv_gettlv(tlvlist, 0x000d, 1) ||
+			!aim_tlv_gettlv(tlvlist, 0x0005, 1) ||
+			!aim_tlv_gettlv(tlvlist, 0x0006, 1)) {
+		aim_tlvlist_free(&tlvlist);
 		return 0;
 	}
 
-	redir.group = aim_gettlv16(tlvlist, 0x000d, 1);
-	redir.ip = aim_gettlv_str(tlvlist, 0x0005, 1);
-	redir.cookielen = aim_gettlv(tlvlist, 0x0006, 1)->length;
-	redir.cookie = aim_gettlv_str(tlvlist, 0x0006, 1);
+	redir.group = aim_tlv_get16(tlvlist, 0x000d, 1);
+	redir.ip = aim_tlv_getstr(tlvlist, 0x0005, 1);
+	redir.cookielen = aim_tlv_gettlv(tlvlist, 0x0006, 1)->length;
+	redir.cookie = aim_tlv_getstr(tlvlist, 0x0006, 1);
 
 	/* Fetch original SNAC so we can get csi if needed */
 	origsnac = aim_remsnac(sess, snac->id);
@@ -143,7 +143,7 @@ static int redirect(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 		free(origsnac->data);
 	free(origsnac);
 
-	aim_freetlvchain(&tlvlist);
+	aim_tlvlist_free(&tlvlist);
 
 	return ret;
 }
@@ -151,7 +151,7 @@ static int redirect(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 /* Subtype 0x0006 - Request Rate Information. */
 faim_internal int aim_reqrates(aim_session_t *sess, aim_conn_t *conn)
 {
-	return aim_genericreq_n(sess, conn, 0x0001, 0x0006);
+	return aim_genericreq_n_snacid(sess, conn, 0x0001, 0x0006);
 }
 
 /*
@@ -491,7 +491,7 @@ static int serverresume(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx,
 /* Subtype 0x000e - Request self-info */
 faim_export int aim_reqpersonalinfo(aim_session_t *sess, aim_conn_t *conn)
 {
-	return aim_genericreq_n(sess, conn, 0x0001, 0x000e);
+	return aim_genericreq_n_snacid(sess, conn, 0x0001, 0x000e);
 }
 
 /* Subtype 0x000f - Self User Info */
@@ -543,8 +543,13 @@ static int evilnotify(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
  * call it again with zero when you're back.
  *
  */
-faim_export int aim_bos_setidle(aim_session_t *sess, aim_conn_t *conn, fu32_t idletime)
+faim_export int aim_srv_setidle(aim_session_t *sess, fu32_t idletime)
 {
+	aim_conn_t *conn;
+
+	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_BOS)))
+		return -EINVAL;
+
 	return aim_genericreq_l(sess, conn, 0x0001, 0x0011, &idletime);
 }
 
@@ -585,17 +590,17 @@ static int migrate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_
 		faimdprintf(sess, 0, "bifurcated migration unsupported -- group 0x%04x\n", group);
 	}
 
-	tl = aim_readtlvchain(bs);
+	tl = aim_tlvlist_read(bs);
 
-	if (aim_gettlv(tl, 0x0005, 1))
-		ip = aim_gettlv_str(tl, 0x0005, 1);
+	if (aim_tlv_gettlv(tl, 0x0005, 1))
+		ip = aim_tlv_getstr(tl, 0x0005, 1);
 
-	cktlv = aim_gettlv(tl, 0x0006, 1);
+	cktlv = aim_tlv_gettlv(tl, 0x0006, 1);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, ip, cktlv ? cktlv->value : NULL);
 
-	aim_freetlvchain(&tl);
+	aim_tlvlist_free(&tl);
 	free(ip);
 
 	return ret;
@@ -626,16 +631,16 @@ static int motd(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mod
 	/* 
 	 * TLVs follow 
 	 */
-	tlvlist = aim_readtlvchain(bs);
+	tlvlist = aim_tlvlist_read(bs);
 
-	msg = aim_gettlv_str(tlvlist, 0x000b, 1);
+	msg = aim_tlv_getstr(tlvlist, 0x000b, 1);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, id, msg);
 
 	free(msg);
 
-	aim_freetlvchain(&tlvlist);
+	aim_tlvlist_free(&tlvlist);
 
 	return ret;
 }
@@ -660,6 +665,8 @@ faim_export int aim_bos_setprivacyflags(aim_session_t *sess, aim_conn_t *conn, f
  * WinAIM sends these every 4min or so to keep the connection alive.  Its not 
  * really necessary.
  *
+ * Wha?  No?  Since when?  I think WinAIM sends an empty channel 3 
+ * SNAC as a no-op...
  */
 faim_export int aim_nop(aim_session_t *sess, aim_conn_t *conn)
 {
@@ -760,9 +767,9 @@ faim_export int aim_setextstatus(aim_session_t *sess, fu32_t status)
 	snacid = aim_cachesnac(sess, 0x0001, 0x001e, 0x0000, NULL, 0);
 	aim_putsnac(&fr->data, 0x0001, 0x001e, 0x0000, snacid);
 	
-	aim_addtlvtochain32(&tl, 0x0006, data);
-	aim_writetlvchain(&fr->data, &tl);
-	aim_freetlvchain(&tl);
+	aim_tlvlist_add_32(&tl, 0x0006, data);
+	aim_tlvlist_write(&fr->data, &tl);
+	aim_tlvlist_free(&tl);
 	
 	aim_tx_enqueue(sess, fr);
 
@@ -787,15 +794,15 @@ faim_export int aim_srv_setavailmsg(aim_session_t *sess, char *msg)
 	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0001)))
 		return -EINVAL;
 
-	if (msg) {
+	if (msg != NULL) {
 		if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10 + 4 + strlen(msg) + 8)))
 			return -ENOMEM;
 
 		snacid = aim_cachesnac(sess, 0x0001, 0x001e, 0x0000, NULL, 0);
 		aim_putsnac(&fr->data, 0x0001, 0x001e, 0x0000, snacid);
 
-		aimbs_put16(&fr->data, 0x001d);
-		aimbs_put16(&fr->data, strlen(msg)+8);
+		aimbs_put16(&fr->data, 0x001d); /* userinfo TLV type */
+		aimbs_put16(&fr->data, strlen(msg)+8); /* total length of userinfo TLV data */
 		aimbs_put16(&fr->data, 0x0002);
 		aimbs_put8(&fr->data, 0x04);
 		aimbs_put8(&fr->data, strlen(msg)+4);
@@ -870,9 +877,9 @@ static int memrequest(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 
 	offset = aimbs_get32(bs);
 	len = aimbs_get32(bs);
-	list = aim_readtlvchain(bs);
+	list = aim_tlvlist_read(bs);
 
-	modname = aim_gettlv_str(list, 0x0001, 1);
+	modname = aim_tlv_getstr(list, 0x0001, 1);
 
 	faimdprintf(sess, 1, "data at 0x%08lx (%d bytes) of requested\n", offset, len, modname ? modname : "aim.exe");
 
@@ -880,7 +887,7 @@ static int memrequest(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 		ret = userfunc(sess, rx, offset, len, modname);
 
 	free(modname);
-	aim_freetlvchain(&list);
+	aim_tlvlist_free(&list);
 
 	return ret;
 }
@@ -1067,7 +1074,7 @@ static int snachandler(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 	return 0;
 }
 
-faim_internal int general_modfirst(aim_session_t *sess, aim_module_t *mod)
+faim_internal int service_modfirst(aim_session_t *sess, aim_module_t *mod)
 {
 
 	mod->family = 0x0001;
@@ -1075,7 +1082,7 @@ faim_internal int general_modfirst(aim_session_t *sess, aim_module_t *mod)
 	mod->toolid = 0x0110;
 	mod->toolversion = 0x0629;
 	mod->flags = 0;
-	strncpy(mod->name, "general", sizeof(mod->name));
+	strncpy(mod->name, "service", sizeof(mod->name));
 	mod->snachandler = snachandler;
 
 	return 0;

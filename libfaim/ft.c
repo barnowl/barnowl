@@ -258,7 +258,7 @@ faim_export int aim_handlerendconnect(aim_session_t *sess, aim_conn_t *cur)
 	if ((acceptfd = accept(cur->fd, &addr, &addrlen)) == -1)
 		return 0; /* not an error */
 
-	if (addr.sa_family != AF_INET) { /* just in case IPv6 really is happening */
+	if ((addr.sa_family != AF_INET) && (addr.sa_family != AF_INET6)) { /* just in case IPv6 really is happening */
 		close(acceptfd);
 		aim_conn_close(cur);
 		return -1;

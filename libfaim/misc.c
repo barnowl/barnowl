@@ -12,7 +12,6 @@
 /*
  * Generic routine for sending commands.
  *
- *
  * I know I can do this in a smarter way...but I'm not thinking straight
  * right now...
  *

@@ -67,15 +67,15 @@ faim_export int aim_chatnav_createroom(aim_session_t *sess, aim_conn_t *conn, co
 	/* detail level */
 	aimbs_put8(&fr->data, 0x01);
 
-	aim_addtlvtochain_raw(&tl, 0x00d3, strlen(name), name);
-	aim_addtlvtochain_raw(&tl, 0x00d6, strlen(charset), charset);
-	aim_addtlvtochain_raw(&tl, 0x00d7, strlen(lang), lang);
+	aim_tlvlist_add_raw(&tl, 0x00d3, strlen(name), name);
+	aim_tlvlist_add_raw(&tl, 0x00d6, strlen(charset), charset);
+	aim_tlvlist_add_raw(&tl, 0x00d7, strlen(lang), lang);
 
 	/* tlvcount */
-	aimbs_put16(&fr->data, aim_counttlvchain(&tl));
-	aim_writetlvchain(&fr->data, &tl);
+	aimbs_put16(&fr->data, aim_tlvlist_count(&tl));
+	aim_tlvlist_write(&fr->data, &tl);
 
-	aim_freetlvchain(&tl);
+	aim_tlvlist_free(&tl);
 
 	aim_tx_enqueue(sess, fr);
 
@@ -92,13 +92,13 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 	fu8_t maxrooms = 0;
 	aim_tlvlist_t *tlvlist, *innerlist;
 
-	tlvlist = aim_readtlvchain(bs);
+	tlvlist = aim_tlvlist_read(bs);
 
 	/* 
 	 * Type 0x0002: Maximum concurrent rooms.
 	 */ 
-	if (aim_gettlv(tlvlist, 0x0002, 1))
-		maxrooms = aim_gettlv8(tlvlist, 0x0002, 1);
+	if (aim_tlv_gettlv(tlvlist, 0x0002, 1))
+		maxrooms = aim_tlv_get8(tlvlist, 0x0002, 1);
 
 	/* 
 	 * Type 0x0003: Exchange information
@@ -107,7 +107,7 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 	 * representing another exchange.  
 	 * 
 	 */
-	for (curexchange = 0; ((exchangetlv = aim_gettlv(tlvlist, 0x0003, curexchange+1))); ) {
+	for (curexchange = 0; ((exchangetlv = aim_tlv_gettlv(tlvlist, 0x0003, curexchange+1))); ) {
 		aim_bstream_t tbs;
 
 		aim_bstream_init(&tbs, exchangetlv->value, exchangetlv->length);
@@ -118,7 +118,7 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 
 		/* exchange number */
 		exchanges[curexchange-1].number = aimbs_get16(&tbs);
-		innerlist = aim_readtlvchain(&tbs);
+		innerlist = aim_tlvlist_read(&tbs);
 
 		/* 
 		 * Type 0x000a: Unknown.
@@ -126,28 +126,28 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 		 * Usually three bytes: 0x0114 (exchange 1) or 0x010f (others).
 		 *
 		 */
-		if (aim_gettlv(innerlist, 0x000a, 1))
+		if (aim_tlv_gettlv(innerlist, 0x000a, 1))
 			;
 
 		/* 
 		 * Type 0x000d: Unknown.
 		 */
-		if (aim_gettlv(innerlist, 0x000d, 1))
+		if (aim_tlv_gettlv(innerlist, 0x000d, 1))
 			;
 
 		/* 
 		 * Type 0x0004: Unknown
 		 */
-		if (aim_gettlv(innerlist, 0x0004, 1))
+		if (aim_tlv_gettlv(innerlist, 0x0004, 1))
 			;
 
 		/* 
 		 * Type 0x0002: Unknown
 		 */
-		if (aim_gettlv(innerlist, 0x0002, 1)) {
+		if (aim_tlv_gettlv(innerlist, 0x0002, 1)) {
 			fu16_t classperms;
 
-			classperms = aim_gettlv16(innerlist, 0x0002, 1);
+			classperms = aim_tlv_get16(innerlist, 0x0002, 1);
 			
 			faimdprintf(sess, 1, "faim: class permissions %x\n", classperms);
 		}
@@ -161,45 +161,45 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 		 * 8 Occupant Peek Allowed
 		 *
 		 */ 
-		if (aim_gettlv(innerlist, 0x00c9, 1))
-			exchanges[curexchange-1].flags = aim_gettlv16(innerlist, 0x00c9, 1);
+		if (aim_tlv_gettlv(innerlist, 0x00c9, 1))
+			exchanges[curexchange-1].flags = aim_tlv_get16(innerlist, 0x00c9, 1);
 		      
 		/*
 		 * Type 0x00ca: Creation Date 
 		 */
-		if (aim_gettlv(innerlist, 0x00ca, 1))
+		if (aim_tlv_gettlv(innerlist, 0x00ca, 1))
 			;
 		      
 		/*
 		 * Type 0x00d0: Mandatory Channels?
 		 */
-		if (aim_gettlv(innerlist, 0x00d0, 1))
+		if (aim_tlv_gettlv(innerlist, 0x00d0, 1))
 			;
 
 		/*
 		 * Type 0x00d1: Maximum Message length
 		 */
-		if (aim_gettlv(innerlist, 0x00d1, 1))
+		if (aim_tlv_gettlv(innerlist, 0x00d1, 1))
 			;
 
 		/*
 		 * Type 0x00d2: Maximum Occupancy?
 		 */
-		if (aim_gettlv(innerlist, 0x00d2, 1))	
+		if (aim_tlv_gettlv(innerlist, 0x00d2, 1))	
 			;
 
 		/*
 		 * Type 0x00d3: Exchange Description
 		 */
-		if (aim_gettlv(innerlist, 0x00d3, 1))	
-			exchanges[curexchange-1].name = aim_gettlv_str(innerlist, 0x00d3, 1);
+		if (aim_tlv_gettlv(innerlist, 0x00d3, 1))	
+			exchanges[curexchange-1].name = aim_tlv_getstr(innerlist, 0x00d3, 1);
 		else
 			exchanges[curexchange-1].name = NULL;
 
 		/*
 		 * Type 0x00d4: Exchange Description URL
 		 */
-		if (aim_gettlv(innerlist, 0x00d4, 1))	
+		if (aim_tlv_gettlv(innerlist, 0x00d4, 1))	
 			;
 
 		/*
@@ -210,51 +210,51 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 		 * 2  Exchange creation allowed
 		 * 
 		 */
-		if (aim_gettlv(innerlist, 0x00d5, 1)) {
+		if (aim_tlv_gettlv(innerlist, 0x00d5, 1)) {
 			fu8_t createperms;
 
-			createperms = aim_gettlv8(innerlist, 0x00d5, 1);
+			createperms = aim_tlv_get8(innerlist, 0x00d5, 1);
 		}
 
 		/*
 		 * Type 0x00d6: Character Set (First Time)
 		 */	      
-		if (aim_gettlv(innerlist, 0x00d6, 1))	
-			exchanges[curexchange-1].charset1 = aim_gettlv_str(innerlist, 0x00d6, 1);
+		if (aim_tlv_gettlv(innerlist, 0x00d6, 1))	
+			exchanges[curexchange-1].charset1 = aim_tlv_getstr(innerlist, 0x00d6, 1);
 		else
 			exchanges[curexchange-1].charset1 = NULL;
 		      
 		/*
 		 * Type 0x00d7: Language (First Time)
 		 */	      
-		if (aim_gettlv(innerlist, 0x00d7, 1))	
-			exchanges[curexchange-1].lang1 = aim_gettlv_str(innerlist, 0x00d7, 1);
+		if (aim_tlv_gettlv(innerlist, 0x00d7, 1))	
+			exchanges[curexchange-1].lang1 = aim_tlv_getstr(innerlist, 0x00d7, 1);
 		else
 			exchanges[curexchange-1].lang1 = NULL;
 
 		/*
 		 * Type 0x00d8: Character Set (Second Time)
 		 */	      
-		if (aim_gettlv(innerlist, 0x00d8, 1))	
-			exchanges[curexchange-1].charset2 = aim_gettlv_str(innerlist, 0x00d8, 1);
+		if (aim_tlv_gettlv(innerlist, 0x00d8, 1))	
+			exchanges[curexchange-1].charset2 = aim_tlv_getstr(innerlist, 0x00d8, 1);
 		else
 			exchanges[curexchange-1].charset2 = NULL;
 
 		/*
 		 * Type 0x00d9: Language (Second Time)
 		 */	      
-		if (aim_gettlv(innerlist, 0x00d9, 1))	
-			exchanges[curexchange-1].lang2 = aim_gettlv_str(innerlist, 0x00d9, 1);
+		if (aim_tlv_gettlv(innerlist, 0x00d9, 1))	
+			exchanges[curexchange-1].lang2 = aim_tlv_getstr(innerlist, 0x00d9, 1);
 		else
 			exchanges[curexchange-1].lang2 = NULL;
 		      
 		/*
 		 * Type 0x00da: Unknown
 		 */
-		if (aim_gettlv(innerlist, 0x00da, 1))	
+		if (aim_tlv_gettlv(innerlist, 0x00da, 1))	
 			;
 
-		aim_freetlvchain(&innerlist);
+		aim_tlvlist_free(&innerlist);
 	}
 
 	/*
@@ -271,7 +271,7 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 		free(exchanges[curexchange].lang2);
 	}
 	free(exchanges);
-	aim_freetlvchain(&tlvlist);
+	aim_tlvlist_free(&tlvlist);
 
 	return ret;
 }
@@ -289,11 +289,11 @@ static int parseinfo_create(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
 	int ret = 0;
 	aim_bstream_t bbbs;
 
-	tlvlist = aim_readtlvchain(bs);
+	tlvlist = aim_tlvlist_read(bs);
 
-	if (!(bigblock = aim_gettlv(tlvlist, 0x0004, 1))) {
+	if (!(bigblock = aim_tlv_gettlv(tlvlist, 0x0004, 1))) {
 		faimdprintf(sess, 0, "no bigblock in top tlv in create room response\n");
-		aim_freetlvchain(&tlvlist);
+		aim_tlvlist_free(&tlvlist);
 		return 0;
 	}
 
@@ -307,35 +307,35 @@ static int parseinfo_create(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
 
 	if (detaillevel != 0x02) {
 		faimdprintf(sess, 0, "unknown detaillevel in create room response (0x%02x)\n", detaillevel);
-		aim_freetlvchain(&tlvlist);
+		aim_tlvlist_free(&tlvlist);
 		free(ck);
 		return 0;
 	}
 
 	unknown = aimbs_get16(&bbbs);
 
-	innerlist = aim_readtlvchain(&bbbs);
+	innerlist = aim_tlvlist_read(&bbbs);
 
-	if (aim_gettlv(innerlist, 0x006a, 1))
-		fqcn = aim_gettlv_str(innerlist, 0x006a, 1);
+	if (aim_tlv_gettlv(innerlist, 0x006a, 1))
+		fqcn = aim_tlv_getstr(innerlist, 0x006a, 1);
 
-	if (aim_gettlv(innerlist, 0x00c9, 1))
-		flags = aim_gettlv16(innerlist, 0x00c9, 1);
+	if (aim_tlv_gettlv(innerlist, 0x00c9, 1))
+		flags = aim_tlv_get16(innerlist, 0x00c9, 1);
 
-	if (aim_gettlv(innerlist, 0x00ca, 1))
-		createtime = aim_gettlv32(innerlist, 0x00ca, 1);
+	if (aim_tlv_gettlv(innerlist, 0x00ca, 1))
+		createtime = aim_tlv_get32(innerlist, 0x00ca, 1);
 
-	if (aim_gettlv(innerlist, 0x00d1, 1))
-		maxmsglen = aim_gettlv16(innerlist, 0x00d1, 1);
+	if (aim_tlv_gettlv(innerlist, 0x00d1, 1))
+		maxmsglen = aim_tlv_get16(innerlist, 0x00d1, 1);
 
-	if (aim_gettlv(innerlist, 0x00d2, 1))
-		maxoccupancy = aim_gettlv16(innerlist, 0x00d2, 1);
+	if (aim_tlv_gettlv(innerlist, 0x00d2, 1))
+		maxoccupancy = aim_tlv_get16(innerlist, 0x00d2, 1);
 
-	if (aim_gettlv(innerlist, 0x00d3, 1))
-		name = aim_gettlv_str(innerlist, 0x00d3, 1);
+	if (aim_tlv_gettlv(innerlist, 0x00d3, 1))
+		name = aim_tlv_getstr(innerlist, 0x00d3, 1);
 
-	if (aim_gettlv(innerlist, 0x00d5, 1))
-		createperms = aim_gettlv8(innerlist, 0x00d5, 1);
+	if (aim_tlv_gettlv(innerlist, 0x00d5, 1))
+		createperms = aim_tlv_get8(innerlist, 0x00d5, 1);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype))) {
 		ret = userfunc(sess, rx, snac2->type, fqcn, instance, exchange, flags, createtime, maxmsglen, maxoccupancy, createperms, unknown, name, ck);
@@ -344,8 +344,8 @@ static int parseinfo_create(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
 	free(ck);
 	free(name);
 	free(fqcn);
-	aim_freetlvchain(&innerlist);
-	aim_freetlvchain(&tlvlist);
+	aim_tlvlist_free(&innerlist);
+	aim_tlvlist_free(&tlvlist);
 
 	return ret;
 }

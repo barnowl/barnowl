@@ -46,7 +46,7 @@ faim_internal int misc_modfirst(aim_session_t *sess, aim_module_t *mod);
 faim_internal int chatnav_modfirst(aim_session_t *sess, aim_module_t *mod);
 faim_internal int chat_modfirst(aim_session_t *sess, aim_module_t *mod);
 faim_internal int locate_modfirst(aim_session_t *sess, aim_module_t *mod);
-faim_internal int general_modfirst(aim_session_t *sess, aim_module_t *mod);
+faim_internal int service_modfirst(aim_session_t *sess, aim_module_t *mod);
 faim_internal int invite_modfirst(aim_session_t *sess, aim_module_t *mod);
 faim_internal int translate_modfirst(aim_session_t *sess, aim_module_t *mod);
 faim_internal int popups_modfirst(aim_session_t *sess, aim_module_t *mod);
@@ -188,9 +188,6 @@ typedef struct aim_conn_inside_s {
 
 faim_internal void aim_conn_addgroup(aim_conn_t *conn, fu16_t group);
 
-faim_internal fu32_t aim_getcap(aim_session_t *sess, aim_bstream_t *bs, int len);
-faim_internal int aim_putcap(aim_bstream_t *bs, fu32_t caps);
-
 faim_internal int aim_cachecookie(aim_session_t *sess, aim_msgcookie_t *cookie);
 faim_internal aim_msgcookie_t *aim_uncachecookie(aim_session_t *sess, fu8_t *cookie, int type);
 faim_internal aim_msgcookie_t *aim_mkcookie(fu8_t *, int, void *);
@@ -199,13 +196,16 @@ faim_internal int aim_freecookie(aim_session_t *sess, aim_msgcookie_t *cookie);
 faim_internal int aim_msgcookie_gettype(int reqclass);
 faim_internal int aim_cookie_free(aim_session_t *sess, aim_msgcookie_t *cookie);
 
+/* 0x0002 - locate.c */
+faim_internal void aim_locate_requestuserinfo(aim_session_t *sess, const char *sn);
+faim_internal fu32_t aim_locate_getcaps(aim_session_t *sess, aim_bstream_t *bs, int len);
+faim_internal fu32_t aim_locate_getcaps_short(aim_session_t *sess, aim_bstream_t *bs, int len);
+faim_internal int aim_putcap(aim_bstream_t *bs, fu32_t caps);
 faim_internal void aim_info_free(aim_userinfo_t *);
 faim_internal int aim_info_extract(aim_session_t *sess, aim_bstream_t *bs, aim_userinfo_t *);
 faim_internal int aim_putuserinfo(aim_bstream_t *bs, aim_userinfo_t *info);
 
 faim_internal int aim_chat_readroominfo(aim_bstream_t *bs, struct aim_chat_roominfo *outinfo);
-
-faim_internal void faimdprintf(aim_session_t *sess, int dlevel, const char *format, ...);
 
 faim_internal void aim_conn_kill_chat(aim_session_t *sess, aim_conn_t *conn);
 
@@ -214,6 +214,8 @@ faim_internal int aim_setversions(aim_session_t *sess, aim_conn_t *conn);
 faim_internal int aim_reqrates(aim_session_t *, aim_conn_t *);
 faim_internal int aim_rates_addparam(aim_session_t *, aim_conn_t *);
 faim_internal int aim_rates_delparam(aim_session_t *, aim_conn_t *);
+
+faim_internal void faimdprintf(aim_session_t *sess, int dlevel, const char *format, ...);
 
 #ifndef FAIM_INTERNAL_INSANE
 #define printf() printf called inside libfaim

@@ -110,10 +110,10 @@ faim_export int aim_admin_setnick(aim_session_t *sess, aim_conn_t *conn, const c
 	snacid = aim_cachesnac(sess, 0x0007, 0x0004, 0x0000, NULL, 0);
 	aim_putsnac(&fr->data, 0x0007, 0x0004, 0x0000, snacid);
 
-	aim_addtlvtochain_raw(&tl, 0x0001, strlen(newnick), newnick);
+	aim_tlvlist_add_raw(&tl, 0x0001, strlen(newnick), newnick);
 	
-	aim_writetlvchain(&fr->data, &tl);
-	aim_freetlvchain(&tl);
+	aim_tlvlist_write(&fr->data, &tl);
+	aim_tlvlist_free(&tl);
 	
 	aim_tx_enqueue(sess, fr);
 
@@ -138,13 +138,13 @@ faim_export int aim_admin_changepasswd(aim_session_t *sess, aim_conn_t *conn, co
 	aim_putsnac(&fr->data, 0x0007, 0x0004, 0x0000, snacid);
 
 	/* new password TLV t(0002) */
-	aim_addtlvtochain_raw(&tl, 0x0002, strlen(newpw), newpw);
+	aim_tlvlist_add_raw(&tl, 0x0002, strlen(newpw), newpw);
 
 	/* current password TLV t(0012) */
-	aim_addtlvtochain_raw(&tl, 0x0012, strlen(curpw), curpw);
+	aim_tlvlist_add_raw(&tl, 0x0012, strlen(curpw), curpw);
 
-	aim_writetlvchain(&fr->data, &tl);
-	aim_freetlvchain(&tl);
+	aim_tlvlist_write(&fr->data, &tl);
+	aim_tlvlist_free(&tl);
 
 	aim_tx_enqueue(sess, fr);
 
@@ -167,10 +167,10 @@ faim_export int aim_admin_setemail(aim_session_t *sess, aim_conn_t *conn, const 
 	snacid = aim_cachesnac(sess, 0x0007, 0x0004, 0x0000, NULL, 0);
 	aim_putsnac(&fr->data, 0x0007, 0x0004, 0x0000, snacid);
 
-	aim_addtlvtochain_raw(&tl, 0x0011, strlen(newemail), newemail);
+	aim_tlvlist_add_raw(&tl, 0x0011, strlen(newemail), newemail);
 	
-	aim_writetlvchain(&fr->data, &tl);
-	aim_freetlvchain(&tl);
+	aim_tlvlist_write(&fr->data, &tl);
+	aim_tlvlist_free(&tl);
 	
 	aim_tx_enqueue(sess, fr);
 
@@ -204,7 +204,7 @@ static int accountconfirm(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	status = aimbs_get16(bs);
 	/* This is 0x0013 if unable to confirm at this time */
 
-	tl = aim_readtlvchain(bs);
+	tl = aim_tlvlist_read(bs);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, status);

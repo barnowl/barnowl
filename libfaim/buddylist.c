@@ -14,9 +14,9 @@
  * Request Buddy List rights.
  *
  */
-faim_export int aim_bos_reqbuddyrights(aim_session_t *sess, aim_conn_t *conn)
+faim_export int aim_buddylist_reqrights(aim_session_t *sess, aim_conn_t *conn)
 {
-	return aim_genericreq_n(sess, conn, 0x0003, 0x0002);
+	return aim_genericreq_n_snacid(sess, conn, 0x0003, 0x0002);
 }
 
 /*
@@ -33,13 +33,13 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 	/* 
 	 * TLVs follow 
 	 */
-	tlvlist = aim_readtlvchain(bs);
+	tlvlist = aim_tlvlist_read(bs);
 
 	/*
 	 * TLV type 0x0001: Maximum number of buddies.
 	 */
-	if (aim_gettlv(tlvlist, 0x0001, 1))
-		maxbuddies = aim_gettlv16(tlvlist, 0x0001, 1);
+	if (aim_tlv_gettlv(tlvlist, 0x0001, 1))
+		maxbuddies = aim_tlv_get16(tlvlist, 0x0001, 1);
 
 	/*
 	 * TLV type 0x0002: Maximum number of watchers.
@@ -49,8 +49,8 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 	 * other IM protocol.)
 	 * 
 	 */
-	if (aim_gettlv(tlvlist, 0x0002, 1))
-		maxwatchers = aim_gettlv16(tlvlist, 0x0002, 1);
+	if (aim_tlv_gettlv(tlvlist, 0x0002, 1))
+		maxwatchers = aim_tlv_get16(tlvlist, 0x0002, 1);
 
 	/*
 	 * TLV type 0x0003: Unknown.
@@ -61,7 +61,7 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, maxbuddies, maxwatchers);
 
-	aim_freetlvchain(&tlvlist);
+	aim_tlvlist_free(&tlvlist);
 
 	return ret;  
 }
@@ -73,7 +73,7 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
  * XXX This should just be an extension of setbuddylist()
  *
  */
-faim_export int aim_add_buddy(aim_session_t *sess, aim_conn_t *conn, const char *sn)
+faim_export int aim_buddylist_addbuddy(aim_session_t *sess, aim_conn_t *conn, const char *sn)
 {
 	aim_frame_t *fr;
 	aim_snacid_t snacid;
@@ -105,7 +105,7 @@ faim_export int aim_add_buddy(aim_session_t *sess, aim_conn_t *conn, const char 
  * XXX Clean this up.  
  *
  */
-faim_export int aim_bos_setbuddylist(aim_session_t *sess, aim_conn_t *conn, const char *buddy_list)
+faim_export int aim_buddylist_set(aim_session_t *sess, aim_conn_t *conn, const char *buddy_list)
 {
 	aim_frame_t *fr;
 	aim_snacid_t snacid;
@@ -153,7 +153,7 @@ faim_export int aim_bos_setbuddylist(aim_session_t *sess, aim_conn_t *conn, cons
  * the same as setbuddylist() but with a different snac subtype).
  *
  */
-faim_export int aim_remove_buddy(aim_session_t *sess, aim_conn_t *conn, const char *sn)
+faim_export int aim_buddylist_removebuddy(aim_session_t *sess, aim_conn_t *conn, const char *sn)
 {
 	aim_frame_t *fr;
 	aim_snacid_t snacid;
@@ -181,7 +181,7 @@ faim_export int aim_remove_buddy(aim_session_t *sess, aim_conn_t *conn, const ch
  * XXX Why would we send this?
  *
  */
-faim_export int aim_sendbuddyoncoming(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *info)
+faim_export int aim_buddylist_oncoming(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *info)
 {
 	aim_frame_t *fr;
 	aim_snacid_t snacid;
@@ -208,7 +208,7 @@ faim_export int aim_sendbuddyoncoming(aim_session_t *sess, aim_conn_t *conn, aim
  * XXX Why would we send this?
  *
  */
-faim_export int aim_sendbuddyoffgoing(aim_session_t *sess, aim_conn_t *conn, const char *sn)
+faim_export int aim_buddylist_offgoing(aim_session_t *sess, aim_conn_t *conn, const char *sn)
 {
 	aim_frame_t *fr;
 	aim_snacid_t snacid;
@@ -252,6 +252,8 @@ static int buddychange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, &userinfo);
 
+	if (snac->subtype == 0x000b)
+		aim_locate_requestuserinfo(sess, userinfo.sn);
 	aim_info_free(&userinfo);
 
 	return ret;

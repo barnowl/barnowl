@@ -30,17 +30,17 @@ faim_export int aim_odir_email(aim_session_t *sess, const char *region, const ch
 		return -EINVAL;
 
 	/* Create a TLV chain, write it to the outgoing frame, then free the chain */
-	aim_addtlvtochain_raw(&tl, 0x001c, strlen(region), region);
-	aim_addtlvtochain16(&tl, 0x000a, 0x0001); /* Type of search */
-	aim_addtlvtochain_raw(&tl, 0x0005, strlen(email), email);
+	aim_tlvlist_add_raw(&tl, 0x001c, strlen(region), region);
+	aim_tlvlist_add_16(&tl, 0x000a, 0x0001); /* Type of search */
+	aim_tlvlist_add_raw(&tl, 0x0005, strlen(email), email);
 
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+aim_sizetlvchain(&tl))))
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+aim_tlvlist_size(&tl))))
 		return -ENOMEM;
 	snacid = aim_cachesnac(sess, 0x000f, 0x0002, 0x0000, NULL, 0);
 	aim_putsnac(&fr->data, 0x000f, 0x0002, 0x0000, snacid);
 
-	aim_writetlvchain(&fr->data, &tl);
-	aim_freetlvchain(&tl);
+	aim_tlvlist_write(&fr->data, &tl);
+	aim_tlvlist_free(&tl);
 
 	aim_tx_enqueue(sess, fr);
 
@@ -79,36 +79,36 @@ faim_export int aim_odir_name(aim_session_t *sess, const char *region, const cha
 		return -EINVAL;
 
 	/* Create a TLV chain, write it to the outgoing frame, then free the chain */
-	aim_addtlvtochain_raw(&tl, 0x001c, strlen(region), region);
-	aim_addtlvtochain16(&tl, 0x000a, 0x0000); /* Type of search */
+	aim_tlvlist_add_raw(&tl, 0x001c, strlen(region), region);
+	aim_tlvlist_add_16(&tl, 0x000a, 0x0000); /* Type of search */
 	if (first)
-		aim_addtlvtochain_raw(&tl, 0x0001, strlen(first), first);
+		aim_tlvlist_add_raw(&tl, 0x0001, strlen(first), first);
 	if (last)
-		aim_addtlvtochain_raw(&tl, 0x0002, strlen(last), last);
+		aim_tlvlist_add_raw(&tl, 0x0002, strlen(last), last);
 	if (middle)
-		aim_addtlvtochain_raw(&tl, 0x0003, strlen(middle), middle);
+		aim_tlvlist_add_raw(&tl, 0x0003, strlen(middle), middle);
 	if (maiden)
-		aim_addtlvtochain_raw(&tl, 0x0004, strlen(maiden), maiden);
+		aim_tlvlist_add_raw(&tl, 0x0004, strlen(maiden), maiden);
 	if (country)
-		aim_addtlvtochain_raw(&tl, 0x0006, strlen(country), country);
+		aim_tlvlist_add_raw(&tl, 0x0006, strlen(country), country);
 	if (state)
-		aim_addtlvtochain_raw(&tl, 0x0007, strlen(state), state);
+		aim_tlvlist_add_raw(&tl, 0x0007, strlen(state), state);
 	if (city)
-		aim_addtlvtochain_raw(&tl, 0x0008, strlen(city), city);
+		aim_tlvlist_add_raw(&tl, 0x0008, strlen(city), city);
 	if (nick)
-		aim_addtlvtochain_raw(&tl, 0x000c, strlen(nick), nick);
+		aim_tlvlist_add_raw(&tl, 0x000c, strlen(nick), nick);
 	if (zip)
-		aim_addtlvtochain_raw(&tl, 0x000d, strlen(zip), zip);
+		aim_tlvlist_add_raw(&tl, 0x000d, strlen(zip), zip);
 	if (address)
-		aim_addtlvtochain_raw(&tl, 0x0021, strlen(address), address);
+		aim_tlvlist_add_raw(&tl, 0x0021, strlen(address), address);
 
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+aim_sizetlvchain(&tl))))
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+aim_tlvlist_size(&tl))))
 		return -ENOMEM;
 	snacid = aim_cachesnac(sess, 0x000f, 0x0002, 0x0000, NULL, 0);
 	aim_putsnac(&fr->data, 0x000f, 0x0002, 0x0000, snacid);
 
-	aim_writetlvchain(&fr->data, &tl);
-	aim_freetlvchain(&tl);
+	aim_tlvlist_write(&fr->data, &tl);
+	aim_tlvlist_free(&tl);
 
 	aim_tx_enqueue(sess, fr);
 
@@ -134,18 +134,18 @@ faim_export int aim_odir_interest(aim_session_t *sess, const char *region, const
 		return -EINVAL;
 
 	/* Create a TLV chain, write it to the outgoing frame, then free the chain */
-	aim_addtlvtochain_raw(&tl, 0x001c, strlen(region), region);
-	aim_addtlvtochain16(&tl, 0x000a, 0x0001); /* Type of search */
+	aim_tlvlist_add_raw(&tl, 0x001c, strlen(region), region);
+	aim_tlvlist_add_16(&tl, 0x000a, 0x0001); /* Type of search */
 	if (interest)
-		aim_addtlvtochain_raw(&tl, 0x0001, strlen(interest), interest);
+		aim_tlvlist_add_raw(&tl, 0x0001, strlen(interest), interest);
 
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+aim_sizetlvchain(&tl))))
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+aim_tlvlist_size(&tl))))
 		return -ENOMEM;
 	snacid = aim_cachesnac(sess, 0x000f, 0x0002, 0x0000, NULL, 0);
 	aim_putsnac(&fr->data, 0x000f, 0x0002, 0x0000, snacid);
 
-	aim_writetlvchain(&fr->data, &tl);
-	aim_freetlvchain(&tl);
+	aim_tlvlist_write(&fr->data, &tl);
+	aim_tlvlist_free(&tl);
 
 	aim_tx_enqueue(sess, fr);
 
@@ -173,22 +173,22 @@ static int parseresults(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx,
 	/* Allocate a linked list, 1 node per result */
 	while (numresults) {
 		struct aim_odir *new;
-		aim_tlvlist_t *tl = aim_readtlvchain_num(bs, aimbs_get16(bs));
+		aim_tlvlist_t *tl = aim_tlvlist_readnum(bs, aimbs_get16(bs));
 		new = (struct aim_odir *)malloc(sizeof(struct aim_odir));
-		new->first = aim_gettlv_str(tl, 0x0001, 1);
-		new->last = aim_gettlv_str(tl, 0x0002, 1);
-		new->middle = aim_gettlv_str(tl, 0x0003, 1);
-		new->maiden = aim_gettlv_str(tl, 0x0004, 1);
-		new->email = aim_gettlv_str(tl, 0x0005, 1);
-		new->country = aim_gettlv_str(tl, 0x0006, 1);
-		new->state = aim_gettlv_str(tl, 0x0007, 1);
-		new->city = aim_gettlv_str(tl, 0x0008, 1);
-		new->sn = aim_gettlv_str(tl, 0x0009, 1);
-		new->interest = aim_gettlv_str(tl, 0x000b, 1);
-		new->nick = aim_gettlv_str(tl, 0x000c, 1);
-		new->zip = aim_gettlv_str(tl, 0x000d, 1);
-		new->region = aim_gettlv_str(tl, 0x001c, 1);
-		new->address = aim_gettlv_str(tl, 0x0021, 1);
+		new->first = aim_tlv_getstr(tl, 0x0001, 1);
+		new->last = aim_tlv_getstr(tl, 0x0002, 1);
+		new->middle = aim_tlv_getstr(tl, 0x0003, 1);
+		new->maiden = aim_tlv_getstr(tl, 0x0004, 1);
+		new->email = aim_tlv_getstr(tl, 0x0005, 1);
+		new->country = aim_tlv_getstr(tl, 0x0006, 1);
+		new->state = aim_tlv_getstr(tl, 0x0007, 1);
+		new->city = aim_tlv_getstr(tl, 0x0008, 1);
+		new->sn = aim_tlv_getstr(tl, 0x0009, 1);
+		new->interest = aim_tlv_getstr(tl, 0x000b, 1);
+		new->nick = aim_tlv_getstr(tl, 0x000c, 1);
+		new->zip = aim_tlv_getstr(tl, 0x000d, 1);
+		new->region = aim_tlv_getstr(tl, 0x001c, 1);
+		new->address = aim_tlv_getstr(tl, 0x0021, 1);
 		new->next = results;
 		results = new;
 		numresults--;

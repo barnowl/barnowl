@@ -12,7 +12,7 @@
 /* Subtype 0x0002 - Request BOS rights. */
 faim_export int aim_bos_reqrights(aim_session_t *sess, aim_conn_t *conn)
 {
-	return aim_genericreq_n(sess, conn, 0x0009, 0x0002);
+	return aim_genericreq_n_snacid(sess, conn, 0x0009, 0x0002);
 }
 
 /* Subtype 0x0003 - BOS Rights. */
@@ -26,24 +26,24 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 	/* 
 	 * TLVs follow 
 	 */
-	tlvlist = aim_readtlvchain(bs);
+	tlvlist = aim_tlvlist_read(bs);
 
 	/*
 	 * TLV type 0x0001: Maximum number of buddies on permit list.
 	 */
-	if (aim_gettlv(tlvlist, 0x0001, 1))
-		maxpermits = aim_gettlv16(tlvlist, 0x0001, 1);
+	if (aim_tlv_gettlv(tlvlist, 0x0001, 1))
+		maxpermits = aim_tlv_get16(tlvlist, 0x0001, 1);
 
 	/*
 	 * TLV type 0x0002: Maximum number of buddies on deny list.
 	 */
-	if (aim_gettlv(tlvlist, 0x0002, 1)) 
-		maxdenies = aim_gettlv16(tlvlist, 0x0002, 1);
+	if (aim_tlv_gettlv(tlvlist, 0x0002, 1)) 
+		maxdenies = aim_tlv_get16(tlvlist, 0x0002, 1);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, maxpermits, maxdenies);
 
-	aim_freetlvchain(&tlvlist);
+	aim_tlvlist_free(&tlvlist);
 
 	return ret;  
 }

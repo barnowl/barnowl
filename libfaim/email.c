@@ -18,12 +18,13 @@
  * @param conn The email connection for this session.
  * @return Return 0 if no errors, otherwise return the error number.
  */
-faim_export int aim_email_sendcookies(aim_session_t *sess, aim_conn_t *conn)
+faim_export int aim_email_sendcookies(aim_session_t *sess)
 {
+	aim_conn_t *conn;
 	aim_frame_t *fr;
 	aim_snacid_t snacid;
 
-	if (!sess || !conn)
+	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_EML)))
 		return -EINVAL;
 
 	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+2+16+16)))
@@ -81,6 +82,8 @@ static int parseinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, ai
 	fu8_t *cookie8, *cookie16;
 	int tmp, havenewmail = 0; /* Used to tell the client we have _new_ mail */
 
+	char *alertitle = NULL, *alerturl = NULL;
+
 	cookie8 = aimbs_getraw(bs, 8); /* Possibly the code used to log you in to mail? */
 	cookie16 = aimbs_getraw(bs, 16); /* Mail cookie sent above */
 
@@ -104,9 +107,9 @@ static int parseinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, ai
 	new->cookie8 = cookie8;
 	new->cookie16 = cookie16;
 
-	tlvlist = aim_readtlvchain_num(bs, aimbs_get16(bs));
+	tlvlist = aim_tlvlist_readnum(bs, aimbs_get16(bs));
 
-	tmp = aim_gettlv16(tlvlist, 0x0080, 1);
+	tmp = aim_tlv_get16(tlvlist, 0x0080, 1);
 	if (tmp) {
 		if (new->nummsgs < tmp)
 			havenewmail = 1;
@@ -117,18 +120,24 @@ static int parseinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, ai
 		havenewmail = 1;
 		new->nummsgs++; /* We know we have at least 1 new email */
 	}
-	new->url = aim_gettlv_str(tlvlist, 0x0007, 1);
-	if (!(new->unread = aim_gettlv8(tlvlist, 0x0081, 1))) {
+	new->url = aim_tlv_getstr(tlvlist, 0x0007, 1);
+	if (!(new->unread = aim_tlv_get8(tlvlist, 0x0081, 1))) {
 		havenewmail = 0;
 		new->nummsgs = 0;
 	}
-	new->domain = aim_gettlv_str(tlvlist, 0x0082, 1);
-	new->flag = aim_gettlv16(tlvlist, 0x0084, 1);
+	new->domain = aim_tlv_getstr(tlvlist, 0x0082, 1);
+	new->flag = aim_tlv_get16(tlvlist, 0x0084, 1);
 
+	alertitle = aim_tlv_getstr(tlvlist, 0x0005, 1);
+	alerturl  = aim_tlv_getstr(tlvlist, 0x000d, 1);
+	
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		ret = userfunc(sess, rx, new, havenewmail);
+		ret = userfunc(sess, rx, new, havenewmail, alertitle, (alerturl ? alerturl + 2 : NULL));
 
-	aim_freetlvchain(&tlvlist);
+	aim_tlvlist_free(&tlvlist);
+
+	free(alertitle);
+	free(alerturl);
 
 	return ret;
 }
@@ -140,12 +149,13 @@ static int parseinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, ai
  * @param conn The email connection for this session.
  * @return Return 0 if no errors, otherwise return the error number.
  */
-faim_export int aim_email_activate(aim_session_t *sess, aim_conn_t *conn)
+faim_export int aim_email_activate(aim_session_t *sess)
 {
+	aim_conn_t *conn;
 	aim_frame_t *fr;
 	aim_snacid_t snacid;
 
-	if (!sess || !conn)
+	if (!sess || !(conn = aim_conn_findbygroup(sess, AIM_CB_FAM_EML)))
 		return -EINVAL;
 
 	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+1+16)))

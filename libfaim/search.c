@@ -77,11 +77,14 @@ static int reply(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mo
 	if ((snac2 = aim_remsnac(sess, snac->id)))
 		searchaddr = (char *)snac2->data;
 
-	tlvlist = aim_readtlvchain(bs);
-	m = aim_counttlvchain(&tlvlist);
+	tlvlist = aim_tlvlist_read(bs);
+	m = aim_tlvlist_count(&tlvlist);
 
-	/* XXX uhm. */
-	while ((cur = aim_gettlv_str(tlvlist, 0x0001, j+1)) && j < m) {
+	/* XXX uhm.
+	 * This is the only place that uses something other than 1 for the 3rd 
+	 * parameter to aim_tlv_gettlv_whatever().
+	 */
+	while ((cur = aim_tlv_getstr(tlvlist, 0x0001, j+1)) && j < m) {
 		buf = realloc(buf, (j+1) * (MAXSNLEN+1));
 
 		strncpy(&buf[j * (MAXSNLEN+1)], cur, MAXSNLEN);
@@ -90,7 +93,7 @@ static int reply(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mo
 		j++; 
 	}
 
-	aim_freetlvchain(&tlvlist);
+	aim_tlvlist_free(&tlvlist);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, searchaddr, j, buf);
