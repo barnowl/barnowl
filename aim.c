@@ -102,7 +102,7 @@ static int ssidata(aim_session_t *sess, aim_frame_t *fr, ...);
 static int ssidatanochange(aim_session_t *sess, aim_frame_t *fr, ...);
 static int offlinemsg(aim_session_t *sess, aim_frame_t *fr, ...);
 static int offlinemsgdone(aim_session_t *sess, aim_frame_t *fr, ...);
-
+/*
 static int faimtest_ssi_parseerr     (aim_session_t *, aim_frame_t *, ...);
 static int faimtest_ssi_parserights  (aim_session_t *, aim_frame_t *, ...);
 static int faimtest_ssi_parselist    (aim_session_t *, aim_frame_t *, ...);
@@ -111,7 +111,7 @@ static int faimtest_ssi_authgiven    (aim_session_t *, aim_frame_t *, ...);
 static int faimtest_ssi_authrequest  (aim_session_t *, aim_frame_t *, ...);
 static int faimtest_ssi_authreply    (aim_session_t *, aim_frame_t *, ...);
 static int faimtest_ssi_gotadded     (aim_session_t *, aim_frame_t *, ...);
-
+*/
 
 void chatnav_redirect(aim_session_t *sess, struct aim_redirect_data *redir);
 void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir);
@@ -1881,8 +1881,10 @@ static int ssidata(aim_session_t *sess, aim_frame_t *fr, ...)
   fu16_t itemcount;
   fu32_t stamp;
   struct aim_ssi_item *list;
+  /*
   struct aim_ssi_item *curitem;
   struct aim_ssi_item *l;
+  */
   
   va_start(ap, fr);
   fmtver = va_arg(ap, unsigned int);
@@ -2208,7 +2210,7 @@ void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
 
 /**********************************************************************************/
 
-
+#if 0
 static int faimtest_ssi_rerequestdata(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   aim_ssi_reqdata(sess);
@@ -2269,7 +2271,6 @@ static int faimtest_ssi_parserights(aim_session_t *sess, aim_frame_t *fr, ...)
   return(1);
 }
 
-#if 0
 static int faimtest_ssi_parselist(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   /* GaimConnection *gc = sess->aux_data; */
