@@ -7,7 +7,11 @@ contributions.
 
 Erik Nygren
    Complete overhaul of the variable system
-   perl, aperl and pperl commands
+   Substantial changes to how commands are handled
+   Substantial changes to how key presses are handled   
+   Command aliases
+   User keybindings
+   perl, aperl and pperl commands   
    Multiple browser support
    Support for older versions of lib zephyr
    Many bug fixes and features
