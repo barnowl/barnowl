@@ -881,46 +881,49 @@ void owl_command_version() {
 
 char *owl_command_addbuddy(int argc, char **argv, char *buff)
 {
-  if (!owl_global_is_aimloggedin(&g)) {
-    owl_function_makemsg("addbuddy: You must be logged into aim to use this command.");
-    return(NULL);
-  }
-
   if (argc!=3) {
     owl_function_makemsg("usage: addbuddy <protocol> <buddyname>");
     return(NULL);
   }
 
-  if (strcasecmp(argv[1], "aim")) {
-    owl_function_makemsg("addbuddy: currently the only supported protocol is 'aim'");
-    return(NULL);
+  if (!strcasecmp(argv[1], "aim")) {
+    if (!owl_global_is_aimloggedin(&g)) {
+      owl_function_makemsg("addbuddy: You must be logged into aim to use this command.");
+      return(NULL);
+    }
+    owl_aim_addbuddy(argv[2]);
+    owl_function_makemsg("%s added as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
+  } else if (!strcasecmp(argv[1], "zephyr")) {
+    owl_zephyr_addbuddy(argv[2]);
+    owl_function_makemsg("%s added as zephyr buddy", argv[2]);
+  } else {
+    owl_function_makemsg("addbuddy: currently the only supported protocols are 'zephyr' and 'aim'");
   }
-
-  owl_aim_addbuddy(argv[2]);
-  owl_function_makemsg("%s added as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
 
   return(NULL);
 }
 
 char *owl_command_delbuddy(int argc, char **argv, char *buff)
 {
-  if (!owl_global_is_aimloggedin(&g)) {
-    owl_function_makemsg("delbuddy: You must be logged into aim to use this command.");
-    return(NULL);
-  }
-
   if (argc!=3) {
     owl_function_makemsg("usage: delbuddy <protocol> <buddyname>");
     return(NULL);
   }
 
-  if (strcasecmp(argv[1], "aim")) {
-    owl_function_makemsg("delbuddy: currently the only supported protocol is 'aim'");
-    return(NULL);
+  if (!strcasecmp(argv[1], "aim")) {
+    if (!owl_global_is_aimloggedin(&g)) {
+      owl_function_makemsg("delbuddy: You must be logged into aim to use this command.");
+      return(NULL);
+    }
+    owl_aim_delbuddy(argv[2]);
+    owl_function_makemsg("%s deleted as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
+  } else if (!strcasecmp(argv[1], "zephyr")) {
+    owl_zephyr_delbuddy(argv[2]);
+    owl_function_makemsg("%s deleted as zephyr buddy", argv[2]);
+  } else {
+    owl_function_makemsg("delbuddy: currently the only supported protocols are 'zephyr' and 'aim'");
   }
 
-  owl_aim_delbuddy(argv[2]);
-  owl_function_makemsg("%s deleted as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
 
   return(NULL);
 }

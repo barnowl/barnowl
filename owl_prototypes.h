@@ -968,6 +968,8 @@ extern void owl_zephyr_delsub(char *filename, char *class, char *inst, char *rec
 extern char *owl_zephyr_makesubline(char *class, char *inst, char *recip);
 extern void owl_zephyr_zlog_in(void);
 extern void owl_zephyr_zlog_out(void);
+extern void owl_zephyr_addbuddy(char *name);
+extern void owl_zephyr_delbuddy(char *name);
 
 /* -------------------------------- zwrite.c -------------------------------- */
 extern int owl_zwrite_create_and_send_from_line(char *cmd, char *msg);

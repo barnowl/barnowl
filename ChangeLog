@@ -84,6 +84,8 @@ $Id$
 	The 'B' key is now bound to 'alist'
 	Added the 'startup' and 'unstartup' commands
 	The $HOME/.owl directory is created on startup if it does not exist
+	Added the 'aim_ingorelogin_timer' variable
+	'addbuddy zephyr <user>' and 'delbuddy zephyr <user>' now work.
 	
 1.2.8
 	Class pings are displayed differently now

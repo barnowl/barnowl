@@ -606,3 +606,27 @@ void owl_zephyr_zlog_out(void)
   }
 }
 
+void owl_zephyr_addbuddy(char *name)
+{
+  char *filename;
+  FILE *file;
+  
+  filename=owl_sprintf("%s/.anyone", owl_global_get_homedir(&g));
+  file=fopen(filename, "a");
+  owl_free(filename);
+  if (!file) {
+    owl_function_makemsg("Error opening zephyr buddy file for append");
+    return;
+  }
+  fprintf(file, "%s\n", name);
+  fclose(file);
+}
+
+void owl_zephyr_delbuddy(char *name)
+{
+  char *filename;
+
+  filename=owl_sprintf("%s/.anyone", owl_global_get_homedir(&g));
+  owl_util_file_deleteline(filename, name, 0);
+  owl_free(filename);
+}
