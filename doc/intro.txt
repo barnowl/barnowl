@@ -1,58 +1,77 @@
+                     ========================
+                     Quick Guide To Using Owl
+                     ========================
 
-$Id$
+=======================
+Section 1: INTRODUCTION
+=======================
 
+Owl is a tty, curses-based instant messaging client.  This is a quick
+guide to learning how to use it.  Currently it supports only zephyr,
+but other messaging protocols, including AIM and Jabber, are on the
+way.  Some major features of owl include:
 
-Owl is a tty, curses-based zephyr client.  This is a quick guide to
-learning how to use it.
+   o) As a tty client it can be run over telnet, rlogin or text ssh
+      sessions
 
-====================
-OVERVIEW OF FEATURES
-====================
-o) As a tty client it can be run over telnet, rlogin or text ssh sessions
+   o) It uses a perl configuration file for setting preferences and
+      formatting messages
 
-o) It uses a perl configuration file for setting preferences and
-   formatting messages
+   o) Emacs style editing of messages
 
-o) emacs style editing of messages
+   o) It is easy to use and runs without a configfile.
 
-o) It is easy to use and runs without a configfile.
+   o) Advanced sorting and coloring of messages
 
-o) There will future support for AIM and ICQ
+==========================
+Section 2: GETTING STARTED
+==========================
 
-o) There will be future support for advanced sorting of messages
-
-===============
-GETTING STARTED
-===============
 Owl will run happily without a configfile, so to get started just run
-it.  Owl will take over the terminal window it's started in.
+the program.  Owl will take over the terminal window it's started in,
+so you may wish to have another terminal around at the same time.
 
-The Screen
-----------
-There are three main parts to the screen.  The large top portion of
-the screen is where zephyrs are displayed.  The status bar separates
-this area from the one below and displays some status information.
-The space below that is used to type in messages and is also used by
-owl to give warnings and information to the user.
+On Athena you can find owl in the ktools locker.  So to run it you can
+type:
+
+        add ktools
+        owl
+
+at the Athena% prompt.  If you wish to run the latest beta release of
+owl type 'owl-beta' instead of 'owl'.
+
+The Screen Layout
+-----------------
+There are three main parts to the owl screen.  The large top portion
+of the screen is where zephyrs are displayed.  The status bar
+separates this area from the one below and displays some status
+information.  The space below that is used to type in messages and is
+also used by owl to give warnings and information to the user.
+
+On Line Help
+------------
+Owl has a full on line help system.  Pressing the 'h' key will bring
+up the basic help screen.  Further help can be obtained using the help
+command.
 
 Sending a Zephyr
 ----------------
-To send a zephyr to yourself hit the 'z' key.  This will start a
+To send a zephyr to yourself press the 'z' key.  This will start a
 zwrite command, which you can finish by typing the name of the user
 you wish to send to, followed by enter.  Begin typing your message.
 You will notice that most emacs-style editing is available.  When you
-are ready to send type Control-D.  If you wish to cancel type
-Control-C.
+are ready to send the message type Control-D or a dot ('.') on a line
+by itself.  If instead you wish to cancel the message type Control-C.
 
-If instead of a user you wish to send to class/instance simply supply
--c and -i arguments to the zwrite command.
+If you wish to send to a class/instance pair simply supply -c and -i
+arguments to the zwrite command as you normally would.
 
 Manipulating Messages
 ---------------------
 When there are one or more zephyrs in the message window, one of them
 will be the 'current' message.  Owl will indicate which one it is with
-an arrow to the left of the message.  The following keys will move you
-between messages
+an arrow that looks like this: -> .  The following keys will move you
+to different messages:
 
 	n		move to the next non-deleted message
 	p		move to the previous non-deleted message
@@ -60,36 +79,46 @@ between messages
 	C-p , up	move to the previous message
 	<		move to the first message
 	>		move to the last message
+	C-v		page down
+	M-v		page up
 	right		scroll the screen to the right
 	left		scroll the screen to the left
 	P		move to the next personal message
 	M-P		move to the previous personal message
-	T		Mark all 'trash' messages for deletion
 
 When you are ready to delete a message you can mark it for deletion
 and a 'D' will appear to the left of the message.  Messages will not
-actually be removed until you perform an expunge.
+actually be removed until you perform an expunge.  The following keys
+are used to delete, undelete and expunge messages:
 
 	d		mark a message for deletion
 	u		unmark a message for deletion
 	x		expunge deleted messages
-	T		mark all automated messages for deletion
+	T		mark all 'trash' messages for deletion
+        M-D		mark all messages in the view for deletion
+	M-u		unmark all messages in the view for deletion
 
 If you would like to respond to a zephyr sent to you there is a reply
-shortcut.  This will reply to a personal zephyr, or if the zephyr is
-sent to a zephyr class it will reply to the zephyr class.
+shortcut.
 
-	r		reply to a zephyr
+	r               Reply.  Personal zephyrs get a personal reply,
+                        class/instance zephyrs get a public reply.
+	R		Reply to sender.  Always replies personally
+                        to the user.
+        M-r             Reply but allow editing of the command line.
+        M-R             Reply to sender but allow editing of the
+                        command line.
 
-You can scroll within the current message using:
+In the event that the current message is too large to fit on the
+screen, you can scroll within the message using the following keys:
 
 	SPACE		page down
 	b		page up
 	RETURN		line down
 	BACKSPACE	line up
 
-The pointer will change to indicate that the message is not starting
-at the first line.
+The message pointer will change to indicate that the message is not
+starting at the first line.
 
 Two other keys that relate to the current message:
 
@@ -101,94 +130,59 @@ Other Functions
 ----------------
 Some other funcions that can be performed with a single keystroke:
 
-	A		toggle zaway
-	h		print the help screen
+	A		toggle zaway on or off
 	C-l		refresh and resize the screen
 	C-z		suspend
 
 Command Mode
 ------------
 Owl has a command mode where you can enter more detailed commands for
-owl to process.  To enter command mode:
+owl to process.  To enter command press the color (':') key:
 
 	:		begin command mode
 
 Owl will give you a command prompt and you can begin typing your
 command.  Type Enter to execute the command, Control-C to cancel.
-Currently support commands are:
+There are many commands.  The basic commands are listed on the basic
+help screen (by pressing 'h').  If you'd like a list of all commands
+you can use the command "show commands".  To get detailed information
+on the syntax and use of a command you can use the command 'help
+<command>' as in:
 
-	quit , exit	exit owl
-	zwrite		send a zephyr
-	reply		reply to the current zephyr
-	set		set a variable
-	print		print a variable
-	zlog [in|out]	send a login or logout message
-	version		print the owl version number
-	subscribe	subscribe to a class, instance, recipient
-	unsubscribe	unsubscribe from a class, instance, recipient
-	unsuball	unsubscribe from all messagse
-	getsubs		print a list of current subscriptions
-	zlocate		locate a user
-	info		print detailed information about a message
-	help		print the help screen
-	next		move to the next message
-	prev		move to the previous message
-	next-notdel	move to the next non-deleted message
-	prev-notdel	move to the previous not-deleted message
-	expunge		expunge messages marked for deletion
-	first		move to the first message
-	last		move to the last message
-	resize		resize owl to the current window
-	suspend		suspend owl
-	exec		run a shell command
-	zaway [on|off|<msg>]  Turn zaway on, off, or set the message
-	load-subs	load subscriptions from a file
-	status		print info about owl status
-	about		print info about owl
+	help zwrite
 
 Variables
 ---------
-The 'set' and 'print' commands let set and print the values of owl
-variables.  The currently supported variables are these:
 
-Variables:                                                                                        
-     name            settings  default      meaning                                                  
-     --------------- --------  -------      -------                                                  
-     appendtosepbar  <string>            string to append to the end of the sepbar                
-     bell            on,off    on        enable / disable the terminal bell                       
-     burningears     on,off    off       [NOT YET IMPLEMENTED] beep on messages matching patterns 
-     classlogging    on,off    off       turn class logging on or off                             
-     classpath       <path>    ~/zlog/class
-				         path for logging class zephyrs                           
-     debug           on,off    on        whether debugging is enabled                             
-     debug_file      <path>    /var/tmp/owldebug
-					 path for logging debug messages when debugging is enabled
-     disable-ctrl-d  on,off    off       don't send zephyrs on C-d                                
-												  
-     displayoutgoing on,off    on        display outgoing messages                                
-     logging         on,off    off       turn personal logging on or off                          
-     loginsubs       on,off    on        load logins from .anyone on startup                      
-     logpath         <path>    ~/zlog/people
-					 path for logging personal zephyrs                        
-     personalbell    on,off    off       ring the terminal bell when personal messages are receive
-     rxping          on,off    off       display received pings                                   
-     shutdownlogout  on,off    on        send a logout message when owl exits                     
-     startuplogin    on,off    on        send a login message when owl starts                     
-     summarymode     on,off    off       [NOT YET IMPLEMENTED]                                    
-     txping          on,off    on        send pings                                               
-     typewinsize     int > 0   8         number of lines in the typing window                     
-     webbrowser  none,netscape,galeon netscape web browser to use to launch URLs             
-     zaway_msg         <string>  "I'm sorry..."
-					   current zaway msg for responding to zephyrs when away    
-     zaway_msg_default <string>  "I'm sorry..."
-				           default zaway msg for responding to zephyrs when away  
-     zsig              <string>            zephyr signature                                         
-     zsigproc          <path>    <null>    name of a program to run that will generate zsigs        
+Owl has a number of internal variables that can be used to change the
+behavior the program.  The 'print' command will let you view the value
+of a variable and the 'set' commmand will let you set the value of a
+variable.  For example:
+
+        set personalbell on 
+
+will set the value of the variable 'personalbell' to on.  The command:
+
+	print personalbell
+
+will show you the current value.  The 'print' command with no
+arguments will show you the value of all variables.  A list of all
+variables is available on the basic help screen, or by using the
+command "show variables".  The command "show variable <variablename>"
+will show you detailed information about a variable and how to use it.
+As in:
+
+	show variable personalbell
+
+=============================
+Section 3: FILTERS AND COLORS
+=============================
 
 
-================
-THE CONFIG FILE
-================
+
+==========================
+Section 4: THE CONFIG FILE
+==========================
 
 *** WARNING: This interface may change substantially in the near future ***
 
@@ -226,6 +220,8 @@ to set text to be appended to sepbar that separates the received
 message list from the edit window.
 
 
-===================
-FURTHER INFORMATION
-===================
+==============================
+Section 5: FURTHER INFORMATION
+==============================
+
+$Id$

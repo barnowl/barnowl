@@ -16,6 +16,11 @@ $Id$
 	Added the variable 'smartstrip' which will strip kerberos
 	  instances out for the 'reply' command.
 	Added -R/usr/athena/lib to the build for Athena
+	Started updating the intro document
+	Small changes to help / about
+	The 'subscribe' and 'unsubscribe' commands (and their aliases) now
+	  update .zephyr.subs by default.  If either is given the '-t'
+	  (for "temporary") option the .zephyr.subs will not be updated
 	
 1.2.3
 	Added filters "ping", "auto" and "login" by default.

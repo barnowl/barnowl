@@ -62,7 +62,7 @@ void owl_help() {
      "    C-l           Refresh the screen\n"
      "    C-z           Suspend\n"
      "    h             Print this help message\n"
-     "    : , M-x       Enter one of the commands below\n"
+     "    : , M-x       Enter command mode\n"
      "\n\n"
      );
   owl_fmtext_append_bold

@@ -407,3 +407,119 @@ void owl_zephyr_zlocate(char *user, char *out, int auth) {
     owl_free(myuser);
   }
 }
+
+void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip) {
+  char *line, subsfile[LINE], buff[LINE];
+  FILE *file;
+
+  line=owl_zephyr_makesubline(class, inst, recip);
+
+  if (filename==NULL) {
+    sprintf(subsfile, "%s/%s", owl_global_get_homedir(&g), ".zephyr.subs");
+  } else {
+    strcpy(subsfile, filename);
+  }
+
+  /* first check if it exists already */
+  file=fopen(subsfile, "r");
+  if (!file) {
+    owl_function_makemsg("Error opening file %s", subsfile);
+    owl_free(line);
+    return;
+  }
+  while (fgets(buff, LINE, file)!=NULL) {
+    if (!strcasecmp(buff, line)) {
+      owl_function_makemsg("Subscription already present in %s", subsfile);
+      owl_free(line);
+      return;
+    }
+  }
+
+  /* if we get here then we didn't find it */
+  fclose(file);
+  file=fopen(subsfile, "a");
+  if (!file) {
+    owl_function_makemsg("Error opening file %s for writing", subsfile);
+    owl_free(line);
+    return;
+  }
+  fputs(line, file);
+  fclose(file);
+  owl_function_makemsg("Subscription added");
+  
+  owl_free(line);
+}
+
+void owl_zephyr_delsub(char *filename, char *class, char *inst, char *recip) {
+  char *line, subsfile[LINE], buff[LINE], *text;
+  char backupfilename[LINE];
+  FILE *file, *backupfile;
+  int size;
+  
+  line=owl_zephyr_makesubline(class, inst, recip);
+
+  /* open the subsfile for reading */
+  if (filename==NULL) {
+    sprintf(subsfile, "%s/%s", owl_global_get_homedir(&g), ".zephyr.subs");
+  } else {
+    strcpy(subsfile, filename);
+  }
+  file=fopen(subsfile, "r");
+  if (!file) {
+    owl_function_makemsg("Error opening file %s", subsfile);
+    owl_free(line);
+    return;
+  }
+
+  /* open the backup file for writing */
+  sprintf(backupfilename, "%s.backup", subsfile);
+  backupfile=fopen(backupfilename, "w");
+  if (!backupfile) {
+    owl_function_makemsg("Error opening file %s for writing", backupfilename);
+    owl_free(line);
+    return;
+  }
+
+  /* we'll read the entire file into memory, minus the line we don't want and
+   * and at the same time create a backup file */
+  text=malloc(LINE);
+  size=LINE;
+  while (fgets(buff, LINE, file)!=NULL) {
+    /* if we don't match the line, add to text */
+    if (strcasecmp(buff, line)) {
+      size+=LINE;
+      text=realloc(text, size);
+      strcat(text, buff);
+    }
+
+    /* write to backupfile */
+    fputs(buff, backupfile);
+  }
+  fclose(backupfile);
+  fclose(file);
+
+  /* now open the original subs file for writing and write out the
+   * subs */
+  file=fopen(subsfile, "w");
+  if (!file) {
+    owl_function_makemsg("WARNING: Error opening %s to rewrite subscriptions.  Use %s to restore", subsfile, backupfilename);
+    owl_function_beep();
+    owl_free(line);
+    return;
+  }
+
+  fputs(text, file);
+  fclose(file);
+  owl_free(line);
+
+  owl_function_makemsg("Subscription removed");
+}
+
+char *owl_zephyr_makesubline(char *class, char *inst, char *recip) {
+  /* caller must free the return */
+  char *out;
+
+  out=owl_malloc(strlen(class)+strlen(inst)+strlen(recip)+30);
+  sprintf(out, "%s,%s,%s\n", class, inst, !strcmp(recip, "") ? "*" : recip);
+  return(out);
+}

@@ -1064,7 +1064,7 @@ void owl_function_about() {
   sprintf(buff, "This is owl version %s\n", OWL_VERSION_STRING);
   strcat(buff, "\nOwl was written by James Kretchmar at the Massachusetts\n");
   strcat(buff, "Institute of Technology.  The first version, 0.5, was\n");
-  strcat(buff, "released in March 2002\n");
+  strcat(buff, "released in March 2002.\n");
   strcat(buff, "\n");
   strcat(buff, "The name 'owl' was chosen in reference to the owls in the\n");
   strcat(buff, "Harry Potter novels, who are tasked with carrying messages\n");
