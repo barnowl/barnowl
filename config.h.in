@@ -17,6 +17,8 @@
 
 #undef HAVE_COM_ERR_H
 
+#undef HAVE_SYS_FILIO_H
+
 /* Define if you have the com_err library (-lcom_err).  */
 #undef HAVE_LIBCOM_ERR
 
