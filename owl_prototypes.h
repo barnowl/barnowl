@@ -6,6 +6,7 @@ extern int owl_aim_send_im(char *to, char *msg);
 extern void owl_aim_chat_join(char *chatroom);
 extern void owl_aim_chat_leave(char *chatroom);
 extern int owl_aim_chat_sendmsg(char *chatroom, char *msg);
+extern char *owl_aim_normalize_screenname(char *in);
 extern int owl_aim_process_events();
 extern int faimtest_flapversion(aim_session_t *sess, aim_frame_t *fr, ...);
 extern int faimtest_conncomplete(aim_session_t *sess, aim_frame_t *fr, ...);

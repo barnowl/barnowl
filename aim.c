@@ -187,6 +187,24 @@ int owl_aim_chat_sendmsg(char *chatroom, char *msg)
   return(0);
 }
 
+/* caller must free the return */
+char *owl_aim_normalize_screenname(char *in) {
+  char *out;
+  int i, j, k;
+
+  j=strlen(in);
+  out=owl_malloc(j+30);
+  k=0;
+  for (i=0; i<j; i++) {
+    if (in[i]!=' ') {
+      out[k]=in[i];
+      k++;
+    }
+  }
+  out[k]='\0';
+  return(out);
+}
+
 int owl_aim_process_events() {
   aim_session_t *aimsess;
   aim_conn_t *waitingconn = NULL;
@@ -1269,7 +1287,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   }
   
   if (args->icbmflags & AIM_IMFLAGS_HASICON) {
-    aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_BUDDYREQ, "You have an icon");
+    /* aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_BUDDYREQ, "You have an icon"); */
     /* printf("icbm: their icon: iconstamp = %ld, iconlen = 0x%08lx, iconsum = 0x%04x\n", args->iconstamp, args->iconlen, args->iconsum); */
   }
   
