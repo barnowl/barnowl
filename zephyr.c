@@ -380,6 +380,8 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
   memset(&notice, 0, sizeof(notice));
 
   ZResetAuthentication();
+
+  if (!zsig) zsig="";
   
   notice.z_kind=ACKED;
   notice.z_port=0;

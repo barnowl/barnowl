@@ -1,7 +1,9 @@
 $Id$
 
-2.1.4-pre-1
+2.1.4
 	Normalize and downcase AIM names for logging
+	Fixed a bug where sending a null zsig could cause a crash
+	Better 'away' toggling if only one protocol is away.
 
 2.1.3
 	Added perl filter elements.  Similar to having "filter <subfilter>"

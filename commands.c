@@ -1397,8 +1397,44 @@ char *owl_command_aaway(int argc, char **argv, char *buff)
 
 char *owl_command_away(int argc, char **argv, char *buff)
 {
-  owl_command_zaway(argc, argv, buff);
-  owl_command_aaway(argc, argv, buff);
+  if ((argc==1) ||
+      ((argc==2) && !strcmp(argv[1], "on"))) {
+    owl_global_set_aaway_msg(&g, owl_global_get_aaway_msg_default(&g));
+    owl_global_set_zaway_msg(&g, owl_global_get_zaway_msg_default(&g));
+    owl_function_aaway_on();
+    owl_function_zaway_on();
+    owl_function_makemsg("Away messages set.", owl_global_get_aaway_msg_default(&g));
+    return NULL;
+  }
+
+  if (argc==2 && !strcmp(argv[1], "off")) {
+    owl_function_aaway_off();
+    owl_function_zaway_off();
+    return NULL;
+  }
+
+  if (argc==2 && !strcmp(argv[1], "toggle")) {
+    /* if either one is on, turn it off, otherwise toggle both (turn
+     *  them both on)
+     */
+    if (!owl_global_is_zaway(&g) && !owl_global_is_aaway(&g)) {
+      owl_function_aaway_toggle();
+      owl_function_zaway_toggle();
+      owl_function_makemsg("Away messages set.");
+    } else {
+      if (owl_global_is_zaway(&g)) owl_function_zaway_toggle();
+      if (owl_global_is_aaway(&g)) owl_function_aaway_toggle();
+      owl_function_makemsg("Away messages off.");
+    }
+    return NULL;
+  }
+
+  buff = skiptokens(buff, 1);
+  owl_global_set_aaway_msg(&g, buff);
+  owl_global_set_zaway_msg(&g, buff);
+  owl_function_aaway_on();
+  owl_function_zaway_on();
+  owl_function_makemsg("Away messages set.");
   return NULL;
 }
 
