@@ -105,7 +105,9 @@ int main(int argc, char **argv, char **env) {
   putenv(buff);
   initscr();
   start_color();
+#ifdef HAVE_USE_DEFAULT_COLORS
   use_default_colors();
+#endif
   raw();
   noecho();
 

@@ -8,7 +8,9 @@ static struct _owl_keypress_specialmap {
   int   kj;
   char *ks;
 } specialmap[] = {
+#ifdef KEY_CODE_YES
    { KEY_CODE_YES, 	"CODE_YES" }, 
+#endif
    { KEY_MIN, 		"MIN" }, 
    { KEY_BREAK, 	"BREAK" }, 
    { KEY_DOWN, 		"DOWN" }, 
@@ -112,7 +114,9 @@ static struct _owl_keypress_specialmap {
    { KEY_SUSPEND, 	"SUSPEND" }, 
    { KEY_UNDO, 	        "UNDO" }, 
    { KEY_MOUSE, 	"MOUSE" }, 
+#ifdef KEY_RESIZE
    { KEY_RESIZE, 	"RESIZE" }, 
+#endif
    { KEY_MAX, 	        "MAX" }, 
    { ' ', 	        "SPACE" }, 
    { 27, 	        "ESCAPE" }, 

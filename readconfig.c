@@ -10,8 +10,6 @@
 
 static const char fileIdent[] = "$Id$";
 
-
-
 extern XS(boot_owl);
 
 static void owl_perl_xs_init(pTHX) {
@@ -44,6 +42,7 @@ int owl_readconfig(char *file) {
   owl_global_set_perlinterp(&g, (void*)p);
   perl_construct(p);
 
+  /* start by assuming no config */
   owl_global_set_no_have_config(&g);
 
   ret=stat(filename, &statbuff);
@@ -51,12 +50,25 @@ int owl_readconfig(char *file) {
     return(0);
   }
 
+  /* This is the CMU code for reading a site owlconf.  Not sure if I
+     want it yet */
+  /*
+  ret=stat(filename, &statbuff);
+  if (ret) {
+    sprintf(filename, "%s/%s", DATADIR, "owl/owlconf");
+    ret=stat(filename, &statbuff);
+    if (ret) {
+      return(0);
+    }
+  }
+  */
+
   ret=perl_parse(p, owl_perl_xs_init, 2, embedding, NULL);
   if (ret) return(-1);
-
   ret=perl_run(p);
   if (ret) return(-1);
 
+  /* if we get this far, we have a good config file */
   owl_global_set_have_config(&g);
 
   /* create variables */

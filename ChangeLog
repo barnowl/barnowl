@@ -44,6 +44,24 @@ $Id$
 	only 'make distclean' will nuke core and ~ files now
 	fixes to owl_function_do_newmsgproc from Stephen
 	converted functions.c to new code style, which I'm giving a shot
+	Makefile.in: define DATADIR, for default owlconf.
+	Makefile.in: provide "all" and "install" rules.
+	configure.in: try also libdes and libkrb4, for people using heimdal
+	configure.in: see if des_ecb_encrypt is already prototyped.
+	configure.in: minor changes to work with new autoconf without needing acconfig.h.
+        configure.in: find the install program.
+	configure.in: test for use_default_colors since some versions of
+	  solaris don't have it, so we can at least compile something
+	  vaguely working there.
+	keypress.c: ifdefs for keys not defined on at least some solarises.
+	owl.c: don't call use_default_colors if we don't have it
+	readconfig.c: added *commented out* code to try to find a
+	  system-default owlconf if the user doesn't have one.  Have to
+	  ponder if I want this
+	zcrypt.c: don't prototype des_ecb_encrypt if there is a prototype in
+	  des.h.
+	zcrypt.c: include owl.h so we get the configure-generated config.h
+	Change to codelist.pl to deal with new code style
 	
 1.2.8
 	Class pings are displayed differently now

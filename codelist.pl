@@ -12,14 +12,13 @@ foreach $file (@ARGV) {
     print "/* -------------------------------- $file -------------------------------- */\n";
     while (<FILE>) {
 	if (/^\S/
-	    && /\{\s*$/
+	    && (/\{\s*$/ || /\)\s*$/)
 	    && !/\}/
 	    && !/^\{/
-	    && !/^#include/
+	    && !/^#/
 	    && !/^static/
-	    && !/^#define/
 	    && !/\/\*/)
-	{s/\s+\{/\;/; print "extern "; print;}
+	{s/\s+\{/\;/; s/\)[ \t]*$/\)\;/; print "extern "; print;}
 	    
     }
     close(FILE);

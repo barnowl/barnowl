@@ -15,6 +15,7 @@ static const char fileIdent[] = "$Id$";
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "owl.h"
 
 #define BASE_CODE 70
 #define LAST_CODE (BASE_CODE + 15)
@@ -64,7 +65,9 @@ char *BuildArgString(char **argv, int start, int end);
 int do_encrypt(char *keystring, int zephyr, char *class, char *instance, ZWRITEOPTIONS *zoptions, char* keyfile);
 int do_decrypt(char *keystring);
 
+#ifndef HAVE_DES_ECB_ENCRYPT_PROTO
 int des_ecb_encrypt(char [], char [], des_key_schedule, int);
+#endif
 
 #define M_NONE            0
 #define M_ZEPHYR_ENCRYPT  1
