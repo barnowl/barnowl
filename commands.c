@@ -621,6 +621,14 @@ owl_cmd commands_to_init[]
 		  "completes the command (eg, sends message being composed)",
 		  "", ""),
 
+  OWLCMD_VOID_CTX("editmulti:done-or-delete", owl_command_editmulti_done_or_delete, 
+		  OWL_CTX_EDITMULTI,
+		  "completes the command, but only if at end of message",
+		  "", 
+		  "If only whitespace is to the right of the cursor,\n"
+		  "runs 'editmulti:done'.\n"\
+		  "Otherwise runs 'edit:delete-next-char'\n"),
+
   /****************************************************************/
   /********************** POPLESS-SPECIFIC ************************/
   /****************************************************************/
@@ -1145,6 +1153,7 @@ char *owl_command_reply(int argc, char **argv, char *buff) {
   if (argc==2 && !strcmp("-e", argv[1])) {
     edit=1;
     argv++;
+    argc--;
   }
 
   if ((argc==1) || (argc==2 && !strcmp(argv[1], "all"))) {    
@@ -1550,6 +1559,14 @@ void owl_command_editmulti_done(owl_editwin *e) {
   owl_global_set_typwin_inactive(&g);
   owl_global_set_needrefresh(&g);
   wnoutrefresh(owl_editwin_get_curswin(e));
+}
+
+void owl_command_editmulti_done_or_delete(owl_editwin *e) {
+  if (owl_editwin_is_at_end(e)) {
+    owl_command_editmulti_done(e);
+  } else {
+    owl_editwin_delete_char(e);
+  }
 }
 
 

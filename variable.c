@@ -41,6 +41,13 @@ static const char fileIdent[] = "$Id$";
         NULL, owl_variable_enum_get_tostring, \
         NULL }
 
+#define OWLVAR_ENUM_FULL(name,default,docstring,validset,validate, set, get) \
+        { name, OWL_VARIABLE_INT, NULL, default, validset, docstring, NULL, \
+        validate, \
+        set, owl_variable_enum_set_fromstring, \
+        get, owl_variable_enum_get_tostring, \
+        NULL }
+
 static owl_variable variables_to_init[] = {
 
   OWLVAR_BOOL( "personalbell" /* %OwlVarStub */, 0,
@@ -77,8 +84,8 @@ static owl_variable variables_to_init[] = {
   OWLVAR_BOOL( "classlogging" /* %OwlVarStub */, 0,
 	       "turn class logging on or off" ),
 
-  OWLVAR_BOOL_FULL( "disable-ctrl-d" /* %OwlVarStub:lockout_ctrld */, 0,
-		    "don't send zephyrs on C-d",
+  OWLVAR_ENUM_FULL( "disable-ctrl-d" /* %OwlVarStub:lockout_ctrld */, 1,
+		    "don't send zephyrs on C-d (or disable if in the middle of the message if set to 'middle')", "off,middle,on",
 		    NULL, owl_variable_disable_ctrl_d_set, NULL),
 
   OWLVAR_BOOL( "_burningears" /* %OwlVarStub:burningears */, 0,
@@ -185,15 +192,16 @@ int owl_variable_debug_set(owl_variable *v, void *newval) {
 /* note that changing the value of this will clobber 
  * any user setting of this */
 int owl_variable_disable_ctrl_d_set(owl_variable *v, void *newval) {
-  if (newval && !owl_context_is_startup(owl_global_get_context(&g))
-      && (*(int*)newval == 1 || *(int*)newval == 0)) {
-    if (*(int*)newval) {
+  if (newval && !owl_context_is_startup(owl_global_get_context(&g))) {
+    if (*(int*)newval == 2) {
       owl_function_command_norv("bindkey editmulti C-d command edit:delete-next-char");
+    } else if (*(int*)newval == 1) {
+      owl_function_command_norv("bindkey editmulti C-d command editmulti:done-or-delete");
     } else {
       owl_function_command_norv("bindkey editmulti C-d command editmulti:done");
     }
   }  
-  return owl_variable_bool_set_default(v, newval);  
+  return owl_variable_int_set_default(v, newval);  
 }
 
 

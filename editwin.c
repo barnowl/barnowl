@@ -739,6 +739,22 @@ void owl_editwin_fill_paragraph(owl_editwin *e) {
   }
 }
 
+/* returns if only whitespace remains */
+int owl_editwin_is_at_end(owl_editwin *e) {
+  int i, cur;  
+  cur=_owl_editwin_get_index_from_xy(e);
+  if (cur >= e->bufflen) return(1);
+  for (i=e->bufflen-1; i>cur; i--) {
+    if (e->buff[i] != '\r'
+	&& e->buff[i] != '\n'
+	&& e->buff[i] != ' ') {
+      return(0);
+    }
+  }
+  if (cur==i) return(1);
+  else return(0);
+}
+
 int owl_editwin_check_dotsend(owl_editwin *e) {
   int i;
 

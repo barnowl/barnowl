@@ -125,7 +125,7 @@ void owl_function_zwrite_setup(char *line) {
   e=owl_global_get_typwin(&g);
   owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE);
 
-  if (!owl_global_is_lockout_ctrld(&g)) {
+  if (!owl_global_get_lockout_ctrld(&g)) {
     owl_function_makemsg("Type your zephyr below.  End with ^D or a dot on a line by itself.  ^C will quit.");
   } else {
     owl_function_makemsg("Type your zephyr below.  End with a dot on a line by itself.  ^C will quit.");

@@ -93,9 +93,9 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   /* This would be nice, but interferes with C-c to cancel */
   /*BIND_CMD("C-c C-c", "editmulti:done", "sends the zephyr");*/
 
-  /* note that changing "disable-ctrl-d" will change this to 
+  /* note that changing "disable-ctrl-d" to "on" will change this to 
    * edit:delete-next-char */
-  BIND_CMD("C-d",     "editmulti:done", "sends the zephyr");
+  BIND_CMD("C-d",     "editmulti:done-or-delete", "sends the zephyr if at the end of the message");
 
 
   /****************************************************************/
