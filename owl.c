@@ -272,10 +272,11 @@ int main(int argc, char **argv, char **env) {
       /* check for burning ears message */
       /* this is an unsupported feature */
       if (owl_global_is_burningears(&g) && owl_message_is_burningears(m)) {
-	char buff[LINE];
-	sprintf(buff, "@i(Burning ears message on class %s)", owl_message_get_class(m));
+	char *buff;
+	buff = owl_sprintf("@i(Burning ears message on class %s)", owl_message_get_class(m));
 	/* owl_function_makemsg(buff); */
 	owl_function_adminmsg(buff, "");
+	owl_free(buff);
 	owl_function_beep();
       }
 

@@ -27,7 +27,7 @@ void sepbar(char *in) {
   if (owl_messagelist_get_size(ml)==0) {
     strcpy(buff, " (-/-) ");
   } else {
-    sprintf(buff, " (%i/%i/%i) ", owl_global_get_curmsg(&g)+1,
+    snprintf(buff, 1024, " (%i/%i/%i) ", owl_global_get_curmsg(&g)+1,
 	    owl_view_get_size(v),
 	    owl_messagelist_get_size(ml));
   }
@@ -61,7 +61,7 @@ void sepbar(char *in) {
   if (owl_global_get_rightshift(&g)>0) {
     getyx(sepwin, y, x);
     wmove(sepwin, y, x+2);
-    sprintf(buff, " right: %i ", owl_global_get_rightshift(&g));
+    snprintf(buff, 1024, " right: %i ", owl_global_get_rightshift(&g));
     waddstr(sepwin, buff);
   }
 
@@ -315,6 +315,34 @@ void *owl_realloc(void *ptr, size_t size) {
   return(realloc(ptr, size));
 }
 
+/* allocates memory and returns the string or null.
+ * caller must free the string. 
+ * from Linux sprintf man page. 
+ */
+char *owl_sprintf(const char *fmt, ...) {
+  int n, size = 100;
+  char *p;
+  va_list ap;
+  if ((p = owl_malloc (size)) == NULL)
+    return NULL;
+  while (1) {
+    /* Try to print in the allocated space. */
+    va_start(ap, fmt);
+    n = vsnprintf (p, size, fmt, ap);
+    va_end(ap);
+    /* If that worked, return the string. */
+    if (n > -1 && n < size)
+      return p;
+    /* Else try again with more space. */
+    if (n > -1)    /* glibc 2.1 */
+      size = n+1; /* precisely what is needed */
+    else           /* glibc 2.0 */
+      size *= 2;  /* twice the old size */
+    if ((p = owl_realloc (p, size)) == NULL)
+      return NULL;
+  }
+}
+
 char *pretty_sender(char *in) {
   char *out, *ptr;
   
@@ -330,15 +358,14 @@ char *pretty_sender(char *in) {
 }
 
 char *long_sender(char *in) {
-  char *out, *ptr;
+  char *ptr;
 
   /* the caller must free the return */
-  out=owl_malloc(strlen(in)+100);
-  strcpy(out, in);
-  ptr=strchr(out, '@');
-  if (ptr) return(out);
-  sprintf(out, "%s@%s", out, ZGetRealm());
-  return(out);
+  if (NULL != (ptr=strchr(in, '@'))) {
+    return owl_strdup(in);
+  } else {
+    return owl_sprintf("%s@%s", in, ZGetRealm());
+  }
 }
 		  
 

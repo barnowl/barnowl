@@ -80,9 +80,12 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("zwrite", owl_command_zwrite, OWL_CTX_INTERACTIVE,
 	      "send a zephyr",
-	      "zwrite [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcde] [<user> ...] ",
+	      "zwrite [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcde] [<user> ...] [-m <message...>]",
 	      "Zwrite send a zephyr to the one or more users specified.\n\n"
 	      "The following options are available:\n\n"
+	      "-m    Specifies a message to send without prompting.\n"
+	      "      Note that this does not yet log an outgoing message.\n"
+	      "      This must be the last argument.\n\n"
 	      "-n    Do not send a ping message.\n\n"
 	      "-C    If the message is sent to more than one user include a\n"
 	      "      \"cc:\" line in the text\n\n"
@@ -1110,7 +1113,21 @@ void owl_command_status() {
 }
 
 char *owl_command_zwrite(int argc, char **argv, char *buff) {
-  char *tmpbuff;
+  char *tmpbuff, *pos, *cmd, *msg;
+
+  /* check for a zwrite -m */
+  for (pos = buff; *pos; pos = skiptokens(pos, 1)) {
+    if (!strncmp(pos, "-m ", 3)) {
+      cmd = owl_strdup(buff);
+      msg = cmd+(pos-buff);
+      *msg = '\0';
+      msg += 3;
+      owl_zwrite_create_and_send_from_line(cmd, msg);
+      owl_free(cmd);
+      return NULL;
+    }
+  }
+
   if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the zwrite command.");
   } else {

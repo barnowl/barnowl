@@ -154,9 +154,8 @@ void owl_function_zwrite(char *line) {
 
   /* display the message as an admin message in the receive window */
   if (owl_global_is_displayoutgoing(&g) && owl_zwrite_is_personal(&z)) {
-    tmpbuff=owl_malloc(strlen(owl_editwin_get_text(owl_global_get_typwin(&g)))+1024);
     owl_zwrite_get_recipstr(&z, buff);
-    sprintf(tmpbuff, "Message sent to %s", buff);
+    tmpbuff = owl_sprintf("Message sent to %s", buff);
     owl_function_adminmsg_outgoing(tmpbuff, owl_editwin_get_text(owl_global_get_typwin(&g)), line);
     owl_free(tmpbuff);
   }
@@ -1161,7 +1160,7 @@ void owl_function_getsubs() {
 
   }
 
-  buff=malloc(num*200);
+  buff=owl_malloc(num*200);
   strcpy(buff, "");
   for (i=0; i<num; i++) {
     if ((ret = ZGetSubscriptions(&sub, &one)) != ZERR_NONE) {
@@ -1172,7 +1171,7 @@ void owl_function_getsubs() {
   }
 
   owl_function_popless_text(buff);
-  free(buff);
+  owl_free(buff);
   ZFlushSubscriptions();
 }
 
@@ -1265,7 +1264,6 @@ void owl_function_delete_automsgs() {
   owl_message *m;
   owl_view *v;
   owl_filter *f;
-  char buff[LINE];
 
   /* get the trash filter */
   f=owl_global_get_filter(&g, "trash");
@@ -1286,8 +1284,7 @@ void owl_function_delete_automsgs() {
     }
   }
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  sprintf(buff, "%i messages marked for deletion", count);
-  owl_function_makemsg(buff);
+  owl_function_makemsg("%i messages marked for deletion", count);
   owl_global_set_needrefresh(&g);
 }
 

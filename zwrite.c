@@ -3,6 +3,16 @@
 
 static const char fileIdent[] = "$Id$";
 
+int owl_zwrite_create_and_send_from_line(char *cmd, char *msg) {
+  owl_zwrite z;
+  int rv;
+  rv = owl_zwrite_create_from_line(&z, cmd);
+  if (rv) return(rv);
+  owl_zwrite_send_message(&z, msg);
+  owl_zwrite_free(&z);
+  return(0);
+}
+
 int owl_zwrite_create_from_line(owl_zwrite *z, char *line) {
   int argc, badargs, myargc;
   char **argv, **myargv;

@@ -110,8 +110,7 @@ int loadloginsubs(char *filename) {
       if (strchr(buffer, '@')) {
 	subs[count].zsub_classinst=owl_strdup(buffer);
       } else {
-	subs[count].zsub_classinst=owl_malloc(1024);
-	sprintf(subs[count].zsub_classinst, "%s@%s", buffer, ZGetRealm());
+	subs[count].zsub_classinst=owl_sprintf("%s@%s", buffer, ZGetRealm());
       }
 
       count++;
@@ -345,7 +344,6 @@ void send_ping(char *to) {
 }
 
 void owl_zephyr_handle_ack(ZNotice_t *retnotice) {
-  char buff[LINE];
   char *tmp;
   
   /* if it's an HMACK ignore it */
@@ -361,24 +359,23 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice) {
     } else if (!strcasecmp(retnotice->z_class, "message") &&
 	       !strcasecmp(retnotice->z_class_inst, "personal")) {
       tmp=pretty_sender(retnotice->z_recipient);
-      sprintf(buff, "Message sent to %s.", tmp);
+      owl_function_makemsg("Message sent to %s.", tmp);
       free(tmp);
     } else {
-      sprintf(buff, "Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
+      owl_function_makemsg("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
     }
-    owl_function_makemsg(buff);
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
     if (strcasecmp(retnotice->z_class, "message")) {
-      sprintf(buff, "Not logged in or not subscribing to class %s, instance %s",
+      owl_function_makemsg("Not logged in or not subscribing to class %s, instance %s",
 	      retnotice->z_class, retnotice->z_class_inst);
-      owl_function_makemsg(buff);
     } else {
-      owl_function_makemsg("Not logged in or subscribing to messages.");
+      tmp = pretty_sender(retnotice->z_recipient);
+      owl_function_makemsg("%s: Not logged in or subscribing to messages.", 
+			   tmp);
+      owl_free(tmp);
     }
   } else {
-    char buff[1024];
-    sprintf(buff, "Internal error on ack (%s)", retnotice->z_message);
-    owl_function_makemsg(buff);
+    owl_function_makemsg("Internal error on ack (%s)", retnotice->z_message);
   }
 }
 
@@ -411,8 +408,7 @@ void owl_zephyr_zaway(owl_message *m) {
 	      owl_global_get_zaway_msg(&g));
 
   /* display the message as an admin message in the receive window */
-  tmpbuff=owl_malloc(strlen(owl_global_get_zaway_msg(&g))+LINE);
-  sprintf(tmpbuff, "Message sent to %s", owl_message_get_sender(m));
+  tmpbuff = owl_sprintf("Message sent to %s", owl_message_get_sender(m));
   owl_function_adminmsg(tmpbuff, owl_global_get_zaway_msg(&g));
   owl_free(tmpbuff);
 }

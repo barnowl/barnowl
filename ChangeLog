@@ -11,6 +11,15 @@ $Id$
 	Fixed a bug in the summary field for user-created aliases
 	Added "reply zaway" which sends a zaway response to the current msg.
 	Added "edit:delete-prev-word" command and bound M-BACKSPACE to it.
+	Added owl_sprintf which returns the formatted string, or NULL.
+	        The caller must free this string.
+		This will allocate enough memory and thus 
+		avoid potential some buffer overrun situations.
+	Started fixing some potential buffer overrun situations.
+	Simple implementation of 'zwrite -m' (doesn't yet log an outgoing
+	        message as having been sent.)
+	The "Not logged in or subscribing to messages" error 
+	        now includes the name of the recipient.
 		
 1.2.1-pre-1
 	Added RCS Id strings to all files.
