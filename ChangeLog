@@ -1,193 +1,180 @@
 $Id$
 
-1.2.1-pre-4
-	Page-down will not skip past the last message if its truncated.
-	Added C-t binding for transposing characters.  (from jdaniel)
-	
-1.2.1-pre-3
-	Variables now have a summary and a long description.
-	        Only the summary is shown with help.
-		The long description is shown with "show variable foo".
+1.2.1
+        New framework for command handling.
+        New framework for keymap handling.
+        Added commands for everything that is bound 
+             to a key (do 'show commands' to get the full list).
+        Added 'multi' and '(' commands to allow multiple commands
+             to be specified on a line.              
+        Added user keybindings with bindkey command.
+        Added command aliases (eg, "alias foo bar").
+        Added undelete command that parallels the delete command.
+        Added additional options to delete command.
+        The reply command now takes arguments.
+        Added 'edit:insert-text' command.
+        Added 'show zpunts' to show active punt filters.
+        Added 'show variable <name>' and 'show variables'.
+        Added 'show command <name>' and 'show commands'.
+        Added 'show keymap <name>' and 'show keymaps'.
+        Added 'M-u' to undelete all messages in current view.
+        Fixed dotsend so that the zephyr will still send if there
+             is whitespace after the dot but not on the same line.
+             This should resolve an issue where dotsend wouldn't work
+             if you'd gone up and edited a zephyr.
+	Bug in page down fixed
+	C-t will transpose characters
         Fix the scrolling bug where we would sometimes fail to scroll
              the screen down, leaving the current message off 
              the bottom of the screen.
+        Refixed 'login or login' typo in help
+        Fixed M-u description
+        Removed 'first' and 'last' from basic command help
+        Added M-N to basic key help
+        Added M-D, M-u to basic key help
+        Fixed a quoting problem in configure.in
+        Changed top of help to use 'show' instead of M-x
+        Fixed a bug in the summary field for user-created aliases
+        Added "reply zaway" which sends a zaway response to the current msg.
+        Added "edit:delete-prev-word" command and bound M-BACKSPACE to it.
+	Some buffer overruns fixed
+        Variables now have a summary and a long description.
+                Only the summary is shown with help.
+                The long description is shown with "show variable foo".
         Added a 'scrollmode' variable which determines how the screen
-	     will scroll as the cursor moves.  The default behaves
-	     identically to previous versions of owl.
+             will scroll as the cursor moves.  The default behaves
+             identically to previous versions of owl.
              The following modes are supported:
-	     normal      - This is the owl default.  Scrolling happens
-	                   when it needs to, and an attempt is made to
-	                   keep the current message roughly near
-	                   the middle of the screen.  (default)
-	     top         - The current message will always be the
-	                   the top message displayed.
-	     neartop     - The current message will be one down
-	                   from the top message displayed,
-	                   where possible.
-	     center      - An attempt is made to keep the current
-	                   message near the center of the screen.
-	     paged       - The top message displayed only changes
-	                   when user moves the cursor to the top
-	                   or bottom of the screen.  When it moves,
-	                   the screen will be paged up or down and
-	                   the cursor will be near the top or
-	                   the bottom.
-	     pagedcenter - The top message displayed only changes
-	                   when user moves the cursor to the top
-	                   or bottom of the screen.  When it moves,
-	                   the screen will be paged up or down and
-	                   the cursor will be near the center.
-
-1.2.1-pre-2
-	Refixed 'login or login' typo in help
-	Fixed M-u description
-	Removed 'first' and 'last' from basic command help
-	Added M-N to basic key help
-	Added M-D, M-u to basic key help
-	Fixed a quoting problem in configure.in
-	Changed top of help to use 'show' instead of M-x
-	Fixed a bug in the summary field for user-created aliases
-	Added "reply zaway" which sends a zaway response to the current msg.
-	Added "edit:delete-prev-word" command and bound M-BACKSPACE to it.
-	Added owl_sprintf which returns the formatted string, or NULL.
-	        The caller must free this string.
-		This will allocate enough memory and thus 
-		avoid potential some buffer overrun situations.
-	Started fixing some potential buffer overrun situations.
-	Simple implementation of 'zwrite -m' (doesn't yet log an outgoing
-	        message as having been sent.)
-	The "Not logged in or subscribing to messages" error 
-	        now includes the name of the recipient.
-	The "disable-ctrl-d" variable may also be set to "middle"
-	        which will result in ctrl-d only sending at the 
-		end of the message.  This is now the default.
-		This also added a command "editmulti:done-or-delete".
-	Fixed a bug in the "reply -e" command.
-	Always clear the command buffer before executing the command.
-	        (So that interactive commands can sanely do start-command.)
-	Fixed preservation of e->dotsend across owl_editwin_clear().
-	Added history for multiline edit windows (eg, for zephyr composition).
-	        The M-n and M-p keys will cycle through the history ring.
-		In particular, it is now possible to edit the command line
-		of a zephyr being composed:  C-c it and restart it 
-		and then M-p to get the aborted composition back.
-	Added owl::send_zwrite(command, message) to the perl glue
-	        to allow for the direct sending of multi-line messages.
-		For example:  owl::send_zwrite("-c foo -i bar", "hello"); 
-	Reverted attempted fix for the pagedown problem
-	        which just made things worse.
-	Changed owl_fmtext_print_plain to return an alloc'd string to 
-	        avoid buffer overrun risks.
-	Added owl::ztext_stylestrip("...") function to perlglue 
-	         which returns the ztext with formatting stripped out.
-	Added colorztext variable which can be used to disable @color()
-	         strings arriving in messages after it is set.
-		 (Currently, changing its value won't reformat messages).
-	Outgoing zephyr logging now obeys the logpath variable.
-	The '~' character in logpath and classlogpath now gets
-	         replaced with the user's home directory.
-	Added simple implementation of smartnarrow-to-admin that
-	         creates a "type-admin" autofilter.
-		 This was done mostly so that M-C-n and M-C-p do something
-		 sane on admin messages.
-	Added opera to the allowed options to the webbrowser variable.
-	Fixed some buffer overruns in the "reply" command.
-	When repying to "all" on a message that begins with "CC:" (eg, sent 
-	         with "zwrite -C", the reply line will be constructed
-		 from the sender and the usernames on the CC: line
-		 of the message being replied to.
-	There is no such thing as C-R, so left C-r as it is but added:
-	         M-r --- edit reply to all
-	         M-R --- edit reply to sender
-	
-1.2.1-pre-1
-	Added RCS Id strings to all files.
-	'show keymaps' shows details of all keymaps after summary list.
-	Added --no-move option to delete command.
-	        In particular, delete-and-always-move-down may now
-		be implemented with 
-		'( delete --no-move ; next --skip-deleted )'.
-	Folded the nextmsg and prevmsg commands and functions together into 
-	        one command which takes arguments.
-		Added '--filter <name>' option (eg, for next_personal),
-		'--skip-deleted' option, and
-		'--last-if-none'/'--first-if-none' options.
-		Help updated accordingly.  
-		In particular, the 'personal' view is now used 
-		for 'next personal'.  
-	Updated examples/owlconf.erik with the above.
-	Fixed the annoying pagedown sometimes-not-working bug.
-	Made owl_function_fast*filt return a string and not do the 
-	        narrowing, to make it more general.
-	Added a smartfilter command that creates a filter
-	        based on the current message and returns the name
-		of the filter.
-	Added --smart-filter and --smart-filter-instance options 
-	        to the next and prev commands.
-	Added M-C-n and M-C-p keybindings to "move to next message 
-	        matching current" and "move to previous message 
-		matching current"
-	Added variables edit:maxfillcols and edit:maxwrapcols which 
-	        will limit how wide editing paragraphs may get before
-		they get wrapped.  This is a max and may be narrower
-		depending on the current size of the window.
-		If 0, the max is unlimited.  Default is 70 columns for
-		edit:maxfillcols and unlimited for edit:maxwrapcols.
-	Added smartzpunt command with key binding of "C-x k".
-	        This starts a zpunt command filled in with 
-		the proposed zpunt.
-	Fixed a memory reference bug in delete and undelete commands.
-	Added support for perl to call directly back into owl.
-	Changed the implementation of owl::command("...") to immediately
-	        call back into owl.  This allows perl to get the return
-		value of strings returned by owl commands.
-	Added the getview command which returns the name of the current 
-	        view's filter.  
-	Added the getvar command which returns the value of a variable.
-	Added an example to examples/owlconf.erik which uses TAB to 
-		narrow and restore the view.  
-	Added an example to examples/owlconf.erik which uses M-c to 
-		color messages matching the current one green.
-	
-1.2.0-pre-1
-	Integrated change to fix problem with popup blinking on new zephyrs.
-	C-l and resizes will now refresh an open viewwin (eg, help).
-	Updated doc/code.txt to include info about filters, commands,
-	        contexts, and keybindings.
-	Ooops.  "delete view" had accidentally been misbound to M-d.
-	        Switched the binding back to M-D.
-	Exec commands cleaned up to not have buffer-size limitations
-	        and to not mess up spaces.  exec also returns a string
-		of the output now.
-	Integrated changes from 1.1.3, and added docs for "zlocate -d"
-		and new show commands.
-	Show with arguments produces help on show.
-	Fix a bug in readconfig caught by efence (where we'd try to read before 
-	        the beginning of a string if it was empty).
+             normal      - This is the owl default.  Scrolling happens
+                           when it needs to, and an attempt is made to
+                           keep the current message roughly near
+                           the middle of the screen.  (default)
+             top         - The current message will always be the
+                           the top message displayed.
+             neartop     - The current message will be one down
+                           from the top message displayed,
+                           where possible.
+             center      - An attempt is made to keep the current
+                           message near the center of the screen.
+             paged       - The top message displayed only changes
+                           when user moves the cursor to the top
+                           or bottom of the screen.  When it moves,
+                           the screen will be paged up or down and
+                           the cursor will be near the top or
+                           the bottom.
+             pagedcenter - The top message displayed only changes
+                           when user moves the cursor to the top
+                           or bottom of the screen.  When it moves,
+                           the screen will be paged up or down and
+                           the cursor will be near the center.
+        Added owl_sprintf which returns the formatted string, or NULL.
+                The caller must free this string.
+                This will allocate enough memory and thus 
+                avoid potential some buffer overrun situations.
+        Simple implementation of 'zwrite -m' (doesn't yet log an outgoing
+                message as having been sent.)
+        The "Not logged in or subscribing to messages" error 
+                now includes the name of the recipient.
+        The "disable-ctrl-d" variable may also be set to "middle"
+                which will result in ctrl-d only sending at the 
+                end of the message.  This is now the default.
+                This also added a command "editmulti:done-or-delete".
+        Fixed a bug in the "reply -e" command.
+        Always clear the command buffer before executing the command.
+                (So that interactive commands can sanely do start-command.)
+        Fixed preservation of e->dotsend across owl_editwin_clear().
+        Added history for multiline edit windows (eg, for zephyr composition).
+                The M-n and M-p keys will cycle through the history ring.
+                In particular, it is now possible to edit the command line
+                of a zephyr being composed:  C-c it and restart it 
+                and then M-p to get the aborted composition back.
+        Added owl::send_zwrite(command, message) to the perl glue
+                to allow for the direct sending of multi-line messages.
+                For example:  owl::send_zwrite("-c foo -i bar", "hello"); 
+        Changed owl_fmtext_print_plain to return an alloc'd string to 
+                avoid buffer overrun risks.
+        Added owl::ztext_stylestrip("...") function to perlglue 
+                 which returns the ztext with formatting stripped out.
+        Added colorztext variable which can be used to disable @color()
+                 strings arriving in messages after it is set.
+                 (Currently, changing its value won't reformat messages).
+        Outgoing zephyr logging now obeys the logpath variable.
+        The '~' character in logpath and classlogpath now gets
+                 replaced with the user's home directory.
+        Added simple implementation of smartnarrow-to-admin that
+                 creates a "type-admin" autofilter.
+                 This was done mostly so that M-C-n and M-C-p do something
+                 sane on admin messages.
+        Added opera to the allowed options to the webbrowser variable.
+        Fixed some buffer overruns in the "reply" command.
+        When repying to "all" on a message that begins with "CC:" (eg, sent 
+                 with "zwrite -C", the reply line will be constructed
+                 from the sender and the usernames on the CC: line
+                 of the message being replied to.
+        There is no such thing as C-R, so left C-r as it is but added:
+                 M-r --- edit reply to all
+                 M-R --- edit reply to sender
+        Added RCS Id strings to all files.
+        'show keymaps' shows details of all keymaps after summary list.
+        Added --no-move option to delete command.
+                In particular, delete-and-always-move-down may now
+                be implemented with 
+                '( delete --no-move ; next --skip-deleted )'.
+        Folded the nextmsg and prevmsg commands and functions together into 
+                one command which takes arguments.
+                Added '--filter <name>' option (eg, for next_personal),
+                '--skip-deleted' option, and
+                '--last-if-none'/'--first-if-none' options.
+                Help updated accordingly.  
+                In particular, the 'personal' filter is now used 
+                for 'next personal'.  
+	        Added --smart-filter and --smart-filter-instance options 
+                to the next and prev commands.
+        Updated examples/owlconf.erik with the above.
+        Made owl_function_fast*filt return a string and not do the 
+                narrowing, to make it more general.
+        Added a smartfilter command that creates a filter
+                based on the current message and returns the name
+                of the filter.
+        Added M-C-n and M-C-p keybindings to "move to next message 
+                matching current" and "move to previous message 
+                matching current"
+        Added variables edit:maxfillcols and edit:maxwrapcols which 
+                will limit how wide editing paragraphs may get before
+                they get wrapped.  This is a max and may be narrower
+                depending on the current size of the window.
+                If 0, the max is unlimited.  Default is 70 columns for
+                edit:maxfillcols and unlimited for edit:maxwrapcols.
+        Added smartzpunt command with key binding of "C-x k".
+                This starts a zpunt command filled in with 
+                the proposed zpunt.
+        Fixed a memory reference bug in delete and undelete commands.
+        Added support for perl to call directly back into owl.
+        Changed the implementation of owl::command("...") to immediately
+                call back into owl.  This allows perl to get the return
+                value of strings returned by owl commands.
+        Added the getview command which returns the name of the current 
+                view's filter.  
+        Added the getvar command which returns the value of a variable.
+        Added an example to examples/owlconf.erik which uses TAB to 
+                narrow and restore the view.  
+        Added an example to examples/owlconf.erik which uses M-c to 
+                color messages matching the current one green.
+        Integrated change to fix problem with popup blinking on new zephyrs.
+        C-l and resizes will now refresh an open viewwin (eg, help).
+        Updated doc/code.txt to include info about filters, commands,
+                contexts, and keybindings.
+        Exec commands cleaned up to not have buffer-size limitations
+                and to not mess up spaces.  exec also returns a string
+                of the output now.
+        Integrated changes from 1.1.3, and added docs for "zlocate -d"
+                and new show commands.
+        Show with arguments produces help on show.
+        Fix a bug in readconfig caught by efence (where we'd try to read before 
+                the beginning of a string if it was empty).
         The perl command doesn't do makemsg directly, but instead
-	     returns the string and it will get printed if it 
-	     was run interactively.
-	New framework for command handling.
-	New framework for keymap handling.
-	Added commands for everything that is bound 
-	     to a key (do 'show commands' to get the full list).
-	Added 'multi' and '(' commands to allow multiple commands
-	     to be specified on a line.		     
-	Added user keybindings with bindkey command.
-	Added command aliases (eg, "alias foo bar").
-	Added undelete command that parallels the delete command.
-	Added additional options to delete command.
-	The reply command now takes arguments.
-	Added 'edit:insert-text' command.
-	Added 'show zpunts' to show active punt filters.
-	Added 'show variable <name>' and 'show variables'.
-	Added 'show command <name>' and 'show commands'.
-	Added 'show keymap <name>' and 'show keymaps'.
-	Added 'M-u' to undelete all messages in current view.
-	Fixed dotsend so that the zephyr will still send if there
-	     is whitespace after the dot but not on the same line.
-	     This should resolve an issue where dotsend wouldn't work
-	     if you'd gone up and edited a zephyr.
+             returns the string and it will get printed if it 
+             was run interactively.
 	
 1.1.3
 	'show subs' and 'show subscriptions' are now the same as 'getsubs'
