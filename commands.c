@@ -450,12 +450,33 @@ owl_cmd commands_to_init[]
 	      "and 'galeon' are supported.\n"),
 
   OWLCMD_ARGS("zaway", owl_command_zaway, OWL_CTX_INTERACTIVE,
-	      "running a command from the shell",
+	      "Set, enable or disable zephyr away message",
 	      "zaway [ on | off | toggle ]\n"
 	      "zaway <message>",
-	      "Turn on or off the default zaway message.  If a message is\n"
-	      "specified turn on zaway with that message\n"),
-  OWLCMD_ALIAS("away", "zaway"),
+	      "Turn on or off a zaway message.  If 'message' is\n"
+	      "specified turn on zaway with that message, otherwise\n"
+	      "use the default.\n"),
+
+  OWLCMD_ARGS("aaway", owl_command_aaway, OWL_CTX_INTERACTIVE,
+	      "Set, enable or disable AIM away message",
+	      "aaway [ on | off | toggle ]\n"
+	      "aaway <message>",
+	      "Turn on or off the AIM away message.  If 'message' is\n"
+	      "specified turn on aaway with that message, otherwise\n"
+	      "use the default.\n"),
+
+  OWLCMD_ARGS("away", owl_command_away, OWL_CTX_INTERACTIVE,
+	      "Set, enable or disable both AIM and zephyr away messages",
+	      "away [ on | off | toggle ]\n"
+	      "away <message>",
+	      "Turn on or off the AIM and zephyr away message.  If\n"
+	      "'message' is specified turn them on with that message,\n"
+	      "otherwise use the default.\n"
+	      "\n"
+	      "This command really just runs the 'aaway' and 'zaway'\n"
+	      "commands together\n"
+	      "\n"
+	      "SEE ALSO: aaway, zaway"),
 
   OWLCMD_ARGS("load-subs", owl_command_loadsubs, OWL_CTX_ANY,
 	      "load subscriptions from a file",
@@ -1342,6 +1363,39 @@ char *owl_command_zaway(int argc, char **argv, char *buff)
   return NULL;
 }
 
+
+char *owl_command_aaway(int argc, char **argv, char *buff)
+{
+  if ((argc==1) ||
+      ((argc==2) && !strcmp(argv[1], "on"))) {
+    owl_global_set_aaway_msg(&g, owl_global_get_aaway_msg_default(&g));
+    owl_function_aaway_on();
+    return NULL;
+  }
+
+  if (argc==2 && !strcmp(argv[1], "off")) {
+    owl_function_aaway_off();
+    return NULL;
+  }
+
+  if (argc==2 && !strcmp(argv[1], "toggle")) {
+    owl_function_aaway_toggle();
+    return NULL;
+  }
+
+  buff = skiptokens(buff, 1);
+  owl_global_set_aaway_msg(&g, buff);
+  owl_function_aaway_on();
+  return NULL;
+}
+
+
+char *owl_command_away(int argc, char **argv, char *buff)
+{
+  owl_command_zaway(argc, argv, buff);
+  owl_command_aaway(argc, argv, buff);
+  return NULL;
+}
 
 char *owl_command_set(int argc, char **argv, char *buff)
 {

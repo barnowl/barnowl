@@ -208,6 +208,19 @@ static owl_variable variables_to_init[] = {
 		 OWL_DEFAULT_ZAWAYMSG,
 	         "default zaway message", "" ),
 
+  OWLVAR_BOOL_FULL( "aaway" /* %OwlVarStub */, 0,
+		    "Set AIM away status",
+		    "",
+		    NULL, owl_variable_aaway_set, NULL),
+
+  OWLVAR_STRING( "aaway_msg" /* %OwlVarStub */, 
+		 OWL_DEFAULT_AAWAYMSG,
+	         "AIM away msg for responding when away", "" ),
+
+  OWLVAR_STRING( "aaway_msg_default" /* %OwlVarStub */, 
+		 OWL_DEFAULT_AAWAYMSG,
+	         "default AIM away message", "" ),
+
   OWLVAR_STRING( "view_home" /* %OwlVarStub */, "all",
 	         "home view to switch to after 'X' and 'V'", 
 		 "SEE ALSO: view, filter\n" ),
@@ -354,10 +367,21 @@ int owl_variable_typewinsize_set(owl_variable *v, void *newval) {
 }
 
 /* debug (cache value in g->debug) */
-
 int owl_variable_debug_set(owl_variable *v, void *newval) {
   if (newval && (*(int*)newval == 1 || *(int*)newval == 0)) {
     g.debug = *(int*)newval;
+  }
+  return owl_variable_bool_set_default(v, newval);
+}
+
+/* When 'aaway' is changed, need to notify the AIM server */
+int owl_variable_aaway_set(owl_variable *v, void *newval) {
+  if (newval) {
+    if (*(int*)newval == 1) {
+      owl_aim_set_awaymsg(owl_global_get_aaway_msg(&g));
+    } else if (*(int*)newval == 0) {
+      owl_aim_set_awaymsg("");
+    }
   }
   return owl_variable_bool_set_default(v, newval);
 }

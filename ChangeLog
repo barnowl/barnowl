@@ -7,15 +7,17 @@ $Id$
 	First pass at AIM away messages.  It is a little different from
 	  what most clients seem to do, in that an away reply is sent for
 	  each message received.  Most clients only reply to the first one
-	  per away-session.  Also, it's completely tied to the zaway
-	  functions, it should probably be separated out into aaway
-	  functions with a new "away" function that will get everything.
-	  Loop detection stuff should work and has been tested, but I'm
-	  not completely sure I did this right ... so odd behavior should
-	  be reported.
-	New 'away' command, just an alias to zaway for now.
-	'A' key now bound to 'away' command.
-	In status bar "ZAWAY" is now "AWAY"
+	  per away-session.
+	Now have a set of 'aaway' commands and variables just like the
+	  'zaway' ones (except that changing the 'aaway' variable talks to
+	  the server)
+	The new 'away' command does everything for both AIM *and* zephyr.
+	  There is a known funkiness here, where if you turn one away on,
+	  and then use 'away' (or 'A') to toggle, you will turn on off and
+	  the other on.  Just leaving it for now.  Should do better in the
+	  next patch.
+	The 'A' key is bound to 'away'
+	Status bar can now read AWAY, Z-AWAY or A-AWAY.
  	
 2.1.1-pre-1
 	Only print forced AIM logout message once.

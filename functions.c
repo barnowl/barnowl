@@ -862,15 +862,37 @@ void owl_function_zaway_toggle()
 void owl_function_zaway_on()
 {
   owl_global_set_zaway_on(&g);
-  owl_aim_set_awaymsg(owl_global_get_zaway_msg(&g));
-  owl_function_makemsg("aim and zaway set (%s)", owl_global_get_zaway_msg(&g));
+  owl_function_makemsg("zaway set (%s)", owl_global_get_zaway_msg(&g));
 }
 
 void owl_function_zaway_off()
 {
   owl_global_set_zaway_off(&g);
-  owl_aim_set_awaymsg("");
-  owl_function_makemsg("aim and zaway off");
+  owl_function_makemsg("zaway off");
+}
+
+void owl_function_aaway_toggle()
+{
+  if (!owl_global_is_aaway(&g)) {
+    owl_global_set_aaway_msg(&g, owl_global_get_aaway_msg_default(&g));
+    owl_function_aaway_on();
+  } else {
+    owl_function_aaway_off();
+  }
+}
+
+void owl_function_aaway_on()
+{
+  owl_global_set_aaway_on(&g);
+  /* owl_aim_set_awaymsg(owl_global_get_zaway_msg(&g)); */
+  owl_function_makemsg("AIM away set (%s)", owl_global_get_aaway_msg(&g));
+}
+
+void owl_function_aaway_off()
+{
+  owl_global_set_aaway_off(&g);
+  /* owl_aim_set_awaymsg(""); */
+  owl_function_makemsg("AIM away off");
 }
 
 void owl_function_quit()

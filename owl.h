@@ -137,6 +137,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_KEYBINDING_FUNCTION 2   /* function taking no args */
 
 #define OWL_DEFAULT_ZAWAYMSG    "I'm sorry, but I am currently away from the terminal and am\nnot able to receive your message.\n"
+#define OWL_DEFAULT_AAWAYMSG    "I'm sorry, but I am currently away from the terminal and am\nnot able to receive your message.\n"
 
 #define OWL_INCLUDE_REG_TESTS   1  /* whether to build in regression tests */
 
