@@ -2583,11 +2583,12 @@ void owl_function_show_colors()
   owl_fmtext_free(&fm);
 }
 
+/* add the given class, inst, recip to the punt list for filtering.
+ *   if direction==0 then punt
+ *   if direction==1 then unpunt
+ */
 void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
 {
-  /* add the given class, inst, recip to the punt list for filtering.
-   *   if direction==0 then punt
-   *   if direction==1 then unpunt */
   owl_filter *f;
   owl_list *fl;
   char *buff;
@@ -2598,11 +2599,21 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   /* first, create the filter */
   f=malloc(sizeof(owl_filter));
   buff=malloc(strlen(class)+strlen(inst)+strlen(recip)+100);
-  if (!strcmp(recip, "*")) {
-    sprintf(buff, "class ^%s$ and instance ^%s$", class, inst);
+  strcpy(buff, "class");
+  if (!strcmp(class, "*")) {
+    strcat(buff, " .*");
   } else {
-    sprintf(buff, "class ^%s$ and instance ^%s$ and recipient %s", class, inst, recip);
+    sprintf(buff, "%s ^%s$", buff, class);
   }
+  if (!strcmp(inst, "*")) {
+    strcat(buff, " and instance .*");
+  } else {
+    sprintf(buff, "%s and instance ^%s$", buff, inst);
+  }
+  if (strcmp(recip, "*")) {
+    sprintf(buff, "%s and recipient ^%s$", buff, recip);
+  }
+  
   owl_function_debugmsg("About to filter %s", buff);
   ret=owl_filter_init_fromstring(f, "punt-filter", buff);
   owl_free(buff);
