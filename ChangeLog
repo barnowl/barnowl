@@ -86,6 +86,9 @@ $Id$
 	The $HOME/.owl directory is created on startup if it does not exist
 	Added the 'aim_ingorelogin_timer' variable
 	'addbuddy zephyr <user>' and 'delbuddy zephyr <user>' now work.
+	'isloginout' and 'isprivate' are now message attributes
+	improved 'info' function lists seperate info for zephyr, aim and
+	   also prints all message attributes
 	
 1.2.8
 	Class pings are displayed differently now

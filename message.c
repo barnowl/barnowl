@@ -77,6 +77,25 @@ char *owl_message_get_attribute_value(owl_message *m, char *attrname)
   return(NULL);
 }
 
+/* We cheat and indent it for now, since we really want this for
+ * the 'info' function.  Later there should just be a generic
+ * function to indent fmtext.
+ */
+void owl_message_attributes_tofmtext(owl_message *m, owl_fmtext *fm) {
+  int i, j;
+  owl_pair *p;
+  char *buff;
+
+  owl_fmtext_init_null(fm);
+
+  j=owl_list_get_size(&(m->attributes));
+  for (i=0; i<j; i++) {
+    p=owl_list_get_element(&(m->attributes), i);
+    buff=owl_sprintf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), owl_pair_get_value(p));
+    owl_fmtext_append_normal(fm, buff);
+    owl_free(buff);
+  }
+}
 
 owl_fmtext *owl_message_get_fmtext(owl_message *m)
 {
@@ -198,6 +217,35 @@ char *owl_message_get_opcode(owl_message *m)
   return(opcode);
 }
 
+
+void owl_message_set_isloginout(owl_message *m)
+{
+  owl_message_set_attribute(m, "isloginout", "");
+}
+
+int owl_message_is_loginout(owl_message *m)
+{
+  char *res;
+
+  res=owl_message_get_attribute_value(m, "isloginout");
+  if (!res) return(0);
+  return(1);
+}
+
+void owl_message_set_isprivate(owl_message *m)
+{
+  owl_message_set_attribute(m, "isprivate", "");
+}
+
+int owl_message_is_private(owl_message *m)
+{
+  char *res;
+
+  res=owl_message_get_attribute_value(m, "isprivate");
+  if (!res) return(0);
+  return(1);
+}
+
 char *owl_message_get_timestr(owl_message *m)
 {
   return(m->time);
@@ -253,7 +301,6 @@ char *owl_message_type_to_string(owl_message *m)
   if (m->type==OWL_MESSAGE_TYPE_MSN) return("msn");
   return("unknown");
 }
-
 
 char *owl_message_get_text(owl_message *m)
 {
@@ -375,25 +422,6 @@ int owl_message_is_personal(owl_message *m)
   return(0);
 }
 
-/* true if the message is only intended for one recipient (me) */
-int owl_message_is_to_me(owl_message *m)
-{
-  if (owl_message_is_type_zephyr(m)) {
-    if (!strcasecmp(owl_message_get_recipient(m), ZGetSender())) {
-      return(1);
-    } else {
-      return(0);
-    }
-  } else if (owl_message_is_type_aim(m)) {
-    /* right now we don't support chat rooms */
-    return(1);
-  } else if (owl_message_is_type_admin(m)) {
-    return(1);
-  }
-  return(0);
-}
-
-
 int owl_message_is_from_me(owl_message *m)
 {
   if (owl_message_is_type_zephyr(m)) {
@@ -417,7 +445,7 @@ int owl_message_is_from_me(owl_message *m)
 int owl_message_is_mail(owl_message *m)
 {
   if (owl_message_is_type_zephyr(m)) {
-    if (!strcasecmp(owl_message_get_class(m), "mail") && owl_message_is_to_me(m)) {
+    if (!strcasecmp(owl_message_get_class(m), "mail") && owl_message_is_private(m)) {
       return(1);
     } else {
       return(0);
@@ -438,29 +466,13 @@ int owl_message_is_ping(owl_message *m)
   return(0);
 }
 
-int owl_message_is_login(owl_message *m)
-{
-  if (owl_message_is_type_zephyr(m)) {
-    if (!strcasecmp(owl_message_get_class(m), "login")) {
-      return(1);
-    } else {
-      return(0);
-    }
-  } else if (owl_message_is_type_aim(m)) {
-    /* deal with this once we can use buddy lists */
-    return(0);
-  }
-       
-  return(0);
-}
-
 int owl_message_is_burningears(owl_message *m)
 {
   /* we should add a global to cache the short zsender */
   char sender[LINE], *ptr;
 
   /* if the message is from us or to us, it doesn't count */
-  if (owl_message_is_from_me(m) || owl_message_is_to_me(m)) return(0);
+  if (owl_message_is_from_me(m) || owl_message_is_private(m)) return(0);
 
   if (owl_message_is_type_zephyr(m)) {
     strcpy(sender, ZGetSender());
@@ -539,6 +551,9 @@ void owl_message_create_incoming_aim(owl_message *m, char *sender, char *recipie
   owl_message_set_type_aim(m);
   owl_message_set_direction_in(m);
 
+  /* for now, all AIM messages are private messages since we don't do chat rooms */
+  owl_message_set_isprivate(m);
+
   indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
   owl_text_indent(indent, text, OWL_MSGTAB);
   owl_fmtext_init_null(&(m->fmtext));
@@ -591,6 +606,8 @@ void owl_message_create_aim_login(owl_message *m, int direction, char *screennam
   owl_message_set_recipient(m, owl_global_get_aim_screenname(&g));
   owl_message_set_type_aim(m);
   owl_message_set_direction_in(m);
+
+  owl_message_set_isloginout(m);
 
   owl_fmtext_init_null(&(m->fmtext));
   owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
@@ -665,6 +682,16 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
     owl_message_set_realm(m, ptr+1);
   } else {
     owl_message_set_realm(m, ZGetRealm());
+  }
+
+  /* Set the "isloginout" attribute if it's a login message */
+  if (!strcasecmp(n->z_class, "login")) {
+    owl_message_set_isloginout(m);
+  }
+
+  /* is the "isprivate" attribute if it's a private zephyr */
+  if (!strcasecmp(n->z_recipient, ZGetSender())) {
+    owl_message_set_isprivate(m);
   }
 
   m->zwriteline=strdup("");
@@ -878,7 +905,7 @@ void _owl_message_make_text_from_notice_standard(owl_message *m)
   owl_fmtext_init_null(&(m->fmtext));
   owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
 
-  if (!strcasecmp(owl_message_get_opcode(m), "ping") && owl_message_is_to_me(m)) {
+  if (!strcasecmp(owl_message_get_opcode(m), "ping") && owl_message_is_private(m)) {
     owl_fmtext_append_bold(&(m->fmtext), "PING");
     owl_fmtext_append_normal(&(m->fmtext), " from ");
     owl_fmtext_append_bold(&(m->fmtext), frombuff);

@@ -4,7 +4,8 @@
 
 static const char fileIdent[] = "$Id$";
 
-void owl_fmtext_init_null(owl_fmtext *f) {
+void owl_fmtext_init_null(owl_fmtext *f)
+{
   f->textlen=0;
   f->textbuff=owl_strdup("");
   f->fmbuff=owl_malloc(5);
@@ -14,21 +15,24 @@ void owl_fmtext_init_null(owl_fmtext *f) {
 }
 
 
-void _owl_fmtext_set_attr(owl_fmtext *f, int attr, int first, int last) {
+void _owl_fmtext_set_attr(owl_fmtext *f, int attr, int first, int last)
+{
   int i;
   for (i=first; i<=last; i++) {
     f->fmbuff[i]=(unsigned char) attr;
   }
 }
 
-void _owl_fmtext_add_attr(owl_fmtext *f, int attr, int first, int last) {
+void _owl_fmtext_add_attr(owl_fmtext *f, int attr, int first, int last)
+{
   int i;
   for (i=first; i<=last; i++) {
     f->fmbuff[i]|=(unsigned char) attr;
   }
 }
 
-void _owl_fmtext_set_color(owl_fmtext *f, int color, int first, int last) {
+void _owl_fmtext_set_color(owl_fmtext *f, int color, int first, int last)
+{
   int i;
   for (i=first; i<=last; i++) {
     f->colorbuff[i]=(unsigned char) color;
@@ -36,7 +40,8 @@ void _owl_fmtext_set_color(owl_fmtext *f, int color, int first, int last) {
 }
 
 
-void owl_fmtext_append_attr(owl_fmtext *f, char *text, int attr, int color) {
+void owl_fmtext_append_attr(owl_fmtext *f, char *text, int attr, int color)
+{
   int newlen;
 
   newlen=strlen(f->textbuff)+strlen(text);
@@ -51,31 +56,37 @@ void owl_fmtext_append_attr(owl_fmtext *f, char *text, int attr, int color) {
 }
 
 
-void owl_fmtext_append_normal(owl_fmtext *f, char *text) {
+void owl_fmtext_append_normal(owl_fmtext *f, char *text)
+{
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_NONE, OWL_COLOR_DEFAULT);
 }
 
-void owl_fmtext_append_normal_color(owl_fmtext *f, char *text, int color) {
+void owl_fmtext_append_normal_color(owl_fmtext *f, char *text, int color)
+{
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_NONE, color);
 }
 
 
-void owl_fmtext_append_bold(owl_fmtext *f, char *text) {
+void owl_fmtext_append_bold(owl_fmtext *f, char *text)
+{
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_BOLD, OWL_COLOR_DEFAULT);
 }
 
 
-void owl_fmtext_append_reverse(owl_fmtext *f, char *text) {
+void owl_fmtext_append_reverse(owl_fmtext *f, char *text)
+{
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_REVERSE, OWL_COLOR_DEFAULT);
 }
 
 
-void owl_fmtext_append_reversebold(owl_fmtext *f, char *text) {
+void owl_fmtext_append_reversebold(owl_fmtext *f, char *text)
+{
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_REVERSE | OWL_FMTEXT_ATTR_BOLD, OWL_COLOR_DEFAULT);
 }
 
 
-void owl_fmtext_addattr(owl_fmtext *f, int attr) {
+void owl_fmtext_addattr(owl_fmtext *f, int attr)
+{
   /* add the attribute to all text */
   int i, j;
 
@@ -85,7 +96,8 @@ void owl_fmtext_addattr(owl_fmtext *f, int attr) {
   }
 }
 
-void owl_fmtext_colorize(owl_fmtext *f, int color) {
+void owl_fmtext_colorize(owl_fmtext *f, int color)
+{
   /* everywhere the color is OWL_COLOR_DEFAULT, change it to be 'color' */
   int i, j;
 
@@ -96,7 +108,8 @@ void owl_fmtext_colorize(owl_fmtext *f, int color) {
 }
 
 
-void owl_fmtext_append_ztext(owl_fmtext *f, char *text) {
+void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
+{
   int stacksize, curattrs, curcolor;
   char *ptr, *txtptr, *buff, *tmpptr;
   int attrstack[32], chrstack[32];
@@ -215,7 +228,8 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text) {
 
       } else {
 	/* if we didn't understand it, we'll print it.  This is different from zwgc
-	   but zwgc seems to be smarter about some screw cases than I am */
+	 * but zwgc seems to be smarter about some screw cases than I am
+	 */
 	owl_fmtext_append_attr(f, "@", curattrs, curcolor);
 	txtptr++;
 	continue;
@@ -281,7 +295,10 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text) {
 
 }
 
-void owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in, int start, int stop) {
+/* This is used internally to fmtext.  Use owl_fmtext_append_fmtext()
+ * (no initial underscore) externally */
+void _owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in, int start, int stop)
+{
   int newlen, i;
 
   newlen=strlen(f->textbuff)+(stop-start+1);
@@ -298,7 +315,14 @@ void owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in, int start, int stop
   f->textlen=newlen;
 }
 
-void owl_fmtext_append_spaces(owl_fmtext *f, int nspaces) {
+void owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in)
+{
+  _owl_fmtext_append_fmtext(f, in, 0, in->textlen);
+
+}
+
+void owl_fmtext_append_spaces(owl_fmtext *f, int nspaces)
+{
   int i;
   for (i=0; i<nspaces; i++) {
     owl_fmtext_append_normal(f, " ");
@@ -309,7 +333,8 @@ void owl_fmtext_append_spaces(owl_fmtext *f, int nspaces) {
  * joins the elements together with join_with. 
  * If format_fn is specified, passes it the list element value
  * and it will return a string which this needs to free. */
-void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(format_fn)(void*)) {
+void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(format_fn)(void*))
+{
   int i, size;
   void *elem;
   char *text;
@@ -334,12 +359,14 @@ void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(
 
 
 /* caller is responsible for freeing */
-char *owl_fmtext_print_plain(owl_fmtext *f) {
+char *owl_fmtext_print_plain(owl_fmtext *f)
+{
   return owl_strdup(f->textbuff);
 }
 
 
-void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w) {
+void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w)
+{
   char *tmpbuff;
   int position, trans1, trans2, len, lastsame;
 
@@ -394,7 +421,8 @@ void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w) {
 }
 
 
-int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *out) {
+int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *out)
+{
   /* start with line aline (where the first line is 0) and print
    *  'lines' lines
    */
@@ -419,17 +447,18 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
     ptr2=strchr(ptr1, '\n');
     offset=ptr1-in->textbuff;
     if (!ptr2) {
-      owl_fmtext_append_fmtext(out, in, offset, in->textlen-1);
+      _owl_fmtext_append_fmtext(out, in, offset, in->textlen-1);
       return(-1);
     }
-    owl_fmtext_append_fmtext(out, in, offset, (ptr2-ptr1)+offset);
+    _owl_fmtext_append_fmtext(out, in, offset, (ptr2-ptr1)+offset);
     ptr1=ptr2+1;
   }
   return(0);
 }
 
 
-void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *out) {
+void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *out)
+{
   char *ptr1, *ptr2, *last;
   int len, offset;
   
@@ -467,14 +496,15 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
     }
 
     offset=ptr1-in->textbuff;
-    owl_fmtext_append_fmtext(out, in, offset+acol, offset+acol+len);
+    _owl_fmtext_append_fmtext(out, in, offset+acol, offset+acol+len);
 
     ptr1=ptr2+1;
   }
 }
 
 
-int owl_fmtext_num_lines(owl_fmtext *f) {
+int owl_fmtext_num_lines(owl_fmtext *f)
+{
   int lines, i;
 
   if (f->textlen==0) return(0);
@@ -491,25 +521,29 @@ int owl_fmtext_num_lines(owl_fmtext *f) {
 }
 
 
-char *owl_fmtext_get_text(owl_fmtext *f) {
+char *owl_fmtext_get_text(owl_fmtext *f)
+{
   return(f->textbuff);
 }
 
-void owl_fmtext_set_char(owl_fmtext *f, int index, int ch) {
+void owl_fmtext_set_char(owl_fmtext *f, int index, int ch)
+{
   /* set the charater at 'index' to be 'char'.  If index is out of
    * bounds don't do anything */
   if ((index < 0) || (index > f->textlen-1)) return;
   f->textbuff[index]=ch;
 }
 
-void owl_fmtext_free(owl_fmtext *f) {
+void owl_fmtext_free(owl_fmtext *f)
+{
   if (f->textbuff) owl_free(f->textbuff);
   if (f->fmbuff) owl_free(f->fmbuff);
   if (f->colorbuff) owl_free(f->colorbuff);
 }
 
 
-void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src) {
+void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src)
+{
   dst->textlen=src->textlen;
   dst->textbuff=owl_malloc(src->textlen+5);
   dst->fmbuff=owl_malloc(src->textlen+5);
@@ -520,9 +554,11 @@ void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src) {
 }
 
 
-int owl_fmtext_search_and_highlight(owl_fmtext *f, char *string) {
-  /* highlight all instance of "string".  Return the number of
-   * instances found.  This is case insensitive. */
+/* highlight all instance of "string".  Return the number of
+ * instances found.  This is case insensitive.
+ */
+int owl_fmtext_search_and_highlight(owl_fmtext *f, char *string)
+{
 
   int found, len;
   char *ptr1, *ptr2;
@@ -544,9 +580,11 @@ int owl_fmtext_search_and_highlight(owl_fmtext *f, char *string) {
   return(found);
 }
 
-int owl_fmtext_search(owl_fmtext *f, char *string) {
-  /* return 1 if the string is found, 0 if not.  This is case
-   *  insensitive */
+/* return 1 if the string is found, 0 if not.  This is case
+ *  insensitive
+ */
+int owl_fmtext_search(owl_fmtext *f, char *string)
+{
 
   if (stristr(f->textbuff, string)) return(1);
   return(0);

@@ -1,4 +1,4 @@
-/* Written by James Kretchmar, MIT
+/*
  *
  * Copyright 2001 Massachusetts Institute of Technology
  *
@@ -274,6 +274,13 @@ int main(int argc, char **argv, char **env) {
 
     followlast=owl_global_should_followlast(&g);
 
+    
+    /* If we're logged into AIM, do AIM stuff */
+    if (owl_global_is_aimloggedin(&g)) {
+      owl_function_debugmsg("Doing aim processing");
+      owl_aim_process_events();
+    }
+
     /* little hack */
     now=time(NULL);
     today=localtime(&now);
@@ -346,8 +353,8 @@ int main(int argc, char **argv, char **env) {
 
       /* ring the bell if it's a personal */
       if (owl_global_is_personalbell(&g) &&
-	  (owl_message_is_personal(m) ||
-	  (owl_message_is_type_aim(m) && owl_message_is_to_me(m)))) {
+	  !owl_message_is_loginout(m) &&
+	  owl_message_is_private(m)) {
 	owl_function_beep();
       }
 
@@ -372,12 +379,6 @@ int main(int argc, char **argv, char **env) {
       if (owl_global_is_logging(&g) || owl_global_is_classlogging(&g)) {
 	owl_log_incoming(m);
       }
-    }
-
-    /* If we're logged into AIM, do AIM stuff */
-    if (owl_global_is_aimloggedin(&g)) {
-      owl_function_debugmsg("Doing aim processing");
-      owl_aim_process_events();
     }
 
     /* follow the last message if we're supposed to */
