@@ -237,15 +237,15 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
 int owl_message_is_personal(owl_message *m) {
   if (strcasecmp(owl_message_get_class(m), "message")) return(0);
   if (strcasecmp(owl_message_get_instance(m), "personal")) return(0);
-  if (!strcmp(owl_message_get_recipient(m), ZGetSender()) ||
-      !strcmp(owl_message_get_sender(m), ZGetSender())) {
+  if (!strcasecmp(owl_message_get_recipient(m), ZGetSender()) ||
+      !strcasecmp(owl_message_get_sender(m), ZGetSender())) {
     return(1);
   }
   return(0);
 }
 
 int owl_message_is_private(owl_message *m) {
-  if (!strcmp(owl_message_get_recipient(m), ZGetSender())) return(1);
+  if (!strcasecmp(owl_message_get_recipient(m), ZGetSender())) return(1);
   return(0);
 }
 

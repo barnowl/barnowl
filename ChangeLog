@@ -4,6 +4,8 @@ $Id$
 	Moved the (broken) newmsgproc stuff it a function procedure
 	Added thew 'newlinestrip' variable, on by default, that strips
 	  leading and trailing newlines from incoming messages.
+	Fixed a case sensitivity probelm in owl_message_is_personal and
+	   owl_message_is_private
 
 1.2.8
 	Class pings are displayed differently now
