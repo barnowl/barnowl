@@ -1,8 +1,12 @@
 $Id$
+
 1.2.6
 	Started adding code for newmsgproc.  It doesn't fully work yet!
 	  Don't use it.
 	Added search, '/' and '?' to basic help.
+	Will attempt to keep the current message as close as possible
+	     to the previous current message after an expunge.
+	"set <variable>" and "unset <variable>" now work for boolean variables.
 	
 1.2.5
 	Patch to fix memory bug in replying to CC messages
@@ -23,7 +27,7 @@ $Id$
 	  calculations
 	You can now use %me% in filters
 	The built-in personal filter is updated to do so
-	Fixed a bug in moving the poiner after an expunge
+	Fixed a bug in moving the pointer after an expunge
 	Fixed up the normal scrolling code.  Now it should always
 	  land on a message, but it's still not optimal.
 	Added the variable 'smartstrip' which will strip kerberos

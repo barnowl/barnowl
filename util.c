@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <malloc.h>
+#include <unistd.h>
 #include <ctype.h>
 
 static const char fileIdent[] = "$Id$";

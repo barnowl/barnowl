@@ -396,39 +396,14 @@ void owl_function_expunge() {
   owl_message *m;
   owl_messagelist *ml;
   owl_view *v;
-  int i, j;
+  int lastmsgid=0;
 
   curmsg=owl_global_get_curmsg(&g);
   v=owl_global_get_current_view(&g);
   ml=owl_global_get_msglist(&g);
 
-  /* just check to make sure we're in bounds... */
-  if (curmsg>owl_view_get_size(v)-1) curmsg=owl_view_get_size(v)-1;
-  if (curmsg<0) curmsg=0;
-
-  /* first try to move to an undeleted message in the view */
   m=owl_view_get_element(v, curmsg);
-  if (owl_message_is_delete(m)) {
-    /* try to find the next undeleted message */
-    j=owl_view_get_size(v);
-    for (i=curmsg+1; i<j; i++) {
-      if (!owl_message_is_delete(owl_view_get_element(v, i))) {
-	owl_global_set_curmsg(&g, i);
-	break;
-      }
-    }
-
-    /* if we weren't successful try to find one backwards */
-    curmsg=owl_global_get_curmsg(&g);
-    if (owl_message_is_delete(owl_view_get_element(v, curmsg))) {
-      for (i=curmsg; i>0; i--) {
-	if (!owl_message_is_delete(owl_view_get_element(v, i))) {
-	  owl_global_set_curmsg(&g, i);
-	  break;
-	}
-      }
-    }
-  }
+  if (m) lastmsgid = owl_message_get_id(m);
 
   /* expunge the message list */
   owl_messagelist_expunge(ml);
@@ -436,14 +411,13 @@ void owl_function_expunge() {
   /* update all views (we only have one right now) */
   owl_view_recalculate(v);
 
-  if (curmsg>owl_view_get_size(v)-1) {
-    owl_global_set_curmsg(&g, owl_view_get_size(v)-1);
-    if (owl_global_get_curmsg(&g)<0) {
-      owl_global_set_curmsg(&g, 0);
-    }
-    owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
-  }
-
+  /* find where the new position should be
+     (as close as possible to where we last where) */
+  curmsg = owl_view_get_nearest_to_msgid(v, lastmsgid);
+  if (curmsg>owl_view_get_size(v)-1) curmsg = owl_view_get_size(v)-1;
+  if (curmsg<0) curmsg = 0;
+  owl_global_set_curmsg(&g, curmsg);
+  owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
   /* if there are no messages set the direction to down in case we
      delete everything upwards */
   owl_global_set_direction_downwards(&g);

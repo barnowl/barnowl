@@ -429,7 +429,7 @@ char *owl_variable_get_validsettings(owl_variable *v) {
 /* functions for getting and setting variable values */
 
 /* returns 0 on success, prints a status msg if msg is true */
-int owl_variable_set_fromstring(owl_vardict *d, char *name, char *value, int msg) {
+int owl_variable_set_fromstring(owl_vardict *d, char *name, char *value, int msg, int requirebool) {
   owl_variable *v;
   char buff2[1024];
   if (!name) return(-1);
@@ -440,8 +440,11 @@ int owl_variable_set_fromstring(owl_vardict *d, char *name, char *value, int msg
   }
   if (!v->set_fromstring_fn) {
     if (msg) owl_function_makemsg("Variable %s is read-only", name);
-    return -1;
-    
+    return -1;   
+  }
+  if (requirebool && v->type!=OWL_VARIABLE_BOOL) {
+    if (msg) owl_function_makemsg("Variable %s is not a boolean", name);
+    return -1;   
   }
   if (0 != v->set_fromstring_fn(v, value)) {
     if (msg) owl_function_makemsg("Unable to set %s (must be %s)", name, 
@@ -800,9 +803,9 @@ int owl_variable_regtest(void) {
   FAIL_UNLESS("get bool as string 2", 0==strcmp(buf,"off"));
   FAIL_UNLESS("set bool 1", 0==owl_variable_set_bool_on(&vd,"personalbell"));
   FAIL_UNLESS("get bool 2", 1==owl_variable_get_bool(&vd,"personalbell"));
-  FAIL_UNLESS("set bool 3", 0==owl_variable_set_fromstring(&vd,"personalbell","off",0));
+  FAIL_UNLESS("set bool 3", 0==owl_variable_set_fromstring(&vd,"personalbell","off",0,0));
   FAIL_UNLESS("get bool 4", 0==owl_variable_get_bool(&vd,"personalbell"));
-  FAIL_UNLESS("set bool 5", -1==owl_variable_set_fromstring(&vd,"personalbell","xxx",0));
+  FAIL_UNLESS("set bool 5", -1==owl_variable_set_fromstring(&vd,"personalbell","xxx",0,0));
   FAIL_UNLESS("get bool 6", 0==owl_variable_get_bool(&vd,"personalbell"));
 
 
@@ -818,10 +821,10 @@ int owl_variable_regtest(void) {
   FAIL_UNLESS("get int 2", 12==owl_variable_get_int(&vd,"typewinsize"));
   FAIL_UNLESS("set int 1b", -1==owl_variable_set_int(&vd,"typewinsize",-3));
   FAIL_UNLESS("get int 2b", 12==owl_variable_get_int(&vd,"typewinsize"));
-  FAIL_UNLESS("set int 3", 0==owl_variable_set_fromstring(&vd,"typewinsize","9",0));
+  FAIL_UNLESS("set int 3", 0==owl_variable_set_fromstring(&vd,"typewinsize","9",0,0));
   FAIL_UNLESS("get int 4", 9==owl_variable_get_int(&vd,"typewinsize"));
-  FAIL_UNLESS("set int 5", -1==owl_variable_set_fromstring(&vd,"typewinsize","xxx",0));
-  FAIL_UNLESS("set int 6", -1==owl_variable_set_fromstring(&vd,"typewinsize","",0));
+  FAIL_UNLESS("set int 5", -1==owl_variable_set_fromstring(&vd,"typewinsize","xxx",0,0));
+  FAIL_UNLESS("set int 6", -1==owl_variable_set_fromstring(&vd,"typewinsize","",0,0));
   FAIL_UNLESS("get int 7", 9==owl_variable_get_int(&vd,"typewinsize"));
 
   FAIL_UNLESS("get enum", OWL_WEBBROWSER_NETSCAPE==owl_variable_get_int(&vd,"webbrowser"));
@@ -832,13 +835,13 @@ int owl_variable_regtest(void) {
   FAIL_UNLESS("set enum 1b", -1==owl_variable_set_int(&vd,"webbrowser",-3));
   FAIL_UNLESS("set enum 1b", -1==owl_variable_set_int(&vd,"webbrowser",209));
   FAIL_UNLESS("get enum 2b", OWL_WEBBROWSER_GALEON==owl_variable_get_int(&vd,"webbrowser"));
-  FAIL_UNLESS("set enum 3", 0==owl_variable_set_fromstring(&vd,"webbrowser","none",0));
+  FAIL_UNLESS("set enum 3", 0==owl_variable_set_fromstring(&vd,"webbrowser","none",0,0));
   FAIL_UNLESS("get enum 4", OWL_WEBBROWSER_NONE==owl_variable_get_int(&vd,"webbrowser"));
-  FAIL_UNLESS("set enum 5", 0==owl_variable_set_fromstring(&vd,"webbrowser","netscape",0));
+  FAIL_UNLESS("set enum 5", 0==owl_variable_set_fromstring(&vd,"webbrowser","netscape",0,0));
   FAIL_UNLESS("get enum 6", OWL_WEBBROWSER_NETSCAPE==owl_variable_get_int(&vd,"webbrowser"));
-  FAIL_UNLESS("set enum 7", -1==owl_variable_set_fromstring(&vd,"webbrowser","xxx",0));
-  FAIL_UNLESS("set enum 8", -1==owl_variable_set_fromstring(&vd,"webbrowser","",0));
-  FAIL_UNLESS("set enum 9", -1==owl_variable_set_fromstring(&vd,"webbrowser","netscapey",0));
+  FAIL_UNLESS("set enum 7", -1==owl_variable_set_fromstring(&vd,"webbrowser","xxx",0,0));
+  FAIL_UNLESS("set enum 8", -1==owl_variable_set_fromstring(&vd,"webbrowser","",0,0));
+  FAIL_UNLESS("set enum 9", -1==owl_variable_set_fromstring(&vd,"webbrowser","netscapey",0,0));
   FAIL_UNLESS("get enum 10", OWL_WEBBROWSER_NETSCAPE==owl_variable_get_int(&vd,"webbrowser"));
 
 

@@ -113,10 +113,18 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("set", owl_command_set, OWL_CTX_ANY,
 	      "set a variable value",
-	      "set [-q] <variable> <value>\n"
+	      "set [-q] <variable> [<value>]\n"
 	      "set",
 	      "Set the named variable to the specified value.  If no\n"
 	      "arguments are used print the value of all variables.\n"
+	      "If value is unspecified and the variable is a boolean, will set it to 'on'.\n"
+	      "If -q is specified, is silent and doesn't print a message.\n"),
+
+  OWLCMD_ARGS("unset", owl_command_unset, OWL_CTX_ANY,
+	      "unset a boolean variable value",
+	      "set [-q] <variable>\n"
+	      "set",
+	      "Set the named boolean variable to off.\n"
 	      "If -q is specified, is silent and doesn't print a message.\n"),
 
   OWLCMD_ARGS("print", owl_command_print, OWL_CTX_ANY,
@@ -945,14 +953,22 @@ char *owl_command_zaway(int argc, char **argv, char *buff) {
 char *owl_command_set(int argc, char **argv, char *buff) {
   char *var, *val;
   int  silent=0;
+  int requirebool=0;
 
   if (argc == 1) {
     owl_function_printallvars();
     return NULL;
-  } else if (argc == 4 && !strcmp("-q",argv[1])) {
+  } 
+
+  if (argc > 1 && !strcmp("-q",argv[1])) {
     silent = 1;
-    var=argv[2];
-    val=argv[3];
+    argc--; argv++;
+  }
+
+  if (argc == 2) {
+    var=argv[1];
+    val="on";
+    requirebool=1;
   } else if (argc == 3) {
     var=argv[1];
     val=argv[2];
@@ -960,8 +976,26 @@ char *owl_command_set(int argc, char **argv, char *buff) {
     owl_function_makemsg("Wrong number of arguments for set command");
     return NULL;
   }
+  owl_variable_set_fromstring(owl_global_get_vardict(&g), var, val, !silent, requirebool);
+  return NULL;
+}
 
-  owl_variable_set_fromstring(owl_global_get_vardict(&g), var, val, !silent);
+char *owl_command_unset(int argc, char **argv, char *buff) {
+  char *var, *val;
+  int  silent=0;
+
+  if (argc > 1 && !strcmp("-q",argv[1])) {
+    silent = 1;
+    argc--; argv++;
+  }
+  if (argc == 2) {
+    var=argv[1];
+    val="off";
+  } else {
+    owl_function_makemsg("Wrong number of arguments for unset command");
+    return NULL;
+  }
+  owl_variable_set_fromstring(owl_global_get_vardict(&g), var, val, !silent, 1);
   return NULL;
 }
 
