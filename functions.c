@@ -431,9 +431,15 @@ void owl_function_zcrypt(char *line, char *msg)
 void owl_function_aimwrite(char *to)
 {
   int ret;
+  char *msg, *format_msg;
+
+  /* make a formatted copy of the message */
+  msg=owl_editwin_get_text(owl_global_get_typwin(&g));
+  format_msg=owl_strdup(msg);
+  owl_text_wordunwrap(format_msg);
   
-  /*  send the message */
-  ret=owl_aim_send_im(to, owl_editwin_get_text(owl_global_get_typwin(&g)));
+  /* send the message */
+  ret=owl_aim_send_im(to, format_msg);
   if (!ret) {
     owl_function_makemsg("AIM message sent.");
   } else {
@@ -442,13 +448,15 @@ void owl_function_aimwrite(char *to)
 
   /* display the message as an outgoing message in the receive window */
   if (owl_global_is_displayoutgoing(&g)) {
-    owl_function_make_outgoing_aim(owl_editwin_get_text(owl_global_get_typwin(&g)), to);
+    owl_function_make_outgoing_aim(msg, to);
   }
 
   /* log it if we have logging turned on */
   if (owl_global_is_logging(&g)) {
-    owl_log_outgoing_aim(to, owl_editwin_get_text(owl_global_get_typwin(&g)));
+    owl_log_outgoing_aim(to, msg);
   }
+
+  owl_free(format_msg);
 }
 
 void owl_function_loopwrite()

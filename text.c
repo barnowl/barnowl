@@ -257,6 +257,21 @@ char *owl_text_wordwrap(char *in, int col)
   return(out);
 }
 
+/* this modifies 'in' */
+void owl_text_wordunwrap(char *in)
+{
+  int i, j;
+
+  j=strlen(in);
+  for (i=0; i<j; i++) {
+    if ( (in[i]=='\n') &&
+	 ((i>0) && (i<(j-1))) &&
+	 (in[i-1]!='\n') &&
+	 (in[i+1]!='\n') )
+      in[i]=' ';
+  }
+}
+
 /* exactly like strstr but case insensitive */
 char *stristr(char *a, char *b)
 {

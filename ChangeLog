@@ -1,6 +1,6 @@
 $Id$
 
-2.0.13-pre-2
+2.0.13-pre-3
 	Changed startup message for new mailing list
 	blist now prints AIM info even if .anyone is unreadable
 	Catch SIGPIPE and print an error rather than crashing.
@@ -10,7 +10,9 @@ $Id$
 	Handle the case in aim_bstream_send where aim_send returns -1,
 	        although there is likely an underlying problem here
 		that would lead to this case.
-	Print the username on aim login failure, not something random like the password.  ;)
+	Print the username on aim login failure, not something random like
+	        the password.  ;)
+	Un-word-wrap text when sending AIM messages.
 	
 2.0.12
 	Command history now doesn't allow the last entry
