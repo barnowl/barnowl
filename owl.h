@@ -20,8 +20,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.9-pre-1
-#define OWL_VERSION_STRING "2.0.9-pre-1"
+#define OWL_VERSION         2.0.9-pre-2
+#define OWL_VERSION_STRING "2.0.9-pre-2"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"

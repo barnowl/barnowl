@@ -278,7 +278,9 @@ int main(int argc, char **argv, char **env) {
 
   /* set the startup and default style, based on userclue and presence of a
    * formatting function */
-  if (owl_global_is_config_format(&g)) {
+  if (0 != strcmp(owl_global_get_default_style(&g), "__unspecified__")) {
+    /* the style was set by the user: leave it alone */
+  } else if (owl_global_is_config_format(&g)) {
     owl_global_set_default_style(&g, "perl");
   } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
     owl_global_set_default_style(&g, "default");

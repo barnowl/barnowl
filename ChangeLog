@@ -1,5 +1,10 @@
 $Id$
 
+2.0.9-pre-2
+	Better reporting of perl errors (both into the errqueue
+	        and also clearing the error after displaying it).
+	Allow default_style to be specified in config.
+	
 2.0.9-pre-1
 	Added errqueue
 	Added command "show errors"

@@ -120,7 +120,9 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m) {
 
   if (SvTRUE(ERRSV)) {
     STRLEN n_a;
-    owl_function_makemsg("Perl Error: '%s'", SvPV(ERRSV, n_a));
+    owl_function_error("Perl Error: '%s'", SvPV(ERRSV, n_a));
+    /* and clear the error */
+    sv_setsv (ERRSV, &PL_sv_undef);
   }
 
   if (count != 1) {
@@ -177,13 +179,19 @@ char *owl_perlconfig_readconfig(char *file) {
   ret=perl_parse(p, owl_perl_xs_init, 2, embedding, NULL);
   if (ret || SvTRUE(ERRSV)) {
     STRLEN n_a;
-    return owl_strdup(SvPV(ERRSV, n_a));
+    char *err;
+    err = owl_strdup(SvPV(ERRSV, n_a));
+    sv_setsv (ERRSV, &PL_sv_undef);     /* and clear the error */
+    return err;
   }
 
   ret=perl_run(p);
   if (ret || SvTRUE(ERRSV)) {
     STRLEN n_a;
-    return owl_strdup(SvPV(ERRSV, n_a));
+    char *err;
+    err = owl_strdup(SvPV(ERRSV, n_a));
+    sv_setsv (ERRSV, &PL_sv_undef);     /* and clear the error */
+    return err;
   }
 
   owl_global_set_have_config(&g);
@@ -206,7 +214,10 @@ char *owl_perlconfig_readconfig(char *file) {
 
   if (SvTRUE(ERRSV)) {
     STRLEN n_a;
-    return owl_strdup(SvPV(ERRSV, n_a));
+    char *err;
+    err = owl_strdup(SvPV(ERRSV, n_a));
+    sv_setsv (ERRSV, &PL_sv_undef);     /* and clear the error */
+    return err;
   }
 
   /* check if we have the formatting function */
@@ -256,7 +267,8 @@ char *owl_perlconfig_execute(char *line) {
 
   if (SvTRUE(ERRSV)) {
     STRLEN n_a;
-    owl_function_makemsg("Perl Error: '%s'", SvPV(ERRSV, n_a));
+    owl_function_error("Perl Error: '%s'", SvPV(ERRSV, n_a));
+    sv_setsv (ERRSV, &PL_sv_undef);     /* and clear the error */
   }
 
   preout=SvPV(response, len);
