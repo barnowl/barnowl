@@ -1,5 +1,9 @@
 $Id$
 
+2.0.8-pre-6
+	On an offgoing message, don't create an AIM logout
+	  message unless the buddy was already logged in.
+	
 2.0.8-pre-5	
 	Fixed bug with idle times causing broken pipes.
 	New libfaim
