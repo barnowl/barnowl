@@ -58,6 +58,7 @@ void owl_help()
      "    M-N           View zephyrs in selected converstaion of instance\n"
      "    V             Change to back to home view ('all' by default)\n"
      "    v             Start a view command\n"
+     "    !             Invert the current view\n"
      "\n"
      "    l             Print a zephyr/AIM buddy listing\n"
      "    A             Toggle zaway\n"

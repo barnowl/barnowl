@@ -2249,57 +2249,7 @@ char *owl_function_perl(int argc, char **argv, char *buff, int type)
   return NULL;
 }
 
-#if 0
-void owl_function_change_view_old(char *filtname)
-{
-  owl_view *v;
-  owl_filter *f;
-  int curid=-1, newpos, curmsg;
-  owl_message *curm=NULL;
-
-  v=owl_global_get_current_view(&g);
-  curmsg=owl_global_get_curmsg(&g);
-  if (curmsg==-1) {
-    owl_function_debugmsg("Hit the curmsg==-1 case in change_view");
-  } else {
-    curm=owl_view_get_element(v, curmsg);
-    if (curm) {
-      curid=owl_message_get_id(curm);
-      owl_view_save_curmsgid(v, curid);
-    }
-  }
-
-  /* grab the filter */;
-  f=owl_global_get_filter(&g, filtname);
-  if (!f) {
-    owl_function_error("Unknown filter %s", filtname);
-    return;
-  }
-
-  /* free the existing view and create a new one based on the filter */
-  owl_view_free(v);
-  owl_view_create(v, f);
-
-  /* Figure out what to set the current message to.
-   * - If the view we're leaving has messages in it, go to the closest message
-   *   to the last message pointed to in that view. 
-   * - If the view we're leaving is empty, try to restore the position
-   *   from the last time we were in the new view.  */
-  if (curm) {
-    newpos = owl_view_get_nearest_to_msgid(v, curid);
-  } else {
-    newpos = owl_view_get_nearest_to_saved(v);
-  }
-
-  owl_global_set_curmsg(&g, newpos);
-
-  owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_global_set_direction_downwards(&g);
-}
-#endif
-
-void owl_function_change_view(char *filtname)
+void owl_function_change_currentview_filter(char *filtname)
 {
   owl_view *v;
   owl_filter *f;
@@ -2355,6 +2305,8 @@ void owl_function_create_filter(int argc, char **argv)
     return;
   }
 
+  owl_function_debugmsg("owl_function_create_filter: starting to create filter named %s", argv[1]);
+
   v=owl_global_get_current_view(&g);
 
   /* don't touch the all filter */
@@ -2404,10 +2356,47 @@ void owl_function_create_filter(int argc, char **argv)
 
   /* if it was in use by the current view then update */
   if (inuse) {
-    owl_function_change_view(argv[1]);
+    owl_function_change_currentview_filter(argv[1]);
   }
   owl_global_set_needrefresh(&g);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+}
+
+/* If 'filtername' does not start with 'not-' create a filter named
+ * 'not-<filtername>' defined as "not filter <filtername>".  If the
+ * filter 'not-<filtername>' already exists, do not overwrite it.  If
+ * 'filtername' begins with 'not-' and a filter 'filtername' already
+ * exists, then do nothing.  If the filter 'filtername' does not
+ * exist, create it and define it as 'not filter <filtername>'
+ *
+ * Returns the name of the negated filter, which the caller must free.
+ */
+char *owl_function_create_negative_filter(char *filtername)
+{
+  char *newname;
+  owl_filter *tmpfilt;
+  char *argv[5];
+
+  owl_function_debugmsg("owl_function_create_negative_filter");
+  
+  if (!strncmp(filtername, "not-", 4)) {
+    newname=owl_strdup(filtername+4);
+  } else {
+    newname=owl_sprintf("not-%s", filtername);
+  }
+
+  tmpfilt=owl_global_get_filter(&g, newname);
+  if (!tmpfilt) {
+    argv[0]="filter"; /* anything is fine here */
+    argv[1]=newname;
+    argv[2]="not";
+    argv[3]="filter";
+    argv[4]=filtername;
+    owl_function_create_filter(5, argv);
+  }
+
+  owl_function_debugmsg("owl_function_create_negative_filter: returning with %s", newname);
+  return(newname);
 }
 
 void owl_function_show_filters()

@@ -217,6 +217,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
 
   BIND_CMD("v",   "start-command view ", "start a view command");
   BIND_CMD("V",   "view --home",      "change to the home view ('all' by default)");
+  BIND_CMD("!",   "view -r",          "invert the current view filter");
   BIND_CMD("M-n", "smartnarrow",      "narrow to a view based on the current message");
   BIND_CMD("M-N", "smartnarrow -i",   "narrow to a view based on the current message, and consider instance pair");
   BIND_CMD("M-p", "view personal", "");

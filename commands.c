@@ -547,7 +547,7 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("view", owl_command_view, OWL_CTX_INTERACTIVE,
 	      "view messages matching a filter",
-	      "view [<viewname>] [-f <filter> | --home ] [-s <style>]\n"
+	      "view [<viewname>] [-f <filter> | --home | -r ] [-s <style>]\n"
 	      "view <filter>\n"
 	      "view -d <expression>\n"
 	      "view --home",
@@ -1225,7 +1225,7 @@ char *owl_command_smartnarrow(int argc, char **argv, char *buff)
     owl_function_makemsg("Wrong number of arguments for %s", argv[0]);    
   }
   if (filtname) {
-    owl_function_change_view(filtname);
+    owl_function_change_currentview_filter(filtname);
     owl_free(filtname);
   }
   return NULL;
@@ -1909,25 +1909,31 @@ char *owl_command_zlocate(int argc, char **argv, char *buff)
   return NULL;
 }
 
+
+/* Backwards compatability has made this kind of complicated:
+ * view [<viewname>] [-f <filter> | -d <expression> | --home | -r ] [-s <style>]
+ * view <filter>
+ * view -d <expression>
+ * view --home
+ */
 char *owl_command_view(int argc, char **argv, char *buff)
 {
-
-  /* Backwards compatability has made this kind of complicated:
-   * view [<viewname>] [-f <filter> | -d <expression> | --home ] [-s <style>]
-   * view <filter>
-   * view -d <expression>
-   * view --home
-   */
-
-  /* First take the 'view --home' case */
-  if (argc == 2 && !strcmp(argv[1], "--home")) {
-    owl_function_change_view(owl_global_get_view_home(&g));
-    return(NULL);
+  /* First take the 'view --home' and 'view -r' cases */
+  if (argc == 2) {
+    if (!strcmp(argv[1], "--home")) {
+      owl_function_change_currentview_filter(owl_global_get_view_home(&g));
+      return(NULL);
+    } else if (!strcmp(argv[1], "-r")) {
+      char *foo;
+      foo=owl_function_create_negative_filter(owl_view_get_filtname(owl_global_get_current_view(&g)));
+      owl_function_change_currentview_filter(foo);
+      return(NULL);
+    }
   }
 
   /* Now look for 'view <filter>' */
   if (argc==2) {
-    owl_function_change_view(argv[1]);
+    owl_function_change_currentview_filter(argv[1]);
     return(NULL);
   }
 
@@ -1943,7 +1949,7 @@ char *owl_command_view(int argc, char **argv, char *buff)
       myargv[i]=argv[i];
     }
     owl_function_create_filter(argc, myargv);
-    owl_function_change_view("owl-dynamic");
+    owl_function_change_currentview_filter("owl-dynamic");
     owl_free(myargv);
     return NULL;
   }
@@ -1955,7 +1961,11 @@ char *owl_command_view(int argc, char **argv, char *buff)
   }
   argc--;
   argv++;
-  if (strcmp(argv[0], "-f") && strcmp(argv[0], "-d") && strcmp(argv[0], "--home") && strcmp(argv[0], "-s")) {
+  if (strcmp(argv[0], "-f") &&
+      strcmp(argv[0], "-d") &&
+      strcmp(argv[0], "--home") &&
+      strcmp(argv[0], "-s") &&
+      strcmp(argv[0], "-r")) {
     if (strcmp(argv[0], "main")) {
       owl_function_makemsg("No view named '%s'", argv[0]);
       return(NULL);
@@ -1969,13 +1979,17 @@ char *owl_command_view(int argc, char **argv, char *buff)
 	owl_function_makemsg("Too few argments to the view command");
 	return(NULL);
       }
-      owl_function_change_view(argv[1]);
+      owl_function_change_currentview_filter(argv[1]);
       argc-=2;
       argv+=2;
     } else if (!strcmp(argv[0], "--home")) {
-      owl_function_change_view(owl_global_get_view_home(&g));
+      owl_function_change_currentview_filter(owl_global_get_view_home(&g));
       argc--;
       argv++;
+    } else if (!strcmp(argv[0], "-r")) {
+      char *foo;
+      foo=owl_function_create_negative_filter(owl_view_get_filtname(owl_global_get_current_view(&g)));
+      owl_function_change_currentview_filter(foo);
     } else if (!strcmp(argv[0], "-s")) {
       if (argc<2) {
 	owl_function_makemsg("Too few argments to the view command");
@@ -2068,7 +2082,7 @@ char *owl_command_viewclass(int argc, char **argv, char *buff)
     return NULL;
   }
   filtname = owl_function_classinstfilt(argv[1], NULL);
-  owl_function_change_view(filtname);
+  owl_function_change_currentview_filter(filtname);
   owl_free(filtname);
   return NULL;
 }
@@ -2081,7 +2095,7 @@ char *owl_command_viewuser(int argc, char **argv, char *buff)
     return NULL;
   }
   filtname=owl_function_zuserfilt(argv[1]);
-  owl_function_change_view(filtname);
+  owl_function_change_currentview_filter(filtname);
   owl_free(filtname);
   return NULL;
 }
