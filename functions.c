@@ -1666,8 +1666,16 @@ char *owl_function_perl(int argc, char **argv, char *buff, int type) {
 void owl_function_change_view(char *filtname) {
   owl_view *v;
   owl_filter *f;
+  int curid=-1, newpos;
+  owl_message *curm;
 
   v=owl_global_get_current_view(&g);
+  curm=owl_view_get_element(v, owl_global_get_curmsg(&g));
+  if (curm) {
+    curid = owl_message_get_id(curm);
+    owl_view_save_curmsgid(v, curid);
+  }
+
   f=owl_global_get_filter(&g, filtname);
   if (!f) {
     owl_function_makemsg("Unknown filter");
@@ -1677,7 +1685,19 @@ void owl_function_change_view(char *filtname) {
   owl_view_free(v);
   owl_view_create(v, f);
 
-  owl_global_set_curmsg(&g, 0);
+  /* Figure out where to set the current message to.
+   * - If the previous view had messages in it, go to the closest message
+   *   to the last message in that view. 
+   * - If the previous view was empty, attempts to restore the position
+   *   from the last time we were in that view.  */
+  if (curm) {
+    newpos = owl_view_get_nearest_to_msgid(v, curid);
+  } else {
+    newpos = owl_view_get_nearest_to_saved(v);
+  }
+
+  owl_global_set_curmsg(&g, newpos);
+
   owl_global_set_curmsg_vert_offset(&g, 0);
   owl_global_set_direction_downwards(&g);
   owl_function_calculate_topmsg(OWL_DIRECTION_NONE);

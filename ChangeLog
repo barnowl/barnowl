@@ -7,7 +7,12 @@ $Id$
 	Fixed stristr, which was completely broken
 	renamed owl_fmtext_ztext_stylestrip to owl_function_ztext_styletsrip
 	     and put it in functions.c
-
+	Attempts to stay near the current message when switching views.
+	     When switching from an empty view to one we've previously
+	     been in, the new current message position will attempt
+	     to be close to the current position from the last 
+	     time we visited that view.
+	
 1.2.1
         New framework for command handling.
         New framework for keymap handling.

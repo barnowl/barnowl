@@ -20,6 +20,7 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv) {
   f->name=owl_strdup(name);
   f->polarity=0;
   f->color=OWL_COLOR_DEFAULT;
+  f->cachedmsgid=-1;
   owl_list_create(&(f->fes));
 
   /* first take arguments that have to come first */
@@ -94,6 +95,14 @@ void owl_filter_set_color(owl_filter *f, int color) {
 
 int owl_filter_get_color(owl_filter *f) {
   return(f->color);
+}
+
+void owl_filter_set_cachedmsgid(owl_filter *f, int cachedmsgid) {
+  f->cachedmsgid=cachedmsgid;
+}
+
+int owl_filter_get_cachedmsgid(owl_filter *f) {
+  return(f->cachedmsgid);
 }
 
 int owl_filter_message_match(owl_filter *f, owl_message *m) {

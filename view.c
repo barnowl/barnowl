@@ -55,6 +55,34 @@ int owl_view_get_size(owl_view *v) {
   return(owl_messagelist_get_size(&(v->ml)));
 }
 
+/* Returns the position in the view with a message closest 
+ * to the passed msgid. */
+int owl_view_get_nearest_to_msgid(owl_view *v, int targetid) {
+  int i, bestdist=-1, bestpos=0, curid, curdist;
+
+  for (i=0; i<owl_view_get_size(v); i++) {
+    curid = owl_message_get_id(owl_view_get_element(v, i));
+    curdist = abs(targetid-curid);
+    if (bestdist<0 || curdist<bestdist) {
+      bestdist = curdist;
+      bestpos = i;
+    }
+  }
+  return bestpos;
+}
+
+int owl_view_get_nearest_to_saved(owl_view *v) {
+  int cachedid = owl_filter_get_cachedmsgid(v->filter);
+  if (cachedid<0) return(0);
+  return owl_view_get_nearest_to_msgid(v, cachedid);
+}
+
+/* saves the current message position in the filter so it can 
+ * be restored later if we switch back to this filter. */
+void owl_view_save_curmsgid(owl_view *v, int curid) {
+  owl_filter_set_cachedmsgid(v->filter, curid);
+}
+
 char *owl_view_get_filtname(owl_view *v) {
   return(owl_filter_get_name(v->filter));
 }

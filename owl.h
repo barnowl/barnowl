@@ -288,6 +288,7 @@ typedef struct _owl_filter {
   int polarity;
   owl_list fes; /* filterelements */
   int color;
+  int cachedmsgid;  /* cached msgid: should move into view eventually */
 } owl_filter;
 
 typedef struct _owl_view {
