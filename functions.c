@@ -1801,25 +1801,24 @@ void owl_function_reply(int type, int enter)
 	class="webzephyr";
 	inst=owl_message_get_sender(m);
 	to=OWL_WEBZEPHYR_PRINCIPAL;
-      }
-
-      /* Special case LOGIN/LOGOUT notifications on class "webzephyr" */
-      if (!strcasecmp(owl_message_get_class(m), "webzephyr") &&
-	  owl_message_is_loginout(m)) {
+      } else if (!strcasecmp(owl_message_get_class(m), "webzephyr") &&
+		 owl_message_is_loginout(m)) {
+	/* Special case LOGIN/LOGOUT notifications on class "webzephyr" */
 	class="webzephyr";
 	inst=owl_message_get_instance(m);
 	to=OWL_WEBZEPHYR_PRINCIPAL;
-      }
-      
-      if (owl_message_is_loginout(m)) {
+      } else if (owl_message_is_loginout(m)) {
+	/* Normal LOGIN/LOGOUT messages */
 	class="MESSAGE";
 	inst="PERSONAL";
 	to=owl_message_get_sender(m);
       } else if (type==1) {
+	/* Personal reply */
 	class="MESSAGE";
 	inst="PERSONAL";
 	to=owl_message_get_sender(m);
       } else {
+	/* General reply */
 	class=owl_message_get_class(m);
 	inst=owl_message_get_instance(m);
 	to=owl_message_get_recipient(m);
