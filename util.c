@@ -398,9 +398,9 @@ char *owl_sprintf(const char *fmt, ...) {
 }
 
 char *short_zuser(char *in) {
-  char *out, *ptr;
-  
   /* the caller must free the return */
+  char *out, *ptr;
+
   out=owl_strdup(in);
   ptr=strchr(out, '@');
   if (ptr) {
@@ -413,9 +413,9 @@ char *short_zuser(char *in) {
 
 
 char *long_zuser(char *in) {
+  /* the caller must free the return */
   char *ptr;
 
-  /* the caller must free the return */
   if (NULL != (ptr=strchr(in, '@'))) {
     return owl_strdup(in);
   } else {

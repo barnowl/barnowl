@@ -484,7 +484,7 @@ void _owl_message_make_text_from_config(owl_message *m) {
 }
 
 void _owl_message_make_text_from_zwriteline_standard(owl_message *m) {
-  char *indent, *text, *zsigbuff;
+  char *indent, *text, *zsigbuff, *foo;
 
   text=owl_message_get_body(m);
 
@@ -493,7 +493,9 @@ void _owl_message_make_text_from_zwriteline_standard(owl_message *m) {
   owl_fmtext_init_null(&(m->fmtext));
   owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
   owl_fmtext_append_normal(&(m->fmtext), "Zephyr sent to ");
-  owl_fmtext_append_normal(&(m->fmtext), owl_message_get_recipient(m));
+  foo=short_zuser(owl_message_get_recipient(m));
+  owl_fmtext_append_normal(&(m->fmtext), foo);
+  owl_free(foo);
   owl_fmtext_append_normal(&(m->fmtext), "  (Zsig: ");
 
   zsigbuff=owl_malloc(strlen(owl_message_get_zsig(m)));
