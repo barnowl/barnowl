@@ -47,6 +47,7 @@
 #include <regex.h>
 #include <time.h>
 #include <signal.h>
+#include <termios.h>
 #include <libfaim/aim.h>
 #include "config.h"
 #ifdef HAVE_LIBZEPHYR
@@ -58,8 +59,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.1.10-pre-2
-#define OWL_VERSION_STRING "2.1.10-pre-2"
+#define OWL_VERSION         2.1.10
+#define OWL_VERSION_STRING "2.1.10"
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */
@@ -560,6 +561,7 @@ typedef struct _owl_global {
   siginfo_t err_signal_info;
   owl_zbuddylist zbuddies;
   owl_timer zephyr_buddycheck_timer;
+  struct termios startup_tio;
 } owl_global;
 
 /* globals */

@@ -970,8 +970,12 @@ void owl_function_quit()
     owl_aim_logout();
   }
 
-  /* final clean up */
+  /* done with curses */
   endwin();
+
+  /* restore terminal settings */
+  tcsetattr(0, TCSAFLUSH, owl_global_get_startup_tio(&g));
+
   owl_function_debugmsg("Quitting Owl");
   exit(0);
 }

@@ -885,3 +885,8 @@ owl_zbuddylist *owl_global_get_zephyr_buddylist(owl_global *g)
 {
   return(&(g->zbuddies));
 }
+
+struct termios *owl_global_get_startup_tio(owl_global *g)
+{
+  return(&(g->startup_tio));
+}

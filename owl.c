@@ -45,6 +45,7 @@
 #include <time.h>
 #include <sys/param.h>
 #include <sys/types.h>
+#include <termios.h>
 #include <sys/stat.h>
 #include "owl.h"
 
@@ -76,6 +77,7 @@ int main(int argc, char **argv, char **env)
   time_t nexttime, now;
   struct tm *today;
   char *dir;
+  struct termios tio;
 #ifdef HAVE_LIBZEPHYR
   ZNotice_t notice;
 #endif
@@ -153,6 +155,14 @@ int main(int argc, char **argv, char **env)
   sigaction(SIGPIPE, &sigact, NULL);
   sigaction(SIGTERM, &sigact, NULL);
   sigaction(SIGHUP, &sigact, NULL);
+
+  /* save initial terminal settings */
+  tcgetattr(0, owl_global_get_startup_tio(&g));
+
+  /* turn ISTRIP off */
+  tcgetattr(0, &tio);
+  tio.c_iflag &= ~ISTRIP;
+  tcsetattr(0, TCSAFLUSH, &tio);
 
   /* screen init */
   if (!getenv("TERMINFO")) {
