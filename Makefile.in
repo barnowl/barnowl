@@ -26,10 +26,10 @@ test: tester
 	./tester reg
 
 clean:
-	$(RM) *~ *.o owl tester core $(AUTOGEN) owl_prototypes.h.new
+	$(RM) owl tester *.o $(AUTOGEN) owl_prototypes.h.new
 
 distclean: clean
-	$(RM) config.cache config.log config.status Makefile config.h TAGS
+	$(RM) config.cache config.log config.status Makefile config.h TAGS *~ core
 
 proto: owl_prototypes.h
 

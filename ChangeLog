@@ -41,6 +41,7 @@ $Id$
 	  alert_filter
 	added the 'term' command which takes the 'raise' and 'deiconify'
 	  options.  It assumes xterm for now.
+	only 'make distclean' will nuke core and ~ files now
 	
 1.2.8
 	Class pings are displayed differently now
