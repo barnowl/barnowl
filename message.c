@@ -830,8 +830,10 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, char *user,
 {
   char *longuser, *ptr;
 
+#ifdef HAVE_LIBZEPHYR
   memset(&(m->notice), 0, sizeof(ZNotice_t));
-
+#endif
+  
   longuser=long_zuser(user);
   
   owl_message_init(m);
