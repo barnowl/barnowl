@@ -2885,11 +2885,13 @@ void owl_function_do_newmsgproc(void)
   }
 }
 
+/* print the xterm escape sequence to raise the window */
 void owl_function_xterm_raise(void)
 {
   printf("\033[5t");
 }
 
+/* print the xterm escape sequence to deiconify the window */
 void owl_function_xterm_deiconify(void)
 {
   printf("\033[1t");
@@ -2898,7 +2900,9 @@ void owl_function_xterm_deiconify(void)
 /* Add the specified command to the startup file.  Eventually this
  * should be clever, and rewriting settings that will obviosly
  * override earlier settings with 'set' 'bindkey' and 'alias'
- * commands.  For now though we just append to the startupfile.
+ * commands.  For now though we just remove any line that would
+ * duplicate this one and then append this line to the end of
+ * startupfile.
  */
 void owl_function_addstartup(char *buff)
 {
@@ -2912,7 +2916,13 @@ void owl_function_addstartup(char *buff)
     owl_function_makemsg("Error opening startupfile for new command");
     return;
   }
+
+  /* delete earlier copies */
+  owl_util_file_deleteline(filename, buff, 1);
+
+  /* add this line */
   fprintf(file, "%s\n", buff);
+
   fclose(file);
 }
 
