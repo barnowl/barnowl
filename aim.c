@@ -219,7 +219,6 @@ void owl_aim_successful_login(char *screenname)
 			   owl_global_get_aim_ignorelogin_timer(&g));
 
   /* aim_bos_setidle(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), 5000); */
-  /* aim_bos_setprofile(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), NULL, NULL, 0, NULL, NULL, 0, AIM_CAPS_CHAT); */
 }
 
 void owl_aim_logout(void)
@@ -559,7 +558,7 @@ static int conninitdone_bos(aim_session_t *sess, aim_frame_t *fr, ...)
   aim_im_reqparams(sess);
   aim_bos_reqrights(sess, fr->conn); /* XXX - Don't call this with ssi? */
 
-  aim_bos_setprofile(owl_global_get_aimsess(&g), fr->conn, NULL, NULL, 0, NULL, NULL, 0, AIM_CAPS_CHAT);
+  /* aim_bos_setprofile(owl_global_get_aimsess(&g), fr->conn, NULL, NULL, 0, NULL, NULL, 0, AIM_CAPS_CHAT); */
 
 #ifdef NOSSI
   /*
