@@ -10,6 +10,9 @@ $Id$
 	Fixed a bug in owl_function_calculate_topmsg_normal that caused a
 	  segfault
 	Fixed some typos in the intro doc
+	Removed old zlog functions from zephyr.c
+	Implemented the dump command
+	New startup message
 	
 1.2.5
 	Patch to fix memory bug in replying to CC messages

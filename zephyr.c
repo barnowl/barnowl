@@ -175,21 +175,6 @@ int owl_zephyr_unsub(char *class, char *inst, char *recip) {
 }
 
 
-void zlog_in() {
-  int ret;
-
-  ret=ZSetLocation(EXPOSE_NETVIS);
-  /* do something on failure */
-}
-
-void zlog_out() {
-  int ret;
-
-  ret=ZUnsetLocation();
-  /* do something on failure */
-}
-
-
 char *owl_zephyr_get_field(ZNotice_t *n, int j, int *k) {
   /* return a pointer to the Jth field, place the length in k.  If the
      field doesn't exist return an emtpy string */

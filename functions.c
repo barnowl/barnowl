@@ -5,6 +5,8 @@
 #include <string.h>
 #include <com_err.h>
 #include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "owl.h"
 
 static const char fileIdent[] = "$Id$";
@@ -2459,4 +2461,37 @@ void owl_function_zlist(char *file, int elapsed, int timesort) {
   owl_fmtext_free(&fm);
 
   owl_free(ourfile);
+}
+
+void owl_function_dump(char *filename) {
+  int i, j, count;
+  owl_message *m;
+  owl_view *v;
+  FILE *file;
+  /* struct stat sbuf; */
+
+  v=owl_global_get_current_view(&g);
+
+  /* in the future make it ask yes/no */
+  /*
+  ret=stat(filename, &sbuf);
+  if (!ret) {
+    ret=owl_function_askyesno("File exists, continue? [Y/n]");
+    if (!ret) return;
+  }
+  */
+
+  file=fopen(filename, "w");
+  if (!file) {
+    owl_function_makemsg("Error opening file");
+    return;
+  }
+
+  count=0;
+  j=owl_view_get_size(v);
+  for (i=0; i<j; i++) {
+    m=owl_view_get_element(v, i);
+    fputs(owl_message_get_text(m), file);
+  }
+  fclose(file);
 }

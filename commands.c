@@ -168,6 +168,11 @@ owl_cmd commands_to_init[]
 	      "getsubs retrieves the current subscriptions from the server\n"
 	      "and displays them.\n"),
 
+  OWLCMD_ARGS("dump", owl_command_dump, OWL_CTX_ANY,
+	      "dump messages to a file",
+	      "dump <filename>",
+	      "Dump messages in current view to the named file."),
+
   OWLCMD_ARGS("smartzpunt", owl_command_smartzpunt, OWL_CTX_INTERACTIVE,
 	      "creates a zpunt based on the current message",
 	      "smartzpunt [-i | --instance]",
@@ -778,6 +783,16 @@ void owl_command_version() {
 
   sprintf(buff, "Owl version %s", OWL_VERSION_STRING);
   owl_function_makemsg(buff);
+}
+
+char *owl_command_dump(int argc, char **argv, char *buff) {
+  if (argc!=2) {
+    owl_function_makemsg("usage: dump <filename>");
+    return(NULL);
+  }
+
+  owl_function_dump(argv[1]);
+  return(NULL);
 }
 
 char *owl_command_next(int argc, char **argv, char *buff) {
