@@ -349,7 +349,7 @@ int main(int argc, char **argv, char **env) {
 	
 	/* if it exited, fork & exec a new one */
 	if (owl_global_get_newmsgproc_pid(&g)==0) {
-	  int i, argc;
+	  int i, myargc;
 	  i=fork();
 	  if (i) {
 	    /* parent set the child's pid */
@@ -359,14 +359,13 @@ int main(int argc, char **argv, char **env) {
 	  } else {
 	    /* child exec's the program */
 	    char **parsed;
-	    
-	    parsed=owl_parseline(owl_global_get_newmsgproc(&g), &argc);
+	    parsed=owl_parseline(owl_global_get_newmsgproc(&g), &myargc);
 	    parsed=realloc(parsed, strlen(owl_global_get_newmsgproc(&g)+300));
-	    parsed[argc]='\0';
+	    parsed[myargc]=(char *) NULL;
 
-	    owl_function_debugmsg("About to exec: -%s- with %i arguments", parsed[0], argc);
+	    owl_function_debugmsg("About to exec: %s with %i arguments", parsed[0], myargc);
 
-	    execvp(*parsed, parsed);
+	    execvp(parsed[0], (char **) parsed);
 	    
 
 	    /* was there an error exec'ing? */
