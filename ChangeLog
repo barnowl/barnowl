@@ -1,5 +1,9 @@
 $Id$
 
+2.0.8-pre-5	
+	Fixed bug with idle times causing broken pipes.
+	New libfaim
+
 2.0.8-pre-4
 	Added the 'source' command.
 	Fix to make 'default' style the default again.

@@ -20,8 +20,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.0.8-pre-4
-#define OWL_VERSION_STRING "2.0.8-pre-4"
+#define OWL_VERSION         2.0.8-pre-5
+#define OWL_VERSION_STRING "2.0.8-pre-5"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
@@ -46,6 +46,13 @@ static const char owl_h_fileIdent[] = "$Id$";
 
 #define OWL_EDITWIN_STYLE_MULTILINE 0
 #define OWL_EDITWIN_STYLE_ONELINE   1
+
+#define OWL_PROTOCOL_ZEPHYR         0
+#define OWL_PROTOCOL_AIM            1
+#define OWL_PROTOCOL_JABBER         2
+#define OWL_PROTOCOL_ICQ            3
+#define OWL_PROTOCOL_YAHOO          4
+#define OWL_PROTOCOL_MSN            5
 
 #define OWL_MESSAGE_TYPE_ADMIN      0
 #define OWL_MESSAGE_TYPE_GENERIC    1
@@ -383,9 +390,15 @@ typedef struct _owl_keyhandler {
   int       kpstackpos;		/* location in stack (-1 = none) */
 } owl_keyhandler;
 
+typedef struct _owl_buddy {
+  int proto;
+  char *name;
+  int isidle;
+  int idlesince;
+} owl_buddy;
+
 typedef struct _owl_buddylist {
   owl_list buddies;
-  owl_list idletimes;
 } owl_buddylist;
 
 typedef struct _owl_timer {

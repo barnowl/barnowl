@@ -74,7 +74,12 @@ char *owl_message_get_attribute_value(owl_message *m, char *attrname)
       return(owl_pair_get_value(p));
     }
   }
-  owl_function_debugmsg("No attribute %s found", attrname);
+
+  /*
+  owl_function_debugmsg("No attribute %s found for message %i",
+			attrname,
+			owl_message_get_id(m));
+  */
   return(NULL);
 }
 
@@ -847,5 +852,3 @@ void owl_message_free(owl_message *m)
  
   owl_fmtext_free(&(m->fmtext));
 }
-
-

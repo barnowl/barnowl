@@ -2874,7 +2874,8 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
 {
   int i, j, idle;
   owl_fmtext fm;
-  owl_buddylist *b;
+  owl_buddylist *bl;
+  owl_buddy *b;
   char *foo, *timestr;
 #ifdef HAVE_LIBZEPHYR
   char *ourfile, *tmp, buff[LINE], *line;
@@ -2886,19 +2887,21 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
   owl_fmtext_init_null(&fm);
 
   if (aim && owl_global_is_aimloggedin(&g)) {
-    b=owl_global_get_buddylist(&g);
+    bl=owl_global_get_buddylist(&g);
 
     owl_fmtext_append_bold(&fm, "AIM users logged in:\n");
-    j=owl_buddylist_get_size(b);
+    /* we're assuming AIM for now */
+    j=owl_buddylist_get_size(bl);
     for (i=0; i<j; i++) {
-      idle=owl_buddylist_get_idletime(b, i);
+      b=owl_buddylist_get_buddy_n(bl, i);
+      idle=owl_buddy_get_idle_time(b);
       if (idle!=0) {
 	timestr=owl_util_minutes_to_timestr(idle);
       } else {
 	timestr=owl_strdup("");
       }
       foo=owl_sprintf("  %-15.15s %-12.12s\n",
-		      owl_buddylist_get_buddy(b, i),
+		      owl_buddy_get_name(b),
 		      timestr);
       owl_fmtext_append_normal(&fm, foo);
       owl_free(timestr);

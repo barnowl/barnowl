@@ -76,6 +76,7 @@ static int faimtest_parse_buddyrights(aim_session_t *sess, aim_frame_t *fr, ...)
 static int faimtest_bosrights(aim_session_t *sess, aim_frame_t *fr, ...);
 static int faimtest_locrights(aim_session_t *sess, aim_frame_t *fr, ...);
 static int faimtest_reportinterval(aim_session_t *sess, aim_frame_t *fr, ...);
+/* static int reportinterval(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs); */
 static int faimtest_parse_motd(aim_session_t *sess, aim_frame_t *fr, ...);
 static int getaimdata(aim_session_t *sess, unsigned char **bufret, int *buflenret, unsigned long offset, unsigned long len, const char *modname);
 static int faimtest_memrequest(aim_session_t *sess, aim_frame_t *fr, ...);
@@ -105,23 +106,6 @@ static int ssidatanochange(aim_session_t *sess, aim_frame_t *fr, ...);
 static int offlinemsg(aim_session_t *sess, aim_frame_t *fr, ...);
 static int offlinemsgdone(aim_session_t *sess, aim_frame_t *fr, ...);
 
-static int directim_incoming(aim_session_t *sess, aim_frame_t *fr, ...);
-static int directim_typing(aim_session_t *sess, aim_frame_t *fr, ...);
-static int faimtest_directim_initiate(aim_session_t *sess, aim_frame_t *fr, ...);
-static int faimtest_getfile_filereq(aim_session_t *ses, aim_frame_t *fr, ...);
-static int faimtest_getfile_filesend(aim_session_t *sess, aim_frame_t *fr, ...);
-static int faimtest_getfile_complete(aim_session_t *sess, aim_frame_t *fr, ...);
-static int faimtest_getfile_disconnect(aim_session_t *sess, aim_frame_t *fr, ...);
-static int faimtest_getfile_listing(aim_session_t *sess, aim_frame_t *fr, ...);
-static int faimtest_getfile_listingreq(aim_session_t *sess, aim_frame_t *fr, ...);
-static int faimtest_getfile_receive(aim_session_t *sess, aim_frame_t *fr, ...);
-static int faimtest_getfile_state4(aim_session_t *sess, aim_frame_t *fr, ...);
-static int faimtest_getfile_initiate(aim_session_t *sess, aim_frame_t *fr, ...);
-void getfile_start(aim_session_t *sess, aim_conn_t *conn, const char *sn);
-void getfile_requested(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, struct aim_incomingim_ch2_args *args);
-void directim_start(aim_session_t *sess, const char *sn);
-void directim_requested(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, struct aim_incomingim_ch2_args *args);
-
 void chatnav_redirect(aim_session_t *sess, struct aim_redirect_data *redir);
 void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir);
 
@@ -129,9 +113,10 @@ void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir);
 
 void owl_aim_init(void)
 {
-  aim_session_init(owl_global_get_aimsess(&g), AIM_SESS_FLAGS_NONBLOCKCONNECT, 1);
+  aim_session_init(owl_global_get_aimsess(&g), AIM_SESS_FLAGS_NONBLOCKCONNECT, 0);
   aim_setdebuggingcb(owl_global_get_aimsess(&g), faimtest_debugcb);
 }
+
 
 int owl_aim_login(char *screenname, char *password)
 {
@@ -146,6 +131,8 @@ int owl_aim_login(char *screenname, char *password)
   priv->password = owl_strdup(password);
   priv->server = "login.oscar.aol.com";
   owl_global_get_aimsess(&g)->aux_data = priv;
+
+  aim_tx_setenqueue(owl_global_get_aimsess(&g), AIM_TX_IMMEDIATE, NULL);
   
   /* login */
   ret=login(owl_global_get_aimsess(&g), priv->screenname, priv->password);
@@ -157,6 +144,62 @@ int owl_aim_login(char *screenname, char *password)
   owl_global_set_doaimevents(&g);
   return(0);
 }
+
+#if 0
+static void oscar_login(GaimAccount *account) {
+  aim_session_t *sess;
+  aim_conn_t *conn;
+  char buf[256];
+  GaimConnection *gc = gaim_account_get_connection(account);
+  struct oscar_data *od = gc->proto_data = g_new0(struct oscar_data, 1);
+
+  gaim_debug(GAIM_DEBUG_MISC, "oscar", "oscar_login: gc = %p\n", gc);
+
+  if (isdigit(*(gaim_account_get_username(account)))) {
+    od->icq = TRUE;
+  } else {
+    gc->flags |= GAIM_CONNECTION_HTML;
+    gc->flags |= GAIM_CONNECTION_AUTO_RESP;
+  }
+  od->buddyinfo = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, oscar_free_buddyinfo);
+
+  sess = g_new0(aim_session_t, 1);
+
+  aim_session_init(sess, AIM_SESS_FLAGS_NONBLOCKCONNECT, 0);
+  aim_setdebuggingcb(sess, oscar_debug);
+
+  /* we need an immediate queue because we don't use a while-loop to
+   * see if things need to be sent. */
+  aim_tx_setenqueue(sess, AIM_TX_IMMEDIATE, NULL);
+  od->sess = sess;
+  sess->aux_data = gc;
+
+  conn = aim_newconn(sess, AIM_CONN_TYPE_AUTH, NULL);
+  if (conn == NULL) {
+    gaim_debug(GAIM_DEBUG_ERROR, "oscar",
+	       "internal connection error\n");
+    gaim_connection_error(gc, _("Unable to login to AIM"));
+    return;
+  }
+
+  g_snprintf(buf, sizeof(buf), _("Signon: %s"), gaim_account_get_username(account));
+  gaim_connection_update_progress(gc, buf, 2, 5);
+
+  aim_conn_addhandler(sess, conn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNERR, gaim_connerr, 0);
+  aim_conn_addhandler(sess, conn, 0x0017, 0x0007, gaim_parse_login, 0);
+  aim_conn_addhandler(sess, conn, 0x0017, 0x0003, gaim_parse_auth_resp, 0);
+
+  conn->status |= AIM_CONN_STATUS_INPROGRESS;
+  if (gaim_proxy_connect(account, gaim_account_get_string(account, "server", FAIM_LOGIN_SERVER),
+			 gaim_account_get_int(account, "port", FAIM_LOGIN_PORT),
+			 oscar_login_connect, gc) < 0) {
+    gaim_connection_error(gc, _("Couldn't connect to host"));
+    return;
+  }
+  aim_request_login(sess, conn, gaim_account_get_username(account));
+}
+#endif
+
 
 /* stuff to run once login has been successful */
 void owl_aim_successful_login(char *screenname)
@@ -170,7 +213,6 @@ void owl_aim_successful_login(char *screenname)
   /* start the ingorelogin timer */
   owl_timer_reset_newstart(owl_global_get_aim_login_timer(&g),
 			   owl_global_get_aim_ignorelogin_timer(&g));
-
 }
 
 void owl_aim_logout(void)
@@ -195,7 +237,11 @@ void owl_aim_login_error(char *message)
 
 int owl_aim_send_im(char *to, char *msg)
 {
-  aim_send_im(owl_global_get_aimsess(&g), to, AIM_IMFLAGS_ACK, msg);
+  int ret;
+
+  ret=aim_im_sendch1(owl_global_get_aimsess(&g), to, NULL, msg);
+    
+  /* aim_send_im(owl_global_get_aimsess(&g), to, AIM_IMFLAGS_ACK, msg); */
 
   /* I don't know how to check for an error yet */
   return(0);
@@ -203,57 +249,26 @@ int owl_aim_send_im(char *to, char *msg)
 
 void owl_aim_addbuddy(char *screenname)
 {
-  const char **foo;
-  
-  /*
-  aim_bos_setbuddylist(owl_global_get_aimsess(&g),
-		       aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
-		       foo);
-  */
-
-  /*
-  aim_add_buddy(owl_global_get_aimsess(&g),
-		aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
-		screenname);
-  */
-
-  foo=(char *) owl_malloc(30);
-  foo[0]=screenname;
-  aim_ssi_addbuddies(owl_global_get_aimsess(&g),
-		     aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
-		     "Buddies", foo, 1);
-  owl_free(foo);
-
+  aim_ssi_addbuddy(owl_global_get_aimsess(&g), screenname, "Buddies", NULL, NULL, NULL, 0);
 }
 
 void owl_aim_delbuddy(char *screenname)
 {
-  /*
-  aim_remove_buddy(owl_global_get_aimsess(&g),
-		   aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
-		   screenname);
-  */
-
-  aim_ssi_delbuddies(owl_global_get_aimsess(&g),
-		     aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
-		     "Buddies", &screenname, 1);
-
-  /* for some reason we don't get an offgoing notice, so we'll remove
-   * manually
-   */
-
+  aim_ssi_delbuddy(owl_global_get_aimsess(&g), screenname, "Buddies");
   owl_buddylist_offgoing(owl_global_get_buddylist(&g), screenname);
-
-
 }
 
+#if 0
 void owl_aim_get_idle(char *screenname)
 {
+  /*
   aim_getinfo(owl_global_get_aimsess(&g),
 	      aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
 	      screenname,
 	      AIM_GETINFO_GENERALINFO);
+  */
 }
+#endif
 
 
 void owl_aim_chat_join(char *chatroom)
@@ -307,39 +322,33 @@ int owl_aim_process_events() {
     owl_global_aimnop_sent(&g);
   }
 
-  if (selstat == -1) { /* error */
-    /* keepgoing = 0; */ /* fall through */
-  } else if (selstat == 0) { /* no events pending */
-    /* printf("selstat == 0\n"); */
+  if (selstat == -1) {
+    owl_function_debugmsg("Error in select");
+    /* error */
+  } else if (selstat == 0) {
+    /* no events pending */
   } else if (selstat == 1) { /* outgoing data pending */
-    /* printf("selstat == 1\n"); */
     aim_tx_flushqueue(aimsess);
   } else if (selstat == 2) { /* incoming data pending */
     /* printf("selstat == 2\n"); */
-    if (waitingconn->type == AIM_CONN_TYPE_RENDEZVOUS_OUT) {
-      if (aim_handlerendconnect(aimsess, waitingconn) < 0) {
-	/* printf("connection error (rend out)\n"); */
-	aim_conn_kill(aimsess, &waitingconn);
-      }
+    
+    if (aim_get_command(aimsess, waitingconn) >= 0) {
+      aim_rxdispatch(aimsess);
     } else {
-      if (aim_get_command(aimsess, waitingconn) >= 0) {
-	aim_rxdispatch(aimsess);
-      } else {
-	/* printf("connection error (type 0x%04x:0x%04x)\n", waitingconn->type, waitingconn->subtype); */
-	/* we should have callbacks for all these, else the library will do the conn_kill for us. */
-	if (waitingconn->type == AIM_CONN_TYPE_RENDEZVOUS) {
-	  if (waitingconn->subtype == AIM_CONN_SUBTYPE_OFT_DIRECTIM) {
-	    /* printf("disconnected from %s\n", aim_directim_getsn(waitingconn)); */
-	    aim_conn_kill(aimsess, &waitingconn);
-	  }
-	} else {
+      /* printf("connection error (type 0x%04x:0x%04x)\n", waitingconn->type, waitingconn->subtype); */
+      /* we should have callbacks for all these, else the library will do the conn_kill for us. */
+      if (waitingconn->type == AIM_CONN_TYPE_RENDEZVOUS) {
+	if (waitingconn->subtype == AIM_CONN_SUBTYPE_OFT_DIRECTIM) {
+	  /* printf("disconnected from %s\n", aim_directim_getsn(waitingconn)); */
 	  aim_conn_kill(aimsess, &waitingconn);
 	}
-	if (!aim_getconn_type(aimsess, AIM_CONN_TYPE_BOS)) {
-	  /* printf("major connection error\n"); */
-	  /* break; */
-	  /* we should probably kill the session */
-	}
+      } else {
+	aim_conn_kill(aimsess, &waitingconn);
+      }
+      if (!aim_getconn_type(aimsess, AIM_CONN_TYPE_BOS)) {
+	/* printf("major connection error\n"); */
+	/* break; */
+	/* we should probably kill the session */
       }
     }
   }
@@ -352,7 +361,6 @@ static void faimtest_debugcb(aim_session_t *sess, int level, const char *format,
 {
   return;
 }
-
 
 static int faimtest_parse_login(aim_session_t *sess, aim_frame_t *fr, ...)
 {
@@ -383,7 +391,7 @@ static int faimtest_parse_authresp(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
 
   /* printf("Screen name: %s\n", info->sn); */
-  owl_function_debugmsg("Here with %s", info->sn);
+  owl_function_debugmsg("faimtest_parse_authresp: %s", info->sn);
 
   /*
    * Check for error.
@@ -433,7 +441,7 @@ static int faimtest_parse_authresp(aim_session_t *sess, aim_frame_t *fr, ...)
   }
   owl_aim_successful_login(info->sn);
   addcb_bos(sess, bosconn);
-  aim_sendcookie(sess, bosconn, info->cookie);
+  aim_sendcookie(sess, bosconn, info->cookielen, info->cookie);
   return 1;
 }
 
@@ -512,40 +520,24 @@ void addcb_bos(aim_session_t *sess, aim_conn_t *bosconn)
   return;
 }
 
-static int conninitdone_bos(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  char buddies[128]; /* this is the new buddy list */
-  char profile[256]; /* this is the new profile */
-  /* char awaymsg[] = {"blah blah blah Ole! blah blah blah"}; */
 
-  /* Caution: Buddy1 and Buddy2 are real people! (who I don't know) */
-  /*  snprintf(buddies, sizeof(buddies), "Buddy1&Buddy2&%s&", priv->ohcaptainmycaptain ? priv->ohcaptainmycaptain : "blah");
-  snprintf(profile, sizeof(profile), "Hello.<br>My captain is %s.  They were dumb enough to leave this message in their client, or they are using faimtest.  Shame
-on them.", priv->ohcaptainmycaptain);
-  */
-
-  /*
-  snprintf(buddies, sizeof(buddies), "Buddy1&Buddy2&");
-  snprintf(profile, sizeof(profile), "Hello.<br>This is a test");
-  */
-  strcpy(profile, "");
-
+static int conninitdone_bos(aim_session_t *sess, aim_frame_t *fr, ...) {
   aim_reqpersonalinfo(sess, fr->conn);
+
+  #ifndef NOSSI
+  aim_ssi_reqrights(sess);
+  aim_ssi_reqdata(sess);
+  #endif
+
   aim_bos_reqlocaterights(sess, fr->conn);
-
-  /* aim_bos_setprofile(sess, fr->conn, profile, awaymsg, AIM_CAPS_BUDDYICON | AIM_CAPS_CHAT | AIM_CAPS_GETFILE | AIM_CAPS_SENDFILE | AIM_CAPS_IMIMAGE | AIM_CAPS_GAMES | AIM_CAPS_SAVESTOCKS | AIM_CAPS_SENDBUDDYLIST | AIM_CAPS_ICQ | AIM_CAPS_ICQUNKNOWN | AIM_CAPS_ICQRTF | AIM_CAPS_ICQSERVERRELAY | AIM_CAPS_TRILLIANCRYPT); */
-  aim_bos_setprofile(sess, fr->conn, "", "", AIM_CAPS_SENDBUDDYLIST );
   aim_bos_reqbuddyrights(sess, fr->conn);
+  aim_im_reqparams(sess);
+  aim_bos_reqrights(sess, fr->conn); /* XXX - Don't call this with ssi? */
 
-  /* send the buddy list and profile (required, even if empty) */
-  aim_bos_setbuddylist(sess, fr->conn, buddies);
-
-  aim_reqicbmparams(sess);
-
-  aim_bos_reqrights(sess, fr->conn);
-  /* set group permissions -- all user classes */
+  #ifdef NOSSI
   aim_bos_setgroupperm(sess, fr->conn, AIM_FLAG_ALLUSERS);
-  aim_bos_setprivacyflags(sess, fr->conn, AIM_PRIVFLAGS_ALLOWIDLE);
+  aim_bos_setprivacyflags(sess, fr->conn, AIM_PRIVFLAGS_ALLOWIDLE | AIM_PRIVFLAGS_ALLOWMEMBERSINCE);
+  #endif
 
   return 1;
 }
@@ -692,7 +684,7 @@ static int faimtest_handleredirect(aim_session_t *sess, aim_frame_t *fr, ...)
       aim_conn_addhandler(sess, tstconn, 0x0007, 0x0003, faimtest_infochange, 0);
       aim_conn_addhandler(sess, tstconn, 0x0007, 0x0005, faimtest_infochange, 0);
       /* Send the cookie to the Auth */
-      aim_sendcookie(sess, tstconn, redir->cookie);
+      aim_sendcookie(sess, tstconn, redir->cookielen, redir->cookie);
       /* printf("sent cookie to authorizer host\n"); */
     }
   } else if (redir->group == 0x000d) {  /* ChatNav */
@@ -725,7 +717,8 @@ static int faimtest_icbmparaminfo(aim_session_t *sess, aim_frame_t *fr, ...)
   */
   params->maxmsglen = 8000;
   params->minmsginterval = 0; /* in milliseconds */
-  aim_seticbmparam(sess, params);
+  /* aim_seticbmparam(sess, params); */
+  aim_im_setparams(sess, params);
   
   return 1;
 }
@@ -742,7 +735,8 @@ static int faimtest_parse_buddyrights(aim_session_t *sess, aim_frame_t *fr, ...)
   
   /* printf("buddy list rights: Max buddies = %d / Max watchers = %d\n", maxbuddies, maxwatchers); */
   
-  aim_ssi_reqrights(sess, fr->conn);
+  /* aim_ssi_reqrights(sess, fr->conn); */
+  aim_ssi_reqrights(sess);
   
   return 1;
 }
@@ -783,17 +777,19 @@ static int faimtest_reportinterval(aim_session_t *sess, aim_frame_t *fr, ...)
   struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
   va_list ap;
   fu16_t interval;
-  
+
   va_start(ap, fr);
   interval = va_arg(ap, int);
   va_end(ap);
-  
+
   /* printf("minimum report interval: %d (seconds?)\n", interval); */
-  
+
   if (!priv->connected) {
     priv->connected++;
   }
-  aim_reqicbmparams(sess);
+  /* aim_reqicbmparams(sess); */
+  aim_im_reqparams(sess);
+  /* kretch */
   return 1;
 }
 
@@ -1025,7 +1021,7 @@ static int faimtest_parse_userinfo(aim_session_t *sess, aim_frame_t *fr, ...)
   char *prof_encoding = NULL;
   char *prof = NULL;
   fu16_t inforeq = 0;
-
+  owl_buddy *b;
   va_list ap;
   va_start(ap, fr);
   userinfo = va_arg(ap, aim_userinfo_t *);
@@ -1035,7 +1031,11 @@ static int faimtest_parse_userinfo(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
 
   /* right now the only reason we call this is for idle times */
-  owl_buddylist_set_idletime(owl_global_get_buddylist(&g), userinfo->sn, userinfo->idletime);
+  owl_function_debugmsg("parse_userinfo sn: %s idle: %i", userinfo->sn, userinfo->idletime);
+  b=owl_buddylist_get_aim_buddy(owl_global_get_buddylist(&g),
+				userinfo->sn);
+  if (!b) return(1);
+  owl_buddy_set_idle_since(b, userinfo->idletime);
   return(1);
 
   printf("userinfo: sn: %s\n", userinfo->sn);
@@ -1043,12 +1043,13 @@ static int faimtest_parse_userinfo(aim_session_t *sess, aim_frame_t *fr, ...)
   printf("userinfo: flags: 0x%04x = ", userinfo->flags);
   printuserflags(userinfo->flags);
   printf("\n");
-  
+
+  /*
   printf("userinfo: membersince: %lu\n", userinfo->membersince);
   printf("userinfo: onlinesince: %lu\n", userinfo->onlinesince);
   printf("userinfo: idletime: 0x%04x\n", userinfo->idletime);
   printf("userinfo: capabilities = %s = 0x%08lx\n", (userinfo->present & AIM_USERINFO_PRESENT_CAPABILITIES) ? "present" : "not present", userinfo->capabilities);
-  
+  */
   
   if (inforeq == AIM_GETINFO_GENERALINFO) {
     printf("userinfo: profile_encoding: %s\n", prof_encoding ? prof_encoding : "[none]");
@@ -1065,6 +1066,7 @@ static int faimtest_parse_userinfo(aim_session_t *sess, aim_frame_t *fr, ...)
   return 1;
 }
 
+#if 0
 static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, const char *tmpstr)
 {
   struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
@@ -1072,7 +1074,7 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
   if (!strncmp(tmpstr, "disconnect", 10)) {
     logout(sess);
   } else if (strstr(tmpstr, "goodday")) {
-    aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_ACK, "Good day to you too.");
+    /* aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_ACK, "Good day to you too."); */
   } else if (strstr(tmpstr, "haveicon") && priv->buddyicon) {
     struct aim_sendimext_args args;
     /* static const char iconmsg[] = {"I have an icon"}; */
@@ -1117,11 +1119,11 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
      *
      */
     args.destsn = userinfo->sn;
-    args.flags = AIM_IMFLAGS_CUSTOMCHARSET;
+    /* args.flags = AIM_IMFLAGS_CUSTOMCHARSET; */
     args.charset = args.charsubset = 0x4242;
     args.msg = data;
     args.msglen = sizeof(data);
-    aim_send_im_ext(sess, &args);
+    /* aim_send_im_ext(sess, &args); */
    } else if (strstr(tmpstr, "sendmulti")) {
     struct aim_sendimext_args args;
     aim_mpmsg_t mpm;
@@ -1147,7 +1149,7 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
     args.flags = AIM_IMFLAGS_MULTIPART;
     args.mpmsg = &mpm;
     
-    aim_send_im_ext(sess, &args);
+    /* aim_send_im_ext(sess, &args); */
     
     aim_mpmsg_free(sess, &mpm);
     
@@ -1181,7 +1183,7 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
     args.flags = AIM_IMFLAGS_MULTIPART;
     args.mpmsg = &mpm;
     
-    aim_send_im_ext(sess, &args);
+    /* aim_send_im_ext(sess, &args); */
     aim_mpmsg_free(sess, &mpm);
     
   } else if (strstr(tmpstr, "havefeat")) {
@@ -1196,27 +1198,21 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
     args.features = features;
     args.featureslen = sizeof(features);
     
-    aim_send_im_ext(sess, &args);
+    /* aim_send_im_ext(sess, &args); */
   } else if (strstr(tmpstr, "sendicon") && priv->buddyicon) {
-    aim_send_icon(sess, userinfo->sn, priv->buddyicon, priv->buddyiconlen, priv->buddyiconstamp, priv->buddyiconsum);
+    /* aim_send_icon(sess, userinfo->sn, priv->buddyicon, priv->buddyiconlen, priv->buddyiconstamp, priv->buddyiconsum); */
   } else if (strstr(tmpstr, "warnme")) {
     /* printf("icbm: sending non-anon warning\n"); */
-    aim_send_warning(sess, conn, userinfo->sn, 0);
+    /* aim_send_warning(sess, conn, userinfo->sn, 0); */
   } else if (strstr(tmpstr, "anonwarn")) {
     /* printf("icbm: sending anon warning\n"); */
-    aim_send_warning(sess, conn, userinfo->sn, AIM_WARN_ANON);
+    /* aim_send_warning(sess, conn, userinfo->sn, AIM_WARN_ANON); */
   } else if (strstr(tmpstr, "setdirectoryinfo")) {
     /* printf("icbm: sending backwards profile data\n"); */
     aim_setdirectoryinfo(sess, conn, "tsrif", "elddim", "tsal", "nediam", "emankcin", "teerts", "ytic", "etats", "piz", 0, 1);
   } else if (strstr(tmpstr, "setinterests")) {
     /* printf("icbm: setting fun interests\n"); */
     aim_setuserinterests(sess, conn, "interest1", "interest2", "interest3", "interest4", "interest5", 1);
-  } else if (!strncmp(tmpstr, "getfile", 7)) {
-    if (!priv->ohcaptainmycaptain) {
-      aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_ACK, "I have no owner!");
-    } else {
-      getfile_start(sess, conn, (strlen(tmpstr) < 8)?priv->ohcaptainmycaptain:tmpstr+8);
-    }
   } else if (!strncmp(tmpstr, "open chatnav", 12)) {
     aim_reqservice(sess, conn, AIM_CONN_TYPE_CHATNAV);
   } else if (!strncmp(tmpstr, "create", 6)) {
@@ -1233,12 +1229,10 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
     aim_getinfo(sess, conn, "midendian", AIM_GETINFO_GENERALINFO);
     aim_getinfo(sess, conn, "midendian", AIM_GETINFO_AWAYMESSAGE);
     aim_getinfo(sess, conn, "midendian", AIM_GETINFO_CAPABILITIES);
-  } else if (strstr(tmpstr, "open directim")) {
-    directim_start(sess, userinfo->sn);
   } else if(strstr(tmpstr, "lookup")) {
-    aim_usersearch_address(sess, conn, "mid@auk.cx");
+    /* aim_usersearch_address(sess, conn, "mid@auk.cx"); */
   } else if (!strncmp(tmpstr, "reqsendmsg", 10)) {
-    aim_send_im(sess, priv->ohcaptainmycaptain, 0, "sendmsg 7900");
+    /* aim_send_im(sess, priv->ohcaptainmycaptain, 0, "sendmsg 7900"); */
   } else if (!strncmp(tmpstr, "reqadmin", 8)) {
     aim_reqservice(sess, conn, AIM_CONN_TYPE_AUTH);
   } else if (!strncmp(tmpstr, "changenick", 10)) {
@@ -1263,11 +1257,11 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
       for (z = 0; z < i; z++)
 	newbuf[z] = (z % 10)+0x30;
       newbuf[i] = '\0';
-      aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_ACK | AIM_IMFLAGS_AWAY, newbuf);
+      /* aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_ACK | AIM_IMFLAGS_AWAY, newbuf); */
       free(newbuf);
     }
   } else if (strstr(tmpstr, "seticqstatus")) {
-    aim_setextstatus(sess, conn, AIM_ICQ_STATE_DND);
+    aim_setextstatus(sess, AIM_ICQ_STATE_DND);
   } else if (strstr(tmpstr, "rtfmsg")) {
     static const char rtfmsg[] = {"{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}{\\f1\\froman\\fprq2\\fcharset0 Georgia;}{\\f2\\fmodern\\fprq1\\fcharset0 MS Mincho;}{\\f3\\froman\\fprq2\\fcharset2 Symbol;}}\\viewkind4\\uc1\\pard\\f0\\fs20 Test\\f1 test\\f2\fs44 test\\f3\\fs20 test\\f0\\par}"};
     struct aim_sendrtfmsg_args rtfargs;
@@ -1277,7 +1271,7 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
     rtfargs.fgcolor = 0xffffffff;
     rtfargs.bgcolor = 0x00000000;
     rtfargs.rtfmsg = rtfmsg;
-    aim_send_rtfmsg(sess, &rtfargs);
+    /* aim_send_rtfmsg(sess, &rtfargs); */
   } else {
     /* printf("unknown command.\n"); */
     aim_add_buddy(sess, conn, userinfo->sn);
@@ -1285,6 +1279,7 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
   
   return 0;
 }
+#endif
 
 /*
  * Channel 1: Standard Message
@@ -1292,11 +1287,12 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
 static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, struct aim_incomingim_ch1_args *args)
 {
   struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
-  int clienttype = AIM_CLIENTTYPE_UNKNOWN;
   owl_message *m;
   char *stripmsg, *nz_screenname, *wrapmsg;
   char realmsg[8192+1] = {""};
-  clienttype = aim_fingerprintclient(args->features, args->featureslen);
+  /* int clienttype = AIM_CLIENTTYPE_UNKNOWN; */
+
+  /* clienttype = aim_fingerprintclient(args->features, args->featureslen); */
 
   /*
   printf("icbm: sn = \"%s\"\n", userinfo->sn);
@@ -1324,9 +1320,11 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   printf("\n");
   */
 
+  /*
   if (args->icbmflags & AIM_IMFLAGS_CUSTOMCHARSET) {
-    /* printf("icbm: encoding flags = {%04x, %04x}\n", args->charset, args->charsubset); */
+  printf("icbm: encoding flags = {%04x, %04x}\n", args->charset, args->charsubset);
   }
+  */
   
   /*
    * Quickly convert it to eight bit format, replacing non-ASCII UNICODE 
@@ -1424,7 +1422,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   */
   
   if (priv->buddyicon && (args->icbmflags & AIM_IMFLAGS_BUDDYREQ)) {
-    aim_send_icon(sess, userinfo->sn, priv->buddyicon, priv->buddyiconlen, priv->buddyiconstamp, priv->buddyiconsum);
+    /* aim_send_icon(sess, userinfo->sn, priv->buddyicon, priv->buddyiconlen, priv->buddyiconstamp, priv->buddyiconsum); */
   }
   
   return 1;
@@ -1450,9 +1448,7 @@ static int faimtest_parse_incoming_im_chan2(aim_session_t *sess, aim_conn_t *con
   printf("rendezvous: language = %s\n", args->language);
   */
   
-  if (args->reqclass == AIM_CAPS_GETFILE) {
-    getfile_requested(sess, conn, userinfo, args);
-  } else if (args->reqclass == AIM_CAPS_SENDFILE) {
+  if (args->reqclass == AIM_CAPS_SENDFILE) {
     /* printf("send file!\n"); */
   } else if (args->reqclass == AIM_CAPS_CHAT) {
     /*
@@ -1464,8 +1460,6 @@ static int faimtest_parse_incoming_im_chan2(aim_session_t *sess, aim_conn_t *con
     /* printf("chat invitiation: autojoining %s...\n", args->info.chat.roominfo.name); */
 
     /* aim_chat_join(sess, conn, args->info.chat.roominfo.exchange, args->info.chat.roominfo.name, args->info.chat.roominfo.instance); */
-  } else if (args->reqclass == AIM_CAPS_IMIMAGE) {
-    directim_requested(sess, conn, userinfo, args);
   } else if (args->reqclass == AIM_CAPS_BUDDYICON) {
     /* printf("Buddy Icon from %s, length = %lu\n", userinfo->sn, args->info.icon.length); */
   } else if (args->reqclass == AIM_CAPS_ICQRTF) {
@@ -1507,14 +1501,35 @@ static int faimtest_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   aim_userinfo_t *userinfo;
   char *nz_screenname;
-
+  owl_buddy *b;
+  owl_buddylist *bl;
   va_list ap;
   va_start(ap, fr);
   userinfo = va_arg(ap, aim_userinfo_t *);
   va_end(ap);
 
   nz_screenname=owl_aim_normalize_screenname(userinfo->sn);
+  bl=owl_global_get_buddylist(&g);
+  
   owl_buddylist_oncoming(owl_global_get_buddylist(&g), nz_screenname);
+
+  if (userinfo->present & AIM_USERINFO_PRESENT_IDLE) {
+    /*  */
+  }
+
+  b=owl_buddylist_get_aim_buddy(owl_global_get_buddylist(&g), nz_screenname);
+  if (!b) {
+    owl_function_debugmsg("Error: parse_oncoming setting idle time with no buddy present.");
+    return(1);
+  }
+  if (userinfo->idletime==0) {
+    owl_buddy_set_unidle(b);
+  } else {
+    owl_buddy_set_idle(b);
+    owl_buddy_set_idle_since(b, userinfo->idletime);
+  }
+  owl_function_debugmsg("parse_oncoming sn: %s idle: %i", userinfo->sn, userinfo->idletime);
+    
   owl_free(nz_screenname);
   
   /*
@@ -1548,6 +1563,10 @@ static int faimtest_parse_offgoing(aim_session_t *sess, aim_frame_t *fr, ...)
   nz_screenname=owl_aim_normalize_screenname(userinfo->sn);
   owl_buddylist_offgoing(owl_global_get_buddylist(&g), nz_screenname);
   owl_free(nz_screenname);
+
+  if (userinfo->present & AIM_USERINFO_PRESENT_IDLE) {
+    owl_function_debugmsg("parse_offgoing sn: %s idle time %i", userinfo->sn, userinfo->idletime);
+  }
 
   /*
   printf("%ld  %s is now offline (flags: %04x = %s%s%s%s%s%s%s%s) (caps = %s = 0x%08lx)\n",
@@ -1829,7 +1848,7 @@ static int migrate(aim_session_t *sess, aim_frame_t *fr, ...)
   
   /* Login will happen all over again. */
   addcb_bos(sess, bosconn);
-  aim_sendcookie(sess, bosconn, cookie);
+  /* aim_sendcookie(sess, bosconn, cookie); */
   return 1;
 }
 
@@ -1837,7 +1856,8 @@ static int ssirights(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   
   /* printf("got SSI rights, requesting data\n"); */
-  aim_ssi_reqdata(sess, fr->conn, 0, 0x0000);
+  /* aim_ssi_reqdata(sess, fr->conn, 0, 0x0000); */
+  aim_ssi_reqdata(sess);
   
   return 1;
 }
@@ -1848,7 +1868,9 @@ static int ssidata(aim_session_t *sess, aim_frame_t *fr, ...)
   fu8_t fmtver;
   fu16_t itemcount;
   fu32_t stamp;
-  struct aim_ssi_item *list, *l;
+  struct aim_ssi_item *list;
+  struct aim_ssi_item *curitem;
+  /* struct aim_ssi_item *l; */
   
   va_start(ap, fr);
   fmtver = va_arg(ap, unsigned int);
@@ -1858,12 +1880,13 @@ static int ssidata(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("got SSI data: (0x%02x, %d items, %ld)\n", fmtver, itemcount, stamp); */
-  for (l = list; l; l = l->next) {
+  for (curitem=sess->ssi.local; curitem; curitem=curitem->next) {
+    /* for (l = list; l; l = l->next) { */
     /* printf("\t0x%04x (%s) - 0x%04x/0x%04x\n", l->type, l->name, l->gid, l->bid); */
     /* printf("I would have printed data here!\n"); */
   }
   
-  aim_ssi_enable(sess, fr->conn);
+  aim_ssi_enable(sess);
   
   return 1;
 }
@@ -1871,7 +1894,8 @@ static int ssidata(aim_session_t *sess, aim_frame_t *fr, ...)
 static int ssidatanochange(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   /* printf("server says we have the latest SSI data already\n"); */
-  aim_ssi_enable(sess, fr->conn);
+  /* aim_ssi_enable(sess, fr->conn); */
+  aim_ssi_enable(sess);
   return 1;
 }
 
@@ -2127,7 +2151,7 @@ void chatnav_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
   
   aim_conn_addhandler(sess, tstconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNCOMPLETE, faimtest_conncomplete, 0);
   aim_conn_addhandler(sess, tstconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNINITDONE, conninitdone_chat, 0);
-  aim_sendcookie(sess, tstconn, redir->cookie);
+  aim_sendcookie(sess, tstconn, redir->cookielen, redir->cookie);
   /* printf("chatnav: connected\n"); */
   return;
 }
@@ -2151,457 +2175,8 @@ void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
   aim_chat_attachname(tstconn, redir->chat.exchange, redir->chat.room, redir->chat.instance);
   aim_conn_addhandler(sess, tstconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNCOMPLETE, faimtest_conncomplete, 0);
   aim_conn_addhandler(sess, tstconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNINITDONE, conninitdone_chat, 0);
-  aim_sendcookie(sess, tstconn, redir->cookie);
+  aim_sendcookie(sess, tstconn, redir->cookielen, redir->cookie);
   return;	
-}
-
-
-
-
-/******************************************* ft.c ******************************************/
-
-
-static int directim_incoming(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  va_list ap;
-  char *sn, *msg;
-  
-  va_start(ap, fr);
-  sn = va_arg(ap, char *);
-  msg = va_arg(ap, char *);
-  va_end(ap);
-  
-  /* printf("Directim from %s: %s\n", sn, msg); */
-  if (strstr(msg, "sendmsg")) {
-    int i;
-    
-    i = atoi(strstr(msg, "sendmsg")+8);
-    if (i < 10000) {
-      char *newbuf;
-      int z;
-      
-      newbuf = malloc(i+1);
-      for (z = 0; z < i; z++)
-	newbuf[z] = (z % 10)+0x30;
-      newbuf[i] = '\0';
-      aim_send_im_direct(sess, fr->conn, newbuf, strlen(newbuf), 0);
-      free(newbuf);
-    }
-  } else if (strstr(msg, "goodday")) {
-    aim_send_im_direct(sess, fr->conn, "Good day to you, too", 18, 0);
-  } else {
-    char newmsg[1024];
-    snprintf(newmsg, sizeof(newmsg), "unknown (%s)\n", msg);
-    aim_send_im_direct(sess, fr->conn, newmsg, strlen(newmsg), 0);
-  }
-
-  return 1;
-}
-
-static int directim_typing(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  va_list ap;
-  char *sn;
-  
-  va_start(ap, fr);
-  sn = va_arg(ap, char *);
-  va_end(ap);
-  /* printf("ohmigod! %s has started typing (DirectIM). He's going to send you a message! *squeal*\n", sn); */
-  return 1;
-}
-
-static int faimtest_directim_initiate(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  va_list ap;
-  aim_conn_t *newconn, *listenerconn;
-  
-  va_start(ap, fr);
-  newconn = va_arg(ap, aim_conn_t *);
-  listenerconn = va_arg(ap, aim_conn_t *);
-  va_end(ap);
-  
-  aim_conn_close(listenerconn);
-  aim_conn_kill(sess, &listenerconn);
-  
-  aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_DIRECTIMINCOMING, directim_incoming, 0);
-  aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_DIRECTIMTYPING, directim_typing, 0);
-  
-  aim_send_im_direct(sess, newconn, "goodday", 8, 0);
-  
-  /* printf("OFT: DirectIM: connected to %s\n", aim_directim_getsn(newconn)); */
-  
-  return 1;
-}
-
-static int faimtest_getfile_filereq(aim_session_t *ses, aim_frame_t *fr, ...)
-{
-  va_list ap;
-  aim_conn_t *oftconn;
-  struct aim_fileheader_t *fh;
-  fu8_t *cookie;
-  
-  va_start(ap, fr);
-  oftconn = va_arg(ap, aim_conn_t *);
-  fh = va_arg(ap, struct aim_fileheader_t *);
-  cookie = va_arg(ap, fu8_t *);
-  va_end(ap);
-  
-  /* printf("request for file %s.\n", fh->name); */
-  
-  return 1;
-}
-
-static int faimtest_getfile_filesend(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
-  va_list ap;
-  aim_conn_t *oftconn;
-  struct aim_fileheader_t *fh;
-  char *path;
-  fu8_t *cookie;
-  int pos, bufpos = 0, bufsize = 2048, i;
-  char *buf;
-  FILE *file;
-  
-  va_start(ap, fr);
-  oftconn = va_arg(ap, aim_conn_t *);
-  fh = va_arg(ap, struct aim_fileheader_t *);
-  cookie = va_arg(ap, fu8_t *);
-  va_end(ap);
-  
-  /* printf("sending file %s(%ld).\n", fh->name, fh->size); */
-
-  if (!(buf = malloc(2048)))
-    return -1;
-  
-  if (!(path = (char *)calloc(1, strlen(priv->listingpath) +strlen(fh->name)+2))) {
-    /* perror("calloc"); */
-    /* printf("error in calloc of path\n"); */
-    
-    return 0; /* XXX: no idea what winaim expects here =) */
-  }
-
-  snprintf(path, strlen(priv->listingpath)+strlen(fh->name)+2, "%s/%s", priv->listingpath, fh->name);
-  
-  if (!(file = fopen(path, "r"))) {
-    /* printf("getfile_send fopen failed for %s. damn.\n", path); */
-    return 0;
-  }
-  
-  /* 
-   * This is a mess. Remember that faimtest is demonstration code
-   * only and for the sake of the gods, don't use this code in any
-   * of your clients. --mid
-   */
-  for(pos = 0; pos < fh->size; pos++) {
-    
-    bufpos = pos % bufsize;
-    
-    if (bufpos == 0 && pos > 0) { /* filled our buffer. spit it across the wire */
-      if ( (i = send(oftconn->fd, buf, bufsize, 0)) != bufsize ) {
-	/* perror("faim: getfile_send: write1"); */
-	/* printf("faim: getfile_send: whoopsy, didn't write it all...\n"); */
-	free(buf);   
-	return 0;
-      }
-    }
-    
-    if( (buf[bufpos] = fgetc(file)) == EOF) {
-      if(pos != fh->size) {
-	/* printf("faim: getfile_send: hrm... apparent early EOF at pos 0x%x of 0x%lx\n", pos, fh->size); */
-	free(buf);   
-	return 0;
-      }
-    }      
-    /* printf("%c(0x%02x) ", buf[pos], buf[pos]); */
-  }
-  
-  if( (i = send(oftconn->fd, buf, bufpos+1, 0)) != (bufpos+1)) {
-    /* perror("faim: getfile_send: write2"); */
-    /* printf("faim: getfile_send cleanup: whoopsy, didn't write it all...\n"); */
-    free(buf);   
-    return 0;
-  }
-  
-  free(buf);
-  free(fh);
-  
-  return 1;
-}
-
-static int faimtest_getfile_complete(aim_session_t *sess, aim_frame_t *fr, ...) 
-{
-  va_list ap;
-  aim_conn_t *conn;
-  struct aim_fileheader_t *fh;
-  
-  va_start(ap, fr);
-  conn = va_arg(ap, aim_conn_t *);
-  fh = va_arg(ap, struct aim_fileheader_t *);
-  va_end(ap);
-  
-  /* printf("completed file transfer for %s.\n", fh->name); */
-  
-  aim_conn_close(conn);
-  aim_conn_kill(sess, &conn);
-  
-  return 1;
-}
-
-static int faimtest_getfile_disconnect(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  va_list ap;
-  aim_conn_t *conn;
-  char *sn;
-  
-  va_start(ap, fr);
-  conn = va_arg(ap, aim_conn_t *);
-  sn = va_arg(ap, char *);
-  va_end(ap);
-  
-  aim_conn_kill(sess, &conn);
-  
-  /* printf("getfile: disconnected from %s\n", sn); */
-  
-  return 1;
-}
-
-static int faimtest_getfile_listing(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  va_list ap;
-  aim_conn_t *conn;
-  char *listing;
-  struct aim_filetransfer_priv *ft;
-  char *filename, *nameend, *sizec;
-  int filesize, namelen;
-  
-  va_start(ap, fr);
-  conn = va_arg(ap, aim_conn_t *);
-  ft = va_arg(ap, struct aim_filetransfer_priv *);
-  listing = va_arg(ap, char *);
-  va_end(ap);
-  
-  /* printf("listing on %d==================\n%s\n===========\n", conn->fd, listing); */
-  
-  nameend = strstr(listing+0x1a, "\r");
-  namelen = nameend - (listing + 0x1a);
-  
-  filename = malloc(namelen + 1);
-  strncpy(filename, listing+0x1a, namelen);
-  filename[namelen] = 0x00;
-  
-  sizec = malloc(8+1);
-  memcpy(sizec, listing + 0x11, 8);
-  sizec[8] = 0x00;
-  
-  filesize =  strtol(sizec, (char **)NULL, 10);
-  
-  /* printf("requesting %d %s(%d long)\n", namelen, filename, filesize); */
-  
-  /* aim_oft_getfile_request(sess, conn, filename, filesize); */
-  
-  free(filename);
-  free(sizec);
-  
-  return 0;
-}
-
-static int faimtest_getfile_listingreq(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
-  va_list ap;
-  aim_conn_t *oftconn;
-  struct aim_fileheader_t *fh;
-  int pos, bufpos = 0, bufsize = 2048, i;
-  char *buf;
-  
-  va_start(ap, fr);
-  oftconn = va_arg(ap, aim_conn_t *);
-  fh = va_arg(ap, struct aim_fileheader_t *);
-  va_end(ap);
-  
-  /* printf("sending listing of size %ld\n", fh->size); */
-
-  if(!(buf = malloc(2048))) return -1;
-  
-  for(pos = 0; pos < fh->size; pos++) {
-    bufpos = pos % bufsize;
-    if(bufpos == 0 && pos > 0) { /* filled our buffer. spit it across the wire */
-      if ( (i = send(oftconn->fd, buf, bufsize, 0)) != bufsize ) {
-	/* perror("faim: getfile_send: write1"); */
-	/* printf("faim: getfile_send: whoopsy, didn't write it all...\n"); */
-	free(buf);   
-	return 0;
-      }
-    }
-    if( (buf[bufpos] = fgetc(priv->listingfile)) == EOF) {
-      if(pos != fh->size) {
-	/* printf("faim: getfile_send: hrm... apparent early EOF at pos 0x%x of 0x%lx\n", pos, fh->size); */
-	free(buf);   
-	return 0;
-      }
-    }      
-  }
-  
-  if( (i = send(oftconn->fd, buf, bufpos+1, 0)) != (bufpos+1)) {
-    /* perror("faim: getfile_send: write2"); */
-    /* printf("faim: getfile_send cleanup: whoopsy, didn't write it all...\n"); */
-    free(buf);   
-    return 0;
-  }
-  
-  /* printf("sent listing\n"); */
-  free(buf);
-  
-  return 0;
-}
-
-static int faimtest_getfile_receive(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  /* needs ot be fixed --kretch */
-#if 0
-  va_list ap;
-  aim_conn_t *conn;
-  struct aim_filetransfer_priv *ft;
-  unsigned char data;
-  int pos;
-
-
-  va_start(ap, fr);
-  conn = va_arg(ap, aim_conn_t *);
-  ft = va_arg(ap, struct aim_filetransfer_priv *);
-  va_end(ap);
-
-  /* printf("receiving %ld bytes of file data for %s:\n\t", ft->fh.size, ft->fh.name); */
-
-  for(pos = 0; pos < ft->fh.size; pos++) {
-    read(conn->fd, &data, 1);
-    /* printf("%c(%02x) ", data, data); */
-  }
-
-  /* printf("\n"); */
-
-  aim_oft_getfile_end(sess, conn);
-#endif
-  return 0;
-}
-
-static int faimtest_getfile_state4(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  va_list ap;
-  aim_conn_t *conn;
-  
-  va_start(ap, fr);
-  conn = va_arg(ap, aim_conn_t *);
-  va_end(ap);
-  
-  aim_conn_close(conn);
-  aim_conn_kill(sess, &conn);
-  
-  return 0;
-}
-
-static int faimtest_getfile_initiate(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  va_list ap;
-  aim_conn_t *conn, *listenerconn;
-  struct aim_filetransfer_priv *priv;
-  
-  va_start(ap, fr);
-  conn = va_arg(ap, aim_conn_t *);
-  listenerconn = va_arg(ap, aim_conn_t *);
-  va_end(ap);
-  
-  aim_conn_close(listenerconn);
-  aim_conn_kill(sess, &listenerconn);
-
-  /*   This doesn't work with the new libfaim */
-  aim_conn_addhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILEFILEREQ,  faimtest_getfile_filereq, 0);
-  aim_conn_addhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILEFILESEND, faimtest_getfile_filesend, 0);
-  aim_conn_addhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILECOMPLETE, faimtest_getfile_complete, 0);      
-  aim_conn_addhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILEDISCONNECT, faimtest_getfile_disconnect, 0);      
-  aim_conn_addhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILELISTING, faimtest_getfile_listing, 0);
-  aim_conn_addhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILELISTINGREQ, faimtest_getfile_listingreq, 0);
-  aim_conn_addhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILERECEIVE, faimtest_getfile_receive, 0);
-  aim_conn_addhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILESTATE4, faimtest_getfile_state4, 0);
-  
-  priv = (struct aim_filetransfer_priv *)conn->priv;
-  
-  /* printf("getfile: %s (%s) connected to us on %d\n", priv->sn, priv->ip, conn->fd); */
-  
-  return 1;
-}
-
-void getfile_start(aim_session_t *sess, aim_conn_t *conn, const char *sn)
-{
-  aim_conn_t *newconn;
-  
-  newconn = aim_getfile_initiate(sess, conn, sn);
-  /* printf("getting file listing from %s\n", sn); */
-  aim_conn_addhandler(sess, newconn,  AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILEINITIATE, faimtest_getfile_initiate,0);
-  
-  return;
-}
-
-void getfile_requested(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, struct aim_incomingim_ch2_args *args)
-{
-  struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
-  aim_conn_t *newconn;
-  struct aim_fileheader_t *fh;
-  
-  printf("get file request from %s (at %s/%s/%s) %x\n", userinfo->sn, args->clientip, args->clientip2, args->verifiedip, args->reqclass);
-  fh = aim_getlisting(sess, priv->listingfile);
-  newconn = aim_accepttransfer(sess, conn, userinfo->sn, args->cookie, args->clientip, fh->totfiles, fh->totsize, fh->size, fh->checksum, args->reqclass);
-  free(fh);
-
-  if ( (!newconn) || (newconn->fd == -1) ) {
-    printf("getfile: requestconn: apparent error in accepttransfer\n");
-    if (newconn) aim_conn_kill(sess, &newconn);
-    return;
-  }
-  
-  aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILELISTINGREQ, faimtest_getfile_listingreq, 0);
-  aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILEFILEREQ,  faimtest_getfile_filereq, 0);
-  aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILEFILESEND, faimtest_getfile_filesend, 0);
-  aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILECOMPLETE, faimtest_getfile_complete, 0);      
-  aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_GETFILEDISCONNECT, faimtest_getfile_disconnect, 0);      
-  
-  /* printf("getfile connect succeeded, handlers added.\n"); */
-  
-  return;
-}
-
-void directim_start(aim_session_t *sess, const char *sn)
-{
-  aim_conn_t *newconn;
-  
-  /* printf("opening directim to %s\n", sn); */
-  newconn = aim_directim_initiate(sess, sn);
-  if (!newconn || (newconn->fd == -1)) {
-    /* printf("connection failed!\n"); */
-    if (newconn) aim_conn_kill(sess, &newconn);
-  } else {
-    aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_DIRECTIMINITIATE, faimtest_directim_initiate, 0);
-  }
-  return;
-}
-
-void directim_requested(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, struct aim_incomingim_ch2_args *args)
-{
-  aim_conn_t *newconn;
-  
-  /* printf("OFT: DirectIM: request from %s (%s/%s/%s)\n", userinfo->sn, args->clientip, args->clientip2, args->verifiedip); */
-  
-  newconn = aim_directim_connect(sess, userinfo->sn, args->clientip, args->cookie);
-  if (!newconn || (newconn->fd == -1)) {
-    /* printf("icbm: imimage: could not connect\n"); */
-    if (newconn) aim_conn_kill(sess, &newconn);
-  } else {
-    aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_DIRECTIMINCOMING, directim_incoming, 0);
-    aim_conn_addhandler(sess, newconn, AIM_CB_FAM_OFT, AIM_CB_OFT_DIRECTIMTYPING, directim_typing, 0);
-    /* printf("OFT: DirectIM: connected to %s\n", userinfo->sn); */
-    aim_send_im_direct(sess, newconn, "goodday", 7, 0);
-  }
 }
 
 
