@@ -216,6 +216,7 @@ static int aim_send(int fd, const void *buf, size_t count)
 static int aim_bstream_send(aim_bstream_t *bs, aim_conn_t *conn, size_t count)
 {
   int wrote = 0;
+  int rv = 0;
   if (!bs || !conn || (count < 0))
     return -EINVAL;
   
@@ -230,7 +231,13 @@ static int aim_bstream_send(aim_bstream_t *bs, aim_conn_t *conn, size_t count)
       const char *sn = aim_odc_getsn(conn);
       aim_rxcallback_t userfunc;
       while (count - wrote > 1024) {
-	wrote = wrote + aim_send(conn->fd, bs->data + bs->offset + wrote, 1024);
+	rv = aim_send(conn->fd, bs->data + bs->offset + wrote, 1024);
+	if (rv < 0) {
+	  fprintf(stderr, "aim_bstream_send: aim_send failed...\n");
+	  return -EINVAL;
+	}
+	wrote = wrote + rv;
+	  
 	if ((userfunc=aim_callhandler(conn->sessv, conn, 
 				      AIM_CB_FAM_SPECIAL, 
 				      AIM_CB_SPECIAL_IMAGETRANSFER)))
@@ -239,7 +246,12 @@ static int aim_bstream_send(aim_bstream_t *bs, aim_conn_t *conn, size_t count)
       }
     }
     if (count - wrote) {
-      wrote = wrote + aim_send(conn->fd, bs->data + bs->offset + wrote, count - wrote);
+      rv = aim_send(conn->fd, bs->data + bs->offset + wrote, count - wrote);
+      if (rv < 0) {
+	fprintf(stderr, "aim_bstream_send: aim_send failed...\n");
+	return -EINVAL;
+      }
+      wrote = wrote + rv;
     }
     
   }

@@ -7,6 +7,9 @@ $Id$
 	        [It's possible that this may have some portability 
 		issues under Solaris and we may need to add some 
 		configure stuff around SA_SIGINFO...]
+	Handle the case in aim_bstream_send where aim_send returns -1,
+	        although there is likely an underlying problem here
+		that would lead to this case.
 	
 2.0.12
 	Command history now doesn't allow the last entry
