@@ -175,112 +175,138 @@ void owl_function_zwrite(char *line) {
 }
 
 
-
-void owl_function_nextmsg() {
-  int curmsg;
+/* If filter is non-null, looks for the next message matching
+ * that filter.  If skip_deleted, skips any deleted messages. 
+ * If last_if_none, will stop at the last message in the view
+ * if no matching messages are found.  */
+void owl_function_nextmsg_full(char *filter, int skip_deleted, int last_if_none) {
+  int curmsg, i, viewsize, found;
   owl_view *v;
+  owl_filter *f = NULL;
+  owl_message *m;
 
   v=owl_global_get_current_view(&g);
-  
-  curmsg=owl_global_get_curmsg(&g);
-  curmsg++;
-  if (curmsg>owl_view_get_size(v)-1) {
-    curmsg=owl_view_get_size(v)-1;
-    if (curmsg<0) curmsg=0;
-    owl_function_beep();
-    owl_function_makemsg("already at last message");
-  }
-  owl_global_set_curmsg(&g, curmsg);
-  owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
 
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_global_set_direction_downwards(&g);
+  if (filter) {
+    f=owl_global_get_filter(&g, filter);
+    if (!f) {
+      owl_function_makemsg("No %s filter defined", filter);
+      return;
+    }
+  }
+
+  curmsg=owl_global_get_curmsg(&g);
+  viewsize=owl_view_get_size(v);
+  found=0;
+
+  /* just check to make sure we're in bounds... */
+  if (curmsg>viewsize-1) curmsg=viewsize-1;
+  if (curmsg<0) curmsg=0;
+
+  for (i=curmsg+1; i<viewsize; i++) {
+    m=owl_view_get_element(v, i);
+    if (skip_deleted && owl_message_is_delete(m)) continue;
+    if (f && !owl_filter_message_match(f, m)) continue;
+    found = 1;
+    break;
+  }
+
+  if (i>owl_view_get_size(v)-1) i=owl_view_get_size(v)-1;
+
+  if (!found) {
+    owl_function_makemsg("already at last%s message%s%s",
+			 skip_deleted?" non-deleted":"",
+			 filter?" in ":"", filter?filter:"");
+    owl_function_beep();
+  }
+
+  if (last_if_none || found) {
+    owl_global_set_curmsg(&g, i);
+    owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
+    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+    owl_global_set_direction_downwards(&g);
+  }
+}
+
+void owl_function_prevmsg_full(char *filter, int skip_deleted, int first_if_none) {
+  int curmsg, i, viewsize, found;
+  owl_view *v;
+  owl_filter *f = NULL;
+  owl_message *m;
+
+  v=owl_global_get_current_view(&g);
+
+  if (filter) {
+    f=owl_global_get_filter(&g, filter);
+    if (!f) {
+      owl_function_makemsg("No %s filter defined", filter);
+      return;
+    }
+  }
+
+  curmsg=owl_global_get_curmsg(&g);
+  viewsize=owl_view_get_size(v);
+  found=0;
+
+  /* just check to make sure we're in bounds... */
+  if (curmsg>viewsize-1) curmsg=viewsize-1;
+  if (curmsg<0) curmsg=0;
+
+  for (i=curmsg-1; i>=0; i--) {
+    m=owl_view_get_element(v, i);
+    if (skip_deleted && owl_message_is_delete(m)) continue;
+    if (f && !owl_filter_message_match(f, m)) continue;
+    found = 1;
+    break;
+  }
+
+  if (i<0) i=0;
+
+  if (!found) {
+    owl_function_makemsg("already at first%s message%s%s",
+			 skip_deleted?" non-deleted":"",
+			 filter?" in ":"", filter?filter:"");
+    owl_function_beep();
+  }
+
+  if (first_if_none || found) {
+    owl_global_set_curmsg(&g, i);
+    owl_function_calculate_topmsg(OWL_DIRECTION_UPWARDS);
+    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+    owl_global_set_direction_upwards(&g);
+  }
+}
+
+void owl_function_nextmsg() {
+  owl_function_nextmsg_full(NULL, 0, 1);
 }
 
 
 void owl_function_prevmsg() {
-  int curmsg;
-  
-  curmsg=owl_global_get_curmsg(&g);
-  curmsg--;
-  if (curmsg<0) {
-    curmsg=0;
-    owl_function_beep();
-    owl_function_makemsg("already at first message");
-  }
-  owl_global_set_curmsg(&g, curmsg);
-  owl_function_calculate_topmsg(OWL_DIRECTION_UPWARDS);
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_global_set_direction_upwards(&g);
+  owl_function_prevmsg_full(NULL, 0, 1);
 }
 
-
 void owl_function_nextmsg_notdeleted() {
-  int curmsg;
-  owl_message *m;
-  owl_view *v;
-
-  v=owl_global_get_current_view(&g);
-
-  curmsg=owl_global_get_curmsg(&g);
-  while (1) {
-    curmsg++;
-
-    /* if we're out of bounds get in bounds and stop */
-    if (curmsg>owl_view_get_size(v)-1) {
-      curmsg=owl_view_get_size(v)-1;
-      if (curmsg<0) curmsg=0;
-      owl_function_makemsg("already at last non-deleted message");
-      break;
-    }
-
-    /* if this one is not deleted we can stop where we are */
-    m=owl_view_get_element(v, curmsg);
-    if (!owl_message_is_delete(m)) {
-      break;
-    }
-  }
-  
-  owl_global_set_curmsg(&g, curmsg);
-  owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_global_set_direction_downwards(&g);
+  owl_function_nextmsg_full(NULL, 1, 1);
 }
 
 
 void owl_function_prevmsg_notdeleted() {
-  int curmsg;
-  owl_message *m;
-  owl_view *v;
-
-  v=owl_global_get_current_view(&g);
-
-  curmsg=owl_global_get_curmsg(&g);
-  while(1) {
-    curmsg--;
-
-    /* if we're out of bounds get in bounds and stop */
-    if (curmsg<0) {
-      curmsg=0;
-      owl_function_makemsg("already at first non-deleted message");
-      break;
-    }
-
-    /* if this one is not deleted we can stop where we are */
-    m=owl_view_get_element(v, curmsg);
-    if (!owl_message_is_delete(m)) {
-      break;
-    }
-  }
-
-  owl_global_set_curmsg(&g, curmsg);
-  owl_function_calculate_topmsg(OWL_DIRECTION_UPWARDS);
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_global_set_direction_upwards(&g);
+  owl_function_prevmsg_full(NULL, 1, 1);
 }
 
 
-void owl_function_deletecur() {
+void owl_function_nextmsg_personal() {
+  owl_function_nextmsg_full("personal", 0, 0);
+}
+
+void owl_function_prevmsg_personal() {
+  owl_function_prevmsg_full("personal", 0, 0);
+}
+
+
+/* if move_after is 1, moves after the delete */
+void owl_function_deletecur(int move_after) {
   int curmsg;
   owl_view *v;
 
@@ -296,16 +322,19 @@ void owl_function_deletecur() {
   curmsg=owl_global_get_curmsg(&g);
   owl_view_delete_element(v, curmsg);
 
-  /* move the poiner in the appropriate direction to the next undeleted msg */
-  if (owl_global_get_direction(&g)==OWL_DIRECTION_UPWARDS) {
-    owl_command_prev_notdeleted();
-  } else {
-    owl_command_next_notdeleted();
+  if (move_after) {
+    /* move the poiner in the appropriate direction 
+     * to the next undeleted msg */
+    if (owl_global_get_direction(&g)==OWL_DIRECTION_UPWARDS) {
+      owl_function_prevmsg_notdeleted();
+    } else {
+      owl_function_nextmsg_notdeleted();
+    }
   }
 }
 
 
-void owl_function_undeletecur() {
+void owl_function_undeletecur(int move_after) {
   int curmsg;
   owl_view *v;
 
@@ -319,14 +348,16 @@ void owl_function_undeletecur() {
 
   owl_view_undelete_element(v, curmsg);
 
-  if (owl_global_get_direction(&g)==OWL_DIRECTION_UPWARDS) {
-    if (curmsg>0) {
-      owl_command_prev();
+  if (move_after) {
+    if (owl_global_get_direction(&g)==OWL_DIRECTION_UPWARDS) {
+      if (curmsg>0) {
+	owl_function_prevmsg();
+      } else {
+	owl_function_nextmsg();
+      }
     } else {
-      owl_command_next();
+      owl_function_nextmsg();
     }
-  } else {
-    owl_command_next();
   }
 
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
@@ -1258,51 +1289,6 @@ void owl_function_delete_automsgs() {
   sprintf(buff, "%i messages marked for deletion", count);
   owl_function_makemsg(buff);
   owl_global_set_needrefresh(&g);
-}
-
-void owl_function_next_personal() {
-  int i, j, curmsg, found;
-  owl_view *v;
-
-  v=owl_global_get_current_view(&g);
-  j=owl_view_get_size(v);
-  curmsg=owl_global_get_curmsg(&g);
-  found=0;
-  for (i=curmsg+1; i<j; i++) {
-    if (owl_message_is_personal(owl_view_get_element(v, i))) {
-      owl_global_set_curmsg(&g, i);
-      owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
-      owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-      owl_global_set_direction_downwards(&g);
-      found=1;
-      break;
-    }
-  }
-  if (!found) {
-    owl_function_makemsg("No next personal message found");
-  }
-}
-
-void owl_function_prev_personal() {
-  int i, curmsg, found;
-  owl_view *v;
-
-  v=owl_global_get_current_view(&g);
-  curmsg=owl_global_get_curmsg(&g);
-  found=0;
-  for (i=curmsg-1; i>=0; i--) {
-    if (owl_message_is_personal(owl_view_get_element(v, i))) {
-      owl_global_set_curmsg(&g, i);
-      owl_function_calculate_topmsg(OWL_DIRECTION_UPWARDS);
-      owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-      owl_global_set_direction_upwards(&g);
-      found=1;
-      break;
-    }
-  }
-  if (!found) {
-    owl_function_makemsg("No previous personal message found");
-  }
 }
 
 

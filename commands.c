@@ -192,29 +192,39 @@ owl_cmd commands_to_init[]
 	      "Scrolls the current message up or down by <numlines>.\n"
 	      "Scrolls up if <numlines> is negative, else scrolls down.\n"),
 
-  OWLCMD_VOID("next", owl_command_next, OWL_CTX_INTERACTIVE,
-	      "move the pointer to the next message", "", ""),
+  OWLCMD_ARGS("next", owl_command_next, OWL_CTX_INTERACTIVE,
+	      "move the pointer to the next message",
+	      "recv:next [ --filter <name> ] [ --skip-deleted ] [ --last-if-none ]",
+	      "Moves the pointer to the next message in the current view.\n"
+	      "If --filter is specified, will only consider messages in\n"
+	      "the filter <name>.\n"
+	      "If --skip-deleted is specified, deleted messages will\n"
+	      "be skipped.\n"
+	      "If --last-if-none is specified, will stop at last message\n"
+	      "in the view if no other suitable messages are found.\n"),
   OWLCMD_ALIAS("recv:next", "next"),
 
-  OWLCMD_VOID("prev", owl_command_prev, OWL_CTX_INTERACTIVE,
-	      "move the pointer to the previous message", "", ""),
+  OWLCMD_ARGS("prev", owl_command_prev, OWL_CTX_INTERACTIVE,
+	      "move the pointer to the previous message",
+	      "recv:prev [ --filter <name> ] [ --skip-deleted ] [ --first-if-none ]",
+	      "Moves the pointer to the next message in the current view.\n"
+	      "If --filter is specified, will only consider messages in\n"
+	      "the filter <name>.\n"
+	      "If --skip-deleted is specified, deleted messages will\n"
+	      "be skipped.\n"
+	      "If --first-if-none is specified, will stop at first message\n"
+	      "in the view if no other suitable messages are found.\n"),
   OWLCMD_ALIAS("recv:prev", "prev"),
 
-  OWLCMD_VOID("next-notdel", owl_command_next_notdeleted, OWL_CTX_INTERACTIVE,
-	      "move the pointer to the next non-deleted message", "", ""),
-  OWLCMD_ALIAS("recv:next-notdel", "next-notdel"),
+  OWLCMD_ALIAS("recv:next-notdel", "recv:next --skip-deleted --last-if-none"),
+  OWLCMD_ALIAS("next-notdel",      "recv:next --skip-deleted --last-if-none"),
 
-  OWLCMD_VOID("prev-notdel", owl_command_prev_notdeleted, OWL_CTX_INTERACTIVE,
-	      "move the pointer to the previous non-deleted message", "", ""),
-  OWLCMD_ALIAS("recv:prev-notdel", "prev-notdel"),
+  OWLCMD_ALIAS("recv:prev-notdel", "recv:prev --skip-deleted --first-if-none"),
+  OWLCMD_ALIAS("prev-notdel",      "recv:prev --skip-deleted --first-if-none"),
 
-  OWLCMD_VOID("recv:next-personal", owl_function_next_personal, 
-	      OWL_CTX_INTERACTIVE,
-	      "move the pointer to the next personal message", "", ""),
+  OWLCMD_ALIAS("recv:next-personal", "recv:next --filter personal"),
 
-  OWLCMD_VOID("recv:prev-personal", owl_function_prev_personal, 
-	      OWL_CTX_INTERACTIVE,
-	      "move the pointer to the previous personal message", "", ""),
+  OWLCMD_ALIAS("recv:prev-personal", "recv:prev --filter personal"),
 
   OWLCMD_VOID("first", owl_command_first, OWL_CTX_INTERACTIVE,
 	      "move the pointer to the first message", "", ""),
@@ -416,12 +426,13 @@ owl_cmd commands_to_init[]
   
   OWLCMD_ARGS("delete", owl_command_delete, OWL_CTX_INTERACTIVE,
 	      "mark a message for deletion",
-	      "delete [ -id msgid ]\n"
+	      "delete [ -id msgid ] [ --no-move ]\n"
 	      "delete view\n"
 	      "delete trash",
 	      "If no message id is specified the current message is marked\n"
 	      "for deletion.  Otherwise the message with the given message\n"
 	      "id is marked for deltion.\n"
+	      "If '--no-move' is specified, don't move after deletion.\n"
 	      "If 'trash' is specified, deletes all trash/auto messages\n"
 	      "in the current view.\n"
 	      "If 'view' is specified, deletes all messages in the\n"
@@ -430,11 +441,12 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("undelete", owl_command_undelete, OWL_CTX_INTERACTIVE,
 	      "unmark a message for deletion",
-	      "undelete [ -id msgid ]\n"
+	      "undelete [ -id msgid ] [ --no-move ]\n"
 	      "undelete view",
 	      "If no message id is specified the current message is\n"
 	      "unmarked for deletion.  Otherwise the message with the\n"
 	      "given message id is marked for undeltion.\n"
+	      "If '--no-move' is specified, don't move after deletion.\n"
 	      "If 'view' is specified, undeletes all messages\n"
 	      "in the current view.\n"),
   OWLCMD_ALIAS("undel", "undelete"),
@@ -648,20 +660,48 @@ void owl_command_version() {
   owl_function_makemsg(buff);
 }
 
-void owl_command_next() {
-  owl_function_nextmsg();
+char *owl_command_next(int argc, char **argv, char *buff) {
+  char *filter=NULL;
+  int skip_deleted=0, last_if_none=0;
+  while (argc>1) {
+    if (argc>=1 && !strcmp(argv[1], "--skip-deleted")) {
+      skip_deleted=1;
+      argc-=1; argv+=1; 
+    } else if (argc>=1 && !strcmp(argv[1], "--last-if-none")) {
+      last_if_none=1;
+      argc-=1; argv+=1; 
+    } else if (argc>=2 && !strcmp(argv[1], "--filter")) {
+      filter = argv[2];
+      argc-=2; argv+=2; 
+    } else {
+      owl_function_makemsg("Invalid arguments to command 'next'.");
+      return(NULL);
+    }
+  }
+  owl_function_nextmsg_full(filter, skip_deleted, last_if_none);
+  return(NULL);
 }
 
-void owl_command_prev() {
-  owl_function_prevmsg();
-}
-
-void owl_command_next_notdeleted() {
-  owl_function_nextmsg_notdeleted();
-}
-
-void owl_command_prev_notdeleted() {
-  owl_function_prevmsg_notdeleted();
+char *owl_command_prev(int argc, char **argv, char *buff) {
+  char *filter=NULL;
+  int skip_deleted=0, first_if_none=0;
+  while (argc>1) {
+    if (argc>=1 && !strcmp(argv[1], "--skip-deleted")) {
+      skip_deleted=1;
+      argc-=1; argv+=1; 
+    } else if (argc>=1 && !strcmp(argv[1], "--first-if-none")) {
+      first_if_none=1;
+      argc-=1; argv+=1; 
+    } else if (argc>=2 && !strcmp(argv[1], "--filter")) {
+      filter = argv[2];
+      argc-=2; argv+=2; 
+    } else {
+      owl_function_makemsg("Invalid arguments to command 'prev'.");
+      return(NULL);
+    }
+  }
+  owl_function_prevmsg_full(filter, skip_deleted, first_if_none);
+  return(NULL);
 }
 
 char *owl_command_smartnarrow(int argc, char **argv, char *buff) {
@@ -1169,8 +1209,16 @@ void owl_command_openurl(void) {
 }
 
 char *owl_command_delete(int argc, char **argv, char *buff) {
+  int move_after = 1;
+
+  if (!strcmp(argv[1], "--no-move")) {
+    move_after = 0;
+    argc--; 
+    argv++;
+  }
+
   if (argc==1) {
-    owl_function_deletecur();
+    owl_function_deletecur(move_after);
     return NULL;
   }
 
@@ -1194,8 +1242,16 @@ char *owl_command_delete(int argc, char **argv, char *buff) {
 }
 
 char *owl_command_undelete(int argc, char **argv, char *buff) {
+  int move_after = 1;
+
+  if (!strcmp(argv[1], "--no-move")) {
+    move_after = 0;
+    argc--; 
+    argv++;
+  }
+
   if (argc==1) {
-    owl_function_undeletecur();
+    owl_function_undeletecur(move_after);
     return NULL;
   }
 

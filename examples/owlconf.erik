@@ -1,5 +1,14 @@
 ### The owlconf config file   -*- perl -*-  
 ###  $Id$
+
+### !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!!
+### This is an example file intended to demonstrate how to use 
+### various features of owl.  Some of the key bindings, in particular,
+### are more for examples than things you may actually want to use.
+### Make sure to read through it first and understand it before just using it.
+### Don't blame me if anything in here ends up vaporizing your dog.
+### !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!!
+
 ###
 ### This file is interpreted by the perl interpreter.
 ### If you wish to execute an owl command use the
@@ -76,10 +85,20 @@ sub owl::startup {
     owl::command("alias z zwrite");
     owl::command("alias zc zwrite -c");
 
+    # Send zephyrs with "C-c C-c".  
+    # Note that this will cause "C-c" to not work...
     owl::command("bindkey editmulti \"C-c C-c\" command editmulti:done");
+
+    # Make "d" ignore current movement direction
+    owl::command("bindkey recv d command ( delete --no-move ; next --skip-deleted )");
+
+    # Useful keys for reading and deleting by class/instance
     owl::command("bindkey recv M-k command ( smartnarrow ; delete view )");
     owl::command("bindkey recv M-l command ( expunge ; view all )");
     owl::command("bindkey recv M-K command ( smartnarrow ; delete view ; expunge ; view all )");
+
+    # Make 'M-s' insert a <scritchscritchscritch> sequence with a random
+    # number of scritches.
     owl::command(q(bindkey edit M-s command perl owl::command("edit:insert-text <".("scritch"x int(1+rand(5))).">")));
 
 }

@@ -4,6 +4,19 @@ $Id$
 1.2.1-pre
 	Added RCS Id strings to all files.
 	'show keymaps' shows details of all keymaps after summary list.
+	Added --no-move option to delete command.
+	        In particular, delete-and-always-move-down may now
+		be implemented with 
+		'( delete --no-move ; next --skip-deleted )'.
+	Folded the nextmsg and prevmsg commands and functions together into 
+	        one command which takes arguments.
+		Added '--filter <name>' option (eg, for next_personal),
+		'--skip-deleted' option, and
+		'--last-if-none'/'--first-if-none' options.
+		Help updated accordingly.  
+		In particular, the 'personal' view is now used 
+		for 'next personal'.  
+	Updated examples/owlconf.erik with the above.
 	
 1.2.0-pre-erikdevel-17
 	Integrated change to fix problem with popup blinking on new zephyrs.
