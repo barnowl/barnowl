@@ -566,7 +566,8 @@ extern void owl_list_free_all(owl_list *l, void (*elefree)(void *));
 extern void owl_list_free_simple(owl_list *l);
 
 /* -------------------------------- logging.c -------------------------------- */
-extern void owl_log_outgoing(char *to, char *text);
+extern void owl_log_outgoing_zephyr(char *to, char *text);
+extern void owl_log_outgoing_aim(char *to, char *text);
 extern void owl_log_incoming(owl_message *m);
 
 /* -------------------------------- mainwin.c -------------------------------- */

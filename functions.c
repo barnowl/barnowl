@@ -295,7 +295,7 @@ void owl_function_zwrite(char *line)
   if (owl_global_is_logging(&g) && owl_zwrite_is_personal(&z)) {
     j=owl_zwrite_get_numrecips(&z);
     for (i=0; i<j; i++) {
-      owl_log_outgoing(owl_zwrite_get_recip_n(&z, i),
+      owl_log_outgoing_zephyr(owl_zwrite_get_recip_n(&z, i),
 		       owl_editwin_get_text(owl_global_get_typwin(&g)));
     }
   }
@@ -316,13 +316,10 @@ void owl_function_aimwrite(char *to)
     owl_function_make_outgoing_aim(owl_editwin_get_text(owl_global_get_typwin(&g)), to);
   }
 
-  /* not yet */
-#if 0
   /* log it if we have logging turned on */
   if (owl_global_is_logging(&g)) {
-    owl_log_outgoing(to, owl_editwin_get_text(owl_global_get_typwin(&g)));
+    owl_log_outgoing_aim(to, owl_editwin_get_text(owl_global_get_typwin(&g)));
   }
-#endif
 }
 
 

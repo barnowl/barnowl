@@ -296,7 +296,7 @@ int main(int argc, char **argv, char **env) {
       }
     }
 
-    /* grab incoming zephyrs */
+    /* Grab incoming messages. */
     newmsgs=0;
     zpendcount=0;
     while(ZPending() || owl_global_messagequeue_pending(&g)) {
@@ -347,7 +347,7 @@ int main(int argc, char **argv, char **env) {
       owl_view_consider_message(owl_global_get_current_view(&g), m);
 
       /* do we need to autoreply? */
-      if (owl_global_is_zaway(&g)) {
+      if (owl_message_is_type_zephyr(m) && owl_global_is_zaway(&g)) {
 	owl_zephyr_zaway(m);
       }
 
@@ -369,7 +369,6 @@ int main(int argc, char **argv, char **env) {
       if (owl_global_is_burningears(&g) && owl_message_is_burningears(m)) {
 	char *buff;
 	buff = owl_sprintf("@i(Burning ears message on class %s)", owl_message_get_class(m));
-	/* owl_function_makemsg(buff); */
 	owl_function_adminmsg(buff, "");
 	owl_free(buff);
 	owl_function_beep();

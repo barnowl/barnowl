@@ -891,6 +891,8 @@ char *owl_command_addbuddy(int argc, char **argv, char *buff)
       owl_function_makemsg("addbuddy: You must be logged into aim to use this command.");
       return(NULL);
     }
+    owl_function_makemsg("This function is not yet operational.  Stay tuned.");
+    return(NULL);
     owl_aim_addbuddy(argv[2]);
     owl_function_makemsg("%s added as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
   } else if (!strcasecmp(argv[1], "zephyr")) {
@@ -915,6 +917,8 @@ char *owl_command_delbuddy(int argc, char **argv, char *buff)
       owl_function_makemsg("delbuddy: You must be logged into aim to use this command.");
       return(NULL);
     }
+    owl_function_makemsg("This function is not yet operational.  Stay tuned.");
+    return(NULL);
     owl_aim_delbuddy(argv[2]);
     owl_function_makemsg("%s deleted as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
   } else if (!strcasecmp(argv[1], "zephyr")) {

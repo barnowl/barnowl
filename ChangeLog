@@ -89,6 +89,8 @@ $Id$
 	'isloginout' and 'isprivate' are now message attributes
 	improved 'info' function lists seperate info for zephyr, aim and
 	   also prints all message attributes
+	AIM logging (both in and out) now works
+	Disabled 'addbuddy' and 'delbuddy' for aim since it doesn't work yet
 	
 1.2.8
 	Class pings are displayed differently now

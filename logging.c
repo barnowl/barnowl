@@ -6,7 +6,7 @@
 
 static const char fileIdent[] = "$Id$";
 
-void owl_log_outgoing(char *to, char *text) {
+void owl_log_outgoing_zephyr(char *to, char *text) {
   FILE *file;
   char filename[MAXPATHLEN], *logpath;
   char *tobuff, *ptr;
@@ -53,36 +53,92 @@ void owl_log_outgoing(char *to, char *text) {
   owl_free(tobuff);
 }
 
+void owl_log_outgoing_aim(char *to, char *text) {
+  FILE *file;
+  char filename[MAXPATHLEN], *logpath;
+  char *tobuff, *ptr;
+
+  tobuff=owl_sprintf("aim:%s", to);
+
+  /* expand ~ in path names */
+  logpath = owl_util_substitute(owl_global_get_logpath(&g), "~", 
+				owl_global_get_homedir(&g));
+
+  snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
+  file=fopen(filename, "a");
+  if (!file) {
+    owl_function_makemsg("Unable to open file for outgoing logging");
+    owl_free(logpath);
+    return;
+  }
+  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
+  if (text[strlen(text)-1]!='\n') {
+    fprintf(file, "\n");
+  }
+  fclose(file);
+
+  snprintf(filename, MAXPATHLEN, "%s/all", logpath);
+  owl_free(logpath);
+  file=fopen(filename, "a");
+  if (!file) {
+    owl_function_makemsg("Unable to open file for outgoing logging");
+    return;
+  }
+  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
+  if (text[strlen(text)-1]!='\n') {
+    fprintf(file, "\n");
+  }
+  fclose(file);
+
+  owl_free(tobuff);
+}
+
 void owl_log_incoming(owl_message *m) {
   FILE *file, *allfile;
   char filename[MAXPATHLEN], allfilename[MAXPATHLEN], *logpath;
   char *frombuff, *ptr, *from, *buff, *tmp;
   int len, ch, i, personal;
-
-  /* we only do zephyrs right now */
-  if (!owl_message_is_type_zephyr(m)) return;
       
   /* check for nolog */
   if (!strcasecmp(owl_message_get_opcode(m), "nolog") ||
       !strcasecmp(owl_message_get_instance(m), "nolog")) return;
 
-  if (owl_message_is_personal(m)) {
-    personal=1;
-    if (!owl_global_is_logging(&g)) return;
-  } else {
-    personal=0;
-    if (!owl_global_is_classlogging(&g)) return;
-  }
-
-  if (personal) {
-    from=frombuff=owl_strdup(owl_message_get_sender(m));
-    /* chop off a local realm */
-    ptr=strchr(frombuff, '@');
-    if (ptr && !strncmp(ptr+1, ZGetRealm(), strlen(ZGetRealm()))) {
-      *ptr='\0';
+  /* this is kind of a mess */
+  if (owl_message_is_type_zephyr(m)) {
+    if (owl_message_is_personal(m)) {
+      personal=1;
+      if (!owl_global_is_logging(&g)) return;
+    } else {
+      personal=0;
+      if (!owl_global_is_classlogging(&g)) return;
     }
   } else {
-    from=frombuff=owl_strdup(owl_message_get_class(m));
+    if (owl_message_is_private(m)) {
+      personal=1;
+      if (!owl_global_is_logging(&g)) return;
+    } else {
+      personal=0;
+      if (!owl_global_is_classlogging(&g)) return;
+    }
+  }
+
+  if (owl_message_is_type_zephyr(m)) {
+    /* chop off a local realm for personal zephyr messages */
+    if (personal) {
+      if (owl_message_is_type_zephyr(m)) {
+	from=frombuff=owl_strdup(owl_message_get_sender(m));
+	ptr=strchr(frombuff, '@');
+	if (ptr && !strncmp(ptr+1, ZGetRealm(), strlen(ZGetRealm()))) {
+	  *ptr='\0';
+	}
+      }
+    } else {
+      /* we assume zephyr for now */
+      from=frombuff=owl_strdup(owl_message_get_class(m));
+    }
+  } else if (owl_message_is_type_aim(m)) {
+    /* we do not yet handle chat rooms */
+    from=frombuff=owl_sprintf("aim:%s", owl_message_get_sender(m));
   }
   
   /* check for malicious sender formats */
@@ -133,31 +189,46 @@ void owl_log_incoming(owl_message *m) {
     }
   }
 
-  tmp=short_zuser(owl_message_get_sender(m));
-  
-  fprintf(file, "Class: %s Instance: %s", owl_message_get_class(m), owl_message_get_instance(m));
-  if (strcmp(owl_message_get_opcode(m), "")) fprintf(file, " Opcode: %s", owl_message_get_opcode(m));
-  fprintf(file, "\n");
-  fprintf(file, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
-  ptr=owl_zephyr_get_zsig(owl_message_get_notice(m), &i);
-  buff=owl_malloc(i+10);
-  memcpy(buff, ptr, i);
-  buff[i]='\0';
-  fprintf(file, "From: %s <%s>\n\n", buff, tmp);
-  fprintf(file, "%s\n", owl_message_get_body(m));
+  /* write to the main file */
+  if (owl_message_is_type_zephyr(m)) {
+    tmp=short_zuser(owl_message_get_sender(m));
+    fprintf(file, "Class: %s Instance: %s", owl_message_get_class(m), owl_message_get_instance(m));
+    if (strcmp(owl_message_get_opcode(m), "")) fprintf(file, " Opcode: %s", owl_message_get_opcode(m));
+    fprintf(file, "\n");
+    fprintf(file, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
+    ptr=owl_zephyr_get_zsig(owl_message_get_notice(m), &i);
+    buff=owl_malloc(i+10);
+    memcpy(buff, ptr, i);
+    buff[i]='\0';
+    fprintf(file, "From: %s <%s>\n\n", buff, tmp);
+    fprintf(file, "%s\n", owl_message_get_body(m));
+  } else if (owl_message_is_type_aim(m)) {
+    fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
+    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
+    fprintf(file, "%s\n\n", owl_message_get_body(m));
+  }
   fclose(file);
 
+  /* if it's a personal message, also write to the 'all' file */
   if (personal) {
-    fprintf(allfile, "Class: %s Instance: %s", owl_message_get_class(m), owl_message_get_instance(m));
-    if (strcmp(owl_message_get_opcode(m), "")) fprintf(allfile, " Opcode: %s", owl_message_get_opcode(m));
-    fprintf(allfile, "\n");
-    fprintf(allfile, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
-    fprintf(allfile, "From: %s <%s>\n\n", buff, tmp);
-    fprintf(allfile, "%s\n", owl_message_get_body(m));
-    fclose(allfile);
+    if (owl_message_is_type_zephyr(m)) {
+      fprintf(allfile, "Class: %s Instance: %s", owl_message_get_class(m), owl_message_get_instance(m));
+      if (strcmp(owl_message_get_opcode(m), "")) fprintf(allfile, " Opcode: %s", owl_message_get_opcode(m));
+      fprintf(allfile, "\n");
+      fprintf(allfile, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
+      fprintf(allfile, "From: %s <%s>\n\n", buff, tmp);
+      fprintf(allfile, "%s\n", owl_message_get_body(m));
+      fclose(allfile);
+    } else {
+      fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
+      fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
+      fprintf(file, "%s\n\n", owl_message_get_body(m));
+    }
   }
 
-  owl_free(tmp);
-  owl_free(buff);
+  if (owl_message_is_type_zephyr(m)) {
+    owl_free(tmp);
+    owl_free(buff);
+  }
   owl_free(frombuff);
 }
