@@ -53,7 +53,8 @@ void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, owl_message *m)
   if (s->type==OWL_STYLE_TYPE_INTERNAL) {
     (* s->formatfunc)(fm, m);
   } else if (s->type==OWL_STYLE_TYPE_PERL) {
-    char *body, *indent, curlen;
+    char *body, *indent;
+    int curlen;
 
     /* run the perl function */
     body=owl_perlconfig_getmsg(m, 1, s->perlfuncname);
