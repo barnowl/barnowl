@@ -6,6 +6,10 @@ $Id$
 	  leading and trailing newlines from incoming messages.
 	Fixed a case sensitivity probelm in owl_message_is_personal and
 	   owl_message_is_private
+	The message object now uses a list of attributes internally, in
+  	  prep. for supporting new messaging protocols
+	owl_function_info now uses fmtext instead of one staticly sized
+	  buffer
 
 1.2.8
 	Class pings are displayed differently now

@@ -1087,12 +1087,15 @@ void owl_function_about() {
 
 void owl_function_info() {
   owl_message *m;
+  owl_fmtext fm;
   ZNotice_t *n;
-  char buff[5000], tmpbuff[1024];
+  char buff[10000], tmpbuff[1024];
   char *ptr;
   int i, j, fields, len;
   owl_view *v;
 
+  owl_fmtext_init_null(&fm);
+  
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
   if (!m || owl_view_get_size(v)==0) {
@@ -1100,120 +1103,135 @@ void owl_function_info() {
     return;
   }
 
-  sprintf(buff,     "Msg Id    : %i\n", owl_message_get_id(m));
+  owl_fmtext_append_normal(&fm, "Msg Id    : ");
+  sprintf(buff, "%i", owl_message_get_id(m));
+  owl_fmtext_append_normal(&fm, buff);
+  owl_fmtext_append_normal(&fm, "\n");
   if (owl_message_is_type_zephyr(m)) {
-    sprintf(buff, "%sType      : zephyr\n", buff);
+    owl_fmtext_append_normal(&fm, "Type      : zephyr\n");
   } else if (owl_message_is_type_admin(m)) {
-    sprintf(buff, "%sType      : admin\n", buff);
+    owl_fmtext_append_normal(&fm, "Type      : admin\n");
   } else if (owl_message_is_type_generic(m)) {
-    sprintf(buff, "%sType      : generic\n", buff);
+    owl_fmtext_append_normal(&fm, "Type      : generic\n");
   } else {
-    sprintf(buff, "%sType      : unknown\n", buff);
+    owl_fmtext_append_normal(&fm, "Type      : unknown\n");
   }
   if (owl_message_is_direction_in(m)) {
-    sprintf(buff, "%sDirection : in\n", buff);
+    owl_fmtext_append_normal(&fm, "Direction : in\n");
   } else if (owl_message_is_direction_out(m)) {
-    sprintf(buff, "%sDirection : out\n", buff);
+    owl_fmtext_append_normal(&fm, "Direction : out\n");
   } else if (owl_message_is_direction_none(m)) {
-    sprintf(buff, "%sDirection : none\n", buff);
+    owl_fmtext_append_normal(&fm, "Direction : none\n");
   } else {
-    sprintf(buff, "%sDirection : unknown\n", buff);
+    owl_fmtext_append_normal(&fm, "Direction : unknown\n");
   }
-  sprintf(buff, "%sTime      : %s\n", buff, owl_message_get_timestr(m));
+  owl_fmtext_append_normal(&fm, "Time      : ");
+  owl_fmtext_append_normal(&fm, owl_message_get_timestr(m));
+  owl_fmtext_append_normal(&fm, "\n");
 
-  if (!owl_message_is_type_zephyr(m)) {
-    owl_function_popless_text(buff);
-    return;
-  }
+  if (owl_message_is_type_zephyr(m)) {
 
+    if (owl_message_is_direction_in(m)) {
+      n=owl_message_get_notice(m);
+      owl_fmtext_append_normal(&fm, "Class     : ");
+      owl_fmtext_append_normal(&fm, owl_message_get_class(m));
+      owl_fmtext_append_normal(&fm, "\n");
+      owl_fmtext_append_normal(&fm, "Instance  : ");
+      owl_fmtext_append_normal(&fm, owl_message_get_instance(m));
+      owl_fmtext_append_normal(&fm, "\n");
+      owl_fmtext_append_normal(&fm, "Sender    : ");
+      owl_fmtext_append_normal(&fm, owl_message_get_sender(m));
+      owl_fmtext_append_normal(&fm, "\n");
+      owl_fmtext_append_normal(&fm, "Recipient : ");
+      owl_fmtext_append_normal(&fm, owl_message_get_recipient(m));
+      owl_fmtext_append_normal(&fm, "\n");
+      owl_fmtext_append_normal(&fm, "Opcode    : ");
+      owl_fmtext_append_normal(&fm, owl_message_get_opcode(m));
+      owl_fmtext_append_normal(&fm, "\n");
+      owl_fmtext_append_normal(&fm, "Kind      : ");
+      if (n->z_kind==UNSAFE) {
+	owl_fmtext_append_normal(&fm, "UNSAFE\n");
+      } else if (n->z_kind==UNACKED) {
+	owl_fmtext_append_normal(&fm, "UNACKED\n");
+      } else if (n->z_kind==ACKED) {
+	owl_fmtext_append_normal(&fm, "ACKED\n");
+      } else if (n->z_kind==HMACK) {
+	owl_fmtext_append_normal(&fm, "HMACK\n");
+      } else if (n->z_kind==HMCTL) {
+	owl_fmtext_append_normal(&fm, "HMCTL\n");
+      } else if (n->z_kind==SERVACK) {
+	owl_fmtext_append_normal(&fm, "SERVACK\n");
+      } else if (n->z_kind==SERVNAK) {
+	owl_fmtext_append_normal(&fm, "SERVNACK\n");
+      } else if (n->z_kind==CLIENTACK) {
+	owl_fmtext_append_normal(&fm, "CLIENTACK\n");
+      } else if (n->z_kind==STAT) {
+	owl_fmtext_append_normal(&fm, "STAT\n");
+      } else {
+	owl_fmtext_append_normal(&fm, "ILLEGAL VALUE\n");
+      }
 
-  if (owl_message_is_direction_out(m)) {
-    sprintf(buff, "%sClass     : %s\n", buff, owl_message_get_class(m));
-    sprintf(buff, "%sInstance  : %s\n", buff, owl_message_get_instance(m));
-    sprintf(buff, "%sSender    : %s\n", buff, owl_message_get_sender(m));
-    sprintf(buff, "%sRecip     : %s\n", buff, owl_message_get_recipient(m));
-    sprintf(buff, "%sOpcode    : %s\n", buff, owl_message_get_opcode(m));
-    
-    owl_function_popless_text(buff);
-    return;
-  }
+      owl_fmtext_append_normal(&fm, "Time      : ");
+      owl_fmtext_append_normal(&fm, owl_message_get_timestr(m));
+      owl_fmtext_append_normal(&fm, "\n");
+      owl_fmtext_append_normal(&fm, "Host      : ");
+      owl_fmtext_append_normal(&fm, owl_message_get_hostname(m));
+      owl_fmtext_append_normal(&fm, "\n");
+      sprintf(buff, "Port      : %i\n", n->z_port);
+      owl_fmtext_append_normal(&fm, buff);
 
-  n=owl_message_get_notice(m);
+      owl_fmtext_append_normal(&fm,    "Auth      : ");
+      if (n->z_auth == ZAUTH_FAILED) {
+	owl_fmtext_append_normal(&fm, "FAILED\n");
+      } else if (n->z_auth == ZAUTH_NO) {
+	owl_fmtext_append_normal(&fm, "NO\n");
+      } else if (n->z_auth == ZAUTH_YES) {
+	owl_fmtext_append_normal(&fm, "YES\n");
+      } else {
+	sprintf(buff, "Unknown State (%i)\n", n->z_auth);
+	owl_fmtext_append_normal(&fm, buff);
+      }
 
-  sprintf(buff, "%sClass     : %s\n", buff, owl_message_get_class(m));
-  sprintf(buff, "%sInstance  : %s\n", buff, owl_message_get_instance(m));
-  sprintf(buff, "%sSender    : %s\n", buff, owl_message_get_sender(m));
-  sprintf(buff, "%sRecip     : %s\n", buff, owl_message_get_recipient(m));
-  sprintf(buff, "%sOpcode    : %s\n", buff, owl_message_get_opcode(m));
-  strcat(buff,    "Kind      : ");
-  if (n->z_kind==UNSAFE) {
-    strcat(buff, "UNSAFE\n");
-  } else if (n->z_kind==UNACKED) {
-    strcat(buff, "UNACKED\n");
-  } else if (n->z_kind==ACKED) {
-    strcat(buff, "ACKED\n");
-  } else if (n->z_kind==HMACK) {
-    strcat(buff, "HMACK\n");
-  } else if (n->z_kind==HMCTL) {
-    strcat(buff, "HMCTL\n");
-  } else if (n->z_kind==SERVACK) {
-    strcat(buff, "SERVACK\n");
-  } else if (n->z_kind==SERVNAK) {
-    strcat(buff, "SERVNAK\n");
-  } else if (n->z_kind==CLIENTACK) {
-    strcat(buff, "CLIENTACK\n");
-  } else if (n->z_kind==STAT) {
-    strcat(buff, "STAT\n");
-  } else {
-    strcat(buff, "ILLEGAL VALUE\n");
-  }
-  sprintf(buff, "%sTime      : %s\n", buff, owl_message_get_timestr(m));
-  sprintf(buff, "%sHost      : %s\n", buff, owl_message_get_hostname(m));
-  sprintf(buff, "%sPort      : %i\n", buff, n->z_port);
-  strcat(buff,    "Auth      : ");
-  if (n->z_auth == ZAUTH_FAILED) {
-    strcat(buff, "FAILED\n");
-  } else if (n->z_auth == ZAUTH_NO) {
-    strcat(buff, "NO\n");
-  } else if (n->z_auth == ZAUTH_YES) {
-    strcat(buff, "YES\n");
-  } else {
-    sprintf(buff, "%sUnknown State (%i)\n", buff, n->z_auth);
-  }
-  sprintf(buff, "%sCheckd Ath: %i\n", buff, n->z_checked_auth);
-  sprintf(buff, "%sMulti notc: %s\n", buff, n->z_multinotice);
-  sprintf(buff, "%sNum other : %i\n", buff, n->z_num_other_fields);
-  sprintf(buff, "%sMsg Len   : %i\n", buff, n->z_message_len);
-
-  sprintf(buff, "%sFields    : %i\n", buff, owl_zephyr_get_num_fields(n));
-
-  fields=owl_zephyr_get_num_fields(n);
-  for (i=0; i<fields; i++) {
-    sprintf(buff, "%sField %i   : ", buff, i+1);
-
-    ptr=owl_zephyr_get_field(n, i+1, &len);
-    if (!ptr) break;
-    if (len<30) {
-      strncpy(tmpbuff, ptr, len);
-      tmpbuff[len]='\0';
-    } else {
-      strncpy(tmpbuff, ptr, 30);
-      tmpbuff[30]='\0';
-      strcat(tmpbuff, "...");
-    }
-
-    /* just for testing for now */
-    for (j=0; j<strlen(tmpbuff); j++) {
-      if (tmpbuff[j]=='\n') tmpbuff[j]='~';
-      if (tmpbuff[j]=='\r') tmpbuff[j]='!';
-    }
-
-    strcat(buff, tmpbuff);
-    strcat(buff, "\n");
-  }
-  sprintf(buff, "%sDefault Fm: %s\n", buff, n->z_default_format);
+      sprintf(buff, "Checkd Ath: %i\n", buff, n->z_checked_auth);
+      sprintf(buff, "%sMulti notc: %s\n", buff, n->z_multinotice);
+      sprintf(buff, "%sNum other : %i\n", buff, n->z_num_other_fields);
+      sprintf(buff, "%sMsg Len   : %i\n", buff, n->z_message_len);
+      owl_fmtext_append_normal(&fm, buff);
+      
+      sprintf(buff, "Fields    : %i\n", owl_zephyr_get_num_fields(n));
+      owl_fmtext_append_normal(&fm, buff);
+      
+      fields=owl_zephyr_get_num_fields(n);
+      for (i=0; i<fields; i++) {
+	sprintf(buff, "Field %i   : ", i+1);
 	
-  owl_function_popless_text(buff);
+	ptr=owl_zephyr_get_field(n, i+1, &len);
+	if (!ptr) break;
+	if (len<30) {
+	  strncpy(tmpbuff, ptr, len);
+	  tmpbuff[len]='\0';
+	} else {
+	  strncpy(tmpbuff, ptr, 30);
+	  tmpbuff[30]='\0';
+	  strcat(tmpbuff, "...");
+	}
+	
+	/* just for testing for now */
+	for (j=0; j<strlen(tmpbuff); j++) {
+	  if (tmpbuff[j]=='\n') tmpbuff[j]='~';
+	  if (tmpbuff[j]=='\r') tmpbuff[j]='!';
+	}
+	
+	strcat(buff, tmpbuff);
+	strcat(buff, "\n");
+	owl_fmtext_append_normal(&fm, buff);
+      }
+      owl_fmtext_append_normal(&fm, "Default Fm:");
+      owl_fmtext_append_normal(&fm, n->z_default_format);
+    }
+  }
+  
+  owl_function_popless_fmtext(&fm);
 }
 
 

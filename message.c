@@ -13,27 +13,65 @@
 
 static const char fileIdent[] = "$Id$";
 
-void owl_message_init_raw(owl_message *m) {
+void owl_message_init(owl_message *m) {
   time_t t;
 
   m->id=owl_global_get_nextmsgid(&g);
   m->type=OWL_MESSAGE_TYPE_GENERIC;
   owl_message_set_direction_none(m);
   m->delete=0;
-  m->sender=owl_strdup("");
-  m->class=owl_strdup("");
-  m->inst=owl_strdup("");
-  m->recip=owl_strdup("");
-  m->opcode=owl_strdup("");
-  m->realm=owl_strdup("");
-  m->zsig=owl_strdup("");
   strcpy(m->hostname, "");
   m->zwriteline=strdup("");
 
+  owl_list_create(&(m->attributes));
+  
   /* save the time */
   t=time(NULL);
   m->time=owl_strdup(ctime(&t));
   m->time[strlen(m->time)-1]='\0';
+}
+
+void owl_message_set_attribute(owl_message *m, char *attrname, char *attrvalue) {
+  /* add the named attribute to the message.  If an attribute with the
+     name already exists, replace the old value with the new value */
+
+  int i, j;
+  owl_pair *p;
+
+  /* look for an existing pair with this key, and nuke the entry if
+     found */
+  j=owl_list_get_size(&(m->attributes));
+  for (i=0; i<j; i++) {
+    p=owl_list_get_element(&(m->attributes), i);
+    if (!strcmp(owl_pair_get_key(p), attrname)) {
+      owl_free(owl_pair_get_key(p));
+      owl_free(owl_pair_get_value(p));
+      owl_free(p);
+      owl_list_remove_element(&(m->attributes), i);
+      break;
+    }
+  }
+
+  p=owl_malloc(sizeof(owl_pair));
+  owl_pair_create(p, owl_strdup(attrname), owl_strdup(attrvalue));
+  owl_list_append_element(&(m->attributes), p);
+}
+
+char *owl_message_get_attribute_value(owl_message *m, char *attrname) {
+  /* return the value associated with the named attribute, or NULL if
+     the attribute does not exist */
+  int i, j;
+  owl_pair *p;
+
+  j=owl_list_get_size(&(m->attributes));
+  for (i=0; i<j; i++) {
+    p=owl_list_get_element(&(m->attributes), i);
+    if (!strcmp(owl_pair_get_key(p), attrname)) {
+      return(owl_pair_get_value(p));
+    }
+  }
+  owl_function_debugmsg("No attribute %s found", attrname);
+  return(NULL);
 }
 
 
@@ -42,74 +80,108 @@ owl_fmtext *owl_message_get_fmtext(owl_message *m) {
 }
 
 void owl_message_set_class(owl_message *m, char *class) {
-  if (m->class) owl_free(m->class);
-  m->class=owl_strdup(class);
+  owl_message_set_attribute(m, "class", class);
 }
 
 char *owl_message_get_class(owl_message *m) {
-  return(m->class);
+  char *class;
+
+  class=owl_message_get_attribute_value(m, "class");
+  if (!class) return("");
+  return(class);
 }
 
 void owl_message_set_instance(owl_message *m, char *inst) {
-  if (m->inst) owl_free(m->inst);
-  m->inst=owl_strdup(inst);
+  owl_message_set_attribute(m, "instance", inst);
 }
 
 char *owl_message_get_instance(owl_message *m) {
-  return(m->inst);
+  char *instance;
+
+  instance=owl_message_get_attribute_value(m, "instance");
+  if (!instance) return("");
+  return(instance);
 }
 
 void owl_message_set_sender(owl_message *m, char *sender) {
-  if (m->sender) owl_free(m->sender);
-  m->sender=owl_strdup(sender);
+  owl_message_set_attribute(m, "sender", sender);
 }
 
 char *owl_message_get_sender(owl_message *m) {
-  return(m->sender);
+  char *sender;
+
+  sender=owl_message_get_attribute_value(m, "sender");
+  if (!sender) return("");
+  return(sender);
 }
 
 void owl_message_set_zsig(owl_message *m, char *zsig) {
-  if (m->zsig) owl_free(m->zsig);
-  m->zsig=owl_strdup(zsig);
+  owl_message_set_attribute(m, "zsig", zsig);
 }
 
 char *owl_message_get_zsig(owl_message *m) {
-  return(m->zsig);
+  char *zsig;
+
+  zsig=owl_message_get_attribute_value(m, "zsig");
+  if (!zsig) return("");
+  return(zsig);
 }
 
 void owl_message_set_recipient(owl_message *m, char *recip) {
-  if (m->recip) owl_free(m->recip);
-  m->recip=owl_strdup(recip);
+  owl_message_set_attribute(m, "recipient", recip);
 }
 
 char *owl_message_get_recipient(owl_message *m) {
   /* this is stupid for outgoing messages, we need to fix it. */
+
+  char *recip;
      
   if (m->type==OWL_MESSAGE_TYPE_ZEPHYR) {
-    return(m->recip);
+    recip=owl_message_get_attribute_value(m, "recipient");
   } else if (owl_message_is_direction_out(m)) {
-    return(m->zwriteline);
+    recip=m->zwriteline;
   } else {
-    return(m->recip);
+    recip=owl_message_get_attribute_value(m, "recipient");
   }
+  if (!recip) return("");
+  return(recip);
 }
 
 void owl_message_set_realm(owl_message *m, char *realm) {
-  if (m->realm) owl_free(m->realm);
-  m->realm=owl_strdup(realm);
+  owl_message_set_attribute(m, "realm", realm);
 }
 
 char *owl_message_get_realm(owl_message *m) {
-  return(m->realm);
+  char *realm;
+  
+  realm=owl_message_get_attribute_value(m, "realm");
+  if (!realm) return("");
+  return(realm);
 }
 
+void owl_message_set_body(owl_message *m, char *body) {
+  owl_message_set_attribute(m, "body", body);
+}
+
+char *owl_message_get_body(owl_message *m) {
+  char *body;
+
+  body=owl_message_get_attribute_value(m, "body");
+  if (!body) return("");
+  return(body);
+}
+
+
 void owl_message_set_opcode(owl_message *m, char *opcode) {
-  if (m->opcode) free(m->opcode);
-  m->opcode=owl_strdup(opcode);
+  owl_message_set_attribute(m, "opcode", opcode);
 }
 
 char *owl_message_get_opcode(owl_message *m) {
-  return(m->opcode);
+  char *opcode;
+
+  opcode=owl_message_get_attribute_value(m, "opcode");
+  if (!opcode) return("");
+  return(opcode);
 }
 
 char *owl_message_get_timestr(owl_message *m) {
@@ -141,10 +213,6 @@ int owl_message_is_type_generic(owl_message *m) {
 
 char *owl_message_get_text(owl_message *m) {
   return(owl_fmtext_get_text(&(m->fmtext)));
-}
-
-char *owl_message_get_body(owl_message *m) {
-  return(m->body);
 }
 
 void owl_message_set_direction_in(owl_message *m) {
@@ -314,9 +382,9 @@ int owl_message_search(owl_message *m, char *string) {
 void owl_message_create(owl_message *m, char *header, char *text) {
   char *indent;
 
-  owl_message_init_raw(m);
+  owl_message_init(m);
 
-  m->body=owl_strdup(text);
+  owl_message_set_body(m, text);
 
   indent=owl_malloc(strlen(text)+owl_text_num_lines(text)*OWL_MSGTAB+10);
   owl_text_indent(indent, text, OWL_MSGTAB);
@@ -335,10 +403,10 @@ void owl_message_create(owl_message *m, char *header, char *text) {
 void owl_message_create_admin(owl_message *m, char *header, char *text) {
   char *indent;
 
-  owl_message_init_raw(m);
+  owl_message_init(m);
   owl_message_set_type_admin(m);
 
-  m->body=owl_strdup(text);
+  owl_message_set_body(m, text);
 
   /* do something to make it clear the notice shouldn't be used for now */
 
@@ -360,9 +428,10 @@ void owl_message_create_admin(owl_message *m, char *header, char *text) {
 void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
   struct hostent *hent;
   int k, ret;
-  char *ptr, *tmp;
+  char *ptr, *tmp, *tmp2;
 
-  m->id=owl_global_get_nextmsgid(&g);
+  owl_message_init(m);
+  
   owl_message_set_type_zephyr(m);
   owl_message_set_direction_in(m);
   
@@ -375,21 +444,21 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
   m->delete=0;
 
   /* set other info */
-  m->sender=owl_strdup(n->z_sender);
-  m->class=owl_strdup(n->z_class);
-  m->inst=owl_strdup(n->z_class_inst);
-  m->recip=owl_strdup(n->z_recipient);
+  owl_message_set_sender(m, n->z_sender);
+  owl_message_set_class(m, n->z_class);
+  owl_message_set_instance(m, n->z_class_inst);
+  owl_message_set_recipient(m, n->z_recipient);
   if (n->z_opcode) {
-    m->opcode=owl_strdup(n->z_opcode);
+    owl_message_set_opcode(m, n->z_opcode);
   } else {
-    n->z_opcode=owl_strdup("");
+    owl_message_set_opcode(m, "");
   }
-  m->zsig=owl_strdup(n->z_message);
+  owl_message_set_zsig(m, n->z_message);
 
   if ((ptr=strchr(n->z_recipient, '@'))!=NULL) {
-    m->realm=owl_strdup(ptr+1);
+    owl_message_set_realm(m, ptr+1);
   } else {
-    m->realm=owl_strdup(ZGetRealm());
+    owl_message_set_realm(m, ZGetRealm());
   }
 
   m->zwriteline=strdup("");
@@ -400,21 +469,22 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n) {
   memcpy(tmp, ptr, k);
   tmp[k]='\0';
   if (owl_global_is_newlinestrip(&g)) {
-    m->body=owl_util_stripnewlines(tmp);
+    tmp2=owl_util_stripnewlines(tmp);
+    owl_message_set_body(m, tmp2);
     owl_free(tmp);
+    owl_free(tmp2);
   } else {
-    m->body=tmp;
+    owl_message_set_body(m, tmp);
   }
 
   /* if zcrypt is enabled try to decrypt the message */
   if (owl_global_is_zcrypt(&g) && !strcasecmp(n->z_opcode, "crypt")) {
     char *out;
 
-    out=owl_malloc(strlen(m->body)*16+20);
-    ret=zcrypt_decrypt(out, m->body, m->class, m->inst);
+    out=owl_malloc(strlen(owl_message_get_body(m))*16+20);
+    ret=zcrypt_decrypt(out, owl_message_get_body(m), owl_message_get_class(m), owl_message_get_instance(m));
     if (ret==0) {
-      owl_free(m->body);
-      m->body=out;
+      owl_message_set_body(m, out);
     } else {
       owl_free(out);
     }
@@ -448,7 +518,7 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   owl_zwrite z;
   int ret;
   
-  owl_message_init_raw(m);
+  owl_message_init(m);
 
   /* create a zwrite for the purpose of filling in other message fields */
   owl_zwrite_create_from_line(&z, line);
@@ -459,11 +529,12 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   owl_message_set_sender(m, ZGetSender());
   owl_message_set_class(m, owl_zwrite_get_class(&z));
   owl_message_set_instance(m, owl_zwrite_get_instance(&z));
-  m->recip=long_zuser(owl_zwrite_get_recip_n(&z, 0)); /* only gets the first user, must fix */
+  owl_message_set_recipient(m,
+			    long_zuser(owl_zwrite_get_recip_n(&z, 0))); /* only gets the first user, must fix */
   owl_message_set_opcode(m, owl_zwrite_get_opcode(&z));
-  m->realm=owl_strdup(owl_zwrite_get_realm(&z)); /* also a hack, but not here */
+  owl_message_set_realm(m, owl_zwrite_get_realm(&z)); /* also a hack, but not here */
   m->zwriteline=owl_strdup(line);
-  m->body=owl_strdup(body);
+  owl_message_set_body(m, body);
   owl_message_set_zsig(m, zsig);
   
   /* save the hostname */
@@ -486,7 +557,7 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
 
 void _owl_message_make_text_from_config(owl_message *m) {
   char *body, *indent;
-  
+
   owl_fmtext_init_null(&(m->fmtext));
 
   /* get body from the config */
@@ -570,8 +641,8 @@ void _owl_message_make_text_from_notice_standard(owl_message *m) {
   n=&(m->notice);
   
   /* get the body */
-  body=owl_malloc(strlen(m->body)+30);
-  strcpy(body, m->body);
+  body=owl_malloc(strlen(owl_message_get_body(m))+30);
+  strcpy(body, owl_message_get_body(m));
 
   /* add a newline if we need to */
   if (body[0]!='\0' && body[strlen(body)-1]!='\n') {
@@ -583,7 +654,7 @@ void _owl_message_make_text_from_notice_standard(owl_message *m) {
   owl_text_indent(indent, body, OWL_MSGTAB);
 
   /* edit the from addr for printing */
-  strcpy(frombuff, m->sender);
+  strcpy(frombuff, owl_message_get_sender(m));
   ptr=strchr(frombuff, '@');
   if (ptr && !strncmp(ptr+1, ZGetRealm(), strlen(ZGetRealm()))) {
     *ptr='\0';
@@ -593,7 +664,7 @@ void _owl_message_make_text_from_notice_standard(owl_message *m) {
   owl_fmtext_init_null(&(m->fmtext));
   owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
 
-  if (!strcasecmp(n->z_opcode, "ping") && owl_message_is_private(m)) {
+  if (!strcasecmp(owl_message_get_opcode(m), "ping") && owl_message_is_private(m)) {
     owl_fmtext_append_bold(&(m->fmtext), "PING");
     owl_fmtext_append_normal(&(m->fmtext), " from ");
     owl_fmtext_append_bold(&(m->fmtext), frombuff);
@@ -624,9 +695,9 @@ void _owl_message_make_text_from_notice_standard(owl_message *m) {
     owl_fmtext_append_normal(&(m->fmtext), tty);
     owl_fmtext_append_normal(&(m->fmtext), "\n");
   } else {
-    owl_fmtext_append_normal(&(m->fmtext), m->class);
+    owl_fmtext_append_normal(&(m->fmtext), owl_message_get_class(m));
     owl_fmtext_append_normal(&(m->fmtext), " / ");
-    owl_fmtext_append_normal(&(m->fmtext), m->inst);
+    owl_fmtext_append_normal(&(m->fmtext), owl_message_get_instance(m));
     owl_fmtext_append_normal(&(m->fmtext), " / ");
     owl_fmtext_append_bold(&(m->fmtext), frombuff);
     if (strcasecmp(owl_message_get_realm(m), ZGetRealm())) {
@@ -636,7 +707,7 @@ void _owl_message_make_text_from_notice_standard(owl_message *m) {
     }
     if (n->z_opcode[0]!='\0') {
       owl_fmtext_append_normal(&(m->fmtext), " [");
-      owl_fmtext_append_normal(&(m->fmtext), n->z_opcode);
+      owl_fmtext_append_normal(&(m->fmtext), owl_message_get_opcode(m));
       owl_fmtext_append_normal(&(m->fmtext), "] ");
     }
 
@@ -671,8 +742,8 @@ void _owl_message_make_text_from_notice_simple(owl_message *m) {
   n=&(m->notice);
 
   /* get the body */
-  body=owl_malloc(strlen(m->body)+30);
-  strcpy(body, m->body);
+  body=owl_malloc(strlen(owl_message_get_body(m)+30));
+  strcpy(body, owl_message_get_body(m));
 
   /* add a newline if we need to */
   if (body[0]!='\0' && body[strlen(body)-1]!='\n') {
@@ -684,7 +755,7 @@ void _owl_message_make_text_from_notice_simple(owl_message *m) {
   owl_text_indent(indent, body, OWL_MSGTAB);
 
   /* edit the from addr for printing */
-  strcpy(frombuff, m->sender);
+  strcpy(frombuff, owl_message_get_sender(m));
   ptr=strchr(frombuff, '@');
   if (ptr && !strncmp(ptr+1, ZGetRealm(), strlen(ZGetRealm()))) {
     *ptr='\0';
@@ -694,12 +765,12 @@ void _owl_message_make_text_from_notice_simple(owl_message *m) {
   owl_fmtext_init_null(&(m->fmtext));
   owl_fmtext_append_normal(&(m->fmtext), OWL_TABSTR);
 
-  if (!strcasecmp(n->z_opcode, "ping")) {
+  if (!strcasecmp(owl_message_get_opcode(m), "ping")) {
     owl_fmtext_append_bold(&(m->fmtext), "PING");
     owl_fmtext_append_normal(&(m->fmtext), " from ");
     owl_fmtext_append_bold(&(m->fmtext), frombuff);
     owl_fmtext_append_normal(&(m->fmtext), "\n");
-  } else if (!strcasecmp(n->z_class, "login")) {
+  } else if (!strcasecmp(owl_message_get_class(m), "login")) {
     char *ptr, host[LINE], tty[LINE];
     int len;
 
@@ -710,13 +781,13 @@ void _owl_message_make_text_from_notice_simple(owl_message *m) {
     strncpy(tty, ptr, len);
     tty[len]='\0';
     
-    if (!strcasecmp(n->z_opcode, "user_login")) {
+    if (!strcasecmp(owl_message_get_opcode(m), "user_login")) {
       owl_fmtext_append_bold(&(m->fmtext), "LOGIN");
-    } else if (!strcasecmp(n->z_opcode, "user_logout")) {
+    } else if (!strcasecmp(owl_message_get_opcode(m), "user_logout")) {
       owl_fmtext_append_bold(&(m->fmtext), "LOGOUT");
     }
     owl_fmtext_append_normal(&(m->fmtext), " for ");
-    ptr=short_zuser(n->z_class_inst);
+    ptr=short_zuser(owl_message_get_instance(m));
     owl_fmtext_append_bold(&(m->fmtext), ptr);
     owl_free(ptr);
     owl_fmtext_append_normal(&(m->fmtext), " at ");
@@ -726,11 +797,11 @@ void _owl_message_make_text_from_notice_simple(owl_message *m) {
     owl_fmtext_append_normal(&(m->fmtext), "\n");
   } else {
     owl_fmtext_append_normal(&(m->fmtext), "From: ");
-    if (strcasecmp(m->class, "message")) {
+    if (strcasecmp(owl_message_get_class(m), "message")) {
       owl_fmtext_append_normal(&(m->fmtext), "Class ");
-      owl_fmtext_append_normal(&(m->fmtext), m->class);
+      owl_fmtext_append_normal(&(m->fmtext), owl_message_get_class(m));
       owl_fmtext_append_normal(&(m->fmtext), " / Instance ");
-      owl_fmtext_append_normal(&(m->fmtext), m->inst);
+      owl_fmtext_append_normal(&(m->fmtext), owl_message_get_instance(m));
       owl_fmtext_append_normal(&(m->fmtext), " / ");
     }
     owl_fmtext_append_normal(&(m->fmtext), frombuff);
@@ -768,24 +839,31 @@ void owl_message_pretty_zsig(owl_message *m, char *buff) {
   /* stick a one line version of the zsig in buff */
   char *ptr;
 
-  strcpy(buff, m->zsig);
+  strcpy(buff, owl_message_get_zsig(m));
   ptr=strchr(buff, '\n');
   if (ptr) ptr[0]='\0';
 }
 
 void owl_message_free(owl_message *m) {
+  int i, j;
+  owl_pair *p;
+    
   if (owl_message_is_type_zephyr(m) && owl_message_is_direction_in(m)) {
     ZFreeNotice(&(m->notice));
   }
-  if (m->sender) owl_free(m->sender);
-  if (m->recip) owl_free(m->recip);
-  if (m->class) owl_free(m->class);
-  if (m->inst) owl_free(m->inst);
-  if (m->opcode) owl_free(m->opcode);
   if (m->time) owl_free(m->time);
-  if (m->realm) owl_free(m->realm);
-  if (m->body) owl_free(m->body);
   if (m->zwriteline) owl_free(m->zwriteline);
+
+  /* free all the attributes */
+  j=owl_list_get_size(&(m->attributes));
+  for (i=0; i<j; i++) {
+    p=owl_list_get_element(&(m->attributes), i);
+    owl_free(owl_pair_get_key(p));
+    owl_free(owl_pair_get_value(p));
+    owl_free(p);
+  }
+
+  owl_list_free_simple(&(m->attributes));
  
   owl_fmtext_free(&(m->fmtext));
 }

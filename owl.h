@@ -38,6 +38,11 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_MESSAGE_TYPE_ADMIN      0
 #define OWL_MESSAGE_TYPE_GENERIC    1
 #define OWL_MESSAGE_TYPE_ZEPHYR     2
+#define OWL_MESSAGE_TYPE_AIM        3
+#define OWL_MESSAGE_TYPE_JABBER     4
+#define OWL_MESSAGE_TYPE_ICQ        5
+#define OWL_MESSAGE_TYPE_YAHOO      6
+#define OWL_MESSAGE_TYPE_MSN        7
 
 #define OWL_MESSAGE_DIRECTION_NONE  0
 #define OWL_MESSAGE_DIRECTION_IN    1
@@ -224,6 +229,11 @@ typedef struct _owl_zwrite {
   int noping;
 } owl_zwrite;
 
+typedef struct _owl_pair {
+  void *key;
+  void *value;
+} owl_pair;
+
 typedef struct _owl_message {
   int id;
   int type;
@@ -232,16 +242,9 @@ typedef struct _owl_message {
   owl_fmtext fmtext;
   int delete;
   char hostname[MAXHOSTNAMELEN];
-  char *sender;
-  char *recip;
-  char *class;
-  char *inst;
-  char *opcode;
+  owl_list attributes; /* this is a list of pairs */
   char *time;
-  char *realm;
-  char *body;
   char *zwriteline;
-  char *zsig;
 } owl_message;
 
 typedef struct _owl_mainwin {
