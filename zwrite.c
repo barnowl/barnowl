@@ -35,8 +35,10 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line) {
     return(-1);
   }
   myargc=argc;
-  myargc--;
-  myargv++;
+  if (myargc && *(myargv[0])!='-') {
+    myargc--;
+    myargv++;
+  }
   while (myargc) {
     if (!strcmp(myargv[0], "-c")) {
       if (myargc<2) {

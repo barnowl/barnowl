@@ -17,7 +17,6 @@ static const char fileIdent[] = "$Id$";
 void owl_global_init(owl_global *g) {
   struct hostent *hent;
   char hostname[MAXHOSTNAMELEN];
-  char buff[MAXPATHLEN];
 
   gethostname(hostname, MAXHOSTNAMELEN);
   hent=gethostbyname(hostname);
@@ -77,11 +76,6 @@ void owl_global_init(owl_global *g) {
   /* Fill in some variables which don't have constant defaults */
   /* TODO: come back later and check passwd file first */
   strcpy(g->homedir, getenv("HOME"));
-  sprintf(buff, "%s/zlog/people/", owl_global_get_homedir(g));
-  owl_global_set_logpath(g, buff);
-  sprintf(buff, "%s/zlog/class/", owl_global_get_homedir(g));
-  owl_global_set_classlogpath(g, buff);
-  
 
   owl_messagelist_create(&(g->msglist));
   owl_mainwin_init(&(g->mw));

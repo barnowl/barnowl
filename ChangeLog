@@ -33,6 +33,21 @@ $Id$
 		In particular, it is now possible to edit the command line
 		of a zephyr being composed:  C-c it and restart it 
 		and then M-p to get the aborted composition back.
+	Added owl::send_zwrite(command, message) to the perl glue
+	        to allow for the direct sending of multi-line messages.
+		For example:  owl::send_zwrite("-c foo -i bar", "hello"); 
+	Reverted attempted fix for the pagedown problem
+	        which just made things worse.
+	Changed owl_fmtext_print_plain to return an alloc'd string to 
+	        avoid buffer overrun risks.
+	Added owl::ztext_stylestrip("...") function to perlglue 
+	         which returns the ztext with formatting stripped out.
+	Added colorztext variable which can be used to disable @color()
+	         strings arriving in messages after it is set.
+		 (Currently, changing its value won't reformat messages).
+	Outgoing zephyr logging now obeys the logpath variable.
+	The '~' character in logpath and classlogpath now gets
+	         replaced with the user's home directory.
 	
 1.2.1-pre-1
 	Added RCS Id strings to all files.
@@ -83,7 +98,7 @@ $Id$
 	Added an example to examples/owlconf.erik which uses M-c to 
 		color messages matching the current one green.
 	
-1.2.0-pre-erikdevel-17
+1.2.0-pre-1
 	Integrated change to fix problem with popup blinking on new zephyrs.
 	C-l and resizes will now refresh an open viewwin (eg, help).
 	Updated doc/code.txt to include info about filters, commands,
@@ -93,21 +108,14 @@ $Id$
 	Exec commands cleaned up to not have buffer-size limitations
 	        and to not mess up spaces.  exec also returns a string
 		of the output now.
-	
-1.2.0-pre-erikdevel-16
 	Integrated changes from 1.1.3, and added docs for "zlocate -d"
 		and new show commands.
 	Show with arguments produces help on show.
 	Fix a bug in readconfig caught by efence (where we'd try to read before 
 	        the beginning of a string if it was empty).
-	
-1.1.2-erikdevel-15
         The perl command doesn't do makemsg directly, but instead
 	     returns the string and it will get printed if it 
 	     was run interactively.
-
-1.1.2-erikdevel-14
-	*** NOTE: I probably missed some things here...
 	New framework for command handling.
 	New framework for keymap handling.
 	Added commands for everything that is bound 

@@ -147,13 +147,13 @@ char **atokenize(char *buffer, char *sep, int *i) {
 }
 
 /* skips n tokens and returns where that would be.
- * TODO: handle quotes. */
+ * TODO: handle quotes more sanely. */
 char *skiptokens(char *buff, int n) {
   int inquotes=0;
   while (*buff && n>0) {
       while (*buff == ' ') buff++;
       while (*buff && (inquotes || *buff != ' ')) { 
-	if (*buff == '"') inquotes=!inquotes;
+	if (*buff == '"' || *buff == '\'') inquotes=!inquotes;
 	buff++;
       }
       while (*buff == ' ') buff++;
@@ -385,6 +385,37 @@ char *owl_getquoting(char *line) {
   return("");
 }
 
+/* Caller must free returned string.
+ * Returns a string with any occurances of 'from' replaced with 'to'.
+ * Does not currently handle backslash quoting, but may in the future.
+ */
+char *owl_util_substitute(char *in, char *from, char *to) {
+  char *out;
+  int   outlen, tolen, fromlen, inpos=0, outpos=0;
+
+  if (!*from) return owl_strdup(in);
+
+  outlen = strlen(in)+1;
+  tolen  = strlen(to);
+  fromlen  = strlen(from);
+  out = malloc(outlen);
+
+  while (in[inpos]) {
+    if (!strncmp(in+inpos, from, fromlen)) {
+      outlen += tolen;
+      out = owl_realloc(out, outlen);
+      strcpy(out+outpos, to);
+      inpos += fromlen;
+      outpos += tolen;
+    } else {
+      out[outpos] = in[inpos];
+      inpos++; outpos++;
+    }
+  }
+  out[outpos] = '\0';
+  return(out);
+}
+
 
 int owl_util_string_to_color(char *color) {
   if (!strcasecmp(color, "black")) {
@@ -421,3 +452,38 @@ char *owl_util_color_to_string(int color) {
   if (color==OWL_COLOR_DEFAULT) return("default");
   return("Unknown color");
 }
+
+
+/**************************************************************************/
+/************************* REGRESSION TESTS *******************************/
+/**************************************************************************/
+
+#ifdef OWL_INCLUDE_REG_TESTS
+
+#define FAIL_UNLESS(desc,pred) printf("\t%-4s: %s\n", (pred)?"ok":(numfailed++,"FAIL"), desc)
+
+int owl_util_regtest(void) {
+  int numfailed=0;
+
+  printf("BEGIN testing owl_util\n");
+
+  FAIL_UNLESS("owl_util_substitute 1",
+	      !strcmp("foo", owl_util_substitute("foo", "", "Y")));
+  FAIL_UNLESS("owl_util_substitute 2",
+	      !strcmp("fYZYZ", owl_util_substitute("foo", "o", "YZ")));
+  FAIL_UNLESS("owl_util_substitute 3",
+	      !strcmp("foo", owl_util_substitute("fYZYZ", "YZ", "o")));
+  FAIL_UNLESS("owl_util_substitute 4",
+	      !strcmp("/u/foo/meep", owl_util_substitute("~/meep", "~", "/u/foo")));
+
+  FAIL_UNLESS("skiptokens 1", 
+	      !strcmp("bar quux", skiptokens("foo bar quux", 1)));
+  FAIL_UNLESS("skiptokens 2", 
+	      !strcmp("meep", skiptokens("foo 'bar quux' meep", 2)));
+
+  if (numfailed) printf("*** WARNING: failures encountered with owl_util\n");
+  printf("END testing owl_util (%d failures)\n", numfailed);
+  return(numfailed);
+}
+
+#endif /* OWL_INCLUDE_REG_TESTS */

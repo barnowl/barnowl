@@ -7,6 +7,8 @@
 
 static const char fileIdent[] = "$Id$";
 
+static int in_regtest = 0;
+
 #define OWLVAR_BOOL(name,default,docstring) \
         { name, OWL_VARIABLE_BOOL, NULL, default, "on,off", docstring, NULL, \
         NULL, NULL, NULL, NULL, NULL }
@@ -83,6 +85,9 @@ static owl_variable variables_to_init[] = {
 
   OWLVAR_BOOL( "classlogging" /* %OwlVarStub */, 0,
 	       "turn class logging on or off" ),
+
+  OWLVAR_BOOL( "colorztext" /* %OwlVarStub */, 1,
+	       "allow @color() in zephyrs to change color" ),
 
   OWLVAR_ENUM_FULL( "disable-ctrl-d" /* %OwlVarStub:lockout_ctrld */, 1,
 		    "don't send zephyrs on C-d (or disable if in the middle of the message if set to 'middle')", "off,middle,on",
@@ -192,6 +197,9 @@ int owl_variable_debug_set(owl_variable *v, void *newval) {
 /* note that changing the value of this will clobber 
  * any user setting of this */
 int owl_variable_disable_ctrl_d_set(owl_variable *v, void *newval) {
+
+  if (in_regtest) return owl_variable_int_set_default(v, newval);
+
   if (newval && !owl_context_is_startup(owl_global_get_context(&g))) {
     if (*(int*)newval == 2) {
       owl_function_command_norv("bindkey editmulti C-d command edit:delete-next-char");
@@ -673,6 +681,8 @@ int owl_variable_regtest(void) {
   owl_vardict vd;
   int numfailed=0;
   char buf[1024];
+
+  in_regtest = 1;
 
   printf("BEGIN testing owl_variable\n");
   FAIL_UNLESS("setup", 0==owl_variable_dict_setup(&vd));

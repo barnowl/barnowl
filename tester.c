@@ -29,7 +29,7 @@ void test1() {
 
   screeninit();
 
-  owl_editwin_init(&e, stdscr, LINES, COLS, OWL_EDITWIN_STYLE_MULTILINE);
+  owl_editwin_init(&e, stdscr, LINES, COLS, OWL_EDITWIN_STYLE_MULTILINE, NULL);
   /* owl_editwin_set_locktext(&e, "Here is some locktext:\n");*/
   doupdate();
   while (1) {
@@ -136,6 +136,7 @@ void test_keypress() {
 int main(int argc, char **argv, char **env) {
   int numfailures=0;
   if (argc==2 && 0==strcmp(argv[1],"reg")) {
+    numfailures += owl_util_regtest();
     numfailures += owl_dict_regtest();
     numfailures += owl_variable_regtest();
     if (numfailures) {

@@ -179,7 +179,9 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text) {
 
 	/* if it's a color read the color, set the current color and
            continue */
-      } else if (!strcasecmp(buff, "@color") && owl_global_get_hascolors(&g)) {
+      } else if (!strcasecmp(buff, "@color") 
+		 && owl_global_get_hascolors(&g)
+		 && owl_global_is_colorztext(&g)) {
 	owl_free(buff);
 	txtptr+=7;
 	tmpptr=strpbrk(txtptr, "@{[<()>]}");
@@ -324,8 +326,22 @@ void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(
 }
 
 
-void owl_fmtext_print_plain(owl_fmtext *f, char *buff) {
-  strcpy(buff, f->textbuff);
+/* caller is responsible for freeing */
+char *owl_fmtext_print_plain(owl_fmtext *f) {
+  return owl_strdup(f->textbuff);
+}
+
+/* strips formatting from ztext and returns the unformatted text. 
+ * caller is responsible for freeing. */
+char *owl_fmtext_ztext_stylestrip(char *zt) {
+  owl_fmtext fm;
+  char *plaintext;
+
+  owl_fmtext_init_null(&fm);
+  owl_fmtext_append_ztext(&fm, zt);
+  plaintext = owl_fmtext_print_plain(&fm);
+  owl_fmtext_free(&fm);
+  return(plaintext);
 }
 
 

@@ -8,7 +8,7 @@ static const char fileIdent[] = "$Id$";
 
 void owl_log_outgoing(char *to, char *text) {
   FILE *file;
-  char filename[MAXPATHLEN];
+  char filename[MAXPATHLEN], *logpath;
   char *tobuff, *ptr;
 
   tobuff=owl_malloc(strlen(to)+20);
@@ -20,10 +20,15 @@ void owl_log_outgoing(char *to, char *text) {
     *ptr='\0';
   }
 
-  sprintf(filename, "%s/zlog/people/%s", owl_global_get_homedir(&g), tobuff);
+  /* expand ~ in path names */
+  logpath = owl_util_substitute(owl_global_get_logpath(&g), "~", 
+				owl_global_get_homedir(&g));
+
+  snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
   file=fopen(filename, "a");
   if (!file) {
     owl_function_makemsg("Unable to open file for outgoing logging");
+    owl_free(logpath);
     return;
   }
   fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
@@ -32,7 +37,8 @@ void owl_log_outgoing(char *to, char *text) {
   }
   fclose(file);
 
-  sprintf(filename, "%s/zlog/people/all", owl_global_get_homedir(&g));
+  snprintf(filename, MAXPATHLEN, "%s/all", logpath);
+  owl_free(logpath);
   file=fopen(filename, "a");
   if (!file) {
     owl_function_makemsg("Unable to open file for outgoing logging");
@@ -49,7 +55,7 @@ void owl_log_outgoing(char *to, char *text) {
 
 void owl_log_incoming(owl_message *m) {
   FILE *file, *allfile;
-  char filename[MAXPATHLEN], allfilename[MAXPATHLEN];
+  char filename[MAXPATHLEN], allfilename[MAXPATHLEN], *logpath;
   char *frombuff, *ptr, *from, *buff, *tmp;
   int len, ch, i, personal;
 
@@ -85,7 +91,7 @@ void owl_log_incoming(owl_message *m) {
   if (!isalnum(ch)) from="weird";
 
   for (i=0; i<len; i++) {
-    if (frombuff[i]<'!' || frombuff[i]>'~') from="weird";
+    if (frombuff[i]<'!' || frombuff[i]>='~') from="weird";
   }
 
   if (!strcmp(frombuff, ".") || !strcasecmp(frombuff, "..")) from="weird";
@@ -94,13 +100,20 @@ void owl_log_incoming(owl_message *m) {
     if (strcmp(from, "weird")) downstr(from);
   }
 
-  /* create the filename */
+  /* create the filename (expanding ~ in path names) */
   if (personal) {
-    sprintf(filename, "%s/%s", owl_global_get_logpath(&g), from);
-    sprintf(allfilename, "%s/all", owl_global_get_logpath(&g));
+    logpath = owl_util_substitute(owl_global_get_logpath(&g), "~", 
+				  owl_global_get_homedir(&g));
+    snprintf(filename, MAXPATHLEN, "%s/%s", logpath, from);
+    snprintf(allfilename, MAXPATHLEN, "%s/all", logpath);
+
   } else {
-    sprintf(filename, "%s/%s", owl_global_get_classlogpath(&g), from);
+    logpath = owl_util_substitute(owl_global_get_classlogpath(&g), "~", 
+				owl_global_get_homedir(&g));
+
+    snprintf(filename, MAXPATHLEN, "%s/%s", logpath, from);
   }
+  owl_free(logpath);
   
   file=fopen(filename, "a");
   if (!file) {
