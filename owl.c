@@ -29,7 +29,8 @@ int main(int argc, char **argv, char **env) {
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
   owl_editwin *tw;
   owl_popwin *pw;
-  int j, ret, initialsubs, debug, newzephyrs, argcsave, followlast, nexttimediff;
+  int j, ret, initialsubs, debug, argcsave, followlast;
+  int newzephyrs, zpendcount, nexttimediff;
   struct sigaction sigact;
   char *configfile, *tty, *perlout, **argvsave, buff[LINE], startupmsg[LINE];
   owl_filter *f;
@@ -126,6 +127,7 @@ int main(int argc, char **argv, char **env) {
   owl_global_set_startupargs(&g, argcsave, argvsave);
   owl_context_set_readconfig(owl_global_get_context(&g));
 
+  /* set the tty, either from the command line, or by figuring it out */
   if (tty) {
     owl_global_set_tty(&g, tty);
   } else {
@@ -179,6 +181,8 @@ int main(int argc, char **argv, char **env) {
     printf("\nError parsing configfile\n");
     exit(1);
   }
+
+  /* execute the startup function in the configfile */
   perlout = owl_config_execute("owl::startup();");
   if (perlout) owl_free(perlout);
   owl_function_debugmsg("-- Owl Startup --");
@@ -219,7 +223,6 @@ int main(int argc, char **argv, char **env) {
   strcat(startupmsg, "                                                                   OvO   \n");
   strcat(startupmsg, "Please report any bugs or suggestions to bug-owl@mit.edu          (   )  \n");
   strcat(startupmsg, "-------------------------------------------------------------------m-m---\n");
-  
   owl_function_adminmsg("", startupmsg);
   sepbar(NULL);
   
@@ -259,12 +262,17 @@ int main(int argc, char **argv, char **env) {
 
     /* grab incoming zephyrs */
     newzephyrs=0;
+    zpendcount=0;
     while(ZPending()) {
       ZNotice_t notice;
       struct sockaddr_in from;
       owl_message *m;
 
+      /* grab a notice, but if we've done 20 without stopping, take
+	 a break to process keystrokes etc. */
+      if (zpendcount>20) break;
       ZReceiveNotice(&notice, &from);
+      zpendcount++;
 
       /* is this an ack from a zephyr we sent? */
       if (owl_zephyr_notice_is_ack(&notice)) {
@@ -329,13 +337,14 @@ int main(int argc, char **argv, char **env) {
       owl_function_lastmsg_noredisplay();
     }
 
-    /* check if newmsgproc is active, if not but the option is on,
-       make it active */
+    /* do the newmsgproc thing */
     if (newzephyrs) {
       owl_function_do_newmsgproc();
     }
     
     /* redisplay if necessary */
+    /* maybe this should be optimized to not even run if
+       the zephyr won't be displayed */
     if (newzephyrs) {
       owl_mainwin_redisplay(owl_global_get_mainwin(&g));
       sepbar(NULL);

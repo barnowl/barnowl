@@ -149,7 +149,7 @@ static owl_variable variables_to_init[] = {
 	       "path for logging debug messages when debugging is enabled",
 	       "This file will be logged to if 'debug' is set to 'on'.\n"),
   
-  OWLVAR_PATH( "zsigproc" /* %OwlVarStub:zsig_exec */, NULL,
+  OWLVAR_PATH( "zsigproc" /* %OwlVarStub:zsigproc */, NULL,
 	       "name of a program to run that will generate zsigs",
 	       "This program should produce a zsig on stdout when run.\n"
 	       "Note that it is important that this program not block.\n" ),

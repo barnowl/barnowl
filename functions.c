@@ -2453,7 +2453,9 @@ void owl_function_zlist(char *file, int elapsed, int timesort) {
 
   f=fopen(ourfile, "r");
   if (!f) {
-    owl_function_makemsg("Error opening file %s", ourfile);
+    owl_function_makemsg("Error opening file %s: %s",
+			 ourfile,
+			 strerror(errno) ? strerror(errno) : "");
     return;
   }
 

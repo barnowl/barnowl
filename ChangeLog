@@ -18,6 +18,10 @@ $Id$
 	The 'all' filter has been redefinied to be 'true' and there is a
 	  'none' filter defined as 'false'
 	Fixed bug in 'unsub' command that could cause file corruption
+	In the zlist function, give a more detailed error message if
+	  the file cannot be opened.
+	Renamed old instances of zsig_exec in the code to zsigproc
+	Don't print the stderr from zsigproc
 
 1.2.8
 	Class pings are displayed differently now

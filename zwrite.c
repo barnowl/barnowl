@@ -21,7 +21,7 @@ int owl_zwrite_create_and_send_from_line(char *cmd, char *msg) {
 int owl_zwrite_create_from_line(owl_zwrite *z, char *line) {
   int argc, badargs, myargc;
   char **argv, **myargv;
-  char *zsigexec, *zsigowlvar, *zsigzvar, *ptr;
+  char *zsigproc, *zsigowlvar, *zsigzvar, *ptr;
   struct passwd *pw;
 
   badargs=0;
@@ -111,18 +111,23 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line) {
   }
 
   /* set a zsig */
-  zsigexec = owl_global_get_zsig_exec(&g);
+  zsigproc = owl_global_get_zsigproc(&g);
   zsigowlvar = owl_global_get_zsig(&g);
   zsigzvar = ZGetVariable("zwrite-signature");
 
   if (zsigowlvar && *zsigowlvar) {
     owl_free(z->zsig);
     z->zsig=strdup(zsigowlvar);
-  } else if (zsigexec && *zsigexec) {
+  } else if (zsigproc && *zsigproc) {
     FILE *file;
-    char buff[LINE];
+    char buff[LINE], *openline;
 
-    file=popen(zsigexec, "r");
+    /* simple hack for now to nuke stderr */
+    openline=owl_malloc(strlen(zsigproc)+40);
+    strcpy(openline, zsigproc);
+    strcat(openline, " 2> /dev/null");
+    file=popen(openline, "r");
+    owl_free(openline);
     if (!file) {
       if (zsigzvar && *zsigzvar) {
 	owl_free(z->zsig);
