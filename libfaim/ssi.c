@@ -780,16 +780,13 @@ faim_export int aim_ssi_delbuddy(aim_session_t *sess, const char *name, const ch
 {
   struct aim_ssi_item *del;
 
-  owl_function_debugmsg("aim_ssi_delbuddy: here");
   if (!sess) return -EINVAL;
   
   /* Find the buddy */
-  owl_function_debugmsg("aim_ssi_delbuddy: here too");
   del=aim_ssi_itemlist_finditem(sess->ssi.local, group, name, AIM_SSI_TYPE_BUDDY);
   if (!del) return(-EINVAL);
   
   /* Remove the item from the list */
-  owl_function_debugmsg("aim_ssi_delbuddy: removing buddy %s group %s", name, group);
   aim_ssi_itemlist_del(&sess->ssi.local, del);
   
   /* Modify the parent group */
@@ -797,7 +794,6 @@ faim_export int aim_ssi_delbuddy(aim_session_t *sess, const char *name, const ch
   
   /* Check if we should delete the parent group */
   if ((del = aim_ssi_itemlist_finditem(sess->ssi.local, group, NULL, AIM_SSI_TYPE_GROUP)) && (!del->data)) {
-    owl_function_debugmsg("aim_ssi_delbuddy: deleting parent group");
     aim_ssi_itemlist_del(&sess->ssi.local, del);
     
     /* Modify the parent group */
@@ -810,7 +806,6 @@ faim_export int aim_ssi_delbuddy(aim_session_t *sess, const char *name, const ch
   }
   
   /* Sync our local list with the server list */
-  owl_function_debugmsg("aim_ssi_delbuddy: syncing");
   aim_ssi_sync(sess);
   
   return(0);
