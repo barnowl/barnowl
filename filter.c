@@ -3,7 +3,8 @@
 
 static const char fileIdent[] = "$Id$";
 
-int owl_filter_init_fromstring(owl_filter *f, char *name, char *string) {
+int owl_filter_init_fromstring(owl_filter *f, char *name, char *string)
+{
   char **argv;
   int argc, out;
 
@@ -13,7 +14,8 @@ int owl_filter_init_fromstring(owl_filter *f, char *name, char *string) {
   return(out);
 }
 
-int owl_filter_init(owl_filter *f, char *name, int argc, char **argv) {
+int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
+{
   int i, error;
   owl_filterelement *fe;
   char *regexstr;
@@ -87,35 +89,43 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv) {
   return(0);
 }
 
-char *owl_filter_get_name(owl_filter *f) {
+char *owl_filter_get_name(owl_filter *f)
+{
   return(f->name);
 }
 
-void owl_filter_set_polarity_match(owl_filter *f) {
+void owl_filter_set_polarity_match(owl_filter *f)
+{
   f->polarity=0;
 }
 
-void owl_filter_set_polarity_unmatch(owl_filter *f) {
+void owl_filter_set_polarity_unmatch(owl_filter *f)
+{
   f->polarity=1;
 }
 
-void owl_filter_set_color(owl_filter *f, int color) {
+void owl_filter_set_color(owl_filter *f, int color)
+{
   f->color=color;
 }
 
-int owl_filter_get_color(owl_filter *f) {
+int owl_filter_get_color(owl_filter *f)
+{
   return(f->color);
 }
 
-void owl_filter_set_cachedmsgid(owl_filter *f, int cachedmsgid) {
+void owl_filter_set_cachedmsgid(owl_filter *f, int cachedmsgid)
+{
   f->cachedmsgid=cachedmsgid;
 }
 
-int owl_filter_get_cachedmsgid(owl_filter *f) {
+int owl_filter_get_cachedmsgid(owl_filter *f)
+{
   return(f->cachedmsgid);
 }
 
-int owl_filter_message_match(owl_filter *f, owl_message *m) {
+int owl_filter_message_match(owl_filter *f, owl_message *m)
+{
   int i, j, tmp;
   owl_list work_fes, *fes;
   owl_filterelement *fe;
@@ -204,7 +214,8 @@ int owl_filter_message_match(owl_filter *f, owl_message *m) {
   return(tmp);
 }
 
-int _owl_filter_message_match_recurse(owl_filter *f, owl_message *m, owl_list *fes, int start, int end) {
+int _owl_filter_message_match_recurse(owl_filter *f, owl_message *m, owl_list *fes, int start, int end)
+{
   int a=0, b=0, i, x, y, z, score, ret, type;
   owl_filterelement *fe, *tmpfe=NULL;
 
@@ -356,7 +367,8 @@ int _owl_filter_message_match_recurse(owl_filter *f, owl_message *m, owl_list *f
 
 }
 
-void owl_filter_print(owl_filter *f, char *out) {
+void owl_filter_print(owl_filter *f, char *out)
+{
   int i, j;
   owl_filterelement *fe;
   char *tmp;
@@ -380,7 +392,8 @@ void owl_filter_print(owl_filter *f, char *out) {
   strcat(out, "\n");
 }
 
-int owl_filter_equiv(owl_filter *a, owl_filter *b) {
+int owl_filter_equiv(owl_filter *a, owl_filter *b)
+{
   char buff[LINE], buff2[LINE];
 
   owl_filter_print(a, buff);
@@ -390,7 +403,8 @@ int owl_filter_equiv(owl_filter *a, owl_filter *b) {
   return(0);
 }
 
-void owl_filter_free(owl_filter *f) {
+void owl_filter_free(owl_filter *f)
+{
   void (*func)();
 
   func=&owl_filterelement_free;

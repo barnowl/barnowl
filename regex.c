@@ -3,12 +3,14 @@
 
 static const char fileIdent[] = "$Id$";
 
-void owl_regex_init(owl_regex *re) {
+void owl_regex_init(owl_regex *re)
+{
   re->negate=0;
   re->string=NULL;
 }
 
-int owl_regex_create(owl_regex *re, char *string) {
+int owl_regex_create(owl_regex *re, char *string)
+{
   int ret;
   char buff1[LINE], buff2[LINE];
   char *ptr;
@@ -36,7 +38,8 @@ int owl_regex_create(owl_regex *re, char *string) {
   return(0);
 }
 
-int owl_regex_compare(owl_regex *re, char *string) {
+int owl_regex_compare(owl_regex *re, char *string)
+{
   int out, ret;
 
   /* if the regex is not set we match */
@@ -52,22 +55,26 @@ int owl_regex_compare(owl_regex *re, char *string) {
   return(out);
 }
 
-int owl_regex_is_set(owl_regex *re) {
+int owl_regex_is_set(owl_regex *re)
+{
   if (re->string) return(1);
   return(0);
 }
 
-char *owl_regex_get_string(owl_regex *re) {
+char *owl_regex_get_string(owl_regex *re)
+{
   return(re->string);
 }
 
-void owl_regex_copy(owl_regex *a, owl_regex *b) {
+void owl_regex_copy(owl_regex *a, owl_regex *b)
+{
   b->negate=a->negate;
   b->string=owl_strdup(a->string);
   memcpy(&(b->re), &(a->re), sizeof(regex_t));
 }
 
-void owl_regex_free(owl_regex *re) {
+void owl_regex_free(owl_regex *re)
+{
   if (re->string) owl_free(re->string);
 
   /* do we need to free the regular expression? */
