@@ -17,6 +17,7 @@ $Id$
 		In particular, the 'personal' view is now used 
 		for 'next personal'.  
 	Updated examples/owlconf.erik with the above.
+	Fixed the annoying pagedown sometimes-not-working bug.
 	
 1.2.0-pre-erikdevel-17
 	Integrated change to fix problem with popup blinking on new zephyrs.
