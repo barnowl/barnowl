@@ -298,6 +298,40 @@ char *stristr(char *a, char *b) {
   return(ret);
 }
 
+/* Caller must free response. 
+   Takes in strings which are space-separated lists of tokens
+   and returns a single string containing no token more than once.
+   If prohibit is non-null, no token may start with a character
+   in prohibit.
+*/
+char *owl_util_uniq(char *A, char *B, char *prohibit) {
+  char *cat, **tok;
+  int toklen, i, j, first=1;
+  cat = owl_malloc(strlen(A)+strlen(B)+3);
+  strcpy(cat, A);
+  strcat(cat, " ");
+  strcat(cat, B);
+  tok = atokenize(cat, " ", &toklen);
+  strcpy(cat, "");
+  for (i=0; i<toklen; i++) {
+    int dup=0;
+    for (j=0; j<i; j++) {
+      if (!strcmp(tok[i], tok[j])) dup=1;
+    }
+    if (!dup && (!prohibit || !strchr(prohibit, tok[i][0]))) {
+      if (!first) {
+	strcat(cat, " ");
+      }
+      first=0;
+      strcat(cat, tok[i]);
+    }
+  }
+  atokenize_free(tok, toklen);
+  return(cat);
+}
+
+
+
 /* returns if a string is only whitespace */
 int only_whitespace(char *s) {
   int i;
@@ -480,6 +514,13 @@ int owl_util_regtest(void) {
 	      !strcmp("bar quux", skiptokens("foo bar quux", 1)));
   FAIL_UNLESS("skiptokens 2", 
 	      !strcmp("meep", skiptokens("foo 'bar quux' meep", 2)));
+
+  FAIL_UNLESS("owl_util_uniq 1", 
+	      !strcmp("foo bar x", owl_util_uniq("foo", "bar x", "-")));
+  FAIL_UNLESS("owl_util_uniq 2", 
+	      !strcmp("foo bar x", owl_util_uniq("foo", "bar -y x", "-")));
+  FAIL_UNLESS("owl_util_uniq 3", 
+	      !strcmp("meep foo bar", owl_util_uniq("meep foo", "bar foo meep", "-")));
 
   if (numfailed) printf("*** WARNING: failures encountered with owl_util\n");
   printf("END testing owl_util (%d failures)\n", numfailed);

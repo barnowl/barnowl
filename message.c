@@ -606,6 +606,21 @@ int owl_message_is_burningears(owl_message *m) {
   return(0);
 }
 
+/* caller must free return value. */
+char *owl_message_get_cc(owl_message *m) {
+  char *cur, *out, *end;
+
+  cur = owl_message_get_body(m);
+  while (*cur && *cur==' ') cur++;
+  if (strncasecmp(cur, "cc:", 2)) return(NULL);
+  cur+=3;
+  while (*cur && *cur==' ') cur++;
+  out = owl_strdup(cur);
+  end = strchr(out, '\n');
+  if (end) end[0] = '\0';
+  return(out);
+}
+
 int owl_message_get_id(owl_message *m) {
   return(m->id);
 }

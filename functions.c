@@ -1354,14 +1354,14 @@ void owl_function_reply(int type, int enter) {
    * if enter = 0 then allow the command to be edited
    * if enter = 1 then don't wait for editing
    */
-  char buff[1024];
+  char *buff, *oldbuff;
   owl_message *m;
   owl_filter *f;
   
   if (owl_view_get_size(owl_global_get_current_view(&g))==0) {
     owl_function_makemsg("No message selected");
   } else {
-    char *class, *inst, *to;
+    char *class, *inst, *to, *cc=NULL;
     
     m=owl_view_get_element(owl_global_get_current_view(&g), owl_global_get_curmsg(&g));
 
@@ -1394,6 +1394,7 @@ void owl_function_reply(int type, int enter) {
 	class=owl_message_get_class(m);
 	inst=owl_message_get_instance(m);
 	to=owl_message_get_recipient(m);
+	cc=owl_message_get_cc(m);
 	if (!strcmp(to, "") || !strcmp(to, "*")) {
 	  to="";
 	} else if (to[0]=='@') {
@@ -1404,19 +1405,31 @@ void owl_function_reply(int type, int enter) {
       }
       
       /* create the command line */
-      strcpy(buff, "zwrite");
+      buff = owl_strdup("zwrite");
       if (strcasecmp(class, "message")) {
-	sprintf(buff, "%s -c %s%s%s", buff, owl_getquoting(class), class, owl_getquoting(class));
+	buff = owl_sprintf("%s -c %s%s%s", oldbuff=buff, owl_getquoting(class), class, owl_getquoting(class));
+	owl_free(oldbuff);
       }
       if (strcasecmp(inst, "personal")) {
-	sprintf(buff, "%s -i %s%s%s", buff, owl_getquoting(inst), inst, owl_getquoting(inst));
+	buff = owl_sprintf("%s -i %s%s%s", oldbuff=buff, owl_getquoting(inst), inst, owl_getquoting(inst));
+	owl_free(oldbuff);
       }
       if (*to != '\0') {
-	char *tmp;
+	char *tmp, *oldtmp;
 	tmp=pretty_sender(to);
-	sprintf(buff, "%s %s", buff, tmp);
+	if (cc) {
+	  tmp = owl_util_uniq(oldtmp=tmp, cc, "-");
+	  owl_free(oldtmp);
+	  buff = owl_sprintf("%s -C %s", oldbuff=buff, tmp);
+	  owl_free(oldbuff);
+	} else {
+	  tmp=pretty_sender(to);
+	  buff = owl_sprintf("%s %s", oldbuff=buff, tmp);
+	  owl_free(oldbuff);
+	}
 	owl_free(tmp);
       }
+      if (cc) owl_free(cc);
 
       if (enter) {
 	owl_history *hist = owl_global_get_cmd_history(&g);
@@ -1426,6 +1439,7 @@ void owl_function_reply(int type, int enter) {
       } else {
 	owl_function_start_command(buff);
       }
+      owl_free(buff);
     }
   }
 }

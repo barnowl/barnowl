@@ -53,6 +53,14 @@ $Id$
 		 This was done mostly so that M-C-n and M-C-p do something
 		 sane on admin messages.
 	Added opera to the allowed options to the webbrowser variable.
+	Fixed some buffer overruns in the "reply" command.
+	When repying to "all" on a message that begins with "CC:" (eg, sent 
+	         with "zwrite -C", the reply line will be constructed
+		 from the sender and the usernames on the CC: line
+		 of the message being replied to.
+	There is no such thing as C-R, so left C-r as it is but added:
+	         M-r --- edit reply to all
+	         M-R --- edit reply to sender
 	
 1.2.1-pre-1
 	Added RCS Id strings to all files.
