@@ -22,7 +22,7 @@ int owl_popwin_up(owl_popwin *pw)
   pw->lines = owl_util_min(glines,24)*3/4 + owl_util_max(glines-24,0)/2;
   startline = (glines-pw->lines)/2;
 
-  pw->cols = owl_util_min(gcols,100)*15/16 + owl_util_max(gcols-100,0)/2;
+  pw->cols = owl_util_min(gcols,90)*15/16 + owl_util_max(gcols-90,0)/2;
   startcol = (gcols-pw->cols)/2;
 
   pw->borderwin=newwin(pw->lines, pw->cols, startline, startcol);
