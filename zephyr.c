@@ -290,7 +290,7 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice) {
   
   /* if it's an HMACK ignore it */
   if (retnotice->z_kind == HMACK) return;
-  
+
   if (retnotice->z_kind == SERVNAK) {
     owl_function_makemsg("Authorization failure sending zephyr");
   } else if ((retnotice->z_kind != SERVACK) || !retnotice->z_message_len) {
@@ -309,7 +309,7 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice) {
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
     if (strcasecmp(retnotice->z_class, "message")) {
       owl_function_makemsg("Not logged in or not subscribing to class %s, instance %s",
-	      retnotice->z_class, retnotice->z_class_inst);
+			   retnotice->z_class, retnotice->z_class_inst);
     } else {
       tmp = short_zuser(retnotice->z_recipient);
       owl_function_makemsg("%s: Not logged in or subscribing to messages.", 
