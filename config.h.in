@@ -45,4 +45,6 @@
 /* Define if libzephyr contains ZInitLocationInfo */
 #undef HAVE_LIBZEPHYR_ZINITLOCATIONINFO
 
+#undef HAVE_USE_DEFAULT_COLORS
+
 #undef TERMINFO

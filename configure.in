@@ -11,6 +11,7 @@ if test "$GCC" = yes; then
      CFLAGS="$CFLAGS -Wall -g";
 fi
 
+
 dnl Check for Athena
 AC_MSG_CHECKING(for /usr/athena/include)
 if test -d /usr/athena/include; then
@@ -41,6 +42,9 @@ AC_CHECK_LIB(krb, krb_sendauth)
 AC_CHECK_LIB(zephyr, ZGetSender,, AC_MSG_ERROR(No zephyr library found.))
 AC_CHECK_LIB(zephyr, ZInitLocationInfo, AC_DEFINE([HAVE_LIBZEPHYR_ZINITLOCATIONINFO], [], [Have ZInitLocationInfo]),)
 
+AC_CHECK_FUNCS(use_default_colors)
+
+
 AC_MSG_CHECKING(for des_ecb_encrypt prototype)
 AC_TRY_COMPILE([#include <des.h>
 int des_ecb_encrypt(char foo[], char bar[], des_key_schedule baz, int qux);],
@@ -62,7 +66,7 @@ FOO=`perl -MExtUtils::Embed -e ccopts`
 echo Adding perl CFLAGS ${FOO}
 CFLAGS=${CFLAGS}\ ${FOO}
 
-dnl Find the location of XSUBPP
+dnl Find the location of perl XSUBPP
 AC_MSG_CHECKING(for the perl xsubpp precompiler)
 XSUBPPDIR="`(perl -MExtUtils::MakeMaker -e 'print ExtUtils::MakeMaker->new({NAME => qw(owl)})->tool_xsubpp;') | grep \^XSUBPPDIR | sed -e 's/XSUBPPDIR = //g;'`"
 if test -n "${XSUBPPDIR}"; then
@@ -80,10 +84,6 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_FILE(/usr/share/terminfo, AC_DEFINE(TERMINFO, "/usr/share/terminfo", [Have terminfo]),
   AC_CHECK_FILE(/usr/share/lib/terminfo, AC_DEFINE(TERMINFO, "/usr/share/lib/terminfo", [Have terminfo]),
   AC_MSG_ERROR(No terminfo found for this system)))
-
-dnl Checks for library functions.
-dnl AC_PROG_GCC_TRADITIONAL
-dnl AC_CHECK_FUNCS(gethostname strdup use_default_colors)
 
 AC_SUBST(XSUBPPDIR)
 
