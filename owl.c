@@ -341,6 +341,10 @@ int main(int argc, char **argv, char **env)
     }
   }
 
+  /* First buddy check to sync the list without notifications */
+  owl_function_debugmsg("startup: doing initial zephyr buddy check");
+  owl_function_zephyr_buddy_check(0);
+
   /* set the startup and default style, based on userclue and presence of a
    * formatting function */
   owl_function_debugmsg("startup: setting startup and default style");
@@ -490,6 +494,17 @@ int main(int argc, char **argv, char **env)
 	owl_function_command(owl_global_get_alert_action(&g));
       }
 
+      /* if it's a zephyr login or logout, update the zbuddylist */
+      if (owl_message_is_type_zephyr(m) && owl_message_is_loginout(m)) {
+	if (owl_message_is_login(m)) {
+	  owl_zbuddylist_adduser(owl_global_get_zephyr_buddylist(&g), owl_message_get_sender(m));
+	} else if (owl_message_is_logout(m)) {
+	  owl_zbuddylist_deluser(owl_global_get_zephyr_buddylist(&g), owl_message_get_sender(m));
+	} else {
+	  owl_function_error("Internal error: received login notice that is neither login nor logout");
+	}
+      }
+
       /* check for burning ears message */
       /* this is an unsupported feature */
       if (owl_global_is_burningears(&g) && owl_message_is_burningears(m)) {
@@ -503,6 +518,15 @@ int main(int argc, char **argv, char **env)
       /* log the message if we need to */
       if (owl_global_is_logging(&g) || owl_global_is_classlogging(&g)) {
 	owl_log_incoming(m);
+      }
+    }
+
+    /* is it time to check zbuddies? */
+    if (owl_global_is_pseudologins(&g)) {
+      if (owl_timer_is_expired(owl_global_get_zephyr_buddycheck_timer(&g))) {
+	owl_function_debugmsg("Doing zephyr buddy check");
+	owl_function_zephyr_buddy_check(1);
+	owl_timer_reset(owl_global_get_zephyr_buddycheck_timer(&g));
       }
     }
 

@@ -414,6 +414,10 @@ typedef struct _owl_buddylist {
   owl_list buddies;
 } owl_buddylist;
 
+typedef struct _owl_zbuddylist {
+  owl_list zusers;
+} owl_zbuddylist;
+
 typedef struct _owl_timer {
   int direction;
   time_t starttime;
@@ -487,7 +491,9 @@ typedef struct _owl_global {
   int havezephyr;
   int haveaim;
   int got_err_signal;	    /* 1 if we got an unexpected signal */
-  siginfo_t err_signal_info; 
+  siginfo_t err_signal_info;
+  owl_zbuddylist zbuddies;
+  owl_timer zephyr_buddycheck_timer;
 } owl_global;
 
 /* globals */

@@ -1428,74 +1428,80 @@ void owl_function_info()
 
       n=owl_message_get_notice(m);
 
-      owl_fmtext_append_normal(&fm, "  Kind      : ");
-      if (n->z_kind==UNSAFE) {
-	owl_fmtext_append_normal(&fm, "UNSAFE\n");
-      } else if (n->z_kind==UNACKED) {
-	owl_fmtext_append_normal(&fm, "UNACKED\n");
-      } else if (n->z_kind==ACKED) {
-	owl_fmtext_append_normal(&fm, "ACKED\n");
-      } else if (n->z_kind==HMACK) {
-	owl_fmtext_append_normal(&fm, "HMACK\n");
-      } else if (n->z_kind==HMCTL) {
-	owl_fmtext_append_normal(&fm, "HMCTL\n");
-      } else if (n->z_kind==SERVACK) {
-	owl_fmtext_append_normal(&fm, "SERVACK\n");
-      } else if (n->z_kind==SERVNAK) {
-	owl_fmtext_append_normal(&fm, "SERVNACK\n");
-      } else if (n->z_kind==CLIENTACK) {
-	owl_fmtext_append_normal(&fm, "CLIENTACK\n");
-      } else if (n->z_kind==STAT) {
-	owl_fmtext_append_normal(&fm, "STAT\n");
-      } else {
-	owl_fmtext_append_normal(&fm, "ILLEGAL VALUE\n");
+      if (!owl_message_is_pseudo(m)) {
+	owl_fmtext_append_normal(&fm, "  Kind      : ");
+	if (n->z_kind==UNSAFE) {
+	  owl_fmtext_append_normal(&fm, "UNSAFE\n");
+	} else if (n->z_kind==UNACKED) {
+	  owl_fmtext_append_normal(&fm, "UNACKED\n");
+	} else if (n->z_kind==ACKED) {
+	  owl_fmtext_append_normal(&fm, "ACKED\n");
+	} else if (n->z_kind==HMACK) {
+	  owl_fmtext_append_normal(&fm, "HMACK\n");
+	} else if (n->z_kind==HMCTL) {
+	  owl_fmtext_append_normal(&fm, "HMCTL\n");
+	} else if (n->z_kind==SERVACK) {
+	  owl_fmtext_append_normal(&fm, "SERVACK\n");
+	} else if (n->z_kind==SERVNAK) {
+	  owl_fmtext_append_normal(&fm, "SERVNACK\n");
+	} else if (n->z_kind==CLIENTACK) {
+	  owl_fmtext_append_normal(&fm, "CLIENTACK\n");
+	} else if (n->z_kind==STAT) {
+	  owl_fmtext_append_normal(&fm, "STAT\n");
+	} else {
+	  owl_fmtext_append_normal(&fm, "ILLEGAL VALUE\n");
+	}
       }
       owl_fmtext_append_normal(&fm, "  Host      : ");
       owl_fmtext_append_normal(&fm, owl_message_get_hostname(m));
-      owl_fmtext_append_normal(&fm, "\n");
-      sprintf(buff, "  Port      : %i\n", n->z_port);
-      owl_fmtext_append_normal(&fm, buff);
 
-      owl_fmtext_append_normal(&fm,    "  Auth      : ");
-      owl_fmtext_append_normal(&fm, owl_zephyr_get_authstr(n));
-      owl_fmtext_append_normal(&fm, "\n");
-
-      /* fix this */
-      sprintf(buff, "  Checkd Ath: %i\n", n->z_checked_auth);
-      sprintf(buff, "%s  Multi notc: %s\n", buff, n->z_multinotice);
-      sprintf(buff, "%s  Num other : %i\n", buff, n->z_num_other_fields);
-      sprintf(buff, "%s  Msg Len   : %i\n", buff, n->z_message_len);
-      owl_fmtext_append_normal(&fm, buff);
-      
-      sprintf(buff, "  Fields    : %i\n", owl_zephyr_get_num_fields(n));
-      owl_fmtext_append_normal(&fm, buff);
-      
-      fields=owl_zephyr_get_num_fields(n);
-      for (i=0; i<fields; i++) {
-	sprintf(buff, "  Field %i   : ", i+1);
-	
-	ptr=owl_zephyr_get_field(n, i+1, &len);
-	if (!ptr) break;
-	if (len<30) {
-	  strncpy(tmpbuff, ptr, len);
-	  tmpbuff[len]='\0';
-	} else {
-	  strncpy(tmpbuff, ptr, 30);
-	  tmpbuff[30]='\0';
-	  strcat(tmpbuff, "...");
-	}
-	
-	for (j=0; j<strlen(tmpbuff); j++) {
-	  if (tmpbuff[j]=='\n') tmpbuff[j]='~';
-	  if (tmpbuff[j]=='\r') tmpbuff[j]='!';
-	}
-	
-	strcat(buff, tmpbuff);
-	strcat(buff, "\n");
+      if (!owl_message_is_pseudo(m)) {
+	owl_fmtext_append_normal(&fm, "\n");
+	sprintf(buff, "  Port      : %i\n", n->z_port);
 	owl_fmtext_append_normal(&fm, buff);
+
+	owl_fmtext_append_normal(&fm,    "  Auth      : ");
+	owl_fmtext_append_normal(&fm, owl_zephyr_get_authstr(n));
+	owl_fmtext_append_normal(&fm, "\n");
+	
+	/* fix this */
+	sprintf(buff, "  Checkd Ath: %i\n", n->z_checked_auth);
+	sprintf(buff, "%s  Multi notc: %s\n", buff, n->z_multinotice);
+	sprintf(buff, "%s  Num other : %i\n", buff, n->z_num_other_fields);
+	sprintf(buff, "%s  Msg Len   : %i\n", buff, n->z_message_len);
+	owl_fmtext_append_normal(&fm, buff);
+	
+	sprintf(buff, "  Fields    : %i\n", owl_zephyr_get_num_fields(n));
+	owl_fmtext_append_normal(&fm, buff);
+	
+	fields=owl_zephyr_get_num_fields(n);
+	for (i=0; i<fields; i++) {
+	  sprintf(buff, "  Field %i   : ", i+1);
+	  
+	  ptr=owl_zephyr_get_field(n, i+1, &len);
+	  if (!ptr) break;
+	  if (len<30) {
+	    strncpy(tmpbuff, ptr, len);
+	    tmpbuff[len]='\0';
+	  } else {
+	    strncpy(tmpbuff, ptr, 30);
+	    tmpbuff[30]='\0';
+	    strcat(tmpbuff, "...");
+	  }
+	  
+	  for (j=0; j<strlen(tmpbuff); j++) {
+	    if (tmpbuff[j]=='\n') tmpbuff[j]='~';
+	    if (tmpbuff[j]=='\r') tmpbuff[j]='!';
+	  }
+	  
+	  strcat(buff, tmpbuff);
+	  strcat(buff, "\n");
+	  owl_fmtext_append_normal(&fm, buff);
+	}
+	owl_fmtext_append_normal(&fm, "  Default Fm:");
+	owl_fmtext_append_normal(&fm, n->z_default_format);
       }
-      owl_fmtext_append_normal(&fm, "  Default Fm:");
-      owl_fmtext_append_normal(&fm, n->z_default_format);
+      
     }
 #endif    
   }
@@ -3019,18 +3025,18 @@ char *owl_function_ztext_stylestrip(char *zt)
   return(plaintext);
 }
 
-/* Popup a buddylisting.  If file is NULL use the default .anyone */
-void owl_function_buddylist(int aim, int zephyr, char *file)
+/* Popup a buddylisting.  If filename is NULL use the default .anyone */
+void owl_function_buddylist(int aim, int zephyr, char *filename)
 {
-  int i, j, idle;
+  int i, j, x, idle;
   owl_fmtext fm;
   owl_buddylist *bl;
   owl_buddy *b;
+  owl_list anyone;
   char *foo, *timestr;
 #ifdef HAVE_LIBZEPHYR
-  char *ourfile, *tmp, buff[LINE], *line;
+  char *tmp, *user, *line;
   ZLocations_t location[200];
-  FILE *f;
   int numlocs, ret;
 #endif
 
@@ -3060,61 +3066,32 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
 
 #ifdef HAVE_LIBZEPHYR
   if (zephyr) {
-    if (file==NULL) {
-      tmp=owl_global_get_homedir(&g);
-      ourfile=owl_sprintf("%s/.anyone", owl_global_get_homedir(&g));
-    } else {
-      ourfile=owl_strdup(file);
-    }
-
     owl_fmtext_append_bold(&fm, "Zephyr users logged in:\n");
-    f=fopen(ourfile, "r");
-    if (!f) {
-      owl_fmtext_append_normal(&fm, "  Error opening file ");
-      owl_fmtext_append_normal(&fm, ourfile);
-      owl_fmtext_append_normal(&fm, "\n");
-      owl_function_error("Error opening file %s: %s", ourfile, strerror(errno) ? strerror(errno) : "");
+    owl_list_create(&anyone);
+    ret=owl_zephyr_get_anyone_list(&anyone, filename);
+    if (ret) {
+      owl_fmtext_append_normal(&fm, "  Error opening file for zephyr buddies.\n");
     } else {
-      while (fgets(buff, LINE, f)!=NULL) {
-	/* ignore comments, blank lines etc. */
-	if (buff[0]=='#') continue;
-	if (buff[0]=='\n') continue;
-	if (buff[0]=='\0') continue;
-	
-	/* strip the \n */
-	buff[strlen(buff)-1]='\0';
-	
-	/* ingore from # on */
-	tmp=strchr(buff, '#');
-	if (tmp) tmp[0]='\0';
-	
-	/* ingore from SPC */
-	tmp=strchr(buff, ' ');
-	if (tmp) tmp[0]='\0';
-	
-	/* stick on the local realm. */
-	if (!strchr(buff, '@')) {
-	  strcat(buff, "@");
-	  strcat(buff, ZGetRealm());
-	}
-	
-	ret=ZLocateUser(buff, &numlocs, ZAUTH);
+      j=owl_list_get_size(&anyone);
+      for (i=0; i<j; i++) {
+	user=owl_list_get_element(&anyone, i);
+	ret=ZLocateUser(user, &numlocs, ZAUTH);
 	if (ret!=ZERR_NONE) {
-	  owl_function_error("Error getting location for %s", buff);
+	  owl_function_error("Error getting location for %s", user);
 	  continue;
 	}
 	
 	numlocs=200;
 	ret=ZGetLocations(location, &numlocs);
 	if (ret==0) {
-	  for (i=0; i<numlocs; i++) {
-	    line=malloc(strlen(location[i].host)+strlen(location[i].time)+strlen(location[i].tty)+100);
-	    tmp=short_zuser(buff);
+	  for (x=0; x<numlocs; x++) {
+	    line=malloc(strlen(location[x].host)+strlen(location[x].time)+strlen(location[x].tty)+100);
+	    tmp=short_zuser(user);
 	    sprintf(line, "  %-10.10s %-24.24s %-12.12s  %20.20s\n",
 		    tmp,
-		    location[i].host,
-		    location[i].tty,
-		    location[i].time);
+		    location[x].host,
+		    location[x].tty,
+		    location[x].time);
 	    owl_fmtext_append_normal(&fm, line);
 	    owl_free(tmp);
 	  }
@@ -3123,14 +3100,13 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
 	  }
 	}
       }
-      fclose(f);
     }
-    owl_free(ourfile);
   }
 #endif
   
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);
+  owl_list_free_all(&anyone, owl_free);
 }
 
 /* Dump messages in the current view to the file 'filename'. */
@@ -3140,8 +3116,6 @@ void owl_function_dump(char *filename)
   owl_message *m;
   owl_view *v;
   FILE *file;
-
-  /* struct stat sbuf; */
 
   v=owl_global_get_current_view(&g);
 
@@ -3386,4 +3360,67 @@ void owl_function_makemsg(char *fmt, ...)
   wnoutrefresh(owl_global_get_curs_msgwin(&g));
   owl_global_set_needrefresh(&g);
   va_end(ap);
+}
+
+/* get locations for everyone in .anyone.  If 'notify' is '1' then
+ * send a pseudo login or logout message for everyone not in sync with
+ * the global zephyr buddy list.  The list is updated regardless of
+ * the status of 'notify'.
+ */
+void owl_function_zephyr_buddy_check(int notify)
+{
+#ifdef HAVE_LIBZEPHYR
+  int i, j;
+  owl_list anyone;
+  owl_message *m;
+  owl_zbuddylist *zbl;
+  char *user;
+  ZLocations_t location[200];
+  int numlocs, ret;
+
+  zbl=owl_global_get_zephyr_buddylist(&g);
+
+  owl_list_create(&anyone);
+  ret=owl_zephyr_get_anyone_list(&anyone, NULL);
+
+  j=owl_list_get_size(&anyone);
+  for (i=0; i<j; i++) {
+    user=owl_list_get_element(&anyone, i);
+    ret=ZLocateUser(user, &numlocs, ZAUTH);
+    if (ret!=ZERR_NONE) {
+      owl_function_error("Error getting location for %s", user);
+      continue;
+    }
+    numlocs=200;
+    ret=ZGetLocations(location, &numlocs);
+    if (ret==0) {
+      if ((numlocs>0) && !owl_zbuddylist_contains_user(zbl, user)) {
+	/* Send a PSEUDO LOGIN! */
+	if (notify) {
+	  m=owl_malloc(sizeof(owl_message));
+	  owl_message_create_pseudo_zlogin(m, 0, user, location[0].host, location[0].time, location[0].tty);
+	  owl_global_messagequeue_addmsg(&g, m);
+	}
+	owl_zbuddylist_adduser(zbl, user);
+	owl_function_debugmsg("owl_function_zephyr_buddy_check: login for %s ", user);
+      } else if ((numlocs==0) && owl_zbuddylist_contains_user(zbl, user)) {
+	/* I don't think this ever happens (if there are 0 locations we should get an error from
+	 * ZGetLocations)
+	 */
+	owl_function_error("owl_function_zephyr_buddy_check: exceptional case logout for %s ",user);
+      }
+    } else if ((ret==ZERR_NOLOCATIONS) && owl_zbuddylist_contains_user(zbl, user)) {
+      /* Send a PSEUDO LOGOUT! */
+      if (notify) {
+	m=owl_malloc(sizeof(owl_message));
+	owl_message_create_pseudo_zlogin(m, 1, user, location[0].host, location[0].time, location[0].tty);
+	owl_global_messagequeue_addmsg(&g, m);
+      }
+      owl_zbuddylist_deluser(zbl, user);
+      owl_function_debugmsg("owl_function_zephyr_buddy_check: logout for %s ",user);
+    }
+  }
+
+  owl_list_free_all(&anyone, owl_free);
+#endif
 }

@@ -4,7 +4,9 @@ $Id$
 	Only print forced AIM logout message once.
 	Don't bind F1 to help in edit context
 	Fix bug in 'getsubs' with no tickets
-	
+	New code for getting users from .anyfile
+	Added the 'pseudologins' variable, and code to do it
+	new attributes 'pseudo' 'logintty' and 'loginhost'
 2.0.14
 	Fixed missing word in startup message
 	Better 'status' command

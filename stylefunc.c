@@ -46,36 +46,28 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
       owl_fmtext_append_bold(fm, frombuff);
       owl_fmtext_append_normal(fm, "\n");
     } else if (owl_message_is_loginout(m)) {
-      char *ptr, *host, *tty;
-      int len;
+      char *host, *tty;
 
-      ptr=owl_zephyr_get_field(n, 1, &len);
-      host=owl_malloc(len+10);
-      strncpy(host, ptr, len);
-      host[len]='\0';
-
-      ptr=owl_zephyr_get_field(n, 3, &len);
-      tty=owl_malloc(len+10);
-      strncpy(tty, ptr, len);
-      tty[len]='\0';
-
+      host=owl_message_get_attribute_value(m, "loginhost");
+      tty=owl_message_get_attribute_value(m, "logintty");
+      
       if (owl_message_is_login(m)) {
 	owl_fmtext_append_bold(fm, "LOGIN");
       } else if (owl_message_is_logout(m)) {
 	owl_fmtext_append_bold(fm, "LOGOUT");
+      }
+      if (owl_message_is_pseudo(m)) {
+	owl_fmtext_append_bold(fm, " (PSEUDO)");
       }
       owl_fmtext_append_normal(fm, " for ");
       ptr=short_zuser(owl_message_get_instance(m));
       owl_fmtext_append_bold(fm, ptr);
       owl_free(ptr);
       owl_fmtext_append_normal(fm, " at ");
-      owl_fmtext_append_normal(fm, host);
+      owl_fmtext_append_normal(fm, host ? host : "");
       owl_fmtext_append_normal(fm, " ");
-      owl_fmtext_append_normal(fm, tty);
+      owl_fmtext_append_normal(fm, tty ? tty : "");
       owl_fmtext_append_normal(fm, "\n");
-
-      owl_free(host);
-      owl_free(tty);
     } else {
       owl_fmtext_append_normal(fm, "From: ");
       if (strcasecmp(owl_message_get_class(m), "message")) {
@@ -265,38 +257,30 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
       owl_fmtext_append_bold(fm, frombuff);
       owl_fmtext_append_normal(fm, "\n");
     } else if (owl_message_is_loginout(m)) {
-      char *ptr, *host, *tty;
-      int len;
-
-      ptr=owl_zephyr_get_field(n, 1, &len);
-      host=owl_malloc(len+10);
-      strncpy(host, ptr, len);
-      host[len]='\0';
-
-      ptr=owl_zephyr_get_field(n, 3, &len);
-      tty=owl_malloc(len+10);
-      strncpy(tty, ptr, len);
-      tty[len]='\0';
+      char *host, *tty;
+      
+      host=owl_message_get_attribute_value(m, "loginhost");
+      tty=owl_message_get_attribute_value(m, "logintty");
       
       if (owl_message_is_login(m)) {
 	owl_fmtext_append_bold(fm, "LOGIN");
       } else if (owl_message_is_logout(m)) {
 	owl_fmtext_append_bold(fm, "LOGOUT");
       }
+
+      if (owl_message_is_pseudo(m)) owl_fmtext_append_bold(fm, " (PSEUDO)");
+	
       owl_fmtext_append_normal(fm, " for ");
       ptr=short_zuser(owl_message_get_instance(m));
       owl_fmtext_append_bold(fm, ptr);
       owl_free(ptr);
       owl_fmtext_append_normal(fm, " at ");
-      owl_fmtext_append_normal(fm, host);
+      owl_fmtext_append_normal(fm, host ? host : "");
       owl_fmtext_append_normal(fm, " ");
-      owl_fmtext_append_normal(fm, tty);
+      owl_fmtext_append_normal(fm, tty ? tty : "");
       owl_fmtext_append_normal(fm, " ");
       owl_fmtext_append_normal(fm, shorttimestr);
       owl_fmtext_append_normal(fm, "\n");
-
-      owl_free(host);
-      owl_free(tty);
     } else {
       owl_fmtext_append_normal(fm, owl_message_get_class(m));
       owl_fmtext_append_normal(fm, " / ");
@@ -481,37 +465,26 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
     owl_fmtext_append_spaces(fm, OWL_TAB);
 
     if (owl_message_is_loginout(m)) {
-      char *ptr, *host, *tty;
-      int len;
+      char *host, *tty;
       
-      ptr=owl_zephyr_get_field(n, 1, &len);
-      host=owl_malloc(len+10);
-      strncpy(host, ptr, len);
-      host[len]='\0';
-
-      ptr=owl_zephyr_get_field(n, 3, &len);
-      tty=owl_malloc(len+10);
-      strncpy(tty, ptr, len);
-      tty[len]='\0';
+      host=owl_message_get_attribute_value(m, "loginhost");
+      tty=owl_message_get_attribute_value(m, "logintty");
 
       if (owl_message_is_login(m)) {
-	tmp=owl_sprintf(baseformat, "<", "LOGIN", "", sender);
+	tmp=owl_sprintf(baseformat, "<", owl_message_is_pseudo(m)?"LOGIN-P":"LOGIN", "", sender);
 	owl_fmtext_append_normal(fm, tmp);
 	owl_free(tmp);
       } else if (owl_message_is_logout(m)) {
-	tmp=owl_sprintf(baseformat, "<", "LOGOUT", "", sender);
+	tmp=owl_sprintf(baseformat, "<", owl_message_is_pseudo(m)?"LOGOUT-P":"LOGOUT", "", sender);
 	owl_fmtext_append_normal(fm, tmp);
 	owl_free(tmp);
       }
 
       owl_fmtext_append_normal(fm, "at ");
-      owl_fmtext_append_normal(fm, host);
+      owl_fmtext_append_normal(fm, host ? host : "");
       owl_fmtext_append_normal(fm, " ");
-      owl_fmtext_append_normal(fm, tty);
+      owl_fmtext_append_normal(fm, tty ? tty : "");
       owl_fmtext_append_normal(fm, "\n");
-
-      owl_free(host);
-      owl_free(tty);
 
     } else if (owl_message_is_ping(m)) {
       tmp=owl_sprintf(baseformat, "<", "PING", "", sender);
@@ -663,36 +636,27 @@ void owl_stylefunc_vt(owl_fmtext *fm, owl_message *m)
       owl_fmtext_append_bold(fm, frombuff);
       owl_fmtext_append_normal(fm, "\n");
     } else if (owl_message_is_loginout(m)) {
-      char *ptr, *host, *tty;
-      int len;
-
-      ptr=owl_zephyr_get_field(n, 1, &len);
-      host=owl_malloc(len+10);
-      strncpy(host, ptr, len);
-      host[len]='\0';
-
-      ptr=owl_zephyr_get_field(n, 3, &len);
-      tty=owl_malloc(len+10);
-      strncpy(tty, ptr, len);
-      tty[len]='\0';
+      char *host, *tty;
+      
+      host=owl_message_get_attribute_value(m, "loginhost");
+      tty=owl_message_get_attribute_value(m, "logintty");
       
       if (owl_message_is_login(m)) {
 	owl_fmtext_append_bold(fm, "LOGIN");
       } else if (owl_message_is_logout(m)) {
 	owl_fmtext_append_bold(fm, "LOGOUT");
       }
+      if (owl_message_is_pseudo(m)) owl_fmtext_append_bold(fm, " (PSEUDO)");
+
       owl_fmtext_append_normal(fm, " for ");
       ptr=short_zuser(owl_message_get_instance(m));
       owl_fmtext_append_bold(fm, ptr);
       owl_free(ptr);
       owl_fmtext_append_normal(fm, " at ");
-      owl_fmtext_append_normal(fm, host);
+      owl_fmtext_append_normal(fm, host ? host : "");
       owl_fmtext_append_normal(fm, " ");
-      owl_fmtext_append_normal(fm, tty);
+      owl_fmtext_append_normal(fm, tty ? tty : "");
       owl_fmtext_append_normal(fm, "\n");
-
-      owl_free(host);
-      owl_free(tty);
     } else {
       owl_fmtext_append_normal(fm, sender);
       owl_fmtext_append_normal(fm, "|");

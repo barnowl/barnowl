@@ -33,11 +33,11 @@ void owl_message_init(owl_message *m)
   owl_fmtext_init_null(&(m->fmtext));
 }
 
+/* add the named attribute to the message.  If an attribute with the
+ * name already exists, replace the old value with the new value
+ */
 void owl_message_set_attribute(owl_message *m, char *attrname, char *attrvalue)
 {
-  /* add the named attribute to the message.  If an attribute with the
-     name already exists, replace the old value with the new value */
-
   int i, j;
   owl_pair *p;
 
@@ -60,10 +60,11 @@ void owl_message_set_attribute(owl_message *m, char *attrname, char *attrvalue)
   owl_list_append_element(&(m->attributes), p);
 }
 
+/* return the value associated with the named attribute, or NULL if
+ * the attribute does not exist
+ */
 char *owl_message_get_attribute_value(owl_message *m, char *attrname)
 {
-  /* return the value associated with the named attribute, or NULL if
-     the attribute does not exist */
   int i, j;
   owl_pair *p;
 
@@ -361,6 +362,12 @@ int owl_message_is_type_zephyr(owl_message *m)
 int owl_message_is_type_aim(owl_message *m)
 {
   if (m->type==OWL_MESSAGE_TYPE_AIM) return(1);
+  return(0);
+}
+
+int owl_message_is_pseudo(owl_message *m)
+{
+  if (owl_message_get_attribute_value(m, "pseudo")) return(1);
   return(0);
 }
 
@@ -706,7 +713,7 @@ void owl_message_create_loopback(owl_message *m, char *text)
 void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 {
   struct hostent *hent;
-  int k;
+  int k, len;
   char *ptr, *tmp, *tmp2;
 
   owl_message_init(m);
@@ -720,12 +727,8 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   /* a little gross, we'll replace \r's with ' ' for now */
   owl_zephyr_hackaway_cr(&(m->notice));
   
-  m->delete=0;
-
   /* save the time, we need to nuke the string saved by message_init */
-  if (m->timestr) {
-    owl_free(m->timestr);
-  }
+  if (m->timestr) owl_free(m->timestr);
   m->time=n->z_time.tv_sec;
   m->timestr=owl_strdup(ctime(&(m->time)));
   m->timestr[strlen(m->timestr)-1]='\0';
@@ -750,6 +753,22 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 
   /* Set the "isloginout" attribute if it's a login message */
   if (!strcasecmp(n->z_class, "login") || !strcasecmp(n->z_class, OWL_WEBZEPHYR_CLASS)) {
+    if (!strcasecmp(n->z_opcode, "user_login") || !strcasecmp(n->z_opcode, "user_logout")) {
+      ptr=owl_zephyr_get_field(n, 1, &len);
+      tmp=owl_malloc(len+10);
+      strncpy(tmp, ptr, len);
+      tmp[len]='\0';
+      owl_message_set_attribute(m, "loginhost", tmp);
+      owl_free(tmp);
+
+      ptr=owl_zephyr_get_field(n, 3, &len);
+      tmp=owl_malloc(len+10);
+      strncpy(tmp, ptr, len);
+      tmp[len]='\0';
+      owl_message_set_attribute(m, "logintty", tmp);
+      owl_free(tmp);
+    }
+
     if (!strcasecmp(n->z_opcode, "user_login")) {
       owl_message_set_islogin(m);
     } else if (!strcasecmp(n->z_opcode, "user_logout")) {
@@ -757,6 +776,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
     }
   }
 
+  
   /* is the "isprivate" attribute if it's a private zephyr */
   if (!strcasecmp(n->z_recipient, owl_zephyr_get_sender())) {
     owl_message_set_isprivate(m);
@@ -808,6 +828,52 @@ void owl_message_create_from_znotice(owl_message *m, void *n)
 {
 }
 #endif
+
+/* If 'direction' is '0' it is a login message, '1' is a logout message. */
+void owl_message_create_pseudo_zlogin(owl_message *m, int direction, char *user, char *host, char *time, char *tty)
+{
+  char *longuser, *ptr;
+
+  memset(&(m->notice), 0, sizeof(ZNotice_t));
+
+  longuser=long_zuser(user);
+  
+  owl_message_init(m);
+  
+  owl_message_set_type_zephyr(m);
+  owl_message_set_direction_in(m);
+
+  owl_message_set_attribute(m, "pseudo", "");
+  owl_message_set_attribute(m, "loginhost", host ? host : "");
+  owl_message_set_attribute(m, "logintty", tty ? tty : "");
+
+  owl_message_set_sender(m, longuser);
+  owl_message_set_class(m, "LOGIN");
+  owl_message_set_instance(m, longuser);
+  owl_message_set_recipient(m, "");
+  if (direction==0) {
+    owl_message_set_opcode(m, "USER_LOGIN");
+    owl_message_set_islogin(m);
+  } else if (direction==1) {
+    owl_message_set_opcode(m, "USER_LOGOUT");
+    owl_message_set_islogout(m);
+  }
+
+  if ((ptr=strchr(longuser, '@'))!=NULL) {
+    owl_message_set_realm(m, ptr+1);
+  } else {
+    owl_message_set_realm(m, owl_zephyr_get_realm());
+  }
+
+  m->zwriteline=strdup("");
+
+  owl_message_set_body(m, "<uninitialized>");
+
+  /* save the hostname */
+  owl_function_debugmsg("create_pseudo_login: host is %s", host);
+  strcpy(m->hostname, host ? host : "");
+  owl_free(longuser);
+}
 
 void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, char *zsig)
 {

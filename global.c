@@ -104,8 +104,10 @@ void owl_global_init(owl_global *g) {
   owl_global_set_no_doaimevents(g);
 
   owl_errqueue_init(&(g->errqueue));
-
   g->got_err_signal=0;
+
+  owl_zbuddylist_create(&(g->zbuddies));
+  owl_timer_create_countdown(&(g->zephyr_buddycheck_timer), 60*3);
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -867,3 +869,12 @@ int owl_global_get_errsignal_and_clear(owl_global *g, siginfo_t *siginfo)
   return signum;
 }
 
+owl_timer *owl_global_get_zephyr_buddycheck_timer(owl_global *g)
+{
+  return(&(g->zephyr_buddycheck_timer));
+}
+
+owl_zbuddylist *owl_global_get_zephyr_buddylist(owl_global *g)
+{
+  return(&(g->zbuddies));
+}

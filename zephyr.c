@@ -793,7 +793,6 @@ void owl_zephyr_set_locationinfo(char *host, char *val)
 }
   
 
-
 /* Strip a local realm fron the zephyr user name.
  * The caller must free the return
  */
@@ -866,4 +865,61 @@ char *owl_zephyr_smartstripped_user(char *in)
   }
 
   return(out);
+}
+
+/* read the list of users in 'filename' as a .anyone file, and put the
+ * names of the zephyr users in the list 'in'.  If 'filename' is NULL,
+ * use the default .anyone file in the users home directory.  Returns
+ * -1 on failure, 0 on success.
+ */
+int owl_zephyr_get_anyone_list(owl_list *in, char *filename)
+{
+#ifdef HAVE_LIBZEPHYR
+  char *ourfile, *tmp, buff[LINE];
+  FILE *f;
+
+  if (filename==NULL) {
+    tmp=owl_global_get_homedir(&g);
+    ourfile=owl_sprintf("%s/.anyone", owl_global_get_homedir(&g));
+  } else {
+    ourfile=owl_strdup(filename);
+  }
+  
+  f=fopen(ourfile, "r");
+  if (!f) {
+    owl_function_error("Error opening file %s: %s", ourfile, strerror(errno) ? strerror(errno) : "");
+    owl_free(ourfile);
+    return(-1);
+  }
+
+  while (fgets(buff, LINE, f)!=NULL) {
+    /* ignore comments, blank lines etc. */
+    if (buff[0]=='#') continue;
+    if (buff[0]=='\n') continue;
+    if (buff[0]=='\0') continue;
+    
+    /* strip the \n */
+    buff[strlen(buff)-1]='\0';
+    
+    /* ingore from # on */
+    tmp=strchr(buff, '#');
+    if (tmp) tmp[0]='\0';
+    
+    /* ingore from SPC */
+    tmp=strchr(buff, ' ');
+    if (tmp) tmp[0]='\0';
+    
+    /* stick on the local realm. */
+    if (!strchr(buff, '@')) {
+      strcat(buff, "@");
+      strcat(buff, ZGetRealm());
+    }
+    owl_list_append_element(in, owl_strdup(buff));
+  }
+  fclose(f);
+  owl_free(ourfile);
+  return(0);
+#else
+  return(-1);
+#endif
 }
