@@ -48,6 +48,10 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv) {
       owl_filterelement_create_or(fe);
     } else if (!strcasecmp(argv[i], "not")) {
       owl_filterelement_create_not(fe);
+    } else if (!strcasecmp(argv[i], "true")) {
+      owl_filterelement_create_true(fe);
+    } else if (!strcasecmp(argv[i], "false")) {
+      owl_filterelement_create_false(fe);
       
     } else if (i==argc-1) {
       error=1;

@@ -14,6 +14,9 @@ $Id$
 	  cc.
 	Added some defenses against resize crashes, and put in debug
 	  messages if they're encountered
+	In filters 'true' and 'false' are now valid tokens.
+	The 'all' filter has been redefinied to be 'true' and there is a
+	  'none' filter defined as 'false'
 
 1.2.8
 	Class pings are displayed differently now
