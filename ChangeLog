@@ -13,6 +13,7 @@ $Id$
 	Print the username on aim login failure, not something random like
 	        the password.  ;)
 	Un-word-wrap text when sending AIM messages.
+	Replace the main loop continue in the keyboard handler with an else.
 	
 2.0.12
 	Command history now doesn't allow the last entry
