@@ -2864,11 +2864,11 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
     for (i=0; i<j; i++) {
       idle=owl_buddylist_get_idletime(b, i);
       if (idle!=0) {
-	timestr=owl_util_seconds_to_timestr(idle);
+	timestr=owl_util_minutes_to_timestr(idle);
       } else {
 	timestr=owl_strdup("");
       }
-      foo=owl_sprintf("  %-10.10s %-15.15s\n",
+      foo=owl_sprintf("  %-10.10s %-10.10s\n",
 		      owl_buddylist_get_buddy(b, i),
 		      timestr);
       owl_fmtext_append_normal(&fm, foo);

@@ -280,25 +280,23 @@ char **owl_parseline(char *line, int *argc)
 }
 
 /* caller must free the return */
-char *owl_util_seconds_to_timestr(int seconds)
+char *owl_util_minutes_to_timestr(int in)
 {
   int days, minutes, hours;
   long run;
   char *out;
 
-  run=seconds;
+  run=in;
 
-  days=run/86400;
-  run-=days*86400;
-  hours=run/3600;
-  run-=hours*3600;
-  minutes=run/60;
-  run-=minutes*60;
+  days=run/1440;
+  run-=days*1440;
+  hours=run/60;
+  run-=hours*60;
 
   if (days>0) {
-    out=owl_sprintf("%i d %2.2i:%2.2i:%2.2li", days, hours, minutes, run);
+    out=owl_sprintf("%i d %2.2i:%2.2i", days, hours, run);
   } else {
-    out=owl_sprintf("     %2.2i:%2.2i:%2.2li", hours, minutes, run);
+    out=owl_sprintf("     %2.2i:%2.2i", hours, run);
   }
   return(out);
 }

@@ -124,7 +124,7 @@ int owl_buddylist_get_idletime(owl_buddylist *b, int n)
 /* set the idle time for user 'screenname'.  If the given
  * screenname is not on the buddy list do nothing
  */
-void owl_buddylist_set_idletime(owl_buddylist *b, char *screenname, int seconds)
+void owl_buddylist_set_idletime(owl_buddylist *b, char *screenname, int minutes)
 {
   int i, j, *idle;
 
@@ -133,7 +133,7 @@ void owl_buddylist_set_idletime(owl_buddylist *b, char *screenname, int seconds)
     if (!strcasecmp(owl_list_get_element(&(b->buddies), i), screenname)) {
       owl_free(owl_list_get_element(&(b->idletimes), i));
       idle=owl_malloc(sizeof(int));
-      *idle=seconds;
+      *idle=minutes;
       owl_list_replace_element(&(b->idletimes), i, idle);
       return;
     }

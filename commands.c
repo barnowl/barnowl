@@ -1609,6 +1609,10 @@ char *owl_command_zwrite(int argc, char **argv, char *buff)
 {
   owl_zwrite z;
 
+  if (!owl_global_is_havezephyr(&g)) {
+    owl_function_makemsg("Zephyr is not available");
+    return(NULL);
+  }
   /* check for a zwrite -m */
   owl_zwrite_create_from_line(&z, buff);
   if (owl_zwrite_is_message_set(&z)) {
