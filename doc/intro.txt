@@ -28,31 +28,36 @@ Section 2: GETTING STARTED
 ==========================
 
 Owl will run happily without a configfile, so to get started just run
-the program.  Owl will take over the terminal window it's started in,
-so you may wish to have another terminal around at the same time.
+the program.  Owl will take over the terminal window it is started in,
+so you may wish to have another terminal window available at the same
+time.
 
-On Athena you can find owl in the ktools locker.  So to run it you can
-type:
+On Athena you can find owl in the ktools locker.  To run it, type:
 
         add ktools
         owl
 
 at the Athena% prompt.  If you wish to run the latest beta release of
-owl type 'owl-beta' instead of 'owl'.
+owl use:
+
+        add ktools
+        owl-beta
+
+instead.
 
 The Screen Layout
 -----------------
 There are three main parts to the owl screen.  The large top portion
 of the screen is where zephyrs are displayed.  The status bar
-separates this area from the one below and displays some status
-information.  The space below that is used to type in messages and is
+separates this area from the one below and displays owl status
+information.  The space below that is used to type messages and is
 also used by owl to give warnings and information to the user.
 
 On Line Help
 ------------
 Owl has a full on line help system.  Pressing the 'h' key will bring
 up the basic help screen.  Further help can be obtained using the help
-command.
+command, described later.
 
 Sending a Zephyr
 ----------------
@@ -68,10 +73,10 @@ arguments to the zwrite command as you normally would.
 
 Manipulating Messages
 ---------------------
-When there are one or more zephyrs in the message window, one of them
-will be the 'current' message.  Owl will indicate which one it is with
-an arrow that looks like this: -> .  The following keys will move you
-to different messages:
+When there are zephyrs in the message window, one of them will be the
+'current' message.  Owl will indicate which one it is with an arrow
+that looks like this: -> The following keys will move you to different
+messages:
 
 	n		move to the next non-deleted message
 	p		move to the previous non-deleted message
@@ -99,7 +104,7 @@ are used to delete, undelete and expunge messages:
 	M-u		unmark all messages in the view for deletion
 
 If you would like to respond to a zephyr sent to you there is a reply
-shortcut.
+shortcut:
 
 	r               Reply.  Personal zephyrs get a personal reply,
                         class/instance zephyrs get a public reply.
@@ -125,10 +130,9 @@ Two other keys that relate to the current message:
 	i 		print detailed information about the message
 	w 		instruct netscape to visit a URL in the message
 
-
 Other Functions
 ----------------
-Some other funcions that can be performed with a single keystroke:
+Some other functions that can be performed with a single keystroke:
 
 	A		toggle zaway on or off
 	C-l		refresh and resize the screen
@@ -136,8 +140,8 @@ Some other funcions that can be performed with a single keystroke:
 
 Command Mode
 ------------
-Owl has a command mode where you can enter more detailed commands for
-owl to process.  To enter command mode press the colon (':') key:
+Owl has a command mode from which you can enter more detailed commands
+for owl to process.  To enter command mode press the colon (':') key:
 
 	:		begin command mode
 
@@ -145,15 +149,20 @@ Owl will give you a command prompt and you can begin typing your
 command.  Type Enter to execute the command, Control-C to cancel.
 There are many commands.  The basic commands are listed on the basic
 help screen (by pressing 'h').  If you'd like a list of all commands
-you can use the command "show commands".  To get detailed information
-on the syntax and use of a command you can use the command 'help
-<command>' as in:
+you can use the command:
 
-	help zwrite
+        show commands
+
+And for detailed information on the syntax and use of a command you
+can use:
+
+        help <command>
+
+For example "help zwrite" will display all the options available when
+using the zwrite command.
 
 Variables
 ---------
-
 Owl has a number of internal variables that can be used to change the
 behavior the program.  The 'print' command will let you view the value
 of a variable and the 'set' commmand will let you set the value of a
@@ -166,22 +175,55 @@ will set the value of the variable 'personalbell' to on.  The command:
 	print personalbell
 
 will show you the current value.  The 'print' command with no
-arguments will show you the value of all variables.  A list of all
-variables is available on the basic help screen, or by using the
-command "show variables".  The command "show variable <variablename>"
-will show you detailed information about a variable and how to use it.
-As in:
+arguments:
 
-	show variable personalbell
+        print
+
+Owl will show you the value of all variables.  You can also use
+
+        show variables
+        show variable <variable>
+
+To display further information on owl variables.
+
+Views
+-----
+Owl always displays a current "view" of messages.  The view describes
+which set of messages should be included on the display.  The default
+view is called "all" and includes every message.  However, you can
+narrow the view to a particular set of zephyrs:
+
+	M-n		Narrow view to the selected conversation
+	M-N		Narrow view to selected conversation by instance
+	V		Return to the home view (the 'all' view)
+	X		Expunge messages and return to home view
+
+If you press M-n while the pointer is on a personal zephyr, the view
+will be narrowed to the conversation with that user only.  If used on
+a class zephyr the conversation will be narrowed to that class, with
+a few special exceptions like class MESSAGE.
+
+There are also some owl commands related to views:
+
+        viewclass <class>     Narrow the view to the named class
+        viewuser <user>       Narrow the view to the named user
+
+More information on views and how they work is included in the section
+on "FILTERS AND COLORS".
+
+==========================================
+Section 3: KEYBINDINGS AND COMMAND ALIASES
+==========================================
+
 
 =============================
-Section 3: FILTERS AND COLORS
+Section 4: FILTERS AND COLORS
 =============================
 
 
 
 ==========================
-Section 4: THE CONFIG FILE
+Section 5: THE CONFIG FILE
 ==========================
 
 *** WARNING: This interface may change substantially in the near future ***
@@ -221,7 +263,7 @@ message list from the edit window.
 
 
 ==============================
-Section 5: FURTHER INFORMATION
+Section 6: FURTHER INFORMATION
 ==============================
 
 $Id$
