@@ -158,6 +158,7 @@ char *owl_text_htmlstrip(char *in) {
     /* if there is no close, copy as you are and exit */
     if (!ptr3) {
       strcat(out, ptr2);
+      return(out);
     }
 
     /* look for things we know */
@@ -172,9 +173,14 @@ char *owl_text_htmlstrip(char *in) {
       ptr1=ptr3+1;
       continue;
     }
+    if (!strncasecmp(ptr2, "<BR>", 4)) {
+      strcat(out, "\n");
+      ptr1=ptr3+1;
+      continue;
+    }
 
     /* if it wasn't something we know, copy to the > and  go again */
-    strncat(out, ptr2, ptr3-ptr2);
+    strncat(out, ptr2, ptr3-ptr2+1);
     ptr1=ptr3+1;
   }
   return(out);
