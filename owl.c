@@ -40,6 +40,7 @@ int main(int argc, char **argv, char **env) {
   time_t nexttime, now;
   struct tm *today;
   char *dir;
+  ZNotice_t notice;
 
   argcsave=argc;
   argvsave=argv;
@@ -88,16 +89,14 @@ int main(int argc, char **argv, char **env) {
     }
   }
 
+#ifdef HAVE_LIBZEPHYR
   /* zephyr init */
-  if ((ret = ZInitialize()) != ZERR_NONE) {
-    com_err("owl",ret,"while initializing");
+  ret=owl_zephyr_initialize();
+  if (ret) {
     exit(1);
   }
-  if ((ret = ZOpenPort(NULL)) != ZERR_NONE) {
-    com_err("owl",ret,"while opening port");
-    exit(1);
-  }
-
+#endif
+  
   /* signal handler */
   sigact.sa_handler=sig_handler;
   sigemptyset(&sigact.sa_mask);
@@ -335,14 +334,13 @@ int main(int argc, char **argv, char **env) {
     /* Grab incoming messages. */
     newmsgs=0;
     zpendcount=0;
-    while(ZPending() || owl_global_messagequeue_pending(&g)) {
-      ZNotice_t notice;
+    while(owl_zephyr_zpending() || owl_global_messagequeue_pending(&g)) {
       struct sockaddr_in from;
       owl_message *m;
       owl_filter *f;
       
       /* grab the new message, stick it in 'm' */
-      if (ZPending()) {
+      if (owl_zephyr_zpending()) {
 	/* grab a zephyr notice, but if we've done 20 without stopping,
 	   take a break to process keystrokes etc. */
 	if (zpendcount>20) break;

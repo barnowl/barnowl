@@ -424,10 +424,12 @@ int owl_message_is_delete(owl_message *m)
   return(0);
 }
 
+#ifdef HAVE_LIBZEPHYR
 ZNotice_t *owl_message_get_notice(owl_message *m)
 {
   return(&(m->notice));
 }
+#endif
 
 char *owl_message_get_hostname(owl_message *m)
 {

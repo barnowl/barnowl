@@ -1,7 +1,6 @@
 #ifndef INC_OWL_H
 #define INC_OWL_H
 
-#include <zephyr/zephyr.h>
 #include <curses.h>
 #include <sys/param.h>
 #include <EXTERN.h>
@@ -10,6 +9,10 @@
 #include <time.h>
 #include <libfaim/aim.h>
 #include "config.h"
+#ifdef HAVE_LIBZEPHYR
+#include <zephyr/zephyr.h>
+#endif
+
 
 static const char owl_h_fileIdent[] = "$Id$";
 
@@ -246,7 +249,9 @@ typedef struct _owl_message {
   int id;
   int type;
   int direction;
+#ifdef HAVE_LIBZEPHYR
   ZNotice_t notice;
+#endif
   owl_fmtext fmtext;              /* this is now only a CACHED copy */
   int invalid_format;             /* indicates whether fmtext needs to be regenerated */
   int delete;
@@ -440,7 +445,9 @@ extern owl_global g;
 #include "owl_prototypes.h"
 
 /* these are missing from the zephyr includes for some reason */
+#ifdef HAVE_LIBZEPHYR
 int ZGetSubscriptions(ZSubscription_t *, int *);
 int ZGetLocations(ZLocations_t *,int *);
+#endif
 
 #endif /* INC_OWL_H */

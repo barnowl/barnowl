@@ -11,8 +11,33 @@ static const char fileIdent[] = "$Id$";
 
 Code_t ZResetAuthentication();
 
+int owl_zephyr_initialize()
+{
+  int ret;
+  
+  if ((ret = ZInitialize()) != ZERR_NONE) {
+    com_err("owl",ret,"while initializing");
+    return(1);
+  }
+  if ((ret = ZOpenPort(NULL)) != ZERR_NONE) {
+    com_err("owl",ret,"while opening port");
+    return(1);
+  }
+  return(0);
+}
+
+int owl_zephyr_zpending()
+{
+#ifdef HAVE_LIBZEPHYR
+  return(ZPending());
+#else
+  return(0);
+#endif
+}
+
 int owl_zephyr_loadsubs(char *filename)
 {
+#ifdef HAVE_LIBZEPHYR
   /* return 0  on success
    *        -1 on file error
    *        -2 on subscription error
@@ -82,10 +107,14 @@ int owl_zephyr_loadsubs(char *filename)
   }
 
   return(ret);
+#else
+  return(0);
+#endif
 }
 
 int owl_zephyr_loadloginsubs(char *filename)
 {
+#ifdef HAVE_LIBZEPHYR
   FILE *file;
   ZSubscription_t subs[3001];
   char subsfile[1024], buffer[1024];
@@ -138,10 +167,14 @@ int owl_zephyr_loadloginsubs(char *filename)
   }
 
   return(ret);
+#else
+  return(0);
+#endif
 }
 
 void unsuball()
 {
+#if HAVE_LIBZEPHYR
   int ret;
 
   ZResetAuthentication();
@@ -149,10 +182,12 @@ void unsuball()
   if (ret != ZERR_NONE) {
     com_err("owl",ret,"while unsubscribing");
   }
+#endif
 }
 
 int owl_zephyr_sub(char *class, char *inst, char *recip)
 {
+#ifdef HAVE_LIBZEPHYR
   ZSubscription_t subs[5];
   int ret;
 
@@ -166,11 +201,15 @@ int owl_zephyr_sub(char *class, char *inst, char *recip)
     ret=-2;
   }
   return(0);
+#else
+  return(0);
+#endif
 }
 
 
 int owl_zephyr_unsub(char *class, char *inst, char *recip)
 {
+#ifdef HAVE_LIBZEPHYR
   ZSubscription_t subs[5];
   int ret;
 
@@ -184,9 +223,12 @@ int owl_zephyr_unsub(char *class, char *inst, char *recip)
     ret=-2;
   }
   return(0);
+#else
+  return(0);
+#endif
 }
 
-
+#ifdef HAVE_LIBZEPHYR
 char *owl_zephyr_get_field(ZNotice_t *n, int j, int *k)
 {
   /* return a pointer to the Jth field, place the length in k.  If the
@@ -215,8 +257,9 @@ char *owl_zephyr_get_field(ZNotice_t *n, int j, int *k)
   *k=0;
   return("");
 }
+#endif
 
-
+#ifdef HAVE_LIBZEPHYR
 int owl_zephyr_get_num_fields(ZNotice_t *n)
 {
   int i, fields;
@@ -228,8 +271,9 @@ int owl_zephyr_get_num_fields(ZNotice_t *n)
   
   return(fields);
 }
+#endif
 
-
+#ifdef HAVE_LIBZEPHYR
 char *owl_zephyr_get_message(ZNotice_t *n, int *k)
 {
   /* return a pointer to the message, place the message length in k */
@@ -240,8 +284,9 @@ char *owl_zephyr_get_message(ZNotice_t *n, int *k)
 
   return(owl_zephyr_get_field(n, 2, k));
 }
+#endif
 
-
+#ifdef HAVE_LIBZEPHYR
 char *owl_zephyr_get_zsig(ZNotice_t *n, int *k)
 {
   /* return a pointer to the zsig if there is one */
@@ -253,10 +298,11 @@ char *owl_zephyr_get_zsig(ZNotice_t *n, int *k)
   *k=strlen(n->z_message);
   return(n->z_message);
 }
-
+#endif
 
 int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *recipient, char *message)
 {
+#ifdef HAVE_LIBZEPHYR
   int ret;
   ZNotice_t notice;
     
@@ -292,20 +338,27 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
     owl_function_makemsg("Error sending zephyr");
     return(ret);
   }
-
   return(0);
+#else
+  return(0);
+#endif
 }
 
+#ifdef HAVE_LIBZEPHYR
 Code_t send_zephyr_helper(ZNotice_t *notice, char *buf, int len, int wait)
 {
   return(ZSendPacket(buf, len, 0));
 }
+#endif
 
 void send_ping(char *to)
 {
+#ifdef HAVE_LIBZEPHYR
   send_zephyr("PING", "", "MESSAGE", "PERSONAL", to, "");
+#endif
 }
 
+#ifdef HAVE_LIBZEPHYR
 void owl_zephyr_handle_ack(ZNotice_t *retnotice)
 {
   char *tmp;
@@ -342,7 +395,9 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
     owl_function_makemsg("Internal error on ack (%s)", retnotice->z_message);
   }
 }
+#endif
 
+#ifdef HAVE_LIBZEPHYR
 int owl_zephyr_notice_is_ack(ZNotice_t *n)
 {
   if (n->z_kind == SERVNAK || n->z_kind == SERVACK || n->z_kind == HMACK) {
@@ -351,9 +406,11 @@ int owl_zephyr_notice_is_ack(ZNotice_t *n)
   }
   return(0);
 }
+#endif
   
 void owl_zephyr_zaway(owl_message *m)
 {
+#ifdef HAVE_LIBZEPHYR
   char *tmpbuff, *myuser, *to;
   
   /* bail if it doesn't look like a message we should reply to.  Some
@@ -391,9 +448,10 @@ void owl_zephyr_zaway(owl_message *m)
   /* display the message as an admin message in the receive window */
   owl_function_make_outgoing_zephyr(owl_global_get_zaway_msg(&g), tmpbuff, "Automated reply:");
   owl_free(tmpbuff);
+#endif
 }
 
-
+#ifdef HAVE_LIBZEPHYR
 void owl_zephyr_hackaway_cr(ZNotice_t *n)
 {
   /* replace \r's with ' '.  Gross-ish */
@@ -405,9 +463,11 @@ void owl_zephyr_hackaway_cr(ZNotice_t *n)
     }
   }
 }
+#endif
 
 void owl_zephyr_zlocate(char *user, char *out, int auth)
 {
+#ifdef HAVE_LIBZEPHYR
   int ret, numlocs;
   int one = 1;
   ZLocations_t locations;
@@ -433,10 +493,12 @@ void owl_zephyr_zlocate(char *user, char *out, int auth)
     sprintf(out, "%s%s: %s\t%s\t%s\n", out, myuser, locations.host, locations.tty, locations.time);
     owl_free(myuser);
   }
+#endif
 }
 
 void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip)
 {
+#ifdef HAVE_LIBZEPHYR
   char *line, subsfile[LINE], buff[LINE];
   FILE *file;
 
@@ -476,10 +538,12 @@ void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip)
   owl_function_makemsg("Subscription added");
   
   owl_free(line);
+#endif
 }
 
 void owl_zephyr_delsub(char *filename, char *class, char *inst, char *recip)
 {
+#ifdef HAVE_LIBZEPHYR
   char *line, subsfile[LINE], buff[LINE], *text;
   char backupfilename[LINE];
   FILE *file, *backupfile;
@@ -543,6 +607,7 @@ void owl_zephyr_delsub(char *filename, char *class, char *inst, char *recip)
   owl_free(line);
 
   owl_function_makemsg("Subscription removed");
+#endif
 }
 
 char *owl_zephyr_makesubline(char *class, char *inst, char *recip)
@@ -558,6 +623,7 @@ char *owl_zephyr_makesubline(char *class, char *inst, char *recip)
 
 void owl_zephyr_zlog_in(void)
 {
+#ifdef HAVE_LIBZEPHYR
   char *exposure, *eset;
   int ret;
 
@@ -589,10 +655,12 @@ void owl_zephyr_zlog_in(void)
       owl_function_makemsg(buff);
     */
   }
+#endif
 }
 
 void owl_zephyr_zlog_out(void)
 {
+#ifdef HAVE_LIBZEPHYR
   int ret;
 
   ZResetAuthentication();
@@ -604,6 +672,7 @@ void owl_zephyr_zlog_out(void)
       owl_function_makemsg(buff);
     */
   }
+#endif
 }
 
 void owl_zephyr_addbuddy(char *name)
