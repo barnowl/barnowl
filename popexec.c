@@ -89,7 +89,8 @@ owl_popexec *owl_popexec_new(char *command)
   return pe;
 }
 
-void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data) {
+void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data)
+{
   owl_popexec *pe = (owl_popexec*)data;
   int navail, bread, rv_navail;
   char *buf;
@@ -164,7 +165,8 @@ void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data) {
   
 }
 
-void owl_popexec_viewwin_onclose(owl_viewwin *vwin, void *data) {
+void owl_popexec_viewwin_onclose(owl_viewwin *vwin, void *data)
+{
   owl_popexec *pe = (owl_popexec*)data;
   int status, rv;
 
@@ -185,7 +187,8 @@ void owl_popexec_viewwin_onclose(owl_viewwin *vwin, void *data) {
   owl_popexec_unref(pe);
 }
 
-void owl_popexec_unref(owl_popexec *pe) {
+void owl_popexec_unref(owl_popexec *pe)
+{
   owl_function_debugmsg("unref of %p was %d", pe, pe->refcount);
   pe->refcount--;
   if (pe->refcount<=0) {

@@ -847,15 +847,11 @@ char *short_zuser(char *in)
  */
 char *long_zuser(char *in)
 {
-  char *ptr;
-
-  if (NULL != (ptr=strchr(in, '@'))) {
-    return owl_strdup(in);
-  } else {
-    return owl_sprintf("%s@%s", in, owl_zephyr_get_realm());
+  if (strchr(in, '@')) {
+    return(owl_strdup(in));
   }
+  return(owl_sprintf("%s@%s", in, owl_zephyr_get_realm()));
 }
-
 
 /* strip out the instance from a zsender's principal.  Preserves the
  * realm if present.  daemon.webzephyr is a special case.  The
