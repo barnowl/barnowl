@@ -5,6 +5,7 @@ $Id$
 	        from commands and displaying them in the errors buffer.
 		This feature is disabled by default.
 		Enable in owl.h with:  OWL_STDERR_REDIR 1
+	Reverted some error messages to makemsg's
 	
 2.0.9-pre-2
 	Better reporting of perl errors (both into the errqueue

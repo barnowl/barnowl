@@ -439,7 +439,7 @@ void owl_function_nextmsg_full(char *filter, int skip_deleted, int last_if_none)
   if (i>owl_view_get_size(v)-1) i=owl_view_get_size(v)-1;
 
   if (!found) {
-    owl_function_error("already at last%s message%s%s",
+    owl_function_makemsg("already at last%s message%s%s",
 			 skip_deleted?" non-deleted":"",
 			 filter?" in ":"", filter?filter:"");
     /* if (!skip_deleted) owl_function_beep(); */
@@ -488,7 +488,7 @@ void owl_function_prevmsg_full(char *filter, int skip_deleted, int first_if_none
   if (i<0) i=0;
 
   if (!found) {
-    owl_function_error("already at first%s message%s%s",
+    owl_function_makemsg("already at first%s message%s%s",
 			 skip_deleted?" non-deleted":"",
 			 filter?" in ":"", filter?filter:"");
     /* if (!skip_deleted) owl_function_beep(); */
@@ -682,7 +682,7 @@ void owl_function_shift_left()
     owl_global_set_needrefresh(&g);
   } else {
     owl_function_beep();
-    owl_function_error("Already full left");
+    owl_function_makemsg("Already full left");
   }
 }
 
@@ -1440,13 +1440,13 @@ void owl_function_page_curmsg(int step)
   if (offset==0) {
     /* Bail if the curmsg isn't the last one displayed */
     if (curmsg != owl_mainwin_get_last_msg(owl_global_get_mainwin(&g))) {
-      owl_function_error("The entire message is already displayed");
+      owl_function_makemsg("The entire message is already displayed");
       return;
     }
     
     /* Bail if we're not truncated */
     if (!owl_mainwin_is_curmsg_truncated(owl_global_get_mainwin(&g))) {
-      owl_function_error("The entire message is already displayed");
+      owl_function_makemsg("The entire message is already displayed");
       return;
     }
   }
