@@ -8,6 +8,8 @@
  *   the ~/.crypt-table will be checked for "crypt-classname" and then       *
  *   "crypt-default" for the keyfile name.                                   */
 
+static const char fileIdent[] = "$Id$";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,6 +63,8 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance);
 char *BuildArgString(char **argv, int start, int end);
 int do_encrypt(char *keystring, int zephyr, char *class, char *instance, ZWRITEOPTIONS *zoptions, char* keyfile);
 int do_decrypt(char *keystring);
+
+int des_ecb_encrypt(char [], char [], des_key_schedule, int);
 
 #define M_NONE            0
 #define M_ZEPHYR_ENCRYPT  1
@@ -313,12 +317,11 @@ int zcrypt_decrypt(char *out, char *in, char *class, char *instance) {
   } else {
     strcat(out, "\n");
   }
-  owl_function_debugmsg("Have: %s", out);
   return(0);
 }
 
 int zcrypt_encrypt(char *out, char *in, char *class, char *instance) {
-
+  return(0);
 }
 
 /* Build a space-separated string from argv from elements between start  *
@@ -346,7 +349,7 @@ char *BuildArgString(char **argv, int start, int end) {
       /* Add a space, if not the first argument */
       if (i != start) *ptr++ = ' ';
       /* Copy argv[i], leaving ptr pointing to the '\0' copied from temp */
-      while ((*ptr = *temp++)!=NULL) {
+      while ((*ptr = *temp++)!=0) {
 	ptr++;
       }
     }
@@ -359,7 +362,7 @@ char *BuildArgString(char **argv, int start, int end) {
 #define MAX_SEARCH 3
 /* Find the class/instance in the .crypt-table */
 char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance) {
-  char *keyfile;
+  char *keyfile = NULL;
   char varname[MAX_SEARCH][128];
   int length[MAX_SEARCH], i;
   char buffer[MAX_BUFF];
@@ -527,7 +530,7 @@ int do_encrypt(char *keystring, int zephyr, char *class, char *instance, ZWRITEO
   char *inbuff = NULL, *inptr;
   int freein = FALSE;
   int use_buffer = FALSE;
-  int num_blocks, last_block_size;
+  int num_blocks=0, last_block_size=0;
 
   des_string_to_key(keystring, key);
   des_key_sched(key, schedule);

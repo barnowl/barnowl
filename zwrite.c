@@ -6,6 +6,8 @@
 
 static const char fileIdent[] = "$Id$";
 
+Code_t ZResetAuthentication();
+
 int owl_zwrite_create_and_send_from_line(char *cmd, char *msg) {
   owl_zwrite z;
   int rv;
