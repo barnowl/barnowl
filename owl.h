@@ -384,6 +384,7 @@ typedef struct _owl_keyhandler {
 
 typedef struct _owl_buddylist {
   owl_list buddies;
+  owl_list idletimes;
 } owl_buddylist;
 
 typedef struct _owl_timer {
@@ -443,6 +444,7 @@ typedef struct _owl_global {
   aim_conn_t waitingconn;
   owl_timer aim_noop_timer;
   owl_timer aim_ignorelogin_timer;
+  owl_timer aim_buddyinfo_timer;
   int aim_loggedin;         /* true if currently logged into AIM */
   char *aim_screenname;     /* currently logged in AIM screen name */
   owl_buddylist buddylist;  /* list of logged in AIM buddies */

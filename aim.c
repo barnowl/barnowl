@@ -156,6 +156,8 @@ int owl_aim_login(char *screenname, char *password)
     return(-1);
   }
   owl_global_set_aimloggedin(&g, screenname);
+
+  owl_buddylist_request_idletimes(owl_global_get_buddylist(&g));
   return(0);
 }
 
@@ -219,6 +221,15 @@ void owl_aim_delbuddy(char *screenname)
 
 
 }
+
+void owl_aim_get_idle(char *screenname)
+{
+  aim_getinfo(owl_global_get_aimsess(&g),
+	      aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
+	      screenname,
+	      AIM_GETINFO_GENERALINFO);
+}
+
 
 void owl_aim_chat_join(char *chatroom)
 {
@@ -976,7 +987,9 @@ static int faimtest_parse_userinfo(aim_session_t *sess, aim_frame_t *fr, ...)
   prof = va_arg(ap, char *);
   va_end(ap);
 
-  return (1);
+  /* right now the only reason we call this is for idle times */
+  owl_buddylist_set_idletime(owl_global_get_buddylist(&g), userinfo->sn, userinfo->idletime);
+  return(1);
 
   printf("userinfo: sn: %s\n", userinfo->sn);
   printf("userinfo: warnlevel: %f\n", aim_userinfo_warnlevel(userinfo));

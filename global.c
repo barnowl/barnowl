@@ -94,6 +94,7 @@ void owl_global_init(owl_global *g) {
   g->aim_loggedin=0;
   owl_timer_create_countdown(&(g->aim_noop_timer), 30);
   owl_timer_create_countdown(&(g->aim_ignorelogin_timer), 0);
+  owl_timer_create_countdown(&(g->aim_buddyinfo_timer), 60);
   owl_buddylist_init(&(g->buddylist));
   g->response=NULL;
   g->havezephyr=0;
@@ -802,4 +803,9 @@ int owl_global_is_havezephyr(owl_global *g)
 {
   if (g->havezephyr) return(1);
   return(0);
+}
+
+owl_timer *owl_global_get_aim_buddyinfo_timer(owl_global *g)
+{
+  return(&(g->aim_buddyinfo_timer));
 }

@@ -2843,9 +2843,10 @@ char *owl_function_ztext_stylestrip(char *zt)
 /* Popup a buddylisting.  If file is NULL use the default .anyone */
 void owl_function_buddylist(int aim, int zephyr, char *file)
 {
-  int i, j;
+  int i, j, idle;
   owl_fmtext fm;
   owl_buddylist *b;
+  char *foo, *timestr;
 #ifdef HAVE_LIBZEPHYR
   char *ourfile, *tmp, buff[LINE], *line;
   ZLocations_t location[200];
@@ -2861,9 +2862,18 @@ void owl_function_buddylist(int aim, int zephyr, char *file)
     owl_fmtext_append_bold(&fm, "AIM users logged in:\n");
     j=owl_buddylist_get_size(b);
     for (i=0; i<j; i++) {
-      owl_fmtext_append_normal(&fm, "  ");
-      owl_fmtext_append_normal(&fm, owl_buddylist_get_buddy(b, i));
-      owl_fmtext_append_normal(&fm, "\n");
+      idle=owl_buddylist_get_idletime(b, i);
+      if (idle!=0) {
+	timestr=owl_util_seconds_to_timestr(idle);
+      } else {
+	timestr=owl_strdup("");
+      }
+      foo=owl_sprintf("  %-10.10s %-15.15s\n",
+		      owl_buddylist_get_buddy(b, i),
+		      timestr);
+      owl_fmtext_append_normal(&fm, foo);
+      owl_free(timestr);
+      owl_free(foo);
     }
   }
 
