@@ -11,7 +11,7 @@
 
 #define FAIM_VERSION_MAJOR 0
 #define FAIM_VERSION_MINOR 99
-#define FAIM_VERSION_MINORMINOR 4
+#define FAIM_VERSION_MINORMINOR 1
 
 #include <faimconfig.h>
 #include <aim_cbtypes.h>
@@ -25,14 +25,13 @@
 #include <errno.h>
 #include <time.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#include <io.h>
-#else
+#ifndef _WIN32
 #include <sys/time.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#else
+#include <winsock.h>
 #endif
 
 /* XXX adjust these based on autoconf-detected platform */
@@ -41,14 +40,6 @@ typedef unsigned short fu16_t;
 typedef unsigned long fu32_t;
 typedef fu32_t aim_snacid_t;
 typedef fu16_t flap_seqnum_t;
-
-/* Portability stuff (DMP) */
-
-#ifdef _WIN32
-#define sleep(x) Sleep((x)*1000)
-#define snprintf _snprintf /* I'm not sure whats wrong with Microsoft here */
-#define close(x) closesocket(x) /* no comment */
-#endif
 
 #if defined(mach) && defined(__APPLE__)
 #define gethostbyname(x) gethostbyname2(x, AF_INET) 
@@ -146,7 +137,7 @@ struct client_info_s {
 	const char *lang; /* two-letter abbrev */
 };
 
-#define AIM_CLIENTINFO_KNOWNGOOD_3_5_1670 { \
+#define CLIENTINFO_AIM_3_5_1670 { \
 	"AOL Instant Messenger (SM), version 3.5.1670/WIN32", \
 	0x0004, \
 	0x0003, \
@@ -157,7 +148,7 @@ struct client_info_s {
 	"en", \
 }
 
-#define AIM_CLIENTINFO_KNOWNGOOD_4_1_2010 { \
+#define CLIENTINFO_AIM_4_1_2010 { \
 	  "AOL Instant Messenger (SM), version 4.1.2010/WIN32", \
 	  0x0004, \
 	  0x0004, \
@@ -168,15 +159,49 @@ struct client_info_s {
 	  "en", \
 }
 
+#define CLIENTINFO_AIM_5_0_2938 { \
+	  "AOL Instant Messenger, version 5.0.2938/WIN32", \
+	  0x0109, \
+	  0x0005, \
+	  0x0000, \
+	  0x0000, \
+	  0x0b7a, \
+	  "us", \
+	  "en", \
+}
+
+#define CLIENTINFO_ICQ_4_65_3281 { \
+	"ICQ Inc. - Product of ICQ (TM) 2000b.4.65.1.3281.85", \
+	0x010a, \
+	0x0004, \
+	0x0041, \
+	0x0001, \
+	0x0cd1, \
+	"us", \
+	"en", \
+}
+
+#define CLIENTINFO_ICQ_5_34_3728 { \
+	"ICQ Inc. - Product of ICQ (TM).2002a.5.34.1.3728.85", \
+	0x010a, \
+	0x0005, \
+	0x0022, \
+	0x0001, \
+	0x0e8f, \
+	"us", \
+	"en", \
+}
+
 /*
  * I would make 4.1.2010 the default, but they seem to have found
  * an alternate way of breaking that one. 
  *
  * 3.5.1670 should work fine, however, you will be subjected to the
- * memory test, which may require you to have a WinAIM binary laying 
+ * memory test, which may require you to have a WinAIM binary lying 
  * around. (see login.c::memrequest())
  */
-#define AIM_CLIENTINFO_KNOWNGOOD AIM_CLIENTINFO_KNOWNGOOD_3_5_1670
+#define CLIENTINFO_AIM_KNOWNGOOD CLIENTINFO_AIM_3_5_1670
+#define CLIENTINFO_ICQ_KNOWNGOOD CLIENTINFO_ICQ_4_65_3281
 
 #ifndef TRUE
 #define TRUE 1
@@ -191,6 +216,8 @@ struct client_info_s {
 #define AIM_CONN_TYPE_BOS           0x0002
 #define AIM_CONN_TYPE_CHAT          0x000e
 #define AIM_CONN_TYPE_CHATNAV       0x000d
+#define AIM_CONN_TYPE_SEARCH        0x000f
+#define AIM_CONN_TYPE_EMAIL         0x0018
 
 /* they start getting arbitrary in rendezvous stuff =) */
 #define AIM_CONN_TYPE_RENDEZVOUS    0x0101 /* these do not speak FLAP! */
@@ -249,8 +276,8 @@ typedef struct aim_conn_s {
  */
 typedef struct aim_bstream_s {
 	fu8_t *data;
-	fu16_t len;
-	fu16_t offset;
+	fu32_t len;
+	fu32_t offset;
 } aim_bstream_t;
 
 typedef struct aim_frame_s {
@@ -261,11 +288,10 @@ typedef struct aim_frame_s {
 			flap_seqnum_t seqnum;     
 		} flap;
 		struct {
-			fu16_t type;
 			fu8_t magic[4]; /* ODC2 OFT2 */
-			fu16_t hdr2len;
-			fu8_t *hdr2; /* rest of bloated header */
-		} oft;
+			fu16_t hdrlen;
+			fu16_t type;
+		} rend;
 	} hdr;
 	aim_bstream_t data;	/* payload stream */
 	fu8_t handled;		/* 0 = new, !0 = been handled */
@@ -304,6 +330,18 @@ typedef struct aim_session_s {
 	void *aux_data;
 
 	/* ---- Internal Use Only ------------------------ */
+
+	/* Server-stored information (ssi) */
+	struct {
+		int received_data;
+		fu16_t revision;
+		struct aim_ssi_item *items;
+		time_t timestamp;
+		int waiting_for_ack;
+		aim_frame_t *holding_queue;
+	} ssi;
+
+	struct aim_emailinfo *emailinfo;
 
 	/* Connection information */
 	aim_conn_t *connlist;
@@ -380,7 +418,7 @@ typedef struct {
 	fu32_t createtime; /* time_t */
 	fu32_t membersince; /* time_t */
 	fu32_t onlinesince; /* time_t */
-	fu32_t sessionlen; /* in seconds */
+	fu32_t sessionlen;  /* in seconds */
 	fu32_t capabilities;
 	struct {
 		fu32_t status;
@@ -458,6 +496,7 @@ faim_internal int aim_puttlv_raw(fu8_t *buf, const fu16_t t, const fu16_t l, con
 
 /* TLV list handling. */
 faim_internal aim_tlvlist_t *aim_readtlvchain(aim_bstream_t *bs);
+faim_internal aim_tlvlist_t *aim_readtlvchain_num(aim_bstream_t *bs, fu16_t num);
 faim_internal void aim_freetlvchain(aim_tlvlist_t **list);
 faim_internal aim_tlv_t *aim_gettlv(aim_tlvlist_t *, fu16_t t, const int n);
 faim_internal char *aim_gettlv_str(aim_tlvlist_t *, const fu16_t t, const int n);
@@ -517,6 +556,7 @@ struct aim_authresp_info {
 	char *email;
 	char *bosip;
 	fu8_t *cookie;
+	char *chpassurl;
 	struct aim_clientrelease latestrelease;
 	struct aim_clientrelease latestbeta;
 };
@@ -573,7 +613,7 @@ faim_export aim_conn_t *aim_getconn_type(aim_session_t *, int type);
 faim_export aim_conn_t *aim_getconn_type_all(aim_session_t *, int type);
 faim_export aim_conn_t *aim_getconn_fd(aim_session_t *, int fd);
 
-/* aim_misc.c */
+/* misc.c */
 
 #define AIM_VISIBILITYCHANGE_PERMITADD    0x05
 #define AIM_VISIBILITYCHANGE_PERMITREMOVE 0x06
@@ -619,7 +659,7 @@ faim_export unsigned short aim_fingerprintclient(unsigned char *msghdr, int len)
 #define AIM_RATE_CODE_CLEARLIMIT 0x0004
 faim_export int aim_ads_requestads(aim_session_t *sess, aim_conn_t *conn);
 
-/* aim_im.c */
+/* im.c */
 
 struct aim_fileheader_t {
 #if 0
@@ -656,13 +696,10 @@ struct aim_fileheader_t {
 				/* 256 */
 };
 
-struct aim_filetransfer_priv {
-	char sn[MAXSNLEN];
-	char cookie[8];
-	char ip[30];
-	int state;
-	struct aim_fileheader_t fh;
-};
+#define AIM_OFT_SUBTYPE_SEND_FILE 0x0001
+#define AIM_OFT_SUBTYPE_SEND_DIR 0x0002
+#define AIM_OFT_SUBTYPE_GET_FILE 0x0011
+#define AIM_OPT_SUBTYPE_GET_LIST 0x0012
 
 struct aim_chat_roominfo {
 	unsigned short exchange;
@@ -682,6 +719,7 @@ struct aim_chat_roominfo {
 #define AIM_IMFLAGS_CUSTOMCHARSET	0x0200 /* charset fields set */
 #define AIM_IMFLAGS_MULTIPART		0x0400 /* ->mpmsg section valid */
 #define AIM_IMFLAGS_OFFLINE		0x0800 /* send to offline user */
+#define AIM_IMFLAGS_TYPINGNOT		0x1000 /* typing notification */
 
 /*
  * Multipart message structures.
@@ -821,8 +859,25 @@ struct aim_incomingim_ch2_args {
 			fu32_t bgcolor;
 			const char *rtfmsg;
 		} rtfmsg;
+		struct {
+			fu16_t subtype;
+			fu16_t totfiles;
+			fu32_t totsize;
+			char *filename;
+		} sendfile;
 	} info;
 	void *destructor; /* used internally only */
+};
+
+/* Valid values for channel 4 args->type */
+#define AIM_ICQMSG_AUTHREQUEST 0x0006
+#define AIM_ICQMSG_AUTHDENIED 0x0007
+#define AIM_ICQMSG_AUTHGRANTED 0x0008
+
+struct aim_incomingim_ch4_args {
+	fu32_t uin; /* Of the sender of the ICBM */
+	fu16_t type;
+	char *msg; /* Reason for auth request, deny, or accept */
 };
 
 faim_export int aim_send_rtfmsg(aim_session_t *sess, struct aim_sendrtfmsg_args *args);
@@ -830,19 +885,27 @@ faim_export int aim_send_im_ext(aim_session_t *sess, struct aim_sendimext_args *
 faim_export int aim_send_im(aim_session_t *, const char *destsn, unsigned short flags, const char *msg);
 faim_export int aim_send_icon(aim_session_t *sess, const char *sn, const fu8_t *icon, int iconlen, time_t stamp, fu16_t iconsum);
 faim_export fu16_t aim_iconsum(const fu8_t *buf, int buflen);
-faim_export int aim_send_im_direct(aim_session_t *, aim_conn_t *, const char *msg);
+faim_export int aim_send_typing(aim_session_t *sess, aim_conn_t *conn, int typing);
+faim_export int aim_send_im_direct(aim_session_t *, aim_conn_t *, const char *msg, int len, int encoding);
 faim_export const char *aim_directim_getsn(aim_conn_t *conn);
 faim_export aim_conn_t *aim_directim_initiate(aim_session_t *, const char *destsn);
 faim_export aim_conn_t *aim_directim_connect(aim_session_t *, const char *sn, const char *addr, const fu8_t *cookie);
 
-faim_export aim_conn_t *aim_sendfile_initiate(aim_session_t *, const char *destsn, const char *filename, fu16_t numfiles, fu32_t totsize);
+faim_export int aim_send_im_ch2_geticqmessage(aim_session_t *sess, const char *sn, int type);
+faim_export aim_conn_t *aim_sendfile_initiate(aim_session_t *, const char *destsn, const char *filename, fu16_t numfiles, fu32_t totsize, char *cookret);
+faim_export int aim_send_im_ch4(aim_session_t *sess, char *sn, fu16_t type, fu8_t *message);
+
+faim_export int aim_mtn_send(aim_session_t *sess, fu16_t type1, char *sn, fu16_t type2);
 
 faim_export aim_conn_t *aim_getfile_initiate(aim_session_t *sess, aim_conn_t *conn, const char *destsn);
 faim_export int aim_oft_getfile_request(aim_session_t *sess, aim_conn_t *conn, const char *name, int size);
+faim_export int aim_oft_sendfile_request(aim_session_t *sess, aim_conn_t *conn,
+		const char *name, int filesdone, int numfiles, int size,
+		int totsize);
 faim_export int aim_oft_getfile_ack(aim_session_t *sess, aim_conn_t *conn);
-faim_export int aim_oft_getfile_end(aim_session_t *sess, aim_conn_t *conn);
+faim_export int aim_oft_end(aim_session_t *sess, aim_conn_t *conn);
 
-/* aim_info.c */
+/* info.c */
 #define AIM_CAPS_BUDDYICON      0x00000001
 #define AIM_CAPS_VOICE          0x00000002
 #define AIM_CAPS_IMIMAGE        0x00000004
@@ -903,7 +966,11 @@ faim_export int aim_handlerendconnect(aim_session_t *sess, aim_conn_t *cur);
 #define AIM_TRANSFER_DENY_DECLINE 0x0001
 #define AIM_TRANSFER_DENY_NOTACCEPTING 0x0002
 faim_export int aim_denytransfer(aim_session_t *sess, const char *sender, const char *cookie, unsigned short code);
-faim_export aim_conn_t *aim_accepttransfer(aim_session_t *sess, aim_conn_t *conn, const char *sn, const fu8_t *cookie, const fu8_t *ip, fu16_t listingfiles, fu16_t listingtotsize, fu16_t listingsize, fu32_t listingchecksum, fu16_t rendid);
+faim_export aim_conn_t *aim_accepttransfer(aim_session_t *sess, aim_conn_t *conn, const char *sn, const fu8_t *cookie, const fu8_t *ip, fu16_t port, fu16_t rendid, ...);
+faim_export int aim_canceltransfer(aim_session_t *sess, aim_conn_t *conn,
+		                const char *cookie, const char *sn, int rendid);
+faim_export fu32_t aim_update_checksum(aim_session_t *sess, aim_conn_t *conn,
+		                const unsigned char *buffer, int bufferlen);
 
 faim_export int aim_getinfo(aim_session_t *, aim_conn_t *, const char *, unsigned short);
 faim_export int aim_sendbuddyoncoming(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *info);
@@ -932,12 +999,12 @@ faim_export int aim_sendbuddyoffgoing(aim_session_t *sess, aim_conn_t *conn, con
 
 
 struct aim_icbmparameters {
-	unsigned short maxchan;
-	unsigned long flags; /* AIM_IMPARAM_FLAG_ */
-	unsigned short maxmsglen; /* message size that you will accept */
-	unsigned short maxsenderwarn; /* this and below are *10 (999=99.9%) */
-	unsigned short maxrecverwarn;
-	unsigned long minmsginterval; /* in milliseconds? */
+	fu16_t maxchan;
+	fu32_t flags; /* AIM_IMPARAM_FLAG_ */
+	fu16_t maxmsglen; /* message size that you will accept */
+	fu16_t maxsenderwarn; /* this and below are *10 (999=99.9%) */
+	fu16_t maxrecverwarn;
+	fu32_t minmsginterval; /* in milliseconds? */
 };
 
 faim_export int aim_reqicbmparams(aim_session_t *sess);
@@ -953,12 +1020,36 @@ faim_export int aim_admin_getinfo(aim_session_t *sess, aim_conn_t *conn, fu16_t 
 faim_export int aim_admin_setemail(aim_session_t *sess, aim_conn_t *conn, const char *newemail);
 faim_export int aim_admin_setnick(aim_session_t *sess, aim_conn_t *conn, const char *newnick);
 
-/* aim_buddylist.c */
+/* buddylist.c */
 faim_export int aim_add_buddy(aim_session_t *, aim_conn_t *, const char *);
 faim_export int aim_remove_buddy(aim_session_t *, aim_conn_t *, const char *);
 
-/* aim_search.c */
+/* search.c */
 faim_export int aim_usersearch_address(aim_session_t *, aim_conn_t *, const char *);
+
+/* newsearch.c */
+struct aim_usersearch {
+	char *first;
+	char *last;
+	char *middle;
+	char *maiden;
+	char *email;
+	char *country;
+	char *state;
+	char *city;
+	char *sn;
+	char *interest;
+	char *nick;
+	char *zip;
+	char *region;
+	char *address;
+	struct aim_usersearch *next;
+};
+
+faim_export int aim_usersearch_email(aim_session_t *, const char *, const char *);
+faim_export int aim_usersearch_name(aim_session_t *, const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *);
+faim_export int aim_usersearch_interest(aim_session_t *, const char *, const char *);
+
 
 /* These apply to exchanges as well. */
 #define AIM_CHATROOM_FLAG_EVILABLE 0x0001
@@ -994,8 +1085,8 @@ faim_export int aim_chat_leaveroom(aim_session_t *sess, const char *name);
 
 #define AIM_SSI_TYPE_BUDDY         0x0000
 #define AIM_SSI_TYPE_GROUP         0x0001
-#define AIM_SSI_TYPE_PERMITLIST    0x0002
-#define AIM_SSI_TYPE_DENYLIST      0x0003
+#define AIM_SSI_TYPE_PERMIT        0x0002
+#define AIM_SSI_TYPE_DENY          0x0003
 #define AIM_SSI_TYPE_PDINFO        0x0004
 #define AIM_SSI_TYPE_PRESENCEPREFS 0x0005
 
@@ -1008,11 +1099,34 @@ struct aim_ssi_item {
 	struct aim_ssi_item *next;
 };
 
+/* These build the actual SNACs and queue them to be sent */
 faim_export int aim_ssi_reqrights(aim_session_t *sess, aim_conn_t *conn);
 faim_export int aim_ssi_reqdata(aim_session_t *sess, aim_conn_t *conn, time_t localstamp, fu16_t localrev);
 faim_export int aim_ssi_enable(aim_session_t *sess, aim_conn_t *conn);
+faim_export int aim_ssi_addmoddel(aim_session_t *sess, aim_conn_t *conn, struct aim_ssi_item **items, unsigned int num, fu16_t subtype);
 faim_export int aim_ssi_modbegin(aim_session_t *sess, aim_conn_t *conn);
 faim_export int aim_ssi_modend(aim_session_t *sess, aim_conn_t *conn);
+
+/* These handle the local variables */
+faim_export struct aim_ssi_item *aim_ssi_itemlist_find(struct aim_ssi_item *list, fu16_t gid, fu16_t bid);
+faim_export struct aim_ssi_item *aim_ssi_itemlist_finditem(struct aim_ssi_item *list, const char *gn, const char *sn, fu16_t type);
+faim_export struct aim_ssi_item *aim_ssi_itemlist_findparent(struct aim_ssi_item *list, char *sn);
+faim_export int aim_ssi_getpermdeny(struct aim_ssi_item *list);
+faim_export fu32_t aim_ssi_getpresence(struct aim_ssi_item *list);
+faim_export int aim_ssi_cleanlist(aim_session_t *sess, aim_conn_t *conn);
+faim_export int aim_ssi_addbuddies(aim_session_t *sess, aim_conn_t *conn, const char *gn, const char **sn, unsigned int num);
+faim_export int aim_ssi_addmastergroup(aim_session_t *sess, aim_conn_t *conn);
+faim_export int aim_ssi_addgroups(aim_session_t *sess, aim_conn_t *conn, const char **gn, unsigned int num);
+faim_export int aim_ssi_addpord(aim_session_t *sess, aim_conn_t *conn, const char **sn, unsigned int num, fu16_t type);
+faim_export int aim_ssi_movebuddy(aim_session_t *sess, aim_conn_t *conn, const char *oldgn, const char *newgn, const char *sn);
+faim_export int aim_ssi_rename_group(aim_session_t *sess, aim_conn_t *conn, const char *oldgn, const char *newgn);
+faim_export int aim_ssi_delbuddies(aim_session_t *sess, aim_conn_t *conn, const char *gn, char **sn, unsigned int num);
+faim_export int aim_ssi_delmastergroup(aim_session_t *sess, aim_conn_t *conn);
+faim_export int aim_ssi_delgroups(aim_session_t *sess, aim_conn_t *conn, char **gn, unsigned int num);
+faim_export int aim_ssi_deletelist(aim_session_t *sess, aim_conn_t *conn);
+faim_export int aim_ssi_delpord(aim_session_t *sess, aim_conn_t *conn, const char **sn, unsigned int num, fu16_t type);
+faim_export int aim_ssi_setpermdeny(aim_session_t *sess, aim_conn_t *conn, fu8_t permdeny, fu32_t vismask);
+faim_export int aim_ssi_setpresence(aim_session_t *sess, aim_conn_t *conn, fu32_t presence);
 
 struct aim_icq_offlinemsg {
 	fu32_t sender;
@@ -1034,7 +1148,22 @@ faim_export int aim_icq_reqofflinemsgs(aim_session_t *sess);
 faim_export int aim_icq_ackofflinemsgs(aim_session_t *sess);
 faim_export int aim_icq_getsimpleinfo(aim_session_t *sess, const char *uin);
 
-/* aim_util.c */
+/* email.c */
+struct aim_emailinfo {
+	fu8_t *cookie16;
+	fu8_t *cookie8;
+	char *url;
+	fu16_t nummsgs;
+	fu8_t unread;
+	char *domain;
+	fu16_t flag;
+	struct aim_emailinfo *next;
+};
+
+faim_export int aim_email_sendcookies(aim_session_t *sess, aim_conn_t *conn);
+faim_export int aim_email_activate(aim_session_t *sess, aim_conn_t *conn);
+
+/* util.c */
 /*
  * These are really ugly.  You'd think this was LISP.  I wish it was.
  *
@@ -1099,7 +1228,7 @@ faim_export int aim_sncmp(const char *sn1, const char *sn2);
 /* for libc's that dont have it */
 faim_export char *aim_strsep(char **pp, const char *delim);
 
-/* aim_meta.c */
+/* meta.c */
 faim_export char *aim_getbuilddate(void);
 faim_export char *aim_getbuildtime(void);
 faim_export int aim_getbuildstring(char *buf, int buflen);

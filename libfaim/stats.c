@@ -1,3 +1,7 @@
+/*
+ * Family 0x000b - Statistics.
+ *
+ */
 
 #define FAIM_INTERNAL
 #include <aim.h>

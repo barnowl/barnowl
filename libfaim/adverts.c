@@ -1,5 +1,5 @@
 /*
- *
+ * Family 0x0005 - Advertisements.
  *
  */
 
@@ -29,5 +29,3 @@ faim_internal int adverts_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	return 0;
 }
-
-

@@ -1,7 +1,5 @@
 /*
- * aim_chat.c
- *
- * Routines for the Chat service.
+ * Family 0x000e - Routines for the Chat service.
  *
  */
 
@@ -14,27 +12,6 @@ struct chatconnpriv {
 	char *name;
 	fu16_t instance;
 };
-
-static void dumpbox(aim_session_t *sess, unsigned char *buf, int len)
-{
-	int i;
-
-	if (!sess || !buf || !len)
-		return;
-
-	faimdprintf(sess, 1, "\nDump of %d bytes at %p:", len, buf);
-
-	for (i = 0; i < len; i++) {
-		if ((i % 8) == 0)
-			faimdprintf(sess, 1, "\n\t");
-
-		faimdprintf(sess, 1, "0x%2x ", buf[i]);
-	}
-
-	faimdprintf(sess, 1, "\n\n");
-
-	return;
-}
 
 faim_internal void aim_conn_kill_chat(aim_session_t *sess, aim_conn_t *conn)
 {
@@ -102,103 +79,6 @@ faim_export int aim_chat_attachname(aim_conn_t *conn, fu16_t exchange, const cha
 	ccp->instance = instance;
 
 	conn->priv = (void *)ccp;
-
-	return 0;
-}
-
-/*
- * Send a Chat Message.
- *
- * Possible flags:
- *   AIM_CHATFLAGS_NOREFLECT   --  Unset the flag that requests messages
- *                                 should be sent to their sender.
- *   AIM_CHATFLAGS_AWAY        --  Mark the message as an autoresponse
- *                                 (Note that WinAIM does not honor this,
- *                                 and displays the message as normal.)
- *
- * XXX convert this to use tlvchains 
- */
-faim_export int aim_chat_send_im(aim_session_t *sess, aim_conn_t *conn, fu16_t flags, const char *msg, int msglen)
-{   
-	int i;
-	aim_frame_t *fr;
-	aim_msgcookie_t *cookie;
-	aim_snacid_t snacid;
-	fu8_t ckstr[8];
-	aim_tlvlist_t *otl = NULL, *itl = NULL;
-
-	if (!sess || !conn || !msg || (msglen <= 0))
-		return 0;
-
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 1152)))
-		return -ENOMEM;
-
-	snacid = aim_cachesnac(sess, 0x000e, 0x0005, 0x0000, NULL, 0);
-	aim_putsnac(&fr->data, 0x000e, 0x0005, 0x0000, snacid);
-
-
-	/* 
-	 * Generate a random message cookie.
-	 *
-	 * XXX mkcookie should generate the cookie and cache it in one
-	 * operation to preserve uniqueness.
-	 *
-	 */
-	for (i = 0; i < sizeof(ckstr); i++)
-		aimutil_put8(ckstr+i, (fu8_t) rand());
-
-	cookie = aim_mkcookie(ckstr, AIM_COOKIETYPE_CHAT, NULL);
-	cookie->data = NULL; /* XXX store something useful here */
-
-	aim_cachecookie(sess, cookie);
-
-	for (i = 0; i < sizeof(ckstr); i++)
-		aimbs_put8(&fr->data, ckstr[i]);
-
-
-	/*
-	 * Channel ID. 
-	 */
-	aimbs_put16(&fr->data, 0x0003);
-
-
-	/*
-	 * Type 1: Flag meaning this message is destined to the room.
-	 */
-	aim_addtlvtochain_noval(&otl, 0x0001);
-
-	/*
-	 * Type 6: Reflect
-	 */
-	if (!(flags & AIM_CHATFLAGS_NOREFLECT))
-		aim_addtlvtochain_noval(&otl, 0x0006);
-
-	/*
-	 * Type 7: Autoresponse
-	 */
-	if (flags & AIM_CHATFLAGS_AWAY)
-		aim_addtlvtochain_noval(&otl, 0x0007);
-
-	/*
-	 * SubTLV: Type 1: Message
-	 */
-	aim_addtlvtochain_raw(&itl, 0x0001, strlen(msg), msg);
-
-	/*
-	 * Type 5: Message block.  Contains more TLVs.
-	 *
-	 * This could include other information... We just
-	 * put in a message TLV however.  
-	 * 
-	 */
-	aim_addtlvtochain_frozentlvlist(&otl, 0x0005, &itl);
-
-	aim_writetlvchain(&fr->data, &otl);
-	
-	aim_freetlvchain(&itl);
-	aim_freetlvchain(&otl);
-	
-	aim_tx_enqueue(sess, fr);
 
 	return 0;
 }
@@ -397,13 +277,12 @@ faim_export int aim_chat_invite(aim_session_t *sess, aim_conn_t *conn, const cha
 }
 
 /*
- * General room information.  Lots of stuff.
+ * Subtype 0x0002 - General room information.  Lots of stuff.
  *
  * Values I know are in here but I havent attached
  * them to any of the 'Unknown's:
  *	- Language (English)
  *
- * SNAC 000e/0002
  */
 static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
@@ -421,8 +300,6 @@ static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	fu32_t creationtime = 0;
 	fu16_t maxmsglen = 0, maxvisiblemsglen = 0;
 	fu16_t unknown_d2 = 0, unknown_d5 = 0;
-
-	dumpbox(sess, bs->data + bs->offset, aim_bstream_empty(bs));
 
 	aim_chat_readroominfo(bs, &roominfo);
 
@@ -569,6 +446,7 @@ static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	return ret;
 }
 
+/* Subtypes 0x0003 and 0x0004 */
 static int userlistchange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_userinfo_t *userinfo = NULL;
@@ -590,6 +468,105 @@ static int userlistchange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 }
 
 /*
+ * Subtype 0x0005 - Send a Chat Message.
+ *
+ * Possible flags:
+ *   AIM_CHATFLAGS_NOREFLECT   --  Unset the flag that requests messages
+ *                                 should be sent to their sender.
+ *   AIM_CHATFLAGS_AWAY        --  Mark the message as an autoresponse
+ *                                 (Note that WinAIM does not honor this,
+ *                                 and displays the message as normal.)
+ *
+ * XXX convert this to use tlvchains 
+ */
+faim_export int aim_chat_send_im(aim_session_t *sess, aim_conn_t *conn, fu16_t flags, const char *msg, int msglen)
+{   
+	int i;
+	aim_frame_t *fr;
+	aim_msgcookie_t *cookie;
+	aim_snacid_t snacid;
+	fu8_t ckstr[8];
+	aim_tlvlist_t *otl = NULL, *itl = NULL;
+
+	if (!sess || !conn || !msg || (msglen <= 0))
+		return 0;
+
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 1152)))
+		return -ENOMEM;
+
+	snacid = aim_cachesnac(sess, 0x000e, 0x0005, 0x0000, NULL, 0);
+	aim_putsnac(&fr->data, 0x000e, 0x0005, 0x0000, snacid);
+
+
+	/* 
+	 * Generate a random message cookie.
+	 *
+	 * XXX mkcookie should generate the cookie and cache it in one
+	 * operation to preserve uniqueness.
+	 *
+	 */
+	for (i = 0; i < sizeof(ckstr); i++)
+		aimutil_put8(ckstr+i, (fu8_t) rand());
+
+	cookie = aim_mkcookie(ckstr, AIM_COOKIETYPE_CHAT, NULL);
+	cookie->data = NULL; /* XXX store something useful here */
+
+	aim_cachecookie(sess, cookie);
+
+	for (i = 0; i < sizeof(ckstr); i++)
+		aimbs_put8(&fr->data, ckstr[i]);
+
+
+	/*
+	 * Channel ID. 
+	 */
+	aimbs_put16(&fr->data, 0x0003);
+
+
+	/*
+	 * Type 1: Flag meaning this message is destined to the room.
+	 */
+	aim_addtlvtochain_noval(&otl, 0x0001);
+
+	/*
+	 * Type 6: Reflect
+	 */
+	if (!(flags & AIM_CHATFLAGS_NOREFLECT))
+		aim_addtlvtochain_noval(&otl, 0x0006);
+
+	/*
+	 * Type 7: Autoresponse
+	 */
+	if (flags & AIM_CHATFLAGS_AWAY)
+		aim_addtlvtochain_noval(&otl, 0x0007);
+
+	/*
+	 * SubTLV: Type 1: Message
+	 */
+	aim_addtlvtochain_raw(&itl, 0x0001, strlen(msg), msg);
+
+	/*
+	 * Type 5: Message block.  Contains more TLVs.
+	 *
+	 * This could include other information... We just
+	 * put in a message TLV however.  
+	 * 
+	 */
+	aim_addtlvtochain_frozentlvlist(&otl, 0x0005, &itl);
+
+	aim_writetlvchain(&fr->data, &otl);
+	
+	aim_freetlvchain(&itl);
+	aim_freetlvchain(&otl);
+	
+	aim_tx_enqueue(sess, fr);
+
+	return 0;
+}
+
+/*
+ * Subtype 0x0006
+ *
  * We could probably include this in the normal ICBM parsing 
  * code as channel 0x0003, however, since only the start
  * would be the same, we might as well do it here.
@@ -733,5 +710,3 @@ faim_internal int chat_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	return 0;
 }
-
-

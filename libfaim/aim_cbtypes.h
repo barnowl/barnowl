@@ -23,8 +23,11 @@
 #define AIM_CB_FAM_TRN 0x000c
 #define AIM_CB_FAM_CTN 0x000d /* ChatNav */
 #define AIM_CB_FAM_CHT 0x000e /* Chat */
+#define AIM_CB_FAM_SCH 0x000f /* "New" search */
+#define AIM_CB_FAM_SSI 0x0013 /* Server stored information */
 #define AIM_CB_FAM_ICQ 0x0015
 #define AIM_CB_FAM_ATH 0x0017
+#define AIM_CB_FAM_EML 0x0018
 #define AIM_CB_FAM_OFT 0xfffe /* OFT/Rvous */
 #define AIM_CB_FAM_SPECIAL 0xffff /* Internal libfaim use */
 
@@ -96,8 +99,9 @@
 #define AIM_CB_MSG_INCOMING 0x0007
 #define AIM_CB_MSG_EVIL 0x0009
 #define AIM_CB_MSG_MISSEDCALL 0x000a
-#define AIM_CB_MSG_CLIENTERROR 0x000b
+#define AIM_CB_MSG_CLIENTAUTORESP 0x000b
 #define AIM_CB_MSG_ACK 0x000c
+#define AIM_CB_MSG_MTN 0x0014
 #define AIM_CB_MSG_DEFAULT 0xffff
 
 /*
@@ -173,6 +177,15 @@
 #define AIM_CB_CHT_DEFAULT 0xffff
 
 /*
+ * SNAC Family: "New" Search
+ *
+ * Most of these are actually special.
+ */ 
+#define AIM_CB_SCH_ERROR 0x0001
+#define AIM_CB_SCH_SEARCH 0x0002
+#define AIM_CB_SCH_RESULTS 0x0003
+
+/*
  * SNAC Family: ICQ
  *
  * Most of these are actually special.
@@ -182,6 +195,23 @@
 #define AIM_CB_ICQ_OFFLINEMSGCOMPLETE 0x00f1
 #define AIM_CB_ICQ_SIMPLEINFO 0x00f2
 #define AIM_CB_ICQ_DEFAULT 0xffff
+
+/*
+ * SNAC Family: Server-Stored Buddy Lists
+ */
+#define AIM_CB_SSI_ERROR 0x0001
+#define AIM_CB_SSI_REQRIGHTS 0x0002
+#define AIM_CB_SSI_RIGHTSINFO 0x0003
+#define AIM_CB_SSI_REQLIST 0x0005
+#define AIM_CB_SSI_LIST 0x0006
+#define AIM_CB_SSI_ACTIVATE 0x0007
+#define AIM_CB_SSI_ADD 0x0008
+#define AIM_CB_SSI_MOD 0x0009
+#define AIM_CB_SSI_DEL 0x000A
+#define AIM_CB_SSI_SRVACK 0x000E
+#define AIM_CB_SSI_NOLIST 0x000F
+#define AIM_CB_SSI_EDITSTART 0x0011
+#define AIM_CB_SSI_EDITSTOP 0x0012
 
 /*
  * SNAC Family: Authorizer
@@ -196,6 +226,18 @@
 #define AIM_CB_ATH_AUTHRESPONSE 0x0007
 
 /*
+ * SNAC Family: Email
+ *
+ * Used for getting information on the email address
+ * associated with your screen name.
+ *
+ */
+#define AIM_CB_EML_ERROR 0x0001
+#define AIM_CB_EML_SENDCOOKIES 0x0006
+#define AIM_CB_EML_MAILSTATUS 0x0007
+#define AIM_CB_EML_INIT 0x0016
+
+/*
  * OFT Services
  *
  * See non-SNAC note below.
@@ -206,6 +248,7 @@
 #define AIM_CB_OFT_DIRECTIMTYPING 0x0004
 #define AIM_CB_OFT_DIRECTIMINITIATE 0x0005
 
+/* had been removed, put back by kretch */
 #define AIM_CB_OFT_GETFILECONNECTREQ 0x0006 /* connect request -- actually an OSCAR CAP*/
 #define AIM_CB_OFT_GETFILELISTINGREQ 0x0007 /* OFT listing.txt request */
 #define AIM_CB_OFT_GETFILEFILEREQ 0x0008    /* received file request */
@@ -218,8 +261,10 @@
 #define AIM_CB_OFT_GETFILELISTINGRXCONFIRM 0x000f
 #define AIM_CB_OFT_GETFILESTATE4 0x0010
 
-#define AIM_CB_OFT_SENDFILEDISCONNECT 0x0020   /* OFT connection disconnected.*/
-
+#define AIM_CB_OFT_SENDFILEFILEREQ 0x0011 /* started receiving file */
+#define AIM_CB_OFT_SENDFILEFILESEND 0x0012 /* buddy ready to for us to send */
+#define AIM_CB_OFT_SENDFILECOMPLETE 0x0013 /* send to buddy complete */
+#define AIM_CB_OFT_SENDFILEINITIATE 0x0014 /* connection to buddy initiated */
 
 
 /*
@@ -236,8 +281,12 @@
 #define AIM_CB_SPECIAL_CONNCOMPLETE 0x0004
 #define AIM_CB_SPECIAL_FLAPVER 0x0005
 #define AIM_CB_SPECIAL_CONNINITDONE 0x0006
+#define AIM_CB_SPECIAL_IMAGETRANSFER 0x007
+#define AIM_CB_SPECIAL_MSGTIMEOUT 0x008
 #define AIM_CB_SPECIAL_UNKNOWN 0xffff
 #define AIM_CB_SPECIAL_DEFAULT AIM_CB_SPECIAL_UNKNOWN
 
+/* SNAC flags */
+#define AIM_SNACFLAGS_DESTRUCTOR 0x0001
 
 #endif/*__AIM_CBTYPES_H__ */

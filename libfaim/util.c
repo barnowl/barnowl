@@ -138,7 +138,6 @@ faim_export int aim_snlen(const char *sn)
 *     non-0 if different
 *
 */
-
 faim_export int aim_sncmp(const char *sn1, const char *sn2)
 {
 	const char *curPtr1 = NULL, *curPtr2 = NULL;
@@ -204,5 +203,3 @@ faim_export char *aim_strsep(char **pp, const char *delim)
 
 	return p;
 }
-
-

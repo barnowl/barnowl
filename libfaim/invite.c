@@ -1,5 +1,5 @@
 /*
- * This isn't really ever used by anyone anymore.
+ * Family 0x0006 - This isn't really ever used by anyone anymore.
  *
  * Once upon a time, there used to be a menu item in AIM clients that
  * said something like "Invite a friend to use AIM..." and then it would
@@ -32,5 +32,3 @@ faim_internal int invite_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	return 0;
 }
-
-

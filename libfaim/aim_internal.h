@@ -24,6 +24,8 @@ typedef struct aim_module_s {
 	fu16_t flags;
 	char name[AIM_MODULENAME_MAXLEN+1];
 	int (*snachandler)(aim_session_t *sess, struct aim_module_s *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs);
+	int (*snacdestructor)(aim_session_t *sess, aim_conn_t *conn, aim_modsnac_t *snac, void *data);
+
 	void (*shutdown)(aim_session_t *sess, struct aim_module_s *mod);
 	void *priv;
 	struct aim_module_s *next;
@@ -52,6 +54,8 @@ faim_internal int translate_modfirst(aim_session_t *sess, aim_module_t *mod);
 faim_internal int popups_modfirst(aim_session_t *sess, aim_module_t *mod);
 faim_internal int adverts_modfirst(aim_session_t *sess, aim_module_t *mod);
 faim_internal int icq_modfirst(aim_session_t *sess, aim_module_t *mod);
+faim_internal int email_modfirst(aim_session_t *sess, aim_module_t *mod);
+faim_internal int newsearch_modfirst(aim_session_t *sess, aim_module_t *mod);
 
 faim_internal int aim_genericreq_n(aim_session_t *, aim_conn_t *conn, fu16_t family, fu16_t subtype);
 faim_internal int aim_genericreq_n_snacid(aim_session_t *, aim_conn_t *conn, fu16_t family, fu16_t subtype);
@@ -60,9 +64,7 @@ faim_internal int aim_genericreq_s(aim_session_t *, aim_conn_t *conn, fu16_t fam
 
 #define AIMBS_CURPOSPAIR(x) ((x)->data + (x)->offset), ((x)->len - (x)->offset)
 
-faim_internal void aim_rxqueue_cleanbyconn(aim_session_t *sess, aim_conn_t *conn);
-faim_internal int aim_recv(int fd, void *buf, size_t count);
-faim_internal int aim_bstream_recv(aim_bstream_t *bs, int fd, size_t count);
+/* bstream.c */
 faim_internal int aim_bstream_init(aim_bstream_t *bs, fu8_t *data, int len);
 faim_internal int aim_bstream_empty(aim_bstream_t *bs);
 faim_internal int aim_bstream_curpos(aim_bstream_t *bs);
@@ -87,18 +89,32 @@ faim_internal char *aimbs_getstr(aim_bstream_t *bs, int len);
 faim_internal int aimbs_putraw(aim_bstream_t *bs, const fu8_t *v, int len);
 faim_internal int aimbs_putbs(aim_bstream_t *bs, aim_bstream_t *srcbs, int len);
 
-faim_internal int aim_get_command_rendezvous(aim_session_t *sess, aim_conn_t *conn);
+/* conn.c */
+faim_internal aim_conn_t *aim_cloneconn(aim_session_t *sess, aim_conn_t *src);
 
-faim_internal int aim_tx_sendframe(aim_session_t *sess, aim_frame_t *cur);
-faim_internal flap_seqnum_t aim_get_next_txseqnum(aim_conn_t *);
-faim_internal aim_frame_t *aim_tx_new(aim_session_t *sess, aim_conn_t *conn, fu8_t framing, fu8_t chan, int datalen);
-faim_internal void aim_frame_destroy(aim_frame_t *);
-faim_internal int aim_tx_enqueue(aim_session_t *, aim_frame_t *);
-faim_internal int aim_tx_printqueue(aim_session_t *);
-faim_internal void aim_tx_cleanqueue(aim_session_t *, aim_conn_t *);
+/* ft.c */
+faim_internal int aim_rxdispatch_rendezvous(aim_session_t *sess, aim_frame_t *fr);
 
+/* rxhandlers.c */
 faim_internal aim_rxcallback_t aim_callhandler(aim_session_t *sess, aim_conn_t *conn, u_short family, u_short type);
 faim_internal int aim_callhandler_noparam(aim_session_t *sess, aim_conn_t *conn, fu16_t family, fu16_t type, aim_frame_t *ptr);
+faim_internal int aim_parse_unknown(aim_session_t *, aim_frame_t *, ...);
+faim_internal void aim_clonehandlers(aim_session_t *sess, aim_conn_t *dest, aim_conn_t *src);
+
+/* rxqueue.c */
+faim_internal int aim_recv(int fd, void *buf, size_t count);
+faim_internal int aim_bstream_recv(aim_bstream_t *bs, int fd, size_t count);
+faim_internal void aim_rxqueue_cleanbyconn(aim_session_t *sess, aim_conn_t *conn);
+faim_internal void aim_frame_destroy(aim_frame_t *);
+
+/* txqueue.c */
+faim_internal aim_frame_t *aim_tx_new(aim_session_t *sess, aim_conn_t *conn, fu8_t framing, fu16_t chan, int datalen);
+faim_internal int aim_tx_enqueue(aim_session_t *, aim_frame_t *);
+faim_internal flap_seqnum_t aim_get_next_txseqnum(aim_conn_t *);
+faim_internal int aim_tx_sendframe(aim_session_t *sess, aim_frame_t *cur);
+faim_internal void aim_tx_cleanqueue(aim_session_t *, aim_conn_t *);
+
+/* XXX - What is this?   faim_internal int aim_tx_printqueue(aim_session_t *); */
 
 /*
  * Generic SNAC structure.  Rarely if ever used.
@@ -113,19 +129,18 @@ typedef struct aim_snac_s {
 	struct aim_snac_s *next;
 } aim_snac_t;
 
+struct aim_snac_destructor {
+	aim_conn_t *conn;
+	void *data;
+};
+
+/* snac.c */
 faim_internal void aim_initsnachash(aim_session_t *sess);
 faim_internal aim_snacid_t aim_newsnac(aim_session_t *, aim_snac_t *newsnac);
 faim_internal aim_snacid_t aim_cachesnac(aim_session_t *sess, const fu16_t family, const fu16_t type, const fu16_t flags, const void *data, const int datalen);
 faim_internal aim_snac_t *aim_remsnac(aim_session_t *, aim_snacid_t id);
 faim_internal void aim_cleansnacs(aim_session_t *, int maxage);
 faim_internal int aim_putsnac(aim_bstream_t *, fu16_t family, fu16_t type, fu16_t flags, aim_snacid_t id);
-
-faim_internal aim_conn_t *aim_cloneconn(aim_session_t *sess, aim_conn_t *src);
-faim_internal void aim_clonehandlers(aim_session_t *sess, aim_conn_t *dest, aim_conn_t *src);
-
-faim_internal int aim_oft_buildheader(unsigned char *,struct aim_fileheader_t *);
-
-faim_internal int aim_parse_unknown(aim_session_t *, aim_frame_t *, ...);
 
 /* Stored in ->priv of the service request SNAC for chats. */
 struct chatsnacinfo {

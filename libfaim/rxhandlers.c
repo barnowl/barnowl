@@ -1,5 +1,5 @@
 /*
- * aim_rxhandlers.c
+ * rxhandlers.c
  *
  * This file contains most all of the incoming packet handlers, along
  * with aim_rxdispatch(), the Rx dispatcher.  Queue/list management is
@@ -68,7 +68,7 @@ faim_internal int aim__registermodule(aim_session_t *sess, int (*modfirst)(aim_s
 	mod->next = (aim_module_t *)sess->modlistv;
 	(aim_module_t *)sess->modlistv = mod;
 
-	/* faimdprintf(sess, 1, "registered module %s (family 0x%04x, version = 0x%04x, tool 0x%04x, tool version 0x%04x)\n", mod->name, mod->family, mod->version, mod->toolid, mod->toolversion); */
+	faimdprintf(sess, 1, "registered module %s (family 0x%04x, version = 0x%04x, tool 0x%04x, tool version 0x%04x)\n", mod->name, mod->family, mod->version, mod->toolid, mod->toolversion);
 
 	return 0;
 }
@@ -546,9 +546,8 @@ faim_export void aim_rxdispatch(aim_session_t *sess)
 				faimdprintf(sess, 0, "internal error: non-OFT frames on OFT connection\n");
 				cur->handled = 1; /* get rid of it */
 			} else {
-				/* XXX: implement this */
-				faimdprintf(sess, 0, "faim: OFT frame!\n");
-				cur->handled = 1; /* get rid of it */
+				aim_rxdispatch_rendezvous(sess, cur);
+				cur->handled = 1;
 			}
 			continue;
 		}
@@ -613,6 +612,3 @@ faim_internal int aim_parse_unknown(aim_session_t *sess, aim_frame_t *frame, ...
 
 	return 1;
 }
-
-
-

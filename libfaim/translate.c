@@ -1,4 +1,6 @@
 /*
+ * Family 0x000c - Translation.
+ *
  * I have no idea why this group was issued.  I have never seen anything
  * that uses it.  From what I remember, the last time I tried to poke at
  * the server with this group, it whined about not supporting it.
@@ -23,5 +25,3 @@ faim_internal int translate_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	return 0;
 }
-
-

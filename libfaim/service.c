@@ -1,5 +1,5 @@
 /*
- * Group 1.  This is a very special group.  All connections support
+ * Family 0x0001 - This is a very special group.  All connections support
  * this group, as it does some particularly good things (like rate limiting).
  */
 
@@ -9,7 +9,7 @@
 
 #include "md5.h"
 
-/* Client Online (group 1, subtype 2) */
+/* Subtype 0x0002 - Client Online */
 faim_export int aim_clientready(aim_session_t *sess, aim_conn_t *conn)
 {
 	aim_conn_inside_t *ins = (aim_conn_inside_t *)conn->inside;
@@ -48,7 +48,7 @@ faim_export int aim_clientready(aim_session_t *sess, aim_conn_t *conn)
 }
 
 /*
- * Host Online (group 1, type 3)
+ * Subtype 0x0003 - Host Online
  * 
  * See comments in conn.c about how the group associations are supposed
  * to work, and how they really work.
@@ -91,13 +91,13 @@ static int hostonline(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	return 1; 
 }
 
-/* Service request (group 1, type 4) */
+/* Subtype 0x0004 - Service request */
 faim_export int aim_reqservice(aim_session_t *sess, aim_conn_t *conn, fu16_t serviceid)
 {
 	return aim_genericreq_s(sess, conn, 0x0001, 0x0004, &serviceid);
 }
 
-/* Redirect (group 1, type 5) */
+/* Subtype 0x0005 - Redirect */
 static int redirect(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	struct aim_redirect_data redir;
@@ -147,7 +147,7 @@ static int redirect(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 	return ret;
 }
 
-/* Request Rate Information. (group 1, type 6) */
+/* Subtype 0x0006 - Request Rate Information. */
 faim_internal int aim_reqrates(aim_session_t *sess, aim_conn_t *conn)
 {
 	return aim_genericreq_n(sess, conn, 0x0001, 0x0006);
@@ -257,7 +257,7 @@ static void rc_addpair(struct rateclass *rc, fu16_t group, fu16_t type)
 	return;
 }
 
-/* Rate Parameters (group 1, type 7) */
+/* Subtype 0x0007 - Rate Parameters */
 static int rateresp(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_conn_inside_t *ins = (aim_conn_inside_t *)rx->conn->inside;
@@ -344,7 +344,7 @@ static int rateresp(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 	return 1;
 }
 
-/* Add Rate Parameter (group 1, type 8) */
+/* Subtype 0x0008 - Add Rate Parameter */
 faim_internal int aim_rates_addparam(aim_session_t *sess, aim_conn_t *conn)
 {
 	aim_conn_inside_t *ins = (aim_conn_inside_t *)conn->inside;
@@ -366,7 +366,7 @@ faim_internal int aim_rates_addparam(aim_session_t *sess, aim_conn_t *conn)
 	return 0;
 }
 
-/* Delete Rate Parameter (group 1, type 9) */
+/* Subtype 0x0009 - Delete Rate Parameter */
 faim_internal int aim_rates_delparam(aim_session_t *sess, aim_conn_t *conn)
 {
 	aim_conn_inside_t *ins = (aim_conn_inside_t *)conn->inside;
@@ -388,7 +388,7 @@ faim_internal int aim_rates_delparam(aim_session_t *sess, aim_conn_t *conn)
 	return 0;
 }
 
-/* Rate Change (group 1, type 0x0a) */
+/* Subtype 0x000a - Rate Change */
 static int ratechange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_rxcallback_t userfunc;
@@ -413,7 +413,7 @@ static int ratechange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 }
 
 /*
- * How Migrations work.  
+ * How Migrations work.
  *
  * The server sends a Server Pause message, which the client should respond to 
  * with a Server Pause Ack, which contains the families it needs on this 
@@ -425,7 +425,7 @@ static int ratechange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
  *
  */
 
-/* Service Pause (group 1, type 0x0b) */
+/* Subtype 0x000b - Service Pause */
 static int serverpause(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_rxcallback_t userfunc;
@@ -437,7 +437,7 @@ static int serverpause(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 }
 
 /*
- * Service Pause Acknowledgement (group 1, type 0x0c)
+ * Subtype 0x000c - Service Pause Acknowledgement
  *
  * It is rather important that aim_sendpauseack() gets called for the exact
  * same connection that the Server Pause callback was called for, since
@@ -473,7 +473,7 @@ faim_export int aim_sendpauseack(aim_session_t *sess, aim_conn_t *conn)
 	return 0;
 }
 
-/* Service Resume (group 1, type 0x0d) */
+/* Subtype 0x000d - Service Resume */
 static int serverresume(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_rxcallback_t userfunc;
@@ -484,13 +484,13 @@ static int serverresume(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx,
 	return 0;
 }
 
-/* Request self-info (group 1, type 0x0e) */
+/* Subtype 0x000e - Request self-info */
 faim_export int aim_reqpersonalinfo(aim_session_t *sess, aim_conn_t *conn)
 {
 	return aim_genericreq_n(sess, conn, 0x0001, 0x000e);
 }
 
-/* Self User Info (group 1, type 0x0f) */
+/* Subtype 0x000f - Self User Info */
 static int selfinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_rxcallback_t userfunc;
@@ -504,7 +504,7 @@ static int selfinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 	return 0;
 }
 
-/* Evil Notification (group 1, type 0x10) */
+/* Subtype 0x0010 - Evil Notification */
 static int evilnotify(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_rxcallback_t userfunc;
@@ -525,7 +525,7 @@ static int evilnotify(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 }
 
 /*
- * Idle Notification (group 1, type 0x11)
+ * Subtype 0x0011 - Idle Notification
  *
  * Should set your current idle time in seconds.  Note that this should
  * never be called consecutively with a non-zero idle time.  That makes
@@ -539,7 +539,7 @@ faim_export int aim_bos_setidle(aim_session_t *sess, aim_conn_t *conn, fu32_t id
 }
 
 /*
- * Service Migrate (group 1, type 0x12)
+ * Subtype 0x0012 - Service Migrate
  *
  * This is the final SNAC sent on the original connection during a migration.
  * It contains the IP and cookie used to connect to the new server, and 
@@ -591,7 +591,7 @@ static int migrate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_
 	return ret;
 }
 
-/* Message of the Day (group 1, type 0x13) */
+/* Subtype 0x0013 - Message of the Day */
 static int motd(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_rxcallback_t userfunc;
@@ -631,7 +631,7 @@ static int motd(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mod
 }
 
 /* 
- * Set privacy flags (group 1, type 0x14)
+ * Subtype 0x0014 - Set privacy flags
  *
  * Normally 0x03.
  *
@@ -645,10 +645,10 @@ faim_export int aim_bos_setprivacyflags(aim_session_t *sess, aim_conn_t *conn, f
 }
 
 /*
- * No-op (group 1, type 0x16)
+ * Subtype 0x0016 - No-op
  *
  * WinAIM sends these every 4min or so to keep the connection alive.  Its not 
- * real necessary.
+ * really necessary.
  *
  */
 faim_export int aim_nop(aim_session_t *sess, aim_conn_t *conn)
@@ -657,7 +657,7 @@ faim_export int aim_nop(aim_session_t *sess, aim_conn_t *conn)
 }
 
 /* 
- * Set client versions (group 1, subtype 0x17) 
+ * Subtype 0x0017 - Set client versions
  *
  * If you've seen the clientonline/clientready SNAC you're probably 
  * wondering what the point of this one is.  And that point seems to be
@@ -704,7 +704,7 @@ faim_internal int aim_setversions(aim_session_t *sess, aim_conn_t *conn)
 	return 0;
 }
 
-/* Host versions (group 1, subtype 0x18) */
+/* Subtype 0x0018 - Host versions */
 static int hostversions(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	int vercount;
@@ -724,7 +724,7 @@ static int hostversions(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx,
 }
 
 /* 
- * Set Extended Status (group 1, type 0x1e) 
+ * Subtype 0x001e - Set Extended Status
  *
  * Currently only works if using ICQ.
  *
@@ -790,7 +790,7 @@ faim_export int aim_setextstatus(aim_session_t *sess, aim_conn_t *conn, fu32_t s
  * Anyway, neener.  We win again.
  *
  */
-/* Client verification (group 1, subtype 0x1f) */
+/* Subtype 0x001f - Client verification */
 static int memrequest(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_rxcallback_t userfunc;
@@ -815,7 +815,7 @@ static int memrequest(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	return 0;
 }
 
-#if 0 
+#if 0
 static void dumpbox(aim_session_t *sess, unsigned char *buf, int len)
 {
 	int i;
@@ -838,7 +838,7 @@ static void dumpbox(aim_session_t *sess, unsigned char *buf, int len)
 }
 #endif
 
-/* Client verification reply (group 1, subtype 0x20) */
+/* Subtype 0x0020 - Client verification reply */
 faim_export int aim_sendmemblock(aim_session_t *sess, aim_conn_t *conn, fu32_t offset, fu32_t len, const fu8_t *buf, fu8_t flag)
 {
 	aim_frame_t *fr;
@@ -969,4 +969,3 @@ faim_internal int general_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	return 0;
 }
-

@@ -7,6 +7,10 @@
 #define FAIM_INTERNAL
 #include <aim.h>
 
+#ifdef _WIN32
+#include "win32dep.h"
+#endif
+
 faim_export char *aim_getbuilddate(void)
 {
 	return AIM_BUILDDATE;
@@ -32,6 +36,8 @@ faim_export int aim_getbuildstring(char *buf, int buflen)
 
 faim_internal void faimdprintf(aim_session_t *sess, int dlevel, const char *format, ...)
 {
+  return; /* kretch */
+  
 	if (!sess) {
 		fprintf(stderr, "faimdprintf: no session! boo! (%d, %s)\n", dlevel, format);
 		return;

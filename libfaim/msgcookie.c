@@ -192,5 +192,3 @@ faim_internal int aim_msgcookie_gettype(int reqclass)
 	default: return AIM_COOKIETYPE_UNKNOWN;
 	}           
 }
-
-

@@ -1,7 +1,5 @@
 /*
- *  aim_im.c
- *
- *  The routines for sending/receiving Instant Messages.
+ *  Family 0x0004 - Routines for sending/receiving Instant Messages.
  *
  *  Note the term ICBM (Inter-Client Basic Message) which blankets
  *  all types of genericly routed through-server messages.  Within
@@ -10,7 +8,10 @@
  *  what would commonly be called an "instant message".  Channel 2
  *  is used for negotiating "rendezvous".  These transactions end in
  *  something more complex happening, such as a chat invitation, or
- *  a file transfer.
+ *  a file transfer.  Channel 3 is used for chat messages (not in 
+ *  the same family as these channels).  Channel 4 is used for 
+ *  various ICQ messages.  Examples are normal messages, URLs, and 
+ *  old-style authorization.
  *
  *  In addition to the channel, every ICBM contains a cookie.  For
  *  standard IMs, these are only used for error messages.  However,
@@ -21,6 +22,10 @@
 
 #define FAIM_INTERNAL
 #include <aim.h>
+
+#ifdef _WIN32
+#include "win32dep.h"
+#endif
 
 /*
  * Takes a msghdr (and a length) and returns a client type
@@ -36,6 +41,8 @@
  *  0501 0003 0101 0201 01       WinAIM 2.0.847, 2.1.1187, 3.0.1464, 
  *                                      4.3.2229, 4.4.2286
  *  0501 0004 0101 0102 0101     WinAIM 4.1.2010, libfaim (right here)
+ *  0501 0003 0101 02            WinAIM 5
+ *  0501 0001 01                 iChat x.x
  *  0501 0001 0101 01            AOL v6.0, CompuServe 2000 v6.0, any
  *                                      TOC client
  *
@@ -83,6 +90,76 @@ faim_export fu16_t aim_fingerprintclient(fu8_t *msghdr, int len)
 	return AIM_CLIENTTYPE_UNKNOWN;
 }
 
+/*
+ * Subtype 0x0002
+ *
+ * I definitly recommend sending this.  If you don't, you'll be stuck
+ * with the rather unreasonable defaults.  You don't want those.  Send this.
+ * 
+ */
+faim_export int aim_seticbmparam(aim_session_t *sess, struct aim_icbmparameters *params)
+{
+	aim_conn_t *conn;
+	aim_frame_t *fr;
+	aim_snacid_t snacid;
+
+	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0004)))
+		return -EINVAL;
+
+	if (!params)
+		return -EINVAL;
+
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+16)))
+		return -ENOMEM;
+
+	snacid = aim_cachesnac(sess, 0x0004, 0x0002, 0x0000, NULL, 0);
+	aim_putsnac(&fr->data, 0x0004, 0x0002, 0x0000, snacid);
+
+	/* This is read-only (see Parameter Reply). Must be set to zero here. */
+	aimbs_put16(&fr->data, 0x0000);
+
+	/* These are all read-write */
+	aimbs_put32(&fr->data, params->flags); 
+	aimbs_put16(&fr->data, params->maxmsglen);
+	aimbs_put16(&fr->data, params->maxsenderwarn); 
+	aimbs_put16(&fr->data, params->maxrecverwarn); 
+	aimbs_put32(&fr->data, params->minmsginterval);
+
+	aim_tx_enqueue(sess, fr);
+
+	return 0;
+}
+
+/* Subtype 0x0004 - Request ICBM parameter information. */
+faim_export int aim_reqicbmparams(aim_session_t *sess)
+{
+	aim_conn_t *conn;
+
+	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0004)))
+		return -EINVAL;
+
+	return aim_genericreq_n(sess, conn, 0x0004, 0x0004);
+}
+
+/* Subtype 0x0005 */
+static int paraminfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
+{
+	struct aim_icbmparameters params;
+	aim_rxcallback_t userfunc;
+
+	params.maxchan = aimbs_get16(bs);
+	params.flags = aimbs_get32(bs);
+	params.maxmsglen = aimbs_get16(bs);
+	params.maxsenderwarn = aimbs_get16(bs);
+	params.maxrecverwarn = aimbs_get16(bs);
+	params.minmsginterval = aimbs_get32(bs);
+	
+	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+		return userfunc(sess, rx, &params);
+
+	return 0;
+}
+
 /* This should be endian-safe now... but who knows... */
 faim_export fu16_t aim_iconsum(const fu8_t *buf, int buflen)
 {
@@ -100,7 +177,7 @@ faim_export fu16_t aim_iconsum(const fu8_t *buf, int buflen)
 }
 
 /*
- * Send an ICBM (instant message).  
+ * Subtype 0x0006 - Send an ICBM (instant message).  
  *
  *
  * Possible flags:
@@ -193,7 +270,6 @@ faim_export int aim_send_im_ext(aim_session_t *sess, struct aim_sendimext_args *
 		msgtlvlen += 2 /* 0101 */ + 2 /* block len */;
 		msgtlvlen += 4 /* charset */ + args->msglen;
 	}
-
 
 	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, msgtlvlen+128)))
 		return -ENOMEM;
@@ -314,6 +390,8 @@ faim_export int aim_send_im_ext(aim_session_t *sess, struct aim_sendimext_args *
 
 	/*
 	 * Set the I HAVE A REALLY PURTY ICON flag.
+	 * XXX - This should really only be sent on initial 
+	 * IMs and when you change your icon.
 	 */
 	if (args->flags & AIM_IMFLAGS_HASICON) {
 		aimbs_put16(&fr->data, 0x0008);
@@ -326,6 +404,7 @@ faim_export int aim_send_im_ext(aim_session_t *sess, struct aim_sendimext_args *
 
 	/*
 	 * Set the Buddy Icon Requested flag.
+	 * XXX - Everytime?  Surely not...
 	 */
 	if (args->flags & AIM_IMFLAGS_BUDDYREQ) {
 		aimbs_put16(&fr->data, 0x0009);
@@ -366,6 +445,8 @@ faim_export int aim_send_im(aim_session_t *sess, const char *destsn, fu16_t flag
 }
 
 /*
+ * Subtype 0x0006
+ *
  * This is also performance sensitive. (If you can believe it...)
  *
  */
@@ -449,6 +530,8 @@ faim_export int aim_send_icon(aim_session_t *sess, const char *sn, const fu8_t *
 }
 
 /*
+ * Subtype 0x0006
+ *
  * This only works for ICQ 2001b (thats 2001 not 2000).  Better, only
  * send it to clients advertising the RTF capability.  In fact, if you send
  * it to a client that doesn't support that capability, the server will gladly
@@ -564,6 +647,7 @@ faim_export int aim_send_rtfmsg(aim_session_t *sess, struct aim_sendrtfmsg_args 
 	return 0;
 }
 
+/* Subtype 0x0006 */
 faim_internal int aim_request_directim(aim_session_t *sess, const char *destsn, fu8_t *ip, fu16_t port, fu8_t *ckret)
 {
 	aim_conn_t *conn;
@@ -640,6 +724,7 @@ faim_internal int aim_request_directim(aim_session_t *sess, const char *destsn, 
 	return 0;
 }
 
+/* Subtype 0x0006 */
 faim_internal int aim_request_sendfile(aim_session_t *sess, const char *sn, const char *filename, fu16_t numfiles, fu32_t totsize, fu8_t *ip, fu16_t port, fu8_t *ckret)
 {
 	aim_conn_t *conn;
@@ -647,6 +732,7 @@ faim_internal int aim_request_sendfile(aim_session_t *sess, const char *sn, cons
 	fu8_t ck[8];
 	aim_frame_t *fr;
 	aim_snacid_t snacid;
+	struct aim_snac_destructor snacdest;
 
 	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0004)))
 		return -EINVAL;
@@ -657,15 +743,22 @@ faim_internal int aim_request_sendfile(aim_session_t *sess, const char *sn, cons
 	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+8+2+1+strlen(sn)+2+2+2+8+16+6+8+6+4+2+2+2+2+4+strlen(filename)+4)))
 		return -ENOMEM;
 
-	snacid = aim_cachesnac(sess, 0x0004, 0x0006, 0x0000, NULL, 0);
-	aim_putsnac(&fr->data, 0x0004, 0x0006, 0x0000, snacid);
-
 	for (i = 0; i < 7; i++)
 		aimutil_put8(ck+i, 0x30 + ((fu8_t) rand() % 10));
 	ck[7] = '\0';
 
 	if (ckret)
 		memcpy(ckret, ck, 8);
+
+	/* Fill in the snac destructor so we know if the request
+	 * times out.  Use the cookie in the data field, so we
+	 * know what request to cancel if there is an error.
+	 */
+	snacdest.data = malloc(8);
+	memcpy(snacdest.data, ck, 8);
+	snacdest.conn = conn;
+	snacid = aim_cachesnac(sess, 0x0004, 0x0006, AIM_SNACFLAGS_DESTRUCTOR, &snacdest, sizeof(snacdest));
+	aim_putsnac(&fr->data, 0x0004, 0x0006, 0x0000, snacid);
 
 	/*
 	 * Cookie
@@ -719,13 +812,209 @@ faim_internal int aim_request_sendfile(aim_session_t *sess, const char *sn, cons
 	aimbs_put16(&fr->data, 2+2+4+strlen(filename)+4);
 
 	/* ? */
-	aimbs_put16(&fr->data, 0x0001);
+	aimbs_put16(&fr->data, (numfiles > 1) ? 0x0002 : 0x0001);
 	aimbs_put16(&fr->data, numfiles);
 	aimbs_put32(&fr->data, totsize);
 	aimbs_putraw(&fr->data, filename, strlen(filename));
 
 	/* ? */
 	aimbs_put32(&fr->data, 0x00000000);
+
+#if 0
+	/* Newer clients seem to send this (?) -- wtm */
+	aimbs_put32(&fr->data, 0x00030000);
+#endif
+
+	aim_tx_enqueue(sess, fr);
+
+	return 0;
+}
+
+/**
+ * Subtype 0x0006 - Request the status message of the given ICQ user.
+ *
+ * @param sess The oscar session.
+ * @param sn The UIN of the user of whom you wish to request info.
+ * @param type The type of info you wish to request.  This should be the current 
+ *        state of the user, as one of the AIM_ICQ_STATE_* defines.
+ * @return Return 0 if no errors, otherwise return the error number.
+ */
+faim_export int aim_send_im_ch2_geticqmessage(aim_session_t *sess, const char *sn, int type)
+{
+	aim_conn_t *conn;
+	int i;
+	fu8_t ck[8];
+	aim_frame_t *fr;
+	aim_snacid_t snacid;
+
+	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0004)) || !sn)
+		return -EINVAL;
+
+	for (i = 0; i < 8; i++)
+		aimutil_put8(ck+i, (fu8_t) rand());
+
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+8+2+1+strlen(sn) + 4+0x5e + 4)))
+		return -ENOMEM;
+
+	snacid = aim_cachesnac(sess, 0x0004, 0x0006, 0x0000, NULL, 0);
+	aim_putsnac(&fr->data, 0x0004, 0x0006, 0x0000, snacid);
+
+	/* Cookie */
+	aimbs_putraw(&fr->data, ck, 8);
+
+	/* Channel (2) */
+	aimbs_put16(&fr->data, 0x0002);
+
+	/* Dest sn */
+	aimbs_put8(&fr->data, strlen(sn));
+	aimbs_putraw(&fr->data, sn, strlen(sn));
+
+	/* TLV t(0005) - Encompasses almost everything below. */
+	aimbs_put16(&fr->data, 0x0005); /* T */
+	aimbs_put16(&fr->data, 0x005e); /* L */
+	{ /* V */
+		aimbs_put16(&fr->data, 0x0000);
+
+		/* Cookie */
+		aimbs_putraw(&fr->data, ck, 8);
+
+		/* Put the 16 byte server relay capability */
+		aim_putcap(&fr->data, AIM_CAPS_ICQSERVERRELAY);
+
+		/* TLV t(000a) */
+		aimbs_put16(&fr->data, 0x000a);
+		aimbs_put16(&fr->data, 0x0002);
+		aimbs_put16(&fr->data, 0x0001);
+
+		/* TLV t(000f) */
+		aimbs_put16(&fr->data, 0x000f);
+		aimbs_put16(&fr->data, 0x0000);
+
+		/* TLV t(2711) */
+		aimbs_put16(&fr->data, 0x2711);
+		aimbs_put16(&fr->data, 0x0036);
+		{ /* V */
+			aimbs_putle16(&fr->data, 0x001b); /* L */
+			aimbs_putle16(&fr->data, 0x0008); /* XXX - Protocol version */
+			aimbs_putle32(&fr->data, 0x00000000); /* Unknown */
+			aimbs_putle32(&fr->data, 0x00000000); /* Unknown */
+			aimbs_putle32(&fr->data, 0x00000000); /* Unknown */
+			aimbs_putle32(&fr->data, 0x00000000); /* Unknown */
+			aimbs_putle16(&fr->data, 0x0000); /* Unknown */
+			aimbs_putle16(&fr->data, 0x0003); /* Client features? */
+			aimbs_putle16(&fr->data, 0x0000); /* Unknown */
+			aimbs_putle8(&fr->data, 0x00); /* Unkizown */
+			aimbs_putle16(&fr->data, 0xffff); /* Sequence number?  XXX - This should decrement by 1 with each request */
+
+			aimbs_putle16(&fr->data, 0x000e); /* L */
+			aimbs_putle16(&fr->data, 0xffff); /* Sequence number?  XXX - This should decrement by 1 with each request */
+			aimbs_putle32(&fr->data, 0x00000000); /* Unknown */
+			aimbs_putle32(&fr->data, 0x00000000); /* Unknown */
+			aimbs_putle32(&fr->data, 0x00000000); /* Unknown */
+
+			/* The type of status message being requested */
+			if (type & AIM_ICQ_STATE_CHAT)
+				aimbs_putle16(&fr->data, 0x03ec);
+			else if(type & AIM_ICQ_STATE_DND)
+				aimbs_putle16(&fr->data, 0x03eb);
+			else if(type & AIM_ICQ_STATE_OUT)
+				aimbs_putle16(&fr->data, 0x03ea);
+			else if(type & AIM_ICQ_STATE_BUSY)
+				aimbs_putle16(&fr->data, 0x03e9);
+			else if(type & AIM_ICQ_STATE_AWAY)
+				aimbs_putle16(&fr->data, 0x03e8);
+
+			aimbs_putle16(&fr->data, 0x0000); /* Status? */
+			aimbs_putle16(&fr->data, 0x0001); /* Priority of this message? */
+			aimbs_putle16(&fr->data, 0x0001); /* L? */
+			aimbs_putle8(&fr->data, 0x00); /* Null termination? */
+		} /* End TLV t(2711) */
+	} /* End TLV t(0005) */
+
+	/* TLV t(0003) */
+	aimbs_put16(&fr->data, 0x0003);
+	aimbs_put16(&fr->data, 0x0000);
+
+	aim_tx_enqueue(sess, fr);
+
+	return 0;
+}
+
+/**
+ * Subtype 0x0006
+ *
+ * This can be used to send an ICQ authorization reply (deny or grant).  It is the "old way."  
+ * The new way is to use SSI.  I like the new way a lot better.  This seems like such a hack, 
+ * mostly because it's in network byte order.  Figuring this stuff out sometimes takes a while, 
+ * but thats ok, because it gives me time to try to figure out what kind of drugs the AOL people 
+ * were taking when they merged the two protocols.
+ *
+ * @param sn The destination screen name.
+ * @param type The type of message.  0x0007 for authorization denied.  0x0008 for authorization granted.
+ * @param message The message you want to send, it should be null terminated.
+ * @return Return 0 if no errors, otherwise return the error number.
+ */
+faim_export int aim_send_im_ch4(aim_session_t *sess, char *sn, fu16_t type, fu8_t *message)
+{
+	aim_conn_t *conn;
+	aim_frame_t *fr;
+	aim_snacid_t snacid;
+	int i;
+
+	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0002)))
+		return -EINVAL;
+
+	if (!sn || !type || !message)
+		return -EINVAL;
+
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+8+3+strlen(sn)+12+strlen(message)+1+4)))
+		return -ENOMEM;
+
+	snacid = aim_cachesnac(sess, 0x0004, 0x0006, 0x0000, NULL, 0);
+	aim_putsnac(&fr->data, 0x0004, 0x0006, 0x0000, snacid);
+
+	/*
+	 * Cookie
+	 */
+	for (i=0; i<8; i++)
+		aimbs_put8(&fr->data, (fu8_t)rand());
+
+	/*
+	 * Channel (4)
+	 */
+	aimbs_put16(&fr->data, 0x0004);
+
+	/*
+	 * Dest sn
+	 */
+	aimbs_put8(&fr->data, strlen(sn));
+	aimbs_putraw(&fr->data, sn, strlen(sn));
+
+	/*
+	 * TLV t(0005)
+	 *
+	 * ICQ data (the UIN and the message).
+	 */
+	aimbs_put16(&fr->data, 0x0005);
+	aimbs_put16(&fr->data, 4 + 2+2+strlen(message)+1);
+
+	/*
+	 * Your UIN
+	 */
+	aimbs_putle32(&fr->data, atoi(sess->sn));
+
+	/*
+	 * TLV t(type) l(strlen(message)+1) v(message+NULL)
+	 */
+	aimbs_putle16(&fr->data, type);
+	aimbs_putle16(&fr->data, strlen(message)+1);
+	aimbs_putraw(&fr->data, message, strlen(message)+1);
+
+	/*
+	 * TLV t(0006) l(0000) v()
+	 */
+	aimbs_put16(&fr->data, 0x0006);
+	aimbs_put16(&fr->data, 0x0000);
 
 	aim_tx_enqueue(sess, fr);
 
@@ -1156,6 +1445,10 @@ static int incomingim_ch1(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 
 			args.icbmflags |= AIM_IMFLAGS_BUDDYREQ;
 
+		} else if (type == 0x000b) { /* Non-direct connect typing notification */
+
+			args.icbmflags |= AIM_IMFLAGS_TYPINGNOT;
+
 		} else if (type == 0x0017) {
 
 			args.extdatalen = length;
@@ -1330,6 +1623,38 @@ static void incomingim_ch2_icqserverrelay(aim_session_t *sess, aim_module_t *mod
 	return;
 }
 
+static void incomingim_ch2_sendfile_free(aim_session_t *sess, struct aim_incomingim_ch2_args *args)
+{
+	free(args->info.sendfile.filename);
+}
+
+static void incomingim_ch2_sendfile(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_userinfo_t *userinfo, struct aim_incomingim_ch2_args *args, aim_bstream_t *servdata)
+{
+
+	args->destructor = (void *)incomingim_ch2_sendfile_free;
+
+	if (servdata) {
+		int flen;
+
+		/* subtype is one of AIM_OFT_SUBTYPE_* */
+		args->info.sendfile.subtype = aimbs_get16(servdata);
+		args->info.sendfile.totfiles = aimbs_get16(servdata);
+		args->info.sendfile.totsize = aimbs_get32(servdata);
+
+		/* XXX - create an aimbs_getnullstr function */
+		/* Use an inelegant way of getting the null-terminated filename, 
+		 * since there's no easy bstream routine. */
+		for (flen = 0; aimbs_get8(servdata); flen++);
+		aim_bstream_advance(servdata, -flen -1);
+		args->info.sendfile.filename = aimbs_getstr(servdata, flen);
+
+		/* There is sometimes more after the null-terminated filename, 
+		 * but I'm unsure of its format. */
+	}
+
+	return;
+}
+
 typedef void (*ch2_args_destructor_t)(aim_session_t *sess, struct aim_incomingim_ch2_args *args);
 
 static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, fu16_t channel, aim_userinfo_t *userinfo, aim_tlvlist_t *tlvlist, fu8_t *cookie)
@@ -1357,7 +1682,7 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	/*
 	 * First two bytes represent the status of the connection.
 	 *
-	 * 0 is a request, 1 is a deny (?), 2 is an accept
+	 * 0 is a request, 1 is a cancel, 2 is an accept
 	 */ 
 	args.status = aimbs_get16(&bbs);
 
@@ -1501,6 +1826,8 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 		incomingim_ch2_chat(sess, mod, rx, snac, userinfo, &args, sdbsptr);
 	else if (args.reqclass & AIM_CAPS_ICQSERVERRELAY)
 		incomingim_ch2_icqserverrelay(sess, mod, rx, snac, userinfo, &args, sdbsptr);
+	else if (args.reqclass & AIM_CAPS_SENDFILE)
+		incomingim_ch2_sendfile(sess, mod, rx, snac, userinfo, &args, sdbsptr);
 
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
@@ -1519,7 +1846,36 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	return ret;
 }
 
+static int incomingim_ch4(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, fu16_t channel, aim_userinfo_t *userinfo, aim_tlvlist_t *tlvlist, fu8_t *cookie)
+{
+	aim_bstream_t meat;
+	aim_rxcallback_t userfunc;
+	aim_tlv_t *block;
+	struct aim_incomingim_ch4_args args;
+	int ret = 0;
+
+	/*
+	 * Make a bstream for the meaty part.  Yum.  Meat.
+	 */
+	if (!(block = aim_gettlv(tlvlist, 0x0005, 1)))
+		return -1;
+	aim_bstream_init(&meat, block->value, block->length);
+
+	args.uin = aimbs_getle32(&meat);
+	args.type = aimbs_getle16(&meat);
+	args.msg = aimbs_getraw(&meat, aimbs_getle16(&meat));
+
+	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+		ret = userfunc(sess, rx, channel, userinfo, &args);
+
+	free(args.msg);
+
+	return ret;
+}
+
 /*
+ * Subtype 0x0007
+ *
  * It can easily be said that parsing ICBMs is THE single
  * most difficult thing to do in the in AIM protocol.  In
  * fact, I think I just did say that.
@@ -1556,7 +1912,10 @@ static int incomingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	 * Channel 0x0002 is the Rendevous channel, which
 	 * is where Chat Invitiations and various client-client
 	 * connection negotiations come from.
-	 * 
+	 *
+	 * Channel 0x0004 is used for ICQ authorization, or 
+	 * possibly any system notice.
+	 *
 	 */
 	channel = aimbs_get16(bs);
 
@@ -1602,6 +1961,13 @@ static int incomingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 
 		aim_freetlvchain(&tlvlist);
 
+	} else if (channel == 4) {
+		aim_tlvlist_t *tlvlist;
+
+		tlvlist = aim_readtlvchain(bs);
+		ret = incomingim_ch4(sess, mod, rx, snac, channel, &userinfo, tlvlist, cookie);
+		aim_freetlvchain(&tlvlist);
+
 	} else {
 
 		faimdprintf(sess, 0, "icbm: ICBM received on an unsupported channel.  Ignoring.\n (chan = %04x)", channel);
@@ -1613,6 +1979,64 @@ static int incomingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 }
 
 /*
+ * Subtype 0x0008 - Send a warning to destsn.
+ * 
+ * Flags:
+ *  AIM_WARN_ANON  Send as an anonymous (doesn't count as much)
+ *
+ * returns -1 on error (couldn't alloc packet), 0 on success. 
+ *
+ */
+faim_export int aim_send_warning(aim_session_t *sess, aim_conn_t *conn, const char *destsn, fu32_t flags)
+{
+	aim_frame_t *fr;
+	aim_snacid_t snacid;
+	fu16_t outflags = 0x0000;
+
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, strlen(destsn)+13)))
+		return -ENOMEM;
+
+	snacid = aim_cachesnac(sess, 0x0004, 0x0008, 0x0000, destsn, strlen(destsn)+1);
+
+	aim_putsnac(&fr->data, 0x0004, 0x0008, 0x0000, snacid);
+
+	if (flags & AIM_WARN_ANON)
+		outflags |= 0x0001;
+
+	aimbs_put16(&fr->data, outflags); 
+	aimbs_put8(&fr->data, strlen(destsn));
+	aimbs_putraw(&fr->data, destsn, strlen(destsn));
+
+	aim_tx_enqueue(sess, fr);
+
+	return 0;
+}
+
+/* Subtype 0x000a */
+static int missedcall(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
+{
+	int ret = 0;
+	aim_rxcallback_t userfunc;
+	fu16_t channel, nummissed, reason;
+	aim_userinfo_t userinfo;
+
+	while (aim_bstream_empty(bs)) {	
+
+		channel = aimbs_get16(bs);
+		aim_extractuserinfo(sess, bs, &userinfo);
+		nummissed = aimbs_get16(bs);
+		reason = aimbs_get16(bs);
+
+		if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+			 ret = userfunc(sess, rx, channel, &userinfo, nummissed, reason);
+	}
+
+	return ret;
+}
+
+/*
+ * Subtype 0x000b
+ *
  * Possible codes:
  *    AIM_TRANSFER_DENY_NOTSUPPORTED -- "client does not support"
  *    AIM_TRANSFER_DENY_DECLINE -- "client has declined transfer"
@@ -1651,100 +2075,12 @@ faim_export int aim_denytransfer(aim_session_t *sess, const char *sender, const 
 }
 
 /*
- * aim_reqicbmparaminfo()
+ * Subtype 0x000b - Receive the response from an ICQ status message request.
  *
- * Request ICBM parameter information.
+ * This contains the ICQ status message.  Go figure.
  *
  */
-faim_export int aim_reqicbmparams(aim_session_t *sess)
-{
-	aim_conn_t *conn;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0004)))
-		return -EINVAL;
-
-	return aim_genericreq_n(sess, conn, 0x0004, 0x0004);
-}
-
-/*
- *
- * I definitly recommend sending this.  If you don't, you'll be stuck
- * with the rather unreasonable defaults.  You don't want those.  Send this.
- * 
- */
-faim_export int aim_seticbmparam(aim_session_t *sess, struct aim_icbmparameters *params)
-{
-	aim_conn_t *conn;
-	aim_frame_t *fr;
-	aim_snacid_t snacid;
-
-	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0004)))
-		return -EINVAL;
-
-	if (!params)
-		return -EINVAL;
-
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+16)))
-		return -ENOMEM;
-
-	snacid = aim_cachesnac(sess, 0x0004, 0x0002, 0x0000, NULL, 0);
-	aim_putsnac(&fr->data, 0x0004, 0x0002, 0x0000, snacid);
-
-	/* This is read-only (see Parameter Reply). Must be set to zero here. */
-	aimbs_put16(&fr->data, 0x0000);
-
-	/* These are all read-write */
-	aimbs_put32(&fr->data, params->flags); 
-	aimbs_put16(&fr->data, params->maxmsglen);
-	aimbs_put16(&fr->data, params->maxsenderwarn); 
-	aimbs_put16(&fr->data, params->maxrecverwarn); 
-	aimbs_put32(&fr->data, params->minmsginterval);
-
-	aim_tx_enqueue(sess, fr);
-
-	return 0;
-}
-
-static int paraminfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
-{
-	struct aim_icbmparameters params;
-	aim_rxcallback_t userfunc;
-
-	params.maxchan = aimbs_get16(bs);
-	params.flags = aimbs_get32(bs);
-	params.maxmsglen = aimbs_get16(bs);
-	params.maxsenderwarn = aimbs_get16(bs);
-	params.maxrecverwarn = aimbs_get16(bs);
-	params.minmsginterval = aimbs_get32(bs);
-	
-	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		return userfunc(sess, rx, &params);
-
-	return 0;
-}
-
-static int missedcall(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
-{
-	int ret = 0;
-	aim_rxcallback_t userfunc;
-	fu16_t channel, nummissed, reason;
-	aim_userinfo_t userinfo;
-
-	while (aim_bstream_empty(bs)) {	
-
-		channel = aimbs_get16(bs);
-		aim_extractuserinfo(sess, bs, &userinfo);
-		nummissed = aimbs_get16(bs);
-		reason = aimbs_get16(bs);
-
-		if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-			 ret = userfunc(sess, rx, channel, &userinfo, nummissed, reason);
-	}
-
-	return ret;
-}
-
-static int clienterr(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
+static int clientautoresp(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	int ret = 0;
 	aim_rxcallback_t userfunc;
@@ -1758,8 +2094,63 @@ static int clienterr(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, ai
 	sn = aimbs_getstr(bs, snlen);
 	reason = aimbs_get16(bs);
 
-	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
-		 ret = userfunc(sess, rx, channel, sn, reason);
+	if (channel == 0x0002) { /* File transfer declined */
+		if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+			ret = userfunc(sess, rx, channel, sn, reason, ck);
+	} else if (channel == 0x0004) { /* ICQ message */
+		switch (reason) {
+			case 0x0003: { /* ICQ status message.  Maybe other stuff too, you never know with these people. */
+				fu8_t statusmsgtype, *msg;
+				fu16_t len;
+				fu32_t state;
+
+				len = aimbs_getle16(bs); /* Should be 0x001b */
+				aim_bstream_advance(bs, len); /* Unknown */
+
+				len = aimbs_getle16(bs); /* Should be 0x000e */
+				aim_bstream_advance(bs, len); /* Unknown */
+
+				statusmsgtype = aimbs_getle8(bs);
+				switch (statusmsgtype) {
+					case 0xe8:
+						state = AIM_ICQ_STATE_AWAY;
+						break;
+					case 0xe9:
+						state = AIM_ICQ_STATE_AWAY | AIM_ICQ_STATE_BUSY;
+						break;
+					case 0xea:
+						state = AIM_ICQ_STATE_AWAY | AIM_ICQ_STATE_OUT;
+						break;
+					case 0xeb:
+						state = AIM_ICQ_STATE_AWAY | AIM_ICQ_STATE_DND | AIM_ICQ_STATE_BUSY;
+						break;
+					case 0xec:
+						state = AIM_ICQ_STATE_CHAT;
+						break;
+					default:
+						state = 0;
+						break;
+				}
+
+				aimbs_getle8(bs); /* Unknown - 0x03 Maybe this means this is an auto-reply */
+				aimbs_getle16(bs); /* Unknown - 0x0000 */
+				aimbs_getle16(bs); /* Unknown - 0x0000 */
+
+				len = aimbs_getle16(bs);
+				msg = aimbs_getraw(bs, len);
+
+				if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+					ret = userfunc(sess, rx, channel, sn, reason, state, msg);
+
+				free(msg);
+			} break;
+
+			default: {
+				if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+					ret = userfunc(sess, rx, channel, sn, reason);
+			} break;
+		} /* end switch */
+	}
 
 	free(ck);
 	free(sn);
@@ -1767,6 +2158,7 @@ static int clienterr(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, ai
 	return ret;
 }
 
+/* Subtype 0x000c */
 static int msgack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_rxcallback_t userfunc;
@@ -1789,6 +2181,90 @@ static int msgack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 	return ret;
 }
 
+/*
+ * Subtype 0x0014 - Send a mini typing notification (mtn) packet.
+ *
+ * This is supported by winaim5 and newer, MacAIM bleh and newer, iChat bleh and newer, 
+ * and Gaim 0.60 and newer.
+ *
+ */
+faim_export int aim_mtn_send(aim_session_t *sess, fu16_t type1, char *sn, fu16_t type2)
+{
+	aim_conn_t *conn;
+	aim_frame_t *fr;
+	aim_snacid_t snacid;
+
+	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0002)))
+		return -EINVAL;
+
+	if (!sn)
+		return -EINVAL;
+
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+11+strlen(sn)+2)))
+		return -ENOMEM;
+
+	snacid = aim_cachesnac(sess, 0x0004, 0x0014, 0x0000, NULL, 0);
+	aim_putsnac(&fr->data, 0x0004, 0x0014, 0x0000, snacid);
+
+	/*
+	 * 8 days of light
+	 * Er, that is to say, 8 bytes of 0's
+	 */
+	aimbs_put16(&fr->data, 0x0000);
+	aimbs_put16(&fr->data, 0x0000);
+	aimbs_put16(&fr->data, 0x0000);
+	aimbs_put16(&fr->data, 0x0000);
+
+	/*
+	 * Type 1 (should be 0x0001 for mtn)
+	 */
+	aimbs_put16(&fr->data, type1);
+
+	/*
+	 * Dest sn
+	 */
+	aimbs_put8(&fr->data, strlen(sn));
+	aimbs_putraw(&fr->data, sn, strlen(sn));
+
+	/*
+	 * Type 2 (should be 0x0000, 0x0001, or 0x0002 for mtn)
+	 */
+	aimbs_put16(&fr->data, type2);
+
+	aim_tx_enqueue(sess, fr);
+
+	return 0;
+}
+
+/*
+ * Subtype 0x0014 - Receive a mini typing notification (mtn) packet.
+ *
+ * This is supported by winaim5 and newer, MacAIM bleh and newer, iChat bleh and newer, 
+ * and Gaim 0.60 and newer.
+ *
+ */
+static int mtn_receive(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
+{
+	int ret = 0;
+	aim_rxcallback_t userfunc;
+	char *sn;
+	fu8_t snlen;
+	fu16_t type1, type2;
+
+	aim_bstream_advance(bs, 8); /* Unknown - All 0's */
+	type1 = aimbs_get16(bs);
+	snlen = aimbs_get8(bs);
+	sn = aimbs_getstr(bs, snlen);
+	type2 = aimbs_get16(bs);
+
+	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
+		ret = userfunc(sess, rx, type1, sn, type2);
+
+	free(sn);
+
+	return ret;
+}
+
 static int snachandler(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 
@@ -1801,11 +2277,26 @@ static int snachandler(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 	else if (snac->subtype == 0x000a)
 		return missedcall(sess, mod, rx, snac, bs);
 	else if (snac->subtype == 0x000b)
-		return clienterr(sess, mod, rx, snac, bs);
+		return clientautoresp(sess, mod, rx, snac, bs);
 	else if (snac->subtype == 0x000c)
 		return msgack(sess, mod, rx, snac, bs);
+	else if (snac->subtype == 0x0014)
+		return mtn_receive(sess, mod, rx, snac, bs);
 
 	return 0;
+}
+
+static int snacdestructor(aim_session_t *sess, aim_conn_t *conn, aim_modsnac_t *snac, void *data)
+{
+	aim_rxcallback_t userfunc;
+	int ret = 0;
+
+	if (snac->subtype == 0x0006) {
+		if ((userfunc = aim_callhandler(sess, conn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_MSGTIMEOUT)))
+			ret = userfunc(sess, NULL, conn, data);
+	}
+	/* Note that we return 1 for success, 0 for failure. */
+	return ret;
 }
 
 faim_internal int msg_modfirst(aim_session_t *sess, aim_module_t *mod)
@@ -1818,6 +2309,7 @@ faim_internal int msg_modfirst(aim_session_t *sess, aim_module_t *mod)
 	mod->flags = 0;
 	strncpy(mod->name, "messaging", sizeof(mod->name));
 	mod->snachandler = snachandler;
+	mod->snacdestructor = snacdestructor;
 
 	return 0;
 }

@@ -28,8 +28,7 @@ static void freetlv(aim_tlv_t **oldtlv)
 
 /**
  * aim_readtlvchain - Read a TLV chain from a buffer.
- * @buf: Input buffer
- * @maxlen: Length of input buffer
+ * @param bs Input bstream
  *
  * Reads and parses a series of TLV patterns from a data buffer; the
  * returned structure is manipulatable with the rest of the TLV
@@ -46,7 +45,7 @@ static void freetlv(aim_tlv_t **oldtlv)
 faim_internal aim_tlvlist_t *aim_readtlvchain(aim_bstream_t *bs)
 {
 	aim_tlvlist_t *list = NULL, *cur;
-
+	
 	while (aim_bstream_empty(bs) > 0) {
 		fu16_t type, length;
 
@@ -70,19 +69,24 @@ faim_internal aim_tlvlist_t *aim_readtlvchain(aim_bstream_t *bs)
 #endif
 		else {
 
-			if (length > aim_bstream_empty(bs))
-				goto errout;
+			if (length > aim_bstream_empty(bs)) {
+				aim_freetlvchain(&list);
+				return NULL;
+			}
 
 			cur = (aim_tlvlist_t *)malloc(sizeof(aim_tlvlist_t));
-			if (!cur)
-				goto errout;
+			if (!cur) {
+				aim_freetlvchain(&list);
+				return NULL;
+			}
 
 			memset(cur, 0, sizeof(aim_tlvlist_t));
 
-			cur->tlv = createtlv();	
+			cur->tlv = createtlv();
 			if (!cur->tlv) {
 				free(cur);
-				goto errout;
+				aim_freetlvchain(&list);
+				return NULL;
 			}
 			cur->tlv->type = type;
 			if ((cur->tlv->length = length)) {
@@ -90,7 +94,8 @@ faim_internal aim_tlvlist_t *aim_readtlvchain(aim_bstream_t *bs)
 			       if (!cur->tlv->value) {
 				       freetlv(&cur->tlv);
 				       free(cur);
-				       goto errout;
+				       aim_freetlvchain(&list);
+				       return NULL;
 			       }
 			}
 
@@ -100,10 +105,74 @@ faim_internal aim_tlvlist_t *aim_readtlvchain(aim_bstream_t *bs)
 	}
 
 	return list;
+}
 
-errout:
-	aim_freetlvchain(&list);
-	return NULL;
+/**
+ * aim_readtlvchain_num - Read a TLV chain from a buffer.
+ * @param bs Input bstream
+ * @param num The max number of TLVs that will be read, or -1 if unlimited.  
+ *        There are a number of places where you want to read in a tlvchain, 
+ *        but the chain is not at the end of the SNAC, and the chain is 
+ *        preceeded by the number of TLVs.  So you can limit that.
+ *
+ * Reads and parses a series of TLV patterns from a data buffer; the
+ * returned structure is manipulatable with the rest of the TLV
+ * routines.  When done with a TLV chain, aim_freetlvchain() should
+ * be called to free the dynamic substructures.
+ *
+ * XXX There should be a flag setable here to have the tlvlist contain
+ * bstream references, so that at least the ->value portion of each 
+ * element doesn't need to be malloc/memcpy'd.  This could prove to be
+ * just as effecient as the in-place TLV parsing used in a couple places
+ * in libfaim.
+ *
+ */
+faim_internal aim_tlvlist_t *aim_readtlvchain_num(aim_bstream_t *bs, fu16_t num)
+{
+	aim_tlvlist_t *list = NULL, *cur;
+	
+	while ((aim_bstream_empty(bs) > 0) && (num != 0)) {
+		fu16_t type, length;
+
+		type = aimbs_get16(bs);
+		length = aimbs_get16(bs);
+
+		if (length > aim_bstream_empty(bs)) {
+			aim_freetlvchain(&list);
+			return NULL;
+		}
+
+		cur = (aim_tlvlist_t *)malloc(sizeof(aim_tlvlist_t));
+		if (!cur) {
+			aim_freetlvchain(&list);
+			return NULL;
+		}
+
+		memset(cur, 0, sizeof(aim_tlvlist_t));
+
+		cur->tlv = createtlv();
+		if (!cur->tlv) {
+			free(cur);
+			aim_freetlvchain(&list);
+			return NULL;
+		}
+		cur->tlv->type = type;
+		if ((cur->tlv->length = length)) {
+		       cur->tlv->value = aimbs_getraw(bs, length);	
+		       if (!cur->tlv->value) {
+			       freetlv(&cur->tlv);
+			       free(cur);
+			       aim_freetlvchain(&list);
+			       return NULL;
+		       }
+		}
+
+		num--;
+		cur->next = list;
+		list = cur;
+	}
+
+	return list;
 }
 
 /**
@@ -181,11 +250,11 @@ faim_internal int aim_sizetlvchain(aim_tlvlist_t **list)
 }
 
 /**
- * aim_addtlvtochain_str - Add a string to a TLV chain
+ * aim_addtlvtochain_raw - Add a string to a TLV chain
  * @list: Desination chain (%NULL pointer if empty)
- * @type: TLV type
- * @str: String to add
- * @len: Length of string to add (not including %NULL)
+ * @t: TLV type
+ * @l: Length of string to add (not including %NULL)
+ * @v: String to add
  *
  * Adds the passed string as a TLV element of the passed type
  * to the TLV chain.
@@ -244,8 +313,8 @@ faim_internal int aim_addtlvtochain8(aim_tlvlist_t **list, const fu16_t t, const
 /**
  * aim_addtlvtochain16 - Add a 16bit integer to a TLV chain
  * @list: Destination chain
- * @type: TLV type to add
- * @val: Value to add
+ * @t: TLV type to add
+ * @v: Value to add
  *
  * Adds a two-byte unsigned integer to a TLV chain.
  *
@@ -606,4 +675,3 @@ faim_export int aim_puttlv_raw(fu8_t *buf, const fu16_t t, const fu16_t l, const
 	return i;
 }
 #endif
-

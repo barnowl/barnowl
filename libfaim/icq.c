@@ -1,5 +1,5 @@
 /*
- * Encapsulated ICQ.
+ * Family 0x0015 - Encapsulated ICQ.
  *
  */
 
@@ -262,5 +262,3 @@ faim_internal int icq_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	return 0;
 }
-
-

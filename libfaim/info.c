@@ -1,5 +1,5 @@
 /*
- * aim_info.c
+ * Family 0x0002 - Information.
  *
  * The functions here are responsible for requesting and parsing information-
  * gathering SNACs.  Or something like that. 
@@ -14,6 +14,72 @@ struct aim_priv_inforeq {
 	fu16_t infotype;
 };
 
+/*
+ * Subtype 0x0002
+ *
+ * Request Location services rights.
+ *
+ */
+faim_export int aim_bos_reqlocaterights(aim_session_t *sess, aim_conn_t *conn)
+{
+        return aim_genericreq_n(sess, conn, 0x0002, 0x0002);
+}
+
+/*
+ * Subtype 0x0004
+ *
+ * Gives BOS your profile.
+ * 
+ */
+faim_export int aim_bos_setprofile(aim_session_t *sess, aim_conn_t *conn, const char *profile, const char *awaymsg, fu32_t caps)
+{
+	static const char defencoding[] = {"text/aolrtf; charset=\"us-ascii\""};
+	aim_frame_t *fr;
+	aim_tlvlist_t *tl = NULL;
+	aim_snacid_t snacid;
+
+	/* Build to packet first to get real length */
+	if (profile) {
+		aim_addtlvtochain_raw(&tl, 0x0001, strlen(defencoding), defencoding);
+		aim_addtlvtochain_raw(&tl, 0x0002, strlen(profile), profile);
+	}
+
+	/*
+	 * So here's how this works:
+	 *   - You are away when you have a non-zero-length type 4 TLV stored.
+	 *   - You become unaway when you clear the TLV with a zero-length
+	 *       type 4 TLV.
+	 *   - If you do not send the type 4 TLV, your status does not change
+	 *       (that is, if you were away, you'll remain away).
+	 */
+	if (awaymsg) {
+		if (strlen(awaymsg)) {
+			aim_addtlvtochain_raw(&tl, 0x0003, strlen(defencoding), defencoding);
+			aim_addtlvtochain_raw(&tl, 0x0004, strlen(awaymsg), awaymsg);
+		} else
+			aim_addtlvtochain_noval(&tl, 0x0004);
+	}
+
+	aim_addtlvtochain_caps(&tl, 0x0005, caps);
+
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10 + aim_sizetlvchain(&tl))))
+		return -ENOMEM;
+
+	snacid = aim_cachesnac(sess, 0x0002, 0x0004, 0x0000, NULL, 0);
+
+	aim_putsnac(&fr->data, 0x0002, 0x004, 0x0000, snacid);
+	aim_writetlvchain(&fr->data, &tl);
+	aim_freetlvchain(&tl);
+
+	aim_tx_enqueue(sess, fr);
+
+	return 0;
+}
+
+/*
+ * Subtype 0x0005 - Request info of another AIM user.
+ *
+ */
 faim_export int aim_getinfo(aim_session_t *sess, aim_conn_t *conn, const char *sn, fu16_t infotype)
 {
 	struct aim_priv_inforeq privdata;
@@ -199,9 +265,19 @@ static const struct {
 	 {0x09, 0x46, 0x13, 0x4b, 0x4c, 0x7f, 0x11, 0xd1,
 	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
 
+	/* from ICQ2002a
+	{AIM_CAPS_ICQUNKNOWN2,
+	 {0x09, 0x46, 0x13, 0x4e, 0x4c, 0x7f, 0x11, 0xd1,
+	  0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}}, */
+
 	{AIM_CAPS_ICQRTF,
 	 {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 
 	  0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92}},
+
+	/* supposed to be ICQRTF?
+	{AIM_CAPS_TRILLUNKNOWN,
+	 {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 
+	  0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09}}, */
 
 	{AIM_CAPS_ICQUNKNOWN,
 	 {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8,
@@ -216,11 +292,8 @@ static const struct {
 	  0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00}},
 
 	{AIM_CAPS_APINFO, 
-         {0xAA, 0x4A, 0x32, 0xB5,
-	         0xF8, 0x84,
-                0x48, 0xc6,
-	         0xA3, 0xD7,
-	         0x8C, 0x50, 0x97, 0x19, 0xFD, 0x5B}},
+         {0xAA, 0x4A, 0x32, 0xB5, 0xF8, 0x84, 0x48, 0xc6,
+	  0xA3, 0xD7, 0x8C, 0x50, 0x97, 0x19, 0xFD, 0x5B}},
 
 	{AIM_CAPS_LAST}
 };
@@ -375,7 +448,7 @@ faim_internal int aim_extractuserinfo(aim_session_t *sess, aim_bstream_t *bs, ai
 
 		} else if (type == 0x0002) {
 			/*
-			 * Type = 0x0002: Account creation time.
+			 * Type = 0x0002: Account creation time. 
 			 *
 			 * The time/date that the user originally registered for
 			 * the service, stored in time_t format.
@@ -423,6 +496,7 @@ faim_internal int aim_extractuserinfo(aim_session_t *sess, aim_bstream_t *bs, ai
 			 *
 			 * This is sometimes sent instead of type 2 ("account
 			 * creation time"), particularly in the self-info.
+			 * And particularly for ICQ?
 			 */
 			outinfo->membersince = aimbs_get32(bs);
 			outinfo->present |= AIM_USERINFO_PRESENT_MEMBERSINCE;
@@ -556,6 +630,7 @@ faim_internal int aim_putuserinfo(aim_bstream_t *bs, aim_userinfo_t *info)
 	if (info->present & AIM_USERINFO_PRESENT_IDLE)
 		aim_addtlvtochain16(&tlvlist, 0x0004, info->idletime);
 
+/* XXX - So, ICQ_OSCAR_SUPPORT is never defined anywhere... */
 #if ICQ_OSCAR_SUPPORT
 	if (atoi(info->sn) != 0) {
 		if (info->present & AIM_USERINFO_PRESENT_ICQEXTSTATUS)
@@ -567,7 +642,7 @@ faim_internal int aim_putuserinfo(aim_bstream_t *bs, aim_userinfo_t *info)
 
 	if (info->present & AIM_USERINFO_PRESENT_CAPABILITIES)
 		aim_addtlvtochain_caps(&tlvlist, 0x000d, info->capabilities);
-
+ 
 	if (info->present & AIM_USERINFO_PRESENT_SESSIONLEN)
 		aim_addtlvtochain32(&tlvlist, (fu16_t)((info->flags & AIM_FLAG_AOL) ? 0x0010 : 0x000f), info->sessionlen);
 
@@ -578,51 +653,8 @@ faim_internal int aim_putuserinfo(aim_bstream_t *bs, aim_userinfo_t *info)
 	return 0;
 }
 
-faim_export int aim_sendbuddyoncoming(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *info)
-{
-	aim_frame_t *fr;
-	aim_snacid_t snacid;
-
-	if (!sess || !conn || !info)
-		return -EINVAL;
-
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 1152)))
-		return -ENOMEM;
-
-	snacid = aim_cachesnac(sess, 0x0003, 0x000b, 0x0000, NULL, 0);
-	
-	aim_putsnac(&fr->data, 0x0003, 0x000b, 0x0000, snacid);
-	aim_putuserinfo(&fr->data, info);
-
-	aim_tx_enqueue(sess, fr);
-
-	return 0;
-}
-
-faim_export int aim_sendbuddyoffgoing(aim_session_t *sess, aim_conn_t *conn, const char *sn)
-{
-	aim_frame_t *fr;
-	aim_snacid_t snacid;
-
-	if (!sess || !conn || !sn)
-		return -EINVAL;
-
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+1+strlen(sn))))
-		return -ENOMEM;
-
-	snacid = aim_cachesnac(sess, 0x0003, 0x000c, 0x0000, NULL, 0);
-	
-	aim_putsnac(&fr->data, 0x0003, 0x000c, 0x0000, snacid);
-	aimbs_put8(&fr->data, strlen(sn));
-	aimbs_putraw(&fr->data, sn, strlen(sn));
-
-	aim_tx_enqueue(sess, fr);
-
-	return 0;
-}
-
 /*
- * Huh? What is this?
+ * Subtype 0x000b - Huh? What is this?
  */
 faim_export int aim_0002_000b(aim_session_t *sess, aim_conn_t *conn, const char *sn)
 {
@@ -647,10 +679,13 @@ faim_export int aim_0002_000b(aim_session_t *sess, aim_conn_t *conn, const char 
 }
 
 /*
+ * Subtype 0x0003
+ *
  * Normally contains:
  *   t(0001)  - short containing max profile length (value = 1024)
  *   t(0002)  - short - unknown (value = 16) [max MIME type length?]
  *   t(0003)  - short - unknown (value = 10)
+ *   t(0004)  - short - unknown (value = 2048) [ICQ only?]
  */
 static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
@@ -672,6 +707,7 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 	return ret;
 }
 
+/* Subtype 0x0006 */
 static int userinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_userinfo_t userinfo;
@@ -741,6 +777,97 @@ static int userinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim
 	free(origsnac);
 
 	return ret;
+}
+
+/* 
+ * Subtype 0x0009 - Set directory profile data.
+ *
+ * This is not the same as aim_bos_setprofile!
+ * privacy: 1 to allow searching, 0 to disallow.
+ *
+ */
+faim_export int aim_setdirectoryinfo(aim_session_t *sess, aim_conn_t *conn, const char *first, const char *middle, const char *last, const char *maiden, const char *nickname, const char *street, const char *city, const char *state, const char *zip, int country, fu16_t privacy) 
+{
+	aim_frame_t *fr;
+	aim_snacid_t snacid;
+	aim_tlvlist_t *tl = NULL;
+
+	aim_addtlvtochain16(&tl, 0x000a, privacy);
+
+	if (first)
+		aim_addtlvtochain_raw(&tl, 0x0001, strlen(first), first);
+	if (last)
+		aim_addtlvtochain_raw(&tl, 0x0002, strlen(last), last);
+	if (middle)
+		aim_addtlvtochain_raw(&tl, 0x0003, strlen(middle), middle);
+	if (maiden)
+		aim_addtlvtochain_raw(&tl, 0x0004, strlen(maiden), maiden);
+
+	if (state)
+		aim_addtlvtochain_raw(&tl, 0x0007, strlen(state), state);
+	if (city)
+		aim_addtlvtochain_raw(&tl, 0x0008, strlen(city), city);
+
+	if (nickname)
+		aim_addtlvtochain_raw(&tl, 0x000c, strlen(nickname), nickname);
+	if (zip)
+		aim_addtlvtochain_raw(&tl, 0x000d, strlen(zip), zip);
+
+	if (street)
+		aim_addtlvtochain_raw(&tl, 0x0021, strlen(street), street);
+
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+aim_sizetlvchain(&tl))))
+		return -ENOMEM;
+
+	snacid = aim_cachesnac(sess, 0x0002, 0x0009, 0x0000, NULL, 0);
+
+	aim_putsnac(&fr->data, 0x0002, 0x0009, 0x0000, snacid);
+	aim_writetlvchain(&fr->data, &tl);
+	aim_freetlvchain(&tl);
+
+	aim_tx_enqueue(sess, fr);
+
+	return 0;
+}
+
+/*
+ * Subtype 0x000f
+ * 
+ * XXX pass these in better
+ *
+ */
+faim_export int aim_setuserinterests(aim_session_t *sess, aim_conn_t *conn, const char *interest1, const char *interest2, const char *interest3, const char *interest4, const char *interest5, fu16_t privacy)
+{
+	aim_frame_t *fr;
+	aim_snacid_t snacid;
+	aim_tlvlist_t *tl = NULL;
+
+	/* ?? privacy ?? */
+	aim_addtlvtochain16(&tl, 0x000a, privacy);
+
+	if (interest1)
+		aim_addtlvtochain_raw(&tl, 0x0000b, strlen(interest1), interest1);
+	if (interest2)
+		aim_addtlvtochain_raw(&tl, 0x0000b, strlen(interest2), interest2);
+	if (interest3)
+		aim_addtlvtochain_raw(&tl, 0x0000b, strlen(interest3), interest3);
+	if (interest4)
+		aim_addtlvtochain_raw(&tl, 0x0000b, strlen(interest4), interest4);
+	if (interest5)
+		aim_addtlvtochain_raw(&tl, 0x0000b, strlen(interest5), interest5);
+
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+aim_sizetlvchain(&tl))))
+		return -ENOMEM;
+
+	snacid = aim_cachesnac(sess, 0x0002, 0x000f, 0x0000, NULL, 0);
+
+	aim_putsnac(&fr->data, 0x0002, 0x000f, 0x0000, 0);
+	aim_writetlvchain(&fr->data, &tl);
+	aim_freetlvchain(&tl);
+
+	aim_tx_enqueue(sess, fr);
+
+	return 0;
 }
 
 static int snachandler(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)

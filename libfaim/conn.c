@@ -1,4 +1,3 @@
-
 /*
  * conn.c
  *
@@ -14,6 +13,10 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#endif
+
+#ifdef _WIN32
+#include "win32dep.h"
 #endif
 
 /*
@@ -445,13 +448,11 @@ static int aim_proxyconnect(aim_session_t *sess, const char *host, fu16_t port, 
 			buf[2] = 0x00;
 			i = 3;
 		}
-
 		if (write(fd, buf, i) < i) {
 			*statusret = errno;
 			close(fd);
 			return -1;
 		}
-
 		if (read(fd, buf, 2) < 2) {
 			*statusret = errno;
 			close(fd);
@@ -501,6 +502,7 @@ static int aim_proxyconnect(aim_session_t *sess, const char *host, fu16_t port, 
 			close(fd);
 			return -1;
 		}
+
 		if (read(fd, buf, 10) < 10) {
 			*statusret = errno;
 			close(fd);
@@ -876,6 +878,15 @@ faim_export void aim_session_init(aim_session_t *sess, fu32_t flags, int debugle
 
 	sess->modlistv = NULL;
 
+	sess->ssi.received_data = 0;
+	sess->ssi.waiting_for_ack = 0;
+	sess->ssi.holding_queue = NULL;
+	sess->ssi.revision = 0;
+	sess->ssi.items = NULL;
+	sess->ssi.timestamp = (time_t)0;
+
+	sess->emailinfo = NULL;
+
 	/*
 	 * Default to SNAC login unless XORLOGIN is explicitly set.
 	 */
@@ -908,12 +919,14 @@ faim_export void aim_session_init(aim_session_t *sess, fu32_t flags, int debugle
 	aim__registermodule(sess, translate_modfirst);
 	aim__registermodule(sess, chatnav_modfirst);
 	aim__registermodule(sess, chat_modfirst);
-	/* missing 0x0f - 0x12 */
+	aim__registermodule(sess, newsearch_modfirst);
+	/* missing 0x10 - 0x12 */
 	aim__registermodule(sess, ssi_modfirst);
 	/* missing 0x14 */
-	aim__registermodule(sess, icq_modfirst);
+	aim__registermodule(sess, icq_modfirst); /* XXX - Make sure this isn't sent for AIM */
 	/* missing 0x16 */
 	aim__registermodule(sess, auth_modfirst);
+	aim__registermodule(sess, email_modfirst);
 
 	return;
 }
@@ -980,7 +993,9 @@ faim_export int aim_conn_completeconnect(aim_session_t *sess, aim_conn_t *conn)
 {
 	fd_set fds, wfds;
 	struct timeval tv;
-	int res, error = ETIMEDOUT;
+	int res;
+	int error = ETIMEDOUT;
+
 	aim_rxcallback_t userfunc;
 
 	if (!conn || (conn->fd == -1))
@@ -1008,7 +1023,6 @@ faim_export int aim_conn_completeconnect(aim_session_t *sess, aim_conn_t *conn)
 
 	if (FD_ISSET(conn->fd, &fds) || FD_ISSET(conn->fd, &wfds)) {
 		int len = sizeof(error);
-
 		if (getsockopt(conn->fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0)
 			error = errno;
 	}
@@ -1018,7 +1032,6 @@ faim_export int aim_conn_completeconnect(aim_session_t *sess, aim_conn_t *conn)
 		errno = error;
 		return -1;
 	}
-
 	fcntl(conn->fd, F_SETFL, 0); /* XXX should restore original flags */
 
 	conn->status &= ~AIM_CONN_STATUS_INPROGRESS;
@@ -1053,14 +1066,13 @@ faim_export int aim_logoff(aim_session_t *sess)
 	aim_connrst(sess);  /* in case we want to connect again */
 
 	return 0;
-
 }
 
 /*
  * aim_flap_nop()
  *
  * No-op.  WinAIM 4.x sends these _every minute_ to keep
- * the connection alive.  
+ * the connection alive.
  */
 faim_export int aim_flap_nop(aim_session_t *sess, aim_conn_t *conn)
 {
@@ -1073,5 +1085,3 @@ faim_export int aim_flap_nop(aim_session_t *sess, aim_conn_t *conn)
 
 	return 0;
 }
-
-

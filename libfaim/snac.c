@@ -89,6 +89,11 @@ faim_internal aim_snac_t *aim_remsnac(aim_session_t *sess, aim_snacid_t id)
 	for (prev = (aim_snac_t **)&sess->snac_hash[index]; (cur = *prev); ) {
 		if (cur->id == id) {
 			*prev = cur->next;
+			if (cur->flags & AIM_SNACFLAGS_DESTRUCTOR) {
+				struct aim_snac_destructor *asd = cur->data;
+				cur->data = asd->data;
+				free(asd);
+			}
 			return cur;
 		} else
 			prev = &cur->next;
@@ -96,6 +101,40 @@ faim_internal aim_snac_t *aim_remsnac(aim_session_t *sess, aim_snacid_t id)
 
 	return cur;
 }
+
+/* Free a SNAC, and call the appropriate destructor if necessary.
+ */
+faim_internal faim_shortfunc void aim_cleansnac(aim_session_t *sess, aim_snac_t *snac)
+{
+	aim_module_t *cur;
+
+	if (snac->flags & AIM_SNACFLAGS_DESTRUCTOR) {
+		struct aim_snac_destructor *d = snac->data;
+		aim_modsnac_t modsnac;
+
+		modsnac.id = snac->id;
+		modsnac.subtype = snac->type;
+		modsnac.family = snac->family;
+		modsnac.flags = snac->flags;
+
+		for (cur = (aim_module_t *)sess->modlistv; cur; cur = cur->next)
+		{
+			if (!cur->snacdestructor)
+				continue;
+			if (!(cur->flags & AIM_MODFLAG_MULTIFAMILY) &&
+				(cur->family != modsnac.family))
+				continue;
+			if (cur->snacdestructor(sess, d->conn, &modsnac,
+						d->data))
+				break;
+		}
+		free(d->data);
+	}
+
+	free(snac->data);
+	free(snac);
+}
+
 
 /*
  * This is for cleaning up old SNACs that either don't get replies or
@@ -122,10 +161,7 @@ faim_internal void aim_cleansnacs(aim_session_t *sess, int maxage)
 
 				*prev = cur->next;
 
-				/* XXX should we have destructors here? */
-				free(cur->data);
-				free(cur);
-
+				aim_cleansnac(sess, cur);
 			} else
 				prev = &cur->next;
 		}

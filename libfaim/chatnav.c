@@ -1,9 +1,9 @@
 /*
- * Handle ChatNav.
+ * Family 0x000d - Handle ChatNav.
  *
- * [The ChatNav(igation) service does various things to keep chat
- *  alive.  It provides room information, room searching and creating, 
- *  as well as giving users the right ("permission") to use chat.]
+ * The ChatNav(igation) service does various things to keep chat
+ * alive.  It provides room information, room searching and creating,
+ * as well as giving users the right ("permission") to use chat.
  *
  */
 
@@ -11,13 +11,19 @@
 #include <aim.h>
 
 /*
+ * Subtype 0x0002
+ *
  * conn must be a chatnav connection!
+ *
  */
 faim_export int aim_chatnav_reqrights(aim_session_t *sess, aim_conn_t *conn)
 {
 	return aim_genericreq_n_snacid(sess, conn, 0x000d, 0x0002);
 }
 
+/*
+ * Subtype 0x0008
+ */
 faim_export int aim_chatnav_createroom(aim_session_t *sess, aim_conn_t *conn, const char *name, fu16_t exchange)
 {
 	static const char ck[] = {"create"};
@@ -345,6 +351,8 @@ static int parseinfo_create(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
 }
 
 /*
+ * Subtype 0x0009
+ *
  * Since multiple things can trigger this callback, we must lookup the 
  * snacid to determine the original snac subtype that was called.
  *
@@ -415,7 +423,7 @@ faim_internal int chatnav_modfirst(aim_session_t *sess, aim_module_t *mod)
 {
 
 	mod->family = 0x000d;
-	mod->version = 0x0001;
+	mod->version = 0x0003;
 	mod->toolid = 0x0010;
 	mod->toolversion = 0x047c;
 	mod->flags = 0;

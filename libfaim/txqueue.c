@@ -1,5 +1,5 @@
 /*
- *  aim_txqueue.c
+ * txqueue.c
  *
  * Herein lies all the mangement routines for the transmit (Tx) queue.
  *
@@ -10,6 +10,8 @@
 
 #ifndef _WIN32
 #include <sys/socket.h>
+#else
+#include "win32dep.h"
 #endif
 
 /*
@@ -24,7 +26,7 @@
  * chan = channel for FLAP, hdrtype for OFT
  *
  */
-faim_internal aim_frame_t *aim_tx_new(aim_session_t *sess, aim_conn_t *conn, fu8_t framing, fu8_t chan, int datalen)
+faim_internal aim_frame_t *aim_tx_new(aim_session_t *sess, aim_conn_t *conn, fu8_t framing, fu16_t chan, int datalen)
 {
 	aim_frame_t *fr;
 
@@ -61,8 +63,7 @@ faim_internal aim_frame_t *aim_tx_new(aim_session_t *sess, aim_conn_t *conn, fu8
 
 	} else if (fr->hdrtype == AIM_FRAMETYPE_OFT) {
 
-		fr->hdr.oft.type = chan;
-		fr->hdr.oft.hdr2len = 0; /* this will get setup by caller */
+		fr->hdr.rend.type = chan;
 
 	} else 
 		faimdprintf(sess, 0, "tx_new: unknown framing\n");
@@ -230,15 +231,34 @@ static int aim_send(int fd, const void *buf, size_t count)
 static int aim_bstream_send(aim_bstream_t *bs, aim_conn_t *conn, size_t count)
 {
 	int wrote = 0;
-
 	if (!bs || !conn || (count < 0))
 		return -EINVAL;
 
 	if (count > aim_bstream_empty(bs))
 		count = aim_bstream_empty(bs); /* truncate to remaining space */
 
-	if (count)
-		wrote = aim_send(conn->fd, bs->data + bs->offset, count);
+	if (count) {
+		if ((conn->type == AIM_CONN_TYPE_RENDEZVOUS) && 
+		    (conn->subtype == AIM_CONN_SUBTYPE_OFT_DIRECTIM)) {
+			/* I strongly suspect that this is a horrible thing to do
+			 * and I feel really guilty doing it. */
+			const char *sn = aim_directim_getsn(conn);
+			aim_rxcallback_t userfunc;
+			while (count - wrote > 1024) {
+				wrote = wrote + aim_send(conn->fd, bs->data + bs->offset + wrote, 1024);
+				if ((userfunc=aim_callhandler(conn->sessv, conn, 
+							      AIM_CB_FAM_SPECIAL, 
+							      AIM_CB_SPECIAL_IMAGETRANSFER)))
+				  userfunc(conn->sessv, NULL, sn, 
+					   count-wrote>1024 ? ((double)wrote / count) : 1);
+			}
+		}
+		if (count - wrote) {
+			wrote = wrote + aim_send(conn->fd, bs->data + bs->offset + wrote, count - wrote);
+		}
+		
+	}
+	
 
 	if (((aim_session_t *)conn->sessv)->debug >= 2) {
 		int i;
@@ -284,7 +304,6 @@ static int sendframe_flap(aim_session_t *sess, aim_frame_t *fr)
 
 	obslen = aim_bstream_curpos(&obs);
 	aim_bstream_rewind(&obs);
-
 	if (aim_bstream_send(&obs, fr->conn, obslen) != obslen)
 		err = -errno;
 	
@@ -296,46 +315,35 @@ static int sendframe_flap(aim_session_t *sess, aim_frame_t *fr)
 	return err;
 }
 
-static int sendframe_oft(aim_session_t *sess, aim_frame_t *fr)
+static int sendframe_rendezvous(aim_session_t *sess, aim_frame_t *fr)
 {
-	aim_bstream_t hbs;
-	fu8_t *hbs_raw;
-	int hbslen;
+	aim_bstream_t bs;
+	fu8_t *bs_raw;
 	int err = 0;
+	int totlen = 8 + aim_bstream_curpos(&fr->data);
 
-	hbslen = 8 + fr->hdr.oft.hdr2len;
-
-	if (!(hbs_raw = malloc(hbslen)))
+	if (!(bs_raw = malloc(totlen)))
 		return -1;
 
-	aim_bstream_init(&hbs, hbs_raw, hbslen);
+	aim_bstream_init(&bs, bs_raw, totlen);
 
-	aimbs_putraw(&hbs, fr->hdr.oft.magic, 4);
-	aimbs_put16(&hbs, fr->hdr.oft.hdr2len + 8);
-	aimbs_put16(&hbs, fr->hdr.oft.type);
-	aimbs_putraw(&hbs, fr->hdr.oft.hdr2, fr->hdr.oft.hdr2len);
+	aimbs_putraw(&bs, fr->hdr.rend.magic, 4);
+	aimbs_put16(&bs, 8 + fr->hdr.rend.hdrlen);
+	aimbs_put16(&bs, fr->hdr.rend.type);
 
-	aim_bstream_rewind(&hbs);
-	
-	if (aim_bstream_send(&hbs, fr->conn, hbslen) != hbslen) {
+	/* payload */
+	aim_bstream_rewind(&fr->data);
+	aimbs_putbs(&bs, &fr->data, totlen - 8);
 
+	aim_bstream_rewind(&bs);
+
+	if (aim_bstream_send(&bs, fr->conn, totlen) != totlen)
 		err = -errno;
-		
-	} else if (aim_bstream_curpos(&fr->data)) {
-		int len;
 
-		len = aim_bstream_curpos(&fr->data);
-		aim_bstream_rewind(&fr->data);
-		
-		if (aim_bstream_send(&fr->data, fr->conn, len) != len)
-			err = -errno;
-	}
-
-	free(hbs_raw); /* XXX aim_bstream_free */
+	free(bs_raw); /* XXX aim_bstream_free */
 
 	fr->handled = 1;
 	fr->conn->lastactivity = time(NULL);
-
 
 	return err;
 }
@@ -345,7 +353,7 @@ faim_internal int aim_tx_sendframe(aim_session_t *sess, aim_frame_t *fr)
 	if (fr->hdrtype == AIM_FRAMETYPE_FLAP)
 		return sendframe_flap(sess, fr);
 	else if (fr->hdrtype == AIM_FRAMETYPE_OFT)
-		return sendframe_oft(sess, fr);
+		return sendframe_rendezvous(sess, fr);
 	return -1;
 }
 
@@ -421,7 +429,7 @@ faim_export void aim_tx_purgequeue(aim_session_t *sess)
  * disappear without warning.
  *
  */
-faim_export void aim_tx_cleanqueue(aim_session_t *sess, aim_conn_t *conn)
+faim_internal void aim_tx_cleanqueue(aim_session_t *sess, aim_conn_t *conn)
 {
 	aim_frame_t *cur;
 
@@ -432,5 +440,3 @@ faim_export void aim_tx_cleanqueue(aim_session_t *sess, aim_conn_t *conn)
 
 	return;
 }
-
-

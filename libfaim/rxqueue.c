@@ -1,5 +1,5 @@
 /*
- *  aim_rxqueue.c
+ * rxqueue.c
  *
  * This file contains the management routines for the receive
  * (incoming packet) queue.  The actual packet handlers are in
@@ -63,325 +63,38 @@ faim_internal int aim_bstream_recv(aim_bstream_t *bs, int fd, size_t count)
 	return red;
 }
 
-faim_internal int aim_bstream_init(aim_bstream_t *bs, fu8_t *data, int len)
-{
-	
-	if (!bs)
-		return -1;
-
-	bs->data = data;
-	bs->len = len;
-	bs->offset = 0;
-
-	return 0;
-}
-
-faim_internal int aim_bstream_empty(aim_bstream_t *bs)
-{
-	return bs->len - bs->offset;
-}
-
-faim_internal int aim_bstream_curpos(aim_bstream_t *bs)
-{
-	return bs->offset;
-}
-
-faim_internal int aim_bstream_setpos(aim_bstream_t *bs, int off)
-{
-
-	if (off > bs->len)
-		return -1;
-
-	bs->offset = off;
-
-	return off;
-}
-
-faim_internal void aim_bstream_rewind(aim_bstream_t *bs)
-{
-
-	aim_bstream_setpos(bs, 0);
-
-	return;
-}
-
-faim_internal int aim_bstream_advance(aim_bstream_t *bs, int n)
-{
-
-	if (aim_bstream_empty(bs) < n)
-		return 0; /* XXX throw an exception */
-
-	bs->offset += n;
-
-	return n;
-}
-
-faim_internal fu8_t aimbs_get8(aim_bstream_t *bs)
-{
-	
-	if (aim_bstream_empty(bs) < 1)
-		return 0; /* XXX throw an exception */
-	
-	bs->offset++;
-	
-	return aimutil_get8(bs->data + bs->offset - 1);
-}
-
-faim_internal fu16_t aimbs_get16(aim_bstream_t *bs)
-{
-	
-	if (aim_bstream_empty(bs) < 2)
-		return 0; /* XXX throw an exception */
-	
-	bs->offset += 2;
-	
-	return aimutil_get16(bs->data + bs->offset - 2);
-}
-
-faim_internal fu32_t aimbs_get32(aim_bstream_t *bs)
-{
-	
-	if (aim_bstream_empty(bs) < 4)
-		return 0; /* XXX throw an exception */
-	
-	bs->offset += 4;
-	
-	return aimutil_get32(bs->data + bs->offset - 4);
-}
-
-faim_internal fu8_t aimbs_getle8(aim_bstream_t *bs)
-{
-	
-	if (aim_bstream_empty(bs) < 1)
-		return 0; /* XXX throw an exception */
-	
-	bs->offset++;
-	
-	return aimutil_getle8(bs->data + bs->offset - 1);
-}
-
-faim_internal fu16_t aimbs_getle16(aim_bstream_t *bs)
-{
-	
-	if (aim_bstream_empty(bs) < 2)
-		return 0; /* XXX throw an exception */
-	
-	bs->offset += 2;
-	
-	return aimutil_getle16(bs->data + bs->offset - 2);
-}
-
-faim_internal fu32_t aimbs_getle32(aim_bstream_t *bs)
-{
-	
-	if (aim_bstream_empty(bs) < 4)
-		return 0; /* XXX throw an exception */
-	
-	bs->offset += 4;
-	
-	return aimutil_getle32(bs->data + bs->offset - 4);
-}
-
-faim_internal int aimbs_put8(aim_bstream_t *bs, fu8_t v)
-{
-
-	if (aim_bstream_empty(bs) < 1)
-		return 0; /* XXX throw an exception */
-
-	bs->offset += aimutil_put8(bs->data + bs->offset, v);
-
-	return 1;
-}
-
-faim_internal int aimbs_put16(aim_bstream_t *bs, fu16_t v)
-{
-
-	if (aim_bstream_empty(bs) < 2)
-		return 0; /* XXX throw an exception */
-
-	bs->offset += aimutil_put16(bs->data + bs->offset, v);
-
-	return 2;
-}
-
-faim_internal int aimbs_put32(aim_bstream_t *bs, fu32_t v)
-{
-
-	if (aim_bstream_empty(bs) < 4)
-		return 0; /* XXX throw an exception */
-
-	bs->offset += aimutil_put32(bs->data + bs->offset, v);
-
-	return 1;
-}
-
-faim_internal int aimbs_putle8(aim_bstream_t *bs, fu8_t v)
-{
-
-	if (aim_bstream_empty(bs) < 1)
-		return 0; /* XXX throw an exception */
-
-	bs->offset += aimutil_putle8(bs->data + bs->offset, v);
-
-	return 1;
-}
-
-faim_internal int aimbs_putle16(aim_bstream_t *bs, fu16_t v)
-{
-
-	if (aim_bstream_empty(bs) < 2)
-		return 0; /* XXX throw an exception */
-
-	bs->offset += aimutil_putle16(bs->data + bs->offset, v);
-
-	return 2;
-}
-
-faim_internal int aimbs_putle32(aim_bstream_t *bs, fu32_t v)
-{
-
-	if (aim_bstream_empty(bs) < 4)
-		return 0; /* XXX throw an exception */
-
-	bs->offset += aimutil_putle32(bs->data + bs->offset, v);
-
-	return 1;
-}
-
-faim_internal int aimbs_getrawbuf(aim_bstream_t *bs, fu8_t *buf, int len)
-{
-
-	if (aim_bstream_empty(bs) < len)
-		return 0;
-
-	memcpy(buf, bs->data + bs->offset, len);
-	bs->offset += len;
-
-	return len;
-}
-
-faim_internal fu8_t *aimbs_getraw(aim_bstream_t *bs, int len)
-{
-	fu8_t *ob;
-
-	if (!(ob = malloc(len)))
-		return NULL;
-
-	if (aimbs_getrawbuf(bs, ob, len) < len) {
-		free(ob);
-		return NULL;
-	}
-
-	return ob;
-}
-
-faim_internal char *aimbs_getstr(aim_bstream_t *bs, int len)
-{
-	char *ob;
-
-	if (!(ob = malloc(len+1)))
-		return NULL;
-
-	if (aimbs_getrawbuf(bs, ob, len) < len) {
-		free(ob);
-		return NULL;
-	}
-	
-	ob[len] = '\0';
-
-	return ob;
-}
-
-faim_internal int aimbs_putraw(aim_bstream_t *bs, const fu8_t *v, int len)
-{
-
-	if (aim_bstream_empty(bs) < len)
-		return 0; /* XXX throw an exception */
-
-	memcpy(bs->data + bs->offset, v, len);
-	bs->offset += len;
-
-	return len;
-}
-
-faim_internal int aimbs_putbs(aim_bstream_t *bs, aim_bstream_t *srcbs, int len)
-{
-
-	if (aim_bstream_empty(srcbs) < len)
-		return 0; /* XXX throw exception (underrun) */
-
-	if (aim_bstream_empty(bs) < len)
-		return 0; /* XXX throw exception (overflow) */
-
-	memcpy(bs->data + bs->offset, srcbs->data + srcbs->offset, len);
-	bs->offset += len;
-	srcbs->offset += len;
-
-	return len;
-}
-
 /**
- * aim_frame_destroy - free aim_frame_t 
- * @frame: the frame to free  
+ * aim_frame_destroy - free aim_frame_t
+ * @frame: the frame to free
  *
- * returns -1 on error; 0 on success.  
+ * returns -1 on error; 0 on success.
  *
  */
 faim_internal void aim_frame_destroy(aim_frame_t *frame)
 {
 
 	free(frame->data.data); /* XXX aim_bstream_free */
-
-	if (frame->hdrtype == AIM_FRAMETYPE_OFT)
-		free(frame->hdr.oft.hdr2);
 	free(frame);
-	
-	return;
-} 
 
+	return;
+}
 
 /*
- * Grab a single command sequence off the socket, and enqueue
- * it in the incoming event queue in a seperate struct.
+ * Read a FLAP header from conn into fr, and return the number of bytes in the payload.
  */
-faim_export int aim_get_command(aim_session_t *sess, aim_conn_t *conn)
+static faim_shortfunc int aim_get_command_flap(aim_session_t *sess, aim_conn_t *conn, aim_frame_t *fr)
 {
 	fu8_t flaphdr_raw[6];
 	aim_bstream_t flaphdr;
-	aim_frame_t *newrx;
 	fu16_t payloadlen;
 	
-	if (!sess || !conn)
-		return 0;
-
-	if (conn->fd == -1)
-		return -1; /* its a aim_conn_close()'d connection */
-
-	if (conn->fd < 3)  /* can happen when people abuse the interface */
-		return 0;
-
-	if (conn->status & AIM_CONN_STATUS_INPROGRESS)
-		return aim_conn_completeconnect(sess, conn);
-
-	/*
-	 * Rendezvous (client-client) connections do not speak
-	 * FLAP, so this function will break on them.
-	 */
-	if (conn->type == AIM_CONN_TYPE_RENDEZVOUS) 
-		return aim_get_command_rendezvous(sess, conn);
-	else if (conn->type == AIM_CONN_TYPE_RENDEZVOUS_OUT) {
-		faimdprintf(sess, 0, "AIM_CONN_TYPE_RENDEZVOUS_OUT on fd %d\n", conn->fd);
-		return 0; 
-	}
-
 	aim_bstream_init(&flaphdr, flaphdr_raw, sizeof(flaphdr_raw));
 
 	/*
 	 * Read FLAP header.  Six bytes:
-	 *    
 	 *   0 char  -- Always 0x2a
 	 *   1 char  -- Channel ID.  Usually 2 -- 1 and 4 are used during login.
-	 *   2 short -- Sequence number 
+	 *   2 short -- Sequence number
 	 *   4 short -- Number of data bytes that follow.
 	 */
 	if (aim_bstream_recv(&flaphdr, conn->fd, 6) < 6) {
@@ -405,17 +118,78 @@ faim_export int aim_get_command(aim_session_t *sess, aim_conn_t *conn)
 		return -1;
 	}	
 
-	/* allocate a new struct */
-	if (!(newrx = (aim_frame_t *)malloc(sizeof(aim_frame_t))))
-		return -1;
-	memset(newrx, 0, sizeof(aim_frame_t));
-
 	/* we're doing FLAP if we're here */
-	newrx->hdrtype = AIM_FRAMETYPE_FLAP;
-	
-	newrx->hdr.flap.type = aimbs_get8(&flaphdr);
-	newrx->hdr.flap.seqnum = aimbs_get16(&flaphdr);
-	payloadlen = aimbs_get16(&flaphdr);
+	fr->hdrtype = AIM_FRAMETYPE_FLAP;
+
+	fr->hdr.flap.type = aimbs_get8(&flaphdr);
+	fr->hdr.flap.seqnum = aimbs_get16(&flaphdr);
+	payloadlen = aimbs_get16(&flaphdr); /* length of payload */
+
+	return payloadlen;
+}
+
+/*
+ * Read a rendezvous header from conn into fr, and return the number of bytes in the payload.
+ */
+static int aim_get_command_rendezvous(aim_session_t *sess, aim_conn_t *conn, aim_frame_t *fr)
+{
+	fu8_t rendhdr_raw[8];
+	aim_bstream_t rendhdr;
+
+	aim_bstream_init(&rendhdr, rendhdr_raw, sizeof(rendhdr_raw));
+
+	if (aim_bstream_recv(&rendhdr, conn->fd, 8) < 8) {
+		aim_conn_close(conn);
+		return -1;
+	}
+
+	aim_bstream_rewind(&rendhdr);
+
+	fr->hdrtype = AIM_FRAMETYPE_OFT; /* a misnomer--rendezvous */
+
+	aimbs_getrawbuf(&rendhdr, fr->hdr.rend.magic, 4);
+	fr->hdr.rend.hdrlen = aimbs_get16(&rendhdr) - 8;
+	fr->hdr.rend.type = aimbs_get16(&rendhdr);
+
+	return fr->hdr.rend.hdrlen;
+}
+
+/*
+ * Grab a single command sequence off the socket, and enqueue it in the incoming event queue 
+ * in a separate struct.
+ */
+faim_export int aim_get_command(aim_session_t *sess, aim_conn_t *conn)
+{
+	aim_frame_t *newrx;
+	fu16_t payloadlen;
+
+	if (!sess || !conn)
+		return -1;
+
+	if (conn->fd == -1)
+		return -1; /* it's an aim_conn_close()'d connection */
+
+	if (conn->fd < 3) /* can happen when people abuse the interface */
+		return -1;
+
+	if (conn->status & AIM_CONN_STATUS_INPROGRESS)
+		return aim_conn_completeconnect(sess, conn);
+
+	if (!(newrx = (aim_frame_t *)calloc(sizeof(aim_frame_t), 1)))
+		return -1;
+
+	/*
+	 * Rendezvous (client to client) connections do not speak FLAP, so this 
+	 * function will break on them.
+	 */
+	if (conn->type == AIM_CONN_TYPE_RENDEZVOUS)
+		payloadlen = aim_get_command_rendezvous(sess, conn, newrx);
+	else if (conn->type == AIM_CONN_TYPE_RENDEZVOUS_OUT) {
+		faimdprintf(sess, 0, "AIM_CONN_TYPE_RENDEZVOUS_OUT on fd %d\n", conn->fd);
+		free(newrx);
+		return -1;
+	} else
+		payloadlen = aim_get_command_flap(sess, conn, newrx);
 
 	newrx->nofree = 0; /* free by default */
 
@@ -507,4 +281,3 @@ faim_internal void aim_rxqueue_cleanbyconn(aim_session_t *sess, aim_conn_t *conn
 	}	
 	return;
 }
-

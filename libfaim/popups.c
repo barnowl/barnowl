@@ -1,5 +1,6 @@
-
 /*
+ * Family 0x0008 - Popups.
+ *
  * Popups are just what it sounds like.  They're a way for the server to
  * open up an informative box on the client's screen.
  */
@@ -61,5 +62,3 @@ faim_internal int popups_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	return 0;
 }
-
-

@@ -1,6 +1,5 @@
-
 /*
- * aim_search.c
+ * Family 0x000a - User Search.
  *
  * TODO: Add aim_usersearch_name()
  *
@@ -9,28 +8,11 @@
 #define FAIM_INTERNAL
 #include <aim.h>
 
-faim_export int aim_usersearch_address(aim_session_t *sess, aim_conn_t *conn, const char *address)
-{
-	aim_frame_t *fr;
-	aim_snacid_t snacid;
-
-	if (!sess || !conn || !address)
-		return -EINVAL;
-
-	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+strlen(address))))
-		return -ENOMEM;
-
-	snacid = aim_cachesnac(sess, 0x000a, 0x0002, 0x0000, strdup(address), strlen(address)+1);
-	aim_putsnac(&fr->data, 0x000a, 0x0002, 0x0000, snacid);
-	
-	aimbs_putraw(&fr->data, address, strlen(address)); 
-
-	aim_tx_enqueue(sess, fr);
-
-	return 0;
-}
-
-/* XXX can this be integrated with the rest of the error handling? */
+/*
+ * Subtype 0x0001
+ *
+ * XXX can this be integrated with the rest of the error handling?
+ */
 static int error(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	int ret = 0;
@@ -54,6 +36,35 @@ static int error(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_mo
 	return ret;
 }
 
+/*
+ * Subtype 0x0002
+ *
+ */
+faim_export int aim_usersearch_address(aim_session_t *sess, aim_conn_t *conn, const char *address)
+{
+	aim_frame_t *fr;
+	aim_snacid_t snacid;
+
+	if (!sess || !conn || !address)
+		return -EINVAL;
+
+	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+strlen(address))))
+		return -ENOMEM;
+
+	snacid = aim_cachesnac(sess, 0x000a, 0x0002, 0x0000, strdup(address), strlen(address)+1);
+	aim_putsnac(&fr->data, 0x000a, 0x0002, 0x0000, snacid);
+	
+	aimbs_putraw(&fr->data, address, strlen(address)); 
+
+	aim_tx_enqueue(sess, fr);
+
+	return 0;
+}
+
+/*
+ * Subtype 0x0003
+ *
+ */
 static int reply(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	int j = 0, m, ret = 0;
@@ -118,5 +129,3 @@ faim_internal int search_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	return 0;
 }
-
-

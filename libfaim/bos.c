@@ -1,14 +1,18 @@
+/*
+ * Family 0x0009 - Basic Oscar Service.
+ *
+ */
 
 #define FAIM_INTERNAL
 #include <aim.h>
 
-/* Request BOS rights (group 9, type 2) */
+/* Subtype 0x0002 - Request BOS rights. */
 faim_export int aim_bos_reqrights(aim_session_t *sess, aim_conn_t *conn)
 {
 	return aim_genericreq_n(sess, conn, 0x0009, 0x0002);
 }
 
-/* BOS Rights (group 9, type 3) */
+/* Subtype 0x0003 - BOS Rights. */
 static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_rxcallback_t userfunc;
@@ -42,7 +46,7 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 }
 
 /* 
- * Set group permisson mask (group 9, type 4)
+ * Subtype 0x0004 - Set group permisson mask.
  *
  * Normally 0x1f (all classes).
  *
@@ -57,7 +61,7 @@ faim_export int aim_bos_setgroupperm(aim_session_t *sess, aim_conn_t *conn, fu32
 }
 
 /*
- * Modify permit/deny lists (group 9, types 5, 6, 7, and 8)
+ * Stubtypes 0x0005, 0x0006, 0x0007, and 0x0008 - Modify permit/deny lists.
  *
  * Changes your visibility depending on changetype:
  *
@@ -158,5 +162,3 @@ faim_internal int bos_modfirst(aim_session_t *sess, aim_module_t *mod)
 
 	return 0;
 }
-
-
