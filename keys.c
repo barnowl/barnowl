@@ -203,6 +203,9 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-n", "smartnarrow",      "narrow to a view based on the current message");
   BIND_CMD("M-N", "smartnarrow -i",   "narrow to a view based on the current message, and consider instance pair");
 
+  BIND_CMD("/",   "start-command search ", "start a search command");
+  BIND_CMD("?",   "start-command search -r ", "start a revrerse search command");
+
   BIND_CMD("LEFT",   "recv:shiftleft", "");
   BIND_CMD("RIGHT",  "recv:shiftright","");
   BIND_CMD("DOWN",   "recv:next",      "");

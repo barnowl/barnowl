@@ -497,6 +497,15 @@ owl_cmd commands_to_init[]
 	      "returns the value of a variable",
 	      "getvar <varname>", ""),
 
+  OWLCMD_ARGS("search", owl_command_search, OWL_CTX_INTERACTIVE,
+	      "search messages for a particular string",
+	      "search [-r] [<string>]",
+	      "The search command will find messages that contain the\n"
+	      "specified string and move the cursor there.  If no string\n"
+	      "argument is supplied then the previous one is used.  By\n"
+	      "default searches are done fowards, if -r is used the search\n"
+	      "is performed backwards"),
+
   /****************************************************************/
   /************************* EDIT-SPECIFIC ************************/
   /****************************************************************/
@@ -1475,6 +1484,26 @@ char *owl_command_getvar(int argc, char **argv, char *buff) {
     return NULL;
   }
   return owl_strdup(tmpbuff); 
+}
+
+char *owl_command_search(int argc, char **argv, char *buff) {
+  int direction;
+  char *buffstart;
+
+  direction=OWL_DIRECTION_DOWNWARDS;
+  buffstart=skiptokens(buff, 1);
+  if (argc>1 && !strcmp(argv[1], "-r")) {
+    direction=OWL_DIRECTION_UPWARDS;
+    buffstart=skiptokens(buff, 2);
+  }
+    
+  if (argc==1 || (argc==2 && !strcmp(argv[1], "-r"))) {
+    owl_function_search_continue(direction);
+  } else {
+    owl_function_search_start(buffstart, direction);
+  }
+  
+  return(NULL);
 }
 
 /*********************************************************************/

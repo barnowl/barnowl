@@ -1,5 +1,13 @@
 $Id$
 
+1.2.2
+	Added the 'search' command.
+	'/' is a keybinding for 'search'
+	'?' is a keybinding for 'search -r'
+	Fixed stristr, which was completely broken
+	renamed owl_fmtext_ztext_stylestrip to owl_function_ztext_styletsrip
+	     and put it in functions.c
+
 1.2.1
         New framework for command handling.
         New framework for keymap handling.

@@ -57,6 +57,8 @@ void owl_global_init(owl_global *g) {
   }
   g->colorpairs=COLOR_PAIRS;
   g->debug=OWL_DEBUG;
+  g->searchactive=0;
+  g->searchstring=NULL;
   g->starttime=time(NULL); /* assumes we call init only a start time */
   strcpy(g->buffercommand, "");
 
@@ -591,4 +593,24 @@ int owl_global_should_followlast(owl_global *g) {
   
   if (owl_global_get_curmsg(g)==owl_view_get_size(v)-1) return(1);
   return(0);
+}
+
+int owl_global_is_search_active(owl_global *g) {
+  if (g->searchactive) return(1);
+  return(0);
+}
+
+void owl_global_set_search_active(owl_global *g, char *string) {
+  g->searchactive=1;
+  if (g->searchstring != NULL) owl_free(g->searchstring);
+  g->searchstring=owl_strdup(string);
+}
+
+void owl_global_set_search_inactive(owl_global *g) {
+  g->searchactive=0;
+}
+
+char *owl_global_get_search_string(owl_global *g) {
+  if (g->searchstring==NULL) return("");
+  return(g->searchstring);
 }

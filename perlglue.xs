@@ -8,7 +8,7 @@ static const char fileIdent[] = "$Id$";
 extern char *owl_function_command(char *);
 extern void owl_free(void *);
 extern int owl_zwrite_create_and_send_from_line(char *, char *);
-extern char *owl_fmtext_ztext_stylestrip(char *);
+extern char *owl_function_ztext_stylestrip(char *);
 
 MODULE = owl		PACKAGE = owl		
 
@@ -40,7 +40,7 @@ ztext_stylestrip(ztext)
 	PREINIT:
 		char *rv = NULL;
 	CODE:
-		rv = owl_fmtext_ztext_stylestrip(ztext);
+		rv = owl_function_ztext_stylestrip(ztext);
 		RETVAL = rv;
 	OUTPUT:
 		RETVAL

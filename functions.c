@@ -1596,7 +1596,7 @@ char *owl_function_exec(int argc, char **argv, char *buff, int type) {
   FILE *p;
 
   if (argc<2) {
-    owl_function_makemsg("Wrong number of arguments to the pexec command");
+    owl_function_makemsg("Wrong number of arguments to the exec command");
     return NULL;
   }
 
@@ -2181,7 +2181,7 @@ char *owl_function_keymap_summary(void *name) {
 
 /* TODO: implement for real */
 void owl_function_show_keymap(char *name) {
-  owl_fmtext  fm;
+  owl_fmtext fm;
   owl_keymap *km;
 
   owl_fmtext_init_null(&fm);
@@ -2197,10 +2197,93 @@ void owl_function_show_keymap(char *name) {
 
 
 void owl_function_help_for_command(char *cmdname) {
-  owl_fmtext   fm;
+  owl_fmtext fm;
 
   owl_fmtext_init_null(&fm);
   owl_cmd_get_help(owl_global_get_cmddict(&g), cmdname, &fm);
   owl_function_popless_fmtext(&fm);  
   owl_fmtext_free(&fm);
+}
+
+void owl_function_search_start(char *string, int direction) {
+  /* direction is OWL_DIRECTION_DOWNWARDS or OWL_DIRECTION_UPWARDS */
+  owl_global_set_search_active(&g, string);
+  owl_function_search_helper(0, direction);
+}
+
+void owl_function_search_continue(int direction) {
+  /* direction is OWL_DIRECTION_DOWNWARDS or OWL_DIRECTION_UPWARDS */
+  owl_function_search_helper(1, direction);
+}
+
+void owl_function_search_helper(int mode, int direction) {
+  /* move to a message that contains the string.  If direction is
+   * OWL_DIRECTION_DOWNWARDS then search fowards, if direction is
+   * OWL_DIRECTION_UPWARDS then search backwards.
+   *
+   * If mode==0 then it will stay on the current message if it
+   * contains the string.
+   */
+
+  owl_view *v;
+  int viewsize, i, curmsg, start;
+  owl_message *m;
+
+  v=owl_global_get_current_view(&g);
+  viewsize=owl_view_get_size(v);
+  curmsg=owl_global_get_curmsg(&g);
+  
+  if (viewsize==0) {
+    owl_function_makemsg("No messages present");
+    return;
+  }
+
+  if (mode==0) {
+    start=curmsg;
+  } else if (direction==OWL_DIRECTION_DOWNWARDS) {
+    start=curmsg+1;
+  } else {
+    start=curmsg-1;
+  }
+
+  /* bounds check */
+  if (start>=viewsize || start<0) {
+    owl_function_makemsg("No further matches found");
+    return;
+  }
+
+  for (i=start; i<viewsize && i>=0;) {
+    m=owl_view_get_element(v, i);
+    if (owl_message_search(m, owl_global_get_search_string(&g))) {
+      owl_global_set_curmsg(&g, i);
+      owl_function_calculate_topmsg(direction);
+      owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+      if (direction==OWL_DIRECTION_DOWNWARDS) {
+	owl_global_set_direction_downwards(&g);
+      } else {
+	owl_global_set_direction_upwards(&g);
+      }
+      return;
+    }
+    if (direction==OWL_DIRECTION_DOWNWARDS) {
+      i++;
+    } else {
+      i--;
+    }
+  }
+  owl_function_makemsg("No matches found");
+}
+
+
+/* strips formatting from ztext and returns the unformatted text. 
+ * caller is responsible for freeing. */
+char *owl_function_ztext_stylestrip(char *zt) {
+  owl_fmtext fm;
+  char *plaintext;
+
+  owl_fmtext_init_null(&fm);
+  owl_fmtext_append_ztext(&fm, zt);
+  plaintext = owl_fmtext_print_plain(&fm);
+  owl_fmtext_free(&fm);
+  return(plaintext);
 }

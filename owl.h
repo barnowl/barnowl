@@ -11,8 +11,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         1.2.1
-#define OWL_VERSION_STRING "1.2.1"
+#define OWL_VERSION         1.2.2
+#define OWL_VERSION_STRING "1.2.2"
 
 #define OWL_DEBUG 0
 #define OWL_DEBUG_FILE "/var/tmp/owldebug"
@@ -383,6 +383,8 @@ typedef struct _owl_global {
   int nextmsgid;
   int hascolors;
   int colorpairs;
+  int searchactive;
+  char *searchstring;
   owl_filterelement fe_true;
   owl_filterelement fe_false;
   owl_filterelement fe_null;

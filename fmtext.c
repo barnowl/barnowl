@@ -21,6 +21,13 @@ void _owl_fmtext_set_attr(owl_fmtext *f, int attr, int first, int last) {
   }
 }
 
+void _owl_fmtext_add_attr(owl_fmtext *f, int attr, int first, int last) {
+  int i;
+  for (i=first; i<=last; i++) {
+    f->fmbuff[i]|=(unsigned char) attr;
+  }
+}
+
 void _owl_fmtext_set_color(owl_fmtext *f, int color, int first, int last) {
   int i;
   for (i=first; i<=last; i++) {
@@ -331,19 +338,6 @@ char *owl_fmtext_print_plain(owl_fmtext *f) {
   return owl_strdup(f->textbuff);
 }
 
-/* strips formatting from ztext and returns the unformatted text. 
- * caller is responsible for freeing. */
-char *owl_fmtext_ztext_stylestrip(char *zt) {
-  owl_fmtext fm;
-  char *plaintext;
-
-  owl_fmtext_init_null(&fm);
-  owl_fmtext_append_ztext(&fm, zt);
-  plaintext = owl_fmtext_print_plain(&fm);
-  owl_fmtext_free(&fm);
-  return(plaintext);
-}
-
 
 void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w) {
   char *tmpbuff;
@@ -514,4 +508,37 @@ void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src) {
   memcpy(dst->textbuff, src->textbuff, src->textlen);
   memcpy(dst->fmbuff, src->fmbuff, src->textlen);
   memcpy(dst->colorbuff, src->colorbuff, src->textlen);
+}
+
+
+int owl_fmtext_search_and_highlight(owl_fmtext *f, char *string) {
+  /* highlight all instance of "string".  Return the number of
+   * instances found.  This is case insensitive. */
+
+  int found, len;
+  char *ptr1, *ptr2;
+
+  len=strlen(string);
+  found=0;
+  ptr1=f->textbuff;
+  while (ptr1-f->textbuff <= f->textlen) {
+    ptr2=stristr(ptr1, string);
+    if (!ptr2) return(found);
+
+    found++;
+    _owl_fmtext_add_attr(f, OWL_FMTEXT_ATTR_REVERSE,
+			 ptr2 - f->textbuff,
+			 ptr2 - f->textbuff + len - 1);
+
+    ptr1=ptr2+len;
+  }
+  return(found);
+}
+
+int owl_fmtext_search(owl_fmtext *f, char *string) {
+  /* return 1 if the string is found, 0 if not.  This is case
+   *  insensitive */
+
+  if (stristr(f->textbuff, string)) return(1);
+  return(0);
 }

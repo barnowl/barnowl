@@ -293,6 +293,12 @@ char *stristr(char *a, char *b) {
   downstr(x);
   downstr(y);
   ret=strstr(x, y);
+  if (ret==NULL) {
+    owl_free(x);
+    owl_free(y);
+    return(NULL);
+  }
+  ret=ret-x+a;
   owl_free(x);
   owl_free(y);
   return(ret);
@@ -336,7 +342,7 @@ char *owl_util_uniq(char *A, char *B, char *prohibit) {
 int only_whitespace(char *s) {
   int i;
   for (i=0; s[i]; i++) {
-    if (!isspace(s[i])) return(0);
+    if (!isspace((int) s[i])) return(0);
   }
   return(1);
 }

@@ -459,6 +459,11 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
   if (color!=OWL_COLOR_DEFAULT) {
     owl_fmtext_colorize(&b, color);
   }
+
+  if (owl_global_is_search_active(&g)) {
+    owl_fmtext_search_and_highlight(&b, owl_global_get_search_string(&g));
+  }
+      
   owl_fmtext_curs_waddstr(&b, win);
 
   owl_fmtext_free(&a);
@@ -625,3 +630,9 @@ int owl_message_get_id(owl_message *m) {
   return(m->id);
 }
 					
+int owl_message_search(owl_message *m, char *string) {
+  /* return 1 if the message contains "string", 0 otherwise.  This is
+   * case insensitive because the functions it uses are */
+
+  return (owl_fmtext_search(&(m->fmtext), string));
+}
