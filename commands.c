@@ -455,6 +455,7 @@ owl_cmd commands_to_init[]
 	      "zaway <message>",
 	      "Turn on or off the default zaway message.  If a message is\n"
 	      "specified turn on zaway with that message\n"),
+  OWLCMD_ALIAS("away", "zaway"),
 
   OWLCMD_ARGS("load-subs", owl_command_loadsubs, OWL_CTX_ANY,
 	      "load subscriptions from a file",

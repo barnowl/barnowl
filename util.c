@@ -82,7 +82,7 @@ void sepbar(char *in)
     wmove(sepwin, y, x+2);
     wattron(sepwin, A_BOLD);
     wattroff(sepwin, A_REVERSE);
-    waddstr(sepwin, " ZAWAY ");
+    waddstr(sepwin, " AWAY ");
     wattron(sepwin, A_REVERSE);
     wattroff(sepwin, A_BOLD);
   }

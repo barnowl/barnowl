@@ -264,7 +264,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
 
   BIND_CMD("o",   "toggle-oneline", "");
 
-  BIND_CMD("A",   "zaway toggle",     "toggles zaway on and off");
+  BIND_CMD("A",   "away toggle",     "toggles away message on and off");
 
   BIND_CMD("z",   "start-command zwrite ", "start a zwrite command");
   BIND_CMD("a",   "start-command aimwrite ", "start an aimwrite command");
