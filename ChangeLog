@@ -1,7 +1,9 @@
 $Id$
 
 2.0.7-pre-1
-	First pass at making owl build without zephyr
+	Owl should build now without zephyr, enabling it to act as a
+	  standalone AIM client.
+	Cleaned up some warnings from linux gcc.
 	
 2.0.6
 	aimlogin will now accept the screenname without a password and ask

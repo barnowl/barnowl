@@ -12,6 +12,10 @@
 #ifdef HAVE_LIBZEPHYR
 #include <zephyr/zephyr.h>
 #endif
+#ifdef HAVE_COM_ERR_H
+#include <com_err.h>
+#endif
+
 
 
 static const char owl_h_fileIdent[] = "$Id$";

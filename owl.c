@@ -14,7 +14,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <com_err.h>
 #include <signal.h>
 #include <time.h>
 #include <sys/param.h>
@@ -347,7 +346,7 @@ int main(int argc, char **argv, char **env) {
 #ifdef HAVE_LIBZEPHYR
       struct sockaddr_in from;
 #endif
-      owl_message *m;
+      owl_message *m=NULL;
       owl_filter *f;
 
       /* grab the new message, stick it in 'm' */

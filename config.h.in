@@ -15,6 +15,8 @@
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
 
+#undef HAVE_COM_ERR_H
+
 /* Define if you have the com_err library (-lcom_err).  */
 #undef HAVE_LIBCOM_ERR
 

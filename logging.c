@@ -9,7 +9,7 @@ static const char fileIdent[] = "$Id$";
 void owl_log_outgoing_zephyr(char *to, char *text) {
   FILE *file;
   char filename[MAXPATHLEN], *logpath;
-  char *tobuff, *ptr;
+  char *tobuff, *ptr="";
 
   tobuff=owl_malloc(strlen(to)+20);
   strcpy(tobuff, to);
@@ -96,7 +96,7 @@ void owl_log_outgoing_aim(char *to, char *text) {
 void owl_log_incoming(owl_message *m) {
   FILE *file, *allfile;
   char filename[MAXPATHLEN], allfilename[MAXPATHLEN], *logpath;
-  char *frombuff, *ptr, *from, *buff, *tmp;
+  char *frombuff=NULL, *from=NULL, *buff=NULL, *ptr;
   int len, ch, i, personal;
       
   /* check for nolog */
@@ -139,6 +139,8 @@ void owl_log_incoming(owl_message *m) {
   } else if (owl_message_is_type_aim(m)) {
     /* we do not yet handle chat rooms */
     from=frombuff=owl_sprintf("aim:%s", owl_message_get_sender(m));
+  } else {
+    from=frombuff=owl_strdup("unknown");
   }
   
   /* check for malicious sender formats */
@@ -192,6 +194,8 @@ void owl_log_incoming(owl_message *m) {
 
   /* write to the main file */
   if (owl_message_is_type_zephyr(m)) {
+    char *tmp;
+    
     tmp=short_zuser(owl_message_get_sender(m));
     fprintf(file, "Class: %s Instance: %s", owl_message_get_class(m), owl_message_get_instance(m));
     if (strcmp(owl_message_get_opcode(m), "")) fprintf(file, " Opcode: %s", owl_message_get_opcode(m));
@@ -203,6 +207,7 @@ void owl_log_incoming(owl_message *m) {
     buff[i]='\0';
     fprintf(file, "From: %s <%s>\n\n", buff, tmp);
     fprintf(file, "%s\n", owl_message_get_body(m));
+    owl_free(tmp);
   } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
     fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
     fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
@@ -218,12 +223,16 @@ void owl_log_incoming(owl_message *m) {
   /* if it's a personal message, also write to the 'all' file */
   if (personal) {
     if (owl_message_is_type_zephyr(m)) {
+      char *tmp;
+
+      tmp=short_zuser(owl_message_get_sender(m));
       fprintf(allfile, "Class: %s Instance: %s", owl_message_get_class(m), owl_message_get_instance(m));
       if (strcmp(owl_message_get_opcode(m), "")) fprintf(allfile, " Opcode: %s", owl_message_get_opcode(m));
       fprintf(allfile, "\n");
       fprintf(allfile, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
       fprintf(allfile, "From: %s <%s>\n\n", buff, tmp);
       fprintf(allfile, "%s\n", owl_message_get_body(m));
+      owl_free(tmp);
     } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
       fprintf(allfile, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
       fprintf(allfile, "Time: %s\n\n", owl_message_get_timestr(m));
@@ -238,7 +247,6 @@ void owl_log_incoming(owl_message *m) {
   }
 
   if (owl_message_is_type_zephyr(m)) {
-    owl_free(tmp);
     owl_free(buff);
   }
   owl_free(frombuff);

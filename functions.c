@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
-#include <com_err.h>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1742,7 +1741,7 @@ void owl_function_show_term()
  */
 void owl_function_reply(int type, int enter)
 {
-  char *buff, *oldbuff;
+  char *buff=NULL, *oldbuff;
   owl_message *m;
   owl_filter *f;
   

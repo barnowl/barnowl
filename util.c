@@ -696,8 +696,8 @@ char *owl_util_stripnewlines(char *in)
 void owl_util_file_deleteline(char *filename, char *line, int backup)
 {
   char buff[LINE], *text;
-  char *backupfilename;
-  FILE *file, *backupfile;
+  char *backupfilename="";
+  FILE *file, *backupfile=NULL;
   int size, newline;
 
   /* open the file for reading */
@@ -706,7 +706,7 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
     owl_function_makemsg("Error opening file %s", filename);
     return;
   }
-  
+
   /* open the backup file for writing */
   if (backup) {
     backupfilename=owl_sprintf("%s.backup", filename);

@@ -16,6 +16,7 @@ dnl Check for Athena
 AC_MSG_CHECKING(for /usr/athena/include)
 if test -d /usr/athena/include; then
 	CFLAGS=${CFLAGS}\ -I/usr/athena/include
+	CPPFLAGS=${CPPFLAGS}\ -I/usr/athena/include
 	AC_MSG_RESULT(yes)
 else
 	AC_MSG_RESULT(no)
@@ -61,7 +62,7 @@ fi
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(strings.h sys/ioctl.h unistd.h)
+AC_CHECK_HEADERS(strings.h sys/ioctl.h unistd.h com_err.h)
 
 dnl Add CFLAGS for embeded perl
 FOO=`perl -MExtUtils::Embed -e ccopts`

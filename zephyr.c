@@ -3,7 +3,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
-#include <com_err.h>
 #include "owl.h"
 
 static const char fileIdent[] = "$Id$";
