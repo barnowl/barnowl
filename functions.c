@@ -79,7 +79,7 @@ void owl_function_adminmsg(char *header, char *body) {
   owl_global_set_needrefresh(&g);
 }
 
-void owl_function_make_outgoing_zephyr(char *header, char *body, char *zwriteline) {
+void owl_function_make_outgoing_zephyr(char *header, char *body, char *zwriteline, char *zsig) {
   owl_message *m;
   int followlast;
   owl_zwrite z;
@@ -93,7 +93,7 @@ void owl_function_make_outgoing_zephyr(char *header, char *body, char *zwritelin
   /* in 'tobuff' place the "Message sent to foo" string.
    * Right now this only works for one recipient */
   tobuff=owl_malloc(strlen(owl_zwrite_get_recip_n(&z, 0))+100);
-  sprintf(tobuff, "Zephyr sent to %s", owl_zwrite_get_recip_n(&z, 0));
+  sprintf(tobuff, "Zephyr sent to %s  (Zsig: %s)", owl_zwrite_get_recip_n(&z, 0), zsig);
 
   /* create the message */
   m=owl_malloc(sizeof(owl_message));
@@ -128,6 +128,7 @@ void owl_function_make_outgoing_zephyr(char *header, char *body, char *zwritelin
   wnoutrefresh(owl_global_get_curs_recwin(&g));
   owl_global_set_needrefresh(&g);
   owl_free(tobuff);
+  owl_zwrite_free(&z);
 }
 
 void owl_function_zwrite_setup(char *line) {
@@ -152,8 +153,7 @@ void owl_function_zwrite_setup(char *line) {
 
   /* create and setup the editwin */
   e=owl_global_get_typwin(&g);
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE,
-			owl_global_get_msg_history(&g));
+  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE, owl_global_get_msg_history(&g));
 
   if (!owl_global_get_lockout_ctrld(&g)) {
     owl_function_makemsg("Type your zephyr below.  End with ^D or a dot on a line by itself.  ^C will quit.");
@@ -182,11 +182,11 @@ void owl_function_zwrite(char *line) {
   owl_zwrite_send_message(&z, owl_editwin_get_text(owl_global_get_typwin(&g)));
   owl_function_makemsg("Waiting for ack...");
 
-  /* display the message as an admin message in the receive window */
+  /* display the message as an outgoing message in the receive window */
   if (owl_global_is_displayoutgoing(&g) && owl_zwrite_is_personal(&z)) {
     owl_zwrite_get_recipstr(&z, buff);
     tmpbuff = owl_sprintf("Message sent to %s", buff);
-    owl_function_make_outgoing_zephyr(tmpbuff, owl_editwin_get_text(owl_global_get_typwin(&g)), line);
+    owl_function_make_outgoing_zephyr(tmpbuff, owl_editwin_get_text(owl_global_get_typwin(&g)), line, owl_zwrite_get_zsig(&z));
     owl_free(tmpbuff);
   }
 

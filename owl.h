@@ -218,6 +218,7 @@ typedef struct _owl_zwrite {
   char inst[LINE];
   char realm[LINE];
   char opcode[LINE];
+  char *zsig;
   owl_list recips;
   int cc;
   int noping;

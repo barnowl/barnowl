@@ -1,4 +1,7 @@
 #include <string.h>
+#include <pwd.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "owl.h"
 
 static const char fileIdent[] = "$Id$";
@@ -16,6 +19,8 @@ int owl_zwrite_create_and_send_from_line(char *cmd, char *msg) {
 int owl_zwrite_create_from_line(owl_zwrite *z, char *line) {
   int argc, badargs, myargc;
   char **argv, **myargv;
+  char *zsigexec, *zsigowlvar, *zsigzvar, *ptr;
+  struct passwd *pw;
 
   badargs=0;
   
@@ -24,6 +29,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line) {
   strcpy(z->class, "message");
   strcpy(z->inst, "personal");
   strcpy(z->opcode, "");
+  z->zsig=owl_strdup("");
   z->cc=0;
   z->noping=0;
   owl_list_create(&(z->recips));
@@ -102,6 +108,48 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line) {
     return(-1);
   }
 
+  /* set a zsig */
+  zsigexec = owl_global_get_zsig_exec(&g);
+  zsigowlvar = owl_global_get_zsig(&g);
+  zsigzvar = ZGetVariable("zwrite-signature");
+
+  if (zsigowlvar && *zsigowlvar) {
+    owl_free(z->zsig);
+    z->zsig=strdup(zsigowlvar);
+  } else if (zsigexec && *zsigexec) {
+    FILE *file;
+    char buff[LINE];
+
+    file=popen(zsigexec, "r");
+    if (!file) {
+      if (zsigzvar && *zsigzvar) {
+	owl_free(z->zsig);
+	z->zsig=owl_strdup(zsigzvar);
+      }
+    } else {
+      owl_free(z->zsig);
+      z->zsig=owl_malloc(LINE);
+      strcpy(z->zsig, "");
+      while (fgets(buff, LINE, file)) { /* wrong sizing */
+	strcat(z->zsig, buff);
+      }
+      pclose(file);
+      if (z->zsig[strlen(z->zsig)-1]=='\n') {
+	z->zsig[strlen(z->zsig)-1]='\0';
+      }
+    }
+  } else if (zsigzvar) {
+    owl_free(z->zsig);
+    z->zsig=owl_strdup(zsigzvar);
+  } else if (((pw=getpwuid(getuid()))!=NULL) && (pw->pw_gecos)) {
+    owl_free(z->zsig);
+    z->zsig=strdup(pw->pw_gecos);
+    ptr=strchr(z->zsig, ',');
+    if (ptr) {
+      ptr[0]='\0';
+    }
+  }
+
   return(0);
 }
 
@@ -159,9 +207,9 @@ void owl_zwrite_send_message(owl_zwrite *z, char *msg) {
 	strcpy(to, owl_list_get_element(&(z->recips), i));
       }
       if (z->cc) {
-	send_zephyr(z->opcode, NULL, z->class, z->inst, to, tmpmsg);
+	send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, tmpmsg);
       } else {
-	send_zephyr(z->opcode, NULL, z->class, z->inst, to, msg);
+	send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, msg);
       }
     }
     if (z->cc) {
@@ -187,6 +235,10 @@ char *owl_zwrite_get_opcode(owl_zwrite *z) {
 
 char *owl_zwrite_get_realm(owl_zwrite *z) {
   return(z->realm);
+}
+
+char *owl_zwrite_get_zsig(owl_zwrite *z) {
+  return(z->zsig);
 }
 
 void owl_zwrite_get_recipstr(owl_zwrite *z, char *buff) {
@@ -224,4 +276,5 @@ int owl_zwrite_is_personal(owl_zwrite *z) {
   
 void owl_zwrite_free(owl_zwrite *z) {
   owl_list_free_all(&(z->recips), &owl_free);
+  owl_free(z->zsig);
 }

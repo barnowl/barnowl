@@ -15,6 +15,8 @@ $Id$
 	     messages
 	Renamed pretty_sender to short_zuser and renamed long_sender to
              long_zuser
+	Moved zsig generation to the zwrite object
+	Print the zsig used for outgoing messages
 	
 1.2.2
 	Added the 'search' command.

@@ -5,7 +5,6 @@
 #include <string.h>
 #include <zephyr/zephyr.h>
 #include <com_err.h>
-#include <pwd.h>
 #include "owl.h"
 
 static const char fileIdent[] = "$Id$";
@@ -258,48 +257,6 @@ char *owl_zephyr_get_zsig(ZNotice_t *n, int *k) {
 int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *recipient, char *message) {
   int ret;
   ZNotice_t notice;
-  char *ptr;
-  struct passwd *pw;
-  char zsigtmp[LINE];
-  char *zsigexec, *zsigowlvar, *zsigzvar;
-  
-  zsigexec = owl_global_get_zsig_exec(&g);
-  zsigowlvar = owl_global_get_zsig(&g);
-  zsigzvar = ZGetVariable("zwrite-signature");
-
-  if (zsig) {
-    strcpy(zsigtmp, zsig);
-  } else if (zsigowlvar && *zsigowlvar) {
-    strncpy(zsigtmp, zsigowlvar, LINE);
-  } else if (zsigexec && *zsigexec) {
-    FILE *file;
-    char buff[LINE];
-    strcpy(zsigtmp, "");
-    file=popen(zsigexec, "r");
-    if (!file) {
-      if (zsigzvar && *zsigzvar) {
-	strncpy(zsigtmp, zsigzvar, LINE);
-      }
-    } else {
-      while (fgets(buff, LINE, file)) { /* wrong sizing */
-	strcat(zsigtmp, buff);
-      }
-      pclose(file);
-      if (zsigtmp[strlen(zsigtmp)-1]=='\n') {
-	zsigtmp[strlen(zsigtmp)-1]='\0';
-      }
-    }
-  } else if (zsigzvar) {
-    strncpy(zsigtmp, zsigzvar, LINE);
-  } else if (((pw=getpwuid(getuid()))!=NULL) && (pw->pw_gecos)) {
-    strncpy(zsigtmp, pw->pw_gecos, LINE);
-    ptr=strchr(zsigtmp, ',');
-    if (ptr) {
-      ptr[0]='\0';
-    }
-  } else {
-    strcpy(zsigtmp, "");
-  }
     
   memset(&notice, 0, sizeof(notice));
 
@@ -316,10 +273,10 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
   notice.z_sender=NULL;
   if (opcode) notice.z_opcode=opcode;
 
-  notice.z_message_len=strlen(zsigtmp)+1+strlen(message);
+  notice.z_message_len=strlen(zsig)+1+strlen(message);
   notice.z_message=owl_malloc(notice.z_message_len+10);
-  strcpy(notice.z_message, zsigtmp);
-  memcpy(notice.z_message+strlen(zsigtmp)+1, message, strlen(message));
+  strcpy(notice.z_message, zsig);
+  memcpy(notice.z_message+strlen(zsig)+1, message, strlen(message));
 
   /* ret=ZSendNotice(&notice, ZAUTH); */
   ret=ZSrvSendNotice(&notice, ZAUTH, send_zephyr_helper);
