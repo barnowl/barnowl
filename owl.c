@@ -165,7 +165,7 @@ int main(int argc, char **argv, char **env) {
   owl_filter_init_fromstring(f, "personal", "( type ^zephyr$ "
 			     "and class ^message$ and instance ^personal$ "
 			     "and ( recipient ^%me%$ or sender ^%me%$ ) ) "
-			     "or ( type ^aim$ )");
+			     "or ( type ^aim$ and login ^none$ )");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   f=owl_malloc(sizeof(owl_filter));
