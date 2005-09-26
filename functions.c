@@ -398,14 +398,18 @@ void owl_function_zwrite(char *line, char *msg)
     mymsg=owl_zwrite_get_message(&z);
     m=owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
 
-    /* log it */
-    owl_log_message(m);
-
-    /* add it or nuke it */
-    if (owl_global_is_displayoutgoing(&g)) {
-      owl_function_add_message(m);
+    if (m) {
+      /* log it */
+      owl_log_message(m);
+      
+      /* add it or nuke it */
+      if (owl_global_is_displayoutgoing(&g)) {
+	owl_function_add_message(m);
+      } else {
+	owl_message_free(m);
+      }
     } else {
-      owl_message_free(m);
+      owl_function_error("Could not create outgoing zephyr message");
     }
   }
 
@@ -458,15 +462,18 @@ void owl_function_zcrypt(char *line, char *msg)
     /* create the outgoing message */
     mymsg=owl_zwrite_get_message(&z);
     m=owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
-    
-    /* log it */
-    owl_log_message(m);
-    
-    /* add it or nuke it */
-    if (owl_global_is_displayoutgoing(&g)) {
-      owl_function_add_message(m);
+    if (m) {
+      /* log it */
+      owl_log_message(m);
+      
+      /* add it or nuke it */
+      if (owl_global_is_displayoutgoing(&g)) {
+	owl_function_add_message(m);
+      } else {
+	owl_message_free(m);
+      }
     } else {
-      owl_message_free(m);
+      owl_function_error("Could not create outgoing zephyr message");
     }
   }
 
@@ -497,14 +504,18 @@ void owl_function_aimwrite(char *to)
   /* create the outgoing message */
   m=owl_function_make_outgoing_aim(msg, to);
 
-  /* log it */
-  owl_log_message(m);
-
-  /* display it or nuke it */
-  if (owl_global_is_displayoutgoing(&g)) {
-    owl_function_add_message(m);
+  if (m) {
+    /* log it */
+    owl_log_message(m);
+    
+    /* display it or nuke it */
+    if (owl_global_is_displayoutgoing(&g)) {
+      owl_function_add_message(m);
+    } else {
+      owl_message_free(m);
+    }
   } else {
-    owl_message_free(m);
+    owl_function_error("Could not create outgoing AIM message");
   }
 
   owl_free(format_msg);

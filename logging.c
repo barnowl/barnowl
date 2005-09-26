@@ -13,6 +13,11 @@ static const char fileIdent[] = "$Id$";
 void owl_log_message(owl_message *m) {
   owl_function_debugmsg("owl_log_message: entering");
 
+  if (m == NULL) {
+    owl_function_debugmsg("owl_log_message: passed null message");
+    return;
+  }
+
   /* should we be logging this message? */
   if (!owl_log_shouldlog_message(m)) {
     owl_function_debugmsg("owl_log_message: not logging message");

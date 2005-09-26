@@ -1,5 +1,9 @@
 $Id$
 
+2.1.12pre
+        Don't crash when sending/logging outgoing 
+	   AIM message and not logged in [BZ 90]
+	
 2.1.11
 	Don't crash doing zlocate with bad tickets. [BZ 12]
 	Metion the path for the owlconf in intro.txt [BZ 54]
