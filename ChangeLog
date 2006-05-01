@@ -3,6 +3,8 @@ $Id$
 2.1.12pre
         Don't crash when sending/logging outgoing 
 	   AIM message and not logged in [BZ 90]
+	Don't crash when senging to someone not on AIM buddy list [BZ 94]
+	   (patch from Alex Vandiver)
 	
 2.1.11
 	Don't crash doing zlocate with bad tickets. [BZ 12]
