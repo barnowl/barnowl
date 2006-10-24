@@ -2609,9 +2609,9 @@ char *owl_function_classinstfilt(char *class, char *instance)
     tmpinstance=owl_text_quote(instance, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(tmpinstance, ' ', '.');
   }
-  sprintf(argbuff, "( class ^%s$ )", tmpclass);
+  sprintf(argbuff, "( class ^(un)*%s(\\.d)*$ )", tmpclass);
   if (tmpinstance) {
-    sprintf(argbuff, "%s and ( instance ^%s$ )", argbuff, tmpinstance);
+    sprintf(argbuff, "%s and ( instance ^%s(\\.d)*$ )", argbuff, tmpinstance);
   }
   owl_free(tmpclass);
   if (tmpinstance) owl_free(tmpinstance);
@@ -2988,7 +2988,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   } else {
     quoted=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
-    sprintf(buff, "%s ^%s$", buff, quoted);
+    sprintf(buff, "%s ^(un)*%s(\\.d)*$", buff, quoted);
     owl_free(quoted);
   }
   if (!strcmp(inst, "*")) {
@@ -2996,7 +2996,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   } else {
     quoted=owl_text_quote(inst, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
-    sprintf(buff, "%s and instance ^%s$", buff, quoted);
+    sprintf(buff, "%s and instance ^(un)*%s(\\.d)*$", buff, quoted);
     owl_free(quoted);
   }
   if (strcmp(recip, "*")) {
