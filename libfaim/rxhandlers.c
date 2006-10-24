@@ -66,7 +66,7 @@ faim_internal int aim__registermodule(aim_session_t *sess, int (*modfirst)(aim_s
 	}
 
 	mod->next = (aim_module_t *)sess->modlistv;
-	(aim_module_t *)sess->modlistv = mod;
+	sess->modlistv = mod;
 
 	faimdprintf(sess, 1, "registered module %s (family 0x%04x, version = 0x%04x, tool 0x%04x, tool version 0x%04x)\n", mod->name, mod->family, mod->version, mod->toolid, mod->toolversion);
 
