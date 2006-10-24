@@ -922,16 +922,16 @@ int owl_variable_regtest(void) {
   printf("BEGIN testing owl_variable\n");
   FAIL_UNLESS("setup", 0==owl_variable_dict_setup(&vd));
 
-  FAIL_UNLESS("get bool", 0==owl_variable_get_bool(&vd,"personalbell"));
+  FAIL_UNLESS("get bool", 0==owl_variable_get_bool(&vd,"rxping"));
   FAIL_UNLESS("get bool (no such)", -1==owl_variable_get_bool(&vd,"mumble"));
-  FAIL_UNLESS("get bool as string 1", 0==owl_variable_get_tostring(&vd,"personalbell", buf, 1024));
+  FAIL_UNLESS("get bool as string 1", 0==owl_variable_get_tostring(&vd,"rxping", buf, 1024));
   FAIL_UNLESS("get bool as string 2", 0==strcmp(buf,"off"));
-  FAIL_UNLESS("set bool 1", 0==owl_variable_set_bool_on(&vd,"personalbell"));
-  FAIL_UNLESS("get bool 2", 1==owl_variable_get_bool(&vd,"personalbell"));
-  FAIL_UNLESS("set bool 3", 0==owl_variable_set_fromstring(&vd,"personalbell","off",0,0));
-  FAIL_UNLESS("get bool 4", 0==owl_variable_get_bool(&vd,"personalbell"));
-  FAIL_UNLESS("set bool 5", -1==owl_variable_set_fromstring(&vd,"personalbell","xxx",0,0));
-  FAIL_UNLESS("get bool 6", 0==owl_variable_get_bool(&vd,"personalbell"));
+  FAIL_UNLESS("set bool 1", 0==owl_variable_set_bool_on(&vd,"rxping"));
+  FAIL_UNLESS("get bool 2", 1==owl_variable_get_bool(&vd,"rxping"));
+  FAIL_UNLESS("set bool 3", 0==owl_variable_set_fromstring(&vd,"rxping","off",0,0));
+  FAIL_UNLESS("get bool 4", 0==owl_variable_get_bool(&vd,"rxping"));
+  FAIL_UNLESS("set bool 5", -1==owl_variable_set_fromstring(&vd,"rxping","xxx",0,0));
+  FAIL_UNLESS("get bool 6", 0==owl_variable_get_bool(&vd,"rxping"));
 
 
   FAIL_UNLESS("get string", 0==strcmp("~/zlog/people", owl_variable_get_string(&vd,"logpath")));
