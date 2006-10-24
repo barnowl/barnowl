@@ -2366,8 +2366,6 @@ char *owl_command_search(int argc, char **argv, char *buff)
 
 char *owl_command_aimlogin(int argc, char **argv, char *buff)
 {
-  int ret;
-  
   if ((argc<2) || (argc>3)) {
     owl_function_makemsg("Wrong number of arguments to aimlogin command");
     return(NULL);
@@ -2375,17 +2373,13 @@ char *owl_command_aimlogin(int argc, char **argv, char *buff)
 
   /* if we get two arguments, ask for the password */
   if (argc==2) {
-    owl_global_set_buffercommand(&g, buff);
+    owl_global_set_buffercommand(&g, argv[1]);
+    owl_global_set_buffercallback(&g, owl_function_aimlogin);
     owl_function_start_password("AIM Password: ");
     return(NULL);
+  } else {
+    owl_function_aimlogin(argv[1], argv[2]);
   }
-
-  /* clear the buddylist */
-  owl_buddylist_clear(owl_global_get_buddylist(&g));
-
-  /* try to login */
-  ret=owl_aim_login(argv[1], argv[2]);
-  if (ret) owl_function_makemsg("Warning: login for %s failed.\n", argv[1]);
 
   /* this is a test */
   return(NULL);

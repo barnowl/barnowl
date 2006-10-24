@@ -532,6 +532,7 @@ typedef struct _owl_global {
   int haveconfig;
   int config_format;
   char *buffercommand;
+  void (*buffercallback)(char *cmd, char *msg);
   owl_editwin tw;
   owl_viewwin vw;
   void *perl;

@@ -319,6 +319,7 @@ void owl_function_zwrite_setup(char *line)
   owl_global_set_typwin_active(&g);
 
   owl_global_set_buffercommand(&g, line);
+  owl_global_set_buffercallback(&g, &owl_function_zwrite);
 }
 
 void owl_function_aimwrite_setup(char *line)
@@ -349,6 +350,7 @@ void owl_function_aimwrite_setup(char *line)
   owl_global_set_typwin_active(&g);
 
   owl_global_set_buffercommand(&g, line);
+  owl_global_set_buffercallback(&g, &owl_function_aimwrite);
 }
 
 void owl_function_loopwrite_setup()
@@ -373,6 +375,7 @@ void owl_function_loopwrite_setup()
   owl_global_set_typwin_active(&g);
 
   owl_global_set_buffercommand(&g, "loopwrite");
+  owl_global_set_buffercallback(&g, &owl_function_loopwrite);
 }
 
 /* send, log and display an outgoing zephyr.  If 'msg' is NULL
@@ -482,14 +485,15 @@ void owl_function_zcrypt(char *line, char *msg)
   owl_zwrite_free(&z);
 }
 
-void owl_function_aimwrite(char *to)
+void owl_function_aimwrite(char *line, char *msg)
 {
   int ret;
-  char *msg, *format_msg;
+  char *to, *format_msg;
   owl_message *m;
 
+  to = line + 9;
+
   /* make a formatted copy of the message */
-  msg=owl_editwin_get_text(owl_global_get_typwin(&g));
   format_msg=owl_strdup(msg);
   owl_text_wordunwrap(format_msg);
   
@@ -557,18 +561,18 @@ void owl_function_send_aimawymsg(char *to, char *msg)
   owl_free(format_msg);
 }
 
-void owl_function_loopwrite()
+void owl_function_loopwrite(char *line, char *msg)
 {
   owl_message *min, *mout;
 
   /* create a message and put it on the message queue.  This simulates
    * an incoming message */
   min=owl_malloc(sizeof(owl_message));
-  owl_message_create_loopback(min, owl_editwin_get_text(owl_global_get_typwin(&g)));
+  owl_message_create_loopback(min, msg);
   owl_message_set_direction_in(min);
   owl_global_messagequeue_addmsg(&g, min);
 
-  mout=owl_function_make_outgoing_loopback(owl_editwin_get_text(owl_global_get_typwin(&g)));
+  mout=owl_function_make_outgoing_loopback(msg);
   owl_log_message(mout);
   if (owl_global_is_displayoutgoing(&g)) {
     owl_function_add_message(mout);
@@ -927,6 +931,17 @@ void owl_function_loadloginsubs(char *file)
   } else {
     owl_function_error("Error subscribing to login messages from file.");
   }
+}
+
+void owl_function_aimlogin(char *user, char *passwd) {
+  int ret;
+
+  /* clear the buddylist */
+  owl_buddylist_clear(owl_global_get_buddylist(&g));
+
+  /* try to login */
+  ret=owl_aim_login(user, passwd);
+  if (ret) owl_function_makemsg("Warning: login for %s failed.\n", user);
 }
 
 void owl_function_suspend()
@@ -1308,23 +1323,15 @@ void owl_function_resize()
 
 void owl_function_run_buffercommand()
 {
-  char *buff, *ptr;
+  char *buff;
+  void (*cb)(char*, char*);
 
   buff=owl_global_get_buffercommand(&g);
-  if (!strncmp(buff, "zwrite ", 7)) {
-    owl_function_zwrite(buff, owl_editwin_get_text(owl_global_get_typwin(&g)));
-  } else if (!strncmp(buff, "zcrypt ", 7)) {
-    owl_function_zcrypt(buff, owl_editwin_get_text(owl_global_get_typwin(&g)));
-  } else if (!strncmp(buff, "aimwrite ", 9)) {
-    owl_function_aimwrite(buff+9);
-  } else if (!strncmp(buff, "loopwrite", 9) || !strncmp(buff, "loopwrite ", 10)) {
-    owl_function_loopwrite();
-  } else if (!strncmp(buff, "aimlogin ", 9)) {
-    ptr=owl_sprintf("%s %s", buff, owl_global_get_response(&g));
-    owl_function_command(ptr);
-    owl_free(ptr);
+  cb=owl_global_get_buffercallback(&g);
+  if(!cb) {
+    owl_function_error("Internal error: No callback for buffercommand %s", buff);
   } else {
-    owl_function_error("Internal error: invalid buffercommand %s", buff);
+    cb(buff, owl_editwin_get_text(owl_global_get_typwin(&g)));
   }
 }
 

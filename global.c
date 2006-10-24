@@ -249,6 +249,14 @@ char *owl_global_get_buffercommand(owl_global *g) {
   return("");
 }
 
+void owl_global_set_buffercallback(owl_global *g, void (*cb)(char*,char*)) {
+  g->buffercallback = cb;
+}
+
+void (*owl_global_get_buffercallback(owl_global *g))(char*,char*) {
+  return g->buffercallback;
+}
+
 /* refresh */
 
 int owl_global_is_needrefresh(owl_global *g) {
