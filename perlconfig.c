@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#define OWL_PERL
 #include "owl.h"
 #include <perl.h>
 #include "XSUB.h"
@@ -13,6 +14,8 @@ static const char fileIdent[] = "$Id$";
 extern char *owl_perlwrap_codebuff;
 
 extern XS(boot_owl);
+extern XS(boot_DynaLoader);
+extern XS(boot_DBI);
 
 static void owl_perl_xs_init(pTHX)
 {
@@ -20,6 +23,7 @@ static void owl_perl_xs_init(pTHX)
   dXSUB_SYS;
   {
     newXS("owl::bootstrap", boot_owl, file);
+    newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
   }
 }
 
