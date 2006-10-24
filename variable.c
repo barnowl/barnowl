@@ -910,7 +910,7 @@ int owl_variable_string_get_tostring_default(owl_variable *v, char* buf, int buf
 
 #ifdef OWL_INCLUDE_REG_TESTS
 
-#define FAIL_UNLESS(desc,pred) printf("\t%-4s: %s\n", (pred)?"ok":(numfailed++,"FAIL"), desc)
+#include "test.h"
 
 int owl_variable_regtest(void) {
   owl_vardict vd;

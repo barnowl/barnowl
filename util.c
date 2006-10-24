@@ -742,7 +742,7 @@ int owl_util_min(int a, int b)
 
 #ifdef OWL_INCLUDE_REG_TESTS
 
-#define FAIL_UNLESS(desc,pred) printf("\t%-4s: %s\n", (pred)?"ok":(numfailed++,"FAIL"), desc)
+#include "test.h"
 
 int owl_util_regtest(void)
 {

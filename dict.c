@@ -143,7 +143,7 @@ void owl_dict_free_simple(owl_dict *d) {
 /************* REGRESSION TESTS **************/
 #ifdef OWL_INCLUDE_REG_TESTS
 
-#define FAIL_UNLESS(desc,pred) printf("\t%-4s: %s\n", (pred)?"ok":(numfailed++,"FAIL"), desc)
+#include "test.h"
 
 int owl_dict_regtest(void) {
   owl_dict d;
