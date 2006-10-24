@@ -324,7 +324,7 @@ char *owl_perlconfig_getmsg(owl_message *m, int mode, char *subname)
   } else {
     char *ptr = NULL;
     if (owl_perlconfig_is_function("owl::receive_msg")) {
-      owl_perlconfig_call_with_message(subname?subname
+      ptr = owl_perlconfig_call_with_message(subname?subname
 				       :"owl::_receive_msg_legacy_wrap", m);
     }
     if (ptr) owl_free(ptr);

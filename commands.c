@@ -1555,15 +1555,15 @@ char *owl_command_aperl(int argc, char **argv, char *buff)
 
 char *owl_command_multi(int argc, char **argv, char *buff)
 {
-  char *lastrv = NULL, *newbuff;
+  char *lastrv = NULL, *dupbuff, *newbuff;
   char **commands;
   int  ncommands, i;
   if (argc < 2) {
     owl_function_makemsg("Invalid arguments to 'multi' command.");    
     return NULL;
   }
-  newbuff = owl_strdup(buff);
-  newbuff = skiptokens(newbuff, 1);
+  dupbuff = owl_strdup(buff);
+  newbuff = skiptokens(dupbuff, 1);
   if (!strcmp(argv[0], "(")) {
     for (i=strlen(newbuff)-1; i>=0; i--) {
       if (newbuff[i] == ')') {
@@ -1583,6 +1583,7 @@ char *owl_command_multi(int argc, char **argv, char *buff)
     }
     lastrv = owl_function_command(commands[i]);
   }
+  owl_free(dupbuff);
   atokenize_free(commands, ncommands);
   return lastrv;
 }
@@ -1975,6 +1976,7 @@ char *owl_command_view(int argc, char **argv, char *buff)
       char *foo;
       foo=owl_function_create_negative_filter(owl_view_get_filtname(owl_global_get_current_view(&g)));
       owl_function_change_currentview_filter(foo);
+      owl_free(foo);
       return(NULL);
     }
   }

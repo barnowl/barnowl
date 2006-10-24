@@ -3269,6 +3269,7 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
 		    location[x].time);
 	    owl_fmtext_append_normal(&fm, line);
 	    owl_free(tmp);
+	    owl_free(line);
 	  }
 	  if (numlocs>=200) {
 	    owl_fmtext_append_normal(&fm, "  Too many locations found for this user, truncating.\n");
