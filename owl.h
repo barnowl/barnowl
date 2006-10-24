@@ -40,7 +40,13 @@
 #ifndef INC_OWL_H
 #define INC_OWL_H
 
+/* Perl and curses don't play nice. */
+#ifndef OWL_PERL
 #include <curses.h>
+#else
+#define WINDOW void
+#endif
+
 #include <sys/param.h>
 #include <EXTERN.h>
 #include <netdb.h>

@@ -7,14 +7,9 @@ static const char fileIdent[] = "$Id$";
 #include <perl.h>
 #include <XSUB.h>
 
-/* Yeah, we should just include owl.h, but curses and perl don't play nice. */
-extern char *owl_function_command(char *cmd);
-extern void owl_free(void *x);
-extern SV *owl_perlconfig_curmessage2hashref();
-extern int owl_zwrite_create_and_send_from_line(char *, char *);
-extern char *owl_function_ztext_stylestrip(char *);
-extern void g;
-extern int owl_global_get_cols(void*);
+#define OWL_PERL
+#include "owl.h"
+SV *owl_perlconfig_curmessage2hashref(void);
 
 MODULE = owl		PACKAGE = owl		
 
