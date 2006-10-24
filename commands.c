@@ -703,6 +703,10 @@ owl_cmd commands_to_init[]
 	      "returns the value of a variable",
 	      "getvar <varname>", ""),
 
+  OWLCMD_ARGS("getstyle", owl_command_getstyle, OWL_CTX_INTERACTIVE,
+	      "returns the name of the style for the current view",
+	      "", ""),
+
   OWLCMD_ARGS("search", owl_command_search, OWL_CTX_INTERACTIVE,
 	      "search messages for a particular string",
 	      "search [-r] [<string>]",
@@ -2392,6 +2396,18 @@ char *owl_command_aimlogout(int argc, char **argv, char *buff)
 
   owl_aim_logout();
   return(NULL);
+}
+
+char *owl_command_getstyle(int argc, char **argv, char *buff)
+{
+  char *stylename;
+  if (argc != 1) {
+    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
+    return NULL;
+  }
+  stylename = owl_view_get_style_name(owl_global_get_current_view(&g));
+  if (stylename) stylename = owl_strdup(stylename);
+  return stylename;
 }
 
 /*********************************************************************/

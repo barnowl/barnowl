@@ -77,6 +77,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)  /*noproto*/
   hv_store(h, "time", strlen("time"), newSVpv(owl_message_get_timestr(m),0),0);
   hv_store(h, "id", strlen("id"), newSViv(owl_message_get_id(m)),0);
   hv_store(h, "deleted", strlen("deleted"), newSViv(owl_message_is_delete(m)),0);
+  hv_store(h, "private", strlen("private"), newSViv(owl_message_is_private(m)),0);
 
   if (owl_message_is_type_zephyr(m))       blessas = "owl::Message::Zephyr";
   else if (owl_message_is_type_aim(m))     blessas = "owl::Message::AIM";
