@@ -355,6 +355,11 @@ static owl_variable variables_to_init[] = {
 	       "Note that this is currently risky as you might accidentally\n"
 	       "delete a message right as it came in.\n" ),
 
+  OWLVAR_STRING( "perl_mainloop_hook" /* %OwlVarStub */, NULL,
+		 "mainloop hook to perl",
+		 "If this variable is set, owl will call to the perl function\n"
+		 "specified." ),
+  
   /* This MUST be last... */
   { NULL, 0, NULL, 0, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL }
