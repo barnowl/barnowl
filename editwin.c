@@ -710,7 +710,11 @@ void owl_editwin_delete_nextword(owl_editwin *e)
   /* then nuke the next word */
   while (1) {
     z=_owl_editwin_get_index_from_xy(e);
-    if (e->buff[z+1]==' ' || e->buff[z+1]=='\n' || e->buff[z+1]=='\0') break;
+    /* z == e->bufflen check added to prevent a hang I (nelhage) have
+       seen repeatedly while using owl. I'm not sure precisely what
+       conditions lead to it. */
+    if (z == e->bufflen
+        || e->buff[z+1]==' ' || e->buff[z+1]=='\n' || e->buff[z+1]=='\0') break;
     owl_editwin_delete_char(e);
   }
   owl_editwin_delete_char(e);
