@@ -31,6 +31,31 @@ sub AUTOLOAD {
     return &owl::command("$called ".join(" ",@_));
 }
 
+=head2 new_command NAME FUNC [{ARGS}]
+
+Add a new owl command. When owl executes the command NAME, FUNC will
+be called with the arguments passed to the command, with NAME as the
+first argument.
+
+ARGS should be a hashref containing any or all of C<summary>,
+C<usage>, or C<description> keys.
+
+=cut
+
+sub new_command {
+    my $name = shift;
+    my $func = shift;
+    my $args = shift || {};
+    my %args = (
+        summary     => undef,
+        usage       => undef,
+        description => undef,
+        %{$args}
+    );
+
+    owl::new_command_internal($name, $func, $args{summary}, $args{usage}, $args{description});
+}
+
 #####################################################################
 #####################################################################
 

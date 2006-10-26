@@ -4,8 +4,6 @@ static const char fileIdent[] = "$Id$";
 #include <zephyr/zephyr.h>
 #endif
 #include <EXTERN.h>
-#include <perl.h>
-#include <XSUB.h>
 
 #define OWL_PERL
 #include "owl.h"
@@ -74,3 +72,30 @@ ztext_stylestrip(ztext)
 	CLEANUP:
 		if (rv) owl_free(rv);
 
+void
+new_command_internal(name, func, summary, usage, description)
+	char *name
+	SV *func
+	char *summary
+	char *usage
+	char *description
+	PREINIT:
+		owl_cmd cmd;
+	CODE:
+		SvREFCNT_inc(func);
+		cmd.name = name;
+		cmd.cmd_perl = func;
+		cmd.summary = summary;
+		cmd.usage = usage;
+		cmd.description = description;
+		cmd.validctx = OWL_CTX_ANY;
+
+		cmd.cmd_aliased_to = NULL;
+		cmd.cmd_args_fn = NULL;
+		cmd.cmd_v_fn = NULL;
+		cmd.cmd_i_fn = NULL;
+		cmd.cmd_ctxargs_fn = NULL;
+		cmd.cmd_ctxv_fn = NULL;
+		cmd.cmd_ctxi_fn = NULL;
+
+		owl_cmddict_add_cmd(owl_global_get_cmddict(&g), &cmd);

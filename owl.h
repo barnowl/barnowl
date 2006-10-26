@@ -40,13 +40,6 @@
 #ifndef INC_OWL_H
 #define INC_OWL_H
 
-/* Perl and curses don't play nice. */
-#ifndef OWL_PERL
-#include <curses.h>
-#else
-#define WINDOW void
-#endif
-
 #include <sys/param.h>
 #include <EXTERN.h>
 #include <netdb.h>
@@ -61,6 +54,16 @@
 #endif
 #ifdef HAVE_COM_ERR_H
 #include <com_err.h>
+#endif
+
+/* Perl and curses don't play nice. */
+#ifdef OWL_PERL
+typedef void WINDOW;
+#include <perl.h>
+#include "XSUB.h"
+#else
+#include <curses.h>
+typedef void SV;
 #endif
 
 static const char owl_h_fileIdent[] = "$Id$";
@@ -304,6 +307,7 @@ typedef struct _owl_cmd {	/* command */
 				 * caller must free return value if !NULL */
   void (*cmd_ctxv_fn)(void *ctx);	        /* takes no args */
   void (*cmd_ctxi_fn)(void *ctx, int i);	/* takes an int as an arg */
+  SV *cmd_perl;                                /* Perl closure that takes a list of args */
 } owl_cmd;
 
 

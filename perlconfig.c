@@ -6,8 +6,6 @@
 #include <errno.h>
 #define OWL_PERL
 #include "owl.h"
-#include <perl.h>
-#include "XSUB.h"
 
 static const char fileIdent[] = "$Id$";
 
@@ -15,7 +13,7 @@ extern char *owl_perlwrap_codebuff;
 
 extern XS(boot_owl);
 extern XS(boot_DynaLoader);
-extern XS(boot_DBI);
+// extern XS(boot_DBI);
 
 static void owl_perl_xs_init(pTHX)
 {
@@ -335,4 +333,47 @@ char *owl_perlconfig_getmsg(owl_message *m, int mode, char *subname)
     if (ptr) owl_free(ptr);
     return(NULL);
   }
+}
+
+char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
+{
+  int i, count;
+  char * ret = NULL;
+  STRLEN n_a;
+  dSP;
+
+  ENTER;
+  SAVETMPS;
+
+  PUSHMARK(SP);
+  for(i=0;i<argc;i++) {
+    XPUSHs(sv_2mortal(newSVpv(argv[i], 0)));
+  }
+  PUTBACK;
+
+  count = call_sv(cmd->cmd_perl, G_SCALAR|G_EVAL);
+
+  SPAGAIN;
+
+  if(SvTRUE(ERRSV)) {
+    owl_function_error("Error: %s", SvPV(ERRSV, n_a));
+    POPs;
+  } else {
+    if(count != 1)
+      croak("Perl command %s returned more than one value!", cmd->name);
+    SV * rv = POPs;
+    if(SvTRUE(rv)) {
+      ret = owl_strdup(SvPV(rv, n_a));
+    }
+  }
+
+  FREETMPS;
+  LEAVE;
+
+  return ret;
+}
+
+void owl_perlconfig_cmd_free(owl_cmd *cmd)
+{
+  SvREFCNT_dec(cmd);
 }

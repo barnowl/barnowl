@@ -56,6 +56,16 @@ int owl_cmddict_add_alias(owl_cmddict *cd, char *alias_from, char *alias_to) {
   return(0);
 }
 
+int owl_cmddict_add_cmd(owl_cmddict *cd, owl_cmd * cmd) {
+  owl_cmd * newcmd = owl_malloc(sizeof(owl_cmd));
+  if(owl_cmd_create_from_template(newcmd, cmd) < 0) {
+    owl_free(newcmd);
+    return -1;
+  }
+  owl_function_debugmsg("Add cmd %s", cmd->name);
+  return owl_dict_insert_element(cd, newcmd->name, (void*)newcmd, (void(*)(void*))owl_cmd_free);
+}
+
 char *owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char *cmdbuff) {
   char **argv;
   int argc;
@@ -117,6 +127,8 @@ void owl_cmd_free(owl_cmd *cmd) {
   if (cmd->summary) owl_free(cmd->summary);
   if (cmd->usage) owl_free(cmd->usage);
   if (cmd->description) owl_free(cmd->description);
+  if (cmd->cmd_aliased_to) owl_free(cmd->cmd_aliased_to);
+  if (cmd->cmd_perl) owl_perlconfig_cmd_free(cmd);
 }
 
 int owl_cmd_is_context_valid(owl_cmd *cmd, owl_context *ctx) { 
@@ -186,6 +198,8 @@ char *owl_cmd_execute(owl_cmd *cmd, owl_cmddict *cd, owl_context *ctx, int argc,
     cmd->cmd_ctxv_fn(owl_context_get_data(ctx));
   } else if (cmd->cmd_ctxi_fn) {
     cmd->cmd_ctxi_fn(owl_context_get_data(ctx), ival);
+  } else if (cmd->cmd_perl) {
+    return owl_perlconfig_perlcmd(cmd, argc, argv);
   }
 
   return NULL;
