@@ -351,11 +351,11 @@ int main(int argc, char **argv, char **env)
   sprintf(buff,      "Welcome to Owl version %s.  Press 'h' for on-line help. \n", OWL_VERSION_STRING);
   strcat(startupmsg, buff);
   strcat(startupmsg, "                                                                       \n");
-  strcat(startupmsg, "If you would like to receive release announcements about Owl you can   \n");
-  strcat(startupmsg, "join the owl-users mailing list at http://www.ktools.org/              \n");
+  strcat(startupmsg, "This is an UNOFFICIAL DEVELOPMENT BUILD of owl. If you are using this  \n");
+  strcat(startupmsg, "build regularly, please add yourself to dirty-owl-hackers@mit.edu      \n");
   strcat(startupmsg, "                                                                 ^ ^   \n");
-  strcat(startupmsg, "                                                                 OvO   \n");
-  strcat(startupmsg, "Please report any bugs or suggestions to bug-owl@ktools.org     (   )  \n");
+  strcat(startupmsg, "Any bugs should be reported to dirty-owl-hackers@mit.edu         OvO   \n");
+  strcat(startupmsg, "Do not seek help with this build from bug-owl or ktools.        (   )  \n");
   strcat(startupmsg, "-----------------------------------------------------------------m-m---\n");
   owl_function_adminmsg("", startupmsg);
   sepbar(NULL);
