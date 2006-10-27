@@ -34,6 +34,14 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->lock=0;
   e->dotsend=0;
   e->echochar='\0';
+
+  /*
+    // We get initialized multiple times, but we need to hold on to
+    // the callbacks, so we can't NULL them here.
+    e->command = NULL;
+    e->callback = NULL;
+    e->cbdata = NULL;
+  */
   if (win) werase(win);
 }
 
@@ -73,6 +81,43 @@ owl_history *owl_editwin_get_history(owl_editwin *e)
 void owl_editwin_set_dotsend(owl_editwin *e)
 {
   e->dotsend=1;
+}
+
+void owl_editwin_set_command(owl_editwin *e, char *command) {
+  if(e->command) owl_free(e->command);
+  e->command = owl_strdup(command);
+}
+
+char *owl_editwin_get_command(owl_editwin *e) {
+  if(e->command) return e->command;
+  return "";
+}
+
+void owl_editwin_set_callback(owl_editwin *e, void (*cb)(owl_editwin*)) {
+  e->callback = cb;
+}
+
+void (*owl_editwin_get_callback(owl_editwin *e))(owl_editwin*) {
+  return e->callback;
+}
+
+void owl_editwin_set_cbdata(owl_editwin *e, void *data) {
+  e->cbdata = data;
+}
+
+void* owl_editwin_get_cbdata(owl_editwin *e) {
+  return e->cbdata;
+}
+
+void owl_editwin_do_callback(owl_editwin *e) {
+  void (*cb)(owl_editwin*);
+  cb=owl_editwin_get_callback(e);
+  if(!cb) {
+    owl_function_error("Internal error: No editwin callback!");
+  } else {
+    // owl_function_error("text: |%s|", owl_editwin_get_text(e));
+    cb(e);
+  }
 }
 
 int owl_editwin_limit_maxcols(int v, int maxv)
