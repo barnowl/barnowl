@@ -340,6 +340,11 @@ void owl_message_set_type_aim(owl_message *m)
 {
   m->type=OWL_MESSAGE_TYPE_AIM;
 }
+
+void owl_message_set_type(owl_message *m, int type)
+{
+  m->type=type;
+}
 						
 int owl_message_is_type_admin(owl_message *m)
 {
@@ -395,6 +400,11 @@ void owl_message_set_direction_out(owl_message *m)
 void owl_message_set_direction_none(owl_message *m)
 {
   m->direction=OWL_MESSAGE_DIRECTION_NONE;
+}
+
+void owl_message_set_direction(owl_message *m, int direction)
+{
+  m->direction=direction;
 }
 
 int owl_message_is_direction_in(owl_message *m)
@@ -630,6 +640,28 @@ char *owl_message_get_type(owl_message *m) {
   }
 }
 
+int owl_message_parse_type(char *type) {
+  if(!strcmp(type, "admin")) {
+    return OWL_MESSAGE_TYPE_ADMIN;
+  } else if(!strcmp(type, "zephyr")) {
+    return OWL_MESSAGE_TYPE_ZEPHYR;
+  } if(!strcmp(type, "aim")) {
+    return OWL_MESSAGE_TYPE_AIM;
+  } else if(!strcmp(type, "jabber")) {
+    return OWL_MESSAGE_TYPE_JABBER;
+  } else if(!strcmp(type, "icq")) {
+    return OWL_MESSAGE_TYPE_ICQ;
+  } else if(!strcmp(type, "yahoo")) {
+    return OWL_MESSAGE_TYPE_YAHOO;
+  } else if(!strcmp(type, "msn")) {
+    return OWL_MESSAGE_TYPE_MSN;
+  } else if(!strcmp(type, "loopback")) {
+    return OWL_MESSAGE_TYPE_LOOPBACK;
+  } else {
+    return OWL_MESSAGE_TYPE_GENERIC;
+  }
+}
+
 char *owl_message_get_direction(owl_message *m) {
   switch (m->direction) {
   case OWL_MESSAGE_DIRECTION_IN:
@@ -643,6 +675,17 @@ char *owl_message_get_direction(owl_message *m) {
   }
 }
 
+int owl_message_parse_direction(char *d) {
+  if(!strcmp(d, "in")) {
+    return OWL_MESSAGE_DIRECTION_IN;
+  } else if(!strcmp(d, "out")) {
+    return OWL_MESSAGE_DIRECTION_OUT;
+  } else {
+    return OWL_MESSAGE_DIRECTION_NONE;
+  }
+}
+
+
 char *owl_message_get_login(owl_message *m) {
   if (owl_message_is_login(m)) {
     return "login";
@@ -652,6 +695,7 @@ char *owl_message_get_login(owl_message *m) {
     return "none";
   }
 }
+
 
 char *owl_message_get_header(owl_message *m) {
   return owl_message_get_attribute_value(m, "adminheader");

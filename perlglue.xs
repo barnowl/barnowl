@@ -1,3 +1,4 @@
+/* -*- mode: c; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 static const char fileIdent[] = "$Id$";
 
 #ifdef HAVE_LIBZEPHYR
@@ -89,7 +90,6 @@ new_command_internal(name, func, summary, usage, description)
 		cmd.usage = usage;
 		cmd.description = description;
 		cmd.validctx = OWL_CTX_ANY;
-
 		cmd.cmd_aliased_to = NULL;
 		cmd.cmd_args_fn = NULL;
 		cmd.cmd_v_fn = NULL;
@@ -97,5 +97,38 @@ new_command_internal(name, func, summary, usage, description)
 		cmd.cmd_ctxargs_fn = NULL;
 		cmd.cmd_ctxv_fn = NULL;
 		cmd.cmd_ctxi_fn = NULL;
-
 		owl_cmddict_add_cmd(owl_global_get_cmddict(&g), &cmd);
+
+void queue_message(msg)
+	SV *msg
+	PREINIT:
+		char * key;
+		char * val;
+		owl_message *m;
+		HV * hash;
+		HE * ent;
+		I32 count;
+		I32 len;
+	CODE:
+		if(!SvROK(msg) || SvTYPE(SvRV(msg)) != SVt_PVHV) {
+			croak("Usage: owl::queue_message($message)");
+		}
+		
+		hash = (HV*)SvRV(msg);
+		m = owl_malloc(sizeof(owl_message));
+		owl_message_init(m);
+		
+		count = hv_iterinit(hash);
+		while((ent = hv_iternext(hash))) {
+			key = hv_iterkey(ent, &len);
+			val = SvPV_nolen(hv_iterval(hash, ent));
+			if(!strcmp(key, "type")) {
+				owl_message_set_type(m, owl_message_parse_type(val));
+			} else if(!strcmp(key, "direction")) {
+				owl_message_set_direction(m, owl_message_parse_direction(val));
+			} else {
+				owl_message_set_attribute(m, key, val);
+			}
+		}
+
+		owl_global_messagequeue_addmsg(&g, m);

@@ -61,6 +61,15 @@ sub new_command {
 
 package owl::Message;
 
+sub new {
+    my $class = shift;
+    my %args = (@_);
+    if($class eq __PACKAGE__ && $args{type}) {
+        $class = "owl::Message::" . ucfirst $args{type};
+    }
+    return bless {%args}, $class;
+}
+
 sub type        { return shift->{"type"}; }
 sub direction   { return shift->{"direction"}; }
 sub time        { return shift->{"time"}; }
@@ -83,6 +92,7 @@ sub is_zephyr   { return (shift->{"type"} eq "zephyr"); }
 sub is_aim      { return (shift->{"type"} eq "aim"); }
 sub is_admin    { return (shift->{"type"} eq "admin"); }
 sub is_generic  { return (shift->{"type"} eq "generic"); }
+sub is_jabber   { return (shift->{"type"} eq "jabber"); }
 
 # These are overridden by appropriate message types
 sub is_ping     { return 0; }
@@ -246,6 +256,13 @@ sub header      { return shift->{"header"}; }
 sub auth        { return shift->{"auth"}; }
 sub fields      { return shift->{"fields"}; }
 sub zsig        { return shift->{"zsig"}; }
+
+#####################################################################
+#####################################################################
+
+package owl::Message::Jabber;
+
+@ISA = qw( owl::Message );
 
 #####################################################################
 #####################################################################
