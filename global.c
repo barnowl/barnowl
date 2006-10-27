@@ -67,7 +67,6 @@ void owl_global_init(owl_global *g) {
   g->searchactive=0;
   g->searchstring=NULL;
   g->starttime=time(NULL); /* assumes we call init only a start time */
-  g->buffercommand=NULL;
   g->newmsgproc_pid=0;
   
   owl_global_set_config_format(g, 0);
@@ -240,21 +239,19 @@ owl_editwin *owl_global_get_typwin(owl_global *g) {
 /* buffercommand */
 
 void owl_global_set_buffercommand(owl_global *g, char *command) {
-  if (g->buffercommand) owl_free(g->buffercommand);
-  g->buffercommand=owl_strdup(command);
+  owl_editwin_set_command(owl_global_get_typwin(g), command);
 }
 
 char *owl_global_get_buffercommand(owl_global *g) {
-  if (g->buffercommand) return(g->buffercommand);
-  return("");
+  return owl_editwin_get_command(owl_global_get_typwin(g));
 }
 
-void owl_global_set_buffercallback(owl_global *g, void (*cb)(char*,char*)) {
-  g->buffercallback = cb;
+void owl_global_set_buffercallback(owl_global *g, void (*cb)(owl_editwin*)) {
+  owl_editwin_set_callback(owl_global_get_typwin(g), cb);
 }
 
-void (*owl_global_get_buffercallback(owl_global *g))(char*,char*) {
-  return g->buffercallback;
+void (*owl_global_get_buffercallback(owl_global *g))(owl_editwin*) {
+  return owl_editwin_get_callback(owl_global_get_typwin(g));
 }
 
 /* refresh */

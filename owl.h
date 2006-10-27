@@ -441,6 +441,10 @@ typedef struct _owl_editwin {
   int lock;
   int dotsend;
   int echochar;
+
+  char *command;
+  void (*callback)(struct _owl_editwin*);
+  void *cbdata;
 } owl_editwin;
 
 typedef struct _owl_mux {
@@ -535,8 +539,7 @@ typedef struct _owl_global {
   char *cur_zaway_msg;
   int haveconfig;
   int config_format;
-  char *buffercommand;
-  void (*buffercallback)(char *cmd, char *msg);
+  void *buffercbdata;
   owl_editwin tw;
   owl_viewwin vw;
   void *perl;

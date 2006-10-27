@@ -319,7 +319,7 @@ void owl_function_zwrite_setup(char *line)
   owl_global_set_typwin_active(&g);
 
   owl_global_set_buffercommand(&g, line);
-  owl_global_set_buffercallback(&g, &owl_function_zwrite);
+  owl_global_set_buffercallback(&g, &owl_callback_zwrite);
 }
 
 void owl_function_aimwrite_setup(char *line)
@@ -350,7 +350,7 @@ void owl_function_aimwrite_setup(char *line)
   owl_global_set_typwin_active(&g);
 
   owl_global_set_buffercommand(&g, line);
-  owl_global_set_buffercallback(&g, &owl_function_aimwrite);
+  owl_global_set_buffercallback(&g, &owl_callback_aimwrite);
 }
 
 void owl_function_loopwrite_setup()
@@ -375,7 +375,12 @@ void owl_function_loopwrite_setup()
   owl_global_set_typwin_active(&g);
 
   owl_global_set_buffercommand(&g, "loopwrite");
-  owl_global_set_buffercallback(&g, &owl_function_loopwrite);
+  owl_global_set_buffercallback(&g, &owl_callback_loopwrite);
+}
+
+void owl_callback_zwrite(owl_editwin *e) {
+  owl_function_zwrite(owl_editwin_get_command(e),
+                      owl_editwin_get_text(e));
 }
 
 /* send, log and display an outgoing zephyr.  If 'msg' is NULL
@@ -485,6 +490,11 @@ void owl_function_zcrypt(char *line, char *msg)
   owl_zwrite_free(&z);
 }
 
+void owl_callback_aimwrite(owl_editwin *e) {
+  owl_function_aimwrite(owl_editwin_get_command(e),
+                        owl_editwin_get_text(e));
+}
+
 void owl_function_aimwrite(char *line, char *msg)
 {
   int ret;
@@ -561,7 +571,11 @@ void owl_function_send_aimawymsg(char *to, char *msg)
   owl_free(format_msg);
 }
 
-void owl_function_loopwrite(char *line, char *msg)
+void owl_callback_loopwrite(owl_editwin *e) {
+  owl_function_loopwrite(owl_editwin_get_text(e));
+}
+
+void owl_function_loopwrite(char *msg)
 {
   owl_message *min, *mout;
 
@@ -931,6 +945,11 @@ void owl_function_loadloginsubs(char *file)
   } else {
     owl_function_error("Error subscribing to login messages from file.");
   }
+}
+
+void owl_callback_aimlogin(owl_editwin *e) {
+  owl_function_aimlogin(owl_editwin_get_command(e),
+                        owl_global_get_response(&g));
 }
 
 void owl_function_aimlogin(char *user, char *passwd) {
@@ -1323,16 +1342,7 @@ void owl_function_resize()
 
 void owl_function_run_buffercommand()
 {
-  char *buff;
-  void (*cb)(char*, char*);
-
-  buff=owl_global_get_buffercommand(&g);
-  cb=owl_global_get_buffercallback(&g);
-  if(!cb) {
-    owl_function_error("Internal error: No callback for buffercommand %s", buff);
-  } else {
-    cb(buff, owl_editwin_get_text(owl_global_get_typwin(&g)));
-  }
+  owl_editwin_do_callback(owl_global_get_typwin(&g));
 }
 
 void owl_function_debugmsg(char *fmt, ...)
@@ -2166,17 +2176,21 @@ void owl_function_reply(int type, int enter)
 	owl_free(tmp);
       }
       if (cc) owl_free(cc);
-    }
-
-    /* aim */
-    if (owl_message_is_type_aim(m)) {
+    } else if (owl_message_is_type_aim(m)) {
+      /* aim */
       if (owl_message_is_direction_out(m)) {
 	buff=owl_sprintf("aimwrite %s", owl_message_get_recipient(m));
       } else {
 	buff=owl_sprintf("aimwrite %s", owl_message_get_sender(m));
       }
+    } else {
+      char *cmd;
+      if((type==0 && (cmd=owl_message_get_attribute_value(m, "replycmd")))
+         || (type==1 && (cmd=owl_message_get_attribute_value(m, "replysendercmd")))) {
+        buff = owl_strdup(cmd);
+      }
     }
-    
+
     if (enter) {
       owl_history *hist = owl_global_get_cmd_history(&g);
       owl_history_store(hist, buff);

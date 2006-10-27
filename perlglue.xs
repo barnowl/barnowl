@@ -99,7 +99,7 @@ new_command_internal(name, func, summary, usage, description)
 		cmd.cmd_ctxi_fn = NULL;
 		owl_cmddict_add_cmd(owl_global_get_cmddict(&g), &cmd);
 
-void queue_message(msg)
+void queue_message(msg) 
 	SV *msg
 	PREINIT:
 		char * key;
@@ -110,6 +110,7 @@ void queue_message(msg)
 		I32 count;
 		I32 len;
 	CODE:
+	{
 		if(!SvROK(msg) || SvTYPE(SvRV(msg)) != SVt_PVHV) {
 			croak("Usage: owl::queue_message($message)");
 		}
@@ -130,5 +131,11 @@ void queue_message(msg)
 				owl_message_set_attribute(m, key, val);
 			}
 		}
+		owl_message_set_isprivate(m);
+		if(owl_message_is_type_admin(m)) {
+			if(!owl_message_get_attribute_value(m, "adminheader"))
+				owl_message_set_attribute(m, "adminheader", "");
+		} 
 
 		owl_global_messagequeue_addmsg(&g, m);
+	}
