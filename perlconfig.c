@@ -377,3 +377,28 @@ void owl_perlconfig_cmd_free(owl_cmd *cmd)
 {
   SvREFCNT_dec(cmd);
 }
+
+void owl_perlconfig_edit_callback(owl_editwin *e)
+{
+  SV *cb = (SV*)(e->cbdata);
+  if(cb == NULL) {
+    owl_function_error("Perl callback is NULL!");
+  }
+
+  dSP;
+
+  ENTER;
+  SAVETMPS;
+
+  PUSHMARK(SP);
+  XPUSHs(sv_2mortal(newSVpv(owl_editwin_get_text(e), 0)));
+  PUTBACK;
+  
+  call_sv(cb, G_DISCARD);
+
+  FREETMPS;
+  LEAVE;
+
+  SvREFCNT_dec(cb);
+  e->cbdata = NULL;
+}

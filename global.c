@@ -98,7 +98,6 @@ void owl_global_init(owl_global *g) {
   owl_timer_create_countdown(&(g->aim_buddyinfo_timer), 60);
   owl_buddylist_init(&(g->buddylist));
     
-  g->response=NULL;
   g->havezephyr=0;
   g->haveaim=0;
   owl_global_set_no_doaimevents(g);
@@ -812,19 +811,6 @@ void owl_global_add_style(owl_global *g, owl_style *s)
   owl_dict_insert_element(&(g->styledict), owl_style_get_name(s), 
 			  s, (void(*)(void*))owl_style_free);
 }
-
-char *owl_global_get_response(owl_global *g)
-{
-  if (g->response==NULL) return("");
-  return(g->response);
-}
-
-void owl_global_set_response(owl_global *g, char *resp)
-{
-  if (g->response) owl_free(g->response);
-  g->response=owl_strdup(resp);
-}
-
 
 void owl_global_set_haveaim(owl_global *g)
 {

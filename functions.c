@@ -949,7 +949,7 @@ void owl_function_loadloginsubs(char *file)
 
 void owl_callback_aimlogin(owl_editwin *e) {
   owl_function_aimlogin(owl_editwin_get_command(e),
-                        owl_global_get_response(&g));
+                        owl_editwin_get_text(e));
 }
 
 void owl_function_aimlogin(char *user, char *passwd) {
