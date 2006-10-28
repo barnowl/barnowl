@@ -726,6 +726,15 @@ owl_cmd commands_to_init[]
 	      "aimlogout\n",
 	      ""),
 
+  OWLCMD_ARGS("error", owl_command_error, OWL_CTX_ANY,
+              "Display an error message",
+              "error <message>",
+              ""),
+
+  OWLCMD_ARGS("message", owl_command_message, OWL_CTX_ANY,
+              "Display an informatative message",
+              "message <message>",
+              ""),
 
   /****************************************************************/
   /************************* EDIT-SPECIFIC ************************/
@@ -2408,6 +2417,20 @@ char *owl_command_getstyle(int argc, char **argv, char *buff)
   stylename = owl_view_get_style_name(owl_global_get_current_view(&g));
   if (stylename) stylename = owl_strdup(stylename);
   return stylename;
+}
+
+char *owl_command_error(int argc, char **argv, char *buff)
+{
+    buff = skiptokens(buff, 1);
+    owl_function_error(buff);
+    return NULL;
+}
+
+char *owl_command_message(int argc, char **argv, char *buff)
+{
+    buff = skiptokens(buff, 1);
+    owl_function_makemsg(buff);
+    return NULL;
 }
 
 /*********************************************************************/
