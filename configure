@@ -2790,7 +2790,7 @@ if test "${ac_cv_lib_des_des_quad_cksum+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-ldes  $LIBS"
+LIBS="$LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -2853,7 +2853,7 @@ if test $ac_cv_lib_des_des_quad_cksum = yes; then
 #define HAVE_LIBDES 1
 _ACEOF
 
-  LIBS="-ldes $LIBS"
+  LIBS="$LIBS"
 
 fi
 
