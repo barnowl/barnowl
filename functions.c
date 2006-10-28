@@ -2191,6 +2191,11 @@ void owl_function_reply(int type, int enter)
       }
     }
 
+    if(!buff) {
+        owl_function_error("I don't know how to reply to that message.");
+        return;
+    }
+    
     if (enter) {
       owl_history *hist = owl_global_get_cmd_history(&g);
       owl_history_store(hist, buff);
