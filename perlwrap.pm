@@ -88,11 +88,15 @@ sub is_outgoing { return (shift->{"direction"} eq "out"); }
 
 sub is_deleted  { return shift->{"deleted"}; }
 
-sub is_zephyr   { return (shift->{"type"} eq "zephyr"); }
-sub is_aim      { return (shift->{"type"} eq "aim"); }
 sub is_admin    { return (shift->{"type"} eq "admin"); }
 sub is_generic  { return (shift->{"type"} eq "generic"); }
+sub is_zephyr   { return (shift->{"type"} eq "zephyr"); }
+sub is_aim      { return (shift->{"type"} eq "aim"); }
 sub is_jabber   { return (shift->{"type"} eq "jabber"); }
+sub is_icq      { return (shift->{"type"} eq "icq"); }
+sub is_yahoo    { return (shift->{"type"} eq "yahoo"); }
+sub is_msn      { return (shift->{"type"} eq "msn"); }
+sub is_loopback { return (shift->{"type"} eq "loopback"); }
 
 # These are overridden by appropriate message types
 sub is_ping     { return 0; }

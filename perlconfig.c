@@ -31,6 +31,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)  /*noproto*/
   SV *hr;
   char *ptr, *blessas;
   int i, j;
+  owl_pair *pair;
 
   if (!m) return &PL_sv_undef;
   h = newHV();
@@ -56,6 +57,13 @@ SV *owl_perlconfig_message2hashref(owl_message *m)  /*noproto*/
 	     newSVpv(owl_zephyr_get_authstr(owl_message_get_notice(m)),0),0);
   }
 
+  j=owl_list_get_size(&(m->attributes));
+  for(i=0; i<j; i++) {
+    pair=owl_list_get_element(&(m->attributes), i);
+    hv_store(h, owl_pair_get_key(pair), strlen(owl_pair_get_key(pair)),
+	     newSVpv(owl_pair_get_value(pair),0),0);
+  }
+  
   MSG2H(h, type);
   MSG2H(h, direction);
   MSG2H(h, class);
@@ -79,6 +87,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)  /*noproto*/
 
   if (owl_message_is_type_zephyr(m))       blessas = "owl::Message::Zephyr";
   else if (owl_message_is_type_aim(m))     blessas = "owl::Message::AIM";
+  else if (owl_message_is_type_jabber(m))  blessas = "owl::Message::Jabber";
   else if (owl_message_is_type_admin(m))   blessas = "owl::Message::Admin";
   else if (owl_message_is_type_generic(m)) blessas = "owl::Message::Generic";
   else                                     blessas = "owl::Message";

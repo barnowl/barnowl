@@ -121,7 +121,7 @@ void owl_message_format(owl_message *m)
   owl_view *v;
 
   if (m->invalid_format) {
-    /* for now we assume there's jsut the one view and use that style */
+    /* for now we assume there's just the one view and use that style */
     v=owl_global_get_current_view(&g);
     s=owl_view_get_style(v);
 
@@ -352,9 +352,9 @@ int owl_message_is_type_admin(owl_message *m)
   return(0);
 }
 
-int owl_message_is_type_loopback(owl_message *m)
+int owl_message_is_type_generic(owl_message *m)
 {
-  if (m->type==OWL_MESSAGE_TYPE_LOOPBACK) return(1);
+  if (m->type==OWL_MESSAGE_TYPE_GENERIC) return(1);
   return(0);
 }
 
@@ -370,15 +370,43 @@ int owl_message_is_type_aim(owl_message *m)
   return(0);
 }
 
-int owl_message_is_pseudo(owl_message *m)
+int owl_message_is_type_jabber(owl_message *m)
 {
-  if (owl_message_get_attribute_value(m, "pseudo")) return(1);
+  if (m->type==OWL_MESSAGE_TYPE_JABBER) return(1);
+
   return(0);
 }
 
-int owl_message_is_type_generic(owl_message *m)
+int owl_message_is_type_icq(owl_message *m)
 {
-  if (m->type==OWL_MESSAGE_TYPE_GENERIC) return(1);
+  if (m->type==OWL_MESSAGE_TYPE_ICQ) return(1);
+
+  return(0);
+}
+
+int owl_message_is_type_yahoo(owl_message *m)
+{
+  if (m->type==OWL_MESSAGE_TYPE_YAHOO) return(1);
+
+  return(0);
+}
+
+int owl_message_is_type_msn(owl_message *m)
+{
+  if (m->type==OWL_MESSAGE_TYPE_MSN) return(1);
+
+  return(0);
+}
+
+int owl_message_is_type_loopback(owl_message *m)
+{
+  if (m->type==OWL_MESSAGE_TYPE_LOOPBACK) return(1);
+  return(0);
+}
+
+int owl_message_is_pseudo(owl_message *m)
+{
+  if (owl_message_get_attribute_value(m, "pseudo")) return(1);
   return(0);
 }
 
