@@ -134,11 +134,15 @@ void queue_message(msg)
 				owl_message_set_type(m, owl_message_parse_type(val));
 			} else if(!strcmp(key, "direction")) {
 				owl_message_set_direction(m, owl_message_parse_direction(val));
+			} else if(!strcmp(key, "isprivate")) {
+				SV * v = hv_iterval(hash, ent);
+				if(SvTRUE(v)) {
+					owl_message_set_isprivate(m);
+				}
 			} else {
 				owl_message_set_attribute(m, key, val);
 			}
 		}
-		owl_message_set_isprivate(m);
 		if(owl_message_is_type_admin(m)) {
 			if(!owl_message_get_attribute_value(m, "adminheader"))
 				owl_message_set_attribute(m, "adminheader", "");
