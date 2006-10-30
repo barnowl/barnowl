@@ -411,3 +411,11 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
   SvREFCNT_dec(cb);
   e->cbdata = NULL;
 }
+
+void owl_perlconfig_mainloop()
+{
+  dSP ;
+  PUSHMARK(SP) ;
+  call_pv("owl::mainloop_hook", G_DISCARD|G_EVAL|G_KEEPERR);
+  return;
+}

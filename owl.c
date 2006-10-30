@@ -448,8 +448,7 @@ int main(int argc, char **argv, char **env)
     /* Hook perl into the loop */
 
     if (owl_perlconfig_is_function("owl::mainloop_hook")) {
-	 perlout = owl_perlconfig_execute("owl::mainloop_hook");
-	 if (perlout) owl_free(perlout);
+	 owl_perlconfig_mainloop();
     }
 
     /* little hack */
