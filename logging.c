@@ -38,7 +38,9 @@ void owl_log_message(owl_message *m) {
     owl_log_outgoing_zephyr(m);
   } else if (owl_message_is_type_loopback(m)) {
     owl_log_outgoing_loopback(m);
-  } else {
+  } else if (owl_message_is_type_jabber(m)) {
+   owl_log_outgoing_jabber(m);	  
+  }else {
     owl_function_error("Unknown message type for logging");
   }
   owl_function_debugmsg("owl_log_message: leaving");
@@ -182,6 +184,56 @@ void owl_log_outgoing_zephyr_error(char *to, char *text)
   owl_free(tobuff);
 }
 
+void owl_log_outgoing_jabber(owl_message *m)
+{
+  FILE *file;
+  char filename[MAXPATHLEN], *logpath;
+  char *tobuff, *normalto, *text;
+  owl_function_debugmsg("owl_log_outgoing_jabber: entering");
+  /* normalize and downcase the screenname */
+  normalto = owl_message_get_recipient(m);
+  
+  /* downstr(normalto); */
+  tobuff=owl_sprintf("jabber:%s", normalto);
+  /* owl_free(normalto); */
+
+  /* expand ~ in path names */
+  logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
+
+  text=owl_message_get_body(m);
+  
+  snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
+  file=fopen(filename, "a");
+  if (!file) {
+    owl_function_error("Unable to open file for outgoing logging");
+    owl_free(logpath);
+    owl_free(tobuff);
+    return;
+  }
+  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
+  if (text[strlen(text)-1]!='\n') {
+    fprintf(file, "\n");
+  }
+  fclose(file);
+
+  snprintf(filename, MAXPATHLEN, "%s/all", logpath);
+  owl_free(logpath);
+  file=fopen(filename, "a");
+  if (!file) {
+    owl_function_error("Unable to open file for outgoing logging");
+    owl_free(tobuff);
+    return;
+  }
+  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
+  if (text[strlen(text)-1]!='\n') {
+    fprintf(file, "\n");
+  }
+  fclose(file);
+
+  owl_free(tobuff);
+}
+
+
 void owl_log_outgoing_aim(owl_message *m)
 {
   FILE *file;
@@ -290,6 +342,14 @@ void owl_log_incoming(owl_message *m)
     } else {
       personal=0;
     }
+  } else if (owl_message_is_type_jabber(m)) {
+	  /* This needs to be fixed to handle groupchat */
+	  char* msgtype = owl_message_get_attribute_value(m,"jtype");
+	  if (msgtype && !strcmp(msgtype,"groupchat")) {
+		  personal =0;
+	  } else {
+  	     personal=1;
+	  }
   } else {
     if (owl_message_is_private(m) || owl_message_is_loginout(m)) {
       personal=1;
@@ -297,6 +357,8 @@ void owl_log_incoming(owl_message *m)
       personal=0;
     }
   }
+
+  
 
   if (owl_message_is_type_zephyr(m)) {
     if (personal) {
@@ -315,6 +377,8 @@ void owl_log_incoming(owl_message *m)
     owl_free(normalto);
   } else if (owl_message_is_type_loopback(m)) {
     from=frombuff=owl_strdup("loopback");
+  } else if (owl_message_is_type_jabber(m)) {
+        from=frombuff=owl_sprintf("jabber:%s",owl_message_get_sender(m));
   } else {
     from=frombuff=owl_strdup("unknown");
   }
