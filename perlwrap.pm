@@ -28,6 +28,7 @@ sub _receive_msg_legacy_wrap {
 sub AUTOLOAD {
     my $called = $AUTOLOAD;
     $called =~ s/.*:://;
+    $called =~ s/_/-/g;
     return &owl::command("$called ".join(" ",@_));
 }
 
