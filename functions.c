@@ -3306,6 +3306,14 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
     owl_list_free_all(&anyone, owl_free);
   }
 #endif
+
+  if(owl_perlconfig_is_function("owl::get_blist")) {
+      char * perlblist = owl_perlconfig_execute("owl::get_blist()");
+      if(perlblist) {
+          owl_fmtext_append_ztext(&fm, perlblist);
+          owl_free(perlblist);
+      }
+  }
   
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);
