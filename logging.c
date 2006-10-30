@@ -456,7 +456,12 @@ void owl_log_incoming(owl_message *m)
     fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
     if (owl_message_is_login(m)) fprintf(file, "LOGIN\n\n");
     if (owl_message_is_logout(m)) fprintf(file, "LOGOUT\n\n");
-  } else {
+  } else if (owl_message_is_type_jabber(m)) {
+    fprintf(file, "From: <%s> To: <%s>\n",owl_message_get_attribute_value(m,"from_jid"), owl_message_get_recipient(m));
+    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
+    fprintf(file, "%s\n\n",owl_message_get_body(m));
+  }
+  else {
     fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
     fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
     fprintf(file, "%s\n\n", owl_message_get_body(m));
