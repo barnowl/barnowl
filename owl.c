@@ -71,7 +71,7 @@ int main(int argc, char **argv, char **env)
   int j, ret, initialsubs, debug, argcsave, followlast;
   int newmsgs, zpendcount, nexttimediff;
   struct sigaction sigact;
-  char *configfile, *tty, *perlout, *perlerr, **argvsave, buff[LINE], startupmsg[LINE], *perl_mainloop_hook;
+  char *configfile, *tty, *perlout, *perlerr, **argvsave, buff[LINE], startupmsg[LINE];
   owl_filter *f;
   owl_style *s;
   time_t nexttime, now;
@@ -91,7 +91,6 @@ int main(int argc, char **argv, char **env)
   tty=NULL;
   debug=0;
   initialsubs=1;
-  perl_mainloop_hook = NULL;
   if (argc>0) {
     argv++;
     argc--;
@@ -447,13 +446,10 @@ int main(int argc, char **argv, char **env)
     }
 
     /* Hook perl into the loop */
-    perl_mainloop_hook = owl_global_get_perl_mainloop_hook(&g);
-    if (perl_mainloop_hook) {
-      if (owl_perlconfig_is_function(perl_mainloop_hook)) {
-	owl_function_debugmsg("startup: executing perl mainloop hook");
-	perlout = owl_perlconfig_execute(perl_mainloop_hook);
-	if (perlout) owl_free(perlout);
-      }
+
+    if (owl_perlconfig_is_function("owl::mainloop_hook")) {
+	 perlout = owl_perlconfig_execute("owl::mainloop_hook");
+	 if (perlout) owl_free(perlout);
     }
 
     /* little hack */
