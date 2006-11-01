@@ -57,7 +57,7 @@ distclean: clean libfaimdistclean
 proto: owl_prototypes.h
 
 perlglue.c: perlglue.xs
-	perl $(XSUBPPDIR)/xsubpp -typemap $(XSUBPPDIR)/typemap -prototypes perlglue.xs > perlglue.c
+	perl $(XSUBPPDIR)/xsubpp  -prototypes perlglue.xs > perlglue.c
 
 varstubs.c: variable.c stubgen.pl
 	perl stubgen.pl > varstubs.c
