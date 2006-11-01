@@ -208,3 +208,11 @@ void start_edit_win(line, callback)
 		owl_editwin_set_cbdata(owl_global_get_typwin(&g), callback);
 		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
 	}
+
+
+char * 
+get_data_dir ()
+	CODE:
+		RETVAL = (char *) DATADIR;
+	OUTPUT:
+	RETVAL
