@@ -280,9 +280,176 @@ package owl::Message::Jabber;
 
 #####################################################################
 #####################################################################
+################################################################################
+package owl;
+
+# Arrays of function pointers to be called at specific times.
+our @onStartSubs = ();
+our @onReceiveMsg = undef;
+our @onMainLoop = undef;
+our @onGetBuddyList = undef;
+
+################################################################################
+# Mainloop hook and threading.
+################################################################################
+
+use threads;
+use threads::shared;
+
+# Shared thread shutdown flag.
+# Consider adding a reload flag, so threads that should persist across reloads
+# can distinguish the two events. We wouldn't want a reload to cause us to
+# log out of and in to a perl-based IM session.
+our $shutdown : shared;
+$shutdown = 0;
+our $reload : shared;
+$reload = 0;
+
+sub owl::mainloop_hook
+{
+    foreach (@onMainLoop)
+    {
+	&$_();
+    }
+    return;
+}
+
+################################################################################
+# Startup and Shutdown code
+################################################################################
+sub owl::startup
+{
+# Modern versions of owl provides a great place to have startup stuff.
+# Put things in ~/.owl/startup
+    onStart();
+}
+
+sub owl::shutdown
+{
+# Modern versions of owl provides a great place to have shutdown stuff.
+# Put things in ~/.owl/shutdown
+
+# At this point I use owl::shutdown to tell any auxillary threads that they
+# should terminate.
+    $shutdown = 1;
+    owl::mainloop_hook();
+}
+
+#Run this on start and reload. Adds modules and runs their startup functions.
+sub onStart
+{
+    reload_init();
+    #So that the user's .owlconf can have startsubs, we don't clear
+    #onStartSubs; reload does however
+    @onReceiveMsg = ();
+    @onMainLoop = ();
+    @onGetBuddyList = ();
+
+    loadModules();
+    foreach (@onStartSubs)
+    {
+	&$_();
+    }
+}
+################################################################################
+# Reload Code, taken from /afs/sipb/user/jdaniel/project/owl/perl
+################################################################################
+sub reload_hook (@) 
+{
+    
+  @onStartSubs = ();
+    onStart();
+    return 1;
+}
+
+sub reload 
+{
+    # Shutdown existing threads.
+    $reload = 1;
+    owl::mainloop_hook();
+    $reload = 0;
+    @onMainLoop = ();
+    
+    # Do reload
+    if (do "$ENV{HOME}/.owlconf" && reload_hook(@_))
+    {
+	return "owlconf reloaded";
+    } 
+    else
+    {
+        return "$ENV{HOME}/.owlconf load attempted, but error encountered:\n$@";
+    }
+}
+
+sub reload_init () 
+{
+    owl::command('alias reload perl reload');
+    owl::command('bindkey global "C-x C-r" command reload');
+}
+
+################################################################################
+# Loads modules from ~/.owl/modules and owl's data directory
+################################################################################
+
+sub loadModules ()
+{
+my @modules;
+foreach my $dir (owl::get_data_dir()."/owl/modules", $ENV{HOME}."/.owl/modules") {
+  opendir(MODULES, $dir);
+  # source ./modules/*.pl
+  @modules  =  grep(/\.pl$/, readdir(MODULES));
+
+foreach my $mod (@modules) {
+  do "$dir/$mod";
+}
+closedir(MODULES);
+}
+}
+sub queue_admin_msg
+{
+    my $err = shift;
+    my $m = owl::Message->new(type => 'admin',
+			      direction => 'none',
+			      body => $err);
+    owl::queue_message($m);
+}
+
+
+################################################################################
+# Hooks into receive_msg()
+################################################################################
+
+sub owl::receive_msg
+{
+    my $m = shift;
+    foreach (@onReceiveMsg)
+    {
+	&$_($m);
+    }
+}
+
+################################################################################
+# Hooks into get_blist()
+################################################################################
+
+sub owl::get_blist
+{
+    my $m = shift;
+    foreach (@onGetBuddyList)
+    {
+	&$_($m);
+    }
+}
 
 # switch to package main when we're done
 package main;
+# alias the hooks
+foreach my $hook  qw (onStartSubs
+onReceiveMsg
+onMainLoop
+onGetBuddyList ) {
+  *{"main::".$hook} = \*{"owl::".$hook};
+}
 
 # load the config  file
 if (-r $owl::configfile) {
