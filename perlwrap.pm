@@ -357,7 +357,7 @@ sub onStart
 sub reload_hook (@) 
 {
     
-  @onStartSubs = ();
+
     onStart();
     return 1;
 }
@@ -369,6 +369,7 @@ sub reload
     owl::mainloop_hook();
     $reload = 0;
     @onMainLoop = ();
+  @onStartSubs = ();
     
     # Do reload
     if (do "$ENV{HOME}/.owlconf" && reload_hook(@_))
@@ -404,14 +405,6 @@ foreach my $mod (@modules) {
 }
 closedir(MODULES);
 }
-}
-sub queue_admin_msg
-{
-    my $err = shift;
-    my $m = owl::Message->new(type => 'admin',
-			      direction => 'none',
-			      body => $err);
-    owl::queue_message($m);
 }
 
 
