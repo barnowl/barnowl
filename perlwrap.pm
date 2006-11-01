@@ -372,7 +372,8 @@ sub reload
   @onStartSubs = ();
     
     # Do reload
-    if (do "$ENV{HOME}/.owlconf" && reload_hook(@_))
+    package main;
+    if (do "$ENV{HOME}/.owlconf" && owl::reload_hook(@_))
     {
 	return "owlconf reloaded";
     } 
@@ -380,11 +381,12 @@ sub reload
     {
         return "$ENV{HOME}/.owlconf load attempted, but error encountered:\n$@";
     }
+package owl;
 }
 
 sub reload_init () 
 {
-    owl::command('alias reload perl reload');
+    owl::command('alias reload perl owl::reload()');
     owl::command('bindkey global "C-x C-r" command reload');
 }
 
