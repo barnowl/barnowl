@@ -7,8 +7,15 @@
 
 package owl;
 
+
+BEGIN {
 # bootstrap in C bindings and glue
 bootstrap owl 1.2;
+};
+
+use lib(get_data_dir()."/owl/lib");
+use lib($::ENV{'HOME'}."/.owl/lib");
+
 
 # populate global variable space for legacy owlconf files 
 sub _format_msg_legacy_wrap {
