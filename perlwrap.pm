@@ -17,6 +17,8 @@ use lib(get_data_dir()."/owl/lib");
 use lib($::ENV{'HOME'}."/.owl/lib");
 
 
+our $configfile = $::ENV{'HOME'}."/.owlconf";
+
 # populate global variable space for legacy owlconf files 
 sub _format_msg_legacy_wrap {
     my ($m) = @_;
@@ -281,5 +283,10 @@ package owl::Message::Jabber;
 
 # switch to package main when we're done
 package main;
+
+# load the config  file
+if (-r $owl::configfile) {
+do $owl::configfile or die $@;
+}
 
 1;

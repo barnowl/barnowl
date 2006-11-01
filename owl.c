@@ -107,6 +107,7 @@ int main(int argc, char **argv, char **env)
 	exit(1);
       }
       configfile=argv[1];
+      abort(); /*We dirty hackers have broken -c for now--hartmans*/
       argv+=2;
       argc-=2;
     } else if (!strcmp(argv[0], "-t")) {
@@ -310,7 +311,7 @@ int main(int argc, char **argv, char **env)
   /* read the config file */
   owl_function_debugmsg("startup: processing config file");
   owl_context_set_readconfig(owl_global_get_context(&g));
-  perlerr=owl_perlconfig_readconfig(configfile);
+  perlerr=owl_perlconfig_readconfig();
   if (perlerr) {
     endwin();
     owl_function_error("Error parsing configfile: %s\n", perlerr);

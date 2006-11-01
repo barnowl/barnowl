@@ -161,23 +161,13 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
   return out;
 }
 
-char *owl_perlconfig_readconfig(char *file)
+char *owl_perlconfig_readconfig(void)
 {
-  int ret, fd;
+  int ret;
   PerlInterpreter *p;
-  char filename[1024];
-  char *embedding[5];
   char *err;
-  struct stat statbuff;
+  char *args[4] = {"", "-e", "0;", NULL};
 
-  if (file==NULL) {
-    sprintf(filename, "%s/%s", getenv("HOME"), ".owlconf");
-  } else {
-    strcpy(filename, file);
-  }
-  embedding[0]="";
-  embedding[1]=filename;
-  embedding[2]=0;
 
   /* create and initialize interpreter */
   p=perl_alloc();
@@ -186,29 +176,8 @@ char *owl_perlconfig_readconfig(char *file)
 
   owl_global_set_no_have_config(&g);
 
-  /* Before we let perl have at it, we'll do our own checks on the the
-   *  file to see if it's present, readnable etc.
-   */
 
-  /* Not present, start without it */
-  ret=stat(filename, &statbuff);
-  if (ret) {
-    return(NULL);
-  }
-
-  /* present, but stat thinks it's unreadable */
-  if (! (statbuff.st_mode & S_IREAD)) {
-    return(owl_sprintf("%s present but not readable", filename));
-  }
-
-  /* can we open it? */
-  fd=open(filename, O_RDONLY);
-  if (fd==-1) {
-    return(owl_sprintf("could not open %s for reading", filename));
-  }
-  close(fd);
-
-  ret=perl_parse(p, owl_perl_xs_init, 2, embedding, NULL);
+  ret=perl_parse(p, owl_perl_xs_init, 2, args, NULL);
   if (ret || SvTRUE(ERRSV)) {
     STRLEN n_a;
     err=owl_strdup(SvPV(ERRSV, n_a));
