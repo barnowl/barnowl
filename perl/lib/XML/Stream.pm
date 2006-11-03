@@ -2113,14 +2113,13 @@ sub SASLClient
     
     my $sasl = new Authen::SASL(mechanism=>join(" ",@{$mechanisms}),
                                 callback=>{
-                                           authname => $username."@".$self->{SIDS}->{$sid}->{hostname},
-
+#                                           authname => $username."@".$self->{SIDS}->{$sid}->{hostname},
                                            user     => $username,
                                            pass     => $password
                                           }
                                );
 
-    $self->{SIDS}->{$sid}->{sasl}->{client} = $sasl->client_new();
+    $self->{SIDS}->{$sid}->{sasl}->{client} = $sasl->client_new('xmpp', $self->{SIDS}->{$sid}->{hostname});
     $self->{SIDS}->{$sid}->{sasl}->{username} = $username;
     $self->{SIDS}->{$sid}->{sasl}->{password} = $password;
     $self->{SIDS}->{$sid}->{sasl}->{authed} = 0;

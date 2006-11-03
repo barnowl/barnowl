@@ -423,8 +423,6 @@ sub handleIQ
     my $self = shift;
     my $iq = shift;
 
-    print "handleIQ: iq(",$iq->GetXML(),")\n";
-
     my $type = $iq->GetType();
     return unless (($type eq "set") || ($type eq "result"));
 
@@ -460,8 +458,6 @@ sub handlePresence
 {
     my $self = shift;
     my $presence = shift;
-
-    print "handlePresence: presence(",$presence->GetXML(),")\n";
 
     my $type = $presence->GetType();
     $type = "" unless defined($type);
