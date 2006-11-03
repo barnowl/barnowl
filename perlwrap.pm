@@ -283,11 +283,11 @@ package owl::Message::Jabber;
 ################################################################################
 package owl;
 
-# Arrays of function pointers to be called at specific times.
+# Arrays of subrefs to be called at specific times.
 our @onStartSubs = ();
-our @onReceiveMsg = undef;
-our @onMainLoop = undef;
-our @onGetBuddyList = undef;
+our @onReceiveMsg = ();
+our @onMainLoop = ();
+our @onGetBuddyList = ();
 
 ################################################################################
 # Mainloop hook and threading.
@@ -305,26 +305,38 @@ $shutdown = 0;
 our $reload : shared;
 $reload = 0;
 
-sub owl::mainloop_hook
+# Functions to call hook lists
+sub runHook($@)
 {
-    foreach (@onMainLoop)
-    {
-	&$_();
-    }
-    return;
+    my $hook = shift;
+    my @args = @_;
+    $_->(@args) for (@$hook);
+}
+
+sub runHook_accumulate($@)
+{
+    my $hook = shift;
+    use Data::Dumper;
+    my @args = @_;
+    return join("\n", map {$_->(@args)} @$hook);
+}
+
+sub mainloop_hook
+{
+    runHook(\@onMainLoop);
 }
 
 ################################################################################
 # Startup and Shutdown code
 ################################################################################
-sub owl::startup
+sub startup
 {
 # Modern versions of owl provides a great place to have startup stuff.
 # Put things in ~/.owl/startup
     onStart();
 }
 
-sub owl::shutdown
+sub shutdown
 {
 # Modern versions of owl provides a great place to have shutdown stuff.
 # Put things in ~/.owl/shutdown
@@ -332,7 +344,7 @@ sub owl::shutdown
 # At this point I use owl::shutdown to tell any auxillary threads that they
 # should terminate.
     $shutdown = 1;
-    owl::mainloop_hook();
+    mainloop_hook();
 }
 
 #Run this on start and reload. Adds modules and runs their startup functions.
@@ -346,10 +358,7 @@ sub onStart
     @onGetBuddyList = ();
 
     loadModules();
-    foreach (@onStartSubs)
-    {
-	&$_();
-    }
+    runHook(\@onStartSubs);
 }
 ################################################################################
 # Reload Code, taken from /afs/sipb/user/jdaniel/project/owl/perl
@@ -394,46 +403,44 @@ sub reload_init ()
 # Loads modules from ~/.owl/modules and owl's data directory
 ################################################################################
 
-sub loadModules ()
-{
-my @modules;
-foreach my $dir (owl::get_data_dir()."/owl/modules", $ENV{HOME}."/.owl/modules") {
-  opendir(MODULES, $dir);
-  # source ./modules/*.pl
-  @modules  =  grep(/\.pl$/, readdir(MODULES));
+sub loadModules () {
+    my @modules;
+    foreach my $dir ( owl::get_data_dir() . "/owl/modules",
+        $ENV{HOME} . "/.owl/modules" )
+    {
+        opendir( MODULES, $dir );
 
-foreach my $mod (@modules) {
-  do "$dir/$mod";
+        # source ./modules/*.pl
+        @modules = grep( /\.pl$/, readdir(MODULES) );
+
+        foreach my $mod (@modules) {
+            do "$dir/$mod";
+        }
+        closedir(MODULES);
+    }
+
 }
-closedir(MODULES);
-}
-}
+
 
 
 ################################################################################
 # Hooks into receive_msg()
 ################################################################################
 
-sub owl::receive_msg
+sub receive_msg
 {
     my $m = shift;
-    foreach (@onReceiveMsg)
-    {
-	&$_($m);
-    }
+    runHook(\@onReceiveMsg, $m);
 }
 
 ################################################################################
 # Hooks into get_blist()
 ################################################################################
 
-sub owl::get_blist
+sub get_blist
 {
     my $m = shift;
-    foreach (@onGetBuddyList)
-    {
-	&$_($m);
-    }
+    return runHook_accumulate(\@onGetBuddyList, $m);
 }
 
 # switch to package main when we're done
