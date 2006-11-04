@@ -4,19 +4,29 @@ use Net::Jabber;
 ################################################################################
 # owl perl jabber support
 #
-# Todo:
-# Connect command.
+# XXX Todo:
+# Rosters for MUCs
+# More user feedback
+#  * joining MUC
+#  * parting MUC
+#  * presence (Roster and MUC)
+# Implementing formatting and logging callbacks for C
+# Appropriate callbacks for presence subscription messages.
+#  * Current behavior => auto-accept (default for Net::Jabber)
 #
 ################################################################################
 
 our $client;
 our $jid;
+our $roster;
 
 sub onStart
 {
     if(eval{\&owl::queue_message}) 
     {
 	register_owl_commands();
+	push @::onMainLoop, sub { owl_jabber::onMainLoop(@_) };
+	push @::onGetBuddyList, sub { owl_jabber::onGetBuddyList(@_) };
     }
     else
     {
@@ -25,7 +35,7 @@ sub onStart
         # give up silently.
     }
 }
-push @::onStartSubs, \&onStart;
+push @::onStartSubs, sub { owl_jabber::onStart(@_) };
 
 sub onMainLoop
 {
@@ -39,18 +49,70 @@ sub onMainLoop
     else #Error
     {
 	queue_admin_msg("Jabber disconnected.");
+	$roster = undef;
 	$client = undef;
 	return;
     }
     
     if ($::shutdown)
     {
+	$roster = undef;
 	$client->Disconnect();
 	$client = undef;
 	return;
     }
 }
-push @::onMainLoop, \&onMainLoop;
+
+sub blist_listBuddy
+{
+    my $buddy = shift;
+    my $blistStr .= "    ";
+    my %jq = $roster->query($buddy);
+    my $res = $roster->resource($buddy);
+
+    $blistStr .= $jq{name} ? $jq{name} : $buddy->GetJID();
+    
+    if ($res)
+    {
+	my %rq = $roster->resourceQuery($buddy, $res);
+	$blistStr .= " [".($rq{show} ? $rq{show} : 'online')."]";
+	$blistStr .= " ".$rq{status} if $rq{status};
+	$blistStr = boldify($blistStr);
+    }
+    else
+    {
+	$blistStr .= $jq{ask} ? " [pending]" : " [offline]";
+    }
+
+    return $blistStr."\n";
+}
+
+sub onGetBuddyList
+{
+    return "" if ($client == undef);
+    my $blist = "\n".boldify("Jabber Roster for ".$jid->GetJID('base'))."\n";
+
+    foreach my $group ($roster->groups())
+    {
+	$blist .= "  Group: $group\n";
+	foreach my $buddy ($roster->jids('group',$group))
+	{
+	    $blist .= blist_listBuddy($buddy);
+	}
+    }
+    
+    my @unsorted = $roster->jids('nogroup');
+    if (@unsorted)
+    {
+	$blist .= "  [unsorted]\n";
+	foreach my $buddy (@unsorted)
+	{
+	    $blist .= blist_listBuddy($buddy);
+	}
+    }
+
+    $blist .= "\n";
+}
 
 ################################################################################
 ### Owl Commands
@@ -68,28 +130,29 @@ sub register_owl_commands()
         jwrite => \&cmd_jwrite,
         {
             summary     => "Send a Jabber Message",
-            usage       => "jwrite JID [-t thread]"
+            usage       => "jwrite JID [-g] [-t thread] [-s subject]"
         }
     );
     owl::new_command(
-        jchat => \&cmd_jwrite_gc,
+        jlist => \&cmd_jlist,
         {
-            summary => "Send a Jabber Message",
-            usage       => "jchat [room]@[server]"
+            summary     => "Show your Jabber roster.",
+            usage       => "jlist"
         }
     );
     owl::new_command(
-        jjoin => \&cmd_join_gc,
+        jmuc => \&cmd_jmuc,
         {
-            summary     => "Joins a jabber groupchat.",
-            usage       => "jjoin [room]@[server]/[nick]"
-        }
-    );
-    owl::new_command(
-        jpart => \&cmd_part_gc,
-        {
-            summary     => "Parts a jabber groupchat.",
-            usage       => "jpart [room]@[server]/[nick]"
+            summary     => "Jabber MUC related commands.",
+	    description => "jmuc sends jabber commands related to muc.\n\n".
+		"The following commands are available\n\n".
+		"join {muc}  Join a muc.\n\n".
+		"part [muc]  Part a muc.".
+		"            The muc is taken from the current message if not supplied.\n\n".
+		"invite {jid} [muc]\n\n".
+		"            Invite {jid} to [muc].\n".
+		"            The muc is taken from the current message if not supplied.\n\n",
+            usage       => "jmuc {command} {args}"
         }
     );
 }
@@ -101,14 +164,20 @@ sub cmd_login
 	queue_admin_msg("Already logged in.");
 	return;
     }
-    
-    # These strings should not be hard-coded here.
+
+    %muc_roster = ();
     $client = Net::Jabber::Client->new();
+    $roster = $client->Roster();
+
+    #XXX Todo: Add more callbacks.
+    # MUC presence handlers
     $client->SetMessageCallBacks(chat => sub { owl_jabber::process_incoming_chat_message(@_) },
 				 error => sub { owl_jabber::process_incoming_error_message(@_) },
 				 groupchat => sub { owl_jabber::process_incoming_groupchat_message(@_) },
 				 headline => sub { owl_jabber::process_incoming_headline_message(@_) },
 				 normal => sub { owl_jabber::process_incoming_normal_message(@_) });
+
+    #XXX Todo: Parameterize the arguments to Connect()
     my $status = $client->Connect(hostname => 'jabber.mit.edu',
 				  tls => 1,
 				  port => 5222,
@@ -117,12 +186,15 @@ sub cmd_login
     if (!$status)
     {
 	owl::error("We failed to connect");
+	$client = undef;
 	return;
     }
+
 
     my @result = $client->AuthSend(username => $ENV{USER}, resource => 'owl', password => '');
     if($result[0] ne 'ok') {
 	owl::error("Error in connect: " . join(" ", $result[1..$#result]));
+	$roster = undef;
 	$client->Disconnect();
 	$client = undef;
         return;
@@ -134,6 +206,7 @@ sub cmd_login
 			    $client->{SERVER}->{hostname}),
 		 resource => 'owl');
     
+    $roster->fetch();
     $client->PresenceSend(priority => 1);
     queue_admin_msg("Connected to jabber as ".$jid->GetJID('full'));
 
@@ -144,11 +217,22 @@ sub cmd_logout
 {
     if ($client)
     {
+	$roster = undef;
 	$client->Disconnect();
 	$client = undef;
 	queue_admin_msg("Jabber disconnected.");
     }
     return "";
+}
+
+sub cmd_jlist
+{
+    if (!$client)
+    {
+	owl::error("You are not logged in to Jabber.");
+	return;
+    }
+    owl::popless_ztext(onGetBuddyList());
 }
 
 our $jwrite_to;
@@ -159,7 +243,7 @@ sub cmd_jwrite
 {
     if (!$client)
     {
-	# Error here
+	owl::error("You are not logged in to Jabber.");
 	return;
     }
 
@@ -172,8 +256,10 @@ sub cmd_jwrite
 
   JW_ARG: for (my $i = 1; $i < $argsLen; $i++)
     {
-	$args[$i] =~ /^-t$/ && ($jwrite_thread = $args[++$i]  && next JW_ARG);
-	$args[$i] =~ /^-s$/ && ($jwrite_subject = $args[++$i] && next JW_ARG);
+	$args[$i] =~ /^-t$/ && ($jwrite_thread = $args[++$i]  and next JW_ARG);
+	$args[$i] =~ /^-s$/ && ($jwrite_subject = $args[++$i] and next JW_ARG);
+	$args[$i] =~ /^-g$/ && ($jwrite_type = "groupchat" and next JW_ARG);
+
 	if ($jwrite_to ne '')
 	{
 	    # Too many To's
@@ -188,75 +274,117 @@ sub cmd_jwrite
 	$jwrite_to = $args[$i];
     }
 
-    if(!$jwrite_to) {
+    if(!$jwrite_to)
+    {
         owl::error("Usage: jwrite JID [-t thread] [-s 'subject']");
         return;
     }
+
+
+    owl::message("Type your message below.  End with a dot on a line by itself.  ^C will quit.");
+    owl::start_edit_win(join(' ', @args), \&process_owl_jwrite);
+}
+
+sub cmd_jmuc
+{
+    if (!$client)
+    {
+	owl::error("You are not logged in to Jabber.");
+	return;
+    }
     
-    owl::message("Type your message below.  End with a dot on a line by itself.  ^C will quit.");
-    owl::start_edit_win(join(' ', @args), \&process_owl_jwrite);
-}
-
-sub cmd_join_gc
-{
-    if (!$client)
+    if (!$_[1])
     {
-	# Error here
-	return;
-    }
-    if(!$_[1])
-    {
-	owl::error("Usage: jchat [room]@[server]/[nick]");
+	#XXX TODO: Write general usage for jmuc command.
 	return;
     }
 
-    my $x = new XML::Stream::Node('x');
-    $x->put_attrib(xmlns => 'http://jabber.org/protocol/muc');
-    $x->add_child('history')->put_attrib(maxchars => '0');
+    my $cmd = $_[1];
 
+    if ($cmd eq 'join')
+    {
+	if (!$_[2])
+	{
+	    owl::error('Usage: jmuc join {muc} [password]');
+	    return;
+	}
+	my $muc = $_[2];
+	my $x = new XML::Stream::Node('x');
+	$x->put_attrib(xmlns => 'http://jabber.org/protocol/muc');
+	$x->add_child('history')->put_attrib(maxchars => '0');
+	
+	if ($_[3]) #password
+	{
+	    $x->add_child('password')->add_cdata($_[3]);
+	}
 
-    my $presence = new Net::Jabber::Presence;
-    $presence->SetPresence(to => $_[1]);
-    $presence->AddX($x);
+	my $presence = new Net::Jabber::Presence;
+	$presence->SetPresence(to => $muc);
+	$presence->AddX($x);
+	$client->Send($presence);
+    }
+    elsif ($cmd eq 'part')
+    {
+	my $muc;
+	if (!$_[2])
+	{
+	    my $m = owl::getcurmsg();
+	    if ($m->is_jabber && $m->{jtype} eq 'groupchat')
+	    {
+		$muc = $m->{muc};
+	    }
+	    else
+	    {
+		owl::error('Usage: "jmuc part [muc]"');
+	        return;
+	    }
+	}
+	else
+	{
+	    $muc = $_[2];
+	}
+	$client->PresenceSend(to => $muc, type => 'unavailable');
+    }
+    elsif ($cmd eq 'invite')
+    {
+	my $jid;
+	my $muc;
 
-    $client->Send($presence);
+	owl::error('Usage: jmuc invite {jid} [muc]') if (!$_[2]);
+	
+	if (!@_[3])
+	{  	
+	    my $m = owl::getcurmsg();
+	    if ($m->is_jabber && $m->{jtype} eq 'groupchat')
+	    {
+		$muc = $m->{muc};
+	    }
+	    else
+	    {
+		owl::error('Usage: jmuc invite {jid} [muc]');
+	        return;
+	    }
+	}
+	else
+	{
+	    $muc = $_[3];
+	}
+	
+	my $x = new XML::Stream::Node('x');
+	$x->put_attrib(xmlns => 'http://jabber.org/protocol/muc#user');
+	$x->add_child('invite')->put_attrib(to => $_[2]);
+	
+	my $message = new Net::Jabber::Message;
+	$message->SetTo($muc);
+	$message->AddX($x);
+	
+	$client->Send($message);
+    }
+    else
+    {
+	owl::error('jmuc: unrecognized command.');
+    }
     return "";
-}
-
-sub cmd_part_gc
-{
-    if (!$client)
-    {
-	# Error here
-	return;
-    }
-    if(!$_[1])
-    {
-	owl::error("Usage: jchat [room]@[server]/[nick]");
-	return;
-    }
-
-    $client->PresenceSend(to=>$_[1], type=>'unavailable');
-    return "";
-}
-
-sub cmd_jwrite_gc
-{
-    if (!$client)
-    {
-	# Error here
-	return;
-    }
-
-    $jwrite_to = $_[1];
-    $jwrite_thread = "";
-    $jwrite_subject = "";
-    $jwrite_type = "groupchat";
-    my @args = @_;
-    my $argsLen = @args;
-
-    owl::message("Type your message below.  End with a dot on a line by itself.  ^C will quit.");
-    owl::start_edit_win(join(' ', @args), \&process_owl_jwrite);
 }
 
 ################################################################################
@@ -295,7 +423,9 @@ sub process_incoming_chat_message
 sub process_incoming_error_message
 {
     my ($session, $j) = @_;
-    queue_admin_msg("Error ".$j->GetErrorCode()." sending to ".$j->GetFrom('jid')->GetJID('base'));
+    my %jhash = j2hash($j, 'in');
+    $jhash{type} = 'admin';
+    owl::queue_message(owl::Message->new(%jhash));
 }
 
 sub process_incoming_groupchat_message
@@ -315,13 +445,33 @@ sub process_incoming_headline_message
 sub process_incoming_normal_message
 {
     my ($session, $j) = @_;
-    owl::queue_message(j2o($j, 'in'));
+    my %props = j2hash($j, 'in');
+
+    # XXX TODO: handle things such as MUC invites here.
+
+#    if ($j->HasX('http://jabber.org/protocol/muc#user'))
+#    {
+#	my $x = $j->GetX('http://jabber.org/protocol/muc#user');
+#	if ($x->HasChild('invite'))
+#	{
+#	    $props	    
+#	}
+#    }
+#    
+    owl::queue_message(owl::Message->new(%props));
+}
+
+sub process_muc_presence
+{
+    my ($session, $p) = @_;
+    return unless ($p->HasX('http://jabber.org/protocol/muc#user'));
+    
 }
 
 
 ### Helper functions
 
-sub j2o
+sub j2hash
 {
     my $j = shift;
     my $dir = shift;
@@ -329,53 +479,63 @@ sub j2o
     my %props = (type => 'jabber',
 		 direction => $dir);
 
+    my $jtype = $props{jtype} = $j->GetType();
+    my $from  = $j->GetFrom('jid');
+    my $to    = $j->GetTo('jid');
 
-    $props{replycmd} = "jwrite";
+    $props{from} = $from->GetJID('full');
+    $props{to}   = $to->GetJID('full');
 
-    $props{jtype} = $j->GetType();
-    $props{jtype} =~ /^(?:headline|error)$/ && {$props{replycmd} = undef};
-    $props{jtype} =~ /^groupchat$/ && {$props{replycmd} = "jchat"};
-
-    $props{isprivate} = $props{jtype} =~ /^(?:normal|chat)$/;
-
-    my $reply_to;
-    if ($j->DefinedTo())
-    {
-	my $jid = $j->GetTo('jid');
-	$props{recipient} = $jid->GetJID('base');
-	$props{to_jid} = $jid->GetJID('full');
-	if ($dir eq 'out')
-	{
-	    $reply_to = $props{to_jid};
-	    $props{jtype} =~ /^groupchat$/ && {$reply_to = $jid->GetJID('base')};
-	}
-    }
-    if ($j->DefinedFrom())
-    {
-	my $jid = $j->GetFrom('jid');
-	$props{sender} = $jid->GetJID('base');
-	$props{from_jid} = $jid->GetJID('full');
-	$reply_to = $props{from_jid} if ($dir eq 'in');
-	if ($dir eq 'in')
-	{
-	    $reply_to = $props{from_jid};
-	    $props{jtype} =~ /^groupchat$/ && {$reply_to = $jid->GetJID('base')};
-	}
-    }
-
-    $props{subject} = $j->GetSubject() if ($j->DefinedSubject());
-    $props{body} = $j->GetBody() if ($j->DefinedBody());
-#    if ($j->DefinedThread())
-#    {
-#	$props{thread} = $j->GetThread() if ($j->DefinedThread());
-#	$props{replycmd} .= " -t $props{thread}";
-#    }
-    $props{error} = $j->GetError() if ($j->DefinedError());
+    $props{recipient}  = $to->GetJID('base');
+    $props{sender}     = $from->GetJID('base');
+    $props{subject}    = $j->GetSubject() if ($j->DefinedSubject());
+    $props{thread}     = $j->GetThread() if ($j->DefinedThread());
+    $props{body}       = $j->GetBody() if ($j->DefinedBody());
+    $props{error}      = $j->GetError() if ($j->DefinedError());
     $props{error_code} = $j->GetErrorCode() if ($j->DefinedErrorCode());
-    $props{replycmd} .= " $reply_to";
-    $props{replysendercmd} = $props{replycmd};
+    $props{xml}        = $j->GetXML();
 
-    return owl::Message->new(%props);
+    if ($jtype eq 'chat')
+    {
+	$props{replycmd} = "jwrite ".(($dir eq 'in') ? $props{from} : $props{to});
+	$props{isprivate} = 1;
+    }
+    elsif ($jtype eq 'groupchat')
+    {
+	my $nick = $props{nick} = $from->GetResource();
+	my $room = $props{room} = $from->GetJID('base');
+	$props{replycmd} = "jwrite -g $room";
+	
+	$props{sender} = $nick;
+	$props{recipient} = $room;
+
+	if ($props{subject} && !$props{body})
+	{
+	    $props{body} = '['.$nick." has set the topic to: ".$props{subject}."]"
+	}
+    }
+    elsif ($jtype eq 'normal')
+    {
+	$props{replycmd} = undef;
+	$props{isprivate} = 1;
+    }
+    elsif ($jtype eq 'headline')
+    {
+	$props{replycmd} = undef;
+    }
+    elsif ($jtype eq 'error')
+    {
+	$props{replycmd} = undef;
+	$props{body} = "Error ".$props{error_code}." sending to ".$props{from}."\n".$props{error};
+    }
+    
+    $props{replysendercmd} = $props{replycmd};
+    return %props;
+}
+
+sub j2o
+{
+    return owl::Message->new(j2hash(@_));
 }
 
 sub queue_admin_msg
@@ -386,3 +546,18 @@ sub queue_admin_msg
 			      body => $err);
     owl::queue_message($m);
 }
+
+sub boldify($)
+{
+    $str = shift;
+
+    return '@b('.$str.')' if ( $str !~ /\)/ );
+    return '@b<'.$str.'>' if ( $str !~ /\>/ );
+    return '@b{'.$str.'}' if ( $str !~ /\}/ );
+    return '@b['.$str.']' if ( $str !~ /\]/ );
+
+    my $txt = "\@b($str";
+    $txt =~ s/\)/\)\@b\[\)\]\@b\(/g;
+    return $txt.')';
+}
+

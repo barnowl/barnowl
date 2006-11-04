@@ -216,3 +216,23 @@ get_data_dir ()
 		RETVAL = (char *) DATADIR;
 	OUTPUT:
 	RETVAL
+
+void
+popless_text(text) 
+	char *text
+	CODE:
+	{
+		owl_function_popless_text(text);
+	}
+
+void
+popless_ztext(text) 
+	char *text
+	CODE:
+	{
+		owl_fmtext fm;
+		owl_fmtext_init_null(&fm);
+		owl_fmtext_append_ztext(&fm, text);
+		owl_function_popless_fmtext(&fm);
+		owl_fmtext_free(&fm);
+	}
