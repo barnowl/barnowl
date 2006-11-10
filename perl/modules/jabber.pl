@@ -48,16 +48,10 @@ sub onMainLoop
 	my $client = \$connections->{$jid}->{client};
 
 	my $status = $$client->Process(0);
-	if ($status == 0     # No data received
-	|| $status == 1) # Data received
-	{
-	}
-	else #Error
-	{
-	    do_logout($jid);
-	    return;
-	}
-	
+        if(!defined($status)) {
+            owl::error("Jabber account $jid disconnected!");
+            do_logout($jid);
+        }
 	if ($::shutdown)
 	{
 	    do_logout($jid);
