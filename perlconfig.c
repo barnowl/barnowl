@@ -334,7 +334,7 @@ char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
   SPAGAIN;
 
   if(SvTRUE(ERRSV)) {
-    owl_function_error("Error: %s", SvPV(ERRSV, n_a));
+    owl_function_error("%s", SvPV(ERRSV, n_a));
     POPs;
   } else {
     if(count != 1)
@@ -385,6 +385,10 @@ void owl_perlconfig_mainloop()
 {
   dSP ;
   PUSHMARK(SP) ;
-  call_pv("owl::mainloop_hook", G_DISCARD|G_EVAL|G_KEEPERR);
+  call_pv("owl::mainloop_hook", G_DISCARD|G_EVAL);
+  if(SvTRUE(ERRSV)) {
+    STRLEN n_a;
+    owl_function_error("%s", SvPV(ERRSV, n_a));
+  }
   return;
 }
