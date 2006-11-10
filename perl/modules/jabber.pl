@@ -392,8 +392,8 @@ sub cmd_jwrite {
     };
 
     owl::message(
-"Type your message below.  End with a dot on a line by itself.  ^C will quit."
-    );
+        "Type your message below.  End with a dot on a line by itself.  ^C will quit."
+       );
     owl::start_edit_win( join( ' ', @args ), \&process_owl_jwrite );
 }
 
@@ -540,6 +540,7 @@ sub process_owl_jwrite {
     }
     $connections->{ $vars{jwrite}{from} }->{client}->Send($j);
     delete $vars{jwrite};
+    owl::message("");   # Kludge to make the ``type your message...'' message go away
 }
 
 ### XMPP Callbacks
@@ -611,6 +612,8 @@ sub j2hash {
     $props{from} = $from->GetJID('full');
     $props{to}   = $to->GetJID('full');
 
+    my $account = ( $dir eq 'out' ) ? $props{from} : $props{to};
+
     $props{recipient}  = $to->GetJID('base');
     $props{sender}     = $from->GetJID('base');
     $props{subject}    = $j->GetSubject() if ( $j->DefinedSubject() );
@@ -622,17 +625,16 @@ sub j2hash {
 
     if ( $jtype eq 'chat' ) {
         $props{replycmd} =
-          "jwrite " . ( ( $dir eq 'in' ) ? $props{from} : $props{to} );
-        $props{replycmd} .=
-          " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
+          "jwrite " . ( ( $dir eq 'in' ) ? $props{from} : $props{to} ) . " -a $account";
         $props{isprivate} = 1;
+        $props{replysendercmd} = $props{replycmd};
     }
     elsif ( $jtype eq 'groupchat' ) {
         my $nick = $props{nick} = $from->GetResource();
         my $room = $props{room} = $from->GetJID('base');
-        $props{replycmd} = "jwrite -g $room";
-        $props{replycmd} .=
-          " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
+        $props{replycmd} = "jwrite -g $room -a $account";
+
+        $props{replysendercmd} = "jwrite " . $from->GetJID('full') . " -a $account";
 
         $props{sender} = $nick || $room;
         $props{recipient} = $room;
@@ -658,7 +660,6 @@ sub j2hash {
           . $props{error};
     }
 
-    $props{replysendercmd} = $props{replycmd};
     return %props;
 }
 
