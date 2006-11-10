@@ -1,4 +1,7 @@
 package owl_jabber;
+use warnings;
+use strict;
+
 use Authen::SASL qw(Perl);
 use Net::Jabber;
 use Net::DNS;
@@ -37,6 +40,7 @@ sub onStart
         # give up silently.
     }
 }
+
 push @::onStartSubs, sub { owl_jabber::onStart(@_) };
 
 sub onMainLoop
@@ -220,7 +224,7 @@ sub cmd_login
     my @result = $$client->AuthSend(%{$vars{jlogin_authhash}});
     if($result[0] ne 'ok') 
     {
-	if ($result[1] = "401")
+	if ($result[1] == 401)
 	{
 	    $vars{jlogin_jid} = $jidStr;
 	    delete $connections->{$jidStr};
@@ -315,7 +319,7 @@ sub cmd_logout
 	# Logged into multiple accounts, account specified.
 	else
 	{
-	    if ($_[1] = '-a') #All accounts.
+	    if ($_[1] eq '-a') #All accounts.
 	    {
 		foreach my $jid (keys %$connections)
 		{
@@ -363,7 +367,7 @@ sub cmd_jwrite
 
     my @args = @_;
     shift;
-    local @::ARGV = @_;
+    local @ARGV = @_;
     my $gc;
     GetOptions('thread=s' => \$jwrite_thread,
 	       'subject=s' => \$jwrite_subject,
@@ -371,14 +375,14 @@ sub cmd_jwrite
 	       'groupchat' => \$gc);
     $jwrite_type = 'groupchat' if $gc;
 
-    if (scalar @::ARGV != 1)
+    if (scalar @ARGV != 1)
     {
         owl::error("Usage: jwrite JID [-g] [-t thread] [-s 'subject'] [-a account]");
 	return;
     }
     else
     {
-	$jwrite_to = @::ARGV[0];
+	    $jwrite_to = shift @ARGV;
     }
 
     if (!$jwrite_from)
@@ -409,16 +413,9 @@ sub cmd_jwrite
     owl::start_edit_win(join(' ', @args), \&process_owl_jwrite);
 }
 
-#XXX Todo: Split off sub-commands into their own subroutines.
-# It'll make them more managable.
 sub cmd_jmuc
 {
-	if (!connected())
-		{
-			owl::error("You are not logged in to Jabber.");
-			return;
-		}
-    
+	die "You are not logged in to Jabber" unless connected();
 	my $ocmd = shift;
 	my $cmd = shift;    
 	if (!$cmd)
@@ -428,61 +425,57 @@ sub cmd_jmuc
 	}
 
 	my %jmuc_commands = (
-		join => \&jmuc_join,
-		part => \&jmuc_part,
-		invite => \&jmuc_invite
+		join   => \&jmuc_join,
+		part   => \&jmuc_part,
+		invite => \&jmuc_invite,
+		configure => \&jmuc_configure
 	       );
 	my $func = $jmuc_commands{$cmd};
 	if(!$func) {
 		owl::error("jmuc: Unknown command: $cmd");
-	} else {
-		return $func->(@_);
+		return;
+	}
+
+	{
+		local @ARGV = @_;
+		my $jid;
+		my $muc;
+		my $m = owl::getcurmsg();
+		if ($m->is_jabber && $m->{jtype} eq 'groupchat')
+		{
+			$muc = $m->{room};
+			$jid = $m->{to};
+		}
+
+		my $getopt = Getopt::Long::Parser->new;
+		$getopt->configure('pass_through');
+		$getopt->getoptions('account=s' => \$jid);
+		$jid ||= defaultJID();
+		if($jid) {
+			$jid = resolveJID($jid);
+			return unless $jid;
+		} else {
+			owl::error('You must specify an account with -a {jid}');
+		}
+		return $func->($jid, $muc, @ARGV);
 	}
 }
 
 sub jmuc_join {
-	local @ARGV = @_;
+	my ($jid, $muc, @args) = @_;
+	local @ARGV = @args;
 	my $password;
-	my $jid;
-	GetOptions('password=s' => \$password,
-		   'account=s' => \$jid);
+	GetOptions('password=s' => \$password);
 
-	my $muc;
-	if (scalar @ARGV != 1)
-	{
-	    owl::error('Usage: jmuc join {muc} [-p password] [-a account]');
-	    return;
-	}
-	else
-	{
-	    $muc = @ARGV[0];
-	}
-
-	if (!$jid)
-	{
-	    if (connected() == 1)
-	    {
-		$jid = (keys %$connections)[0];
-	    }
-	    else
-	    {
-		owl::error("Please specify an account with -a {jid}");
-		return;
-	    }
-	}
-	else
-	{
-	    $jid = resolveJID($jid);
-	    return unless $jid;
-	}
+	$muc = shift @ARGV or die("Usage: jmuc join {muc} [-p password] [-a account]");
 
 	my $x = new XML::Stream::Node('x');
 	$x->put_attrib(xmlns => 'http://jabber.org/protocol/muc');
 	$x->add_child('history')->put_attrib(maxchars => '0');
 	
-	if ($jmuc_password)
+	if ($password)
 	{
-	    $x->add_child('password')->add_cdata($jmuc_password);
+	    $x->add_child('password')->add_cdata($password);
 	}
 
 	my $presence = new Net::Jabber::Presence;
@@ -492,111 +485,23 @@ sub jmuc_join {
 }
 
 sub jmuc_part {
-	my $muc;
-	my $jid;
-	if (!$_[0])
-	{
-	    my $m = owl::getcurmsg();
-	    if ($m->is_jabber && $m->{jtype} eq 'groupchat')
-	    {
-		$muc = $m->{room};
-		$jid = $m->{to};
-	    }
-	    else
-	    {
-		owl::error('Usage: jmuc part {muc} [-a account]');
-	        return;
-	    }
-	}
-	else
-	{
-	    local @ARGV = @_;
-	    GetOptions('account=s' => \$jid);
-	    if (scalar @ARGV != 1)
-	    {
-		owl::error('Usage: jmuc part {muc} [-a account]');
-		return;
-	    }
-	    else
-	    {
-		$muc = @ARGV[0];
-	    }
-	    if (!$jid)
-	    {
-		if (connected() == 1)
-		{
-		    $jid = (keys %$connections)[0];
-		}
-		else
-		{
-		    owl::error("Please specify an account with -a {jid}");
-		    return;
-		}
-	    }
-	    else
-	    {
-		$jid = resolveJID($jid);
-		return unless $jid;
-	    }
-	}
+	my ($jid, $muc, @args) = @_;
+
+	$muc = shift @args if scalar @args;
+	die("Usage: jmuc part {muc} [-a account]") unless $muc;
+
 	$connections->{$jid}->{client}->PresenceSend(to => $muc, type => 'unavailable');
 	queue_admin_msg("$jid has left $muc.");
 }
 
 sub jmuc_invite
 {
-	my $jid;
-	my $invite_jid;
-	my $muc;
+	my ($jid, $muc, @args) = @_;
 
-	owl::error('Usage: jmuc invite {jid} [muc] [-a account]') if (!$_[0]);
-	$invite_jid = $_[0];
-	
-	if (!@_[1])
-	{  	
-	    my $m = owl::getcurmsg();
-	    if ($m->is_jabber && $m->{jtype} eq 'groupchat')
-	    {
-		$muc = $m->{room};
-		$jid = $m->{to};
-	    }
-	    else
-	    {
-		owl::error('Usage: jmuc invite {jid} [muc] [-a account]');
-	        return;
-	    }
-	}
-	else
-	{
-	    local @ARGV = @_;
-	    GetOptions('account=s' => \$jid);
-	    if (scalar @ARGV != 2)
-	    {
-		owl::error('Usage: jmuc invite {jid} [muc] [-a account]');
-		return;
-	    }
-	    else
-	    {
-		($muc, $invite_jid) = @ARGV;
-	    }
-	    if (!$jid)
-	    {
-		if (connected() == 1)
-		{
-		    $jid = (keys %$connections)[0];
-		}
-		else
-		{
-		    owl::error("Please specify an account with -a {jid}");
-		    return;
-		}
-	    }
-	    else
-	    {
-		$jid = resolveJID($jid);
-		return unless $jid;
-	    }
-	}
+	my $invite_jid = shift @args;
+	$muc = shift @args if scalar @args;
+
+	die('Usage: jmuc invite {jid} [muc] [-a account]') unless $muc && $invite_jid;
 	
 	my $x = new XML::Stream::Node('x');
 	$x->put_attrib(xmlns => 'http://jabber.org/protocol/muc#user');
@@ -607,6 +512,26 @@ sub jmuc_invite
 	$message->AddX($x);
 	$connections->{$jid}->{client}->Send($message);
 	queue_admin_msg("$jid has invited $invite_jid to $muc.");
+}
+
+Net::Jabber::Namespaces::add_ns(
+	ns  => "http://jabber.org/protocol/muc#owner",
+	tag => 'query',
+       );
+
+sub jmuc_configure {
+	my ($jid, $muc, @args) = @_;
+	$muc = shift @args if scalar @args;
+	die("Usage: jmuc configure [muc]") unless $muc;
+	my $iq = Net::Jabber::IQ->new();
+	$iq->SetTo($muc);
+	$iq->SetType('set');
+	my $query = $iq->NewQuery("http://jabber.org/protocol/muc#owner");
+	my $x = $query->NewChild("jabber:x:data");
+	$x->SetType('submit');
+
+	$connections->{$jid}->{client}->Send($iq);
+	queue_admin_msg("Accepted default instant configuration for $muc");
 }
 
 
@@ -775,7 +700,7 @@ sub queue_admin_msg
 
 sub boldify($)
 {
-    $str = shift;
+    my $str = shift;
 
     return '@b('.$str.')' if ( $str !~ /\)/ );
     return '@b<'.$str.'>' if ( $str !~ /\>/ );
@@ -806,6 +731,11 @@ sub getServerFromJID
 sub connected
 {
     return scalar keys %$connections;
+}
+
+sub defaultJID {
+	return (keys %$connections)[0]	if (connected() == 1);
+	return;
 }
 
 sub resolveJID
