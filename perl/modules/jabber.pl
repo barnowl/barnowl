@@ -145,7 +145,8 @@ sub register_owl_commands() {
               . "invite {jid} [muc]\n"
               . "            Invite {jid} to [muc].\n"
               . "            The muc is taken from the current message if not supplied.\n\n"
-              . "configure [muc]\n" "            Configure [muc].\n"
+              . "configure [muc]\n"
+              . "            Configure [muc].\n"
               . "            Necessary to initalize a new MUC",
             usage => "jmuc {command} {args}"
         }
@@ -486,13 +487,11 @@ sub jmuc_invite {
     die('Usage: jmuc invite {jid} [muc] [-a account]')
       unless $muc && $invite_jid;
 
-    my $x = new XML::Stream::Node('x');
-    $x->put_attrib( xmlns => 'http://jabber.org/protocol/muc#user' );
-    $x->add_child('invite')->put_attrib( to => $invite_jid );
-
-    my $message = new Net::Jabber::Message;
+    my $message = Net::Jabber::Message->new();
     $message->SetTo($muc);
-    $message->AddX($x);
+    my $x = $message->NewChild('http://jabber.org/protocol/muc#user');
+    $x->AddInvite();
+    $x->GetInvite()->SetTo($invite_jid);
     $connections->{$jid}->{client}->Send($message);
     queue_admin_msg("$jid has invited $invite_jid to $muc.");
 }
