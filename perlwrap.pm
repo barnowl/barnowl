@@ -414,7 +414,13 @@ sub loadModules () {
         @modules = grep( /\.pl$/, readdir(MODULES) );
 
         foreach my $mod (@modules) {
-            do "$dir/$mod";
+                unless (do "$dir/$mod") {
+                        if($!) {
+                                owl::error("Error loading $dir/$mod: $!");
+                        } elsif($@) {
+                                owl::error("Error loading $dir/$mod: $@");
+                        }
+                }
         }
         closedir(MODULES);
     }
