@@ -187,7 +187,8 @@ sub cmd_login
 
     my ($server, $port) = getServerFromJID($jid);
 
-    $connections->{$jidStr}->{client} = Net::Jabber::Client->new();
+    $connections->{$jidStr}->{client} = Net::Jabber::Client->new(debuglevel => owl::getvar('debug') eq 'on' ? 1 : 0,
+                                                                 debugfile  => 'jabber.log');
     my $client = \$connections->{$jidStr}->{client};
     $connections->{$jidStr}->{roster} = $connections->{$jidStr}->{client}->Roster();
 
@@ -412,37 +413,49 @@ sub cmd_jwrite
 # It'll make them more managable.
 sub cmd_jmuc
 {
-    if (!connected())
-    {
-	owl::error("You are not logged in to Jabber.");
-	return;
-    }
+	if (!connected())
+		{
+			owl::error("You are not logged in to Jabber.");
+			return;
+		}
     
-    my $ocmd = shift;
-    my $cmd = shift;    
-    if (!$cmd)
-    {
-	#XXX TODO: Write general usage for jmuc command.
-	return;
-    }
+	my $ocmd = shift;
+	my $cmd = shift;    
+	if (!$cmd)
+	{
+		#XXX TODO: Write general usage for jmuc command.
+		return;
+	}
 
-    if ($cmd eq 'join')
-    {
-	local @::ARGV = @_;
+	my %jmuc_commands = (
+		join => \&jmuc_join,
+		part => \&jmuc_part,
+		invite => \&jmuc_invite
+	       );
+	my $func = $jmuc_commands{$cmd};
+	if(!$func) {
+		owl::error("jmuc: Unknown command: $cmd");
+	} else {
+		return $func->(@_);
+	}
+}
+
+sub jmuc_join {
+	local @ARGV = @_;
 	my $password;
 	my $jid;
 	GetOptions('password=s' => \$password,
 		   'account=s' => \$jid);
 
 	my $muc;
-	if (scalar @::ARGV != 1)
+	if (scalar @ARGV != 1)
 	{
 	    owl::error('Usage: jmuc join {muc} [-p password] [-a account]');
 	    return;
 	}
 	else
 	{
-	    $muc = @::ARGV[0];
+	    $muc = @ARGV[0];
 	}
 
 	if (!$jid)
@@ -476,9 +489,9 @@ sub cmd_jmuc
 	$presence->SetPresence(to => $muc);
 	$presence->AddX($x);
 	$connections->{$jid}->{client}->Send($presence);
-    }
-    elsif ($cmd eq 'part')
-    {
+}
+
+sub jmuc_part {
 	my $muc;
 	my $jid;
 	if (!$_[0])
@@ -497,16 +510,16 @@ sub cmd_jmuc
 	}
 	else
 	{
-	    local @::ARGV = @_;
+	    local @ARGV = @_;
 	    GetOptions('account=s' => \$jid);
-	    if (scalar @::ARGV != 1)
+	    if (scalar @ARGV != 1)
 	    {
 		owl::error('Usage: jmuc part {muc} [-a account]');
 		return;
 	    }
 	    else
 	    {
-		$muc = @::ARGV[0];
+		$muc = @ARGV[0];
 	    }
 	    if (!$jid)
 	    {
@@ -528,9 +541,10 @@ sub cmd_jmuc
 	}
 	$connections->{$jid}->{client}->PresenceSend(to => $muc, type => 'unavailable');
 	queue_admin_msg("$jid has left $muc.");
-    }
-    elsif ($cmd eq 'invite')
-    {
+}
+
+sub jmuc_invite
+{
 	my $jid;
 	my $invite_jid;
 	my $muc;
@@ -554,16 +568,16 @@ sub cmd_jmuc
 	}
 	else
 	{
-	    local @::ARGV = @_;
+	    local @ARGV = @_;
 	    GetOptions('account=s' => \$jid);
-	    if (scalar @::ARGV != 2)
+	    if (scalar @ARGV != 2)
 	    {
 		owl::error('Usage: jmuc invite {jid} [muc] [-a account]');
 		return;
 	    }
 	    else
 	    {
-		($muc, $invite_jid) = @::ARGV;
+		($muc, $invite_jid) = @ARGV;
 	    }
 	    if (!$jid)
 	    {
@@ -593,13 +607,8 @@ sub cmd_jmuc
 	$message->AddX($x);
 	$connections->{$jid}->{client}->Send($message);
 	queue_admin_msg("$jid has invited $invite_jid to $muc.");
-    }
-    else
-    {
-	owl::error('jmuc: unrecognized command.');
-    }
-    return "";
 }
+
 
 ################################################################################
 ### Owl Callbacks
