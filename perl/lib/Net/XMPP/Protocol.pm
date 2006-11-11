@@ -1830,6 +1830,11 @@ sub AuthIQAuth
 
     delete($args{digest});
     delete($args{type});
+    my $password = delete $args{password};
+    if (ref($password) eq 'CODE')
+    {
+        $password = $password->();
+    }
 
     #--------------------------------------------------------------------------
     # 0k authenticaion (http://core.jabber.org/0k.html)
@@ -1843,7 +1848,7 @@ sub AuthIQAuth
     #--------------------------------------------------------------------------
     if ($authType eq "zerok")
     {
-        my $hashA = Digest::SHA1::sha1_hex(delete($args{password}));
+        my $hashA = Digest::SHA1::sha1_hex($password);
         $args{hash} = Digest::SHA1::sha1_hex($hashA.$token);
 
         for (1..$sequence)
@@ -1862,7 +1867,6 @@ sub AuthIQAuth
     #--------------------------------------------------------------------------
     if ($authType eq "digest")
     {
-        my $password = delete($args{password});
         $args{digest} = Digest::SHA1::sha1_hex($self->GetStreamID().$password);
     }
 
@@ -1884,6 +1888,7 @@ sub AuthIQAuth
     # From the reply IQ determine if we were successful or not.  If yes then
     # return "".  If no then return error string from the reply.
     #--------------------------------------------------------------------------
+    $password =~ tr/\0-\377/x/;
     return unless defined($iqLogin);
     return ( $iqLogin->GetErrorCode() , $iqLogin->GetError() )
         if ($iqLogin->GetType() eq "error");
