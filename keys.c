@@ -223,7 +223,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-p", "view personal", "");
   
   BIND_CMD("/",   "start-command search ", "start a search command");
-  BIND_CMD("?",   "start-command search -r ", "start a revrerse search command");
+  BIND_CMD("?",   "start-command search -r ", "start a reverse search command");
 
   BIND_CMD("LEFT",   "recv:shiftleft", "");
   BIND_CMD("RIGHT",  "recv:shiftright","");
