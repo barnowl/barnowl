@@ -453,17 +453,14 @@ sub jmuc_join {
     $muc = shift @ARGV
       or die("Usage: jmuc join {muc} [-p password] [-a account]");
 
-    my $x = new XML::Stream::Node('x');
-    $x->put_attrib( xmlns => 'http://jabber.org/protocol/muc' );
-    $x->add_child('history')->put_attrib( maxchars => '0' );
-
-    if ($password) {
-        $x->add_child('password')->add_cdata($password);
-    }
-
     my $presence = new Net::Jabber::Presence;
     $presence->SetPresence( to => $muc );
-    $presence->AddX($x);
+    my $x = $presence->NewChild('http://jabber.org/protocol/muc');
+    $x->AddHistory()->SetMaxChars(0);
+    if ($password) {
+        $x->SetPassword($password);
+    }
+
     $connections->{$jid}->{client}->Send($presence);
 }
 
@@ -495,11 +492,6 @@ sub jmuc_invite {
     $connections->{$jid}->{client}->Send($message);
     queue_admin_msg("$jid has invited $invite_jid to $muc.");
 }
-
-Net::Jabber::Namespaces::add_ns(
-    ns  => "http://jabber.org/protocol/muc#owner",
-    tag => 'query',
-);
 
 sub jmuc_configure {
     my ( $jid, $muc, @args ) = @_;
