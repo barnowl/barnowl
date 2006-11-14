@@ -8,6 +8,8 @@ use Net::Jabber;
 use Net::DNS;
 use Getopt::Long;
 
+no warnings 'redefine';
+
 ################################################################################
 # owl perl jabber support
 #
@@ -19,7 +21,7 @@ use Getopt::Long;
 #  * presence (Roster and MUC)
 # Implementing formatting and logging callbacks for C
 # Appropriate callbacks for presence subscription messages.
-#  * Current behavior => auto-accept (default for Net::Jabber)
+#  * Current behavior is auto-accept (default for Net::Jabber)
 #
 ################################################################################
 
@@ -33,7 +35,6 @@ sub onStart {
         push @::onGetBuddyList, sub { owl_jabber::onGetBuddyList(@_) };
     }
     else {
-
         # Our owl doesn't support queue_message. Unfortunately, this
         # means it probably *also* doesn't support owl::error. So just
         # give up silently.
@@ -76,34 +77,50 @@ sub blist_listBuddy {
         $blistStr = boldify($blistStr);
     }
     else {
-        $blistStr .= $jq{ask} ? " [pending]" : " [offline]";
+	if ($jq{ask}) {
+            $blistStr .= " [pending]";
+	}
+	elsif ($jq{subscription} eq 'none' || $jq{subscription} eq 'from') {
+	    $blistStr .= " [not subscribed]";
+	}
+	else {
+	    $blistStr .= " [offline]";
+	}
     }
-
     return $blistStr . "\n";
+}
+
+sub getSingleBuddyList {
+    my $jid = shift;
+    $jid = resolveJID($jid);
+    return "" unless $jid;
+    my $blist = "";
+    my $roster = \$connections->{$jid}->{roster};
+    if ($$roster) {
+        $blist .= "\n" . boldify("Jabber Roster for $jid\n");
+
+        foreach my $group ( $$roster->groups() ) {
+            $blist .= "  Group: $group\n";
+            foreach my $buddy ( $$roster->jids( 'group', $group ) ) {
+                $blist .= blist_listBuddy( $roster, $buddy );
+            }
+        }
+
+        my @unsorted = $$roster->jids('nogroup');
+        if (@unsorted) {
+            $blist .= "  [unsorted]\n";
+            foreach my $buddy (@unsorted) {
+                $blist .= blist_listBuddy( $roster, $buddy );
+            }
+        }
+    }
+    return $blist;
 }
 
 sub onGetBuddyList {
     my $blist = "";
-    foreach my $jid ( keys %{$connections} ) {
-        my $roster = \$connections->{$jid}->{roster};
-        if ($$roster) {
-            $blist .= "\n" . boldify("Jabber Roster for $jid\n");
-
-            foreach my $group ( $$roster->groups() ) {
-                $blist .= "  Group: $group\n";
-                foreach my $buddy ( $$roster->jids( 'group', $group ) ) {
-                    $blist .= blist_listBuddy( $roster, $buddy );
-                }
-            }
-
-            my @unsorted = $$roster->jids('nogroup');
-            if (@unsorted) {
-                $blist .= "  [unsorted]\n";
-                foreach my $buddy (@unsorted) {
-                    $blist .= blist_listBuddy( $roster, $buddy );
-                }
-            }
-        }
+    foreach my $jid (keys %{$connections}) {
+        $blist .= getSingleBuddyList($jid);
     }
     return $blist;
 }
@@ -176,108 +193,82 @@ sub cmd_login {
 
     my ( $server, $port ) = getServerFromJID($jid);
 
-    $connections->{$jidStr}->{client} = Net::Jabber::Client->new(
-        debuglevel => owl::getvar('debug') eq 'on' ? 1 : 0,
-        debugfile => 'jabber.log'
-    );
-    my $client = \$connections->{$jidStr}->{client};
-    $connections->{$jidStr}->{roster} =
-      $connections->{$jidStr}->{client}->Roster();
-
-    #XXX Todo: Add more callbacks.
-    # MUC presence handlers
-    $$client->SetMessageCallBacks(
-        chat      => sub { owl_jabber::process_incoming_chat_message(@_) },
-        error     => sub { owl_jabber::process_incoming_error_message(@_) },
-        groupchat => sub { owl_jabber::process_incoming_groupchat_message(@_) },
-        headline  => sub { owl_jabber::process_incoming_headline_message(@_) },
-        normal    => sub { owl_jabber::process_incoming_normal_message(@_) }
-    );
-
+    $vars{jlogin_jid} = $jidStr;
+    $vars{jlogin_havepass} = 0;
     $vars{jlogin_connhash} = {
         hostname      => $server,
         tls           => 1,
         port          => $port,
         componentname => $componentname
     };
-
-    my $status = $$client->Connect( %{ $vars{jlogin_connhash} } );
-
-    if ( !$status ) {
-        delete $connections->{$jidStr};
-        delete $vars{jlogin_connhash};
-        owl::error("We failed to connect");
-        return "";
-    }
-
     $vars{jlogin_authhash} =
-      { username => $uid, resource => $resource, password => '' };
-    my @result = $$client->AuthSend( %{ $vars{jlogin_authhash} } );
-    if ( $result[0] ne 'ok' ) {
-        if ( $result[1] == 401 ) {
-            $vars{jlogin_jid} = $jidStr;
-            delete $connections->{$jidStr};
-            owl::start_password( "Password for $jidStr: ", \&do_login_with_pw );
-            return "";
-        }
-        owl::error(
-            "Error in connect: " . join( " ", $result[ 1 .. $#result ] ) );
-        do_logout($jidStr);
-        delete $vars{jlogin_connhash};
-        delete $vars{jlogin_authhash};
-        return "";
-    }
-    $connections->{$jidStr}->{roster}->fetch();
-    $$client->PresenceSend( priority => 1 );
-    queue_admin_msg("Connected to jabber as $jidStr");
-    delete $vars{jlogin_connhash};
-    delete $vars{jlogin_authhash};
-    return "";
+      { username => $uid,
+        resource => $resource,
+    };
+
+    return do_login('');
 }
 
-sub do_login_with_pw {
-    $vars{jlogin_authhash}->{password} = shift;
-    my $jidStr = delete $vars{jlogin_jid};
-    if ( !$jidStr ) {
+sub do_login {
+    $vars{jlogin_password} = shift;
+    $vars{jlogin_authhash}->{password} = sub { return $vars{jlogin_password} || '' };
+    my $jidStr = $vars{jlogin_jid};
+    if ( !$jidStr && $vars{jlogin_havepass}) {
         owl::error("Got password but have no jid!");
     }
+    else
+    {
+        $connections->{$jidStr}->{client} = Net::Jabber::Client->new(
+            debuglevel => owl::getvar('debug') eq 'on' ? 1 : 0,
+            debugfile => 'jabber.log'
+        );
+        my $client = \$connections->{$jidStr}->{client};
+        $connections->{$jidStr}->{roster} =
+          $connections->{$jidStr}->{client}->Roster();
 
-    $connections->{$jidStr}->{client} = Net::Jabber::Client->new();
-    my $client = \$connections->{$jidStr}->{client};
-    $connections->{$jidStr}->{roster} =
-      $connections->{$jidStr}->{client}->Roster();
+        #XXX Todo: Add more callbacks.
+        # * MUC presence handlers
+        $$client->SetMessageCallBacks(
+            chat      => sub { owl_jabber::process_incoming_chat_message(@_) },
+            error     => sub { owl_jabber::process_incoming_error_message(@_) },
+            groupchat => sub { owl_jabber::process_incoming_groupchat_message(@_) },
+            headline  => sub { owl_jabber::process_incoming_headline_message(@_) },
+            normal    => sub { owl_jabber::process_incoming_normal_message(@_) }
+        );
+        $$client->SetPresenceCallBacks(
+            subscribe   => sub { owl_jabber::process_presence_subscribe(@_) },
+            unsubscribe => sub { owl_jabber::process_presence_unsubscribe(@_) });
 
-    $$client->SetMessageCallBacks(
-        chat      => sub { owl_jabber::process_incoming_chat_message(@_) },
-        error     => sub { owl_jabber::process_incoming_error_message(@_) },
-        groupchat => sub { owl_jabber::process_incoming_groupchat_message(@_) },
-        headline  => sub { owl_jabber::process_incoming_headline_message(@_) },
-        normal    => sub { owl_jabber::process_incoming_normal_message(@_) }
-    );
+        my $status = $$client->Connect( %{ $vars{jlogin_connhash} } );
+        if ( !$status ) {
+            delete $connections->{$jidStr};
+            owl::error("We failed to connect");
+        }
+        else {
+            my @result = $$client->AuthSend( %{ $vars{jlogin_authhash} } );
 
-    my $status = $$client->Connect( %{ $vars{jlogin_connhash} } );
-    if ( !$status ) {
-        delete $connections->{$jidStr};
-        delete $vars{jlogin_connhash};
-        delete $vars{jlogin_authhash};
-        owl::error("We failed to connect");
-        return "";
+            if ( $result[0] ne 'ok' ) {
+            if ( !$vars{jlogin_havepass} && $result[0] == 401 ) {
+                $vars{jlogin_havepass} = 1;
+                delete $connections->{$jidStr};
+                owl::start_password( "Password for $jidStr: ", \&do_login );
+                return "";
+            }
+            delete $connections->{$jidStr};
+            owl::error(
+                "Error in connect: " . join( " ", @result ) );
+        }
+            else {
+                $connections->{$jidStr}->{roster}->fetch();
+                $$client->PresenceSend( priority => 1 );
+                queue_admin_msg("Connected to jabber as $jidStr");
+            }
+        }
     }
-
-    my @result = $$client->AuthSend( %{ $vars{jlogin_authhash} } );
-
-    if ( $result[0] ne 'ok' ) {
-        owl::error(
-            "Error in connect: " . join( " ", $result[ 1 .. $#result ] ) );
-        do_logout($jidStr);
-        delete $vars{jlogin_connhash};
-        delete $vars{jlogin_authhash};
-        return "";
-    }
-
-    $connections->{$jidStr}->{roster}->fetch();
-    $$client->PresenceSend( priority => 1 );
-    queue_admin_msg("Connected to jabber as $jidStr");
+    delete $vars{jlogin_jid};
+    $vars{jlogin_password} =~ tr/\0-\377/x/;
+    delete $vars{jlogin_password};
+    delete $vars{jlogin_havepass};
     delete $vars{jlogin_connhash};
     delete $vars{jlogin_authhash};
     return "";
@@ -291,20 +282,17 @@ sub do_logout {
 }
 
 sub cmd_logout {
-
     # Logged into multiple accounts
     if ( connected() > 1 ) {
-
         # Logged into multiple accounts, no accout specified.
         if ( !$_[1] ) {
             my $errStr =
-"You are logged into multiple accounts. Please specify an account to log out of.\n";
+              "You are logged into multiple accounts. Please specify an account to log out of.\n";
             foreach my $jid ( keys %$connections ) {
                 $errStr .= "\t$jid\n";
             }
             queue_admin_msg($errStr);
         }
-
         # Logged into multiple accounts, account specified.
         else {
             if ( $_[1] eq '-a' )    #All accounts.
@@ -322,7 +310,6 @@ sub cmd_logout {
     }
     else                            # Only one account logged in.
     {
-
         do_logout( ( keys %$connections )[0] );
     }
     return "";
@@ -706,6 +693,13 @@ sub defaultJID {
     return;
 }
 
+sub baseJID {
+    my $givenJidStr = shift;
+    my $givenJid    = new Net::XMPP::JID;
+    $givenJid->SetJID($givenJidStr);
+    return $givenJid->GetJID('base');
+}
+
 sub resolveJID {
     my $givenJidStr = shift;
     my $givenJid    = new Net::XMPP::JID;
@@ -751,10 +745,12 @@ sub resolveJID {
             owl::error("Invalid account: $givenJidStr");
         }
 
-        # Log out this one.
+        # It's this one.
         else {
             return $matchingJid;
         }
     }
     return "";
 }
+
+1;
