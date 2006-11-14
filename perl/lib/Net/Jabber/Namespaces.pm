@@ -1441,6 +1441,12 @@ $Net::XMPP::Namespaces::SKIPNS{'__netjabber__'} = 1;
             tag   => 'x',
             xpath => {
                       Password => { path => 'password/text()' },
+                      History  => {
+                                    type  => 'child',
+                                    path  => 'history',
+                                    child => { ns => '__netjabber__:iq:muc:history' },
+                                    calls => ['Add', 'Get', 'Set', 'Defined' ],
+                                   },
                       MUC      => { type => 'master' },
                      },
             docs  => {
@@ -1448,7 +1454,26 @@ $Net::XMPP::Namespaces::SKIPNS{'__netjabber__'} = 1;
                      },
            );
 }
-       
+
+#-----------------------------------------------------------------------------
+# __netjabber__:iq:muc:history
+#-----------------------------------------------------------------------------
+{
+    &add_ns(ns    => '__netjabber__:iq:muc:history',
+            tag   => 'history',
+            xpath => {
+                      MaxChars   => { path => '@maxchars' },
+                      MaxStanzas => { path => '@maxstanzas' },
+                      Seconds    => { path => '@seconds' },
+                      Since      => { path => '@since' }
+                     },
+            docs  => {
+                      module => 'Net::Jabber',
+                     },
+           );
+                   
+}
+
 #-----------------------------------------------------------------------------
 # http://jabber.org/protocol/muc#admin
 #-----------------------------------------------------------------------------
@@ -1582,6 +1607,19 @@ $Net::XMPP::Namespaces::SKIPNS{'__netjabber__'} = 1;
                      },
            );
 }
+
+
+#-----------------------------------------------------------------------------
+# http://jabber.org/protocol/muc#owner
+#-----------------------------------------------------------------------------
+
+{
+        &add_ns(
+                ns  => "http://jabber.org/protocol/muc#owner",
+                tag => 'query',
+               );
+}
+
 
 #-----------------------------------------------------------------------------
 # http://jabber.org/protocol/pubsub
