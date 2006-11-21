@@ -631,10 +631,10 @@ void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip)
 	return;
       }
     }
+    fclose(file);
   }
 
   /* if we get here then we didn't find it */
-  fclose(file);
   file=fopen(subsfile, "a");
   if (!file) {
     owl_function_error("Error opening file %s for writing", subsfile);
