@@ -378,12 +378,15 @@ sub attribution
         my $id;
         my $id1 = index($str,"\'");
         my $id2 = index($str,"\"");
+
+	return %attribs if ($id1 == -1 && $id2 == -1);
+
         if((($id1 < $id2) && ($id1 != -1)) || ($id2 == -1))
         {
             $ids = $id1;
             $id = "\'";
         }
-        if((($id2 < $id1) && ($id1 == -1)) || ($id2 != -1))
+        if((($id2 < $id1) && ($id2 != -1)) || ($id1 == -1))
         {
             $ids = $id2;
             $id = "\"";
