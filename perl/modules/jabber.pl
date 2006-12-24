@@ -38,29 +38,28 @@ sub addConnection {
     my $self = shift;
     my $jidStr = shift;
 
-    $self->{Client}->{$jidStr} = 
-      Net::Jabber::Client->new(
-          debuglevel => owl::getvar('debug') eq 'on' ? 1 : 0,
-          debugfile => 'jabber.log'
-      );
-    my $refConn = \$self->{Client}->{$jidStr};
-    $self->{Roster}->{$jidStr} = $$refConn->Roster();
-    return $refConn;
+    my $client = Net::Jabber::Client->new(
+        owl::getvar('debug') eq 'on'
+          ? (debuglevel =>  ? 1 : 0,
+             debugfile => 'jabber.log')
+          : ()
+         );
+
+    $self->{Client}->{$jidStr} = $client;
+    $self->{Roster}->{$jidStr} = $client->Roster();
+    return $client;
 }
 
 sub removeConnection {
     my $self = shift;
     my $jidStr = shift;
-    my $ret = 0;
-    foreach my $j ( keys %{ $self->{Client} } ) {
-        if ($j eq $jidStr) {
-            $self->{Client}->{$j}->Disconnect();
-            delete $self->{Roster}->{$j};
-            delete $self->{Client}->{$j};
-            $ret = 1;
-        }
-    }
-    return $ret;
+    return 0 unless exists $self->{Client}->{$jidStr};
+    
+    $self->{Client}->{$jidStr}->Disconnect();
+    delete $self->{Roster}->{$jidStr};
+    delete $self->{Client}->{$jidStr};
+    
+    return 1;
 }
 
 sub connected {
@@ -76,10 +75,7 @@ sub getJids {
 sub jidExists {
     my $self = shift;
     my $jidStr = shift;
-    foreach my $j ( keys %{ $self->{Client} } ) {
-        return 1 if ($j eq $jidStr);
-    }
-    return 0;
+    return exists $self->{Client}->{$jidStr};
 }
 
 sub sidExists {
@@ -91,47 +87,35 @@ sub sidExists {
     return 0;
 }
 
-sub getConnRefFromSid {
+sub getConnectionFromSid {
     my $self = shift;
     my $sid = shift;
-    foreach my $j ( keys %{ $self->{Client} } ) {
-        if ($self->{Client}->{$j}->{SESSION}->{id} eq $sid) {
-            return \$self->{Client}->{$j};
-        }
+    foreach my $c (values %{ $self->{Client} }) {
+        return $c if $c->{SESSION}->{id} eq $sid;
     }
     return undef;
 }
 
-sub getConnRefFromJidStr {
+sub getConnectionFromJidStr {
     my $self = shift;
     my $jidStr = shift;
-    foreach my $j ( keys %{ $self->{Client} } ) {
-        if ($jidStr eq $j) {
-            return \$self->{Client}->{$j};
-        }
-    }
-    return undef;
+    return $self->{Client}->{$jidStr};
 }
 
-sub getRosterRefFromSid {
+sub getRosterFromSid {
     my $self = shift;
     my $sid = shift;
-    foreach my $j ( keys %{ $self->{Client} } ) {
-        if ($self->{Client}->{$j}->{SESSION}->{id} eq $sid) {
-            return \$self->{Roster}->{$j};
-        }
+    foreach my $j ( $self->getJids ) {
+        return $self->{Roster}->{$j}
+          if $self->{Client}->{$j}->{SESSION}->{id} eq $sid;
     }
     return undef;
 }
 
-sub getRosterRefFromJidStr {
+sub getRosterFromJidStr {
     my $self = shift;
     my $jidStr = shift;
-    foreach my $j ( keys %{ $self->{Client} } ) {
-        if ($jidStr eq $j) {
-            return \$self->{Roster}->{$j};
-        }
-    }
+    return $self->{Roster}->{$jidStr};
     return undef;
 }
 ################################################################################
@@ -160,7 +144,7 @@ sub onMainLoop {
     return if ( !$conn->connected() );
 
     foreach my $jid ( $conn->getJids() ) {
-        my $client = $conn->getConnRefFromJidStr($jid);
+        my $client = $conn->getConnectionFromJidStr($jid);
 
         my $status = $client->Process(0);
         if ( !defined($status) ) {
@@ -208,8 +192,8 @@ sub getSingleBuddyList {
     $jid = resolveJID($jid);
     return "" unless $jid;
     my $blist = "";
-    my $roster = $conn->getRosterRefFromJidStr($jid);
-    if ($$roster) {
+    my $roster = $conn->getRosterFromJidStr($jid);
+    if ($roster) {
         $blist .= "\n" . boldify("Jabber Roster for $jid\n");
 
         foreach my $group ( $roster->groups() ) {
@@ -350,7 +334,7 @@ sub do_login {
             headline  => sub { owl_jabber::process_incoming_headline_message(@_) },
             normal    => sub { owl_jabber::process_incoming_normal_message(@_) }
         );
-        $$client->SetPresenceCallBacks(
+        $client->SetPresenceCallBacks(
 #            available    => sub { owl_jabber::process_presence_available(@_) },
 #            unavailable  => sub { owl_jabber::process_presence_available(@_) },
             subscribe    => sub { owl_jabber::process_presence_subscribe(@_) },
@@ -378,8 +362,8 @@ sub do_login {
                 "Error in connect: " . join( " ", @result ) );
         }
             else {
-                ${ $conn->getRosterRefFromJidStr($jidStr) }->fetch();
-                $$client->PresenceSend( priority => 1 );
+                ${ $conn->getRosterFromJidStr($jidStr) }->fetch();
+                $client->PresenceSend( priority => 1 );
                 queue_admin_msg("Connected to jabber as $jidStr");
             }
         }
@@ -569,7 +553,7 @@ sub jmuc_join {
         $x->SetPassword($password);
     }
 
-    ${ $conn->getConnRefFromJidStr($jid) }->Send($presence);
+    $conn->getConnectionFromJidStr($jid)->Send($presence);
 }
 
 sub jmuc_part {
@@ -578,8 +562,7 @@ sub jmuc_part {
     $muc = shift @args if scalar @args;
     die("Usage: jmuc part {muc} [-a account]") unless $muc;
 
-    ${ $conn->getConnRefFromJidStr($jid) }
-      ->PresenceSend( to => $muc, type => 'unavailable' );
+    $conn->getConnectionFromJidStr($jid)->PresenceSend( to => $muc, type => 'unavailable' );
     queue_admin_msg("$jid has left $muc.");
 }
 
@@ -597,7 +580,7 @@ sub jmuc_invite {
     my $x = $message->NewChild('http://jabber.org/protocol/muc#user');
     $x->AddInvite();
     $x->GetInvite()->SetTo($invite_jid);
-    ${ $conn->getConnRefFromJidStr($jid) }->Send($message);
+    $conn->getConnectionFromJidStr($jid)->Send($message);
     queue_admin_msg("$jid has invited $invite_jid to $muc.");
 }
 
@@ -612,7 +595,7 @@ sub jmuc_configure {
     my $x     = $query->NewChild("jabber:x:data");
     $x->SetType('submit');
 
-    ${ $conn->getConnRefFromJidStr($jid) }->Send($iq);
+    $conn->getConnectionFromJidStr($jid)->Send($iq);
     queue_admin_msg("Accepted default instant configuration for $muc");
 }
 
@@ -676,7 +659,7 @@ sub jroster_sub {
     my $purgeGroups = shift;
     my $baseJid = baseJID($jid);
 
-    my $roster = $conn->getRosterRefFromJidStr($jid);
+    my $roster = $conn->getRosterFromJidStr($jid);
 
     # Adding lots of users with the same name is a bad idea.
     $name = "" unless (1 == scalar(@ARGV));
@@ -685,10 +668,10 @@ sub jroster_sub {
     $p->SetType('subscribe');
 
     foreach my $to (@ARGV) {
-        jroster_add($jid, $name, \@groups, $purgeGroups, ($to)) unless ($$roster->exists($to));
+        jroster_add($jid, $name, \@groups, $purgeGroups, ($to)) unless ($roster->exists($to));
 
         $p->SetTo($to);
-        ${ $conn->getConnRefFromJidStr($jid) }->Send($p);
+        $conn->getConnectionFromJidStr($jid)->Send($p);
         queue_admin_msg("You ($baseJid) have requested a subscription to ($to)'s presence.");
     }
 }
@@ -704,7 +687,7 @@ sub jroster_unsub {
     $p->SetType('unsubscribe');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
-        ${ $conn->getConnRefFromJidStr($jid) }->Send($p);
+        $conn->getConnectionFromJidStr($jid)->Send($p);
         queue_admin_msg("You ($baseJid) have unsubscribed from ($to)'s presence.");
     }
 }
@@ -716,13 +699,13 @@ sub jroster_add {
     my $purgeGroups = shift;
     my $baseJid = baseJID($jid);
 
-    my $roster = $conn->getRosterRefFromJidStr($jid);
+    my $roster = $conn->getRosterFromJidStr($jid);
 
     # Adding lots of users with the same name is a bad idea.
     $name = "" unless (1 == scalar(@ARGV));
 
     foreach my $to (@ARGV) {
-        my %jq  = $$roster->query($to);
+        my %jq  = $roster->query($to);
         my $iq = new Net::XMPP::IQ;
         $iq->SetType('set');
         my $item = new XML::Stream::Node('item');
@@ -746,7 +729,7 @@ sub jroster_add {
 
         $item->put_attrib(jid => $to);
         $item->put_attrib(name => $name) if $name;
-        ${ $conn->getConnRefFromJidStr($jid) }->Send($iq);
+        $conn->getConnectionFromJidStr($jid)->Send($iq);
         my $msg = "$baseJid: "
           . ($name ? "$name ($to)" : "($to)")
           . " is on your roster in the following groups: { "
@@ -770,7 +753,7 @@ sub jroster_remove {
     $item->put_attrib(subscription=> 'remove');
     foreach my $to (@ARGV) {
         $item->put_attrib(jid => $to);
-        ${ $conn->getConnRefFromJidStr($jid) }->Send($iq);
+        $conn->getConnectionFromJidStr($jid)->Send($iq);
         queue_admin_msg("You ($baseJid) have removed ($to) from your roster.");
     }
 }
@@ -786,7 +769,7 @@ sub jroster_auth {
     $p->SetType('subscribed');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
-        ${ $conn->getConnRefFromJidStr($jid) }->Send($p);
+        $conn->getConnectionFromJidStr($jid)->Send($p);
         queue_admin_msg("($to) has been subscribed to your ($baseJid) presence.");
     }
 }
@@ -802,7 +785,7 @@ sub jroster_deauth {
     $p->SetType('unsubscribed');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
-        ${ $conn->getConnRefFromJidStr($jid) }->Send($p);
+        $conn->getConnectionFromJidStr($jid)->Send($p);
         queue_admin_msg("($to) has been unsubscribed from your ($baseJid) presence.");
     }
 }
@@ -832,10 +815,10 @@ sub process_owl_jwrite {
     }
 
     if ($vars{jwrite}{sid} && $conn->sidExists( $vars{jwrite}{sid} )) {
-        ${ $conn->getConnRefFromSid($vars{jwrite}{sid}) }->Send($j);
+        $conn->getConnectionFromSid($vars{jwrite}{sid})->Send($j);
     }
     else {
-        ${ $conn->getConnRefFromJidStr($vars{jwrite}{from}) }->Send($j);
+        $conn->getConnectionFromJidStr($vars{jwrite}{from})->Send($j);
     }
 
     delete $vars{jwrite};
@@ -967,7 +950,7 @@ sub process_presence_unsubscribe {
 	if ($to eq $cJid->GetJID('base') ||
             $to eq $cJid->GetJID('full')) {
 	    my $reply = $p->Reply(type=>"unsubscribed");
-	    ${ $conn->getConnRefFromJidStr($jid) }->Send($reply);
+	    $conn->getConnectionFromJidStr($jid)->Send($reply);
 	    return;
 	}
     }
