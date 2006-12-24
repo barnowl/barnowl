@@ -808,9 +808,7 @@ sub process_owl_jwrite {
     $j->SetSubject( $vars{jwrite}{subject} ) if ( $vars{jwrite}{subject} );
 
     my $m = j2o( $j, { direction => 'out' } );
-    if ( $vars{jwrite}{type} ne 'groupchat' ) {
-
-        #XXX TODO: Check for displayoutgoing.
+    if ( $vars{jwrite}{type} ne 'groupchat' && owl::getvar('displayoutgoing') eq 'on') {
         owl::queue_message($m);
     }
 
