@@ -14,3 +14,4 @@ barn-owl TODO list
 * Check for memory leaks
  * perl eval()s from owl seem problematic
 * Add sane default keybindings
+* Add jabber capabilities to one-line mode

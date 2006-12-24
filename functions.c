@@ -2086,12 +2086,6 @@ void owl_function_reply(int type, int enter)
       }
     }
 
-    /* admin */
-    if (owl_message_is_type_admin(m)) {
-      owl_function_error("You cannot reply to an admin message");
-      return;
-    }
-
     /* loopback */
     if (owl_message_is_type_loopback(m)) {
       owl_function_loopwrite_setup();

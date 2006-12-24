@@ -25,7 +25,120 @@ no warnings 'redefine';
 #
 ################################################################################
 
-our $connections;
+
+################################################################################
+################################################################################
+package owl_jabber::ConnectionManager;
+sub new {
+    my $class = shift;
+    return bless { }, $class;
+}
+
+sub addConnection {
+    my $self = shift;
+    my $jidStr = shift;
+
+    $self->{Client}->{$jidStr} = 
+      Net::Jabber::Client->new(
+          debuglevel => owl::getvar('debug') eq 'on' ? 1 : 0,
+          debugfile => 'jabber.log'
+      );
+    my $refConn = \$self->{Client}->{$jidStr};
+    $self->{Roster}->{$jidStr} = $$refConn->Roster();
+    return $refConn;
+}
+
+sub removeConnection {
+    my $self = shift;
+    my $jidStr = shift;
+    my $ret = 0;
+    foreach my $j ( keys %{ $self->{Client} } ) {
+        if ($j eq $jidStr) {
+            $self->{Client}->{$j}->Disconnect();
+            delete $self->{Roster}->{$j};
+            delete $self->{Client}->{$j};
+            $ret = 1;
+        }
+    }
+    return $ret;
+}
+
+sub connected {
+    my $self = shift;
+    return scalar keys %{ $self->{Client} };
+}
+
+sub getJids {
+    my $self = shift;
+    return keys %{ $self->{Client} };
+}
+
+sub jidExists {
+    my $self = shift;
+    my $jidStr = shift;
+    foreach my $j ( keys %{ $self->{Client} } ) {
+        return 1 if ($j eq $jidStr);
+    }
+    return 0;
+}
+
+sub sidExists {
+    my $self = shift;
+    my $sid = shift || "";
+    foreach my $j ( keys %{ $self->{Client} } ) {
+        return 1 if ($self->{Client}->{$j}->{SESSION}->{id} eq $sid);
+    }
+    return 0;
+}
+
+sub getConnRefFromSid {
+    my $self = shift;
+    my $sid = shift;
+    foreach my $j ( keys %{ $self->{Client} } ) {
+        if ($self->{Client}->{$j}->{SESSION}->{id} eq $sid) {
+            return \$self->{Client}->{$j};
+        }
+    }
+    return undef;
+}
+
+sub getConnRefFromJidStr {
+    my $self = shift;
+    my $jidStr = shift;
+    foreach my $j ( keys %{ $self->{Client} } ) {
+        if ($jidStr eq $j) {
+            return \$self->{Client}->{$j};
+        }
+    }
+    return undef;
+}
+
+sub getRosterRefFromSid {
+    my $self = shift;
+    my $sid = shift;
+    foreach my $j ( keys %{ $self->{Client} } ) {
+        if ($self->{Client}->{$j}->{SESSION}->{id} eq $sid) {
+            return \$self->{Roster}->{$j};
+        }
+    }
+    return undef;
+}
+
+sub getRosterRefFromJidStr {
+    my $self = shift;
+    my $jidStr = shift;
+    foreach my $j ( keys %{ $self->{Client} } ) {
+        if ($jidStr eq $j) {
+            return \$self->{Roster}->{$j};
+        }
+    }
+    return undef;
+}
+################################################################################
+
+package owl_jabber;
+
+our $conn = new owl_jabber::ConnectionManager unless $conn;;
 our %vars;
 
 sub onStart {
@@ -44,10 +157,10 @@ sub onStart {
 push @::onStartSubs, sub { owl_jabber::onStart(@_) };
 
 sub onMainLoop {
-    return if ( !connected() );
+    return if ( !$conn->connected() );
 
-    foreach my $jid ( keys %$connections ) {
-        my $client = \$connections->{$jid}->{client};
+    foreach my $jid ( $conn->getJids() ) {
+        my $client = $conn->getConnRefFromJidStr($jid);
 
         my $status = $$client->Process(0);
         if ( !defined($status) ) {
@@ -68,7 +181,7 @@ sub blist_listBuddy {
     my %jq  = $$roster->query($buddy);
     my $res = $$roster->resource($buddy);
 
-    $blistStr .= $jq{name} ? $jq{name} : $buddy->GetJID();
+    $blistStr .= $jq{name} ? $jq{name} . "\t(" .$buddy->GetJID() . ')' : $buddy->GetJID();
 
     if ($res) {
         my %rq = $$roster->resourceQuery( $buddy, $res );
@@ -95,7 +208,7 @@ sub getSingleBuddyList {
     $jid = resolveJID($jid);
     return "" unless $jid;
     my $blist = "";
-    my $roster = \$connections->{$jid}->{roster};
+    my $roster = $conn->getRosterRefFromJidStr($jid);
     if ($$roster) {
         $blist .= "\n" . boldify("Jabber Roster for $jid\n");
 
@@ -119,7 +232,7 @@ sub getSingleBuddyList {
 
 sub onGetBuddyList {
     my $blist = "";
-    foreach my $jid (keys %{$connections}) {
+    foreach my $jid ($conn->getJids()) {
         $blist .= getSingleBuddyList($jid);
     }
     return $blist;
@@ -168,6 +281,14 @@ sub register_owl_commands() {
             usage => "jmuc {command} {args}"
         }
     );
+    owl::new_command(
+        jroster => \&cmd_jroster,
+        {
+            summary     => "Jabber Roster related commands.",
+	    description => "jroster sends jabber commands related to rosters.\n\n",
+            usage       => "jroster {command} {args}"
+        }
+    );
 }
 
 sub cmd_login {
@@ -186,7 +307,7 @@ sub cmd_login {
         return;
     }
 
-    if ( $connections->{$jidStr} ) {
+    if ( $conn->jidExists($jidStr) ) {
         owl::error("Already logged in as $jidStr.");
         return;
     }
@@ -218,13 +339,7 @@ sub do_login {
     }
     else
     {
-        $connections->{$jidStr}->{client} = Net::Jabber::Client->new(
-            debuglevel => owl::getvar('debug') eq 'on' ? 1 : 0,
-            debugfile => 'jabber.log'
-        );
-        my $client = \$connections->{$jidStr}->{client};
-        $connections->{$jidStr}->{roster} =
-          $connections->{$jidStr}->{client}->Roster();
+        my $client = $conn->addConnection($jidStr);
 
         #XXX Todo: Add more callbacks.
         # * MUC presence handlers
@@ -236,12 +351,16 @@ sub do_login {
             normal    => sub { owl_jabber::process_incoming_normal_message(@_) }
         );
         $$client->SetPresenceCallBacks(
-            subscribe   => sub { owl_jabber::process_presence_subscribe(@_) },
-            unsubscribe => sub { owl_jabber::process_presence_unsubscribe(@_) });
+#            available    => sub { owl_jabber::process_presence_available(@_) },
+#            unavailable  => sub { owl_jabber::process_presence_available(@_) },
+            subscribe    => sub { owl_jabber::process_presence_subscribe(@_) },
+            subscribed   => sub { owl_jabber::process_presence_subscribed(@_) },
+            unsubscribe  => sub { owl_jabber::process_presence_unsubscribe(@_) },
+            unsubscribed => sub { owl_jabber::process_presence_unsubscribed(@_) });
 
         my $status = $$client->Connect( %{ $vars{jlogin_connhash} } );
         if ( !$status ) {
-            delete $connections->{$jidStr};
+            $conn->removeConnection($jidStr);
             owl::error("We failed to connect");
         }
         else {
@@ -250,16 +369,16 @@ sub do_login {
             if ( $result[0] ne 'ok' ) {
             if ( !$vars{jlogin_havepass} && $result[0] == 401 ) {
                 $vars{jlogin_havepass} = 1;
-                delete $connections->{$jidStr};
+                $conn->removeConnection($jidStr);
                 owl::start_password( "Password for $jidStr: ", \&do_login );
                 return "";
             }
-            delete $connections->{$jidStr};
+            $conn->removeConnection($jidStr);
             owl::error(
                 "Error in connect: " . join( " ", @result ) );
         }
             else {
-                $connections->{$jidStr}->{roster}->fetch();
+                ${ $conn->getRosterRefFromJidStr($jidStr) }->fetch();
                 $$client->PresenceSend( priority => 1 );
                 queue_admin_msg("Connected to jabber as $jidStr");
             }
@@ -276,19 +395,18 @@ sub do_login {
 
 sub do_logout {
     my $jid = shift;
-    $connections->{$jid}->{client}->Disconnect();
-    delete $connections->{$jid};
-    queue_admin_msg("Jabber disconnected ($jid).");
+    my $disconnected = $conn->removeConnection($jid);
+    queue_admin_msg("Jabber disconnected ($jid).") if $disconnected;
 }
 
 sub cmd_logout {
     # Logged into multiple accounts
-    if ( connected() > 1 ) {
+    if ( $conn->connected() > 1 ) {
         # Logged into multiple accounts, no accout specified.
         if ( !$_[1] ) {
             my $errStr =
               "You are logged into multiple accounts. Please specify an account to log out of.\n";
-            foreach my $jid ( keys %$connections ) {
+            foreach my $jid ( $conn->getJids() ) {
                 $errStr .= "\t$jid\n";
             }
             queue_admin_msg($errStr);
@@ -297,7 +415,7 @@ sub cmd_logout {
         else {
             if ( $_[1] eq '-a' )    #All accounts.
             {
-                foreach my $jid ( keys %$connections ) {
+                foreach my $jid ( $conn->getJids() ) {
                     do_logout($jid);
                 }
             }
@@ -310,13 +428,13 @@ sub cmd_logout {
     }
     else                            # Only one account logged in.
     {
-        do_logout( ( keys %$connections )[0] );
+        do_logout( ( $conn->getJids() )[0] );
     }
     return "";
 }
 
 sub cmd_jlist {
-    if ( !( scalar keys %$connections ) ) {
+    if ( !( scalar $conn->getJids() ) ) {
         owl::error("You are not logged in to Jabber.");
         return;
     }
@@ -324,13 +442,14 @@ sub cmd_jlist {
 }
 
 sub cmd_jwrite {
-    if ( !connected() ) {
+    if ( !$conn->connected() ) {
         owl::error("You are not logged in to Jabber.");
         return;
     }
 
     my $jwrite_to      = "";
     my $jwrite_from    = "";
+    my $jwrite_sid     = "";
     my $jwrite_thread  = "";
     my $jwrite_subject = "";
     my $jwrite_type    = "chat";
@@ -343,6 +462,7 @@ sub cmd_jwrite {
         'thread=s'  => \$jwrite_thread,
         'subject=s' => \$jwrite_subject,
         'account=s' => \$jwrite_from,
+        'id=s'     =>  \$jwrite_sid,
         'groupchat' => \$gc
     );
     $jwrite_type = 'groupchat' if $gc;
@@ -357,8 +477,8 @@ sub cmd_jwrite {
     }
 
     if ( !$jwrite_from ) {
-        if ( connected() == 1 ) {
-            $jwrite_from = ( keys %$connections )[0];
+        if ( $conn->connected() == 1 ) {
+            $jwrite_from = ( $conn->getJids() )[0];
         }
         else {
             owl::error("Please specify an account with -a {jid}");
@@ -373,19 +493,20 @@ sub cmd_jwrite {
     $vars{jwrite} = {
         to      => $jwrite_to,
         from    => $jwrite_from,
+        sid     => $jwrite_sid,
         subject => $jwrite_subject,
         thread  => $jwrite_thread,
         type    => $jwrite_type
     };
 
     owl::message(
-        "Type your message below.  End with a dot on a line by itself.  ^C will quit."
-       );
+"Type your message below.  End with a dot on a line by itself.  ^C will quit."
+    );
     owl::start_edit_win( join( ' ', @args ), \&process_owl_jwrite );
 }
 
 sub cmd_jmuc {
-    die "You are not logged in to Jabber" unless connected();
+    die "You are not logged in to Jabber" unless $conn->connected();
     my $ocmd = shift;
     my $cmd  = shift;
     if ( !$cmd ) {
@@ -448,7 +569,7 @@ sub jmuc_join {
         $x->SetPassword($password);
     }
 
-    $connections->{$jid}->{client}->Send($presence);
+    ${ $conn->getConnRefFromJidStr($jid) }->Send($presence);
 }
 
 sub jmuc_part {
@@ -457,7 +578,7 @@ sub jmuc_part {
     $muc = shift @args if scalar @args;
     die("Usage: jmuc part {muc} [-a account]") unless $muc;
 
-    $connections->{$jid}->{client}
+    ${ $conn->getConnRefFromJidStr($jid) }
       ->PresenceSend( to => $muc, type => 'unavailable' );
     queue_admin_msg("$jid has left $muc.");
 }
@@ -476,7 +597,7 @@ sub jmuc_invite {
     my $x = $message->NewChild('http://jabber.org/protocol/muc#user');
     $x->AddInvite();
     $x->GetInvite()->SetTo($invite_jid);
-    $connections->{$jid}->{client}->Send($message);
+    ${ $conn->getConnRefFromJidStr($jid) }->Send($message);
     queue_admin_msg("$jid has invited $invite_jid to $muc.");
 }
 
@@ -491,8 +612,199 @@ sub jmuc_configure {
     my $x     = $query->NewChild("jabber:x:data");
     $x->SetType('submit');
 
-    $connections->{$jid}->{client}->Send($iq);
+    ${ $conn->getConnRefFromJidStr($jid) }->Send($iq);
     queue_admin_msg("Accepted default instant configuration for $muc");
+}
+
+
+#XXX TODO: Consider merging this with jmuc and selecting off the first two args.
+sub cmd_jroster {
+    die "You are not logged in to Jabber" unless $conn->connected();
+    my $ocmd = shift;
+    my $cmd  = shift;
+    if ( !$cmd ) {
+
+        #XXX TODO: Write general usage for jroster command.
+        return;
+    }
+
+    my %jroster_commands = (
+        sub      => \&jroster_sub,
+        unsub    => \&jroster_unsub,
+        add      => \&jroster_add,
+        remove   => \&jroster_remove,
+        auth     => \&jroster_auth,
+        deauth   => \&jroster_deauth
+    );
+
+    my $func = $jroster_commands{$cmd};
+    if ( !$func ) {
+        owl::error("jroster: Unknown command: $cmd");
+        return;
+    }
+
+    {
+        local @ARGV = @_;
+        my $jid;
+        my $name;
+        my @groups;
+        my $purgeGroups;
+        my $getopt = Getopt::Long::Parser->new;
+        $getopt->configure('pass_through');
+        $getopt->getoptions(
+            'account=s' => \$jid,
+            'group=s' => \@groups,
+            'purgegroups' => \$purgeGroups,
+            'name=s' => \$name
+        );
+        $jid ||= defaultJID();
+        if ($jid) {
+            $jid = resolveJID($jid);
+            return unless $jid;
+        }
+        else {
+            owl::error('You must specify an account with -a {jid}');
+        }
+        return $func->( $jid, $name, \@groups, $purgeGroups,  @ARGV );
+    }
+}
+
+sub jroster_sub {
+    my $jid = shift;
+    my $name = shift;
+    my @groups = @{ shift() };
+    my $purgeGroups = shift;
+    my $baseJid = baseJID($jid);
+
+    my $roster = $conn->getRosterRefFromJidStr($jid);
+
+    # Adding lots of users with the same name is a bad idea.
+    $name = "" unless (1 == scalar(@ARGV));
+
+    my $p = new Net::XMPP::Presence;
+    $p->SetType('subscribe');
+
+    foreach my $to (@ARGV) {
+        jroster_add($jid, $name, \@groups, $purgeGroups, ($to)) unless ($$roster->exists($to));
+
+        $p->SetTo($to);
+        ${ $conn->getConnRefFromJidStr($jid) }->Send($p);
+        queue_admin_msg("You ($baseJid) have requested a subscription to ($to)'s presence.");
+    }
+}
+
+sub jroster_unsub {
+    my $jid = shift;
+    my $name = shift;
+    my @groups = @{ shift() };
+    my $purgeGroups = shift;
+    my $baseJid = baseJID($jid);
+
+    my $p = new Net::XMPP::Presence;
+    $p->SetType('unsubscribe');
+    foreach my $to (@ARGV) {
+        $p->SetTo($to);
+        ${ $conn->getConnRefFromJidStr($jid) }->Send($p);
+        queue_admin_msg("You ($baseJid) have unsubscribed from ($to)'s presence.");
+    }
+}
+
+sub jroster_add {
+    my $jid = shift;
+    my $name = shift;
+    my @groups = @{ shift() };
+    my $purgeGroups = shift;
+    my $baseJid = baseJID($jid);
+
+    my $roster = $conn->getRosterRefFromJidStr($jid);
+
+    # Adding lots of users with the same name is a bad idea.
+    $name = "" unless (1 == scalar(@ARGV));
+
+    foreach my $to (@ARGV) {
+        my %jq  = $$roster->query($to);
+        my $iq = new Net::XMPP::IQ;
+        $iq->SetType('set');
+        my $item = new XML::Stream::Node('item');
+        $iq->NewChild('jabber:iq:roster')->AddChild($item);
+
+        my %allGroups = ();
+
+        foreach my $g (@groups) {
+            $allGroups{$g} = $g;
+        }
+
+        unless ($purgeGroups) {
+            foreach my $g (@{$jq{groups}}) {
+                $allGroups{$g} = $g;
+            }
+        }
+
+        foreach my $g (keys %allGroups) {
+            $item->add_child('group')->add_cdata($g);
+        }
+
+        $item->put_attrib(jid => $to);
+        $item->put_attrib(name => $name) if $name;
+        ${ $conn->getConnRefFromJidStr($jid) }->Send($iq);
+        my $msg = "$baseJid: "
+          . ($name ? "$name ($to)" : "($to)")
+          . " is on your roster in the following groups: { "
+          . join(" , ", keys %allGroups)
+          . " }";
+        queue_admin_msg($msg);
+    }
+}
+
+sub jroster_remove {
+    my $jid = shift;
+    my $name = shift;
+    my @groups = @{ shift() };
+    my $purgeGroups = shift;
+    my $baseJid = baseJID($jid);
+
+    my $iq = new Net::XMPP::IQ;
+    $iq->SetType('set');
+    my $item = new XML::Stream::Node('item');
+    $iq->NewChild('jabber:iq:roster')->AddChild($item);
+    $item->put_attrib(subscription=> 'remove');
+    foreach my $to (@ARGV) {
+        $item->put_attrib(jid => $to);
+        ${ $conn->getConnRefFromJidStr($jid) }->Send($iq);
+        queue_admin_msg("You ($baseJid) have removed ($to) from your roster.");
+    }
+}
+
+sub jroster_auth {
+    my $jid = shift;
+    my $name = shift;
+    my @groups = @{ shift() };
+    my $purgeGroups = shift;
+    my $baseJid = baseJID($jid);
+
+    my $p = new Net::XMPP::Presence;
+    $p->SetType('subscribed');
+    foreach my $to (@ARGV) {
+        $p->SetTo($to);
+        ${ $conn->getConnRefFromJidStr($jid) }->Send($p);
+        queue_admin_msg("($to) has been subscribed to your ($baseJid) presence.");
+    }
+}
+
+sub jroster_deauth {
+    my $jid = shift;
+    my $name = shift;
+    my @groups = @{ shift() };
+    my $purgeGroups = shift;
+    my $baseJid = baseJID($jid);
+
+    my $p = new Net::XMPP::Presence;
+    $p->SetType('unsubscribed');
+    foreach my $to (@ARGV) {
+        $p->SetTo($to);
+        ${ $conn->getConnRefFromJidStr($jid) }->Send($p);
+        queue_admin_msg("($to) has been unsubscribed from your ($baseJid) presence.");
+    }
 }
 
 ################################################################################
@@ -508,16 +820,24 @@ sub process_owl_jwrite {
         type => $vars{jwrite}{type},
         body => $body
     );
+
     $j->SetThread( $vars{jwrite}{thread} )   if ( $vars{jwrite}{thread} );
     $j->SetSubject( $vars{jwrite}{subject} ) if ( $vars{jwrite}{subject} );
 
-    my $m = j2o( $j, 'out' );
+    my $m = j2o( $j, { direction => 'out' } );
     if ( $vars{jwrite}{type} ne 'groupchat' ) {
 
         #XXX TODO: Check for displayoutgoing.
         owl::queue_message($m);
     }
-    $connections->{ $vars{jwrite}{from} }->{client}->Send($j);
+
+    if ($vars{jwrite}{sid} && $conn->sidExists( $vars{jwrite}{sid} )) {
+        ${ $conn->getConnRefFromSid($vars{jwrite}{sid}) }->Send($j);
+    }
+    else {
+        ${ $conn->getConnRefFromJidStr($vars{jwrite}{from}) }->Send($j);
+    }
+
     delete $vars{jwrite};
     owl::message("");   # Kludge to make the ``type your message...'' message go away
 }
@@ -525,33 +845,38 @@ sub process_owl_jwrite {
 ### XMPP Callbacks
 
 sub process_incoming_chat_message {
-    my ( $session, $j ) = @_;
-    owl::queue_message( j2o( $j, 'in' ) );
+    my ( $sid, $j ) = @_;
+    owl::queue_message( j2o( $j, { direction => 'in',
+                                   sid => $sid } ) );
 }
 
 sub process_incoming_error_message {
-    my ( $session, $j ) = @_;
-    my %jhash = j2hash( $j, 'in' );
+    my ( $sid, $j ) = @_;
+    my %jhash = j2hash( $j, { direction => 'in',
+                              sid => $sid } );
     $jhash{type} = 'admin';
     owl::queue_message( owl::Message->new(%jhash) );
 }
 
 sub process_incoming_groupchat_message {
-    my ( $session, $j ) = @_;
+    my ( $sid, $j ) = @_;
 
     # HACK IN PROGRESS (ignoring delayed messages)
     return if ( $j->DefinedX('jabber:x:delay') && $j->GetX('jabber:x:delay') );
-    owl::queue_message( j2o( $j, 'in' ) );
+    owl::queue_message( j2o( $j, { direction => 'in',
+                                   sid => $sid } ) );
 }
 
 sub process_incoming_headline_message {
-    my ( $session, $j ) = @_;
-    owl::queue_message( j2o( $j, 'in' ) );
+    my ( $sid, $j ) = @_;
+    owl::queue_message( j2o( $j, { direction => 'in',
+                                   sid => $sid } ) );
 }
 
 sub process_incoming_normal_message {
-    my ( $session, $j ) = @_;
-    my %props = j2hash( $j, 'in' );
+    my ( $sid, $j ) = @_;
+    my %jhash = j2hash( $j, { direction => 'in',
+                              sid => $sid } );
 
     # XXX TODO: handle things such as MUC invites here.
 
@@ -564,25 +889,124 @@ sub process_incoming_normal_message {
     #	}
     #    }
     #
-    owl::queue_message( owl::Message->new(%props) );
+    owl::queue_message( owl::Message->new(%jhash) );
 }
 
 sub process_muc_presence {
-    my ( $session, $p ) = @_;
+    my ( $sid, $p ) = @_;
     return unless ( $p->HasX('http://jabber.org/protocol/muc#user') );
-
 }
+
+
+sub process_presence_available {
+    my ( $sid, $p ) = @_;
+    my $from = $p->GetFrom();
+    my $to = $p->GetTo();
+    my $type = $p->GetType();
+    my %props = (
+        to => $to,
+        from => $from,
+        recipient => $to,
+        sender => $from,
+        type => 'jabber',
+        jtype => $p->GetType(),
+        status => $p->GetStatus(),
+        show => $p->GetShow(),
+        xml => $p->GetXML(),
+        direction => 'in');
+
+    if ($type eq '' || $type eq 'available') {
+        $props{body} = "$from is now online. ";
+        $props{loginout} = 'login';
+    }
+    else {
+        $props{body} = "$from is now offline. ";
+        $props{loginout} = 'logout';
+    }
+    $props{replysendercmd} = $props{replycmd} = "jwrite $from -i $sid";
+    owl::queue_message(owl::Message->new(%props));
+}
+
+sub process_presence_subscribe {
+    my ( $sid, $p ) = @_;
+    my $from = $p->GetFrom();
+    my $to = $p->GetTo();
+    my %props = (
+        to => $to,
+        from => $from,
+        xml => $p->GetXML(),
+        type => 'admin',
+        adminheader => 'Jabber presence: subscribe',
+        direction => 'in');
+
+    $props{body} = "The user ($from) wants to subscribe to your ($to) presence.\nReply (r) will authorize, reply-sender (R) will deny.";
+    $props{replycmd} = "jroster auth $from -a $to";
+    $props{replysendercmd} = "jroster deauth $from -a $to";
+    owl::queue_message(owl::Message->new(%props));
+}
+
+sub process_presence_unsubscribe {
+    my ( $sid, $p ) = @_;
+    my $from = $p->GetFrom();
+    my $to = $p->GetTo();
+    my %props = (
+        to => $to,
+        from => $from,
+        xml => $p->GetXML(),
+        type => 'admin',
+        adminheader => 'Jabber presence: unsubscribe',
+        direction => 'in');
+
+    $props{body} = "The user ($from) has been unsubscribed from your ($to) presence.\n";
+    owl::queue_message(owl::Message->new(%props));
+
+    # Find a connection to reply with.
+    foreach my $jid ($conn->getJids()) {
+	my $cJid = new Net::XMPP::JID;
+	$cJid->SetJID($jid);
+	if ($to eq $cJid->GetJID('base') ||
+            $to eq $cJid->GetJID('full')) {
+	    my $reply = $p->Reply(type=>"unsubscribed");
+	    ${ $conn->getConnRefFromJidStr($jid) }->Send($reply);
+	    return;
+	}
+    }
+}
+
+sub process_presence_subscribed {
+    my ( $sid, $p ) = @_;
+    queue_admin_msg("ignoring:".$p->GetXML());
+    # RFC 3921 says we should respond to this with a "subscribe"
+    # but this causes a flood of sub/sub'd presence packets with
+    # some servers, so we won't. We may want to detect this condition
+    # later, and have per-server settings.
+    return;
+}
+
+sub process_presence_unsubscribed {
+    my ( $sid, $p ) = @_;
+    queue_admin_msg("ignoring:".$p->GetXML());
+    # RFC 3921 says we should respond to this with a "subscribe"
+    # but this causes a flood of unsub/unsub'd presence packets with
+    # some servers, so we won't. We may want to detect this condition
+    # later, and have per-server settings.
+    return;
+}
+
 
 ### Helper functions
 
 sub j2hash {
     my $j   = shift;
-    my $dir = shift;
+    my %initProps = %{ shift() };
 
-    my %props = (
-        type      => 'jabber',
-        direction => $dir
-    );
+    my $dir = 'none';
+    my %props = ( type => 'jabber' );
+
+    foreach my $k (keys %initProps) {
+        $dir = $initProps{$k} if ($k eq 'direction');
+        $props{$k} = $initProps{$k};
+    }
 
     my $jtype = $props{jtype} = $j->GetType();
     my $from = $j->GetFrom('jid');
@@ -590,8 +1014,6 @@ sub j2hash {
 
     $props{from} = $from->GetJID('full');
     $props{to}   = $to->GetJID('full');
-
-    my $account = ( $dir eq 'out' ) ? $props{from} : $props{to};
 
     $props{recipient}  = $to->GetJID('base');
     $props{sender}     = $from->GetJID('base');
@@ -604,16 +1026,17 @@ sub j2hash {
 
     if ( $jtype eq 'chat' ) {
         $props{replycmd} =
-          "jwrite " . ( ( $dir eq 'in' ) ? $props{from} : $props{to} ) . " -a $account";
+          "jwrite " . ( ( $dir eq 'in' ) ? $props{from} : $props{to} );
+        $props{replycmd} .=
+          " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
         $props{isprivate} = 1;
-        $props{replysendercmd} = $props{replycmd};
     }
     elsif ( $jtype eq 'groupchat' ) {
         my $nick = $props{nick} = $from->GetResource();
         my $room = $props{room} = $from->GetJID('base');
-        $props{replycmd} = "jwrite -g $room -a $account";
-
-        $props{replysendercmd} = "jwrite " . $from->GetJID('full') . " -a $account";
+        $props{replycmd} = "jwrite -g $room";
+        $props{replycmd} .=
+          " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
 
         $props{sender} = $nick || $room;
         $props{recipient} = $room;
@@ -639,6 +1062,7 @@ sub j2hash {
           . $props{error};
     }
 
+    $props{replysendercmd} = $props{replycmd};
     return %props;
 }
 
@@ -684,12 +1108,8 @@ sub getServerFromJID {
     return $jid->GetServer(), 5222;
 }
 
-sub connected {
-    return scalar keys %$connections;
-}
-
 sub defaultJID {
-    return ( keys %$connections )[0] if ( connected() == 1 );
+    return ( $conn->getJids() )[0] if ( $conn->connected() == 1 );
     return;
 }
 
@@ -707,15 +1127,9 @@ sub resolveJID {
 
     # Account fully specified.
     if ( $givenJid->GetResource() ) {
-
         # Specified account exists
-        if ( defined $connections->{$givenJidStr} ) {
-            return $givenJidStr;
-        }
-        else    #Specified account doesn't exist
-        {
-            owl::error("Invalid account: $givenJidStr");
-        }
+        return $givenJidStr if ($conn->jidExists($givenJidStr) );
+        owl::error("Invalid account: $givenJidStr");
     }
 
     # Disambiguate.
@@ -725,7 +1139,7 @@ sub resolveJID {
           "Ambiguous account reference. Please specify a resource.\n";
         my $ambiguous = 0;
 
-        foreach my $jid ( keys %$connections ) {
+        foreach my $jid ( $conn->getJids() ) {
             my $cJid = new Net::XMPP::JID;
             $cJid->SetJID($jid);
             if ( $givenJidStr eq $cJid->GetJID('base') ) {

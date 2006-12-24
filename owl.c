@@ -447,7 +447,6 @@ int main(int argc, char **argv, char **env)
     }
 
     /* Hook perl into the loop */
-
     if (owl_perlconfig_is_function("owl::mainloop_hook")) {
 	 owl_perlconfig_mainloop();
     }
