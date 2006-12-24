@@ -15,3 +15,4 @@ barn-owl TODO list
  * perl eval()s from owl seem problematic
 * Add sane default keybindings
 * Add jabber capabilities to one-line mode
+* We should work even when zephyr is not available
