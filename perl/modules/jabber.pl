@@ -38,12 +38,12 @@ sub addConnection {
     my $self = shift;
     my $jidStr = shift;
 
-    my $client = Net::Jabber::Client->new(
-        owl::getvar('debug') eq 'on'
-          ? (debuglevel =>  ? 1 : 0,
-             debugfile => 'jabber.log')
-          : ()
-         );
+    my %args = ();
+    if(owl::getvar('debug') eq 'on') {
+        $args{debuglevel} = 1;
+        $args{debugfile} = 'jabber.log';
+    }
+    my $client = Net::Jabber::Client->new(%args);
 
     $self->{Client}->{$jidStr} = $client;
     $self->{Roster}->{$jidStr} = $client->Roster();
