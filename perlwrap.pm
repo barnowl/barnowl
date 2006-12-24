@@ -10,7 +10,7 @@ package owl;
 
 BEGIN {
 # bootstrap in C bindings and glue
-bootstrap owl 1.2;
+    bootstrap owl 1.2;
 };
 
 use lib(get_data_dir()."/owl/lib");
@@ -378,19 +378,19 @@ sub reload
     owl::mainloop_hook();
     $reload = 0;
     @onMainLoop = ();
-  @onStartSubs = ();
+    @onStartSubs = ();
     
     # Do reload
     package main;
     if (do "$ENV{HOME}/.owlconf" && owl::reload_hook(@_))
     {
-	return "owlconf reloaded";
+        return "owlconf reloaded";
     } 
     else
     {
         return "$ENV{HOME}/.owlconf load attempted, but error encountered:\n$@";
     }
-package owl;
+    package owl;
 }
 
 sub reload_init () 
@@ -405,8 +405,9 @@ sub reload_init ()
 
 sub loadModules () {
     my @modules;
+    my $rv;
     foreach my $dir ( owl::get_data_dir() . "/owl/modules",
-        $ENV{HOME} . "/.owl/modules" )
+                      $ENV{HOME} . "/.owl/modules" )
     {
         opendir( MODULES, $dir );
 
@@ -414,17 +415,13 @@ sub loadModules () {
         @modules = grep( /\.pl$/, readdir(MODULES) );
 
         foreach my $mod (@modules) {
-                unless (do "$dir/$mod") {
-                        if($!) {
-                                owl::error("Error loading $dir/$mod: $!");
-                        } elsif($@) {
-                                owl::error("Error loading $dir/$mod: $@");
-                        }
-                }
+            unless ($rv = do "$dir/$mod") {
+                owl::error("Couldn't load $dir/$mod:\n $@") if $@;
+                owl::error("Couldn't run $dir/$mod:\n $!") unless defined $rv;
+            }
         }
         closedir(MODULES);
     }
-
 }
 
 
