@@ -33,8 +33,10 @@ int owl_zephyr_initialize()
 int owl_zephyr_shutdown()
 {
 #ifdef HAVE_LIBZEPHYR
-  unsuball();
-  ZClosePort();
+  if(owl_global_is_havezephyr(&g)) {
+    unsuball();
+    ZClosePort();
+  }
 #endif
   return(0);
 }
@@ -42,7 +44,10 @@ int owl_zephyr_shutdown()
 int owl_zephyr_zpending()
 {
 #ifdef HAVE_LIBZEPHYR
-  return(ZPending());
+  if(owl_global_is_havezephyr(&g))
+    return(ZPending());
+  else
+    return 0;
 #else
   return(0);
 #endif

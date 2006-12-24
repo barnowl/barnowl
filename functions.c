@@ -3261,51 +3261,57 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
 
 #ifdef HAVE_LIBZEPHYR
   if (zephyr) {
-    owl_fmtext_append_bold(&fm, "Zephyr users logged in:\n");
-    owl_list_create(&anyone);
-    ret=owl_zephyr_get_anyone_list(&anyone, filename);
-    if (ret) {
-      owl_fmtext_append_normal(&fm, "  Error opening file for zephyr buddies.\n");
+    if(!owl_global_is_havezephyr(&g)) {
+      owl_function_error("Zephyr currently not available.");
     } else {
-      j=owl_list_get_size(&anyone);
-      for (i=0; i<j; i++) {
-	user=owl_list_get_element(&anyone, i);
-	ret=ZLocateUser(user, &numlocs, ZAUTH);
-	if (ret!=ZERR_NONE) {
-	  owl_function_error("Error getting location for %s", user);
-	  continue;
-	}
-	
-	numlocs=200;
-	ret=ZGetLocations(location, &numlocs);
-	if (ret==0) {
-	  for (x=0; x<numlocs; x++) {
-	    line=malloc(strlen(location[x].host)+strlen(location[x].time)+strlen(location[x].tty)+100);
-	    tmp=short_zuser(user);
-	    sprintf(line, "  %-10.10s %-24.24s %-12.12s  %20.20s\n",
-		    tmp,
-		    location[x].host,
-		    location[x].tty,
-		    location[x].time);
-	    owl_fmtext_append_normal(&fm, line);
-	    owl_free(tmp);
-	    owl_free(line);
-	  }
-	  if (numlocs>=200) {
-	    owl_fmtext_append_normal(&fm, "  Too many locations found for this user, truncating.\n");
-	  }
-	}
+      owl_fmtext_append_bold(&fm, "Zephyr users logged in:\n");
+      owl_list_create(&anyone);
+      ret=owl_zephyr_get_anyone_list(&anyone, filename);
+      if (ret) {
+        owl_fmtext_append_normal(&fm, "  Error opening file for zephyr buddies.\n");
+      } else {
+        j=owl_list_get_size(&anyone);
+        for (i=0; i<j; i++) {
+          user=owl_list_get_element(&anyone, i);
+          ret=ZLocateUser(user, &numlocs, ZAUTH);
+          if (ret!=ZERR_NONE) {
+            owl_function_error("Error getting location for %s", user);
+            continue;
+          }
+
+          numlocs=200;
+          ret=ZGetLocations(location, &numlocs);
+          if (ret==0) {
+            for (x=0; x<numlocs; x++) {
+              line=malloc(strlen(location[x].host)+strlen(location[x].time)+strlen(location[x].tty)+100);
+              tmp=short_zuser(user);
+              sprintf(line, "  %-10.10s %-24.24s %-12.12s  %20.20s\n",
+                      tmp,
+                      location[x].host,
+                      location[x].tty,
+                      location[x].time);
+              owl_fmtext_append_normal(&fm, line);
+              owl_free(tmp);
+              owl_free(line);
+            }
+            if (numlocs>=200) {
+              owl_fmtext_append_normal(&fm, "  Too many locations found for this user, truncating.\n");
+            }
+          }
+        }
       }
-    }
-    owl_list_free_all(&anyone, owl_free);
+      owl_list_free_all(&anyone, owl_free);
+    } 
   }
 #endif
 
-  if(owl_perlconfig_is_function("owl::get_blist")) {
-      char * perlblist = owl_perlconfig_execute("owl::get_blist()");
-      if(perlblist) {
-          owl_fmtext_append_ztext(&fm, perlblist);
-          owl_free(perlblist);
+  if(aim && zephyr) {
+      if(owl_perlconfig_is_function("owl::get_blist")) {
+          char * perlblist = owl_perlconfig_execute("owl::get_blist()");
+          if(perlblist) {
+              owl_fmtext_append_ztext(&fm, perlblist);
+              owl_free(perlblist);
+          }
       }
   }
   

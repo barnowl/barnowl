@@ -143,9 +143,8 @@ int main(int argc, char **argv, char **env)
 #ifdef HAVE_LIBZEPHYR
   /* zephyr init */
   ret=owl_zephyr_initialize();
-  if (ret) {
-    exit(1);
-  }
+  if (!ret)
+      owl_global_set_havezephyr(&g);
 #endif
   
   /* signal handler */
@@ -200,9 +199,6 @@ int main(int argc, char **argv, char **env)
   if (debug) owl_global_set_debug_on(&g);
   owl_function_debugmsg("startup: first available debugging message");
   owl_global_set_startupargs(&g, argcsave, argvsave);
-#ifdef HAVE_LIBZEPHYR
-  owl_global_set_havezephyr(&g);
-#endif
   owl_global_set_haveaim(&g);
 
 #if OWL_STDERR_REDIR
