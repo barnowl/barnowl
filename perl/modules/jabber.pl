@@ -362,7 +362,7 @@ sub do_login {
                 "Error in connect: " . join( " ", @result ) );
         }
             else {
-                ${ $conn->getRosterFromJidStr($jidStr) }->fetch();
+                $conn->getRosterFromJidStr($jidStr)->fetch();
                 $client->PresenceSend( priority => 1 );
                 queue_admin_msg("Connected to jabber as $jidStr");
             }
