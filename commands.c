@@ -244,17 +244,13 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("addbuddy", owl_command_addbuddy, OWL_CTX_INTERACTIVE,
 	      "add a buddy to a buddylist",
-	      "addbuddy aim <screenname>",
-	      "Add the named buddy to your buddylist.  Eventually other protocols,\n"
-	      "such as zephyr, will also be able to use this command.  For now the\n"
-	      "only available protocol is 'aim', specified as the first argument."),
+	      "addbuddy <protocol> <screenname>",
+	      "Add the named buddy to your buddylist.  <protocol> can be aim or zephyr\n"),
 
   OWLCMD_ARGS("delbuddy", owl_command_delbuddy, OWL_CTX_INTERACTIVE,
 	      "delete a buddy from a buddylist",
-	      "delbuddy aim <screenname>",
-	      "Delete the named buddy to your buddylist.  Eventually other protocols,\n"
-	      "such as zephyr, will also be able to use this command.  For now the\n"
-	      "only available protocol is 'aim', specified as the first argument.\n"),
+	      "delbuddy <protocol> <screenname>",
+	      "Delete the named buddy to your buddylist.  <protocol< can be aim or zephyr\n"),
 
   OWLCMD_ARGS("join", owl_command_join, OWL_CTX_INTERACTIVE,
 	      "join a chat group",
