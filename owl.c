@@ -140,13 +140,6 @@ int main(int argc, char **argv, char **env)
 
   owl_function_debugmsg("startup: Finished parsing arguments");
 
-#ifdef HAVE_LIBZEPHYR
-  /* zephyr init */
-  ret=owl_zephyr_initialize();
-  if (!ret)
-      owl_global_set_havezephyr(&g);
-#endif
-  
   /* signal handler */
   /*sigact.sa_handler=sig_handler;*/
   sigact.sa_sigaction=sig_handler;
@@ -200,6 +193,13 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: first available debugging message");
   owl_global_set_startupargs(&g, argcsave, argvsave);
   owl_global_set_haveaim(&g);
+
+#ifdef HAVE_LIBZEPHYR
+  /* zephyr init */
+  ret=owl_zephyr_initialize();
+  if (!ret)
+      owl_global_set_havezephyr(&g);
+#endif
 
 #if OWL_STDERR_REDIR
   /* Do this only after we've started curses up... */
