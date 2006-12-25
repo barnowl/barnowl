@@ -65,30 +65,18 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
     } else if (i==argc-1) { /* we need more than one arg at this point */
       error=1;
     } else {
-      if (!strcasecmp(argv[i], "class") ||
-	  !strcasecmp(argv[i], "instance") ||
-	  !strcasecmp(argv[i], "sender") ||
-	  !strcasecmp(argv[i], "recipient") ||
-	  !strcasecmp(argv[i], "body") ||
-	  !strcasecmp(argv[i], "opcode") ||
-	  !strcasecmp(argv[i], "realm") ||
-	  !strcasecmp(argv[i], "type") ||
-	  !strcasecmp(argv[i], "direction") ||
-	  !strcasecmp(argv[i], "hostname") ||
-	  !strcasecmp(argv[i], "login")) {
-	regexstr=owl_text_substitute(argv[i+1], "%me%", owl_zephyr_get_sender());
-	owl_filterelement_create_re(fe, argv[i], regexstr);
-	owl_free(regexstr);
-	i++;
-      } else if (!strcasecmp(argv[i], "filter")) {
+      if (!strcasecmp(argv[i], "filter")) {
 	owl_filterelement_create_filter(fe, argv[i+1]);
 	i++;
       } else if (!strcasecmp(argv[i], "perl")) {
 	owl_filterelement_create_perl(fe, argv[i+1]);
 	i++;
       } else {
-	error=1;
-      }
+	regexstr=owl_text_substitute(argv[i+1], "%me%", owl_zephyr_get_sender());
+	owl_filterelement_create_re(fe, argv[i], regexstr);
+	owl_free(regexstr);
+	i++;
+      } 
     }
 
     if (!error) {
@@ -219,6 +207,9 @@ int owl_filter_message_match(owl_filter *f, owl_message *m)
       } else {
 	match="none";
       }
+    } else {
+      match = owl_message_get_attribute_value(m,field);
+      if(match == NULL) match = "";
     }
 
     tmp=owl_regex_compare(owl_filterelement_get_re(fe), match);
