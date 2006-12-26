@@ -5,6 +5,17 @@ static const char fileIdent[] = "$Id$";
 
 #define OWL_FILTER_MAXRECURSE 20
 
+static owl_filterelement fe_true;
+static owl_filterelement fe_false;
+static owl_filterelement fe_null;
+
+void owl_filterengine_init()
+{
+  owl_filterelement_create_true(&fe_true);
+  owl_filterelement_create_false(&fe_false);
+  owl_filterelement_create_null(&fe_null);
+}
+
 int owl_filter_init_fromstring(owl_filter *f, char *name, char *string)
 {
   char **argv;
