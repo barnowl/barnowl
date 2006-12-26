@@ -192,7 +192,14 @@ int owl_filter_message_match(owl_filter *f, owl_message *m)
 
 void owl_filter_print(owl_filter *f, char *out)
 {
-  strcpy(out, "");
+  strcpy(out, owl_filter_get_name(f));
+  strcat(out, ": ");
+
+  if (f->color!=OWL_COLOR_DEFAULT) {
+    strcat(out, "-c ");
+    strcat(out, owl_util_color_to_string(f->color));
+    strcat(out, " ");
+  }
   if(!f->root) return;
   owl_filterelement_print(f->root, out);
   strcat(out, "\n");
