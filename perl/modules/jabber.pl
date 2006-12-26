@@ -351,7 +351,7 @@ sub do_login {
             my @result = $client->AuthSend( %{ $vars{jlogin_authhash} } );
 
             if ( $result[0] ne 'ok' ) {
-            if ( !$vars{jlogin_havepass} && $result[0] == 401 ) {
+            if ( !$vars{jlogin_havepass} && $result[0] eq '401' ) {
                 $vars{jlogin_havepass} = 1;
                 $conn->removeConnection($jidStr);
                 owl::start_password( "Password for $jidStr: ", \&do_login );
@@ -808,9 +808,7 @@ sub process_owl_jwrite {
     $j->SetSubject( $vars{jwrite}{subject} ) if ( $vars{jwrite}{subject} );
 
     my $m = j2o( $j, { direction => 'out' } );
-    if ( $vars{jwrite}{type} ne 'groupchat' ) {
-
-        #XXX TODO: Check for displayoutgoing.
+    if ( $vars{jwrite}{type} ne 'groupchat' && owl::getvar('displayoutgoing') eq 'on') {
         owl::queue_message($m);
     }
 
@@ -1012,7 +1010,7 @@ sub j2hash {
           "jwrite " . ( ( $dir eq 'in' ) ? $props{from} : $props{to} );
         $props{replycmd} .=
           " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
-        $props{isprivate} = 1;
+        $props{private} = 1;
     }
     elsif ( $jtype eq 'groupchat' ) {
         my $nick = $props{nick} = $from->GetResource();
@@ -1031,7 +1029,7 @@ sub j2hash {
     }
     elsif ( $jtype eq 'normal' ) {
         $props{replycmd}  = undef;
-        $props{isprivate} = 1;
+        $props{private} = 1;
     }
     elsif ( $jtype eq 'headline' ) {
         $props{replycmd} = undef;

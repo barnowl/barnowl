@@ -399,16 +399,21 @@ typedef struct _owl_regex {
 } owl_regex;
 
 typedef struct _owl_filterelement {
-  int type;
-  char *field;
+  int (*match_message)(struct _owl_filterelement *fe, owl_message *m);
+  /* Append a string representation of the filterelement onto buf*/
+  void (*print_elt)(struct _owl_filterelement *fe, char * buf);
+  /* Operands for and,or,not*/
+  struct _owl_filterelement *left, *right;
+  /* For regex filters*/
   owl_regex re;
-  char *filtername;  /* for maching on another filter */
+  /* Used by regexes, filter references, and perl */
+  char *field;
 } owl_filterelement;
 
 typedef struct _owl_filter {
   char *name;
   int polarity;
-  owl_list fes; /* filterelements */
+  owl_filterelement * root;
   int color;
   int cachedmsgid;  /* cached msgid: should move into view eventually */
 } owl_filter;
@@ -554,9 +559,6 @@ typedef struct _owl_global {
   int newmsgproc_pid;
   int malloced, freed;
   char *searchstring;
-  owl_filterelement fe_true;
-  owl_filterelement fe_false;
-  owl_filterelement fe_null;
   aim_session_t aimsess;
   aim_conn_t bosconn;
   owl_timer aim_noop_timer;

@@ -77,10 +77,6 @@ void owl_global_init(owl_global *g) {
   owl_history_set_norepeats(&(g->cmdhist));
   g->nextmsgid=0;
 
-  owl_filterelement_create_true(&(g->fe_true));
-  owl_filterelement_create_false(&(g->fe_false));
-  owl_filterelement_create_null(&(g->fe_null));
-
   _owl_global_setup_windows(g);
 
   /* Fill in some variables which don't have constant defaults */
@@ -580,18 +576,6 @@ int owl_global_get_nextmsgid(owl_global *g) {
 
 owl_view *owl_global_get_current_view(owl_global *g) {
   return(&(g->current_view));
-}
-
-owl_filterelement *owl_global_get_filterelement_true(owl_global *g) {
-  return(&(g->fe_true));
-}
-
-owl_filterelement *owl_global_get_filterelement_false(owl_global *g) {
-  return(&(g->fe_false));
-}
-
-owl_filterelement *owl_global_get_filterelement_null(owl_global *g) {
-  return(&(g->fe_null));
 }
 
 /* has colors */

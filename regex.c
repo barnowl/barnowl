@@ -85,7 +85,10 @@ void owl_regex_copy(owl_regex *a, owl_regex *b)
 
 void owl_regex_free(owl_regex *re)
 {
-  if (re->string) owl_free(re->string);
+    if (re->string) {
+        owl_free(re->string);
+        regfree(&(re->re));
+    }
 
   /* do we need to free the regular expression? */
 }

@@ -189,7 +189,7 @@ int main(int argc, char **argv, char **env)
 
   /* owl global init */
   owl_global_init(&g);
-  if (debug) owl_global_set_debug_on(&g);
+    if (debug) owl_global_set_debug_on(&g);
   owl_function_debugmsg("startup: first available debugging message");
   owl_global_set_startupargs(&g, argcsave, argvsave);
   owl_global_set_haveaim(&g);

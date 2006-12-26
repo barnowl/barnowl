@@ -149,6 +149,7 @@ int main(int argc, char **argv, char **env)
     numfailures += owl_util_regtest();
     numfailures += owl_dict_regtest();
     numfailures += owl_variable_regtest();
+    numfailures += owl_filter_regtest();
     if (numfailures) {
       fprintf(stderr, "*** WARNING: %d failures total\n", numfailures);
     }
