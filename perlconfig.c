@@ -219,7 +219,7 @@ char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc
 }
 
 
-char *owl_perlconfig_readconfig(void)
+char *owl_perlconfig_readconfig(char * file)
 {
   int ret;
   PerlInterpreter *p;
@@ -266,7 +266,12 @@ char *owl_perlconfig_readconfig(void)
   perl_get_sv("owl::time", TRUE);
   perl_get_sv("owl::host", TRUE);
   perl_get_av("owl::fields", TRUE);
-  
+
+  if(file) {
+    SV * cfg = get_sv("owl::configfile", TRUE);
+    sv_setpv(cfg, file);
+  }
+
   perl_eval_pv(owl_perlwrap_codebuff, FALSE);
 
   if (SvTRUE(ERRSV)) {

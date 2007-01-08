@@ -17,7 +17,9 @@ use lib(get_data_dir()."/owl/lib");
 use lib($::ENV{'HOME'}."/.owl/lib");
 
 
-our $configfile = $::ENV{'HOME'}."/.owlconf";
+our $configfile;
+
+$configfile ||= $::ENV{'HOME'}."/.owlconf";
 
 # populate global variable space for legacy owlconf files 
 sub _format_msg_legacy_wrap {
@@ -454,7 +456,11 @@ onGetBuddyList ) {
 
 # load the config  file
 if (-r $owl::configfile) {
-do $owl::configfile or die $@;
+    undef $!;
+    undef $@;
+    do $owl::configfile;
+    die $@ if $@;
+    die $! if $!;
 }
 
 1;
