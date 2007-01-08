@@ -1155,4 +1155,35 @@ sub resolveJID {
     return "";
 }
 
+#####################################################################
+#####################################################################
+
+package owl::Message::Jabber;
+
+our @ISA = qw( owl::Message );
+
+sub jtype { shift->{jtype} };
+sub from { shift->{from} };
+sub to { shift->{to} };
+
+sub smartfilter {
+    my $self = shift;
+    my $inst = shift;
+
+    if($self->jtype eq 'chat') {
+        my ($user, $filter, $ftext);
+        if($self->direction eq 'in') {
+            $user = $self->from;
+        } else {
+            $user = $self->to;
+        }
+        $user = Net::Jabber::JID->new($user)->GetJID($inst ? 'full' : 'base');
+        $filter = "jabber-user-$user";
+        $ftext = qq{type ^jabber\$ and ( ( direction ^in\$ and from ^$user ) } .
+                 qq{or ( direction ^out\$ and to ^$user ) ) };
+        owl::filter("$filter $ftext");
+        return $filter;
+    }
+}
+
 1;

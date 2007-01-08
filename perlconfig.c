@@ -161,6 +161,64 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
   return out;
 }
 
+
+/* Calls a method on a perl object representing a message.
+   If the return value is non-null, the caller must free it.
+ */
+char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc, char ** argv)
+{
+  dSP;
+  unsigned int count, len, i;
+  SV *msgref, *srv;
+  char *out, *preout;
+
+  msgref = owl_perlconfig_message2hashref(m);
+
+  ENTER;
+  SAVETMPS;
+
+  PUSHMARK(SP);
+  XPUSHs(msgref);
+  for(i=0;i<argc;i++) {
+    XPUSHs(sv_2mortal(newSVpv(argv[i], 0)));
+  }
+  PUTBACK;
+
+  count = call_method(method, G_SCALAR|G_KEEPERR|G_EVAL);
+
+  SPAGAIN;
+
+  if(count != 1) {
+    fprintf(stderr, "perl returned wrong count %d\n", count);
+    abort();
+  }
+
+  if (SvTRUE(ERRSV)) {
+    STRLEN n_a;
+    owl_function_error("Error: '%s'", SvPV(ERRSV, n_a));
+    /* and clear the error */
+    sv_setsv (ERRSV, &PL_sv_undef);
+  }
+
+  srv = POPs;
+
+  if (srv) {
+    preout=SvPV(srv, len);
+    out = owl_malloc(strlen(preout)+1);
+    strncpy(out, preout, len);
+    out[len] = '\0';
+  } else {
+    out = NULL;
+  }
+
+  PUTBACK;
+  FREETMPS;
+  LEAVE;
+
+  return out;
+}
+
+
 char *owl_perlconfig_readconfig(void)
 {
   int ret;

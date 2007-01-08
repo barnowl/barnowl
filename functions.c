@@ -2834,33 +2834,39 @@ char *owl_function_smartfilter(int type)
   }
 
   /* narrow personal and login messages to the sender or recip as appropriate */
-  if (owl_message_is_personal(m) || owl_message_is_loginout(m)) {
-    if (owl_message_is_type_zephyr(m)) {
+  if (owl_message_is_type_zephyr(m)) {
+    if (owl_message_is_personal(m) || owl_message_is_loginout(m)) {
       if (owl_message_is_direction_in(m)) {
-	zperson=short_zuser(owl_message_get_sender(m));
+        zperson=short_zuser(owl_message_get_sender(m));
       } else {
-	zperson=short_zuser(owl_message_get_recipient(m));
+        zperson=short_zuser(owl_message_get_recipient(m));
       }
       filtname=owl_function_zuserfilt(zperson);
       owl_free(zperson);
       return(filtname);
     }
-    return(NULL);
-  }
 
-  /* narrow class MESSAGE, instance foo, recip * messages to class, inst */
-  if (!strcasecmp(owl_message_get_class(m), "message") && !owl_message_is_personal(m)) {
-    filtname=owl_function_classinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
+    /* narrow class MESSAGE, instance foo, recip * messages to class, inst */
+    if (!strcasecmp(owl_message_get_class(m), "message") && !owl_message_is_personal(m)) {
+      filtname=owl_function_classinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
+      return(filtname);
+    }
+
+    /* otherwise narrow to the class */
+    if (type==0) {
+      filtname=owl_function_classinstfilt(owl_message_get_class(m), NULL);
+    } else if (type==1) {
+      filtname=owl_function_classinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
+    }
     return(filtname);
   }
 
-  /* otherwise narrow to the class */
-  if (type==0) {
-    filtname=owl_function_classinstfilt(owl_message_get_class(m), NULL);
-  } else if (type==1) {
-    filtname=owl_function_classinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
-  }
-  return(filtname);
+  /* pass it off to perl */
+  char *argv[1];
+  if(type) {
+    argv[0] = "-i";
+  };
+  return owl_perlconfig_message_call_method(m, "smartfilter", type ? 1 : 0, argv);
 }
 
 void owl_function_smartzpunt(int type)
