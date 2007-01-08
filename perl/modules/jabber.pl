@@ -130,8 +130,7 @@ sub onStart {
         register_owl_commands();
         push @::onMainLoop,     sub { owl_jabber::onMainLoop(@_) };
         push @::onGetBuddyList, sub { owl_jabber::onGetBuddyList(@_) };
-    }
-    else {
+    } else {
         # Our owl doesn't support queue_message. Unfortunately, this
         # means it probably *also* doesn't support owl::error. So just
         # give up silently.
@@ -340,7 +339,8 @@ sub do_login {
             subscribe    => sub { owl_jabber::process_presence_subscribe(@_) },
             subscribed   => sub { owl_jabber::process_presence_subscribed(@_) },
             unsubscribe  => sub { owl_jabber::process_presence_unsubscribe(@_) },
-            unsubscribed => sub { owl_jabber::process_presence_unsubscribed(@_) });
+            unsubscribed => sub { owl_jabber::process_presence_unsubscribed(@_) },
+            error        => sub { owl_jabber::process_presence_error(@_) });
 
         my $status = $client->Connect( %{ $vars{jlogin_connhash} } );
         if ( !$status ) {
@@ -974,6 +974,13 @@ sub process_presence_unsubscribed {
     return;
 }
 
+sub process_presence_error {
+    my ( $sid, $p ) = @_;
+    my $code = $p->GetErrorCode();
+    my $error = $p->GetError();
+    owl::error("Jabber: $code $error");
+}
+
 
 ### Helper functions
 
@@ -1069,9 +1076,9 @@ sub boldify($) {
     return '@b{' . $str . '}' if ( $str !~ /\}/ );
     return '@b[' . $str . ']' if ( $str !~ /\]/ );
 
-    my $txt = "\@b($str";
-    $txt =~ s/\)/\)\@b\[\)\]\@b\(/g;
-    return $txt . ')';
+    my $txt = "$str";
+    $txt =~ s{[)]}{)\@b[)]\@b(}g;
+    return '@b(' . $txt . ')';
 }
 
 sub getServerFromJID {
