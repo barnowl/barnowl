@@ -1,16 +1,18 @@
 barn-owl TODO list
 ------------------
 
-* MUC presence info
-* Proper Jabber logging
-* Roster management
- * Adding and removing contacts
- * Approving/rejecting sub requests
+1) Basic Jabber functionality
+ * MUST   default style
+ * MUST   option to accept/deny sub requests
+ * MUST   MUC presence
+ * SHOULD shortname support
+ * MUST   smartnarrow
+ * MUST   think about priority & status
+ * multi-user chat
+   * MAY  More extensive room configuration
+   * MUST show error messages
 * Default domain for JIDs
  * (e.g. jwrite nelhage should DTRT. I'd like jmuc join help to also.)
-* Make the default display work with Jabber
-* Make filters work with Jabber
-* smartnarrow should be jabber-aware
 * Check for memory leaks
  * perl eval()s from owl seem problematic
 * Add sane default keybindings
