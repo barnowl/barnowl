@@ -103,6 +103,7 @@ AC_CHECK_FILE(/usr/share/terminfo, AC_DEFINE(TERMINFO, "/usr/share/terminfo", [H
   AC_CHECK_FILE(/usr/share/lib/terminfo, AC_DEFINE(TERMINFO, "/usr/share/lib/terminfo", [Have terminfo]),
   AC_MSG_ERROR(No terminfo found for this system)))
 
+AC_SUBST(XSUBPPDIR)
 AC_SUBST(XSUBPPFLAGS)
 
 AC_PROG_INSTALL
