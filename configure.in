@@ -47,7 +47,6 @@ AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(k5crypto, krb5_derive_key)
 dnl AC_CHECK_LIB(des425, req_act_vno)
 AC_CHECK_LIB(des425, des_cbc_encrypt)
-AC_CHECK_LIB(des, des_quad_cksum)
 AC_CHECK_LIB(resolv, res_search)
 AC_CHECK_LIB(krb5, krb5_get_credentials)
 AC_CHECK_LIB(krb4, krb_sendauth,,
@@ -88,6 +87,12 @@ else
    AC_MSG_ERROR(not found)
 fi
 
+if test -f "${XSUBPPDIR}/typemap"; then
+   XSUBPPFLAGS="-typemap ${XSUBPPDIR}/typemap"
+else
+   XSUBPPFLAGS=""
+fi
+
 dnl Add LDFLAGS for embeded perl
 FOO=`perl -MExtUtils::Embed -e ldopts | sed 's/,-E//' | sed 's/-liconv//'`
 echo Adding perl LDFLAGS ${FOO}
@@ -98,7 +103,7 @@ AC_CHECK_FILE(/usr/share/terminfo, AC_DEFINE(TERMINFO, "/usr/share/terminfo", [H
   AC_CHECK_FILE(/usr/share/lib/terminfo, AC_DEFINE(TERMINFO, "/usr/share/lib/terminfo", [Have terminfo]),
   AC_MSG_ERROR(No terminfo found for this system)))
 
-AC_SUBST(XSUBPPDIR)
+AC_SUBST(XSUBPPFLAGS)
 
 AC_PROG_INSTALL
 
