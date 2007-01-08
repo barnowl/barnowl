@@ -10,7 +10,6 @@ barn-owl TODO list
  * MUST   think about priority & status
  * multi-user chat
    * MAY  More extensive room configuration
-   * MUST show error messages
 * Default domain for JIDs
  * (e.g. jwrite nelhage should DTRT. I'd like jmuc join help to also.)
 * Check for memory leaks
