@@ -291,7 +291,7 @@ int owl_message_is_logout(owl_message *m)
 
 void owl_message_set_isprivate(owl_message *m)
 {
-  owl_message_set_attribute(m, "isprivate", "");
+  owl_message_set_attribute(m, "isprivate", "true");
 }
 
 int owl_message_is_private(owl_message *m)
@@ -990,6 +990,9 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
     owl_message_set_hostname(m, hostbuff);
   }
   owl_zwrite_free(&z);
+
+  if(owl_message_is_personal(m))
+    owl_message_set_isprivate(m);
 }
 
 void owl_message_pretty_zsig(owl_message *m, char *buff)
