@@ -89,6 +89,4 @@ void owl_regex_free(owl_regex *re)
         owl_free(re->string);
         regfree(&(re->re));
     }
-
-  /* do we need to free the regular expression? */
 }
