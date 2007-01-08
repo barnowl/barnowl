@@ -100,6 +100,7 @@ all: owl
 install: all installdirs
 	${INSTALL_PROGRAM} owl ${bindir}/owl
 	${INSTALL_DATA} doc/owl.1 ${mandir}/man1/owl.1
+	tar -C perl -c . | tar -C ${datadir}/owl -x
 
 installdirs: mkinstalldirs
 	${srcdir}/mkinstalldirs ${bindir} ${mandir}/man1 ${datadir}/owl
