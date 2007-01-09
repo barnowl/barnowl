@@ -226,7 +226,8 @@ sub onGetBuddyList {
 sub register_owl_commands() {
     owl::new_command(
         jabberlogin => \&cmd_login,
-        { summary => "Log into jabber", }
+        { summary => "Log into jabber", },
+        { usage   => "jabberlogin JID" }
     );
     owl::new_command(
         jabberlogout => \&cmd_logout,
@@ -252,24 +253,25 @@ sub register_owl_commands() {
             summary     => "Jabber MUC related commands.",
             description => "jmuc sends jabber commands related to muc.\n\n"
               . "The following commands are available\n\n"
-              . "join {muc}  Join a muc.\n\n"
-              . "part [muc]  Part a muc.\n"
+              . "join MUC    Join a muc.\n\n"
+              . "part MUC    Part a muc.\n"
               . "            The muc is taken from the current message if not supplied.\n\n"
-              . "invite {jid} [muc]\n"
+              . "invite JID MUC\n"
               . "            Invite {jid} to [muc].\n"
               . "            The muc is taken from the current message if not supplied.\n\n"
-              . "configure [muc]\n"
+              . "configure MUC\n"
               . "            Configure [muc].\n"
-              . "            Necessary to initalize a new MUC",
-            usage => "jmuc {command} {args}"
+              . "            Necessary to initalize a new MUC\n"
+              . "            At present, only the default configuration is supported.",
+            usage => "jmuc COMMAND ARGS"
         }
     );
     owl::new_command(
         jroster => \&cmd_jroster,
         {
             summary     => "Jabber Roster related commands.",
-	    description => "jroster sends jabber commands related to rosters.\n\n",
-            usage       => "jroster {command} {args}"
+            description => "jroster sends jabber commands related to rosters.\n\n",
+            usage       => "jroster COMMAND ARGS"
         }
     );
 }
@@ -349,8 +351,8 @@ sub do_login {
         } else {
             my @result = $client->AuthSend( %{ $vars{jlogin_authhash} } );
 
-            if ( $#result == -1 || $result[0] ne 'ok' ) {
-                if ( !$vars{jlogin_havepass} && ( $#result == -1 || $result[0] eq '401' ) ) {
+            if ( ($result[0] || "") ne 'ok' ) {
+                if ( !$vars{jlogin_havepass} && $result[0] eq '401' ) {
                     $vars{jlogin_havepass} = 1;
                     $conn->removeConnection($jidStr);
                     owl::start_password( "Password for $jidStr: ", \&do_login );
