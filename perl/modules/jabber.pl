@@ -1163,13 +1163,16 @@ our @ISA = qw( owl::Message );
 sub jtype { shift->{jtype} };
 sub from { shift->{from} };
 sub to { shift->{to} };
+sub room { shift->{room} };
 
 sub smartfilter {
     my $self = shift;
     my $inst = shift;
 
+    my ($filter, $ftext);
+
     if($self->jtype eq 'chat') {
-        my ($user, $filter, $ftext);
+        my $user;
         if($self->direction eq 'in') {
             $user = $self->from;
         } else {
@@ -1179,6 +1182,12 @@ sub smartfilter {
         $filter = "jabber-user-$user";
         $ftext = qq{type ^jabber\$ and ( ( direction ^in\$ and from ^$user ) } .
                  qq{or ( direction ^out\$ and to ^$user ) ) };
+        owl::filter("$filter $ftext");
+        return $filter;
+    } elsif ($self->jtype eq 'groupchat') {
+        my $room = $self->room;
+        $filter = "jabber-room-$room";
+        $ftext = qq{type ^jabber\$ and room ^$room\$};
         owl::filter("$filter $ftext");
         return $filter;
     }
