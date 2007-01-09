@@ -4,9 +4,9 @@ barn-owl TODO list
 1) Basic Jabber functionality
  * MUST   default style
  * MUST   option to accept/deny sub requests
+  * better UI?
  * MUST   MUC presence
  * SHOULD shortname support
- * MUST   smartnarrow
  * MUST   think about priority & status
  * multi-user chat
    * MAY  More extensive room configuration
