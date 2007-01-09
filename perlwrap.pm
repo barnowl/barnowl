@@ -446,11 +446,9 @@ onGetBuddyList ) {
 
 # load the config  file
 if (-r $owl::configfile) {
-    undef $!;
     undef $@;
     do $owl::configfile;
     die $@ if $@;
-    die $! if $!;
 }
 
 1;
