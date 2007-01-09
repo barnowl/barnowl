@@ -5,6 +5,9 @@
 #####################################################################
 #####################################################################
 
+use strict;
+use warnings;
+
 package owl;
 
 
@@ -15,7 +18,6 @@ BEGIN {
 
 use lib(get_data_dir()."/owl/lib");
 use lib($::ENV{'HOME'}."/.owl/lib");
-
 
 our $configfile;
 
@@ -37,6 +39,7 @@ sub _receive_msg_legacy_wrap {
 
 # make owl::<command>("foo") be aliases to owl::command("<command> foo");
 sub AUTOLOAD {
+    our $AUTOLOAD;
     my $called = $AUTOLOAD;
     $called =~ s/.*:://;
     $called =~ s/_/-/g;
@@ -65,6 +68,7 @@ sub new_command {
         %{$args}
     );
 
+    no warnings 'uninitialized';
     owl::new_command_internal($name, $func, $args{summary}, $args{usage}, $args{description});
 }
 
@@ -197,7 +201,7 @@ sub smartfilter {
 
 package owl::Message::Admin;
 
-@ISA = qw( owl::Message );
+use base qw( owl::Message );
 
 sub header       { return shift->{"header"}; }
 
@@ -206,14 +210,14 @@ sub header       { return shift->{"header"}; }
 
 package owl::Message::Generic;
 
-@ISA = qw( owl::Message );
+use base qw( owl::Message );
 
 #####################################################################
 #####################################################################
 
 package owl::Message::AIM;
 
-@ISA = qw( owl::Message );
+use base qw( owl::Message );
 
 # all non-loginout AIM messages are personal for now...
 sub is_personal { 
@@ -225,7 +229,7 @@ sub is_personal {
 
 package owl::Message::Zephyr;
 
-@ISA = qw( owl::Message );
+use base qw( owl::Message );
 
 sub login_tty { 
     my ($m) = @_;
@@ -240,8 +244,6 @@ sub login_host {
 }
 
 sub zwriteline  { return shift->{"zwriteline"}; }
-
-sub zsig        { return shift->{"zsig"}; }
 
 sub is_ping     { return (lc(shift->opcode) eq "ping"); }
 
@@ -437,11 +439,14 @@ sub get_blist
 # switch to package main when we're done
 package main;
 # alias the hooks
-foreach my $hook  qw (onStartSubs
-onReceiveMsg
-onMainLoop
-onGetBuddyList ) {
-  *{"main::".$hook} = \*{"owl::".$hook};
+{
+    no strict 'refs';
+    foreach my $hook  qw (onStartSubs
+                          onReceiveMsg
+                          onMainLoop
+                          onGetBuddyList ) {
+        *{"main::".$hook} = \*{"owl::".$hook};
+    }
 }
 
 # load the config  file
