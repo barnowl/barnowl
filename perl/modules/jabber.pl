@@ -346,27 +346,25 @@ sub do_login {
         if ( !$status ) {
             $conn->removeConnection($jidStr);
             owl::error("We failed to connect");
-        }
-        else {
+        } else {
             my @result = $client->AuthSend( %{ $vars{jlogin_authhash} } );
 
             if ( $result[0] ne 'ok' ) {
-            if ( !$vars{jlogin_havepass} && $result[0] eq '401' ) {
-                $vars{jlogin_havepass} = 1;
+                if ( !$vars{jlogin_havepass} && $result[0] eq '401' ) {
+                    $vars{jlogin_havepass} = 1;
+                    $conn->removeConnection($jidStr);
+                    owl::start_password( "Password for $jidStr: ", \&do_login );
+                    return "";
+                }
                 $conn->removeConnection($jidStr);
-                owl::start_password( "Password for $jidStr: ", \&do_login );
-                return "";
-            }
-            $conn->removeConnection($jidStr);
-            owl::error(
-                "Error in connect: " . join( " ", @result ) );
-        }
-            else {
+                owl::error( "Error in connect: " . join( " ", @result ) );
+            } else {
                 $conn->getRosterFromJidStr($jidStr)->fetch();
                 $client->PresenceSend( priority => 1 );
                 queue_admin_msg("Connected to jabber as $jidStr");
             }
         }
+
     }
     delete $vars{jlogin_jid};
     $vars{jlogin_password} =~ tr/\0-\377/x/;
