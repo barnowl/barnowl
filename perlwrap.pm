@@ -289,19 +289,12 @@ our @onMainLoop = ();
 our @onGetBuddyList = ();
 
 ################################################################################
-# Mainloop hook and threading.
+# Mainloop hook
 ################################################################################
 
-use threads;
-use threads::shared;
-
-# Shared thread shutdown flag.
-# Consider adding a reload flag, so threads that should persist across reloads
-# can distinguish the two events. We wouldn't want a reload to cause us to
-# log out of and in to a perl-based IM session.
-our $shutdown : shared;
+our $shutdown;
 $shutdown = 0;
-our $reload : shared;
+our $reload;
 $reload = 0;
 
 # Functions to call hook lists
@@ -339,8 +332,7 @@ sub shutdown
 # Modern versions of owl provides a great place to have shutdown stuff.
 # Put things in ~/.owl/shutdown
 
-# At this point I use owl::shutdown to tell any auxillary threads that they
-# should terminate.
+    # use $shutdown to tell modules that that's what we're doing.
     $shutdown = 1;
     mainloop_hook();
 }
@@ -361,23 +353,21 @@ sub onStart
 ################################################################################
 # Reload Code, taken from /afs/sipb/user/jdaniel/project/owl/perl
 ################################################################################
-sub reload_hook (@) 
+sub reload_hook (@)
 {
-    
-
     onStart();
     return 1;
 }
 
-sub reload 
+sub reload
 {
-    # Shutdown existing threads.
+    # Use $reload to tell modules that we're performing a reload.
     $reload = 1;
     owl::mainloop_hook();
     $reload = 0;
     @onMainLoop = ();
     @onStartSubs = ();
-    
+
     # Do reload
     package main;
     if (do "$ENV{HOME}/.owlconf" && owl::reload_hook(@_))
