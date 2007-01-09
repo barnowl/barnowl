@@ -351,8 +351,8 @@ sub do_login {
         } else {
             my @result = $client->AuthSend( %{ $vars{jlogin_authhash} } );
 
-            if ( ($result[0] || "") ne 'ok' ) {
-                if ( !$vars{jlogin_havepass} && $result[0] eq '401' ) {
+            if ( !@result || $result[0] ne 'ok' ) {
+                if ( !$vars{jlogin_havepass} && ( $#result == -1 || $result[0] eq '401' ) ) {
                     $vars{jlogin_havepass} = 1;
                     $conn->removeConnection($jidStr);
                     owl::start_password( "Password for $jidStr: ", \&do_login );
