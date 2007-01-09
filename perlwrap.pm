@@ -8,12 +8,13 @@
 use strict;
 use warnings;
 
-package owl;
+package BarnOwl;
 
 
 BEGIN {
 # bootstrap in C bindings and glue
-    bootstrap owl 1.2;
+    *owl:: = \*BarnOwl::;
+    bootstrap BarnOwl 1.2;
 };
 
 use lib(get_data_dir()."/lib");
@@ -27,23 +28,23 @@ $configfile ||= $::ENV{'HOME'}."/.owlconf";
 sub _format_msg_legacy_wrap {
     my ($m) = @_;
     $m->legacy_populate_global();
-    return &owl::format_msg($m);
+    return &BarnOwl::format_msg($m);
 }
 
 # populate global variable space for legacy owlconf files 
 sub _receive_msg_legacy_wrap {
     my ($m) = @_;
     $m->legacy_populate_global();
-    return &owl::receive_msg($m);
+    return &BarnOwl::Hooks::receive_msg($m);
 }
 
-# make owl::<command>("foo") be aliases to owl::command("<command> foo");
+# make BarnOwl::<command>("foo") be aliases to BarnOwl::command("<command> foo");
 sub AUTOLOAD {
     our $AUTOLOAD;
     my $called = $AUTOLOAD;
     $called =~ s/.*:://;
     $called =~ s/_/-/g;
-    return &owl::command("$called ".join(" ",@_));
+    return &BarnOwl::command("$called ".join(" ",@_));
 }
 
 =head2 new_command NAME FUNC [{ARGS}]
@@ -69,19 +70,19 @@ sub new_command {
     );
 
     no warnings 'uninitialized';
-    owl::new_command_internal($name, $func, $args{summary}, $args{usage}, $args{description});
+    BarnOwl::new_command_internal($name, $func, $args{summary}, $args{usage}, $args{description});
 }
 
 #####################################################################
 #####################################################################
 
-package owl::Message;
+package BarnOwl::Message;
 
 sub new {
     my $class = shift;
     my %args = (@_);
     if($class eq __PACKAGE__ && $args{type}) {
-        $class = "owl::Message::" . ucfirst $args{type};
+        $class = "BarnOwl::Message::" . ucfirst $args{type};
     }
     return bless {%args}, $class;
 }
@@ -136,12 +137,12 @@ sub pretty_sender { return shift->sender; }
 
 sub delete {
     my ($m) = @_;
-    &owl::command("delete --id ".$m->id);
+    &BarnOwl::command("delete --id ".$m->id);
 }
 
 sub undelete {
     my ($m) = @_;
-    &owl::command("undelete --id ".$m->id);
+    &BarnOwl::command("undelete --id ".$m->id);
 }
 
 # Serializes the message into something similar to the zwgc->vt format
@@ -168,26 +169,26 @@ sub serialize {
 # Populate the annoying legacy global variables
 sub legacy_populate_global {
     my ($m) = @_;
-    $owl::direction  = $m->direction ;
-    $owl::type       = $m->type      ;
-    $owl::id         = $m->id        ;
-    $owl::class      = $m->class     ;
-    $owl::instance   = $m->instance  ;
-    $owl::recipient  = $m->recipient ;
-    $owl::sender     = $m->sender    ;
-    $owl::realm      = $m->realm     ;
-    $owl::opcode     = $m->opcode    ;
-    $owl::zsig       = $m->zsig      ;
-    $owl::msg        = $m->body      ;
-    $owl::time       = $m->time      ;
-    $owl::host       = $m->host      ;
-    $owl::login      = $m->login     ;
-    $owl::auth       = $m->auth      ;
+    $BarnOwl::direction  = $m->direction ;
+    $BarnOwl::type       = $m->type      ;
+    $BarnOwl::id         = $m->id        ;
+    $BarnOwl::class      = $m->class     ;
+    $BarnOwl::instance   = $m->instance  ;
+    $BarnOwl::recipient  = $m->recipient ;
+    $BarnOwl::sender     = $m->sender    ;
+    $BarnOwl::realm      = $m->realm     ;
+    $BarnOwl::opcode     = $m->opcode    ;
+    $BarnOwl::zsig       = $m->zsig      ;
+    $BarnOwl::msg        = $m->body      ;
+    $BarnOwl::time       = $m->time      ;
+    $BarnOwl::host       = $m->host      ;
+    $BarnOwl::login      = $m->login     ;
+    $BarnOwl::auth       = $m->auth      ;
     if ($m->fields) {
-	@owl::fields = @{$m->fields};
+	@BarnOwl::fields = @{$m->fields};
 	@main::fields = @{$m->fields};
     } else {
-	@owl::fields = undef;
+	@BarnOwl::fields = undef;
 	@main::fields = undef;
     }
 }
@@ -199,25 +200,25 @@ sub smartfilter {
 #####################################################################
 #####################################################################
 
-package owl::Message::Admin;
+package BarnOwl::Message::Admin;
 
-use base qw( owl::Message );
+use base qw( BarnOwl::Message );
 
 sub header       { return shift->{"header"}; }
 
 #####################################################################
 #####################################################################
 
-package owl::Message::Generic;
+package BarnOwl::Message::Generic;
 
-use base qw( owl::Message );
+use base qw( BarnOwl::Message );
 
 #####################################################################
 #####################################################################
 
-package owl::Message::AIM;
+package BarnOwl::Message::AIM;
 
-use base qw( owl::Message );
+use base qw( BarnOwl::Message );
 
 # all non-loginout AIM messages are personal for now...
 sub is_personal { 
@@ -227,9 +228,9 @@ sub is_personal {
 #####################################################################
 #####################################################################
 
-package owl::Message::Zephyr;
+package BarnOwl::Message::Zephyr;
 
-use base qw( owl::Message );
+use base qw( BarnOwl::Message );
 
 sub login_tty { 
     my ($m) = @_;
@@ -262,7 +263,7 @@ sub is_mail {
 sub pretty_sender {
     my ($m) = @_;
     my $sender = $m->sender;
-    my $realm = owl::zephyr_getrealm();
+    my $realm = BarnOwl::zephyr_getrealm();
     $sender =~ s/\@$realm$//;
     return $sender;
 }
@@ -284,12 +285,6 @@ sub zsig        { return shift->{"zsig"}; }
 ################################################################################
 package owl;
 
-# Arrays of subrefs to be called at specific times.
-our @onStartSubs = ();
-our @onReceiveMsg = ();
-our @onMainLoop = ();
-our @onGetBuddyList = ();
-
 ################################################################################
 # Mainloop hook
 ################################################################################
@@ -298,6 +293,85 @@ our $shutdown;
 $shutdown = 0;
 our $reload;
 $reload = 0;
+
+#Run this on start and reload. Adds modules
+sub onStart
+{
+    reload_init();
+    loadModules();
+}
+################################################################################
+# Reload Code, taken from /afs/sipb/user/jdaniel/project/owl/perl
+################################################################################
+sub reload_hook (@)
+{
+    BarnOwl::Hooks::startup();
+    return 1;
+}
+
+sub reload
+{
+    # Use $reload to tell modules that we're performing a reload.
+  {
+      local $reload = 1;
+      BarnOwl::mainloop_hook();
+  }
+    
+  @BarnOwl::Hooks::onMainLoop = ();
+  @BarnOwl::Hooks::onStartSubs = ();
+
+  # Do reload
+  package main;
+  if (do "$ENV{HOME}/.owlconf" && BarnOwl::reload_hook(@_))
+  {
+      return "owlconf reloaded";
+  } 
+  else
+  {
+      return "$ENV{HOME}/.owlconf load attempted, but error encountered:\n$@";
+  }
+  package owl;
+}
+
+sub reload_init () 
+{
+    BarnOwl::command('alias reload perl BarnOwl::reload()');
+    BarnOwl::command('bindkey global "C-x C-r" command reload');
+}
+
+################################################################################
+# Loads modules from ~/.owl/modules and owl's data directory
+################################################################################
+
+sub loadModules () {
+    my @modules;
+    my $rv;
+    foreach my $dir ( BarnOwl::get_data_dir() . "/modules",
+                      $ENV{HOME} . "/.owl/modules" )
+    {
+        opendir( MODULES, $dir );
+
+        # source ./modules/*.pl
+        @modules = grep( /\.pl$/, readdir(MODULES) );
+
+        foreach my $mod (@modules) {
+            owl::error("Loading $dir/$mod...");
+            unless ($rv = do "$dir/$mod") {
+                BarnOwl::error("Couldn't load $dir/$mod:\n $@") if $@;
+                BarnOwl::error("Couldn't run $dir/$mod:\n $!") unless defined $rv;
+            }
+        }
+        closedir(MODULES);
+    }
+}
+
+package BarnOwl::Hooks;
+
+# Arrays of subrefs to be called at specific times.
+our @onStartSubs = ();
+our @onReceiveMsg = ();
+our @onMainLoop = ();
+our @onGetBuddyList = ();
 
 # Functions to call hook lists
 sub runHook($@)
@@ -314,19 +388,25 @@ sub runHook_accumulate($@)
     return join("\n", map {$_->(@args)} @$hook);
 }
 
-sub mainloop_hook
-{
-    runHook(\@onMainLoop);
-}
-
 ################################################################################
 # Startup and Shutdown code
 ################################################################################
 sub startup
 {
-# Modern versions of owl provides a great place to have startup stuff.
-# Put things in ~/.owl/startup
-    onStart();
+    # Modern versions of owl provides a great place to have startup stuff.
+    # Put things in ~/.owl/startup
+
+    #So that the user's .owlconf can have startsubs, we don't clear
+    #onStartSubs; reload does however
+    @onReceiveMsg = ();
+    @onMainLoop = ();
+    @onGetBuddyList = ();
+
+    BarnOwl::onStart();
+
+    runHook(\@onStartSubs);
+
+    BarnOwl::startup() if *BarnOwl::startup{CODE};
 }
 
 sub shutdown
@@ -335,86 +415,17 @@ sub shutdown
 # Put things in ~/.owl/shutdown
 
     # use $shutdown to tell modules that that's what we're doing.
-    $shutdown = 1;
-    mainloop_hook();
+    $BarnOwl::shutdown = 1;
+    BarnOwl::mainloop_hook();
+
+    BarnOwl::shutdown() if *BarnOwl::shutdown{CODE};
 }
 
-#Run this on start and reload. Adds modules and runs their startup functions.
-sub onStart
+sub mainloop_hook
 {
-    reload_init();
-    #So that the user's .owlconf can have startsubs, we don't clear
-    #onStartSubs; reload does however
-    @onReceiveMsg = ();
-    @onMainLoop = ();
-    @onGetBuddyList = ();
-
-    loadModules();
-    runHook(\@onStartSubs);
+    runHook(\@onMainLoop);
+    BarnOwl::mainlook_hook() if *BarnOwl::mainloop_hook{CODE};
 }
-################################################################################
-# Reload Code, taken from /afs/sipb/user/jdaniel/project/owl/perl
-################################################################################
-sub reload_hook (@)
-{
-    onStart();
-    return 1;
-}
-
-sub reload
-{
-    # Use $reload to tell modules that we're performing a reload.
-    $reload = 1;
-    owl::mainloop_hook();
-    $reload = 0;
-    @onMainLoop = ();
-    @onStartSubs = ();
-
-    # Do reload
-    package main;
-    if (do "$ENV{HOME}/.owlconf" && owl::reload_hook(@_))
-    {
-        return "owlconf reloaded";
-    } 
-    else
-    {
-        return "$ENV{HOME}/.owlconf load attempted, but error encountered:\n$@";
-    }
-    package owl;
-}
-
-sub reload_init () 
-{
-    owl::command('alias reload perl owl::reload()');
-    owl::command('bindkey global "C-x C-r" command reload');
-}
-
-################################################################################
-# Loads modules from ~/.owl/modules and owl's data directory
-################################################################################
-
-sub loadModules () {
-    my @modules;
-    my $rv;
-    foreach my $dir ( owl::get_data_dir() . "/modules",
-                      $ENV{HOME} . "/.owl/modules" )
-    {
-        opendir( MODULES, $dir );
-
-        # source ./modules/*.pl
-        @modules = grep( /\.pl$/, readdir(MODULES) );
-
-        foreach my $mod (@modules) {
-            unless ($rv = do "$dir/$mod") {
-                owl::error("Couldn't load $dir/$mod:\n $@") if $@;
-                owl::error("Couldn't run $dir/$mod:\n $!") unless defined $rv;
-            }
-        }
-        closedir(MODULES);
-    }
-}
-
-
 
 ################################################################################
 # Hooks into receive_msg()
@@ -424,6 +435,7 @@ sub receive_msg
 {
     my $m = shift;
     runHook(\@onReceiveMsg, $m);
+    BarnOwl::receive_msg($m) if *BarnOwl::receive_msg{CODE};
 }
 
 ################################################################################
@@ -432,8 +444,7 @@ sub receive_msg
 
 sub get_blist
 {
-    my $m = shift;
-    return runHook_accumulate(\@onGetBuddyList, $m);
+    return runHook_accumulate(\@onGetBuddyList);
 }
 
 # switch to package main when we're done
@@ -445,14 +456,15 @@ package main;
                           onReceiveMsg
                           onMainLoop
                           onGetBuddyList ) {
-        *{"main::".$hook} = \*{"owl::".$hook};
+        *{"main::".$hook} = \*{"BarnOwl::Hooks::".$hook};
+        *{"owl::".$hook} = \*{"BarnOwl::Hooks::".$hook};
     }
 }
 
 # load the config  file
-if (-r $owl::configfile) {
+if (-r $BarnOwl::configfile) {
     undef $@;
-    do $owl::configfile;
+    do $BarnOwl::configfile;
     die $@ if $@;
 }
 

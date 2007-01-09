@@ -12,7 +12,7 @@ SV *owl_perlconfig_curmessage2hashref(void);
 
 #define SV_IS_CODEREF(sv) (SvROK((sv)) && SvTYPE(SvRV((sv))) == SVt_PVCV)
 
-MODULE = owl		PACKAGE = owl		
+MODULE = BarnOwl		PACKAGE = BarnOwl		
 
 char *
 command(cmd)

@@ -318,8 +318,8 @@ int main(int argc, char **argv, char **env)
   if (owl_global_is_config_format(&g)) {
     owl_function_debugmsg("Found perl formatting");
     s=owl_malloc(sizeof(owl_style));
-    owl_style_create_perl(s, "perl", "owl::_format_msg_legacy_wrap",
-			  "User-defined perl style that calls owl::format_msg"
+    owl_style_create_perl(s, "perl", "BarnOwl::_format_msg_legacy_wrap",
+			  "User-defined perl style that calls BarnOwl::format_msg"
 			  "with legacy global variable support");
     owl_global_add_style(&g, s);
     owl_global_set_default_style(&g, "perl");
@@ -327,7 +327,7 @@ int main(int argc, char **argv, char **env)
 
   /* execute the startup function in the configfile */
   owl_function_debugmsg("startup: executing perl startup, if applicable");
-  perlout = owl_perlconfig_execute("owl::startup();");
+  perlout = owl_perlconfig_execute("BarnOwl::Hooks::startup();");
   if (perlout) owl_free(perlout);
   
   /* hold on to the window names for convenience */
@@ -438,10 +438,7 @@ int main(int argc, char **argv, char **env)
       }
     }
 
-    /* Hook perl into the loop */
-    if (owl_perlconfig_is_function("owl::mainloop_hook")) {
-	 owl_perlconfig_mainloop();
-    }
+    owl_perlconfig_mainloop();
 
     /* little hack */
     now=time(NULL);

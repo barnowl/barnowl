@@ -11,7 +11,7 @@ static const char fileIdent[] = "$Id$";
 
 extern char *owl_perlwrap_codebuff;
 
-extern XS(boot_owl);
+extern XS(boot_BarnOwl);
 extern XS(boot_DynaLoader);
 // extern XS(boot_DBI);
 
@@ -20,7 +20,7 @@ static void owl_perl_xs_init(pTHX)
   char *file = __FILE__;
   dXSUB_SYS;
   {
-    newXS("owl::bootstrap", boot_owl, file);
+    newXS("BarnOwl::bootstrap", boot_BarnOwl, file);
     newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
   }
 }
@@ -85,12 +85,12 @@ SV *owl_perlconfig_message2hashref(owl_message *m)  /*noproto*/
   hv_store(h, "deleted", strlen("deleted"), newSViv(owl_message_is_delete(m)),0);
   hv_store(h, "private", strlen("private"), newSViv(owl_message_is_private(m)),0);
 
-  if (owl_message_is_type_zephyr(m))       blessas = "owl::Message::Zephyr";
-  else if (owl_message_is_type_aim(m))     blessas = "owl::Message::AIM";
-  else if (owl_message_is_type_jabber(m))  blessas = "owl::Message::Jabber";
-  else if (owl_message_is_type_admin(m))   blessas = "owl::Message::Admin";
-  else if (owl_message_is_type_generic(m)) blessas = "owl::Message::Generic";
-  else                                     blessas = "owl::Message";
+  if (owl_message_is_type_zephyr(m))       blessas = "BarnOwl::Message::Zephyr";
+  else if (owl_message_is_type_aim(m))     blessas = "BarnOwl::Message::AIM";
+  else if (owl_message_is_type_jabber(m))  blessas = "BarnOwl::Message::Jabber";
+  else if (owl_message_is_type_admin(m))   blessas = "BarnOwl::Message::Admin";
+  else if (owl_message_is_type_generic(m)) blessas = "BarnOwl::Message::Generic";
+  else                                     blessas = "BarnOwl::Message";
 
   hr = sv_2mortal(newRV_noinc((SV*)h));
   return sv_bless(hr, gv_stashpv(blessas,0));
@@ -254,21 +254,21 @@ char *owl_perlconfig_readconfig(char * file)
   owl_global_set_have_config(&g);
 
   /* create legacy variables */
-  perl_get_sv("owl::id", TRUE);
-  perl_get_sv("owl::class", TRUE);
-  perl_get_sv("owl::instance", TRUE);
-  perl_get_sv("owl::recipient", TRUE);
-  perl_get_sv("owl::sender", TRUE);
-  perl_get_sv("owl::realm", TRUE);
-  perl_get_sv("owl::opcode", TRUE);
-  perl_get_sv("owl::zsig", TRUE);
-  perl_get_sv("owl::msg", TRUE);
-  perl_get_sv("owl::time", TRUE);
-  perl_get_sv("owl::host", TRUE);
-  perl_get_av("owl::fields", TRUE);
+  perl_get_sv("BarnOwl::id", TRUE);
+  perl_get_sv("BarnOwl::class", TRUE);
+  perl_get_sv("BarnOwl::instance", TRUE);
+  perl_get_sv("BarnOwl::recipient", TRUE);
+  perl_get_sv("BarnOwl::sender", TRUE);
+  perl_get_sv("BarnOwl::realm", TRUE);
+  perl_get_sv("BarnOwl::opcode", TRUE);
+  perl_get_sv("BarnOwl::zsig", TRUE);
+  perl_get_sv("BarnOwl::msg", TRUE);
+  perl_get_sv("BarnOwl::time", TRUE);
+  perl_get_sv("BarnOwl::host", TRUE);
+  perl_get_av("BarnOwl::fields", TRUE);
 
   if(file) {
-    SV * cfg = get_sv("owl::configfile", TRUE);
+    SV * cfg = get_sv("BarnOwl::configfile", TRUE);
     sv_setpv(cfg, file);
   }
 
@@ -282,7 +282,7 @@ char *owl_perlconfig_readconfig(char * file)
   }
 
   /* check if we have the formatting function */
-  if (owl_perlconfig_is_function("owl::format_msg")) {
+  if (owl_perlconfig_is_function("BarnOwl::format_msg")) {
     owl_global_set_config_format(&g, 1);
   }
 
@@ -360,16 +360,16 @@ char *owl_perlconfig_getmsg(owl_message *m, int mode, char *subname)
   if (mode==1) {
     char *ret = NULL;
     ret = owl_perlconfig_call_with_message(subname?subname
-					   :"owl::_format_msg_legacy_wrap", m);
+					   :"BarnOwl::_format_msg_legacy_wrap", m);
     if (!ret) {
       ret = owl_sprintf("@b([Perl Message Formatting Failed!])\n");
     } 
     return ret;
   } else {
     char *ptr = NULL;
-    if (owl_perlconfig_is_function("owl::receive_msg")) {
+    if (owl_perlconfig_is_function("BarnOwl::Hooks::receive_msg")) {
       ptr = owl_perlconfig_call_with_message(subname?subname
-				       :"owl::_receive_msg_legacy_wrap", m);
+				       :"BarnOwl::_receive_msg_legacy_wrap", m);
     }
     if (ptr) owl_free(ptr);
     return(NULL);
@@ -451,9 +451,11 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
 
 void owl_perlconfig_mainloop()
 {
+  if (!owl_perlconfig_is_function("BarnOwl::Hooks::mainloop_hook"))
+    return;
   dSP ;
   PUSHMARK(SP) ;
-  call_pv("owl::mainloop_hook", G_DISCARD|G_EVAL);
+  call_pv("BarnOwl::Hooks::mainloop_hook", G_DISCARD|G_EVAL);
   if(SvTRUE(ERRSV)) {
     STRLEN n_a;
     owl_function_error("%s", SvPV(ERRSV, n_a));
