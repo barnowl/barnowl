@@ -4,7 +4,7 @@ srcdir = @srcdir@
 VPATH = @srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
-datadir = @datadir@
+datadir = @datadir@/barnowl
 bindir = @bindir@
 mandir = @mandir@
 
@@ -28,6 +28,8 @@ BASE_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
 OWL_SRC = owl.c
 TESTER_SRC = tester.c
 
+EXE = barnowl
+
 BASE_OBJS = $(BASE_SRCS:.c=.o)
 
 GEN_C = varstubs.c perlglue.c perlwrap.c
@@ -41,7 +43,7 @@ AUTOGEN=$(GEN_C) $(GEN_H)
 
 
 owl: $(AUTOGEN) $(OBJS) owl.o libfaim
-	./athstatic $(CC) -o owl owl.o $(OBJS) $(LDFLAGS) $(LIBS)
+	./athstatic $(CC) -o $(EXE) owl.o $(OBJS) $(LDFLAGS) $(LIBS)
 
 tester: $(AUTOGEN) $(OBJS) tester.o
 	./athstatic $(CC) -o tester tester.o $(OBJS) $(LDFLAGS) $(LIBS)
@@ -50,7 +52,7 @@ test: tester
 	./tester reg
 
 clean: libfaimclean
-	$(RM) owl tester *.o $(AUTOGEN) owl_prototypes.h.new
+	$(RM) $(EXE) tester *.o $(AUTOGEN) owl_prototypes.h.new
 
 distclean: clean libfaimdistclean
 	$(RM) config.cache config.log config.status Makefile config.h TAGS *~ core
@@ -96,12 +98,12 @@ libfaimclean:
 libfaimdistclean:
 	(cd libfaim; $(MAKE) distclean)
 
-all: owl
+all: $(EXE)
 
 install: all installdirs
-	${INSTALL_PROGRAM} owl ${bindir}/owl
-	${INSTALL_DATA} doc/owl.1 ${mandir}/man1/owl.1
-	tar -C perl -c . | tar -C ${datadir}/owl -x
+	${INSTALL_PROGRAM} $(EXE) ${bindir}/$(EXE)
+	${INSTALL_DATA} doc/owl.1 ${mandir}/man1/barnowl.1
+	tar -C perl -c . | tar -C ${datadir} -x
 
 installdirs: mkinstalldirs
-	${srcdir}/mkinstalldirs ${bindir} ${mandir}/man1 ${datadir}/owl
+	${srcdir}/mkinstalldirs ${bindir} ${mandir}/man1 ${datadir}

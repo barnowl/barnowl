@@ -16,7 +16,7 @@ BEGIN {
     bootstrap owl 1.2;
 };
 
-use lib(get_data_dir()."/owl/lib");
+use lib(get_data_dir()."/lib");
 use lib($::ENV{'HOME'}."/.owl/lib");
 
 our $configfile;
@@ -396,7 +396,7 @@ sub reload_init ()
 sub loadModules () {
     my @modules;
     my $rv;
-    foreach my $dir ( owl::get_data_dir() . "/owl/modules",
+    foreach my $dir ( owl::get_data_dir() . "/modules",
                       $ENV{HOME} . "/.owl/modules" )
     {
         opendir( MODULES, $dir );
