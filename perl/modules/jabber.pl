@@ -39,7 +39,7 @@ sub addConnection {
     my $jidStr = shift;
 
     my %args = ();
-    if(owl::getvar('debug') eq 'on') {
+    if(BarnOwl::getvar('debug') eq 'on') {
         $args{debuglevel} = 1;
         $args{debugfile} = 'jabber.log';
     }
@@ -126,13 +126,13 @@ our $conn = new owl_jabber::ConnectionManager unless $conn;;
 our %vars;
 
 sub onStart {
-    if ( eval { \&owl::queue_message } ) {
+    if ( eval { \&BarnOwl::queue_message } ) {
         register_owl_commands();
         push @::onMainLoop,     sub { owl_jabber::onMainLoop(@_) };
         push @::onGetBuddyList, sub { owl_jabber::onGetBuddyList(@_) };
     } else {
         # Our owl doesn't support queue_message. Unfortunately, this
-        # means it probably *also* doesn't support owl::error. So just
+        # means it probably *also* doesn't support BarnOwl::error. So just
         # give up silently.
     }
 }
@@ -147,7 +147,7 @@ sub onMainLoop {
 
         my $status = $client->Process(0);
         if ( !defined($status) ) {
-            owl::error("Jabber account $jid disconnected!");
+            BarnOwl::error("Jabber account $jid disconnected!");
             do_logout($jid);
         }
         if ($::shutdown) {
@@ -224,30 +224,30 @@ sub onGetBuddyList {
 ################################################################################
 ### Owl Commands
 sub register_owl_commands() {
-    owl::new_command(
+    BarnOwl::new_command(
         jabberlogin => \&cmd_login,
         { summary => "Log into jabber", },
         { usage   => "jabberlogin JID" }
     );
-    owl::new_command(
+    BarnOwl::new_command(
         jabberlogout => \&cmd_logout,
         { summary => "Log out of jabber" }
     );
-    owl::new_command(
+    BarnOwl::new_command(
         jwrite => \&cmd_jwrite,
         {
             summary => "Send a Jabber Message",
             usage   => "jwrite JID [-g] [-t thread] [-s subject]"
         }
     );
-    owl::new_command(
+    BarnOwl::new_command(
         jlist => \&cmd_jlist,
         {
             summary => "Show your Jabber roster.",
             usage   => "jlist"
         }
     );
-    owl::new_command(
+    BarnOwl::new_command(
         jmuc => \&cmd_jmuc,
         {
             summary     => "Jabber MUC related commands.",
@@ -257,7 +257,7 @@ sub register_owl_commands() {
               . "part MUC    Part a muc.\n"
               . "            The muc is taken from the current message if not supplied.\n\n"
               . "invite JID MUC\n"
-              . "            Invite {jid} to [muc].\n"
+              . "            Invite JID to MUC.\n"
               . "            The muc is taken from the current message if not supplied.\n\n"
               . "configure MUC\n"
               . "            Configure [muc].\n"
@@ -266,7 +266,7 @@ sub register_owl_commands() {
             usage => "jmuc COMMAND ARGS"
         }
     );
-    owl::new_command(
+    BarnOwl::new_command(
         jroster => \&cmd_jroster,
         {
             summary     => "Jabber Roster related commands.",
@@ -288,12 +288,12 @@ sub cmd_login {
     my $jidStr = $jid->GetJID('full');
 
     if ( !$uid || !$componentname ) {
-        owl::error("usage: $cmd {jid}");
+        BarnOwl::error("usage: $cmd JID");
         return;
     }
 
     if ( $conn->jidExists($jidStr) ) {
-        owl::error("Already logged in as $jidStr.");
+        BarnOwl::error("Already logged in as $jidStr.");
         return;
     }
 
@@ -320,7 +320,7 @@ sub do_login {
     $vars{jlogin_authhash}->{password} = sub { return $vars{jlogin_password} || '' };
     my $jidStr = $vars{jlogin_jid};
     if ( !$jidStr && $vars{jlogin_havepass}) {
-        owl::error("Got password but have no jid!");
+        BarnOwl::error("Got password but have no jid!");
     }
     else
     {
@@ -347,19 +347,19 @@ sub do_login {
         my $status = $client->Connect( %{ $vars{jlogin_connhash} } );
         if ( !$status ) {
             $conn->removeConnection($jidStr);
-            owl::error("We failed to connect");
+            BarnOwl::error("We failed to connect");
         } else {
             my @result = $client->AuthSend( %{ $vars{jlogin_authhash} } );
 
             if ( !@result || $result[0] ne 'ok' ) {
-                if ( !$vars{jlogin_havepass} && ( $#result == -1 || $result[0] eq '401' ) ) {
+                if ( !$vars{jlogin_havepass} && ( !@result || $result[0] eq '401' ) ) {
                     $vars{jlogin_havepass} = 1;
                     $conn->removeConnection($jidStr);
-                    owl::start_password( "Password for $jidStr: ", \&do_login );
+                    BarnOwl::start_password( "Password for $jidStr: ", \&do_login );
                     return "";
                 }
                 $conn->removeConnection($jidStr);
-                owl::error( "Error in connect: " . join( " ", @result ) );
+                BarnOwl::error( "Error in connect: " . join( " ", @result ) );
             } else {
                 $conn->getRosterFromJidStr($jidStr)->fetch();
                 $client->PresenceSend( priority => 1 );
@@ -419,15 +419,15 @@ sub cmd_logout {
 
 sub cmd_jlist {
     if ( !( scalar $conn->getJids() ) ) {
-        owl::error("You are not logged in to Jabber.");
+        BarnOwl::error("You are not logged in to Jabber.");
         return;
     }
-    owl::popless_ztext( onGetBuddyList() );
+    BarnOwl::popless_ztext( onGetBuddyList() );
 }
 
 sub cmd_jwrite {
     if ( !$conn->connected() ) {
-        owl::error("You are not logged in to Jabber.");
+        BarnOwl::error("You are not logged in to Jabber.");
         return;
     }
 
@@ -452,7 +452,7 @@ sub cmd_jwrite {
     $jwrite_type = 'groupchat' if $gc;
 
     if ( scalar @ARGV != 1 ) {
-        owl::error(
+        BarnOwl::error(
             "Usage: jwrite JID [-g] [-t thread] [-s 'subject'] [-a account]");
         return;
     }
@@ -465,7 +465,7 @@ sub cmd_jwrite {
             $jwrite_from = ( $conn->getJids() )[0];
         }
         else {
-            owl::error("Please specify an account with -a {jid}");
+            BarnOwl::error("Please specify an account with -a JID");
             return;
         }
     }
@@ -483,10 +483,10 @@ sub cmd_jwrite {
         type    => $jwrite_type
     };
 
-    owl::message(
+    BarnOwl::message(
 "Type your message below.  End with a dot on a line by itself.  ^C will quit."
     );
-    owl::start_edit_win( join( ' ', @args ), \&process_owl_jwrite );
+    BarnOwl::start_edit_win( join( ' ', @args ), \&process_owl_jwrite );
 }
 
 sub cmd_jmuc {
@@ -507,7 +507,7 @@ sub cmd_jmuc {
     );
     my $func = $jmuc_commands{$cmd};
     if ( !$func ) {
-        owl::error("jmuc: Unknown command: $cmd");
+        BarnOwl::error("jmuc: Unknown command: $cmd");
         return;
     }
 
@@ -515,7 +515,7 @@ sub cmd_jmuc {
         local @ARGV = @_;
         my $jid;
         my $muc;
-        my $m = owl::getcurmsg();
+        my $m = BarnOwl::getcurmsg();
         if ( $m->is_jabber && $m->{jtype} eq 'groupchat' ) {
             $muc = $m->{room};
             $jid = $m->{to};
@@ -530,7 +530,7 @@ sub cmd_jmuc {
             return unless $jid;
         }
         else {
-            owl::error('You must specify an account with -a {jid}');
+            BarnOwl::error('You must specify an account with -a {jid}');
         }
         return $func->( $jid, $muc, @ARGV );
     }
@@ -622,7 +622,7 @@ sub cmd_jroster {
 
     my $func = $jroster_commands{$cmd};
     if ( !$func ) {
-        owl::error("jroster: Unknown command: $cmd");
+        BarnOwl::error("jroster: Unknown command: $cmd");
         return;
     }
 
@@ -646,7 +646,7 @@ sub cmd_jroster {
             return unless $jid;
         }
         else {
-            owl::error('You must specify an account with -a {jid}');
+            BarnOwl::error('You must specify an account with -a {jid}');
         }
         return $func->( $jid, $name, \@groups, $purgeGroups,  @ARGV );
     }
@@ -808,8 +808,8 @@ sub process_owl_jwrite {
     $j->SetSubject( $vars{jwrite}{subject} ) if ( $vars{jwrite}{subject} );
 
     my $m = j2o( $j, { direction => 'out' } );
-    if ( $vars{jwrite}{type} ne 'groupchat' && owl::getvar('displayoutgoing') eq 'on') {
-        owl::queue_message($m);
+    if ( $vars{jwrite}{type} ne 'groupchat' && BarnOwl::getvar('displayoutgoing') eq 'on') {
+        BarnOwl::queue_message($m);
     }
 
     if ($vars{jwrite}{sid} && $conn->sidExists( $vars{jwrite}{sid} )) {
@@ -820,14 +820,14 @@ sub process_owl_jwrite {
     }
 
     delete $vars{jwrite};
-    owl::message("");   # Kludge to make the ``type your message...'' message go away
+    BarnOwl::message("");   # Kludge to make the ``type your message...'' message go away
 }
 
 ### XMPP Callbacks
 
 sub process_incoming_chat_message {
     my ( $sid, $j ) = @_;
-    owl::queue_message( j2o( $j, { direction => 'in',
+    BarnOwl::queue_message( j2o( $j, { direction => 'in',
                                    sid => $sid } ) );
 }
 
@@ -836,7 +836,7 @@ sub process_incoming_error_message {
     my %jhash = j2hash( $j, { direction => 'in',
                               sid => $sid } );
     $jhash{type} = 'admin';
-    owl::queue_message( owl::Message->new(%jhash) );
+    BarnOwl::queue_message( BarnOwl::Message->new(%jhash) );
 }
 
 sub process_incoming_groupchat_message {
@@ -844,13 +844,13 @@ sub process_incoming_groupchat_message {
 
     # HACK IN PROGRESS (ignoring delayed messages)
     return if ( $j->DefinedX('jabber:x:delay') && $j->GetX('jabber:x:delay') );
-    owl::queue_message( j2o( $j, { direction => 'in',
+    BarnOwl::queue_message( j2o( $j, { direction => 'in',
                                    sid => $sid } ) );
 }
 
 sub process_incoming_headline_message {
     my ( $sid, $j ) = @_;
-    owl::queue_message( j2o( $j, { direction => 'in',
+    BarnOwl::queue_message( j2o( $j, { direction => 'in',
                                    sid => $sid } ) );
 }
 
@@ -870,7 +870,7 @@ sub process_incoming_normal_message {
     #	}
     #    }
     #
-    owl::queue_message( owl::Message->new(%jhash) );
+    BarnOwl::queue_message( BarnOwl::Message->new(%jhash) );
 }
 
 sub process_muc_presence {
@@ -905,7 +905,7 @@ sub process_presence_available {
         $props{loginout} = 'logout';
     }
     $props{replysendercmd} = $props{replycmd} = "jwrite $from -i $sid";
-    owl::queue_message(owl::Message->new(%props));
+    BarnOwl::queue_message(BarnOwl::Message->new(%props));
 }
 
 sub process_presence_subscribe {
@@ -923,7 +923,7 @@ sub process_presence_subscribe {
     $props{body} = "The user ($from) wants to subscribe to your ($to) presence.\nReply (r) will authorize, reply-sender (R) will deny.";
     $props{replycmd} = "jroster auth $from -a $to";
     $props{replysendercmd} = "jroster deauth $from -a $to";
-    owl::queue_message(owl::Message->new(%props));
+    BarnOwl::queue_message(BarnOwl::Message->new(%props));
 }
 
 sub process_presence_unsubscribe {
@@ -939,7 +939,7 @@ sub process_presence_unsubscribe {
         direction => 'in');
 
     $props{body} = "The user ($from) has been unsubscribed from your ($to) presence.\n";
-    owl::queue_message(owl::Message->new(%props));
+    BarnOwl::queue_message(BarnOwl::Message->new(%props));
 
     # Find a connection to reply with.
     foreach my $jid ($conn->getJids()) {
@@ -978,7 +978,7 @@ sub process_presence_error {
     my ( $sid, $p ) = @_;
     my $code = $p->GetErrorCode();
     my $error = $p->GetError();
-    owl::error("Jabber: $code $error");
+    BarnOwl::error("Jabber: $code $error");
 }
 
 
@@ -1055,17 +1055,17 @@ sub j2hash {
 }
 
 sub j2o {
-    return owl::Message->new( j2hash(@_) );
+    return BarnOwl::Message->new( j2hash(@_) );
 }
 
 sub queue_admin_msg {
     my $err = shift;
-    my $m   = owl::Message->new(
+    my $m   = BarnOwl::Message->new(
         type      => 'admin',
         direction => 'none',
         body      => $err
     );
-    owl::queue_message($m);
+    BarnOwl::queue_message($m);
 }
 
 sub boldify($) {
@@ -1117,7 +1117,7 @@ sub resolveJID {
     if ( $givenJid->GetResource() ) {
         # Specified account exists
         return $givenJidStr if ($conn->jidExists($givenJidStr) );
-        owl::error("Invalid account: $givenJidStr");
+        BarnOwl::error("Invalid account: $givenJidStr");
     }
 
     # Disambiguate.
@@ -1144,7 +1144,7 @@ sub resolveJID {
 
         # Not one of ours.
         elsif ( $matchingJid eq "" ) {
-            owl::error("Invalid account: $givenJidStr");
+            BarnOwl::error("Invalid account: $givenJidStr");
         }
 
         # It's this one.
@@ -1158,9 +1158,9 @@ sub resolveJID {
 #####################################################################
 #####################################################################
 
-package owl::Message::Jabber;
+package BarnOwl::Message::Jabber;
 
-our @ISA = qw( owl::Message );
+our @ISA = qw( BarnOwl::Message );
 
 sub jtype { shift->{jtype} };
 sub from { shift->{from} };
@@ -1184,13 +1184,13 @@ sub smartfilter {
         $filter = "jabber-user-$user";
         $ftext = qq{type ^jabber\$ and ( ( direction ^in\$ and from ^$user ) } .
                  qq{or ( direction ^out\$ and to ^$user ) ) };
-        owl::filter("$filter $ftext");
+        BarnOwl::filter("$filter $ftext");
         return $filter;
     } elsif ($self->jtype eq 'groupchat') {
         my $room = $self->room;
         $filter = "jabber-room-$room";
         $ftext = qq{type ^jabber\$ and room ^$room\$};
-        owl::filter("$filter $ftext");
+        BarnOwl::filter("$filter $ftext");
         return $filter;
     }
 }
