@@ -126,7 +126,7 @@ our $conn = new owl_jabber::ConnectionManager unless $conn;;
 our %vars;
 
 sub onStart {
-    if ( eval { \&BarnOwl::queue_message } ) {
+    if ( *BarnOwl::queue_message{CODE} ) {
         register_owl_commands();
         push @::onMainLoop,     sub { owl_jabber::onMainLoop(@_) };
         push @::onGetBuddyList, sub { owl_jabber::onGetBuddyList(@_) };
@@ -920,9 +920,11 @@ sub process_presence_subscribe {
         adminheader => 'Jabber presence: subscribe',
         direction => 'in');
 
-    $props{body} = "The user ($from) wants to subscribe to your ($to) presence.\nReply (r) will authorize, reply-sender (R) will deny.";
-    $props{replycmd} = "jroster auth $from -a $to";
-    $props{replysendercmd} = "jroster deauth $from -a $to";
+    $props{body} = "Allow user ($from) to subscribe to your ($to) presence?\n" .
+                   "(Answer with the `yes' or `no' commands)";
+    $props{yescommand} = "jroster auth $from -a $to";
+    $props{nocommand} = "jroster deauth $from -a $to";
+    $props{question} = "true";
     BarnOwl::queue_message(BarnOwl::Message->new(%props));
 }
 
