@@ -3,10 +3,8 @@ barnowl TODO list
 
 1) Basic Jabber functionality
  * MUST   default style
- * MUST   option to accept/deny sub requests
  * SHOULD Store list of muc rooms to join
  * SHOULD Provide way to auto-login to passworded accounts
-  * better UI?
  * MUST   MUC presence
  * SHOULD shortname support
  * MUST   think about priority & status
