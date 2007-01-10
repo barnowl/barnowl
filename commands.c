@@ -732,6 +732,16 @@ owl_cmd commands_to_init[]
               "message <message>",
               ""),
 
+  OWLCMD_VOID("yes", owl_command_yes, OWL_CTX_RECV,
+              "Answer yes to a question",
+              "yes",
+              ""),
+
+  OWLCMD_VOID("no", owl_command_no, OWL_CTX_RECV,
+              "Answer no to a question",
+              "no",
+              ""),
+
   /****************************************************************/
   /************************* EDIT-SPECIFIC ************************/
   /****************************************************************/
@@ -2427,6 +2437,50 @@ char *owl_command_message(int argc, char **argv, char *buff)
     buff = skiptokens(buff, 1);
     owl_function_makemsg(buff);
     return NULL;
+}
+
+void owl_command_yes(void)
+{
+  owl_message *m = owl_view_get_element(owl_global_get_current_view(&g),
+                                        owl_global_get_curmsg(&g));
+  if(!owl_message_is_question(m)) {
+    owl_function_error("That message isn't a question.");
+    return NULL;
+  }
+  if(owl_message_is_answered(m)) {
+    owl_function_error("You already answered that question.");
+    return NULL;
+  }
+  char * cmd = owl_message_get_attribute_value(m, "yescommand");
+  if(!cmd) {
+    owl_function_error("No yes command!");
+    return NULL;
+  }
+
+  owl_function_command_norv(cmd);
+  owl_message_set_isanswered(m);
+}
+
+char *owl_command_no(void)
+{
+  owl_message *m = owl_view_get_element(owl_global_get_current_view(&g),
+                                        owl_global_get_curmsg(&g));
+  if(!owl_message_is_question(m)) {
+    owl_function_error("That message isn't a question.");
+    return NULL;
+  }
+  if(owl_message_is_answered(m)) {
+    owl_function_error("You already answered that question.");
+    return NULL;
+  }
+  char * cmd = owl_message_get_attribute_value(m, "nocommand");
+  if(!cmd) {
+    owl_function_error("No no command!");
+    return NULL;
+  }
+
+  owl_function_command_norv(cmd);
+  owl_message_set_isanswered(m);
 }
 
 /*********************************************************************/
