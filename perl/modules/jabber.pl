@@ -27,6 +27,24 @@ no warnings 'redefine';
 
 ################################################################################
 ################################################################################
+package BarnOwl::Jabber::Connection;
+
+use base qw(Net::Jabber::Client);
+
+sub new {
+    my $class = shift;
+
+    my %args = ();
+    if(BarnOwl::getvar('debug') eq 'on') {
+        $args{debuglevel} = 1;
+        $args{debugfile} = 'jabber.log';
+    }
+    my $self = $class->SUPER::new(%args);
+    return $self
+}
+
+################################################################################
+################################################################################
 package BarnOwl::Jabber::ConnectionManager;
 sub new {
     my $class = shift;
@@ -37,12 +55,7 @@ sub addConnection {
     my $self = shift;
     my $jidStr = shift;
 
-    my %args = ();
-    if(BarnOwl::getvar('debug') eq 'on') {
-        $args{debuglevel} = 1;
-        $args{debugfile} = 'jabber.log';
-    }
-    my $client = Net::Jabber::Client->new(%args);
+    my $client = BarnOwl::Jabber::Connection->new;
 
     $self->{Client}->{$jidStr} = $client;
     $self->{Roster}->{$jidStr} = $client->Roster();
@@ -119,7 +132,7 @@ sub getRosterFromJidStr {
 }
 ################################################################################
 
-package owl_jabber;
+package BarnOwl::Jabber;
 
 our $conn = new BarnOwl::Jabber::ConnectionManager unless $conn;;
 our %vars;
