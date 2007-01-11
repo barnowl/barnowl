@@ -3,16 +3,14 @@ barnowl TODO list
 
 1) Basic Jabber functionality
  * MUST   default style
+ * MUST   think about priority & status
  * SHOULD Store list of muc rooms to join
  * SHOULD Provide way to auto-login to passworded accounts
  * SHOULD shortname support
- * MUST   think about priority & status
- * multi-user chat
-   * MAY  More extensive room configuration
-* Default domain for JIDs
- * (e.g. jwrite nelhage should DTRT. I'd like jmuc join help to also.)
+ * SHOULD automatically infer -g depending on whether we're writing to a MUC we know of.
+ * MAY  More extensive room configuration
 * Check for memory leaks
  * perl eval()s from owl seem problematic
 * Add sane default keybindings
 * Add jabber capabilities to one-line mode
-* We should work even when zephyr is not available
+* We should work well even when zephyr is not available
