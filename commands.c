@@ -2439,7 +2439,7 @@ char *owl_command_message(int argc, char **argv, char *buff)
     return NULL;
 }
 
-char *owl_command_yes(void)
+void owl_command_yes(void)
 {
   owl_message *m;
   owl_view *v;
@@ -2449,30 +2449,30 @@ char *owl_command_yes(void)
   /* bail if there's no current message */
   if (owl_view_get_size(v) < 1) {
     owl_function_error("No current message.");
-    return NULL;
+    return;
   }
 
   m = owl_view_get_element(v, owl_global_get_curmsg(&g));
   if(!owl_message_is_question(m)) {
     owl_function_error("That message isn't a question.");
-    return NULL;
+    return;
   }
   if(owl_message_is_answered(m)) {
     owl_function_error("You already answered that question.");
-    return NULL;
+    return;
   }
   char * cmd = owl_message_get_attribute_value(m, "yescommand");
   if(!cmd) {
     owl_function_error("No yes command!");
-    return NULL;
+    return;
   }
 
   owl_function_command_norv(cmd);
   owl_message_set_isanswered(m);
-  return NULL;
+  return;
 }
 
-char *owl_command_no(void)
+void owl_command_no(void)
 {
   owl_message *m;
   owl_view *v;
@@ -2482,27 +2482,27 @@ char *owl_command_no(void)
   /* bail if there's no current message */
   if (owl_view_get_size(v) < 1) {
     owl_function_error("No current message.");
-    return NULL;
+    return;
   }
 
   m = owl_view_get_element(v, owl_global_get_curmsg(&g));
   if(!owl_message_is_question(m)) {
     owl_function_error("That message isn't a question.");
-    return NULL;
+    return;
   }
   if(owl_message_is_answered(m)) {
     owl_function_error("You already answered that question.");
-    return NULL;
+    return;
   }
   char * cmd = owl_message_get_attribute_value(m, "nocommand");
   if(!cmd) {
     owl_function_error("No no command!");
-    return NULL;
+    return;
   }
 
   owl_function_command_norv(cmd);
   owl_message_set_isanswered(m);
-  return NULL;
+  return;
 }
 
 /*********************************************************************/
