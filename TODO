@@ -5,7 +5,6 @@ barnowl TODO list
  * MUST   default style
  * SHOULD Store list of muc rooms to join
  * SHOULD Provide way to auto-login to passworded accounts
- * MUST   MUC presence
  * SHOULD shortname support
  * MUST   think about priority & status
  * multi-user chat
