@@ -5,6 +5,7 @@ use strict;
 
 use Authen::SASL qw(Perl);
 use Net::Jabber;
+use Net::Jabber::MUC;
 use Net::DNS;
 use Getopt::Long;
 
@@ -40,7 +41,81 @@ sub new {
         $args{debugfile} = 'jabber.log';
     }
     my $self = $class->SUPER::new(%args);
-    return $self
+    $self->{_BARNOWL_MUCS} = [];
+    return $self;
+}
+
+=head2 MUCJoin
+
+Extends MUCJoin to keep track of the MUCs we're joined to as
+Net::Jabber::MUC objects. Takes the same arguments as
+L<Net::Jabber::MUC/new> and L<Net::Jabber::MUC/Connect>
+
+=cut
+
+sub MUCJoin {
+    my $self = shift;
+    my $muc = Net::Jabber::MUC->new(connection => $self, @_);
+    $muc->Join(@_);
+    push @{$self->MUCs}, $muc;
+}
+
+=head2 MUCLeave ARGS
+
+Leave a MUC. The MUC is specified in the same form as L</FindMUC>
+
+=cut
+
+sub MUCLeave {
+    my $self = shift;
+    my $muc = $self->FindMUC(@_);
+    return unless $muc;
+
+    $muc->Leave();
+    
+    $self->{_BARNOWL_MUCS} = grep {$_ != $muc} $self->MUCs;
+}
+
+=head2 FindMUC ARGS
+
+Return the Net::Jabber::MUC object representing a specific MUC we're
+joined to, undef if it doesn't exists. ARGS can be either JID => $JID,
+or Room => $room, Server => $server.
+
+=cut
+
+sub FindMUC {
+    my $self = shift;
+
+    my %args;
+    while($#_ >= 0) { $args{ lc(pop(@_)) } = pop(@_); }
+
+    my $jid;
+    if($args{jid}) {
+        $jid = $args{jid};
+    } elsif($args{room} && $args{server}) {
+        $jid = Net::Jabber::JID->new(userid => $args{room},
+                                     server => $args{server});
+    }
+    $jid = $jid->GetJID('base') if UNIVERSAL::isa($jid, 'Net::Jabber::JID');
+
+    foreach my $muc ($self->MUCs) {
+        return $muc if $muc->BaseJID eq $jid;
+    }
+    return undef;
+}
+
+=head2 MUCs
+
+Returns a list (or arrayref in scalar context) of Net::Jabber::MUC
+objects we believe ourself to be connected to.
+
+=cut
+
+sub MUCs {
+    my $self = shift;
+    my $mucs = $self->{_BARNOWL_MUCS};
+    return wantarray ? @$mucs : $mucs;
 }
 
 ################################################################################
@@ -517,7 +592,8 @@ sub cmd_jmuc {
         join      => \&jmuc_join,
         part      => \&jmuc_part,
         invite    => \&jmuc_invite,
-        configure => \&jmuc_configure
+        configure => \&jmuc_configure,
+        presence  => \&jmuc_presence
     );
     my $func = $jmuc_commands{$cmd};
     if ( !$func ) {
@@ -559,15 +635,12 @@ sub jmuc_join {
     $muc = shift @ARGV
       or die("Usage: jmuc join MUC [-p password] [-a account]");
 
-    my $presence = new Net::Jabber::Presence;
-    $presence->SetPresence( to => $muc );
-    my $x = $presence->NewChild('http://jabber.org/protocol/muc');
-    $x->AddHistory()->SetMaxChars(0);
-    if ($password) {
-        $x->SetPassword($password);
-    }
-
-    $conn->getConnectionFromJidStr($jid)->Send($presence);
+    $conn->getConnectionFromJidStr($jid)->MUCJoin(Jid      => $muc,
+                                                  Password => $password,
+                                                  History  => {
+                                                      MaxChars => 0
+                                                     });
+    return;
 }
 
 sub jmuc_part {
@@ -576,7 +649,7 @@ sub jmuc_part {
     $muc = shift @args if scalar @args;
     die("Usage: jmuc part MUC [-a account]") unless $muc;
 
-    $conn->getConnectionFromJidStr($jid)->PresenceSend( to => $muc, type => 'unavailable' );
+    $conn->getConnectionFromJidStr($jid)->MUCLeave(JID => $muc);
     queue_admin_msg("$jid has left $muc.");
 }
 
@@ -611,6 +684,17 @@ sub jmuc_configure {
 
     $conn->getConnectionFromJidStr($jid)->Send($iq);
     queue_admin_msg("Accepted default instant configuration for $muc");
+}
+
+sub jmuc_presence {
+    my ( $jid, $muc, @args ) = @_;
+
+    my $m = $conn->getConnectionFromJidStr($jid)->FindMUC(jid => $muc);
+    die("No such muc: $muc") unless $m;
+
+    my @jids = $m->Presence();
+    BarnOwl::popless_ztext("JIDs present in " . $m->BaseJID . "\n\t" .
+                           join("\n\t", map {$_->GetResource}@jids));
 }
 
 
