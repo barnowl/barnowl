@@ -1,5 +1,5 @@
 # -*- mode: cperl; cperl-indent-level: 4; indent-tabs-mode: nil -*-
-package owl_jabber;
+package BarnOwl::Jabber;
 use warnings;
 use strict;
 
@@ -21,14 +21,13 @@ no warnings 'redefine';
 #  * presence (Roster and MUC)
 # Implementing formatting and logging callbacks for C
 # Appropriate callbacks for presence subscription messages.
-#  * Current behavior is auto-accept (default for Net::Jabber)
 #
 ################################################################################
 
 
 ################################################################################
 ################################################################################
-package owl_jabber::ConnectionManager;
+package BarnOwl::Jabber::ConnectionManager;
 sub new {
     my $class = shift;
     return bless { }, $class;
@@ -122,14 +121,14 @@ sub getRosterFromJidStr {
 
 package owl_jabber;
 
-our $conn = new owl_jabber::ConnectionManager unless $conn;;
+our $conn = new BarnOwl::Jabber::ConnectionManager unless $conn;;
 our %vars;
 
 sub onStart {
     if ( *BarnOwl::queue_message{CODE} ) {
         register_owl_commands();
-        push @::onMainLoop,     sub { owl_jabber::onMainLoop(@_) };
-        push @::onGetBuddyList, sub { owl_jabber::onGetBuddyList(@_) };
+        push @::onMainLoop,     sub { BarnOwl::Jabber::onMainLoop(@_) };
+        push @::onGetBuddyList, sub { BarnOwl::Jabber::onGetBuddyList(@_) };
     } else {
         # Our owl doesn't support queue_message. Unfortunately, this
         # means it probably *also* doesn't support BarnOwl::error. So just
@@ -137,7 +136,7 @@ sub onStart {
     }
 }
 
-push @::onStartSubs, sub { owl_jabber::onStart(@_) };
+push @::onStartSubs, sub { BarnOwl::Jabber::onStart(@_) };
 
 sub onMainLoop {
     return if ( !$conn->connected() );
@@ -328,21 +327,23 @@ sub do_login {
 
         #XXX Todo: Add more callbacks.
         # * MUC presence handlers
+        # We use the anonymous subrefs in order to have the correct behavior
+        # when we reload
         $client->SetMessageCallBacks(
-            chat      => sub { owl_jabber::process_incoming_chat_message(@_) },
-            error     => sub { owl_jabber::process_incoming_error_message(@_) },
-            groupchat => sub { owl_jabber::process_incoming_groupchat_message(@_) },
-            headline  => sub { owl_jabber::process_incoming_headline_message(@_) },
-            normal    => sub { owl_jabber::process_incoming_normal_message(@_) }
+            chat      => sub { BarnOwl::Jabber::process_incoming_chat_message(@_) },
+            error     => sub { BarnOwl::Jabber::process_incoming_error_message(@_) },
+            groupchat => sub { BarnOwl::Jabber::process_incoming_groupchat_message(@_) },
+            headline  => sub { BarnOwl::Jabber::process_incoming_headline_message(@_) },
+            normal    => sub { BarnOwl::Jabber::process_incoming_normal_message(@_) }
         );
         $client->SetPresenceCallBacks(
-#            available    => sub { owl_jabber::process_presence_available(@_) },
-#            unavailable  => sub { owl_jabber::process_presence_available(@_) },
-            subscribe    => sub { owl_jabber::process_presence_subscribe(@_) },
-            subscribed   => sub { owl_jabber::process_presence_subscribed(@_) },
-            unsubscribe  => sub { owl_jabber::process_presence_unsubscribe(@_) },
-            unsubscribed => sub { owl_jabber::process_presence_unsubscribed(@_) },
-            error        => sub { owl_jabber::process_presence_error(@_) });
+            available    => sub { BarnOwl::Jabber::process_presence_available(@_) },
+#            unavailable  => sub { BarnOwl::Jabber::process_presence_available(@_) },
+            subscribe    => sub { BarnOwl::Jabber::process_presence_subscribe(@_) },
+            subscribed   => sub { BarnOwl::Jabber::process_presence_subscribed(@_) },
+            unsubscribe  => sub { BarnOwl::Jabber::process_presence_unsubscribe(@_) },
+            unsubscribed => sub { BarnOwl::Jabber::process_presence_unsubscribed(@_) },
+            error        => sub { BarnOwl::Jabber::process_presence_error(@_) });
 
         my $status = $client->Connect( %{ $vars{jlogin_connhash} } );
         if ( !$status ) {
@@ -543,7 +544,7 @@ sub jmuc_join {
     GetOptions( 'password=s' => \$password );
 
     $muc = shift @ARGV
-      or die("Usage: jmuc join {muc} [-p password] [-a account]");
+      or die("Usage: jmuc join MUC [-p password] [-a account]");
 
     my $presence = new Net::Jabber::Presence;
     $presence->SetPresence( to => $muc );
@@ -560,7 +561,7 @@ sub jmuc_part {
     my ( $jid, $muc, @args ) = @_;
 
     $muc = shift @args if scalar @args;
-    die("Usage: jmuc part {muc} [-a account]") unless $muc;
+    die("Usage: jmuc part MUC [-a account]") unless $muc;
 
     $conn->getConnectionFromJidStr($jid)->PresenceSend( to => $muc, type => 'unavailable' );
     queue_admin_msg("$jid has left $muc.");
@@ -572,7 +573,7 @@ sub jmuc_invite {
     my $invite_jid = shift @args;
     $muc = shift @args if scalar @args;
 
-    die('Usage: jmuc invite {jid} [muc] [-a account]')
+    die('Usage: jmuc invite JID [muc] [-a account]')
       unless $muc && $invite_jid;
 
     my $message = Net::Jabber::Message->new();
