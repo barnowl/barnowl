@@ -2439,10 +2439,20 @@ char *owl_command_message(int argc, char **argv, char *buff)
     return NULL;
 }
 
-void owl_command_yes(void)
+char *owl_command_yes(void)
 {
-  owl_message *m = owl_view_get_element(owl_global_get_current_view(&g),
-                                        owl_global_get_curmsg(&g));
+  owl_message *m;
+  owl_view *v;
+
+  v = owl_global_get_current_view(&g);
+
+  /* bail if there's no current message */
+  if (owl_view_get_size(v) < 1) {
+    owl_function_error("No current message.");
+    return NULL;
+  }
+
+  m = owl_view_get_element(v, owl_global_get_curmsg(&g));
   if(!owl_message_is_question(m)) {
     owl_function_error("That message isn't a question.");
     return NULL;
@@ -2459,12 +2469,23 @@ void owl_command_yes(void)
 
   owl_function_command_norv(cmd);
   owl_message_set_isanswered(m);
+  return NULL;
 }
 
 char *owl_command_no(void)
 {
-  owl_message *m = owl_view_get_element(owl_global_get_current_view(&g),
-                                        owl_global_get_curmsg(&g));
+  owl_message *m;
+  owl_view *v;
+
+  v = owl_global_get_current_view(&g);
+
+  /* bail if there's no current message */
+  if (owl_view_get_size(v) < 1) {
+    owl_function_error("No current message.");
+    return NULL;
+  }
+
+  m = owl_view_get_element(v, owl_global_get_curmsg(&g));
   if(!owl_message_is_question(m)) {
     owl_function_error("That message isn't a question.");
     return NULL;
@@ -2481,6 +2502,7 @@ char *owl_command_no(void)
 
   owl_function_command_norv(cmd);
   owl_message_set_isanswered(m);
+  return NULL;
 }
 
 /*********************************************************************/
