@@ -54,7 +54,7 @@ sub new {
         my $jid = $args{jid};
         $jid = Net::Jabber::JID->new($jid) unless UNIVERSAL::isa($jid, 'Net::Jabber::JID');
         $args{jid} = $jid;
-    } else if($args{room} && $args{server} && $args{nick}) {
+    } elsif($args{room} && $args{server} && $args{nick}) {
         $args{jid} = New::Jabber::JID->new($args{room}."@".$args{server}."/".$args{nick});
     } else {
         croak("You must specify either a jid or room,server,nick.");
@@ -165,7 +165,7 @@ sub _handler {
     my $self = shift;
     my $sid = shift;
     my $packet = shift;
-    
+
     $self->_handlePresence($packet) if $packet->GetTag() eq "presence";
 }
 
@@ -180,13 +180,15 @@ sub _handlePresence {
     my $presence = shift;
 
     my $type = $presence->GetType() || "available";
-    my $from = $presence->GetFrom();
+    my $from = Net::Jabber::JID->new($presence->GetFrom());
 
-    return unless $from->GetJid('base') eq $self->BaseJID;
+    return unless $from->GetJID('base') eq $self->BaseJID;
 
-    if($type eq 'available') {
+    owl::error('JID matches');
+
+    if($type eq 'unavailable') {
         delete $self->{PRESENCE}->{$from->GetJID('full')};
-    } else {
+    } elsif($type eq 'available') {
         $self->{PRESENCE}->{$from->GetJID('full')} = $from;
     }
 }
@@ -214,5 +216,7 @@ Returns a list of JIDS in the MUC, as Net::Jabber::JID objects
 
 sub Presence {
     my $self = shift;
-    return keys %{$self->{PRESENCE}};
+    return values %{$self->{PRESENCE}};
 }
+
+1;
