@@ -73,7 +73,7 @@ sub MUCLeave {
 
     $muc->Leave();
     
-    $self->{_BARNOWL_MUCS} = grep {$_ != $muc} $self->MUCs;
+    $self->{_BARNOWL_MUCS} = [grep {$_->BaseJID ne $muc->BaseJID} $self->MUCs];
 }
 
 =head2 FindMUC ARGS
@@ -689,12 +689,15 @@ sub jmuc_configure {
 sub jmuc_presence {
     my ( $jid, $muc, @args ) = @_;
 
+    $muc = shift @args if scalar @args;
+    die("Usage: jmuc presence MUC") unless $muc;
+
     my $m = $conn->getConnectionFromJidStr($jid)->FindMUC(jid => $muc);
     die("No such muc: $muc") unless $m;
 
     my @jids = $m->Presence();
     BarnOwl::popless_ztext("JIDs present in " . $m->BaseJID . "\n\t" .
-                           join("\n\t", map {$_->GetResource}@jids));
+                           join("\n\t", map {$_->GetResource}@jids) . "\n");
 }
 
 
