@@ -184,8 +184,6 @@ sub _handlePresence {
 
     return unless $from->GetJID('base') eq $self->BaseJID;
 
-    owl::error('JID matches');
-
     if($type eq 'unavailable') {
         delete $self->{PRESENCE}->{$from->GetJID('full')};
     } elsif($type eq 'available') {
