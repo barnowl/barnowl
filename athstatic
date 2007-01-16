@@ -16,7 +16,7 @@ for arg do
   -l*)
     # Chop off the first two characters to get the library name.
     lib=`expr "$arg" : '..\(.*\)$'`
-    if [ -f /usr/athena/lib/lib${lib}.a ]; then
+    if [ -f /usr/athena/lib/lib${lib}.a -a "$lib" != "perl" ]; then
       options="$options /usr/athena/lib/lib${lib}.a"
     else
       options="$options $arg"
