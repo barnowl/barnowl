@@ -249,6 +249,10 @@ int main(int argc, char **argv, char **env)
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "wordwrap", "not ( type ^admin$ or type ^zephyr$ ) ");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
   owl_filter_init_fromstring(f, "trash", "class ^mail$ or opcode ^ping$ or type ^admin$ or ( not login ^none$ )");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 

@@ -8,22 +8,60 @@ static const char fileIdent[] = "$Id$";
 
 void owl_style_basic_format_body(owl_fmtext *fm, owl_message *m) {
   char *indent, *body;
+  owl_filter *f;
+  int wrap = 0;
 
   /* get the body */
   body=owl_strdup(owl_message_get_body(m));
-  body=realloc(body, strlen(body)+30);
 
-  /* add a newline if we need to */
-  if (body[0]!='\0' && body[strlen(body)-1]!='\n') {
-    strcat(body, "\n");
+  f = owl_global_get_filter(&g, "wordwrap");
+  if(f && owl_filter_message_match(f, m)) 
+    wrap = 1;
+
+  if(wrap) {
+    int cols, i, width, word;
+    char *tab, *tok, *ws = " \t\n\r";
+    cols = owl_global_get_cols(&g) - OWL_MSGTAB - 1;
+
+    tab = owl_malloc(OWL_MSGTAB+1);
+    for(i = 0; i < OWL_MSGTAB; i++) {
+      tab[i] = ' ';
+    }
+    tab[OWL_MSGTAB] = 0;
+
+    tok = strtok(body, ws);
+    tab[OWL_MSGTAB-1] = 0;
+    owl_fmtext_append_normal(fm, tab);
+    tab[OWL_MSGTAB-1] = ' ';
+    width = 0;
+
+    while(tok) {
+      word = strlen(tok);
+      if(word + width + 1 < cols) {
+        owl_fmtext_append_normal(fm, " ");
+        owl_fmtext_append_normal(fm, tok);
+        width += word + 1;
+      } else {
+        owl_fmtext_append_normal(fm, "\n");
+        owl_fmtext_append_normal(fm, tab);
+        owl_fmtext_append_normal(fm, tok);
+        width = word;
+      }
+      tok = strtok(NULL, ws);
+    }
+    owl_fmtext_append_normal(fm, "\n");
+
+    owl_free(tab);
+  } else {
+    /* do the indenting into indent */
+    indent=owl_malloc(strlen(body)+owl_text_num_lines(body)*OWL_MSGTAB+10);
+    owl_text_indent(indent, body, OWL_MSGTAB);
+    owl_fmtext_append_ztext(fm, indent);
+    if(body[strlen(body)-1] != '\n')
+      owl_fmtext_append_ztext(fm, "\n");
+    owl_free(indent);
   }
 
-  /* do the indenting into indent */
-  indent=owl_malloc(strlen(body)+owl_text_num_lines(body)*OWL_MSGTAB+10);
-  owl_text_indent(indent, body, OWL_MSGTAB);
-  owl_fmtext_append_ztext(fm, indent);
-
-  owl_free(indent);
   owl_free(body);
 }
  
