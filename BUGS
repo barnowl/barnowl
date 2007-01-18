@@ -1,0 +1,10 @@
+* if I sub to someone's presence, they sometimes don't show up as
+  offline after they accept [nelhage]
+* We generate jwrite -i command lines, but don't do the right thing
+  with them yet. [nelhage]
+* The jabber roster looks ugly with multiline status messages and
+  long JIDs [nelhage]
+* Hangs on Ubuntu 6.06 [nygren] (see email)
+* Building barnowl on Athena and then running it on Linerva results in
+  sadness finding strict.pm apparently related to having an incorrect
+  @INC. [kchen]
