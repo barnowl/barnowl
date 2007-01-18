@@ -322,14 +322,12 @@ sub reload
 
   # Do reload
   package main;
-  if (do "$ENV{HOME}/.owlconf" && BarnOwl::reload_hook(@_))
-  {
-      return "owlconf reloaded";
-  } 
-  else
-  {
-      return "$ENV{HOME}/.owlconf load attempted, but error encountered:\n$@";
+  if (-r $BarnOwl::configfile) {
+      undef $@;
+      do $BarnOwl::configfile;
+      owl::error("Error reloading $BarnOwl::configfile: $@") if $@;
   }
+  BarnOwl::reload_hook(@_);
   package owl;
 }
 
