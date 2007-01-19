@@ -300,10 +300,6 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: doing AIM initialization");
   owl_aim_init();
 
-  /* process the startup file */
-  owl_function_debugmsg("startup: processing startup file");
-  owl_function_source(NULL);
-
   /* read the config file */
   owl_function_debugmsg("startup: processing config file");
   owl_context_set_readconfig(owl_global_get_context(&g));
@@ -333,7 +329,11 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: executing perl startup, if applicable");
   perlout = owl_perlconfig_execute("BarnOwl::Hooks::startup();");
   if (perlout) owl_free(perlout);
-  
+
+    /* process the startup file */
+  owl_function_debugmsg("startup: processing startup file");
+  owl_function_source(NULL);
+
   /* hold on to the window names for convenience */
   msgwin=owl_global_get_curs_msgwin(&g);
   recwin=owl_global_get_curs_recwin(&g);
