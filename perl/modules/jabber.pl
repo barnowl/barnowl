@@ -1005,9 +1005,9 @@ sub process_presence_available {
         $props{loginout} = 'logout';
     }
     $props{replysendercmd} = $props{replycmd} = "jwrite $from -i $sid";
-#    if(BarnOwl::getvar('debug') eq 'on') {
+    if(BarnOwl::getvar('debug') eq 'on') {
         BarnOwl::queue_message(BarnOwl::Message->new(%props));
-#    }
+    }
 }
 
 sub process_presence_subscribe {
