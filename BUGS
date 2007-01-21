@@ -1,5 +1,3 @@
-* if I sub to someone's presence, they sometimes don't show up as
-  offline after they accept [nelhage]
 * We generate jwrite -i command lines, but don't do the right thing
   with them yet. [nelhage]
 * The jabber roster looks ugly with multiline status messages and
