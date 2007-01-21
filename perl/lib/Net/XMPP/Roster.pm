@@ -269,12 +269,21 @@ sub add
     my ($jid,%item) = @_;
 
     $jid = $jid->GetJID() if UNIVERSAL::isa($jid,"Net::XMPP::JID");
+    if (exists $self->{JIDS}->{$jid})
+    {
+	foreach my $key (keys %item)
+	{
+	    $self->{JIDS}->{$jid}->{$key} = $item{$key};
+	}
+    }
+    else
+    {
+        $self->{JIDS}->{$jid} = \%item;
 
-    $self->{JIDS}->{$jid} = \%item;
-
+    }
     foreach my $group (@{$item{groups}})
     {
-        $self->{GROUPS}->{$group}->{$jid} = 1;
+	$self->{GROUPS}->{$group}->{$jid} = 1;
     }
 }
 
@@ -439,11 +448,13 @@ sub handleRoster
 
     foreach my $jid (keys(%{$roster}))
     {
-        $self->remove($jid);
-
         if ($roster->{$jid}->{subscription} ne "remove")
         {
             $self->add($jid, %{$roster->{$jid}});
+        }
+        else
+        {
+            $self->remove($jid);
         }
     }
 }
