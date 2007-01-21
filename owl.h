@@ -251,7 +251,8 @@ typedef struct _owl_fmtext {
   int textlen;
   char *textbuff;
   char *fmbuff;
-  char *colorbuff;
+  char *fgcolorbuff;
+  char *bgcolorbuff;
 } owl_fmtext;
 
 typedef struct _owl_list {
@@ -414,7 +415,8 @@ typedef struct _owl_filter {
   char *name;
   int polarity;
   owl_filterelement * root;
-  int color;
+  int fgcolor;
+  int bgcolor;
   int cachedmsgid;  /* cached msgid: should move into view eventually */
 } owl_filter;
 
@@ -513,6 +515,11 @@ typedef struct _owl_errqueue {
   owl_list errlist;
 } owl_errqueue;
 
+typedef struct _owl_colorpair_mgr {
+  char *used;
+  int **pairs;
+} owl_colorpair_mgr;
+
 typedef struct _owl_global {
   owl_mainwin mw;
   owl_popwin pw;
@@ -555,6 +562,7 @@ typedef struct _owl_global {
   int nextmsgid;
   int hascolors;
   int colorpairs;
+  owl_colorpair_mgr cpmgr;
   int searchactive;
   int newmsgproc_pid;
   int malloced, freed;

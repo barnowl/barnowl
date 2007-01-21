@@ -515,7 +515,7 @@ char *owl_message_get_hostname(owl_message *m)
   return(m->hostname);
 }
 
-void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline, int acol, int bcol, int color)
+void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline, int acol, int bcol, int fgcolor, int bgcolor)
 {
   owl_fmtext a, b;
 
@@ -527,8 +527,11 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
   
   owl_fmtext_truncate_lines(&(m->fmtext), aline, bline-aline+1, &a);
   owl_fmtext_truncate_cols(&a, acol, bcol, &b);
-  if (color!=OWL_COLOR_DEFAULT) {
-    owl_fmtext_colorize(&b, color);
+  if (fgcolor!=OWL_COLOR_DEFAULT) {
+    owl_fmtext_colorize(&b, fgcolor);
+  }
+  if (bgcolor!=OWL_COLOR_DEFAULT) {
+    owl_fmtext_colorizebg(&b, bgcolor);
   }
 
   if (owl_global_is_search_active(&g)) {

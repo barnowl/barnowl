@@ -2453,7 +2453,22 @@ void owl_function_create_filter(int argc, char **argv)
       owl_function_error("The color '%s' is not available.", argv[3]);
       return;
     }
-    owl_filter_set_color(f, owl_util_string_to_color(argv[3]));
+    owl_filter_set_fgcolor(f, owl_util_string_to_color(argv[3]));
+    owl_global_set_needrefresh(&g);
+    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+    return;
+  }
+  if (argc==4 && !strcmp(argv[2], "-b")) {
+    f=owl_global_get_filter(&g, argv[1]);
+    if (!f) {
+      owl_function_error("The filter '%s' does not exist.", argv[1]);
+      return;
+    }
+    if (owl_util_string_to_color(argv[3])==-1) {
+      owl_function_error("The color '%s' is not available.", argv[3]);
+      return;
+    }
+    owl_filter_set_bgcolor(f, owl_util_string_to_color(argv[3]));
     owl_global_set_needrefresh(&g);
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
     return;
@@ -2544,7 +2559,7 @@ void owl_function_show_filters()
     f=owl_list_get_element(l, i);
     owl_fmtext_append_normal(&fm, "   ");
     if (owl_global_get_hascolors(&g)) {
-      owl_fmtext_append_normal_color(&fm, owl_filter_get_name(f), owl_filter_get_color(f));
+      owl_fmtext_append_normal_color(&fm, owl_filter_get_name(f), owl_filter_get_fgcolor(f), owl_filter_get_bgcolor(f));
     } else {
       owl_fmtext_append_normal(&fm, owl_filter_get_name(f));
     }
@@ -2923,19 +2938,19 @@ void owl_function_smartzpunt(int type)
 /* Set the color of the current view's filter to
  * be 'color'
  */
-void owl_function_color_current_filter(char *color)
+void owl_function_color_current_filter(char *fgcolor, char *bgcolor)
 {
   char *name;
 
   name=owl_view_get_filtname(owl_global_get_current_view(&g));
-  owl_function_color_filter(name, color);
+  owl_function_color_filter(name, fgcolor, bgcolor);
 }
 
 /* Set the color of the filter 'filter' to be 'color'.  If the color
  * name does not exist, return -1, if the filter does not exist or is
  * the "all" filter, return -2.  Return 0 on success
  */
-int owl_function_color_filter(char *filtname, char *color)
+int owl_function_color_filter(char *filtname, char *fgcolor, char *bgcolor)
 {
   owl_filter *f;
 
@@ -2951,11 +2966,21 @@ int owl_function_color_filter(char *filtname, char *color)
     return(-2);
   }
 
-  if (owl_util_string_to_color(color)==-1) {
-    owl_function_error("No color named '%s' avilable.");
+  if (owl_util_string_to_color(fgcolor)==-1) {
+    owl_function_error("No color named '%s' avilable.", fgcolor);
     return(-1);
   }
-  owl_filter_set_color(f, owl_util_string_to_color(color));
+
+
+  if (bgcolor != NULL) {
+    if (owl_util_string_to_color(bgcolor)==-1) {
+      owl_function_error("No color named '%s' avilable.", bgcolor);
+      return(-1);
+    }
+    owl_filter_set_bgcolor(f, owl_util_string_to_color(bgcolor));
+  }
+  owl_filter_set_fgcolor(f, owl_util_string_to_color(fgcolor));
+  
   owl_global_set_needrefresh(&g);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   return(0);
@@ -2967,28 +2992,28 @@ void owl_function_show_colors()
 
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_normal(&fm, "default: ");
-  owl_fmtext_append_normal_color(&fm, "default\n", OWL_COLOR_DEFAULT);
+  owl_fmtext_append_normal_color(&fm, "default\n", OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
 
   owl_fmtext_append_normal(&fm,"red:      ");
-  owl_fmtext_append_normal_color(&fm, "red\n", OWL_COLOR_RED);
+  owl_fmtext_append_normal_color(&fm, "red\n", OWL_COLOR_RED, OWL_COLOR_DEFAULT);
 
   owl_fmtext_append_normal(&fm,"green:    ");
-  owl_fmtext_append_normal_color(&fm, "green\n", OWL_COLOR_GREEN);
+  owl_fmtext_append_normal_color(&fm, "green\n", OWL_COLOR_GREEN, OWL_COLOR_DEFAULT);
 
   owl_fmtext_append_normal(&fm,"yellow:   ");
-  owl_fmtext_append_normal_color(&fm, "yellow\n", OWL_COLOR_YELLOW);
+  owl_fmtext_append_normal_color(&fm, "yellow\n", OWL_COLOR_YELLOW, OWL_COLOR_DEFAULT);
 
   owl_fmtext_append_normal(&fm,"blue:     ");
-  owl_fmtext_append_normal_color(&fm, "blue\n", OWL_COLOR_BLUE);
+  owl_fmtext_append_normal_color(&fm, "blue\n", OWL_COLOR_BLUE, OWL_COLOR_DEFAULT);
 
   owl_fmtext_append_normal(&fm,"magenta:  ");
-  owl_fmtext_append_normal_color(&fm, "magenta\n", OWL_COLOR_MAGENTA);
+  owl_fmtext_append_normal_color(&fm, "magenta\n", OWL_COLOR_MAGENTA, OWL_COLOR_DEFAULT);
 
   owl_fmtext_append_normal(&fm,"cyan:     ");
-  owl_fmtext_append_normal_color(&fm, "cyan\n", OWL_COLOR_CYAN);
+  owl_fmtext_append_normal_color(&fm, "cyan\n", OWL_COLOR_CYAN, OWL_COLOR_DEFAULT);
 
   owl_fmtext_append_normal(&fm,"white:    ");
-  owl_fmtext_append_normal_color(&fm, "white\n", OWL_COLOR_WHITE);
+  owl_fmtext_append_normal_color(&fm, "white\n", OWL_COLOR_WHITE, OWL_COLOR_DEFAULT);
 
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);

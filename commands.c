@@ -502,7 +502,7 @@ owl_cmd commands_to_init[]
   
   OWLCMD_ARGS("filter", owl_command_filter, OWL_CTX_ANY,
 	      "create a message filter",
-	      "filter <name> [ -c color ] [ <expression> ... ]",
+	      "filter <name> [ -c fgcolor ] [ -b bgcolor ] [ <expression> ... ]",
 	      "The filter command creates a filter with the specified name,\n"
 	      "or if one already exists it is replaced.  Example filter\n"
 	      "syntax would be:\n\n"
@@ -532,23 +532,23 @@ owl_cmd commands_to_init[]
 	      "    true\n"
 	      "    false\n"
 	      "Spaces must be present before and after parenthesis.  If the\n"
-	      "optional color argument is used it specifies the color that\n"
+	      "optional color arguments are used they specifies the colors that\n"
 	      "messages matching this filter should be displayed in.\n\n"
 	      "SEE ALSO: view, viewclass, viewuser\n"),
 
   OWLCMD_ARGS("colorview", owl_command_colorview, OWL_CTX_INTERACTIVE,
-	      "change the color on the current filter",
-	      "colorview <color>",
-	      "The color of messages in the current filter will be changed\n"
-	      "to <color>.  Use the 'show colors' command for a list\n"
+	      "change the colors on the current filter",
+	      "colorview <fgcolor> [<bgcolor>]",
+	      "The colors of messages in the current filter will be changed\n"
+	      "to <fgcolor>,<bgcolor>.  Use the 'show colors' command for a list\n"
 	      "of valid colors.\n\n"
 	      "SEE ALSO: 'show colors'\n"),
 
   OWLCMD_ARGS("colorclass", owl_command_colorclass, OWL_CTX_INTERACTIVE,
 	      "create a filter to color messages of the given class name",
-	      "colorclass <class> <color>",
+	      "colorclass <class> <fgcolor> [<bgcolor>]",
 	      "A filter will be created to color messages in <class>"
-	      "in <color>.  Use the 'show colors' command for a list\n"
+	      "in <fgcolor>,<bgcolor>.  Use the 'show colors' command for a list\n"
 	      "of valid colors.\n\n"
 	      "SEE ALSO: 'show colors'\n"),
 
@@ -2252,11 +2252,11 @@ void owl_command_beep()
 
 char *owl_command_colorview(int argc, char **argv, char *buff)
 {
-  if (argc!=2) {
+  if (argc < 2 || argc > 3) {
     owl_function_makemsg("Wrong number of arguments to colorview command");
     return NULL;
   }
-  owl_function_color_current_filter(argv[1]);
+  owl_function_color_current_filter(argv[1], (argc == 3 ? argv[2] : NULL));
   return NULL;
 }
 
@@ -2264,13 +2264,13 @@ char *owl_command_colorclass(int argc, char **argv, char *buff)
 {
   char *filtname;
   
-  if (argc!=3) {
+  if (argc < 3 || argc > 4) {
     owl_function_makemsg("Wrong number of arguments to colorclass command");
     return NULL;
   }
 
   filtname=owl_function_classinstfilt(argv[1], NULL);
-  (void) owl_function_color_filter(filtname, argv[2]);
+  (void) owl_function_color_filter(filtname, argv[2], (argc == 4 ? argv[3] : NULL));
   return NULL;
 }
 

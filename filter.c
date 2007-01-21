@@ -20,16 +20,25 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
 {
   f->name=owl_strdup(name);
   f->polarity=0;
-  f->color=OWL_COLOR_DEFAULT;
+  f->fgcolor=OWL_COLOR_DEFAULT;
+  f->bgcolor=OWL_COLOR_DEFAULT;
   f->cachedmsgid=-1;
 
   /* first take arguments that have to come first */
   /* set the color */
-  if (argc>=2 && !strcmp(argv[0], "-c")) {
+  while ( argc>=2 && ( !strcmp(argv[0], "-c") ||
+		       !strcmp(argv[0], "-b") ) ) {
     if (owl_util_string_to_color(argv[1])==-1) {
       owl_function_error("The color '%s' is not available, using default.", argv[1]);
     } else {
-      f->color=owl_util_string_to_color(argv[1]);
+      switch (argv[0][1]) {
+      case 'c':
+	f->fgcolor=owl_util_string_to_color(argv[1]);
+	break;
+      case 'b':
+	f->bgcolor=owl_util_string_to_color(argv[1]);
+	break;
+      }
     }
     argc-=2;
     argv+=2;
@@ -158,14 +167,24 @@ void owl_filter_set_polarity_unmatch(owl_filter *f)
   f->polarity=1;
 }
 
-void owl_filter_set_color(owl_filter *f, int color)
+void owl_filter_set_fgcolor(owl_filter *f, int color)
 {
-  f->color=color;
+  f->fgcolor=color;
 }
 
-int owl_filter_get_color(owl_filter *f)
+int owl_filter_get_fgcolor(owl_filter *f)
 {
-  return(f->color);
+  return(f->fgcolor);
+}
+
+void owl_filter_set_bgcolor(owl_filter *f, int color)
+{
+  f->bgcolor=color;
+}
+
+int owl_filter_get_bgcolor(owl_filter *f)
+{
+  return(f->bgcolor);
 }
 
 void owl_filter_set_cachedmsgid(owl_filter *f, int cachedmsgid)
@@ -195,9 +214,14 @@ void owl_filter_print(owl_filter *f, char *out)
   strcpy(out, owl_filter_get_name(f));
   strcat(out, ": ");
 
-  if (f->color!=OWL_COLOR_DEFAULT) {
+  if (f->fgcolor!=OWL_COLOR_DEFAULT) {
     strcat(out, "-c ");
-    strcat(out, owl_util_color_to_string(f->color));
+    strcat(out, owl_util_color_to_string(f->fgcolor));
+    strcat(out, " ");
+  }
+  if (f->bgcolor!=OWL_COLOR_DEFAULT) {
+    strcat(out, "-b ");
+    strcat(out, owl_util_color_to_string(f->bgcolor));
     strcat(out, " ");
   }
   if(!f->root) return;

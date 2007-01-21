@@ -13,7 +13,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
   owl_message *m;
   int i, p, q, lines, isfull, viewsize;
   int x, y, savey, recwinlines, start;
-  int topmsg, curmsg, color;
+  int topmsg, curmsg, fgcolor, bgcolor;
   WINDOW *recwin;
   owl_view *v;
   owl_list *filtlist;
@@ -23,6 +23,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
   topmsg=owl_global_get_topmsg(&g);
   curmsg=owl_global_get_curmsg(&g);
   v=owl_global_get_current_view(&g);
+  owl_fmtext_reset_colorpairs();
 
   if (v==NULL) {
     owl_function_debugmsg("Hit a null window in owl_mainwin_redisplay.");
@@ -71,13 +72,15 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
     }
 
     /* if we match filters set the color */
-    color=OWL_COLOR_DEFAULT;
+    fgcolor=OWL_COLOR_DEFAULT;
+    bgcolor=OWL_COLOR_DEFAULT;
     filtlist=owl_global_get_filterlist(&g);
     q=owl_list_get_size(filtlist);
     for (p=0; p<q; p++) {
       f=owl_list_get_element(filtlist, p);
       if (owl_filter_message_match(f, m)) {
-	if (owl_filter_get_color(f)!=OWL_COLOR_DEFAULT) color=owl_filter_get_color(f);
+	if (owl_filter_get_fgcolor(f)!=OWL_COLOR_DEFAULT) fgcolor=owl_filter_get_fgcolor(f);
+	if (owl_filter_get_bgcolor(f)!=OWL_COLOR_DEFAULT) bgcolor=owl_filter_get_bgcolor(f);
       }
     }
 
@@ -91,7 +94,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
 			       start+recwinlines-y,
 			       owl_global_get_rightshift(&g),
 			       owl_global_get_cols(&g)+owl_global_get_rightshift(&g)-1,
-			       color);
+			       fgcolor, bgcolor);
     } else {
       /* otherwise print the whole thing */
       owl_message_curs_waddstr(m, owl_global_get_curs_recwin(&g),
@@ -99,7 +102,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
 			       start+lines,
 			       owl_global_get_rightshift(&g),
 			       owl_global_get_cols(&g)+owl_global_get_rightshift(&g)-1,
-			       color);
+			       fgcolor, bgcolor);
     }
 
 

@@ -63,6 +63,7 @@ void owl_global_init(owl_global *g) {
     g->hascolors=1;
   }
   g->colorpairs=COLOR_PAIRS;
+  owl_fmtext_init_colorpair_mgr(&(g->cpmgr));
   g->debug=OWL_DEBUG;
   g->searchactive=0;
   g->searchstring=NULL;
@@ -589,6 +590,10 @@ int owl_global_get_hascolors(owl_global *g) {
 
 int owl_global_get_colorpairs(owl_global *g) {
   return(g->colorpairs);
+}
+
+owl_colorpair_mgr *owl_global_get_colorpair_mgr(owl_global *g) {
+  return(&(g->cpmgr));
 }
 
 /* puntlist */

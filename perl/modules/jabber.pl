@@ -72,7 +72,6 @@ sub MUCLeave {
     return unless $muc;
 
     $muc->Leave();
-    
     $self->{_BARNOWL_MUCS} = [grep {$_->BaseJID ne $muc->BaseJID} $self->MUCs];
 }
 
@@ -426,7 +425,7 @@ sub do_login {
         );
         $client->SetPresenceCallBacks(
             available    => sub { BarnOwl::Jabber::process_presence_available(@_) },
-#            unavailable  => sub { BarnOwl::Jabber::process_presence_available(@_) },
+            unavailable  => sub { BarnOwl::Jabber::process_presence_available(@_) },
             subscribe    => sub { BarnOwl::Jabber::process_presence_subscribe(@_) },
             subscribed   => sub { BarnOwl::Jabber::process_presence_subscribed(@_) },
             unsubscribe  => sub { BarnOwl::Jabber::process_presence_unsubscribe(@_) },
@@ -1006,9 +1005,9 @@ sub process_presence_available {
         $props{loginout} = 'logout';
     }
     $props{replysendercmd} = $props{replycmd} = "jwrite $from -i $sid";
-    if(BarnOwl::getvar('debug') eq 'on') {
+#    if(BarnOwl::getvar('debug') eq 'on') {
         BarnOwl::queue_message(BarnOwl::Message->new(%props));
-    }
+#    }
 }
 
 sub process_presence_subscribe {

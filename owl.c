@@ -176,14 +176,18 @@ int main(int argc, char **argv, char **env)
 
   /* define simple color pairs */
   if (has_colors() && COLOR_PAIRS>=8) {
-    init_pair(OWL_COLOR_BLACK,   COLOR_BLACK,   -1);
-    init_pair(OWL_COLOR_RED,     COLOR_RED,     -1);
-    init_pair(OWL_COLOR_GREEN,   COLOR_GREEN,   -1);
-    init_pair(OWL_COLOR_YELLOW,  COLOR_YELLOW,  -1);
-    init_pair(OWL_COLOR_BLUE,    COLOR_BLUE,    -1);
-    init_pair(OWL_COLOR_MAGENTA, COLOR_MAGENTA, -1);
-    init_pair(OWL_COLOR_CYAN,    COLOR_CYAN,    -1);
-    init_pair(OWL_COLOR_WHITE,   COLOR_WHITE,   -1);
+    int bg = COLOR_BLACK;
+#ifdef HAVE_USE_DEFAULT_COLORS
+    bg = -1;
+#endif
+    init_pair(OWL_COLOR_BLACK,   COLOR_BLACK,   bg);
+    init_pair(OWL_COLOR_RED,     COLOR_RED,     bg);
+    init_pair(OWL_COLOR_GREEN,   COLOR_GREEN,   bg);
+    init_pair(OWL_COLOR_YELLOW,  COLOR_YELLOW,  bg);
+    init_pair(OWL_COLOR_BLUE,    COLOR_BLUE,    bg);
+    init_pair(OWL_COLOR_MAGENTA, COLOR_MAGENTA, bg);
+    init_pair(OWL_COLOR_CYAN,    COLOR_CYAN,    bg);
+    init_pair(OWL_COLOR_WHITE,   COLOR_WHITE,   bg);
   }
 
   /* owl global init */
