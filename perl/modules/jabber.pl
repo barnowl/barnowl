@@ -627,7 +627,7 @@ sub cmd_jmuc {
         my $jid;
         my $muc;
         my $m = BarnOwl::getcurmsg();
-        if ( $m->is_jabber && $m->{jtype} eq 'groupchat' ) {
+        if ( $m && $m->is_jabber && $m->{jtype} eq 'groupchat' ) {
             $muc = $m->{room};
             $jid = $m->{to};
         }
