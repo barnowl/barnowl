@@ -131,44 +131,44 @@ sub addConnection {
 
     my $client = BarnOwl::Jabber::Connection->new;
 
-    $self->{Client}->{$jidStr} = $client;
-    $self->{Roster}->{$jidStr} = $client->Roster();
+    $self->{$jidStr}->{Client} = $client;
+    $self->{$jidStr}->{Roster} = $client->Roster();
+    $self->{$jidStr}->{Status} = "available";
     return $client;
 }
 
 sub removeConnection {
     my $self = shift;
     my $jidStr = shift;
-    return 0 unless exists $self->{Client}->{$jidStr};
+    return 0 unless exists $self->{$jidStr}->{Client};
 
-    $self->{Client}->{$jidStr}->Disconnect();
-    delete $self->{Roster}->{$jidStr};
-    delete $self->{Client}->{$jidStr};
+    $self->{$jidStr}->{Client}->Disconnect();
+    delete $self->{$jidStr};
 
     return 1;
 }
 
 sub connected {
     my $self = shift;
-    return scalar keys %{ $self->{Client} };
+    return scalar keys %{ $self };
 }
 
 sub getJids {
     my $self = shift;
-    return keys %{ $self->{Client} };
+    return keys %{ $self };
 }
 
 sub jidExists {
     my $self = shift;
     my $jidStr = shift;
-    return exists $self->{Client}->{$jidStr};
+    return exists $self->{$jidStr};
 }
 
 sub sidExists {
     my $self = shift;
     my $sid = shift || "";
-    foreach my $j ( keys %{ $self->{Client} } ) {
-        return 1 if ($self->{Client}->{$j}->{SESSION}->{id} eq $sid);
+    foreach my $c ( values %{ $self } ) {
+        return 1 if ($c->{Client}->{SESSION}->{id} eq $sid);
     }
     return 0;
 }
@@ -176,8 +176,8 @@ sub sidExists {
 sub getConnectionFromSid {
     my $self = shift;
     my $sid = shift;
-    foreach my $c (values %{ $self->{Client} }) {
-        return $c if $c->{SESSION}->{id} eq $sid;
+    foreach my $c (values %{ $self }) {
+        return $c->{Client} if $c->{Client}->{SESSION}->{id} eq $sid;
     }
     return undef;
 }
@@ -185,15 +185,15 @@ sub getConnectionFromSid {
 sub getConnectionFromJidStr {
     my $self = shift;
     my $jidStr = shift;
-    return $self->{Client}->{$jidStr};
+    return $self->{$jidStr}->{Client};
 }
 
 sub getRosterFromSid {
     my $self = shift;
     my $sid = shift;
-    foreach my $j ( $self->getJids ) {
-        return $self->{Roster}->{$j}
-          if $self->{Client}->{$j}->{SESSION}->{id} eq $sid;
+    foreach my $c (values %{ $self }) {
+        return $c->{Roster}
+          if $c->{Client}->{SESSION}->{id} eq $sid;
     }
     return undef;
 }
@@ -201,8 +201,7 @@ sub getRosterFromSid {
 sub getRosterFromJidStr {
     my $self = shift;
     my $jidStr = shift;
-    return $self->{Roster}->{$jidStr};
-    return undef;
+    return $self->{$jidStr}->{Roster};
 }
 ################################################################################
 
@@ -216,6 +215,7 @@ sub onStart {
         register_owl_commands();
         push @::onMainLoop,     sub { BarnOwl::Jabber::onMainLoop(@_) };
         push @::onGetBuddyList, sub { BarnOwl::Jabber::onGetBuddyList(@_) };
+        $vars{show} = '';
     } else {
         # Our owl doesn't support queue_message. Unfortunately, this
         # means it probably *also* doesn't support BarnOwl::error. So just
@@ -228,6 +228,22 @@ push @::onStartSubs, sub { BarnOwl::Jabber::onStart(@_) };
 sub onMainLoop {
     return if ( !$conn->connected() );
 
+    $vars{status_changed} = 0;
+    my $idletime = owl::getidletime();
+    if ($idletime >= 900 && $vars{show} eq 'away') {
+        $vars{show} = 'xa';
+        $vars{status} = 'Auto extended-away after 15 minutes idle.';
+        $vars{status_changed} = 1;
+    } elsif ($idletime >= 300 && $vars{show} eq '') {
+        $vars{show} = 'away';
+        $vars{status} = 'Auto away after 5 minutes idle.';
+        $vars{status_changed} = 1;
+    } elsif ($idletime == 0 && $vars{show} ne '') {
+        $vars{show} = '';
+        $vars{status} = '';
+        $vars{status_changed} = 1;
+    }
+
     foreach my $jid ( $conn->getJids() ) {
         my $client = $conn->getConnectionFromJidStr($jid);
 
@@ -239,6 +255,12 @@ sub onMainLoop {
         if ($::shutdown) {
             do_logout($jid);
             return;
+        }
+        if ($vars{status_changed}) {
+            my $p = new Net::XMPP::Presence;
+            $p->SetShow($vars{show}) if $vars{show};
+            $p->SetStatus($vars{status}) if $vars{status};
+            $client->Send($p);
         }
     }
 }

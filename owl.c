@@ -660,6 +660,7 @@ int main(int argc, char **argv, char **env)
     if (j==ERR) {
       usleep(10);
     } else {
+      owl_global_update_lastinputtime(&g);
       /* find and activate the current keymap.
        * TODO: this should really get fixed by activating
        * keymaps as we switch between windows... 

@@ -556,7 +556,8 @@ typedef struct _owl_global {
   owl_viewwin vw;
   void *perl;
   int debug;
-  int starttime;
+  time_t starttime;
+  time_t lastinputtime;
   char *startupargs;
   int userclue;
   int nextmsgid;

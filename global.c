@@ -68,6 +68,7 @@ void owl_global_init(owl_global *g) {
   g->searchactive=0;
   g->searchstring=NULL;
   g->starttime=time(NULL); /* assumes we call init only a start time */
+  g->lastinputtime=g->starttime;
   g->newmsgproc_pid=0;
   
   owl_global_set_config_format(g, 0);
@@ -435,6 +436,18 @@ time_t owl_global_get_starttime(owl_global *g) {
 
 time_t owl_global_get_runtime(owl_global *g) {
   return(time(NULL)-g->starttime);
+}
+
+time_t owl_global_get_lastinputtime(owl_global *g) {
+  return(g->lastinputtime);
+}
+
+void owl_global_update_lastinputtime(owl_global *g) {
+  g->lastinputtime = time(NULL);
+}
+
+time_t owl_global_get_idletime(owl_global *g) {
+  return(time(NULL)-g->lastinputtime);
 }
 
 void owl_global_get_runtime_string(owl_global *g, char *buff) {

@@ -38,6 +38,13 @@ getnumcols()
 		RETVAL = owl_global_get_cols(&g);
 	OUTPUT:
 		RETVAL
+		
+time_t
+getidletime()
+	CODE:
+		RETVAL = owl_global_get_idletime(&g);
+	OUTPUT:
+		RETVAL
 
 char *
 zephyr_getrealm()
