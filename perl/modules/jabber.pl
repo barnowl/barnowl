@@ -182,10 +182,11 @@ sub getConnectionFromSid {
     return undef;
 }
 
-sub getConnectionFromJidStr {
+sub getConnectionFromJID {
     my $self = shift;
-    my $jidStr = shift;
-    return $self->{$jidStr}->{Client};
+    my $jid = shift;
+    $jid = $jid->GetJID('full') if UNIVERSAL::isa($jid, 'Net::XMPP::JID');
+    return $self->{$jid}->{Client} if exists $self->{$jid};
 }
 
 sub getRosterFromSid {
@@ -198,10 +199,11 @@ sub getRosterFromSid {
     return undef;
 }
 
-sub getRosterFromJidStr {
+sub getRosterFromJID {
     my $self = shift;
-    my $jidStr = shift;
-    return $self->{$jidStr}->{Roster};
+    my $jid = shift;
+    $jid = $jid->GetJID('full') if UNIVERSAL::isa($jid, 'Net::XMPP::JID');
+    return $self->{$jid}->{Roster} if exists $self->{$jid};
 }
 ################################################################################
 
@@ -245,7 +247,7 @@ sub onMainLoop {
     }
 
     foreach my $jid ( $conn->getJids() ) {
-        my $client = $conn->getConnectionFromJidStr($jid);
+        my $client = $conn->getConnectionFromJID($jid);
 
         unless($client) {
             $conn->removeConnection($jid);
@@ -303,10 +305,10 @@ sub blist_listBuddy {
 
 sub getSingleBuddyList {
     my $jid = shift;
-    $jid = resolveJID($jid);
+    $jid = resolveConnectedJID($jid);
     return "" unless $jid;
     my $blist = "";
-    my $roster = $conn->getRosterFromJidStr($jid);
+    my $roster = $conn->getRosterFromJID($jid);
     if ($roster) {
         $blist .= "\n" . boldify("Jabber Roster for $jid\n");
 
@@ -353,7 +355,7 @@ sub register_owl_commands() {
         jwrite => \&cmd_jwrite,
         {
             summary => "Send a Jabber Message",
-            usage   => "jwrite JID [-g] [-t thread] [-s subject]"
+            usage   => "jwrite JID [-t thread] [-s subject]"
         }
     );
     BarnOwl::new_command(
@@ -479,7 +481,7 @@ sub do_login {
                 $conn->removeConnection($jidStr);
                 BarnOwl::error( "Error in connect: " . join( " ", @result ) );
             } else {
-                $conn->getRosterFromJidStr($jidStr)->fetch();
+                $conn->getRosterFromJID($jidStr)->fetch();
                 $client->PresenceSend( priority => 1 );
                 queue_admin_msg("Connected to jabber as $jidStr");
             }
@@ -523,7 +525,7 @@ sub cmd_logout {
             }
             else                    #One account.
             {
-                my $jid = resolveJID( $_[1] );
+                my $jid = resolveConnectedJID( $_[1] );
                 do_logout($jid) if ( $jid ne '' );
             }
         }
@@ -554,6 +556,7 @@ sub cmd_jwrite {
     my $jwrite_sid     = "";
     my $jwrite_thread  = "";
     my $jwrite_subject = "";
+    my $to;
     my $jwrite_type    = "chat";
 
     my @args = @_;
@@ -565,33 +568,24 @@ sub cmd_jwrite {
         'subject=s' => \$jwrite_subject,
         'account=s' => \$jwrite_from,
         'id=s'     =>  \$jwrite_sid,
-        'groupchat' => \$gc
     );
     $jwrite_type = 'groupchat' if $gc;
 
     if ( scalar @ARGV != 1 ) {
         BarnOwl::error(
-            "Usage: jwrite JID [-g] [-t thread] [-s 'subject'] [-a account]");
+            "Usage: jwrite JID [-t thread] [-s 'subject'] [-a account]");
         return;
     }
     else {
-        $jwrite_to = shift @ARGV;
+        $to = shift @ARGV;
     }
 
-    if ( !$jwrite_from ) {
-        if ( $conn->connected() == 1 ) {
-            $jwrite_from = ( $conn->getJids() )[0];
-        }
-        else {
-            BarnOwl::error("Please specify an account with -a JID");
-            return;
-        }
-    }
-    else {
-        $jwrite_from = resolveJID($jwrite_from);
-        return unless $jwrite_from;
-    }
+    ($jwrite_from, $jwrite_to, $jwrite_type) = guess_jwrite($jwrite_from, $to);
 
+    unless($jwrite_from && $jwrite_to) {
+        die("Unable to resolve JID $to");
+    }
+    
     $vars{jwrite} = {
         to      => $jwrite_to,
         from    => $jwrite_from,
@@ -604,7 +598,10 @@ sub cmd_jwrite {
     BarnOwl::message(
 "Type your message below.  End with a dot on a line by itself.  ^C will quit."
     );
-    BarnOwl::start_edit_win( join( ' ', @args ), \&process_owl_jwrite );
+    my $cmd = "jwrite $jwrite_to -a $jwrite_from";
+    $cmd .= " -t $jwrite_thread" if $jwrite_thread;
+    $cmd .= " -t $jwrite_subject" if $jwrite_subject;
+    BarnOwl::start_edit_win( $cmd, \&process_owl_jwrite );
 }
 
 sub cmd_jmuc {
@@ -645,7 +642,7 @@ sub cmd_jmuc {
         $getopt->getoptions( 'account=s' => \$jid );
         $jid ||= defaultJID();
         if ($jid) {
-            $jid = resolveJID($jid);
+            $jid = resolveConnectedJID($jid);
             return unless $jid;
         }
         else {
@@ -664,7 +661,7 @@ sub jmuc_join {
     $muc = shift @ARGV
       or die("Usage: jmuc join MUC [-p password] [-a account]");
 
-    $conn->getConnectionFromJidStr($jid)->MUCJoin(Jid      => $muc,
+    $conn->getConnectionFromJID($jid)->MUCJoin(Jid      => $muc,
                                                   Password => $password,
                                                   History  => {
                                                       MaxChars => 0
@@ -678,7 +675,7 @@ sub jmuc_part {
     $muc = shift @args if scalar @args;
     die("Usage: jmuc part MUC [-a account]") unless $muc;
 
-    $conn->getConnectionFromJidStr($jid)->MUCLeave(JID => $muc);
+    $conn->getConnectionFromJID($jid)->MUCLeave(JID => $muc);
     queue_admin_msg("$jid has left $muc.");
 }
 
@@ -696,7 +693,7 @@ sub jmuc_invite {
     my $x = $message->NewChild('http://jabber.org/protocol/muc#user');
     $x->AddInvite();
     $x->GetInvite()->SetTo($invite_jid);
-    $conn->getConnectionFromJidStr($jid)->Send($message);
+    $conn->getConnectionFromJID($jid)->Send($message);
     queue_admin_msg("$jid has invited $invite_jid to $muc.");
 }
 
@@ -711,7 +708,7 @@ sub jmuc_configure {
     my $x     = $query->NewChild("jabber:x:data");
     $x->SetType('submit');
 
-    $conn->getConnectionFromJidStr($jid)->Send($iq);
+    $conn->getConnectionFromJID($jid)->Send($iq);
     queue_admin_msg("Accepted default instant configuration for $muc");
 }
 
@@ -721,7 +718,7 @@ sub jmuc_presence {
     $muc = shift @args if scalar @args;
     die("Usage: jmuc presence MUC") unless $muc;
 
-    my $m = $conn->getConnectionFromJidStr($jid)->FindMUC(jid => $muc);
+    my $m = $conn->getConnectionFromJID($jid)->FindMUC(jid => $muc);
     die("No such muc: $muc") unless $m;
 
     my @jids = $m->Presence();
@@ -771,7 +768,7 @@ sub cmd_jroster {
         );
         $jid ||= defaultJID();
         if ($jid) {
-            $jid = resolveJID($jid);
+            $jid = resolveConnectedJID($jid);
             return unless $jid;
         }
         else {
@@ -788,7 +785,7 @@ sub jroster_sub {
     my $purgeGroups = shift;
     my $baseJid = baseJID($jid);
 
-    my $roster = $conn->getRosterFromJidStr($jid);
+    my $roster = $conn->getRosterFromJID($jid);
 
     # Adding lots of users with the same name is a bad idea.
     $name = "" unless (1 == scalar(@ARGV));
@@ -800,7 +797,7 @@ sub jroster_sub {
         jroster_add($jid, $name, \@groups, $purgeGroups, ($to)) unless ($roster->exists($to));
 
         $p->SetTo($to);
-        $conn->getConnectionFromJidStr($jid)->Send($p);
+        $conn->getConnectionFromJID($jid)->Send($p);
         queue_admin_msg("You ($baseJid) have requested a subscription to ($to)'s presence.");
     }
 }
@@ -816,7 +813,7 @@ sub jroster_unsub {
     $p->SetType('unsubscribe');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
-        $conn->getConnectionFromJidStr($jid)->Send($p);
+        $conn->getConnectionFromJID($jid)->Send($p);
         queue_admin_msg("You ($baseJid) have unsubscribed from ($to)'s presence.");
     }
 }
@@ -828,7 +825,7 @@ sub jroster_add {
     my $purgeGroups = shift;
     my $baseJid = baseJID($jid);
 
-    my $roster = $conn->getRosterFromJidStr($jid);
+    my $roster = $conn->getRosterFromJID($jid);
 
     # Adding lots of users with the same name is a bad idea.
     $name = "" unless (1 == scalar(@ARGV));
@@ -858,7 +855,7 @@ sub jroster_add {
 
         $item->put_attrib(jid => $to);
         $item->put_attrib(name => $name) if $name;
-        $conn->getConnectionFromJidStr($jid)->Send($iq);
+        $conn->getConnectionFromJID($jid)->Send($iq);
         my $msg = "$baseJid: "
           . ($name ? "$name ($to)" : "($to)")
           . " is on your roster in the following groups: { "
@@ -882,7 +879,7 @@ sub jroster_remove {
     $item->put_attrib(subscription=> 'remove');
     foreach my $to (@ARGV) {
         $item->put_attrib(jid => $to);
-        $conn->getConnectionFromJidStr($jid)->Send($iq);
+        $conn->getConnectionFromJID($jid)->Send($iq);
         queue_admin_msg("You ($baseJid) have removed ($to) from your roster.");
     }
 }
@@ -898,7 +895,7 @@ sub jroster_auth {
     $p->SetType('subscribed');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
-        $conn->getConnectionFromJidStr($jid)->Send($p);
+        $conn->getConnectionFromJID($jid)->Send($p);
         queue_admin_msg("($to) has been subscribed to your ($baseJid) presence.");
     }
 }
@@ -914,7 +911,7 @@ sub jroster_deauth {
     $p->SetType('unsubscribed');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
-        $conn->getConnectionFromJidStr($jid)->Send($p);
+        $conn->getConnectionFromJID($jid)->Send($p);
         queue_admin_msg("($to) has been unsubscribed from your ($baseJid) presence.");
     }
 }
@@ -946,7 +943,7 @@ sub process_owl_jwrite {
         $conn->getConnectionFromSid($vars{jwrite}{sid})->Send($j);
     }
     else {
-        $conn->getConnectionFromJidStr($vars{jwrite}{from})->Send($j);
+        $conn->getConnectionFromJID($vars{jwrite}{from})->Send($j);
     }
 
     delete $vars{jwrite};
@@ -1082,7 +1079,7 @@ sub process_presence_unsubscribe {
 	if ($to eq $cJid->GetJID('base') ||
             $to eq $cJid->GetJID('full')) {
 	    my $reply = $p->Reply(type=>"unsubscribed");
-	    $conn->getConnectionFromJidStr($jid)->Send($reply);
+	    $conn->getConnectionFromJID($jid)->Send($reply);
 	    return;
 	}
     }
@@ -1156,7 +1153,7 @@ sub j2hash {
     elsif ( $jtype eq 'groupchat' ) {
         my $nick = $props{nick} = $from->GetResource();
         my $room = $props{room} = $from->GetJID('base');
-        $props{replycmd} = "jwrite -g $room";
+        $props{replycmd} = "jwrite $room";
         $props{replycmd} .=
           " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
 
@@ -1242,7 +1239,7 @@ sub baseJID {
     return $givenJid->GetJID('base');
 }
 
-sub resolveJID {
+sub resolveConnectedJID {
     my $givenJidStr = shift;
     my $givenJid    = new Net::XMPP::JID;
     $givenJid->SetJID($givenJidStr);
@@ -1251,7 +1248,7 @@ sub resolveJID {
     if ( $givenJid->GetResource() ) {
         # Specified account exists
         return $givenJidStr if ($conn->jidExists($givenJidStr) );
-        BarnOwl::error("Invalid account: $givenJidStr");
+        die("Invalid account: $givenJidStr");
     }
 
     # Disambiguate.
@@ -1273,12 +1270,12 @@ sub resolveJID {
 
         # Need further disambiguation.
         if ($ambiguous) {
-            queue_admin_msg($errStr);
+            die($errStr);
         }
 
         # Not one of ours.
         elsif ( $matchingJid eq "" ) {
-            BarnOwl::error("Invalid account: $givenJidStr");
+            die("Invalid account: $givenJidStr");
         }
 
         # It's this one.
@@ -1287,6 +1284,61 @@ sub resolveJID {
         }
     }
     return "";
+}
+
+sub resolveDestJID {
+    my ($to, $from) = @_;
+    my $jid = Net::Jabber::JID->new($to);
+    if($jid->GetResource()) {
+        return $jid->GetJID('full');
+    }
+
+    my $roster = $conn->getRosterFromJID($from);
+    my @jids = $roster->jids('all');
+    for my $j (@jids) {
+        if($roster->query($j, 'name') eq $to) {
+            return $j->GetJID('full');
+        }
+    }
+
+    return undef;
+}
+
+sub resolveType {
+    my $to = shift;
+    my $from = shift;
+    my @mucs = $conn->getConnectionFromJID($from)->MUCs;
+    if(grep {$_->BaseJID eq $to } @mucs) {
+        return 'groupchat';
+    } else {
+        return 'chat';
+    }
+}
+
+sub guess_jwrite {
+    # Heuristically guess what jids a jwrite was meant to be going to/from
+    my ($from, $to) = (@_);
+    my ($from_jid, $to_jid);
+    if($from) {
+        $from_jid = resolveConnectedJID($from);
+        die("Unable to resolve account $from") unless $from_jid;
+        $to_jid = resolveDestJID($to, $from_jid);
+    } elsif($to =~ /@/) {
+        $to_jid = $to;
+        $from_jid = defaultJID();
+        die("You must specify a JID with -a") unless $from_jid;
+    } else {
+        for my $f ($conn->getJids) {
+            $to_jid = resolveDestJID($to, $f);
+            if(defined($to_jid)) {
+                $from_jid = $f;
+            }
+        }
+        die("Unable to resolve JID $to") unless $to_jid;
+    }
+
+    my $type = resolveType($to_jid, $from_jid);
+    return ($from_jid, $to_jid, $type);
 }
 
 #####################################################################
