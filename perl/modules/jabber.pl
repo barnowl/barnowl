@@ -941,6 +941,7 @@ sub process_owl_jwrite {
         BarnOwl::queue_message($m);
     }
 
+    $j->RemoveFrom(); # Kludge to get around gtalk's random bits after the resouce.
     if ($vars{jwrite}{sid} && $conn->sidExists( $vars{jwrite}{sid} )) {
         $conn->getConnectionFromSid($vars{jwrite}{sid})->Send($j);
     }

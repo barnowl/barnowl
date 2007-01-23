@@ -6,5 +6,4 @@
 * Building barnowl on Athena and then running it on Linerva results in
   sadness finding strict.pm apparently related to having an incorrect
   @INC. [kchen]
-* jwrite foo@gmail.com -a bar@gmail.com fails with error 400 [nygren]
 * reply to resource names from ichat (foo's computer) fails badly [hartmans]
