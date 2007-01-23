@@ -271,19 +271,27 @@ sub add
     $jid = $jid->GetJID() if UNIVERSAL::isa($jid,"Net::XMPP::JID");
     if (exists $self->{JIDS}->{$jid})
     {
-	foreach my $key (keys %item)
-	{
-	    $self->{JIDS}->{$jid}->{$key} = $item{$key};
-	}
+        foreach my $key (keys %item)
+        {
+            $self->{JIDS}->{$jid}->{$key} = $item{$key};
+        }
     }
     else
     {
         $self->{JIDS}->{$jid} = \%item;
-
     }
+
+    foreach my $group (keys %{ $self->{GROUPS} })
+    {
+        # Clear user from old groups.
+        delete $self->{GROUPS}->{$group}->{$jid};
+        # Clean up empty groups.
+        delete $self->{GROUPS}->{$group} unless scalar keys %{ $self->{GROUPS}->{$group} };
+    }
+
     foreach my $group (@{$item{groups}})
     {
-	$self->{GROUPS}->{$group}->{$jid} = 1;
+        $self->{GROUPS}->{$group}->{$jid} = 1;
     }
 }
 
