@@ -697,31 +697,31 @@ int owl_fmtext_get_colorpair(int fg, int bg)
       short oldfg, oldbg;
       pair_content(pair, &oldfg, &oldbg);
       if (cpmgr->pairs[oldfg+1][oldbg] == pair) {
-	cpmgr->pairs[oldfg+1][oldbg] = -1;
+        cpmgr->pairs[oldfg+1][oldbg] = -1;
       }
       init_pair(pair, fg, bg);
       cpmgr->pairs[fg+1][bg] = pair;
       cpmgr->used[pair] = 1;
     } else {
-      // Skip the first COLORS, sicne they're static.
+      // Skip the first COLORS, since they're static.
       for(i = COLORS; i < COLOR_PAIRS; i++) {
-	if (0 == cpmgr->used[i]) {
-	  pair = i;
-	  break;
-	}
+        if (0 == cpmgr->used[i]) {
+          pair = i;
+          break;
+        }
       }
       if (pair != -1) {
-	short oldfg, oldbg;
-	pair_content(pair, &oldfg, &oldbg);
-	if (cpmgr->pairs[oldfg+1][oldbg] == pair) {
-	  cpmgr->pairs[oldfg+1][oldbg] = -1;
-	}
-	init_pair(pair, fg, bg);
-	cpmgr->pairs[fg+1][bg] = pair;
-	cpmgr->used[pair] = 1;
+        short oldfg, oldbg;
+        pair_content(pair, &oldfg, &oldbg);
+        if (cpmgr->pairs[oldfg+1][oldbg] == pair) {
+          cpmgr->pairs[oldfg+1][oldbg] = -1;
+        }
+        init_pair(pair, fg, bg);
+        cpmgr->pairs[fg+1][bg] = pair;
+        cpmgr->used[pair] = 1;
       } else {
-	// Fail to skipping background.
-	pair = fg;
+        // Fail to skipping background.
+        pair = fg;
       }
     }
   }
