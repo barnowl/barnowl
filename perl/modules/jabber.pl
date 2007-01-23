@@ -581,9 +581,13 @@ sub cmd_jwrite {
     }
 
     ($jwrite_from, $jwrite_to, $jwrite_type) = guess_jwrite($jwrite_from, $to);
-
-    unless($jwrite_from && $jwrite_to) {
+    
+    unless($jwrite_to) {
         die("Unable to resolve JID $to");
+    }
+
+    unless($jwrite_from) {
+        die("Unable to resolve account");
     }
     
     $vars{jwrite} = {
@@ -1288,10 +1292,8 @@ sub resolveConnectedJID {
 
 sub resolveDestJID {
     my ($to, $from) = @_;
+    return $to if $to =~ /@/;
     my $jid = Net::Jabber::JID->new($to);
-    if($jid->GetResource()) {
-        return $jid->GetJID('full');
-    }
 
     my $roster = $conn->getRosterFromJID($from);
     my @jids = $roster->jids('all');
@@ -1326,7 +1328,7 @@ sub guess_jwrite {
     } elsif($to =~ /@/) {
         $to_jid = $to;
         $from_jid = defaultJID();
-        die("You must specify a JID with -a") unless $from_jid;
+        die("You must specify an account with -a") unless $from_jid;
     } else {
         for my $f ($conn->getJids) {
             $to_jid = resolveDestJID($to, $f);
