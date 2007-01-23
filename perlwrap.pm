@@ -350,7 +350,7 @@ sub loadModules () {
         opendir( MODULES, $dir );
 
         # source ./modules/*.pl
-        @modules = grep( /\.pl$/, readdir(MODULES) );
+        @modules = sort grep( /\.pl$/, readdir(MODULES) );
 
         foreach my $mod (@modules) {
             owl::error("Loading $dir/$mod...");
