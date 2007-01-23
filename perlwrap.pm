@@ -353,7 +353,6 @@ sub loadModules () {
         @modules = sort grep( /\.pl$/, readdir(MODULES) );
 
         foreach my $mod (@modules) {
-            owl::error("Loading $dir/$mod...");
             unless ($rv = do "$dir/$mod") {
                 BarnOwl::error("Couldn't load $dir/$mod:\n $@") if $@;
                 BarnOwl::error("Couldn't run $dir/$mod:\n $!") unless defined $rv;
