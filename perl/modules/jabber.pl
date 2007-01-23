@@ -247,6 +247,11 @@ sub onMainLoop {
     foreach my $jid ( $conn->getJids() ) {
         my $client = $conn->getConnectionFromJidStr($jid);
 
+        unless($client) {
+            $conn->removeConnection($jid);
+            BarnOwl::error("Connection for $jid undefined -- error in reload?");
+        }
+        
         my $status = $client->Process(0);
         if ( !defined($status) ) {
             BarnOwl::error("Jabber account $jid disconnected!");
@@ -272,7 +277,9 @@ sub blist_listBuddy {
     my %jq  = $roster->query($buddy);
     my $res = $roster->resource($buddy);
 
-    $blistStr .= $jq{name} ? $jq{name} . "\t(" .$buddy->GetJID() . ')' : $buddy->GetJID();
+    my $name = $jq{name} || $buddy->GetUserID();
+
+    $blistStr .= sprintf '%-15s %s', $name, $buddy->GetJID();
 
     if ($res) {
         my %rq = $roster->resourceQuery( $buddy, $res );
@@ -305,7 +312,8 @@ sub getSingleBuddyList {
 
         foreach my $group ( $roster->groups() ) {
             $blist .= "  Group: $group\n";
-            foreach my $buddy ( $roster->jids( 'group', $group ) ) {
+            my @buddies = $roster->jids( 'group', $group );
+            foreach my $buddy ( @buddies ) {
                 $blist .= blist_listBuddy( $roster, $buddy );
             }
         }
@@ -741,7 +749,6 @@ sub cmd_jroster {
         auth     => \&jroster_auth,
         deauth   => \&jroster_deauth
     );
-
     my $func = $jroster_commands{$cmd};
     if ( !$func ) {
         BarnOwl::error("jroster: Unknown command: $cmd");
