@@ -345,7 +345,7 @@ sub register_owl_commands() {
     BarnOwl::new_command(
         jabberlogin => \&cmd_login,
         { summary => "Log into jabber", },
-        { usage   => "jabberlogin JID" }
+        { usage   => "jabberlogin JID [PASSWORD]" }
     );
     BarnOwl::new_command(
         jabberlogout => \&cmd_logout,
@@ -398,7 +398,9 @@ sub cmd_login {
     my $cmd = shift;
     my $jid = new Net::XMPP::JID;
     $jid->SetJID(shift);
-
+    my $password = undef;
+    $password = shift if @_;
+    
     my $uid           = $jid->GetUserID();
     my $componentname = $jid->GetServer();
     my $resource      = $jid->GetResource() || 'owl';
@@ -418,7 +420,7 @@ sub cmd_login {
     my ( $server, $port ) = getServerFromJID($jid);
 
     $vars{jlogin_jid} = $jidStr;
-    $vars{jlogin_havepass} = 0;
+    $vars{jlogin_password} = $password;
     $vars{jlogin_connhash} = {
         hostname      => $server,
         tls           => 1,
@@ -430,7 +432,7 @@ sub cmd_login {
         resource => $resource,
     };
 
-    return do_login('');
+    return do_login($password);
 }
 
 sub do_login {
