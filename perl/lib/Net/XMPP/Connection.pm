@@ -355,7 +355,7 @@ sub Process
         croak("There was an error in the last call to Process that you did not check for and\nhandle.  You should always check the output of the Process call.  If it was\nundef then there was a fatal error that you need to check.  There is an error\nin your program");
     }
 
-    $self->{DEBUG}->Log1("Process: timeout($timeout)") if defined($timeout);
+    $self->{DEBUG}->Log5("Process: timeout($timeout)") if defined($timeout);
 
     if (!defined($timeout) || ($timeout eq ""))
     {
