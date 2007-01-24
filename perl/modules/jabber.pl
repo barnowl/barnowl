@@ -582,19 +582,24 @@ sub cmd_jwrite {
         $to = shift @ARGV;
     }
 
-    ($jwrite_from, $jwrite_to, $jwrite_type) = guess_jwrite($from, $to);
+    my @candidates = guess_jwrite($from, $to);
     
-    unless($jwrite_to) {
+    unless(scalar @candidates) {
         die("Unable to resolve JID $to");
     }
 
-    unless($jwrite_from) {
+    @candidates = grep {defined $_->[0]} @candidates;
+
+    unless(scalar @candidates) {
         if(!$from) {
             die("You must specify an account with -a");
         } else {
             die("Unable to resolve account $from");
         }
     }
+
+
+    ($jwrite_from, $jwrite_to, $jwrite_type) = @{$candidates[0]};
     
     $vars{jwrite} = {
         to      => $jwrite_to,
@@ -605,9 +610,16 @@ sub cmd_jwrite {
         type    => $jwrite_type
     };
 
-    BarnOwl::message(
-"Type your message below.  End with a dot on a line by itself.  ^C will quit."
-    );
+    if(scalar @candidates > 1) {
+        BarnOwl::message(
+            "Warning: Guessing account and/or destination JID"
+           );
+    } else  {
+        BarnOwl::message(
+            "Type your message below.  End with a dot on a line by itself.  ^C will quit."
+           );
+    }
+    
     my $cmd = "jwrite $jwrite_to -a $jwrite_from";
     $cmd .= " -t $jwrite_thread" if $jwrite_thread;
     $cmd .= " -t $jwrite_subject" if $jwrite_subject;
@@ -1329,23 +1341,31 @@ sub guess_jwrite {
     # Heuristically guess what jids a jwrite was meant to be going to/from
     my ($from, $to) = (@_);
     my ($from_jid, $to_jid);
+    my @matches;
     if($from) {
         $from_jid = resolveConnectedJID($from);
         die("Unable to resolve account $from") unless $from_jid;
         $to_jid = resolveDestJID($to, $from_jid);
+        push @matches, [$from_jid, $to_jid];
     } else {
-        for my $f ($conn->getJids) {
+        for my $f ($conn->getJIDs) {
             $to_jid = resolveDestJID($to, $f);
             if(defined($to_jid)) {
-                $from_jid = $f;
+                push @matches, [$f, $to_jid];
             }
         }
-        $to_jid = $to if $to =~ /@/;
-        die("Unable to resolve JID $to") unless $to_jid;
+        if($to =~ /@/) {
+            push @matches, [$_, $to]
+               for ($conn->getJIDs);
+        }
     }
 
-    my $type = resolveType($to_jid, $from_jid);
-    return ($from_jid, $to_jid, $type);
+    for my $m (@matches) {
+        my $type = resolveType($m->[1], $m->[0]);
+        push @$m, $type;
+    }
+    
+    return @matches;
 }
 
 #####################################################################
