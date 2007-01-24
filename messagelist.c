@@ -20,21 +20,25 @@ void *owl_messagelist_get_element(owl_messagelist *ml, int n)
   return(owl_list_get_element(&(ml->list), n));
 }
 
-owl_message *owl_messagelist_get_by_id(owl_messagelist *ml, int id)
+owl_message *owl_messagelist_get_by_id(owl_messagelist *ml, int target_id)
 {
   /* return the message with id == 'id'.  If it doesn't exist return NULL. */
-  /* we could make this much more efficient at some point */
-  int i, j;
+  int first, last, mid, msg_id;
   owl_message *m;
 
-  j=owl_list_get_size(&(ml->list));
-  for (i=0; i<j; i++) {
-    m=owl_list_get_element(&(ml->list), i);
-    if (owl_message_get_id(m)==id) return(m);
-
-    /* the message id's have to be sequential.  If we've passed the
-       one we're looking for just bail */
-    if (owl_message_get_id(m) > id) return(NULL);
+  first = 0;
+  last = owl_list_get_size(&(ml->list)) - 1;
+  while (first <= last) {
+    mid = (first + last) / 2;
+    m = owl_list_get_element(&(ml->list), mid);
+    msg_id = owl_message_get_id(m);
+    if (msg_id == target_id) {
+      return(m);
+    } else if (msg_id < target_id) {
+      first = mid + 1;
+    } else {
+      last = mid - 1;
+    }
   }
   return(NULL);
 }
