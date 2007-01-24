@@ -662,8 +662,7 @@ void owl_fmtext_init_colorpair_mgr(owl_colorpair_mgr *cpmgr)
 {
   // This could be a bitarray if we wanted to save memory.
   int i, j, colors;
-  cpmgr->used = owl_malloc(COLOR_PAIRS * sizeof(char));
-  memset(cpmgr->used, 0, COLOR_PAIRS * sizeof(char));
+  cpmgr->next = COLORS;
 
   colors = COLORS + 1; // 1 to account for "default".
   cpmgr->pairs = owl_malloc(colors * sizeof(int*));
@@ -682,7 +681,7 @@ void owl_fmtext_reset_colorpairs()
 {
   int i, j, colors;
   owl_colorpair_mgr *cpmgr = owl_global_get_colorpair_mgr(&g);
-  memset(cpmgr->used, 0, COLOR_PAIRS * sizeof(char));  
+  cpmgr->next = COLORS;
 
   colors = COLORS + 1; // 1 to account for "default".
   for(i = 0; i < colors; i++) {
@@ -714,22 +713,16 @@ short owl_fmtext_get_colorpair(int fg, int bg)
     // looking for a pair we already set up for this draw.
     cpmgr = owl_global_get_colorpair_mgr(&g);
     pair = cpmgr->pairs[fg+1][bg];
-    if (!(pair != -1 && cpmgr->used[pair])) {
+    if (!(pair != -1 && pair < cpmgr->next)) {
       // If we didn't find a pair, search for a free one to assign.
       // Skip the first COLORS, since they're static.
       // If we ever get 256 color curses, this will need more thought.
-      for(i = COLORS; i < COLOR_PAIRS; i++) {
-        if (!cpmgr->used[i]) {
-          // Found a free pair
-          pair = i;
-          break;
-        }
-      }
+      pair = (cpmgr->next < COLOR_PAIRS) ? cpmgr->next : -1;
       if (pair != -1) {
         // We found a free pair, initialize it.
         init_pair(pair, fg, bg);
         cpmgr->pairs[fg+1][bg] = pair;
-        cpmgr->used[pair] = 1;
+        cpmgr->next++;
       } else {
         // We still don't have a pair, drop the background color. Too bad.
         pair = fg;
