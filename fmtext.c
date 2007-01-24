@@ -680,7 +680,16 @@ void owl_fmtext_init_colorpair_mgr(owl_colorpair_mgr *cpmgr)
 /* Reset used list */
 void owl_fmtext_reset_colorpairs()
 {
-  memset(owl_global_get_colorpair_mgr(&g)->used, 0, COLOR_PAIRS * sizeof(char));  
+  int i, j, colors;
+  owl_colorpair_mgr *cpmgr = owl_global_get_colorpair_mgr(&g);
+  memset(cpmgr->used, 0, COLOR_PAIRS * sizeof(char));  
+
+  colors = COLORS + 1; // 1 to account for "default".
+  for(i = 0; i < colors; i++) {
+    for(j = 0; j < COLORS; j++) {
+      cpmgr->pairs[i][j] = -1;
+    }
+  }
 }
 
 /* Assign pairs by request */
