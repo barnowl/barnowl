@@ -518,7 +518,7 @@ typedef struct _owl_errqueue {
 } owl_errqueue;
 
 typedef struct _owl_colorpair_mgr {
-  char *used;
+  int next;
   int **pairs;
 } owl_colorpair_mgr;
 
