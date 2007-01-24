@@ -140,9 +140,10 @@ sub addConnection {
 sub removeConnection {
     my $self = shift;
     my $jidStr = shift;
-    return 0 unless exists $self->{$jidStr}->{Client};
+    return 0 unless exists $self->{$jidStr};
 
-    $self->{$jidStr}->{Client}->Disconnect();
+    $self->{$jidStr}->{Client}->Disconnect()
+      if $self->{$jidStr}->{Client};
     delete $self->{$jidStr};
 
     return 1;
