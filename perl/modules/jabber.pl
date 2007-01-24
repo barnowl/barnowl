@@ -154,7 +154,7 @@ sub connected {
     return scalar keys %{ $self };
 }
 
-sub getJids {
+sub getJIDs {
     my $self = shift;
     return keys %{ $self };
 }
@@ -247,7 +247,7 @@ sub onMainLoop {
         $vars{status_changed} = 1;
     }
 
-    foreach my $jid ( $conn->getJids() ) {
+    foreach my $jid ( $conn->getJIDs() ) {
         my $client = $conn->getConnectionFromJID($jid);
 
         unless($client) {
@@ -334,7 +334,7 @@ sub getSingleBuddyList {
 
 sub onGetBuddyList {
     my $blist = "";
-    foreach my $jid ($conn->getJids()) {
+    foreach my $jid ($conn->getJIDs()) {
         $blist .= getSingleBuddyList($jid);
     }
     return $blist;
@@ -512,7 +512,7 @@ sub cmd_logout {
         if ( !$_[1] ) {
             my $errStr =
               "You are logged into multiple accounts. Please specify an account to log out of.\n";
-            foreach my $jid ( $conn->getJids() ) {
+            foreach my $jid ( $conn->getJIDs() ) {
                 $errStr .= "\t$jid\n";
             }
             queue_admin_msg($errStr);
@@ -521,7 +521,7 @@ sub cmd_logout {
         else {
             if ( $_[1] eq '-a' )    #All accounts.
             {
-                foreach my $jid ( $conn->getJids() ) {
+                foreach my $jid ( $conn->getJIDs() ) {
                     do_logout($jid);
                 }
             }
@@ -534,13 +534,13 @@ sub cmd_logout {
     }
     else                            # Only one account logged in.
     {
-        do_logout( ( $conn->getJids() )[0] );
+        do_logout( ( $conn->getJIDs() )[0] );
     }
     return "";
 }
 
 sub cmd_jlist {
-    if ( !( scalar $conn->getJids() ) ) {
+    if ( !( scalar $conn->getJIDs() ) ) {
         BarnOwl::error("You are not logged in to Jabber.");
         return;
     }
@@ -671,7 +671,7 @@ sub jmuc_join {
     $muc = shift @ARGV
       or die("Usage: jmuc join MUC [-p password] [-a account]");
 
-    $conn->getConnectionFromJID($jid)->MUCJoin(Jid      => $muc,
+    $conn->getConnectionFromJID($jid)->MUCJoin(JID      => $muc,
                                                   Password => $password,
                                                   History  => {
                                                       MaxChars => 0
@@ -793,7 +793,7 @@ sub jroster_sub {
     my $name = shift;
     my @groups = @{ shift() };
     my $purgeGroups = shift;
-    my $baseJid = baseJID($jid);
+    my $baseJID = baseJID($jid);
 
     my $roster = $conn->getRosterFromJID($jid);
 
@@ -808,7 +808,7 @@ sub jroster_sub {
 
         $p->SetTo($to);
         $conn->getConnectionFromJID($jid)->Send($p);
-        queue_admin_msg("You ($baseJid) have requested a subscription to ($to)'s presence.");
+        queue_admin_msg("You ($baseJID) have requested a subscription to ($to)'s presence.");
     }
 }
 
@@ -817,14 +817,14 @@ sub jroster_unsub {
     my $name = shift;
     my @groups = @{ shift() };
     my $purgeGroups = shift;
-    my $baseJid = baseJID($jid);
+    my $baseJID = baseJID($jid);
 
     my $p = new Net::XMPP::Presence;
     $p->SetType('unsubscribe');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
         $conn->getConnectionFromJID($jid)->Send($p);
-        queue_admin_msg("You ($baseJid) have unsubscribed from ($to)'s presence.");
+        queue_admin_msg("You ($baseJID) have unsubscribed from ($to)'s presence.");
     }
 }
 
@@ -833,7 +833,7 @@ sub jroster_add {
     my $name = shift;
     my @groups = @{ shift() };
     my $purgeGroups = shift;
-    my $baseJid = baseJID($jid);
+    my $baseJID = baseJID($jid);
 
     my $roster = $conn->getRosterFromJID($jid);
 
@@ -866,7 +866,7 @@ sub jroster_add {
         $item->put_attrib(jid => $to);
         $item->put_attrib(name => $name) if $name;
         $conn->getConnectionFromJID($jid)->Send($iq);
-        my $msg = "$baseJid: "
+        my $msg = "$baseJID: "
           . ($name ? "$name ($to)" : "($to)")
           . " is on your roster in the following groups: { "
           . join(" , ", keys %allGroups)
@@ -880,7 +880,7 @@ sub jroster_remove {
     my $name = shift;
     my @groups = @{ shift() };
     my $purgeGroups = shift;
-    my $baseJid = baseJID($jid);
+    my $baseJID = baseJID($jid);
 
     my $iq = new Net::XMPP::IQ;
     $iq->SetType('set');
@@ -890,7 +890,7 @@ sub jroster_remove {
     foreach my $to (@ARGV) {
         $item->put_attrib(jid => $to);
         $conn->getConnectionFromJID($jid)->Send($iq);
-        queue_admin_msg("You ($baseJid) have removed ($to) from your roster.");
+        queue_admin_msg("You ($baseJID) have removed ($to) from your roster.");
     }
 }
 
@@ -899,14 +899,14 @@ sub jroster_auth {
     my $name = shift;
     my @groups = @{ shift() };
     my $purgeGroups = shift;
-    my $baseJid = baseJID($jid);
+    my $baseJID = baseJID($jid);
 
     my $p = new Net::XMPP::Presence;
     $p->SetType('subscribed');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
         $conn->getConnectionFromJID($jid)->Send($p);
-        queue_admin_msg("($to) has been subscribed to your ($baseJid) presence.");
+        queue_admin_msg("($to) has been subscribed to your ($baseJID) presence.");
     }
 }
 
@@ -915,14 +915,14 @@ sub jroster_deauth {
     my $name = shift;
     my @groups = @{ shift() };
     my $purgeGroups = shift;
-    my $baseJid = baseJID($jid);
+    my $baseJID = baseJID($jid);
 
     my $p = new Net::XMPP::Presence;
     $p->SetType('unsubscribed');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
         $conn->getConnectionFromJID($jid)->Send($p);
-        queue_admin_msg("($to) has been unsubscribed from your ($baseJid) presence.");
+        queue_admin_msg("($to) has been unsubscribed from your ($baseJID) presence.");
     }
 }
 
@@ -1083,11 +1083,11 @@ sub process_presence_unsubscribe {
     BarnOwl::queue_message(BarnOwl::Message->new(%props));
 
     # Find a connection to reply with.
-    foreach my $jid ($conn->getJids()) {
-	my $cJid = new Net::XMPP::JID;
-	$cJid->SetJID($jid);
-	if ($to eq $cJid->GetJID('base') ||
-            $to eq $cJid->GetJID('full')) {
+    foreach my $jid ($conn->getJIDs()) {
+	my $cJID = new Net::XMPP::JID;
+	$cJID->SetJID($jid);
+	if ($to eq $cJID->GetJID('base') ||
+            $to eq $cJID->GetJID('full')) {
 	    my $reply = $p->Reply(type=>"unsubscribed");
 	    $conn->getConnectionFromJID($jid)->Send($reply);
 	    return;
@@ -1238,42 +1238,42 @@ sub getServerFromJID {
 }
 
 sub defaultJID {
-    return ( $conn->getJids() )[0] if ( $conn->connected() == 1 );
+    return ( $conn->getJIDs() )[0] if ( $conn->connected() == 1 );
     return;
 }
 
 sub baseJID {
-    my $givenJidStr = shift;
-    my $givenJid    = new Net::XMPP::JID;
-    $givenJid->SetJID($givenJidStr);
-    return $givenJid->GetJID('base');
+    my $givenJIDStr = shift;
+    my $givenJID    = new Net::XMPP::JID;
+    $givenJID->SetJID($givenJIDStr);
+    return $givenJID->GetJID('base');
 }
 
 sub resolveConnectedJID {
-    my $givenJidStr = shift;
-    my $givenJid    = new Net::XMPP::JID;
-    $givenJid->SetJID($givenJidStr);
+    my $givenJIDStr = shift;
+    my $givenJID    = new Net::XMPP::JID;
+    $givenJID->SetJID($givenJIDStr);
 
     # Account fully specified.
-    if ( $givenJid->GetResource() ) {
+    if ( $givenJID->GetResource() ) {
         # Specified account exists
-        return $givenJidStr if ($conn->jidExists($givenJidStr) );
-        die("Invalid account: $givenJidStr");
+        return $givenJIDStr if ($conn->jidExists($givenJIDStr) );
+        die("Invalid account: $givenJIDStr");
     }
 
     # Disambiguate.
     else {
-        my $matchingJid = "";
+        my $matchingJID = "";
         my $errStr =
           "Ambiguous account reference. Please specify a resource.\n";
         my $ambiguous = 0;
 
-        foreach my $jid ( $conn->getJids() ) {
-            my $cJid = new Net::XMPP::JID;
-            $cJid->SetJID($jid);
-            if ( $givenJidStr eq $cJid->GetJID('base') ) {
-                $ambiguous = 1 if ( $matchingJid ne "" );
-                $matchingJid = $jid;
+        foreach my $jid ( $conn->getJIDs() ) {
+            my $cJID = new Net::XMPP::JID;
+            $cJID->SetJID($jid);
+            if ( $givenJIDStr eq $cJID->GetJID('base') ) {
+                $ambiguous = 1 if ( $matchingJID ne "" );
+                $matchingJID = $jid;
                 $errStr .= "\t$jid\n";
             }
         }
@@ -1284,13 +1284,13 @@ sub resolveConnectedJID {
         }
 
         # Not one of ours.
-        elsif ( $matchingJid eq "" ) {
-            die("Invalid account: $givenJidStr");
+        elsif ( $matchingJID eq "" ) {
+            die("Invalid account: $givenJIDStr");
         }
 
         # It's this one.
         else {
-            return $matchingJid;
+            return $matchingJID;
         }
     }
     return "";
@@ -1303,7 +1303,7 @@ sub resolveDestJID {
     my $roster = $conn->getRosterFromJID($from);
     my @jids = $roster->jids('all');
     for my $j (@jids) {
-        if(($roster->query($j, 'name') || "") eq $to) {
+        if(($roster->query($j, 'name') || $j->GetUserID()) eq $to) {
             return $j->GetJID('full');
         } elsif($j->GetJID('base') eq baseJID($to)) {
             return $j->GetJID('full');
