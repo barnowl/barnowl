@@ -399,7 +399,7 @@ sub cmd_login {
     my $cmd = shift;
     my $jid = new Net::XMPP::JID;
     $jid->SetJID(shift);
-    my $password = undef;
+    my $password = '';
     $password = shift if @_;
     
     my $uid           = $jid->GetUserID();
@@ -421,7 +421,6 @@ sub cmd_login {
     my ( $server, $port ) = getServerFromJID($jid);
 
     $vars{jlogin_jid} = $jidStr;
-    $vars{jlogin_password} = $password;
     $vars{jlogin_connhash} = {
         hostname      => $server,
         tls           => 1,
@@ -559,7 +558,7 @@ sub cmd_jwrite {
     my $jwrite_sid     = "";
     my $jwrite_thread  = "";
     my $jwrite_subject = "";
-    my $to;
+    my ($to, $from);
     my $jwrite_type    = "chat";
 
     my @args = @_;
@@ -569,7 +568,7 @@ sub cmd_jwrite {
     GetOptions(
         'thread=s'  => \$jwrite_thread,
         'subject=s' => \$jwrite_subject,
-        'account=s' => \$jwrite_from,
+        'account=s' => \$from,
         'id=s'     =>  \$jwrite_sid,
     );
     $jwrite_type = 'groupchat' if $gc;
@@ -583,14 +582,18 @@ sub cmd_jwrite {
         $to = shift @ARGV;
     }
 
-    ($jwrite_from, $jwrite_to, $jwrite_type) = guess_jwrite($jwrite_from, $to);
+    ($jwrite_from, $jwrite_to, $jwrite_type) = guess_jwrite($from, $to);
     
     unless($jwrite_to) {
         die("Unable to resolve JID $to");
     }
 
     unless($jwrite_from) {
-        die("Unable to resolve account");
+        if(!$from) {
+            die("You must specify an account with -a");
+        } else {
+            die("Unable to resolve account $from");
+        }
     }
     
     $vars{jwrite} = {
@@ -1295,13 +1298,14 @@ sub resolveConnectedJID {
 
 sub resolveDestJID {
     my ($to, $from) = @_;
-    return $to if $to =~ /@/;
     my $jid = Net::Jabber::JID->new($to);
 
     my $roster = $conn->getRosterFromJID($from);
     my @jids = $roster->jids('all');
     for my $j (@jids) {
-        if($roster->query($j, 'name') eq $to) {
+        if(($roster->query($j, 'name') || "") eq $to) {
+            return $j->GetJID('full');
+        } elsif($j->GetJID('base') eq baseJID($to)) {
             return $j->GetJID('full');
         }
     }
@@ -1312,6 +1316,7 @@ sub resolveDestJID {
 sub resolveType {
     my $to = shift;
     my $from = shift;
+    return unless $from;
     my @mucs = $conn->getConnectionFromJID($from)->MUCs;
     if(grep {$_->BaseJID eq $to } @mucs) {
         return 'groupchat';
@@ -1328,10 +1333,6 @@ sub guess_jwrite {
         $from_jid = resolveConnectedJID($from);
         die("Unable to resolve account $from") unless $from_jid;
         $to_jid = resolveDestJID($to, $from_jid);
-    } elsif($to =~ /@/) {
-        $to_jid = $to;
-        $from_jid = defaultJID();
-        die("You must specify an account with -a") unless $from_jid;
     } else {
         for my $f ($conn->getJids) {
             $to_jid = resolveDestJID($to, $f);
@@ -1339,6 +1340,7 @@ sub guess_jwrite {
                 $from_jid = $f;
             }
         }
+        $to_jid = $to if $to =~ /@/;
         die("Unable to resolve JID $to") unless $to_jid;
     }
 
