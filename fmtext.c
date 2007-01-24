@@ -234,14 +234,15 @@ void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w)
     /* set the color */
     /* warning, this is sort of a hack */
     if (owl_global_get_hascolors(&g)) {
-      int pair, fg, bg;
+      int fg, bg;
+      short pair;
       fg = f->fgcolorbuff[position];
       bg = f->bgcolorbuff[position];
       owl_function_debugmsg("waddstr: fg(%i) bg(%i).", fg, bg);
 
       pair = owl_fmtext_get_colorpair(fg, bg);
       if (pair != -1) {
-	wattron(w, COLOR_PAIR(pair));
+        wattron(w, COLOR_PAIR(pair));
       }
     }
 
@@ -410,8 +411,8 @@ int owl_fmtext_search_and_highlight(owl_fmtext *f, char *string)
 
     found++;
     _owl_fmtext_add_attr(f, OWL_FMTEXT_ATTR_REVERSE,
-			 ptr2 - f->textbuff,
-			 ptr2 - f->textbuff + len - 1);
+                         ptr2 - f->textbuff,
+                         ptr2 - f->textbuff + len - 1);
 
     ptr1=ptr2+len;
   }
@@ -463,101 +464,101 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
 
       /* if we've hit our max stack depth, print the @ and move on */
       if (stacksize==32) {
-	owl_fmtext_append_attr(f, "@", curattrs, curcolor, OWL_COLOR_DEFAULT);
-	txtptr++;
-	continue;
+        owl_fmtext_append_attr(f, "@", curattrs, curcolor, OWL_COLOR_DEFAULT);
+        txtptr++;
+        continue;
       }
 
       /* if it's an @@, print an @ and continue */
       if (txtptr[1]=='@') {
-	owl_fmtext_append_attr(f, "@", curattrs, curcolor, OWL_COLOR_DEFAULT);
-	txtptr+=2;
-	continue;
+        owl_fmtext_append_attr(f, "@", curattrs, curcolor, OWL_COLOR_DEFAULT);
+        txtptr+=2;
+        continue;
       }
-	
+        
       /* if there's no opener, print the @ and continue */
       tmpptr=strpbrk(txtptr, "(<[{ ");
       if (!tmpptr || tmpptr[0]==' ') {
-	owl_fmtext_append_attr(f, "@", curattrs, curcolor, OWL_COLOR_DEFAULT);
-	txtptr++;
-	continue;
+        owl_fmtext_append_attr(f, "@", curattrs, curcolor, OWL_COLOR_DEFAULT);
+        txtptr++;
+        continue;
       }
 
       /* check what command we've got, push it on the stack, start
-	 using it, and continue ... unless it's a color command */
+         using it, and continue ... unless it's a color command */
       buff=owl_malloc(tmpptr-ptr+20);
       strncpy(buff, ptr, tmpptr-ptr);
       buff[tmpptr-ptr]='\0';
       if (!strcasecmp(buff, "@bold")) {
-	attrstack[stacksize]=OWL_FMTEXT_ATTR_BOLD;
-	chrstack[stacksize]=tmpptr[0];
-	stacksize++;
-	curattrs|=OWL_FMTEXT_ATTR_BOLD;
-	txtptr+=6;
-	owl_free(buff);
-	continue;
+        attrstack[stacksize]=OWL_FMTEXT_ATTR_BOLD;
+        chrstack[stacksize]=tmpptr[0];
+        stacksize++;
+        curattrs|=OWL_FMTEXT_ATTR_BOLD;
+        txtptr+=6;
+        owl_free(buff);
+        continue;
       } else if (!strcasecmp(buff, "@b")) {
-	attrstack[stacksize]=OWL_FMTEXT_ATTR_BOLD;
-	chrstack[stacksize]=tmpptr[0];
-	stacksize++;
-	curattrs|=OWL_FMTEXT_ATTR_BOLD;
-	txtptr+=3;
-	owl_free(buff);
-	continue;
+        attrstack[stacksize]=OWL_FMTEXT_ATTR_BOLD;
+        chrstack[stacksize]=tmpptr[0];
+        stacksize++;
+        curattrs|=OWL_FMTEXT_ATTR_BOLD;
+        txtptr+=3;
+        owl_free(buff);
+        continue;
       } else if (!strcasecmp(buff, "@i")) {
-	attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
-	chrstack[stacksize]=tmpptr[0];
-	stacksize++;
-	curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
-	txtptr+=3;
-	owl_free(buff);
-	continue;
+        attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
+        chrstack[stacksize]=tmpptr[0];
+        stacksize++;
+        curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
+        txtptr+=3;
+        owl_free(buff);
+        continue;
       } else if (!strcasecmp(buff, "@italic")) {
-	attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
-	chrstack[stacksize]=tmpptr[0];
-	stacksize++;
-	curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
-	txtptr+=8;
-	owl_free(buff);
-	continue;
+        attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
+        chrstack[stacksize]=tmpptr[0];
+        stacksize++;
+        curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
+        txtptr+=8;
+        owl_free(buff);
+        continue;
 
-	/* if it's a color read the color, set the current color and
+        /* if it's a color read the color, set the current color and
            continue */
       } else if (!strcasecmp(buff, "@color") 
-		 && owl_global_get_hascolors(&g)
-		 && owl_global_is_colorztext(&g)) {
-	owl_free(buff);
-	txtptr+=7;
-	tmpptr=strpbrk(txtptr, "@{[<()>]}");
-	if (tmpptr &&
-	    ((txtptr[-1]=='(' && tmpptr[0]==')') ||
-	     (txtptr[-1]=='<' && tmpptr[0]=='>') ||
-	     (txtptr[-1]=='[' && tmpptr[0]==']') ||
-	     (txtptr[-1]=='{' && tmpptr[0]=='}'))) {
+                 && owl_global_get_hascolors(&g)
+                 && owl_global_is_colorztext(&g)) {
+        owl_free(buff);
+        txtptr+=7;
+        tmpptr=strpbrk(txtptr, "@{[<()>]}");
+        if (tmpptr &&
+            ((txtptr[-1]=='(' && tmpptr[0]==')') ||
+             (txtptr[-1]=='<' && tmpptr[0]=='>') ||
+             (txtptr[-1]=='[' && tmpptr[0]==']') ||
+             (txtptr[-1]=='{' && tmpptr[0]=='}'))) {
 
-	  /* grab the color name */
-	  buff=owl_malloc(tmpptr-txtptr+20);
-	  strncpy(buff, txtptr, tmpptr-txtptr);
-	  buff[tmpptr-txtptr]='\0';
+          /* grab the color name */
+          buff=owl_malloc(tmpptr-txtptr+20);
+          strncpy(buff, txtptr, tmpptr-txtptr);
+          buff[tmpptr-txtptr]='\0';
 
-	  /* set it as the current color */
-	  curcolor=owl_util_string_to_color(buff);
-	  if (curcolor==-1) curcolor=OWL_COLOR_DEFAULT;
-	  owl_free(buff);
-	  txtptr=tmpptr+1;
-	  continue;
+          /* set it as the current color */
+          curcolor=owl_util_string_to_color(buff);
+          if (curcolor==-1) curcolor=OWL_COLOR_DEFAULT;
+          owl_free(buff);
+          txtptr=tmpptr+1;
+          continue;
 
-	} else {
+        } else {
 
-	}
+        }
 
       } else {
-	/* if we didn't understand it, we'll print it.  This is different from zwgc
-	 * but zwgc seems to be smarter about some screw cases than I am
-	 */
-	owl_fmtext_append_attr(f, "@", curattrs, curcolor, OWL_COLOR_DEFAULT);
-	txtptr++;
-	continue;
+        /* if we didn't understand it, we'll print it.  This is different from zwgc
+         * but zwgc seems to be smarter about some screw cases than I am
+         */
+        owl_fmtext_append_attr(f, "@", curattrs, curcolor, OWL_COLOR_DEFAULT);
+        txtptr++;
+        continue;
       }
 
     } else if (ptr[0]=='}' || ptr[0]==']' || ptr[0]==')' || ptr[0]=='>') {
@@ -573,38 +574,38 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
 
       /* first, if the stack is empty we must bail (just print and go) */
       if (stacksize==0) {
-	buff=owl_malloc(5);
-	buff[0]=ptr[0];
-	buff[1]='\0';
-	owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
-	owl_free(buff);
-	txtptr++;
-	continue;
+        buff=owl_malloc(5);
+        buff[0]=ptr[0];
+        buff[1]='\0';
+        owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
+        owl_free(buff);
+        txtptr++;
+        continue;
       }
 
       /* if the closing char is what's on the stack, turn off the
          attribue and pop the stack */
       if ((ptr[0]==')' && chrstack[stacksize-1]=='(') ||
-	  (ptr[0]=='>' && chrstack[stacksize-1]=='<') ||
-	  (ptr[0]==']' && chrstack[stacksize-1]=='[') ||
-	  (ptr[0]=='}' && chrstack[stacksize-1]=='{')) {
-	int i;
-	stacksize--;
-	curattrs=OWL_FMTEXT_ATTR_NONE;
-	for (i=0; i<stacksize; i++) {
-	  curattrs|=attrstack[i];
-	}
-	txtptr+=1;
-	continue;
+          (ptr[0]=='>' && chrstack[stacksize-1]=='<') ||
+          (ptr[0]==']' && chrstack[stacksize-1]=='[') ||
+          (ptr[0]=='}' && chrstack[stacksize-1]=='{')) {
+        int i;
+        stacksize--;
+        curattrs=OWL_FMTEXT_ATTR_NONE;
+        for (i=0; i<stacksize; i++) {
+          curattrs|=attrstack[i];
+        }
+        txtptr+=1;
+        continue;
       } else {
-	/* otherwise print and continue */
-	buff=owl_malloc(5);
-	buff[0]=ptr[0];
-	buff[1]='\0';
-	owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
-	owl_free(buff);
-	txtptr++;
-	continue;
+        /* otherwise print and continue */
+        buff=owl_malloc(5);
+        buff[0]=ptr[0];
+        buff[1]='\0';
+        owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
+        owl_free(buff);
+        txtptr++;
+        continue;
       }
     } else {
       /* we've found an unattached opener, print everything and move on */
@@ -635,8 +636,8 @@ void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(
     if (elem && format_fn) {
       text = format_fn(elem);
       if (text) {
-	owl_fmtext_append_normal(f, text);
-	owl_free(text);
+        owl_fmtext_append_normal(f, text);
+        owl_free(text);
       }
     } else if (elem) {
       owl_fmtext_append_normal(f, elem);
@@ -683,44 +684,45 @@ void owl_fmtext_reset_colorpairs()
 }
 
 /* Assign pairs by request */
-int owl_fmtext_get_colorpair(int fg, int bg)
+short owl_fmtext_get_colorpair(int fg, int bg)
 {
   owl_colorpair_mgr *cpmgr;
-  short pair, i;
+  short pair, i, default_bg;
+
+#ifdef HAVE_USE_DEFAULT_COLORS
   if (fg == OWL_COLOR_DEFAULT) fg = -1;
-  if (bg == OWL_COLOR_DEFAULT) {
+  default_bg = OWL_COLOR_DEFAULT;
+#else
+  if (fg == OWL_COLOR_DEFAULT) fg = 0;
+  if (bg == OWL_COLOR_DEFAULT) bg = 0;
+  default_bg = COLOR_BLACK;
+#endif
+
+  if (bg == default_bg) {
+    // default bg -> use color pairs initialized by owl.c
     pair = fg;
   } else {
+    // looking for a pair we already set up for this draw.
     cpmgr = owl_global_get_colorpair_mgr(&g);
     pair = cpmgr->pairs[fg+1][bg];
-    if (pair != -1) {
-      short oldfg, oldbg;
-      pair_content(pair, &oldfg, &oldbg);
-      if (cpmgr->pairs[oldfg+1][oldbg] == pair) {
-        cpmgr->pairs[oldfg+1][oldbg] = -1;
-      }
-      init_pair(pair, fg, bg);
-      cpmgr->pairs[fg+1][bg] = pair;
-      cpmgr->used[pair] = 1;
-    } else {
+    if (!(pair != -1 && cpmgr->used[pair])) {
+      // If we didn't find a pair, search for a free one to assign.
       // Skip the first COLORS, since they're static.
+      // If we ever get 256 color curses, this will need more thought.
       for(i = COLORS; i < COLOR_PAIRS; i++) {
-        if (0 == cpmgr->used[i]) {
+        if (!cpmgr->used[i]) {
+          // Found a free pair
           pair = i;
           break;
         }
       }
       if (pair != -1) {
-        short oldfg, oldbg;
-        pair_content(pair, &oldfg, &oldbg);
-        if (cpmgr->pairs[oldfg+1][oldbg] == pair) {
-          cpmgr->pairs[oldfg+1][oldbg] = -1;
-        }
+        // We found a free pair, initialize it.
         init_pair(pair, fg, bg);
         cpmgr->pairs[fg+1][bg] = pair;
         cpmgr->used[pair] = 1;
       } else {
-        // Fail to skipping background.
+        // We still don't have a pair, drop the background color. Too bad.
         pair = fg;
       }
     }

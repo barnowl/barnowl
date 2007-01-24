@@ -393,7 +393,9 @@ void owl_global_resize(owl_global *g, int x, int y) {
     g->cols=y;
   }
 
+#ifdef HAVE_RESIZETERM
   resizeterm(size.ws_row, size.ws_col);
+#endif
 
   /* re-initialize the windows */
   _owl_global_setup_windows(g);

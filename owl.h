@@ -40,6 +40,9 @@
 #ifndef INC_OWL_H
 #define INC_OWL_H
 
+#ifndef OWL_PERL
+#include <curses.h>
+#endif
 #include <sys/param.h>
 #include <EXTERN.h>
 #include <netdb.h>
@@ -62,7 +65,6 @@ typedef void WINDOW;
 #include <perl.h>
 #include "XSUB.h"
 #else
-#include <curses.h>
 typedef void SV;
 #endif
 
