@@ -254,7 +254,7 @@ sub onMainLoop {
             $conn->removeConnection($jid);
             BarnOwl::error("Connection for $jid undefined -- error in reload?");
         }
-        
+
         my $status = $client->Process(0);
         if ( !defined($status) ) {
             BarnOwl::error("Jabber account $jid disconnected!");
@@ -389,7 +389,24 @@ sub register_owl_commands() {
         jroster => \&cmd_jroster,
         {
             summary     => "Jabber Roster related commands.",
-            description => "jroster sends jabber commands related to rosters.\n\n",
+            description => "jroster sends jabber commands related to rosters.\n\n"
+              . "The following commands are available\n\n"
+              . "sub <jid>     Subscribe to <jid>'s presence. (implicit add)\n\n"
+              . "add <jid>     Adds <jid> to your roster.\n\n"
+              . "unsub <jid>   Unsubscribe from <jid>'s presence.\n\n"
+              . "remove <jid>  Removes <jid> to your roster. (implicit unsub)\n\n"
+              . "auth <jid>    Authorizes <jid> to subscribe to your presence.\n\n"
+              . "deauth <jid>  De-authorizes <jid>'s subscription to your presence.\n\n"
+              . "The following arguments are supported for all commands\n\n"
+              . "-a <jid>      Specify which account to make the roster changes on.\n"
+              . "              Required if you're signed into more than one account.\n\n"
+              . "The following arguments only work with the add and sub commands.\n\n"
+              . "-g <group>    Add <jid> to group <group>.\n"
+              . "              May be specified more than once, will not remove <jid> from any groups.\n\n"
+              . "-p            Purge. Removes <jid> from all groups.\n"
+              . "              May be combined with -g completely alter <jid>'s groups.\n\n"
+              . "-n <name>     Sets <name> as <jid>'s short name.\n\n"
+              . "Note: Unless -n is used, you can specify multiple <jid> arguments.\n",
             usage       => "jroster COMMAND ARGS"
         }
     );
@@ -401,7 +418,7 @@ sub cmd_login {
     $jid->SetJID(shift);
     my $password = '';
     $password = shift if @_;
-    
+
     my $uid           = $jid->GetUserID();
     my $componentname = $jid->GetServer();
     my $resource      = $jid->GetResource() || 'owl';
@@ -491,7 +508,7 @@ sub do_login {
 
     }
     delete $vars{jlogin_jid};
-    $vars{jlogin_password} =~ tr/\0-\377/x/;
+    $vars{jlogin_password} =~ tr/\0-\377/x/ if $vars{jlogin_password};
     delete $vars{jlogin_password};
     delete $vars{jlogin_havepass};
     delete $vars{jlogin_connhash};
@@ -583,7 +600,7 @@ sub cmd_jwrite {
     }
 
     my @candidates = guess_jwrite($from, $to);
-    
+
     unless(scalar @candidates) {
         die("Unable to resolve JID $to");
     }
@@ -600,7 +617,7 @@ sub cmd_jwrite {
 
 
     ($jwrite_from, $jwrite_to, $jwrite_type) = @{$candidates[0]};
-    
+
     $vars{jwrite} = {
         to      => $jwrite_to,
         from    => $jwrite_from,
@@ -619,7 +636,7 @@ sub cmd_jwrite {
             "Type your message below.  End with a dot on a line by itself.  ^C will quit."
            );
     }
-    
+
     my $cmd = "jwrite $jwrite_to -a $jwrite_from";
     $cmd .= " -t $jwrite_thread" if $jwrite_thread;
     $cmd .= " -t $jwrite_subject" if $jwrite_subject;
@@ -1179,6 +1196,13 @@ sub j2hash {
         $props{replycmd} .=
           " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
 
+        if ($dir eq 'out') {
+            $props{replysendercmd} = "jwrite ".$props{to}." -a ".$props{from};
+        }
+        else {
+            $props{replysendercmd} = "jwrite ".$props{from}." -a ".$props{to};
+        }
+
         $props{sender} = $nick || $room;
         $props{recipient} = $room;
 
@@ -1203,7 +1227,7 @@ sub j2hash {
           . $props{error};
     }
 
-    $props{replysendercmd} = $props{replycmd};
+    $props{replysendercmd} = $props{replycmd} unless $props{replysendercmd};
     return %props;
 }
 
@@ -1322,7 +1346,14 @@ sub resolveDestJID {
         }
     }
 
-    return undef;
+    my @mucs = $conn->getConnectionFromJID($from)->MUCs;
+    for my $m (@mucs) {
+        if ($m->BaseJID eq $to) {
+            return $m->BaseJID;
+        }
+    }
+
+    return $to;
 }
 
 sub resolveType {
@@ -1364,7 +1395,7 @@ sub guess_jwrite {
         my $type = resolveType($m->[1], $m->[0]);
         push @$m, $type;
     }
-    
+
     return @matches;
 }
 
