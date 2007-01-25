@@ -372,16 +372,22 @@ sub register_owl_commands() {
             summary     => "Jabber MUC related commands.",
             description => "jmuc sends jabber commands related to muc.\n\n"
               . "The following commands are available\n\n"
-              . "join MUC    Join a muc.\n\n"
-              . "part MUC    Part a muc.\n"
+              . "join <muc>  Join a muc.\n\n"
+              . "part <muc>  Part a muc.\n"
               . "            The muc is taken from the current message if not supplied.\n\n"
-              . "invite JID MUC\n"
-              . "            Invite JID to MUC.\n"
+              . "invite <jid> <muc>\n"
+              . "            Invite <jid> to <muc>.\n"
               . "            The muc is taken from the current message if not supplied.\n\n"
-              . "configure MUC\n"
-              . "            Configure [muc].\n"
-              . "            Necessary to initalize a new MUC\n"
-              . "            At present, only the default configuration is supported.",
+              . "configure <muc>\n"
+              . "            Configures a MUC.\n"
+              . "            Necessary to initalize a new MUC.\n"
+              . "            At present, only the default configuration is supported.\n"
+              . "            The muc is taken from the current message if not supplied.\n\n"
+              . "presence <muc>\n"
+              . "            Shows the roster for <muc>.\n"
+              . "            The muc is taken from the current message if not supplied.\n\n"
+              . "presence -a\n"
+              . "            Shows rosters for all MUCs you're participating in.\n\n",
             usage => "jmuc COMMAND ARGS"
         }
     );
@@ -751,18 +757,35 @@ sub jmuc_configure {
     queue_admin_msg("Accepted default instant configuration for $muc");
 }
 
+sub jmuc_presence_single {
+    my $m = shift;
+    my @jids = $m->Presence();
+    return "JIDs present in " . $m->BaseJID . "\n\t"
+      . join("\n\t", map {$_->GetResource}@jids) . "\n";
+}
+
 sub jmuc_presence {
     my ( $jid, $muc, @args ) = @_;
 
     $muc = shift @args if scalar @args;
     die("Usage: jmuc presence MUC") unless $muc;
 
-    my $m = $conn->getConnectionFromJID($jid)->FindMUC(jid => $muc);
-    die("No such muc: $muc") unless $m;
-
-    my @jids = $m->Presence();
-    BarnOwl::popless_ztext("JIDs present in " . $m->BaseJID . "\n\t" .
-                           join("\n\t", map {$_->GetResource}@jids) . "\n");
+    if ($muc eq '-a') {
+        my $str = "";
+        foreach my $jid ($conn->getJIDs()) {
+            $str .= boldify("Conferences for $jid:\n");
+            my $connection = $conn->getConnectionFromJID($jid);
+            foreach my $muc ($connection->MUCs) {
+                $str .= jmuc_presence_single($muc)."\n";
+            }
+        }
+        BarnOwl::popless_ztext($str);
+    }
+    else {
+        my $m = $conn->getConnectionFromJID($jid)->FindMUC(jid => $muc);
+        die("No such muc: $muc") unless $m;
+        BarnOwl::popless_ztext(jmuc_presence_single($m));
+    }
 }
 
 
