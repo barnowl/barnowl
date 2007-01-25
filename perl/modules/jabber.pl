@@ -96,7 +96,7 @@ sub FindMUC {
         $jid = Net::Jabber::JID->new(userid => $args{room},
                                      server => $args{server});
     }
-    $jid = $jid->GetJID('base') if UNIVERSAL::isa($jid, 'Net::Jabber::JID');
+    $jid = $jid->GetJID('base') if UNIVERSAL::isa($jid, 'Net::XMPP::JID');
 
     foreach my $muc ($self->MUCs) {
         return $muc if $muc->BaseJID eq $jid;
@@ -265,7 +265,7 @@ sub onMainLoop {
             return;
         }
         if ($vars{status_changed}) {
-            my $p = new Net::XMPP::Presence;
+            my $p = new Net::Jabber::Presence;
             $p->SetShow($vars{show}) if $vars{show};
             $p->SetStatus($vars{status}) if $vars{status};
             $client->Send($p);
@@ -414,7 +414,7 @@ sub register_owl_commands() {
 
 sub cmd_login {
     my $cmd = shift;
-    my $jid = new Net::XMPP::JID;
+    my $jid = new Net::Jabber::JID;
     $jid->SetJID(shift);
     my $password = '';
     $password = shift if @_;
@@ -829,7 +829,7 @@ sub jroster_sub {
     # Adding lots of users with the same name is a bad idea.
     $name = "" unless (1 == scalar(@ARGV));
 
-    my $p = new Net::XMPP::Presence;
+    my $p = new Net::Jabber::Presence;
     $p->SetType('subscribe');
 
     foreach my $to (@ARGV) {
@@ -848,7 +848,7 @@ sub jroster_unsub {
     my $purgeGroups = shift;
     my $baseJID = baseJID($jid);
 
-    my $p = new Net::XMPP::Presence;
+    my $p = new Net::Jabber::Presence;
     $p->SetType('unsubscribe');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
@@ -871,7 +871,7 @@ sub jroster_add {
 
     foreach my $to (@ARGV) {
         my %jq  = $roster->query($to);
-        my $iq = new Net::XMPP::IQ;
+        my $iq = new Net::Jabber::IQ;
         $iq->SetType('set');
         my $item = new XML::Stream::Node('item');
         $iq->NewChild('jabber:iq:roster')->AddChild($item);
@@ -911,7 +911,7 @@ sub jroster_remove {
     my $purgeGroups = shift;
     my $baseJID = baseJID($jid);
 
-    my $iq = new Net::XMPP::IQ;
+    my $iq = new Net::Jabber::IQ;
     $iq->SetType('set');
     my $item = new XML::Stream::Node('item');
     $iq->NewChild('jabber:iq:roster')->AddChild($item);
@@ -930,7 +930,7 @@ sub jroster_auth {
     my $purgeGroups = shift;
     my $baseJID = baseJID($jid);
 
-    my $p = new Net::XMPP::Presence;
+    my $p = new Net::Jabber::Presence;
     $p->SetType('subscribed');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
@@ -946,7 +946,7 @@ sub jroster_deauth {
     my $purgeGroups = shift;
     my $baseJID = baseJID($jid);
 
-    my $p = new Net::XMPP::Presence;
+    my $p = new Net::Jabber::Presence;
     $p->SetType('unsubscribed');
     foreach my $to (@ARGV) {
         $p->SetTo($to);
@@ -960,7 +960,7 @@ sub jroster_deauth {
 sub process_owl_jwrite {
     my $body = shift;
 
-    my $j = new Net::XMPP::Message;
+    my $j = new Net::Jabber::Message;
     $body =~ s/\n\z//;
     $j->SetMessage(
         to   => $vars{jwrite}{to},
@@ -977,7 +977,7 @@ sub process_owl_jwrite {
         BarnOwl::queue_message($m);
     }
 
-    $j->RemoveFrom(); # Kludge to get around gtalk's random bits after the resouce.
+    $j->RemoveFrom(); # Kludge to get around gtalk's random bits after the resource.
     if ($vars{jwrite}{sid} && $conn->sidExists( $vars{jwrite}{sid} )) {
         $conn->getConnectionFromSid($vars{jwrite}{sid})->Send($j);
     }
@@ -1113,7 +1113,7 @@ sub process_presence_unsubscribe {
 
     # Find a connection to reply with.
     foreach my $jid ($conn->getJIDs()) {
-	my $cJID = new Net::XMPP::JID;
+	my $cJID = new Net::Jabber::JID;
 	$cJID->SetJID($jid);
 	if ($to eq $cJID->GetJID('base') ||
             $to eq $cJID->GetJID('full')) {
@@ -1188,6 +1188,23 @@ sub j2hash {
         $props{replycmd} .=
           " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
         $props{private} = 1;
+
+        my $connection;
+        if ($dir eq 'in') {
+            $connection = $conn->getConnectionFromSid($props{sid});
+        }
+        else {
+            $connection = $conn->getConnectionFromJID($props{from});
+        }
+
+        # Check to see if we're doing personals with someone in a muc.
+        # If we are, show the full jid because the base jid is the room.
+        if ($connection) {
+            $props{sender} = $props{from}
+              if ($connection->FindMUC(jid => $from));
+            $props{recipient} = $props{to}
+              if ($connection->FindMUC(jid => $to));
+        }
     }
     elsif ( $jtype eq 'groupchat' ) {
         my $nick = $props{nick} = $from->GetResource();
@@ -1280,14 +1297,14 @@ sub defaultJID {
 
 sub baseJID {
     my $givenJIDStr = shift;
-    my $givenJID    = new Net::XMPP::JID;
+    my $givenJID    = new Net::Jabber::JID;
     $givenJID->SetJID($givenJIDStr);
     return $givenJID->GetJID('base');
 }
 
 sub resolveConnectedJID {
     my $givenJIDStr = shift;
-    my $givenJID    = new Net::XMPP::JID;
+    my $givenJID    = new Net::Jabber::JID;
     $givenJID->SetJID($givenJIDStr);
 
     # Account fully specified.
@@ -1305,7 +1322,7 @@ sub resolveConnectedJID {
         my $ambiguous = 0;
 
         foreach my $jid ( $conn->getJIDs() ) {
-            my $cJID = new Net::XMPP::JID;
+            my $cJID = new Net::Jabber::JID;
             $cJID->SetJID($jid);
             if ( $givenJIDStr eq $cJID->GetJID('base') ) {
                 $ambiguous = 1 if ( $matchingJID ne "" );
