@@ -1363,14 +1363,10 @@ sub resolveDestJID {
         }
     }
 
-    my @mucs = $conn->getConnectionFromJID($from)->MUCs;
-    for my $m (@mucs) {
-        if ($m->BaseJID eq $to) {
-            return $m->BaseJID;
-        }
-    }
-
-    return $to;
+    # If we found nothing being clever, check to see if our input was
+    # sane enough to look like a jid with a UserID.
+    return $jid->GetJID('full') if $jid->GetUserID();
+    return undef;
 }
 
 sub resolveType {
