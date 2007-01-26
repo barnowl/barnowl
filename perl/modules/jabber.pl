@@ -1382,7 +1382,7 @@ sub resolveDestJID {
         if(($roster->query($j, 'name') || $j->GetUserID()) eq $to) {
             return $j->GetJID('full');
         } elsif($j->GetJID('base') eq baseJID($to)) {
-            return $j->GetJID('full');
+            return $jid->GetJID('full');
         }
     }
 
