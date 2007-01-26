@@ -1413,7 +1413,7 @@ sub guess_jwrite {
         $from_jid = resolveConnectedJID($from);
         die("Unable to resolve account $from") unless $from_jid;
         $to_jid = resolveDestJID($to, $from_jid);
-        push @matches, [$from_jid, $to_jid];
+        push @matches, [$from_jid, $to_jid] if $to_jid;
     } else {
         for my $f ($conn->getJIDs) {
             $to_jid = resolveDestJID($to, $f);
@@ -1460,19 +1460,31 @@ sub smartfilter {
         } else {
             $user = $self->to;
         }
-        $user = Net::Jabber::JID->new($user)->GetJID($inst ? 'full' : 'base');
-        $filter = "jabber-user-$user";
-        $ftext = qq{type ^jabber\$ and ( ( direction ^in\$ and from ^$user ) } .
-                 qq{or ( direction ^out\$ and to ^$user ) ) };
-        BarnOwl::filter("$filter $ftext");
-        return $filter;
+        return smartfilter_user($user, $inst);
     } elsif ($self->jtype eq 'groupchat') {
         my $room = $self->room;
         $filter = "jabber-room-$room";
         $ftext = qq{type ^jabber\$ and room ^$room\$};
         BarnOwl::filter("$filter $ftext");
         return $filter;
+    } elsif ($self->login ne 'none') {
+        return smartfilter_user($self->from, $inst);
     }
 }
+
+sub smartfilter_user {
+    my $user = shift;
+    my $inst = shift;
+
+    $user   = Net::Jabber::JID->new($user)->GetJID( $inst ? 'full' : 'base' );
+    my $filter = "jabber-user-$user";
+    my $ftext  =
+        qq{type ^jabber\$ and ( ( direction ^in\$ and from ^$user ) }
+      . qq{or ( direction ^out\$ and to ^$user ) ) };
+    BarnOwl::filter("$filter $ftext");
+    return $filter;
+
+}
+
 
 1;
