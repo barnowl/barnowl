@@ -86,7 +86,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
   hv_store(h, "private", strlen("private"), newSViv(owl_message_is_private(m)),0);
 
   type = owl_message_get_type(m);
-  if(!type) type = "generic";
+  if(!type || !*type) type = "generic";
   type = owl_strdup(type);
   type[0] = toupper(type[0]);
   blessas = owl_sprintf("BarnOwl::Message::%s", type);
