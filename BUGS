@@ -2,8 +2,5 @@
   with them yet. [nelhage]
 * The jabber roster looks ugly with multiline status messages and
   long JIDs [nelhage]
-* Hangs on Ubuntu 6.06 [nygren] (see email)
-* Building barnowl on Athena and then running it on Linerva results in
-  sadness finding strict.pm apparently related to having an incorrect
-  @INC. [kchen]
 * reply to resource names from ichat (foo's computer) fails badly [hartmans]
+* viewuser doesn't work with AIM or Jabber
