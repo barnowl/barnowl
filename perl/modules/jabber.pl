@@ -217,6 +217,7 @@ sub onStart {
     if ( *BarnOwl::queue_message{CODE} ) {
         register_owl_commands();
         register_keybindings() unless $BarnOwl::reload;
+        register_filters() unless $BarnOwl::reload;
         push @::onMainLoop,     sub { BarnOwl::Jabber::onMainLoop(@_) };
         push @::onGetBuddyList, sub { BarnOwl::Jabber::onGetBuddyList(@_) };
         $vars{show} = '';
@@ -421,6 +422,10 @@ sub register_owl_commands() {
 
 sub register_keybindings {
     BarnOwl::bindkey("recv j command start-command jwrite ");
+}
+
+sub register_filters {
+    BarnOwl::filter('jabber type ^jabber$');
 }
 
 sub cmd_login {
