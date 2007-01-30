@@ -116,53 +116,14 @@ new_command_internal(name, func, summary, usage, description)
 void queue_message(msg) 
 	SV *msg
 	PREINIT:
-		char * key;
-		char * val;
 		owl_message *m;
-		HV * hash;
-		HE * ent;
-		I32 count;
-		I32 len;
 	CODE:
 	{
 		if(!SvROK(msg) || SvTYPE(SvRV(msg)) != SVt_PVHV) {
 			croak("Usage: owl::queue_message($message)");
 		}
 
-		hash = (HV*)SvRV(msg);
-		m = owl_malloc(sizeof(owl_message));
-		owl_message_init(m);
-
-		count = hv_iterinit(hash);
-		while((ent = hv_iternext(hash))) {
-			key = hv_iterkey(ent, &len);
-			val = SvPV_nolen(hv_iterval(hash, ent));
-			if(!strcmp(key, "type")) {
-				owl_message_set_type(m, owl_message_parse_type(val));
-			} else if(!strcmp(key, "direction")) {
-				owl_message_set_direction(m, owl_message_parse_direction(val));
-			} else if(!strcmp(key, "private")) {
-				SV * v = hv_iterval(hash, ent);
-				if(SvTRUE(v)) {
-					owl_message_set_isprivate(m);
-				}
-			} else if (!strcmp(key, "hostname")) {
-				owl_message_set_hostname(m, val);
-			} else if (!strcmp(key, "zwriteline")) {
-				owl_message_set_zwriteline(m, val);
-			} else if (!strcmp(key, "time")) {
-				m->timestr = owl_strdup(val);
-				struct tm tm;
-				strptime(val, "%a %b %d %T %Y", &tm);
-				m->time = mktime(&tm);
-			} else {
-				owl_message_set_attribute(m, key, val);
-			}
-		}
-		if(owl_message_is_type_admin(m)) {
-			if(!owl_message_get_attribute_value(m, "adminheader"))
-				owl_message_set_attribute(m, "adminheader", "");
-		} 
+		m = owl_perlconfig_hashref2message(msg);
 
 		owl_global_messagequeue_addmsg(&g, m);
 	}

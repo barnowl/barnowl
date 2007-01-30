@@ -108,16 +108,6 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_PROTOCOL_YAHOO          4
 #define OWL_PROTOCOL_MSN            5
 
-#define OWL_MESSAGE_TYPE_ADMIN      0
-#define OWL_MESSAGE_TYPE_GENERIC    1
-#define OWL_MESSAGE_TYPE_ZEPHYR     2
-#define OWL_MESSAGE_TYPE_AIM        3
-#define OWL_MESSAGE_TYPE_JABBER     4
-#define OWL_MESSAGE_TYPE_ICQ        5
-#define OWL_MESSAGE_TYPE_YAHOO      6
-#define OWL_MESSAGE_TYPE_MSN        7
-#define OWL_MESSAGE_TYPE_LOOPBACK   8
-
 #define OWL_MESSAGE_DIRECTION_NONE  0
 #define OWL_MESSAGE_DIRECTION_IN    1
 #define OWL_MESSAGE_DIRECTION_OUT   2
@@ -333,7 +323,6 @@ typedef struct _owl_pair {
 
 typedef struct _owl_message {
   int id;
-  int type;
   int direction;
 #ifdef HAVE_LIBZEPHYR
   ZNotice_t notice;

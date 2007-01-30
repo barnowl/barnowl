@@ -15,7 +15,6 @@ static const char fileIdent[] = "$Id$";
 void owl_message_init(owl_message *m)
 {
   m->id=owl_global_get_nextmsgid(&g);
-  m->type=OWL_MESSAGE_TYPE_GENERIC;
   owl_message_set_direction_none(m);
   m->delete=0;
   m->hostname=owl_strdup("");
@@ -323,85 +322,65 @@ char *owl_message_get_shorttimestr(owl_message *m)
 
 void owl_message_set_type_admin(owl_message *m)
 {
-  m->type=OWL_MESSAGE_TYPE_ADMIN;
+  owl_message_set_attribute(m, "type", "admin");
 }
 
 void owl_message_set_type_loopback(owl_message *m)
 {
-  m->type=OWL_MESSAGE_TYPE_LOOPBACK;
+  owl_message_set_attribute(m, "type", "loopback");
 }
 
 void owl_message_set_type_zephyr(owl_message *m)
 {
-  m->type=OWL_MESSAGE_TYPE_ZEPHYR;
+  owl_message_set_attribute(m, "type", "zephyr");
 }
 
 void owl_message_set_type_aim(owl_message *m)
 {
-  m->type=OWL_MESSAGE_TYPE_AIM;
+  owl_message_set_attribute(m, "type", "aim");
 }
 
-void owl_message_set_type(owl_message *m, int type)
+void owl_message_set_type(owl_message *m, char* type)
 {
-  m->type=type;
+  owl_message_set_attribute(m, "type", type);
+}
+
+int owl_message_is_type(owl_message *m, char *type) {
+  char * t = owl_message_get_attribute_value(m, "type");
+  if(!t) return 0;
+  return !strcmp(t, type);
 }
 						
 int owl_message_is_type_admin(owl_message *m)
 {
-  if (m->type==OWL_MESSAGE_TYPE_ADMIN) return(1);
-  return(0);
+  return owl_message_is_type(m, "admin");
 }
 
 int owl_message_is_type_generic(owl_message *m)
 {
-  if (m->type==OWL_MESSAGE_TYPE_GENERIC) return(1);
-  return(0);
+  char * t = owl_message_get_attribute_value(m, "type");
+  return (t == NULL);
 }
 
 int owl_message_is_type_zephyr(owl_message *m)
 {
-  if (m->type==OWL_MESSAGE_TYPE_ZEPHYR) return(1);
-  return(0);
+  return owl_message_is_type(m, "zephyr");
 }
 
 int owl_message_is_type_aim(owl_message *m)
 {
-  if (m->type==OWL_MESSAGE_TYPE_AIM) return(1);
-  return(0);
+  return owl_message_is_type(m, "aim");
 }
 
+/* XXX TODO: deprecate this */
 int owl_message_is_type_jabber(owl_message *m)
 {
-  if (m->type==OWL_MESSAGE_TYPE_JABBER) return(1);
-
-  return(0);
-}
-
-int owl_message_is_type_icq(owl_message *m)
-{
-  if (m->type==OWL_MESSAGE_TYPE_ICQ) return(1);
-
-  return(0);
-}
-
-int owl_message_is_type_yahoo(owl_message *m)
-{
-  if (m->type==OWL_MESSAGE_TYPE_YAHOO) return(1);
-
-  return(0);
-}
-
-int owl_message_is_type_msn(owl_message *m)
-{
-  if (m->type==OWL_MESSAGE_TYPE_MSN) return(1);
-
-  return(0);
+  return owl_message_is_type(m, "jabber");
 }
 
 int owl_message_is_type_loopback(owl_message *m)
 {
-  if (m->type==OWL_MESSAGE_TYPE_LOOPBACK) return(1);
-  return(0);
+  return owl_message_is_type(m, "loopback");
 }
 
 int owl_message_is_pseudo(owl_message *m)
@@ -665,50 +644,11 @@ int owl_message_get_id(owl_message *m)
 }
 
 char *owl_message_get_type(owl_message *m) {
-  switch (m->type) {
-  case OWL_MESSAGE_TYPE_ADMIN:
-    return("admin");
-  case OWL_MESSAGE_TYPE_ZEPHYR:
-    return("zephyr");
-  case OWL_MESSAGE_TYPE_GENERIC:
-    return("generic");
-  case OWL_MESSAGE_TYPE_AIM:
-    return("aim");
-  case OWL_MESSAGE_TYPE_JABBER:
-    return("jabber");
-  case OWL_MESSAGE_TYPE_ICQ:
-    return("icq");
-  case OWL_MESSAGE_TYPE_YAHOO:
-    return("yahoo");
-  case OWL_MESSAGE_TYPE_MSN:
-    return("msn");
-  case OWL_MESSAGE_TYPE_LOOPBACK:
-    return("loopback");
-  default:
-    return("unknown");
+  char * type = owl_message_get_attribute_value(m, "type");
+  if(!type) {
+    return "generic";
   }
-}
-
-int owl_message_parse_type(char *type) {
-  if(!strcmp(type, "admin")) {
-    return OWL_MESSAGE_TYPE_ADMIN;
-  } else if(!strcmp(type, "zephyr")) {
-    return OWL_MESSAGE_TYPE_ZEPHYR;
-  } if(!strcmp(type, "aim")) {
-    return OWL_MESSAGE_TYPE_AIM;
-  } else if(!strcmp(type, "jabber")) {
-    return OWL_MESSAGE_TYPE_JABBER;
-  } else if(!strcmp(type, "icq")) {
-    return OWL_MESSAGE_TYPE_ICQ;
-  } else if(!strcmp(type, "yahoo")) {
-    return OWL_MESSAGE_TYPE_YAHOO;
-  } else if(!strcmp(type, "msn")) {
-    return OWL_MESSAGE_TYPE_MSN;
-  } else if(!strcmp(type, "loopback")) {
-    return OWL_MESSAGE_TYPE_LOOPBACK;
-  } else {
-    return OWL_MESSAGE_TYPE_GENERIC;
-  }
+  return type;
 }
 
 char *owl_message_get_direction(owl_message *m) {

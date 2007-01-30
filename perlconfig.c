@@ -25,11 +25,11 @@ static void owl_perl_xs_init(pTHX)
   }
 }
 
-SV *owl_perlconfig_message2hashref(owl_message *m)  /*noproto*/
+SV *owl_perlconfig_message2hashref(owl_message *m)
 {
   HV *h;
   SV *hr;
-  char *ptr, *blessas;
+  char *ptr, *blessas, *type;
   int i, j;
   owl_pair *pair;
 
@@ -85,17 +85,18 @@ SV *owl_perlconfig_message2hashref(owl_message *m)  /*noproto*/
   hv_store(h, "deleted", strlen("deleted"), newSViv(owl_message_is_delete(m)),0);
   hv_store(h, "private", strlen("private"), newSViv(owl_message_is_private(m)),0);
 
-  if (owl_message_is_type_zephyr(m))       blessas = "BarnOwl::Message::Zephyr";
-  else if (owl_message_is_type_aim(m))     blessas = "BarnOwl::Message::AIM";
-  else if (owl_message_is_type_jabber(m))  blessas = "BarnOwl::Message::Jabber";
-  else if (owl_message_is_type_admin(m))   blessas = "BarnOwl::Message::Admin";
-  else if (owl_message_is_type_generic(m)) blessas = "BarnOwl::Message::Generic";
-  else                                     blessas = "BarnOwl::Message";
+  type = owl_message_get_type(m);
+  if(!type) type = "generic";
+  type = owl_strdup(type);
+  type[0] = toupper(type[0]);
+  blessas = owl_sprintf("BarnOwl::Message::%s", type);
 
   hr = sv_2mortal(newRV_noinc((SV*)h));
-  return sv_bless(hr, gv_stashpv(blessas,0));
+  hr = sv_bless(hr, gv_stashpv(blessas,0));
+  owl_free(type);
+  owl_free(blessas);
+  return hr;
 }
-
 
 SV *owl_perlconfig_curmessage2hashref(void) /*noproto*/
 {
@@ -109,6 +110,55 @@ SV *owl_perlconfig_curmessage2hashref(void) /*noproto*/
   return owl_perlconfig_message2hashref(owl_view_get_element(v, curmsg));
 }
 
+/* XXX TODO: Messages should round-trip properly between
+   message2hashref and hashref2message. Currently we lose
+   zephyr-specific properties stored in the ZNotice_t
+ */
+owl_message * owl_perlconfig_hashref2message(SV *msg)
+{
+  owl_message * m;
+  HE * ent;
+  I32 count, len;
+  char *key,*val;
+  HV * hash;
+
+  hash = (HV*)SvRV(msg);
+
+  m = owl_malloc(sizeof(owl_message));
+  owl_message_init(m);
+
+  count = hv_iterinit(hash);
+  while((ent = hv_iternext(hash))) {
+    key = hv_iterkey(ent, &len);
+    val = SvPV_nolen(hv_iterval(hash, ent));
+    if(!strcmp(key, "type")) {
+      owl_message_set_type(m, val);
+    } else if(!strcmp(key, "direction")) {
+      owl_message_set_direction(m, owl_message_parse_direction(val));
+    } else if(!strcmp(key, "private")) {
+      SV * v = hv_iterval(hash, ent);
+      if(SvTRUE(v)) {
+        owl_message_set_isprivate(m);
+      }
+    } else if (!strcmp(key, "hostname")) {
+      owl_message_set_hostname(m, val);
+    } else if (!strcmp(key, "zwriteline")) {
+      owl_message_set_zwriteline(m, val);
+    } else if (!strcmp(key, "time")) {
+      m->timestr = owl_strdup(val);
+      struct tm tm;
+      strptime(val, "%a %b %d %T %Y", &tm);
+      m->time = mktime(&tm);
+    } else {
+      owl_message_set_attribute(m, key, val);
+    }
+  }
+  if(owl_message_is_type_admin(m)) {
+    if(!owl_message_get_attribute_value(m, "adminheader"))
+      owl_message_set_attribute(m, "adminheader", "");
+  }
+  return m;
+}
 
 /* Calls in a scalar context, passing it a hash reference.
    If return value is non-null, caller must free. */
