@@ -367,7 +367,7 @@ void owl_text_tr(char *buff, char a, char b)
  */
 char *owl_text_quote(char *in, char *toquote, char *quotestr)
 {
-  int i, x, r, place;
+  int i, x, r, place, escape;
   int in_len, toquote_len, quotestr_len;
   char *out;
 
@@ -376,6 +376,12 @@ char *owl_text_quote(char *in, char *toquote, char *quotestr)
   quotestr_len=strlen(quotestr);
   out=owl_malloc((in_len*quotestr_len)+30);
   place=0;
+  escape = 0;
+  for (i=0; i<in_len; i++) {
+    if(strchr(toquote, in[i]) != NULL)
+      escape++;
+  }
+  out = owl_malloc(in_len + quotestr_len*escape+1);
   for (i=0; i<in_len; i++) {
 
     /* check if it's a character that needs quoting */
