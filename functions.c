@@ -2640,14 +2640,17 @@ char *owl_function_classinstfilt(char *class, char *instance)
   }
 
   /* create the new filter */
-  argbuff=owl_malloc(len+20);
   tmpclass=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   owl_text_tr(tmpclass, ' ', '.');
   if (instance) {
     tmpinstance=owl_text_quote(instance, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(tmpinstance, ' ', '.');
   }
-  sprintf(argbuff, "( class ^(un)*%s(\\.d)*$ )", tmpclass);
+  len = strlen(tmpclass);
+  if(tmpinstance) len += strlen(tmpinstance);
+  len += 60;
+  argbuff = owl_malloc(len);
+  sprintf(argbuff, "class ^(un)*%s(\\.d)*$", tmpclass);
   if (tmpinstance) {
     sprintf(argbuff, "%s and ( instance ^%s(\\.d)*$ )", argbuff, tmpinstance);
   }
