@@ -337,7 +337,7 @@ void owl_message_set_type_zephyr(owl_message *m)
 
 void owl_message_set_type_aim(owl_message *m)
 {
-  owl_message_set_attribute(m, "type", "aim");
+  owl_message_set_attribute(m, "type", "AIM");
 }
 
 void owl_message_set_type(owl_message *m, char* type)
@@ -348,7 +348,7 @@ void owl_message_set_type(owl_message *m, char* type)
 int owl_message_is_type(owl_message *m, char *type) {
   char * t = owl_message_get_attribute_value(m, "type");
   if(!t) return 0;
-  return !strcmp(t, type);
+  return !strcasecmp(t, type);
 }
 						
 int owl_message_is_type_admin(owl_message *m)
