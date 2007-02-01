@@ -736,6 +736,24 @@ int owl_util_min(int a, int b)
   return(b);
 }
 
+/* Return the base class or instance from a zephyr class, by removing
+   leading `un' or trailing `.d'.
+   Modified ``class'' in place, and does not allocate memory.
+*/
+char * owl_util_baseclass(char * class)
+{
+  char * end;
+  while(!strncmp(class, "un", 2)) {
+    class += 2;
+  }
+  end = class + strlen(class) - 1;
+  while(*end == 'd' && *(end-1) == '.') {
+    end -= 2;
+  }
+  *(end + 1) = 0;
+  return class;
+}
+
 /**************************************************************************/
 /************************* REGRESSION TESTS *******************************/
 /**************************************************************************/

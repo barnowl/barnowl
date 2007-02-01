@@ -2616,13 +2616,19 @@ void owl_function_show_zpunts()
  * instance is NULL then catch all messgaes in the class.  Returns the
  * name of the filter, which the caller must free.
  */
-char *owl_function_classinstfilt(char *class, char *instance) 
+char *owl_function_classinstfilt(char *c, char *i) 
 {
   owl_list *fl;
   owl_filter *f;
   char *argbuff, *filtname;
   char *tmpclass, *tmpinstance = NULL;
+  char *class, *instance = NULL;
   int len;
+
+  class = owl_util_baseclass(c);
+  if(i) {
+    instance = owl_util_baseclass(i);
+  }
 
   fl=owl_global_get_filterlist(&g);
 
