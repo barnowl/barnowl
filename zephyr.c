@@ -633,6 +633,7 @@ void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip)
       if (!strcasecmp(buff, line)) {
 	owl_function_error("Subscription already present in %s", subsfile);
 	owl_free(line);
+	fclose(file);
 	return;
       }
     }
