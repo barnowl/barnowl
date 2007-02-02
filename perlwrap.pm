@@ -133,7 +133,8 @@ sub zwriteline  { return undef; }
 sub login_host  { return undef; }
 sub login_tty   { return undef; }
 
-sub pretty_sender { return shift->sender; }
+sub pretty_sender    { return shift->sender; }
+sub pretty_recipient { return shift->recipient; }
 
 sub delete {
     my ($m) = @_;
@@ -266,6 +267,14 @@ sub pretty_sender {
     my $realm = BarnOwl::zephyr_getrealm();
     $sender =~ s/\@$realm$//;
     return $sender;
+}
+
+sub pretty_recipient {
+    my ($m) = @_;
+    my $recip = $m->recipient;
+    my $realm = BarnOwl::zephyr_getrealm();
+    $recip =~ s/\@$realm$//;
+    return $recip;
 }
 
 # These are arguably zephyr-specific
