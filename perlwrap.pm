@@ -108,7 +108,7 @@ sub is_deleted  { return shift->{"deleted"}; }
 sub is_admin    { return (shift->{"type"} eq "admin"); }
 sub is_generic  { return (shift->{"type"} eq "generic"); }
 sub is_zephyr   { return (shift->{"type"} eq "zephyr"); }
-sub is_aim      { return (shift->{"type"} eq "aim"); }
+sub is_aim      { return (shift->{"type"} eq "AIM"); }
 sub is_jabber   { return (shift->{"type"} eq "jabber"); }
 sub is_icq      { return (shift->{"type"} eq "icq"); }
 sub is_yahoo    { return (shift->{"type"} eq "yahoo"); }
