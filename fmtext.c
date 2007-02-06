@@ -238,7 +238,6 @@ void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w)
       short pair;
       fg = f->fgcolorbuff[position];
       bg = f->bgcolorbuff[position];
-      owl_function_debugmsg("waddstr: fg(%i) bg(%i).", fg, bg);
 
       pair = owl_fmtext_get_colorpair(fg, bg);
       if (pair != -1) {
@@ -695,7 +694,7 @@ void owl_fmtext_reset_colorpairs()
 short owl_fmtext_get_colorpair(int fg, int bg)
 {
   owl_colorpair_mgr *cpmgr;
-  short pair, i, default_bg;
+  short pair, default_bg;
 
 #ifdef HAVE_USE_DEFAULT_COLORS
   if (fg == OWL_COLOR_DEFAULT) fg = -1;

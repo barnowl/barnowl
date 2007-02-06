@@ -1272,7 +1272,7 @@ int owl_function_calculate_topmsg_paged(int direction, owl_view *v, int curmsg, 
 
 int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines)
 {
-  int savey, j, i, foo, y;
+  int savey, i, foo, y;
 
   if (curmsg<0) return(topmsg);
     
@@ -1281,17 +1281,23 @@ int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg,
     topmsg=owl_function_calculate_topmsg_center(direction, v, curmsg, 0, recwinlines);
   }
 
-  /* Find number of lines from top to bottom of curmsg (store in savey) */
-  savey=0;
-  for (i=topmsg; i<=curmsg; i++) {
-    savey+=owl_message_get_numlines(owl_view_get_element(v, i));
+  /* If curmsg is so far past topmsg that there are more messages than
+     lines, skip the line counting that follows because we're
+     certainly off screen.  */
+  savey=curmsg-topmsg;
+  if (savey <= recwinlines) {
+    /* Find number of lines from top to bottom of curmsg (store in savey) */
+    savey = 0;
+    for (i=topmsg; i<=curmsg; i++) {
+      savey+=owl_message_get_numlines(owl_view_get_element(v, i));
+    }
   }
 
   /* If we're off the bottom of the screen, set the topmsg to curmsg
    * and scroll upwards */
   if (savey > recwinlines) {
     topmsg=curmsg;
-    savey=owl_message_get_numlines(owl_view_get_element(v, i));
+    savey=owl_message_get_numlines(owl_view_get_element(v, curmsg));
     direction=OWL_DIRECTION_UPWARDS;
   }
   
@@ -1299,20 +1305,20 @@ int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg,
   if (direction == OWL_DIRECTION_UPWARDS || direction == OWL_DIRECTION_NONE) {
     if (savey < (recwinlines / 4)) {
       y=0;
-      for (j=curmsg; j>=0; j--) {
-	foo=owl_message_get_numlines(owl_view_get_element(v, j));
+      for (i=curmsg; i>=0; i--) {
+	foo=owl_message_get_numlines(owl_view_get_element(v, i));
 	/* will we run the curmsg off the screen? */
 	if ((foo+y) >= recwinlines) {
-	  j++;
-	  if (j>curmsg) j=curmsg;
+	  i++;
+	  if (i>curmsg) i=curmsg;
 	  break;
 	}
 	/* have saved 1/2 the screen space? */
 	y+=foo;
 	if (y > (recwinlines / 2)) break;
       }
-      if (j<0) j=0;
-      return(j);
+      if (i<0) i=0;
+      return(i);
     }
   }
 
@@ -1321,14 +1327,14 @@ int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg,
     if (savey > ((recwinlines * 3)/4)) {
       y=0;
       /* count lines from the top until we can save 1/2 the screen size */
-      for (j=topmsg; j<curmsg; j++) {
-	y+=owl_message_get_numlines(owl_view_get_element(v, j));
+      for (i=topmsg; i<curmsg; i++) {
+	y+=owl_message_get_numlines(owl_view_get_element(v, i));
 	if (y > (recwinlines / 2)) break;
       }
-      if (j==curmsg) {
-	j--;
+      if (i==curmsg) {
+	i--;
       }
-      return(j+1);
+      return(i+1);
     }
   }
 
