@@ -334,10 +334,6 @@ int main(int argc, char **argv, char **env)
   perlout = owl_perlconfig_execute("BarnOwl::Hooks::startup();");
   if (perlout) owl_free(perlout);
 
-    /* process the startup file */
-  owl_function_debugmsg("startup: processing startup file");
-  owl_function_source(NULL);
-
   /* hold on to the window names for convenience */
   msgwin=owl_global_get_curs_msgwin(&g);
   recwin=owl_global_get_curs_recwin(&g);
@@ -359,6 +355,10 @@ int main(int argc, char **argv, char **env)
   strcat(startupmsg, "-----------------------------------------------------------------m-m---\n");
   owl_function_adminmsg("", startupmsg);
   sepbar(NULL);
+
+  /* process the startup file */
+  owl_function_debugmsg("startup: processing startup file");
+  owl_function_source(NULL);
 
   wrefresh(sepwin);
 
