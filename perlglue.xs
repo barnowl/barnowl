@@ -147,8 +147,6 @@ void add_message(msg)
 void admin_message(header, body) 
 	char *header
 	char *body
-	PREINIT:
-		owl_message *m;
 	CODE:
 	{
 		owl_function_adminmsg(header, body);		

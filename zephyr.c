@@ -371,6 +371,8 @@ char *owl_zephyr_get_message(ZNotice_t *n)
     field4 = owl_zephyr_get_field(n, 4);
 
     msg = owl_sprintf("%s service on %s %s\n%s", opcode, instance, field3, field4);
+    owl_free(field3);
+    owl_free(field4);
     if (msg) {
       return msg;
     }
