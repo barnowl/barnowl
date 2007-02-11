@@ -360,6 +360,21 @@ char *owl_zephyr_get_message(ZNotice_t *n)
   if (!strcasecmp(n->z_sender, "olc.matisse@ATHENA.MIT.EDU")) {
     return(owl_zephyr_get_field(n, 1));
   }
+  /* deal with MIT NOC messages */
+  else if (!strcasecmp(n->z_sender, "rcmd.achilles@ATHENA.MIT.EDU")) {
+    /* $opcode service on $instance $3.\n$4 */
+    char *msg, *opcode, *instance, *field3, *field4;
+
+    opcode = n->z_opcode;
+    instance = n->z_class_inst;
+    field3 = owl_zephyr_get_field(n, 3);
+    field4 = owl_zephyr_get_field(n, 4);
+
+    msg = owl_sprintf("%s service on %s %s\n%s", opcode, instance, field3, field4);
+    if (msg) {
+      return msg;
+    }
+  }
 
   return(owl_zephyr_get_field(n, 2));
 }
