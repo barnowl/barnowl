@@ -1010,8 +1010,8 @@ sub process_owl_jwrite {
     $j->SetSubject( $vars{jwrite}{subject} ) if ( $vars{jwrite}{subject} );
 
     my $m = j2o( $j, { direction => 'out' } );
-    if ( $vars{jwrite}{type} ne 'groupchat' && BarnOwl::getvar('displayoutgoing') eq 'on') {
-        BarnOwl::queue_message($m);
+    if ( $vars{jwrite}{type} ne 'groupchat') {
+        BarnOwl::add_message($m);
     }
 
     $j->RemoveFrom(); # Kludge to get around gtalk's random bits after the resource.
@@ -1291,12 +1291,7 @@ sub j2o {
 
 sub queue_admin_msg {
     my $err = shift;
-    my $m   = BarnOwl::Message->new(
-        type      => 'admin',
-        direction => 'none',
-        body      => $err
-    );
-    BarnOwl::queue_message($m);
+    BarnOwl::admin_message("jabber.pl", $err);
 }
 
 sub boldify($) {

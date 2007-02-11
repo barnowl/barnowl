@@ -128,6 +128,32 @@ void queue_message(msg)
 		owl_global_messagequeue_addmsg(&g, m);
 	}
 
+void add_message(msg) 
+	SV *msg
+	PREINIT:
+		owl_message *m;
+	CODE:
+	{
+		if(!SvROK(msg) || SvTYPE(SvRV(msg)) != SVt_PVHV) {
+			croak("Usage: owl::add_message($message)");
+		}
+
+		if (owl_global_is_displayoutgoing(&g)) {
+			m = owl_perlconfig_hashref2message(msg);
+			owl_function_add_message(m);
+		}
+	}
+
+void admin_message(header, body) 
+	char *header
+	char *body
+	PREINIT:
+		owl_message *m;
+	CODE:
+	{
+		owl_function_adminmsg(header, body);		
+	}
+
 void start_question(line, callback)
 	char *line
 	SV *callback
