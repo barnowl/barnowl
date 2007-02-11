@@ -121,10 +121,8 @@ static int owl_filterelement_match_or(owl_filterelement *fe, owl_message *m)
 static int owl_filterelement_match_not(owl_filterelement *fe, owl_message *m)
 {
   return !owl_filterelement_match(fe->left, m);
-  fe->match_message = owl_filterelement_match_re;
-  fe->print_elt = owl_filterelement_print_re;
 }
-/*
+
 // Print methods
 
 static void owl_filterelement_print_true(owl_filterelement *fe, char *buf)
@@ -136,7 +134,6 @@ static void owl_filterelement_print_false(owl_filterelement *fe, char *buf)
 {
   strcat(buf, "false");
 }
-*/
 
 static void owl_filterelement_print_re(owl_filterelement *fe, char *buf)
 {
