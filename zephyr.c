@@ -71,6 +71,24 @@ char *owl_zephyr_get_sender()
 #endif
 }
 
+int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
+{
+  int i, ret = 0;
+  /* sub without defaults */
+  if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
+    owl_function_error("Error subscribing to zephyr notifications.");
+    ret=-2;
+  }
+
+  /* free stuff */
+  for (i=0; i<count; i++) {
+    owl_free(subs[i].zsub_class);
+    owl_free(subs[i].zsub_classinst);
+    owl_free(subs[i].zsub_recipient);
+  }
+  return ret;
+}
+
 /* Load zephyr subscriptions form 'filename'.  If 'filename' is NULL,
  * the default file $HOME/.zephyr.subs will be used.
  *
@@ -86,7 +104,7 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   char *tmp, *start;
   char buffer[1024], subsfile[1024];
   ZSubscription_t subs[3001];
-  int count, ret, i;
+  int count, ret;
   struct stat statbuff;
 
   if (filename==NULL) {
@@ -102,7 +120,6 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   }
 
   ZResetAuthentication();
-  /* need to redo this to do chunks, not just bail after 3000 */
   count=0;
   file=fopen(subsfile, "r");
   if (!file) return(-1);
@@ -115,7 +132,14 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
       start=buffer;
     }
     
-    if (count >= 3000) break; /* also tell the user */
+    if (count >= 3000) {
+      ret = owl_zephyr_loadsubs_helper(subs, count);
+      if (ret != 0) {
+	fclose(file);
+	return(ret);
+      }
+      count=0;
+    }
     
     /* add it to the list of subs */
     if ((tmp=(char *) strtok(start, ",\n\r"))==NULL) continue;
@@ -134,19 +158,7 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   }
   fclose(file);
 
-  /* sub without defaults */
-  ret=0;
-  if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
-    owl_function_error("Error subscribing to zephyr notifications.");
-    ret=-2;
-  }
-
-  /* free stuff */
-  for (i=0; i<count; i++) {
-    owl_free(subs[i].zsub_class);
-    owl_free(subs[i].zsub_classinst);
-    owl_free(subs[i].zsub_recipient);
-  }
+  ret=owl_zephyr_loadsubs_helper(subs, count);
 
   return(ret);
 #else
