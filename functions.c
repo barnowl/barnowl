@@ -3526,6 +3526,7 @@ void owl_function_source(char *filename)
     return;
   }
   while (fgets(buff, LINE, file)!=NULL) {
+    if (buff[0] == '#') continue;
     buff[strlen(buff)-1]='\0';
     owl_function_command(buff);
   }
