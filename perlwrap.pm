@@ -323,9 +323,9 @@ sub reload
     # Use $reload to tell modules that we're performing a reload.
   {
       local $reload = 1;
-      BarnOwl::mainloop_hook();
+      BarnOwl::mainloop_hook() if *BarnOwl::mainloop_hook{CODE};
   }
-    
+
   @BarnOwl::Hooks::onMainLoop = ();
   @BarnOwl::Hooks::onStartSubs = ();
 
@@ -430,7 +430,7 @@ sub shutdown
 sub mainloop_hook
 {
     runHook(\@onMainLoop);
-    BarnOwl::mainlook_hook() if *BarnOwl::mainloop_hook{CODE};
+    BarnOwl::mainloop_hook() if *BarnOwl::mainloop_hook{CODE};
 }
 
 ################################################################################
