@@ -389,6 +389,31 @@ char *owl_zephyr_get_message(ZNotice_t *n)
       return msg;
     }
   }
+  /* deal with MIT Discuss messages */
+  else if (!strcasecmp(n->z_sender, "daemon@ATHENA.MIT.EDU") &&
+	   !strcasecmp(n->z_class, "DISCUSS")) {
+    /*New transaction [$1] entered in $2
+      From: $3 ($5)
+      Subject: $4 */
+    
+    char *msg, *field1, *field2, *field3, *field4, *field5;
+    
+    field1 = owl_zephyr_get_field(n, 1);
+    field2 = owl_zephyr_get_field(n, 2);
+    field3 = owl_zephyr_get_field(n, 3);
+    field4 = owl_zephyr_get_field(n, 4);
+    field5 = owl_zephyr_get_field(n, 5);
+    
+    msg = owl_sprintf("New transaction [%s] entered in %s\nFrom: %s (%s)\nSubject: %s", field1, field2, field3, field5, field4);
+    owl_free(field1);
+    owl_free(field2);
+    owl_free(field3);
+    owl_free(field4);
+    owl_free(field5);
+    if (msg) {
+      return msg;
+    }
+  }
 
   return(owl_zephyr_get_field(n, 2));
 }
