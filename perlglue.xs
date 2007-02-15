@@ -237,3 +237,11 @@ popless_ztext(text)
 		owl_function_popless_fmtext(&fm);
 		owl_fmtext_free(&fm);
 	}
+
+void
+error(text) 
+	char *text
+	CODE:
+	{
+		owl_function_error("%s", text);
+	}
