@@ -1455,6 +1455,26 @@ sub jtype { shift->{jtype} };
 sub from { shift->{from} };
 sub to { shift->{to} };
 sub room { shift->{room} };
+sub status { shift->{status} }
+
+sub login_extra {
+    my $self = shift;
+    my $show = $self->{show};
+    my $status = $self->status;
+    my $s = "";
+    $s .= $show if $show;
+    $s .= ", $status" if $status;
+    return $s;
+}
+
+sub long_sender {
+    my $self = shift;
+    return $self->from;
+}
+
+sub context {
+    return shift->room;
+}
 
 sub smartfilter {
     my $self = shift;

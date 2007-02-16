@@ -203,6 +203,19 @@ sub smartfilter {
     die("smartfilter not supported for this message");
 }
 
+# Display fields -- overridden by subclasses when needed
+sub login_type {""}
+sub login_extra {""}
+sub long_sender {""}
+
+# The context in which a non-personal message was sent, e.g. a chat or
+# class
+sub context {""}
+
+# Some indicator of context *within* $self->context. e.g. the zephyr
+# instance
+sub subcontext {""}
+
 #####################################################################
 #####################################################################
 
@@ -237,6 +250,31 @@ sub is_personal {
 package BarnOwl::Message::Zephyr;
 
 use base qw( BarnOwl::Message );
+
+sub login_type {
+    return (shift->zsig eq "") ? "(PSEUDO)" : "";
+}
+
+sub login_extra {
+    my $m = shift;
+    return undef if (!$m->is_loginout);
+    my $s = lc($m->host);
+    $s .= " " . $m->login_tty if defined $m->login_tty;
+    return $s;
+}
+
+sub long_sender {
+    my $m = shift;
+    return $m->zsig;
+}
+
+sub context {
+    return shift->class;
+}
+
+sub subcontext {
+    return shift->instance;
+}
 
 sub login_tty { 
     my ($m) = @_;
@@ -482,123 +520,64 @@ sub format_message($)
 {
     my $m = shift;
 
-    if ( $m->is_zephyr ) {
-        return format_zephyr($m);
-    }
-    elsif ( $m->is_admin ) {
+    if ( $m->is_loginout) {
+        return format_login($m);
+    } elsif($m->is_ping) {
+        return ( "\@b(PING) from \@b(" . $m->pretty_sender . ")\n" );
+    } elsif($m->is_admin) {
         return "\@bold(OWL ADMIN)\n" . indentBody($m);
-    }
-    elsif ( $m->is_aim ) {
-        return format_aim($m);
-    }
-    elsif ( lc( $m->type ) eq 'loopback' ) {
-        return format_loopback($m);
-    }
-    else {
-        return "Unexpected message type.";
+    } else {
+        return format_chat($m);
     }
 }
 
 BarnOwl::_create_style("default", "BarnOwl::Style::Default::format_message", "Default style");
 
 ################################################################################
-sub format_zephyr($)
-{
+
+sub time_hhmm {
     my $m = shift;
-
-    # Extract time from message
     my ($time) = $m->time =~ /(\d\d:\d\d)/;
-
-    # Deal with PING messages, assuming owl's rxping variable is true.
-    if ( $m->is_ping && $m->recipient ne "" ) {
-        return ( "\@b(PING) from \@b(" . $m->pretty_sender . ")\n" );
-    }
-
-    # Deal with login/logout messages
-    elsif ( $m->is_loginout ) {
-        return sprintf(
-            '@b<%s%s> for @b(%s) at %s %s %s',
-            uc( $m->login ),
-
-            # This is a hack, owl does not export "pseudo"-ness
-            ( $m->zsig ) ? "" : " (PSEUDO)",
-            $m->pretty_sender,
-            lc( $m->host ),
-            $m->login_tty,
-            $time
-        );
-    }
-
-    # Deal with outbound zephyrs (personal, we don't see outbound non-personal)
-    elsif ( lc( $m->direction ) eq 'out' ) {
-        my $user = $m->recipient;
-        $user =~ s/\@ATHENA[.]MIT[.]EDU$//;
-
-        my $zsig = $m->zsig;
-        $zsig =~ s/\n.*$//s;
-
-        return sprintf( "Zephyr sent to %s  %s  (Zsig: %s)\n%s",
-            $user, $time, $zsig, indentBody($m) );
-    }
-
-    # Deal with everything else
-    else {
-        my $zsig = $m->zsig;
-        $zsig =~ s/\n.*$//s;
-
-        my $msg = sprintf(
-            "%s / %s / \@b<%s>%s  %s    (%s)\n%s",
-            $m->class, $m->instance, $m->pretty_sender,
-            ( $m->opcode ? " [@{[$m->opcode]}]" : "" ),
-            $time, $zsig, indentBody($m)
-        );
-        return BarnOwl::Style::boldify($msg) if ( $m->is_private );
-        return $msg;
-    }
+    return $time;
 }
 
-
-sub format_aim($)
-{
+sub format_login($) {
     my $m = shift;
-
-    # Extract time from message
-    my ($time) = $m->time =~ /(\d\d:\d\d)/;
-
-    # Deal with login/logout messages
-    if ( $m->is_loginout ) {
-        return
-          sprintf( "\@b(AIM %s) for %s %s",
-                   uc( $m->login ),
-                   $m->sender,
-                   $time );
-    }
-    elsif ( lc( $m->direction ) eq 'out' ) {
-        return sprintf( "AIM sent to %s  %s\n%s",
-                        $m->recipient,
-                        $time,
-                        indentBody($m) );
-    }
-    else {
-        return sprintf( "\@b(AIM from %s)  %s\n%s",
-                        $m->sender,
-                        $time,
-                        BarnOwl::Style::boldify( indentBody($m) ) );
-    }
+    return sprintf(
+        '@b<%s%s> for @b(%s) (%s) %s',
+        uc( $m->login ),
+        $m->login_type,
+        $m->pretty_sender,
+        $m->login_extra,
+        time_hhmm($m)
+       );
 }
 
-
-sub format_loopback($)
-{
+sub format_chat($) {
     my $m = shift;
+    my $header;
+    if ( $m->is_personal ) {
+        if ( $m->direction eq "out" ) {
+            $header = ucfirst $m->type . " sent to " . $m->pretty_recipient;
+        } else {
+            $header = ucfirst $m->type . " from " . $m->pretty_sender;
+        }
+    } else {
+        $header = $m->context;
+        if($m->subcontext) {
+            $header .= " / " . $m->subcontext;
+        }
+        $header .= " / " . $m->pretty_sender;
+    }
 
-    # Extract time from message
-    my ($time) = $m->time =~ /(\d\d:\d\d)/;
-
-    return sprintf( "loopback from: %s to: %s  %s\n%s",
-        $m->sender, $m->recipient, $time, indentBody($m) );
+    $header .= "  " . time_hhmm($m);
+    $header .= "\t(" . $m->long_sender . ")";
+    my $message = $header . "\n". indentBody($m);
+    if($m->is_private && $m->direction eq "in") {
+        $message = BarnOwl::Style::boldify($message);
+    }
+    return $message;
 }
-
 
 sub indentBody($)
 {
