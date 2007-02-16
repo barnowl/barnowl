@@ -4,6 +4,11 @@
 #
 #####################################################################
 #####################################################################
+# XXX NOTE: This file is sourced before almost any barnowl
+# architecture is loaded. This means, for example, that it cannot
+# execute any owl commands. Any code that needs to do so, should
+# create a function wrapping it and push it onto @onStartSubs
+
 
 use strict;
 use warnings;
@@ -292,7 +297,7 @@ sub zsig        { return shift->{"zsig"}; }
 #####################################################################
 #####################################################################
 ################################################################################
-package owl;
+package BarnOwl;
 
 ################################################################################
 # Mainloop hook
@@ -325,7 +330,7 @@ sub reload
       local $reload = 1;
       BarnOwl::mainloop_hook() if *BarnOwl::mainloop_hook{CODE};
   }
-
+    
   @BarnOwl::Hooks::onMainLoop = ();
   @BarnOwl::Hooks::onStartSubs = ();
 
@@ -334,10 +339,10 @@ sub reload
   if (-r $BarnOwl::configfile) {
       undef $@;
       do $BarnOwl::configfile;
-      owl::error("Error reloading $BarnOwl::configfile: $@") if $@;
+      BarnOwl::error("Error reloading $BarnOwl::configfile: $@") if $@;
   }
   BarnOwl::reload_hook(@_);
-  package owl;
+  package BarnOwl;
 }
 
 sub reload_init () 
@@ -370,6 +375,19 @@ sub loadModules () {
         closedir(MODULES);
     }
 }
+
+sub _load_owlconf {
+    # Only do this the first time
+    return if $BarnOwl::reload;
+    # load the config  file
+    if ( -r $BarnOwl::configfile ) {
+        undef $@;
+        do $BarnOwl::configfile;
+        die $@ if $@;
+    }
+}
+
+push @BarnOwl::Hooks::onStartSubs, \&_load_owlconf;
 
 package BarnOwl::Hooks;
 
@@ -453,6 +471,171 @@ sub get_blist
     return runHook_accumulate(\@onGetBuddyList);
 }
 
+################################################################################
+# Built-in perl styles
+################################################################################
+package BarnOwl::Style::Default;
+################################################################################
+# Branching point for various formatting functions in this style.
+################################################################################
+sub format_message($)
+{
+    my $m = shift;
+
+    if ( $m->is_zephyr ) {
+        return format_zephyr($m);
+    }
+    elsif ( $m->is_admin ) {
+        return "\@bold(OWL ADMIN)\n" . indentBody($m);
+    }
+    elsif ( $m->is_aim ) {
+        return format_aim($m);
+    }
+    elsif ( lc( $m->type ) eq 'loopback' ) {
+        return format_loopback($m);
+    }
+    else {
+        return "Unexpected message type.";
+    }
+}
+
+BarnOwl::_create_style("default", "BarnOwl::Style::Default::format_message", "Default style");
+
+################################################################################
+sub format_zephyr($)
+{
+    my $m = shift;
+
+    # Extract time from message
+    my ($time) = $m->time =~ /(\d\d:\d\d)/;
+
+    # Deal with PING messages, assuming owl's rxping variable is true.
+    if ( $m->is_ping && $m->recipient ne "" ) {
+        return ( "\@b(PING) from \@b(" . $m->pretty_sender . ")\n" );
+    }
+
+    # Deal with login/logout messages
+    elsif ( $m->is_loginout ) {
+        return sprintf(
+            '@b<%s%s> for @b(%s) at %s %s %s',
+            uc( $m->login ),
+
+            # This is a hack, owl does not export "pseudo"-ness
+            ( $m->zsig ) ? "" : " (PSEUDO)",
+            $m->pretty_sender,
+            lc( $m->host ),
+            $m->login_tty,
+            $time
+        );
+    }
+
+    # Deal with outbound zephyrs (personal, we don't see outbound non-personal)
+    elsif ( lc( $m->direction ) eq 'out' ) {
+        my $user = $m->recipient;
+        $user =~ s/\@ATHENA[.]MIT[.]EDU$//;
+
+        my $zsig = $m->zsig;
+        $zsig =~ s/\n.*$//s;
+
+        return sprintf( "Zephyr sent to %s  %s  (Zsig: %s)\n%s",
+            $user, $time, $zsig, indentBody($m) );
+    }
+
+    # Deal with everything else
+    else {
+        my $zsig = $m->zsig;
+        $zsig =~ s/\n.*$//s;
+
+        my $msg = sprintf(
+            "%s / %s / \@b<%s>%s  %s    (%s)\n%s",
+            $m->class, $m->instance, $m->pretty_sender,
+            ( $m->opcode ? " [@{[$m->opcode]}]" : "" ),
+            $time, $zsig, indentBody($m)
+        );
+        return BarnOwl::Style::boldify($msg) if ( $m->is_private );
+        return $msg;
+    }
+}
+
+
+sub format_aim($)
+{
+    my $m = shift;
+
+    # Extract time from message
+    my ($time) = $m->time =~ /(\d\d:\d\d)/;
+
+    # Deal with login/logout messages
+    if ( $m->is_loginout ) {
+        return
+          sprintf( "\@b(AIM %s) for %s %s",
+                   uc( $m->login ),
+                   $m->sender,
+                   $time );
+    }
+    elsif ( lc( $m->direction ) eq 'out' ) {
+        return sprintf( "AIM sent to %s  %s\n%s",
+                        $m->recipient,
+                        $time,
+                        indentBody($m) );
+    }
+    else {
+        return sprintf( "\@b(AIM from %s)  %s\n%s",
+                        $m->sender,
+                        $time,
+                        BarnOwl::Style::boldify( indentBody($m) ) );
+    }
+}
+
+
+sub format_loopback($)
+{
+    my $m = shift;
+
+    # Extract time from message
+    my ($time) = $m->time =~ /(\d\d:\d\d)/;
+
+    return sprintf( "loopback from: %s to: %s  %s\n%s",
+        $m->sender, $m->recipient, $time, indentBody($m) );
+}
+
+
+sub indentBody($)
+{
+    my $m = shift;
+    
+    my $body = $m->body;
+    # replace newline followed by anything with 
+    # newline plus four spaces and that thing.
+    $body =~ s/\n(.)/\n    $1/g;
+
+    return "    ".$body;
+}
+
+
+package BarnOwl::Style;
+
+# This takes a zephyr to be displayed and modifies it to be displayed
+# entirely in bold.
+sub boldify($)
+{
+    local $_ = shift;
+    if ( !(/\)/) ) {
+        return '@b(' . $_ . ')';
+    } elsif ( !(/\>/) ) {
+        return '@b<' . $_ . '>';
+    } elsif ( !(/\}/) ) {
+        return '@b{' . $_ . '}';
+    } elsif ( !(/\]/) ) {
+        return '@b[' . $_ . ']';
+    } else {
+        my $txt = "\@b($_";
+        $txt =~ s/\)/\)\@b\[\)\]\@b\(/g;
+        return $txt . ')';
+    }
+}
+
+
 # switch to package main when we're done
 package main;
 # alias the hooks
@@ -465,13 +648,6 @@ package main;
         *{"main::".$hook} = \*{"BarnOwl::Hooks::".$hook};
         *{"owl::".$hook} = \*{"BarnOwl::Hooks::".$hook};
     }
-}
-
-# load the config  file
-if (-r $BarnOwl::configfile) {
-    undef $@;
-    do $BarnOwl::configfile;
-    die $@ if $@;
 }
 
 1;

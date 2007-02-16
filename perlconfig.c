@@ -269,13 +269,12 @@ char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc
 }
 
 
-char *owl_perlconfig_readconfig(char * file)
+char *owl_perlconfig_initperl(char * file)
 {
   int ret;
   PerlInterpreter *p;
   char *err;
   char *args[4] = {"", "-e", "0;", NULL};
-
 
   /* create and initialize interpreter */
   p=perl_alloc();

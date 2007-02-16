@@ -245,3 +245,19 @@ error(text)
 	{
 		owl_function_error("%s", text);
 	}
+
+void
+_create_style(name, function, description)
+     char *name
+     char *function
+     char *description
+     PREINIT:
+		/* This is to allow us to bootstrap the default style before the
+		command architecture has been initialized */
+		owl_style *s;
+     CODE:
+	{
+		s = owl_malloc(sizeof(owl_style));
+		owl_style_create_perl(s, name, function, description);
+		owl_global_add_style(&g, s);
+	}

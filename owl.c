@@ -226,11 +226,22 @@ int main(int argc, char **argv, char **env)
     owl_global_set_tty(&g, owl_util_get_default_tty());
   }
 
+  /* Initialize perl */
+  owl_function_debugmsg("startup: processing config file");
+  owl_context_set_readconfig(owl_global_get_context(&g));
+  perlerr=owl_perlconfig_initperl(configfile);
+  if (perlerr) {
+    endwin();
+    owl_function_error("Internal perl error: %s\n", perlerr);
+    fprintf(stderr, "Internal perl error: %s\n", perlerr);
+    fflush(stderr);
+    printf("Internal perl error: %s\n", perlerr);
+    fflush(stdout);
+    exit(1);
+  }
+
   /* setup the built-in styles */
   owl_function_debugmsg("startup: creating built-in styles");
-  s=owl_malloc(sizeof(owl_style));
-  owl_style_create_internal(s, "default", &owl_stylefunc_default, "Default message formatting");
-  owl_global_add_style(&g, s);
 
   s=owl_malloc(sizeof(owl_style));
   owl_style_create_internal(s, "basic", &owl_stylefunc_basic, "Basic message formatting.");
@@ -303,20 +314,6 @@ int main(int argc, char **argv, char **env)
   /* AIM init */
   owl_function_debugmsg("startup: doing AIM initialization");
   owl_aim_init();
-
-  /* read the config file */
-  owl_function_debugmsg("startup: processing config file");
-  owl_context_set_readconfig(owl_global_get_context(&g));
-  perlerr=owl_perlconfig_readconfig(configfile);
-  if (perlerr) {
-    endwin();
-    owl_function_error("Error parsing configfile: %s\n", perlerr);
-    fprintf(stderr, "\nError parsing configfile: %s\n", perlerr);
-    fflush(stderr);
-    printf("\nError parsing configfile: %s\n", perlerr);
-    fflush(stdout);
-    exit(1);
-  }
 
   /* if the config defines a formatting function, add 'perl' as a style */
   if (owl_global_is_config_format(&g)) {
