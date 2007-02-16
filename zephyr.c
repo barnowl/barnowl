@@ -71,6 +71,7 @@ char *owl_zephyr_get_sender()
 #endif
 }
 
+#ifdef HAVE_LIBZEPHYR
 int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
 {
   int i, ret = 0;
@@ -88,6 +89,7 @@ int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
   }
   return ret;
 }
+#endif
 
 /* Load zephyr subscriptions form 'filename'.  If 'filename' is NULL,
  * the default file $HOME/.zephyr.subs will be used.
