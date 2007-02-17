@@ -349,6 +349,7 @@ $reload = 0;
 #Run this on start and reload. Adds modules
 sub onStart
 {
+    _load_owlconf();
     reload_init();
     loadModules();
 }
@@ -424,8 +425,6 @@ sub _load_owlconf {
         die $@ if $@;
     }
 }
-
-push @BarnOwl::Hooks::onStartSubs, \&_load_owlconf;
 
 package BarnOwl::Hooks;
 
@@ -565,9 +564,9 @@ sub format_chat($) {
     } else {
         $header = $m->context;
         if($m->subcontext) {
-            $header .= " / " . $m->subcontext;
+            $header .= ' / ' . $m->subcontext;
         }
-        $header .= " / " . $m->pretty_sender;
+        $header .= ' / @b{' . $m->pretty_sender . '}';
     }
 
     $header .= "  " . time_hhmm($m);
