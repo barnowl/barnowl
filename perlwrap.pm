@@ -23,11 +23,14 @@ BEGIN {
 };
 
 use lib(get_data_dir()."/lib");
-use lib($::ENV{'HOME'}."/.owl/lib");
+use lib($ENV{HOME}."/.owl/lib");
 
 our $configfile;
 
-$configfile ||= $::ENV{'HOME'}."/.owlconf";
+if(!$configfile && -f $ENV{HOME} . "/.barnowlconf") {
+    $configfile = $ENV{HOME} . "/.barnowlconf";
+}
+$configfile ||= $ENV{HOME}."/.owlconf";
 
 # populate global variable space for legacy owlconf files 
 sub _format_msg_legacy_wrap {
