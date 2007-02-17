@@ -424,8 +424,10 @@ sub _load_owlconf {
     # load the config  file
     if ( -r $BarnOwl::configfile ) {
         undef $@;
+        package main;
         do $BarnOwl::configfile;
         die $@ if $@;
+        package BarnOwl;
     }
 }
 
