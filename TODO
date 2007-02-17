@@ -4,9 +4,8 @@ barnowl TODO list
 1) Basic Jabber functionality
  * MUST   think about priority & status
  * SHOULD Store list of muc rooms to join
- * SHOULD Provide way to auto-login to passworded accounts
- * SHOULD shortname support
- * SHOULD automatically infer -g depending on whether we're writing to a MUC we know of.
+   > .owl/startup is insufficient, since ideally you should autojoin
+     them any time you :jabberlogin, not just at start.
  * MAY  More extensive room configuration
 * Check for memory leaks
  * perl eval()s from owl seem problematic
