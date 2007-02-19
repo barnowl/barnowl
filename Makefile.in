@@ -55,7 +55,7 @@ clean: libfaimclean
 	$(RM) $(EXE) tester *.o $(AUTOGEN) owl_prototypes.h.new
 
 distclean: clean libfaimdistclean
-	$(RM) config.cache config.log config.status Makefile config.h TAGS *~ core
+	$(RM) config.cache config.log config.status configure Makefile config.h TAGS *~ core
 
 proto: owl_prototypes.h
 
