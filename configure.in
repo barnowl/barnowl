@@ -55,7 +55,7 @@ dnl AC_CHECK_LIB(zephyr, ZGetSender,, AC_MSG_ERROR(No zephyr library found.))
 AC_CHECK_LIB(zephyr, ZGetSender)
 AC_CHECK_LIB(zephyr, ZInitLocationInfo, AC_DEFINE([HAVE_LIBZEPHYR_ZINITLOCATIONINFO], [], [Have ZInitLocationInfo]),)
 
-AC_CHECK_FUNCS(use_default_colors des_string_to_key des_key_sched des_ecb_encrypt)
+AC_CHECK_FUNCS(use_default_colors resizeterm des_string_to_key des_key_sched des_ecb_encrypt)
 
 AC_MSG_CHECKING(for des_ecb_encrypt prototype)
 AC_TRY_COMPILE([#include <des.h>
