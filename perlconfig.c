@@ -27,7 +27,7 @@ static void owl_perl_xs_init(pTHX)
 
 SV *owl_perlconfig_message2hashref(owl_message *m)
 {
-  HV *h;
+  HV *h, *stash;
   SV *hr;
   char *ptr, *blessas, *type;
   int i, j;
@@ -92,7 +92,12 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
   blessas = owl_sprintf("BarnOwl::Message::%s", type);
 
   hr = sv_2mortal(newRV_noinc((SV*)h));
-  hr = sv_bless(hr, gv_stashpv(blessas,0));
+  stash =  gv_stashpv(blessas,0);
+  if(!stash) {
+    owl_function_error("No such class: %s for message type %s", blessas, owl_message_get_type(m));
+    stash = gv_stashpv("BarnOwl::Message", 1);
+  }
+  hr = sv_bless(hr,stash);
   owl_free(type);
   owl_free(blessas);
   return hr;
