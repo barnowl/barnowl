@@ -32,14 +32,14 @@ if(!$configfile && -f $ENV{HOME} . "/.barnowlconf") {
 }
 $configfile ||= $ENV{HOME}."/.owlconf";
 
-# populate global variable space for legacy owlconf files 
+# populate global variable space for legacy owlconf files
 sub _format_msg_legacy_wrap {
     my ($m) = @_;
     $m->legacy_populate_global();
     return &BarnOwl::format_msg($m);
 }
 
-# populate global variable space for legacy owlconf files 
+# populate global variable space for legacy owlconf files
 sub _receive_msg_legacy_wrap {
     my ($m) = @_;
     $m->legacy_populate_global();
@@ -165,7 +165,7 @@ sub serialize {
 		my $aval;
 		$aval = $val->[$i];
 		$aval =~ s/\n/\n$f.$i: /g;
-		$s .= "$f.$i: $aval\n";	   
+		$s .= "$f.$i: $aval\n";
 	    }
 	} else {
 	    $val =~ s/\n/\n$f: /g;
@@ -238,12 +238,24 @@ use base qw( BarnOwl::Message );
 #####################################################################
 #####################################################################
 
+package BarnOwl::Message::Loopback;
+
+use base qw( BarnOwl::Message );
+
+# all loopback messages are personal
+sub is_personal {
+  return 1;
+}
+
+#####################################################################
+#####################################################################
+
 package BarnOwl::Message::AIM;
 
 use base qw( BarnOwl::Message );
 
 # all non-loginout AIM messages are personal for now...
-sub is_personal { 
+sub is_personal {
     return !(shift->is_loginout);
 }
 
@@ -279,13 +291,13 @@ sub subcontext {
     return shift->instance;
 }
 
-sub login_tty { 
+sub login_tty {
     my ($m) = @_;
     return undef if (!$m->is_loginout);
     return $m->fields->[2];
 }
 
-sub login_host { 
+sub login_host {
     my ($m) = @_;
     return undef if (!$m->is_loginout);
     return $m->fields->[0];
@@ -295,14 +307,14 @@ sub zwriteline  { return shift->{"zwriteline"}; }
 
 sub is_ping     { return (lc(shift->opcode) eq "ping"); }
 
-sub is_personal { 
+sub is_personal {
     my ($m) = @_;
     return ((lc($m->class) eq "message")
 	    && (lc($m->instance) eq "personal")
 	    && $m->is_private);
 }
 
-sub is_mail { 
+sub is_mail {
     my ($m) = @_;
     return ((lc($m->class) eq "mail") && $m->is_private);
 }
@@ -372,7 +384,7 @@ sub reload
       local $reload = 1;
       BarnOwl::mainloop_hook() if *BarnOwl::mainloop_hook{CODE};
   }
-    
+
   @BarnOwl::Hooks::onMainLoop = ();
   @BarnOwl::Hooks::onStartSubs = ();
 
@@ -387,7 +399,7 @@ sub reload
   package BarnOwl;
 }
 
-sub reload_init () 
+sub reload_init ()
 {
     BarnOwl::command('alias reload perl BarnOwl::reload()');
     BarnOwl::command('bindkey global "C-x C-r" command reload');
@@ -588,9 +600,9 @@ sub format_chat($) {
 sub indentBody($)
 {
     my $m = shift;
-    
+
     my $body = $m->body;
-    # replace newline followed by anything with 
+    # replace newline followed by anything with
     # newline plus four spaces and that thing.
     $body =~ s/\n(.)/\n    $1/g;
 
