@@ -742,24 +742,22 @@ int owl_util_min(int a, int b)
 */
 char * owl_util_baseclass(char * class)
 {
-  char *newClass;
   char *ret;
   char *start, *end;
 
-  start = newClass = owl_strdup(class);
+  start = class;
   while(!strncmp(start, "un", 2)) {
     start += 2;
   }
+
+  start = owl_strdup(start);
   end = start + strlen(start) - 1;
   while(*end == 'd' && *(end-1) == '.') {
     end -= 2;
   }
   *(end + 1) = 0;
 
-  ret = owl_strdup(start);
-  owl_free(newClass);
-
-  return ret;
+  return start;
 }
 
 /**************************************************************************/
