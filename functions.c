@@ -2676,6 +2676,10 @@ char *owl_function_classinstfilt(char *c, char *i)
   owl_global_add_filter(&g, f);
 
   owl_free(argbuff);
+  owl_free(class);
+  if (instance) {
+    owl_free(instance);
+  }
   return(filtname);
 }
 
