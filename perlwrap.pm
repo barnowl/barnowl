@@ -589,7 +589,8 @@ sub format_chat($) {
     $header .= "  " . time_hhmm($m);
     my $sender = $m->long_sender;
     $sender =~ s/\n.*$//s;
-    $header .= "\t(" . $sender . ")";
+    $header .= " " x (4 - ((length $header) % 4));
+    $header .= "(" . $sender . ")";
     my $message = $header . "\n". indentBody($m);
     if($m->is_private && $m->direction eq "in") {
         $message = BarnOwl::Style::boldify($message);
