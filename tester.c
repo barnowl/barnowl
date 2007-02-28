@@ -144,12 +144,15 @@ void test_keypress()
 
 int main(int argc, char **argv, char **env)
 {
+  owl_errqueue_init(owl_global_get_errqueue(&g));
+
   int numfailures=0;
   if (argc==2 && 0==strcmp(argv[1],"reg")) {
     numfailures += owl_util_regtest();
     numfailures += owl_dict_regtest();
     numfailures += owl_variable_regtest();
     numfailures += owl_filter_regtest();
+    numfailures += owl_obarray_regtest();
     if (numfailures) {
       fprintf(stderr, "*** WARNING: %d failures total\n", numfailures);
     }

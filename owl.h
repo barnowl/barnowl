@@ -511,6 +511,10 @@ typedef struct _owl_colorpair_mgr {
   int **pairs;
 } owl_colorpair_mgr;
 
+typedef struct _owl_obarray {
+  owl_list strings;
+} owl_obarray;
+
 typedef struct _owl_global {
   owl_mainwin mw;
   owl_popwin pw;

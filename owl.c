@@ -341,7 +341,7 @@ int main(int argc, char **argv, char **env)
   /* welcome message */
   owl_function_debugmsg("startup: creating splash message");
   strcpy(startupmsg, "-----------------------------------------------------------------------\n");
-  sprintf(buff,      "Welcome to Owl version %s.  Press 'h' for on-line help. \n", OWL_VERSION_STRING);
+  sprintf(buff,      "Welcome to barnowl version %s.  Press 'h' for on-line help. \n", OWL_VERSION_STRING);
   strcat(startupmsg, buff);
   strcat(startupmsg, "                                                                       \n");
   strcat(startupmsg, "This is an UNOFFICIAL DEVELOPMENT BUILD of owl. If you are using this  \n");
