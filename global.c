@@ -105,6 +105,8 @@ void owl_global_init(owl_global *g) {
 
   owl_zbuddylist_create(&(g->zbuddies));
   owl_timer_create_countdown(&(g->zephyr_buddycheck_timer), 60*3);
+
+  owl_obarray_init(&(g->obarray));
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -882,4 +884,9 @@ owl_zbuddylist *owl_global_get_zephyr_buddylist(owl_global *g)
 struct termios *owl_global_get_startup_tio(owl_global *g)
 {
   return(&(g->startup_tio));
+}
+
+char * owl_global_intern(owl_global *g, char * string)
+{
+  return owl_obarray_insert(&(g->obarray), string);
 }

@@ -582,6 +582,7 @@ typedef struct _owl_global {
   owl_zbuddylist zbuddies;
   owl_timer zephyr_buddycheck_timer;
   struct termios startup_tio;
+  owl_obarray obarray;
 } owl_global;
 
 /* globals */
