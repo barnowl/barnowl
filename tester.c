@@ -145,6 +145,7 @@ void test_keypress()
 int main(int argc, char **argv, char **env)
 {
   owl_errqueue_init(owl_global_get_errqueue(&g));
+  owl_obarray_init(&(g.obarray));
 
   int numfailures=0;
   if (argc==2 && 0==strcmp(argv[1],"reg")) {
