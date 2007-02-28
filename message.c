@@ -38,25 +38,25 @@ void owl_message_init(owl_message *m)
 void owl_message_set_attribute(owl_message *m, char *attrname, char *attrvalue)
 {
   int i, j;
-  owl_pair *p;
+  owl_pair *p = NULL, *pair = NULL;
 
-  /* look for an existing pair with this key, and nuke the entry if
-     found */
+  /* look for an existing pair with this key, */
   j=owl_list_get_size(&(m->attributes));
   for (i=0; i<j; i++) {
     p=owl_list_get_element(&(m->attributes), i);
     if (!strcmp(owl_pair_get_key(p), attrname)) {
-      owl_free(owl_pair_get_key(p));
       owl_free(owl_pair_get_value(p));
-      owl_free(p);
-      owl_list_remove_element(&(m->attributes), i);
+      pair = p;
       break;
     }
   }
 
-  p=owl_malloc(sizeof(owl_pair));
-  owl_pair_create(p, owl_strdup(attrname), owl_strdup(attrvalue));
-  owl_list_append_element(&(m->attributes), p);
+  if(pair ==  NULL) {
+    pair = owl_malloc(sizeof(owl_pair));
+    owl_pair_create(pair, owl_global_intern(&g, attrname), NULL);
+    owl_list_append_element(&(m->attributes), pair);
+  }
+  owl_pair_set_value(pair, owl_strdup(attrvalue));
 }
 
 /* return the value associated with the named attribute, or NULL if
@@ -482,11 +482,7 @@ void *owl_message_get_notice(owl_message *m)
 
 void owl_message_set_hostname(owl_message *m, char *hostname)
 {
-  if (m==NULL) return;
-  if (m->hostname!=NULL) {
-    owl_free(m->hostname);
-  }
-  m->hostname=owl_strdup(hostname);
+  m->hostname=owl_global_intern(&g, hostname);
 }
 
 char *owl_message_get_hostname(owl_message *m)
