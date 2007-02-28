@@ -3,8 +3,7 @@
 
 static const char fileIdent[] = "$Id$";
 
-#define INITSIZE 30
-#define GROWAT 2
+#define INITSIZE 10
 #define GROWBY 1.5
 
 int owl_list_create(owl_list *l)
@@ -26,7 +25,7 @@ void owl_list_grow(owl_list *l, int n) /*noproto*/
 {
   void *ptr;
 
-  if ((l->size+n) > (l->avail/GROWAT)) {
+  if ((l->size+n) > l->avail) {
     ptr=owl_realloc(l->list, l->avail*GROWBY*sizeof(void *));
     if (ptr==NULL) abort();
     l->list=ptr;
