@@ -440,6 +440,13 @@ sub _load_owlconf {
         do $BarnOwl::configfile;
         die $@ if $@;
         package BarnOwl;
+        if(*BarnOwl::format_msg{CODE}) {
+            # if the config defines a legacy formatting function, add 'perl' as a style 
+            BarnOwl::_create_style("perl", "BarnOwl::_format_msg_legacy_wrap",
+                                   "User-defined perl style that calls BarnOwl::format_msg"
+                                   . " with legacy global variable support");
+            BarnOwl::set("-q default_style perl");
+        }
     }
 }
 

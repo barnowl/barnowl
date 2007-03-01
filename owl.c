@@ -315,17 +315,6 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: doing AIM initialization");
   owl_aim_init();
 
-  /* if the config defines a formatting function, add 'perl' as a style */
-  if (owl_global_is_config_format(&g)) {
-    owl_function_debugmsg("Found perl formatting");
-    s=owl_malloc(sizeof(owl_style));
-    owl_style_create_perl(s, "perl", "BarnOwl::_format_msg_legacy_wrap",
-			  "User-defined perl style that calls BarnOwl::format_msg"
-			  "with legacy global variable support");
-    owl_global_add_style(&g, s);
-    owl_global_set_default_style(&g, "perl");
-  }
-
   /* execute the startup function in the configfile */
   owl_function_debugmsg("startup: executing perl startup, if applicable");
   perlout = owl_perlconfig_execute("BarnOwl::Hooks::startup();");
@@ -406,7 +395,7 @@ int main(int argc, char **argv, char **env)
     owl_zephyr_zlog_in();
   }
 
-  owl_function_debugmsg("startup: set style for the view");
+  owl_function_debugmsg("startup: set style for the view: %s", owl_global_get_default_style(&g));
   owl_view_set_style(owl_global_get_current_view(&g), 
 		     owl_global_get_style_by_name(&g, owl_global_get_default_style(&g)));   
 
