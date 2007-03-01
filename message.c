@@ -17,7 +17,6 @@ void owl_message_init(owl_message *m)
   m->id=owl_global_get_nextmsgid(&g);
   owl_message_set_direction_none(m);
   m->delete=0;
-  m->hostname=owl_strdup("");
   m->zwriteline=strdup("");
   m->invalid_format=1;
 
@@ -978,7 +977,6 @@ void owl_message_free(owl_message *m)
   j=owl_list_get_size(&(m->attributes));
   for (i=0; i<j; i++) {
     p=owl_list_get_element(&(m->attributes), i);
-    owl_free(owl_pair_get_key(p));
     owl_free(owl_pair_get_value(p));
     owl_free(p);
   }

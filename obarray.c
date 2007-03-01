@@ -2,9 +2,16 @@
 #include <string.h>
 #include "owl.h"
 
-// Lookup a key in the obarray. If the key exists, return its index,
-// and the interned value in *val. Otherwise, return the index it
-// should be inserted at.
+/*
+ * At the moment, the obarray is represented as a sorted list of
+ * strings. I judge this a reasonable tradeoff between simplicity and
+ * reasonable efficient lookup (insertion should be comparatively
+ * rare)
+ */
+
+// Helper method: Lookup a key in the obarray. If the key exists,
+// return its index, and the interned value in *val. Otherwise, return
+// the index it should be inserted at.
 int owl_obarray_lookup(owl_obarray *oa, char * key, char ** val) /*noproto*/
 {
   int first, last, mid;
