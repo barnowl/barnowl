@@ -20,6 +20,7 @@ void owl_message_init(owl_message *m)
   m->zwriteline=strdup("");
   m->invalid_format=1;
 
+  owl_message_set_hostname(m, "");
   owl_list_create(&(m->attributes));
   
   /* save the time */
