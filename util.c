@@ -345,6 +345,8 @@ char **owl_parseline(char *line, int *argc)
     curarg[strlen(curarg)]=line[i];
   }
 
+  free(curarg);
+
   /* check for unbalanced quotes */
   if (quote!='\0') {
     owl_parsefree(argv, *argc);

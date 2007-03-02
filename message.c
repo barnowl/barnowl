@@ -17,7 +17,7 @@ void owl_message_init(owl_message *m)
   m->id=owl_global_get_nextmsgid(&g);
   owl_message_set_direction_none(m);
   m->delete=0;
-  m->zwriteline=strdup("");
+  m->zwriteline=NULL;
   m->invalid_format=1;
 
   owl_message_set_hostname(m, "");
@@ -453,11 +453,14 @@ void owl_message_unmark_delete(owl_message *m)
 
 char *owl_message_get_zwriteline(owl_message *m)
 {
+  if(!m->zwriteline)
+    return "";
   return(m->zwriteline);
 }
 
 void owl_message_set_zwriteline(owl_message *m, char *line)
 {
+  if(m->zwriteline) owl_free(m->zwriteline);
   m->zwriteline=strdup(line);
 }
 
