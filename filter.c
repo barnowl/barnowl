@@ -12,7 +12,7 @@ int owl_filter_init_fromstring(owl_filter *f, char *name, char *string)
 
   argv=owl_parseline(string, &argc);
   out=owl_filter_init(f, name, argc, argv);
-  /* owl_parsefree(argv, argc); */
+  owl_parsefree(argv, argc);
   return(out);
 }
 

@@ -44,6 +44,8 @@ int owl_keybinding_init(owl_keybinding *kb, char *keyseq, char *command, void (*
   }
   kb->j[i] = 0;
 
+  atokenize_free(ktokens, nktokens);
+
   if (command) kb->command = owl_strdup(command);
   kb->function_fn = function_fn;
   if (desc) kb->desc = owl_strdup(desc);
