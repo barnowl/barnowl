@@ -332,7 +332,7 @@ void owl_log_incoming(owl_message *m)
 {
   FILE *file, *allfile;
   char filename[MAXPATHLEN], allfilename[MAXPATHLEN], *logpath;
-  char *frombuff=NULL, *from=NULL, *buff=NULL, *ptr;
+  char *frombuff=NULL, *from=NULL, *zsig=NULL;
   int len, ch, i, personal;
 
   /* figure out if it's a "personal" message or not */
@@ -440,11 +440,8 @@ void owl_log_incoming(owl_message *m)
     if (strcmp(owl_message_get_opcode(m), "")) fprintf(file, " Opcode: %s", owl_message_get_opcode(m));
     fprintf(file, "\n");
     fprintf(file, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
-    ptr=owl_zephyr_get_zsig(owl_message_get_notice(m), &i);
-    buff=owl_malloc(i+10);
-    memcpy(buff, ptr, i);
-    buff[i]='\0';
-    fprintf(file, "From: %s <%s>\n\n", buff, tmp);
+    zsig=owl_message_get_zsig(m);
+    fprintf(file, "From: %s <%s>\n\n", zsig, tmp);
     fprintf(file, "%s\n\n", owl_message_get_body(m));
     owl_free(tmp);
   } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
@@ -479,7 +476,7 @@ void owl_log_incoming(owl_message *m)
       if (strcmp(owl_message_get_opcode(m), "")) fprintf(allfile, " Opcode: %s", owl_message_get_opcode(m));
       fprintf(allfile, "\n");
       fprintf(allfile, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
-      fprintf(allfile, "From: %s <%s>\n\n", buff, tmp);
+      fprintf(allfile, "From: %s <%s>\n\n", zsig, tmp);
       fprintf(allfile, "%s\n\n", owl_message_get_body(m));
       owl_free(tmp);
     } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
@@ -499,8 +496,5 @@ void owl_log_incoming(owl_message *m)
     fclose(allfile);
   }
 
-  if (owl_message_is_type_zephyr(m)) {
-    owl_free(buff);
-  }
   owl_free(frombuff);
 }
