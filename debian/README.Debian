@@ -1,0 +1,7 @@
+owl for Debian
+--------------
+
+owl is one of the simpler (while still being extensible) non-graphical
+zephyr clients, which may make it simpler to get started as a user.
+
+ -- Mark W. Eichin <eichin@thok.org>, Tue, 23 Apr 2002 01:58:14 -0400

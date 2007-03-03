@@ -1,0 +1,15 @@
+Source: owl
+Section: net
+Priority: optional
+Maintainer: Mark W. Eichin <eichin@thok.org>
+Build-Depends: debhelper (>> 3.0.0), libzephyr-dev (>= 2.1.20010518.SNAPSHOT-7), libncurses5-dev, libkrb5-dev, libperl-dev
+Standards-Version: 3.5.2
+
+Package: owl
+Architecture: any
+Depends: ${shlibs:Depends}, zephyr-clients
+Description: A curses-based tty Zephyr client.
+ An alternative standalone (doesn't use zwgc) Zephyr (instant
+ messaging) client.  Has perl hooks and a curses UI.
+ .
+ ktools software -- The 'k' is for Quality!
