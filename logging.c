@@ -378,7 +378,12 @@ void owl_log_incoming(owl_message *m)
   } else if (owl_message_is_type_loopback(m)) {
     from=frombuff=owl_strdup("loopback");
   } else if (owl_message_is_type_jabber(m)) {
-        from=frombuff=owl_sprintf("jabber:%s",owl_message_get_sender(m));
+    if (personal) {
+      from=frombuff=owl_sprintf("jabber:%s",owl_message_get_sender(m));
+    } else {
+      from=frombuff=owl_sprintf("jabber:%s",owl_message_get_recipient(m));
+    }
+      
   } else {
     from=frombuff=owl_strdup("unknown");
   }
@@ -454,7 +459,7 @@ void owl_log_incoming(owl_message *m)
     if (owl_message_is_login(m)) fprintf(file, "LOGIN\n\n");
     if (owl_message_is_logout(m)) fprintf(file, "LOGOUT\n\n");
   } else if (owl_message_is_type_jabber(m)) {
-    fprintf(file, "From: <%s> To: <%s>\n",owl_message_get_attribute_value(m,"from_jid"), owl_message_get_recipient(m));
+    fprintf(file, "From: <%s> To: <%s>\n",owl_message_get_sender(m), owl_message_get_recipient(m));
     fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
     fprintf(file, "%s\n\n",owl_message_get_body(m));
   }
