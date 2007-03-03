@@ -5,8 +5,6 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-# This is the debhelper compatibility version to use.
-export DH_COMPAT=3
 
 # These are used for cross-compiling and for saving the configure script
 # from having to guess our platform (since we know it already)
@@ -14,12 +12,14 @@ DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
 
-ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
-	CFLAGS += -g
+ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O2
 endif
 ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
 	INSTALL_PROGRAM += -s
 endif
+
+	CFLAGS += -g
 
 config.status: configure
 	dh_testdir
@@ -55,8 +55,9 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/owl.
-	# $(MAKE) install prefix=$(CURDIR)/debian/owl/usr
-	cp owl $(CURDIR)/debian/owl/usr/bin/
+	 $(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
+
+	dh_install --sourcedir=debian/tmp --fail-missing $(EXCLUDE)
 
 # Build architecture-independent files here.
 binary-indep: build install
@@ -70,15 +71,8 @@ binary-arch: build install
 	dh_installdocs doc/intro.txt
 	dh_installexamples
 	dh_installmenu
-#	dh_installlogrotate
-#	dh_installemacsen
-#	dh_installpam
-#	dh_installmime
-#	dh_installinit
-	dh_installcron
-	dh_installman doc/owl.1
+	dh_installman 
 	dh_installinfo
-#	dh_undocumented
 	dh_installchangelogs ChangeLog
 	dh_link
 	dh_strip
@@ -86,7 +80,7 @@ binary-arch: build install
 	dh_fixperms
 #	dh_makeshlibs
 	dh_installdeb
-#	dh_perl
+	dh_perl
 	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
