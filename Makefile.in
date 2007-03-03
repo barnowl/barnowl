@@ -101,9 +101,9 @@ libfaimdistclean:
 all: $(EXE)
 
 install: all installdirs
-	${INSTALL_PROGRAM} $(EXE) ${bindir}/$(EXE)
-	${INSTALL_DATA} doc/owl.1 ${mandir}/man1/barnowl.1
-	tar -C perl -c . | tar -C ${datadir} -x
+	${INSTALL_PROGRAM} $(EXE) ${DESTDIR}${bindir}/$(EXE)
+	${INSTALL_DATA} doc/owl.1 ${DESTDIR}${mandir}/man1/barnowl.1
+	tar -C perl -c . | tar -C ${DESTDIR}${datadir} -x
 
 installdirs: mkinstalldirs
-	${srcdir}/mkinstalldirs ${bindir} ${mandir}/man1 ${datadir}
+	${srcdir}/mkinstalldirs ${DESTDIR}${bindir} ${DESTDIR}${mandir}/man1 ${DESTDIR}${datadir}
