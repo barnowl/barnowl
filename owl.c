@@ -337,7 +337,7 @@ int main(int argc, char **argv, char **env)
   strcat(startupmsg, "build regularly, please add yourself to barnowl-users@mit.edu      \n");
   strcat(startupmsg, "                                                                 ^ ^   \n");
   strcat(startupmsg, "                                                                 OvO   \n");
-  strcat(startupmsg, "Pleae report any bugs to dirty-owl-hackers@mit.edu              (   )  \n");
+  strcat(startupmsg, "Please report any bugs to dirty-owl-hackers@mit.edu             (   )  \n");
   strcat(startupmsg, "-----------------------------------------------------------------m-m---\n");
   owl_function_adminmsg("", startupmsg);
   sepbar(NULL);
