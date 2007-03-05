@@ -1,13 +1,25 @@
 # -*- mode: cperl; cperl-indent-level: 4; indent-tabs-mode: nil -*-
-package BarnOwl::Jabber;
 use warnings;
 use strict;
+
+package BarnOwl::Jabber;
 
 use Authen::SASL qw(Perl);
 use Net::Jabber;
 use Net::Jabber::MUC;
 use Net::DNS;
 use Getopt::Long;
+
+BEGIN {
+    if(eval {require IO::Socket::SSL;}) {
+        if($IO::Socket::SSL::VERSION eq "0.97") {
+            BarnOwl::error("You are using IO::Socket:SSL 0.97, which \n" .
+                           "contains bugs causing it not to work with barnowl's jabber.pl. We \n" .
+                           "recommend updating to the latest IO::Socket::SSL from CPAN. \n");
+            die("Not loading jabber.pl\n");
+        }
+    }       
+}
 
 no warnings 'redefine';
 
