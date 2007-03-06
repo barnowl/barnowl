@@ -501,7 +501,7 @@ sub shutdown
 
     # use $shutdown to tell modules that that's what we're doing.
     $BarnOwl::shutdown = 1;
-    BarnOwl::mainloop_hook();
+    BarnOwl::mainloop_hook() if *BarnOwl::mainloop_hook{CODE};
 
     BarnOwl::shutdown() if *BarnOwl::shutdown{CODE};
 }

@@ -87,6 +87,7 @@ int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
     owl_free(subs[i].zsub_classinst);
     owl_free(subs[i].zsub_recipient);
   }
+
   return ret;
 }
 #endif
@@ -105,10 +106,12 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   FILE *file;
   char *tmp, *start;
   char buffer[1024], subsfile[1024];
-  ZSubscription_t subs[3001];
+  ZSubscription_t *subs;
+  int subSize = 1024;
   int count, ret;
   struct stat statbuff;
 
+  subs = owl_malloc(sizeof(ZSubscription_t) * subSize);
   if (filename==NULL) {
     sprintf(subsfile, "%s/%s", owl_global_get_homedir(&g), ".zephyr.subs");
   } else {
@@ -134,13 +137,22 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
       start=buffer;
     }
     
-    if (count >= 3000) {
-      ret = owl_zephyr_loadsubs_helper(subs, count);
-      if (ret != 0) {
-	fclose(file);
-	return(ret);
+    if (count >= subSize) {
+      ZSubscription_t* newsubs;
+      newsubs = owl_realloc(subs, sizeof(ZSubscription_t) * subSize * 2);
+      if (NULL == newsubs) {
+	/* If realloc fails, load what we've got, clear, and continue */
+	ret = owl_zephyr_loadsubs_helper(subs, count);
+	if (ret != 0) {
+	  fclose(file);
+	  return(ret);
+	}
+	count=0;
       }
-      count=0;
+      else {
+	subs = newsubs;
+	subSize *= 2;
+      }
     }
     
     /* add it to the list of subs */
@@ -151,17 +163,22 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
     if ((tmp=(char *) strtok(NULL, " \t\n\r"))==NULL) continue;
     subs[count].zsub_recipient=owl_strdup(tmp);
     
-    /* if it started with '-' then add it to the global punt list */
+    /* if it started with '-' then add it to the global punt list, and
+     * remove it from the list of subs. */
     if (buffer[0]=='-') {
       owl_function_zpunt(subs[count].zsub_class, subs[count].zsub_classinst, subs[count].zsub_recipient, 0);
+      owl_free(subs[count].zsub_class);
+      owl_free(subs[count].zsub_classinst);
+      owl_free(subs[count].zsub_recipient);
     }
-    
-    count++;
+    else {
+      count++;
+    }
   }
   fclose(file);
 
   ret=owl_zephyr_loadsubs_helper(subs, count);
-
+  owl_free(subs);
   return(ret);
 #else
   return(0);
