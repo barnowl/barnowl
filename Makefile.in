@@ -17,6 +17,7 @@ XSUBPPFLAGS=@XSUBPPFLAGS@
 INSTALL=@INSTALL@
 INSTALL_PROGRAM=@INSTALL_PROGRAM@
 INSTALL_DATA=@INSTALL_DATA@
+ATHSTATIC=@ATHSTATIC@
 
 BASE_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
      commands.c global.c text.c fmtext.c editwin.c util.c logging.c \
@@ -43,10 +44,10 @@ AUTOGEN=$(GEN_C) $(GEN_H)
 
 
 $(EXE): $(AUTOGEN) $(OBJS) owl.o libfaim
-	./athstatic $(CC) -o $(EXE) owl.o $(OBJS) $(LDFLAGS) $(LIBS)
+	$(ATHSTATIC) $(CC) -o $(EXE) owl.o $(OBJS) $(LDFLAGS) $(LIBS)
 
 tester: $(AUTOGEN) $(OBJS) tester.o
-	./athstatic $(CC) -o tester tester.o $(OBJS) $(LDFLAGS) $(LIBS)
+	$(ATHSTATIC) $(CC) -o tester tester.o $(OBJS) $(LDFLAGS) $(LIBS)
 
 test: tester
 	./tester reg
