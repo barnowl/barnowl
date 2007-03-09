@@ -811,8 +811,9 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   }
 
   
-  /* set the "isprivate" attribute if it's a private zephyr */
-  if (!strcasecmp(n->z_recipient, owl_zephyr_get_sender())) {
+  /* set the "isprivate" attribute if it's a private zephyr.
+   ``private'' means recipient is */
+  if (*n->z_recipient && *n->z_recipient != '@') {
     owl_message_set_isprivate(m);
   }
 
