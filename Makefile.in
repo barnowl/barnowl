@@ -42,6 +42,10 @@ OBJS = $(BASE_OBJS) $(GEN_O)
 AUTOGEN=$(GEN_C) $(GEN_H)
 #AUTOGEN=$(GEN_C)
 
+HEADERS=$(GEN_H) owl.h config.h
+
+%.o: %.c $(HEADERS)
+	$(CC) -c $(CFLAGS) $< -o $@
 
 $(EXE): $(AUTOGEN) $(OBJS) owl.o libfaim
 	$(ATHSTATIC) $(CC) -o $(EXE) owl.o $(OBJS) $(LDFLAGS) $(LIBS)
