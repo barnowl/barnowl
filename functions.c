@@ -392,6 +392,11 @@ void owl_function_zwrite(char *line, char *msg)
   char *mymsg;
   owl_message *m;
 
+  if(!strncmp(line, "zcrypt", strlen("zcrypt"))) {
+    owl_function_zcrypt(line, msg);
+    return;
+  }
+
   /* create the zwrite and send the message */
   owl_zwrite_create_from_line(&z, line);
   if (msg) {
