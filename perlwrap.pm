@@ -242,8 +242,8 @@ package BarnOwl::Message::Loopback;
 
 use base qw( BarnOwl::Message );
 
-# all loopback messages are personal
-sub is_personal {
+# all loopback messages are private
+sub is_private {
   return 1;
 }
 
@@ -254,8 +254,8 @@ package BarnOwl::Message::AIM;
 
 use base qw( BarnOwl::Message );
 
-# all non-loginout AIM messages are personal for now...
-sub is_personal {
+# all non-loginout AIM messages are private for now...
+sub is_private {
     return !(shift->is_loginout);
 }
 
@@ -599,7 +599,7 @@ sub format_chat($) {
     $header .= " " x (4 - ((length $header) % 4));
     $header .= "(" . $sender . ")";
     my $message = $header . "\n". indentBody($m);
-    if($m->is_private && $m->direction eq "in") {
+    if($m->is_personal && $m->direction eq "in") {
         $message = BarnOwl::Style::boldify($message);
     }
     return $message;
