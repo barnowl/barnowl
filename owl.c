@@ -317,7 +317,7 @@ int main(int argc, char **argv, char **env)
 
   /* execute the startup function in the configfile */
   owl_function_debugmsg("startup: executing perl startup, if applicable");
-  perlout = owl_perlconfig_execute("BarnOwl::Hooks::startup();");
+  perlout = owl_perlconfig_execute("BarnOwl::Hooks::_startup();");
   if (perlout) owl_free(perlout);
 
   /* hold on to the window names for convenience */
