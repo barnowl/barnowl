@@ -80,12 +80,12 @@ sub init
     while($#_ >= 0) { $self->{ARGS}->{ lc(pop(@_)) } = pop(@_); }
 
     $self->{DEBUG} =
-        new Net::XMPP::Debug(level      => $self->_arg("debuglevel",-1),
-                             file       => $self->_arg("debugfile","stdout"),
-                             time       => $self->_arg("debugtime",0),
-                             setdefault => 1,
-                             header     => "XMPP::Conn"
-                    );
+        Net::XMPP::Debug->new(level      => $self->_arg("debuglevel",-1),
+                              file       => $self->_arg("debugfile","stdout"),
+                              time       => $self->_arg("debugtime",0),
+                              setdefault => 1,
+                              header     => "XMPP::Conn"
+                             );
 
     $self->{SERVER} = {};
     $self->{SERVER}->{hostname} = "localhost";
@@ -97,11 +97,11 @@ sub init
     $self->{DISCONNECTED} = 0;
 
     $self->{STREAM} =
-        new XML::Stream(style      => "node",
-                        debugfh    => $self->{DEBUG}->GetHandle(),
-                        debuglevel => $self->{DEBUG}->GetLevel(),
-                        debugtime  => $self->{DEBUG}->GetTime(),
-                       );
+        XML::Stream->new(style      => "node",
+                         debugfh    => $self->{DEBUG}->GetHandle(),
+                         debuglevel => $self->{DEBUG}->GetLevel(),
+                         debugtime  => $self->{DEBUG}->GetTime(),
+                        );
     
     $self->{RCVDB}->{currentID} = 0;
 
