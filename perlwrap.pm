@@ -587,7 +587,7 @@ sub format_chat($) {
         }
     } else {
         $header = $m->context;
-        if($m->subcontext) {
+        if(defined $m->subcontext) {
             $header .= ' / ' . $m->subcontext;
         }
         $header .= ' / @b{' . $m->pretty_sender . '}';
