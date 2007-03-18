@@ -1,14 +1,31 @@
-# -*- mode: cperl; cperl-indent-level: 4; indent-tabs-mode: nil -*-
-use warnings;
 use strict;
+use warnings;
 
-package BarnOwl::Jabber;
+package BarnOwl::Module::Jabber;
+
+=head1 NAME
+
+BarnOwl::Module::Jabber
+
+=head1 DESCRIPTION
+
+This module implements Jabber support for barnowl.
+
+=cut
+
+use BarnOwl;
+use BarnOwl::Hooks;
+use BarnOwl::Message::Jabber;
+use BarnOwl::Module::Jabber::Connection;
+use BarnOwl::Module::Jabber::ConnectionManager;
 
 use Authen::SASL qw(Perl);
 use Net::Jabber;
 use Net::Jabber::MUC;
 use Net::DNS;
 use Getopt::Long;
+
+our $VERSION = 0.1;
 
 BEGIN {
     if(eval {require IO::Socket::SSL;}) {
@@ -37,201 +54,16 @@ no warnings 'redefine';
 #
 ################################################################################
 
-
-################################################################################
-################################################################################
-package BarnOwl::Jabber::Connection;
-
-use base qw(Net::Jabber::Client);
-
-sub new {
-    my $class = shift;
-
-    my %args = ();
-    if(BarnOwl::getvar('debug') eq 'on') {
-        $args{debuglevel} = 1;
-        $args{debugfile} = 'jabber.log';
-    }
-    my $self = $class->SUPER::new(%args);
-    $self->{_BARNOWL_MUCS} = [];
-    return $self;
-}
-
-=head2 MUCJoin
-
-Extends MUCJoin to keep track of the MUCs we're joined to as
-Net::Jabber::MUC objects. Takes the same arguments as
-L<Net::Jabber::MUC/new> and L<Net::Jabber::MUC/Connect>
-
-=cut
-
-sub MUCJoin {
-    my $self = shift;
-    my $muc = Net::Jabber::MUC->new(connection => $self, @_);
-    $muc->Join(@_);
-    push @{$self->MUCs}, $muc;
-}
-
-=head2 MUCLeave ARGS
-
-Leave a MUC. The MUC is specified in the same form as L</FindMUC>
-
-=cut
-
-sub MUCLeave {
-    my $self = shift;
-    my $muc = $self->FindMUC(@_);
-    return unless $muc;
-
-    $muc->Leave();
-    $self->{_BARNOWL_MUCS} = [grep {$_->BaseJID ne $muc->BaseJID} $self->MUCs];
-}
-
-=head2 FindMUC ARGS
-
-Return the Net::Jabber::MUC object representing a specific MUC we're
-joined to, undef if it doesn't exists. ARGS can be either JID => $JID,
-or Room => $room, Server => $server.
-
-=cut
-
-sub FindMUC {
-    my $self = shift;
-
-    my %args;
-    while($#_ >= 0) { $args{ lc(pop(@_)) } = pop(@_); }
-
-    my $jid;
-    if($args{jid}) {
-        $jid = $args{jid};
-    } elsif($args{room} && $args{server}) {
-        $jid = Net::Jabber::JID->new(userid => $args{room},
-                                     server => $args{server});
-    }
-    $jid = $jid->GetJID('base') if UNIVERSAL::isa($jid, 'Net::XMPP::JID');
-
-    foreach my $muc ($self->MUCs) {
-        return $muc if $muc->BaseJID eq $jid;
-    }
-    return undef;
-}
-
-=head2 MUCs
-
-Returns a list (or arrayref in scalar context) of Net::Jabber::MUC
-objects we believe ourself to be connected to.
-
-=cut
-
-sub MUCs {
-    my $self = shift;
-    my $mucs = $self->{_BARNOWL_MUCS};
-    return wantarray ? @$mucs : $mucs;
-}
-
-################################################################################
-################################################################################
-package BarnOwl::Jabber::ConnectionManager;
-sub new {
-    my $class = shift;
-    return bless { }, $class;
-}
-
-sub addConnection {
-    my $self = shift;
-    my $jidStr = shift;
-
-    my $client = BarnOwl::Jabber::Connection->new;
-
-    $self->{$jidStr}->{Client} = $client;
-    $self->{$jidStr}->{Roster} = $client->Roster();
-    $self->{$jidStr}->{Status} = "available";
-    return $client;
-}
-
-sub removeConnection {
-    my $self = shift;
-    my $jidStr = shift;
-    return 0 unless exists $self->{$jidStr};
-
-    $self->{$jidStr}->{Client}->Disconnect()
-      if $self->{$jidStr}->{Client};
-    delete $self->{$jidStr};
-
-    return 1;
-}
-
-sub connected {
-    my $self = shift;
-    return scalar keys %{ $self };
-}
-
-sub getJIDs {
-    my $self = shift;
-    return keys %{ $self };
-}
-
-sub jidExists {
-    my $self = shift;
-    my $jidStr = shift;
-    return exists $self->{$jidStr};
-}
-
-sub sidExists {
-    my $self = shift;
-    my $sid = shift || "";
-    foreach my $c ( values %{ $self } ) {
-        return 1 if ($c->{Client}->{SESSION}->{id} eq $sid);
-    }
-    return 0;
-}
-
-sub getConnectionFromSid {
-    my $self = shift;
-    my $sid = shift;
-    foreach my $c (values %{ $self }) {
-        return $c->{Client} if $c->{Client}->{SESSION}->{id} eq $sid;
-    }
-    return undef;
-}
-
-sub getConnectionFromJID {
-    my $self = shift;
-    my $jid = shift;
-    $jid = $jid->GetJID('full') if UNIVERSAL::isa($jid, 'Net::XMPP::JID');
-    return $self->{$jid}->{Client} if exists $self->{$jid};
-}
-
-sub getRosterFromSid {
-    my $self = shift;
-    my $sid = shift;
-    foreach my $c (values %{ $self }) {
-        return $c->{Roster}
-          if $c->{Client}->{SESSION}->{id} eq $sid;
-    }
-    return undef;
-}
-
-sub getRosterFromJID {
-    my $self = shift;
-    my $jid = shift;
-    $jid = $jid->GetJID('full') if UNIVERSAL::isa($jid, 'Net::XMPP::JID');
-    return $self->{$jid}->{Roster} if exists $self->{$jid};
-}
-################################################################################
-
-package BarnOwl::Jabber;
-
-our $conn = new BarnOwl::Jabber::ConnectionManager unless $conn;;
+our $conn = BarnOwl::Module::Jabber::ConnectionManager->new unless $conn;;
 our %vars;
 
 sub onStart {
     if ( *BarnOwl::queue_message{CODE} ) {
         register_owl_commands();
-        register_keybindings() unless $BarnOwl::reload;
-        register_filters() unless $BarnOwl::reload;
-        push @::onMainLoop,     sub { BarnOwl::Jabber::onMainLoop(@_) };
-        push @::onGetBuddyList, sub { BarnOwl::Jabber::onGetBuddyList(@_) };
+        register_keybindings();
+        register_filters();
+        $BarnOwl::Hooks::mainLoop->add(\&onMainLoop);
+        $BarnOwl::Hooks::getBuddyList->add(\&onGetBuddyList);
         $vars{show} = '';
     } else {
         # Our owl doesn't support queue_message. Unfortunately, this
@@ -240,7 +72,7 @@ sub onStart {
     }
 }
 
-push @::onStartSubs, sub { BarnOwl::Jabber::onStart(@_) };
+$BarnOwl::Hooks::startup->add(\&onStart);
 
 sub onMainLoop {
     return if ( !$conn->connected() );
@@ -302,7 +134,7 @@ sub blist_listBuddy {
         my %rq = $roster->resourceQuery( $buddy, $res );
         $blistStr .= " [" . ( $rq{show} ? $rq{show} : 'online' ) . "]";
         $blistStr .= " " . $rq{status} if $rq{status};
-        $blistStr = boldify($blistStr);
+        $blistStr = BarnOwl::Style::boldify($blistStr);
     }
     else {
 	if ($jq{ask}) {
@@ -325,7 +157,7 @@ sub getSingleBuddyList {
     my $blist = "";
     my $roster = $conn->getRosterFromJID($jid);
     if ($roster) {
-        $blist .= "\n" . boldify("Jabber Roster for $jid\n");
+        $blist .= "\n" . BarnOwl::Style::boldify("Jabber Roster for $jid\n");
 
         foreach my $group ( $roster->groups() ) {
             $blist .= "  Group: $group\n";
@@ -496,20 +328,20 @@ sub do_login {
         # We use the anonymous subrefs in order to have the correct behavior
         # when we reload
         $client->SetMessageCallBacks(
-            chat      => sub { BarnOwl::Jabber::process_incoming_chat_message(@_) },
-            error     => sub { BarnOwl::Jabber::process_incoming_error_message(@_) },
-            groupchat => sub { BarnOwl::Jabber::process_incoming_groupchat_message(@_) },
-            headline  => sub { BarnOwl::Jabber::process_incoming_headline_message(@_) },
-            normal    => sub { BarnOwl::Jabber::process_incoming_normal_message(@_) }
+            chat      => sub { BarnOwl::Module::Jabber::process_incoming_chat_message(@_) },
+            error     => sub { BarnOwl::Module::Jabber::process_incoming_error_message(@_) },
+            groupchat => sub { BarnOwl::Module::Jabber::process_incoming_groupchat_message(@_) },
+            headline  => sub { BarnOwl::Module::Jabber::process_incoming_headline_message(@_) },
+            normal    => sub { BarnOwl::Module::Jabber::process_incoming_normal_message(@_) }
         );
         $client->SetPresenceCallBacks(
-            available    => sub { BarnOwl::Jabber::process_presence_available(@_) },
-            unavailable  => sub { BarnOwl::Jabber::process_presence_available(@_) },
-            subscribe    => sub { BarnOwl::Jabber::process_presence_subscribe(@_) },
-            subscribed   => sub { BarnOwl::Jabber::process_presence_subscribed(@_) },
-            unsubscribe  => sub { BarnOwl::Jabber::process_presence_unsubscribe(@_) },
-            unsubscribed => sub { BarnOwl::Jabber::process_presence_unsubscribed(@_) },
-            error        => sub { BarnOwl::Jabber::process_presence_error(@_) });
+            available    => sub { BarnOwl::Module::Jabber::process_presence_available(@_) },
+            unavailable  => sub { BarnOwl::Module::Jabber::process_presence_available(@_) },
+            subscribe    => sub { BarnOwl::Module::Jabber::process_presence_subscribe(@_) },
+            subscribed   => sub { BarnOwl::Module::Jabber::process_presence_subscribed(@_) },
+            unsubscribe  => sub { BarnOwl::Module::Jabber::process_presence_unsubscribe(@_) },
+            unsubscribed => sub { BarnOwl::Module::Jabber::process_presence_unsubscribed(@_) },
+            error        => sub { BarnOwl::Module::Jabber::process_presence_error(@_) });
 
         my $status = $client->Connect( %{ $vars{jlogin_connhash} } );
         if ( !$status ) {
@@ -799,7 +631,7 @@ sub jmuc_presence {
     if ($muc eq '-a') {
         my $str = "";
         foreach my $jid ($conn->getJIDs()) {
-            $str .= boldify("Conferences for $jid:\n");
+            $str .= BarnOwl::Style::boldify("Conferences for $jid:\n");
             my $connection = $conn->getConnectionFromJID($jid);
             foreach my $muc ($connection->MUCs) {
                 $str .= jmuc_presence_single($muc)."\n";
@@ -1306,19 +1138,6 @@ sub queue_admin_msg {
     BarnOwl::admin_message("jabber.pl", $err);
 }
 
-sub boldify($) {
-    my $str = shift;
-
-    return '@b(' . $str . ')' if ( $str !~ /\)/ );
-    return '@b<' . $str . '>' if ( $str !~ /\>/ );
-    return '@b{' . $str . '}' if ( $str !~ /\}/ );
-    return '@b[' . $str . ']' if ( $str !~ /\]/ );
-
-    my $txt = "$str";
-    $txt =~ s{[)]}{)\@b[)]\@b(}g;
-    return '@b(' . $txt . ')';
-}
-
 sub getServerFromJID {
     my $jid = shift;
     my $res = new Net::DNS::Resolver;
@@ -1455,77 +1274,5 @@ sub guess_jwrite {
 
     return @matches;
 }
-
-#####################################################################
-#####################################################################
-
-package BarnOwl::Message::Jabber;
-
-our @ISA = qw( BarnOwl::Message );
-
-sub jtype { shift->{jtype} };
-sub from { shift->{from} };
-sub to { shift->{to} };
-sub room { shift->{room} };
-sub status { shift->{status} }
-
-sub login_extra {
-    my $self = shift;
-    my $show = $self->{show};
-    my $status = $self->status;
-    my $s = "";
-    $s .= $show if $show;
-    $s .= ", $status" if $status;
-    return $s;
-}
-
-sub long_sender {
-    my $self = shift;
-    return $self->from;
-}
-
-sub context {
-    return shift->room;
-}
-
-sub smartfilter {
-    my $self = shift;
-    my $inst = shift;
-
-    my ($filter, $ftext);
-
-    if($self->jtype eq 'chat') {
-        my $user;
-        if($self->direction eq 'in') {
-            $user = $self->from;
-        } else {
-            $user = $self->to;
-        }
-        return smartfilter_user($user, $inst);
-    } elsif ($self->jtype eq 'groupchat') {
-        my $room = $self->room;
-        $filter = "jabber-room-$room";
-        $ftext = qq{type ^jabber\$ and room ^$room\$};
-        BarnOwl::filter("$filter $ftext");
-        return $filter;
-    } elsif ($self->login ne 'none') {
-        return smartfilter_user($self->from, $inst);
-    }
-}
-
-sub smartfilter_user {
-    my $user = shift;
-    my $inst = shift;
-
-    $user   = Net::Jabber::JID->new($user)->GetJID( $inst ? 'full' : 'base' );
-    my $filter = "jabber-user-$user";
-    my $ftext  =
-        qq{type ^jabber\$ and ( ( direction ^in\$ and from ^$user ) }
-      . qq{or ( direction ^out\$ and to ^$user ) ) };
-    BarnOwl::filter("$filter $ftext");
-    return $filter;
-
-}
-
 
 1;
