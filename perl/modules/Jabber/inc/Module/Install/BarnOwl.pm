@@ -20,7 +20,7 @@ sub barnowl_module {
 
 # --- $class section:
 
-$name.par: all test
+$name.par: pm_to_blib
 \tcd blib; zip ../$name.par -r arch lib
 
 END_MAKEFILE
