@@ -69,7 +69,9 @@ sub MUCJoin {
     my $self = shift;
     my $muc = Net::Jabber::MUC->new(connection => $self, @_);
     $muc->Join(@_);
-    push @{$self->MUCs}, $muc;
+
+    # Add MUC to list of MUCs, unless we're just changing nicks.
+    push @{$self->MUCs}, $muc unless grep {$_->BaseJID eq $muc->BaseJID} $self->MUCs;
 }
 
 =head2 MUCLeave ARGS
