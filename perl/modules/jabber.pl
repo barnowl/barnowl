@@ -1025,7 +1025,7 @@ sub process_owl_jwrite {
 
     my $m = j2o( $j, { direction => 'out' } );
     if ( $vars{jwrite}{type} ne 'groupchat') {
-        BarnOwl::add_message($m);
+        BarnOwl::add_and_log_message($m);
     }
 
     $j->RemoveFrom(); # Kludge to get around gtalk's random bits after the resource.

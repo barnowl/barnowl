@@ -362,9 +362,7 @@ void owl_log_incoming(owl_message *m)
 
   if (owl_message_is_type_zephyr(m)) {
     if (personal) {
-      if (owl_message_is_type_zephyr(m)) {
-	from=frombuff=short_zuser(owl_message_get_sender(m));
-      }
+      from=frombuff=short_zuser(owl_message_get_sender(m));
     } else {
       from=frombuff=owl_strdup(owl_message_get_class(m));
     }
@@ -383,7 +381,6 @@ void owl_log_incoming(owl_message *m)
     } else {
       from=frombuff=owl_sprintf("jabber:%s",owl_message_get_recipient(m));
     }
-      
   } else {
     from=frombuff=owl_strdup("unknown");
   }
