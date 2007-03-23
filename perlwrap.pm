@@ -424,7 +424,7 @@ sub _startup {
         BarnOwl::error("Can't load BarnOwl::ModuleLoader, loadable module support disabled:\n$@");
     }
     
-    $startup->run;
+    $startup->run(0);
     BarnOwl::startup() if *BarnOwl::startup{CODE};
 }
 
