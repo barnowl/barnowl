@@ -56,7 +56,7 @@ sub reload {
 
 sub squelch_redefine {
     my $warning = shift;
-    warn $warning unless $warning =~ /redefined/;
+    warn $warning unless $warning =~ /^Subroutine .+ redefined at/;
 }
 
 1;
