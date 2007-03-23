@@ -543,7 +543,7 @@ sub jids
                      exists($self->{JIDS}->{$jid}->{groups}) &&
                      ($#{$self->{JIDS}->{$jid}->{groups}} > -1));
 
-            push(@jids,new Net::XMPP::JID($jid));
+            push(@jids, Net::XMPP::JID->new($jid));
         }
     }
     
@@ -554,7 +554,7 @@ sub jids
         {
             foreach my $jid (keys(%{$self->{GROUPS}->{$group}}))
             {
-                push(@jids,new Net::XMPP::JID($jid));
+                push(@jids, Net::XMPP::JID->new($jid));
             }
         }
     }
