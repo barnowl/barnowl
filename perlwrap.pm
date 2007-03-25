@@ -420,6 +420,7 @@ sub _startup {
         eval {
             BarnOwl::ModuleLoader->load_all;
         };
+        BarnOwl::error("Error loading modules: $@") if $@;
     } else {
         BarnOwl::error("Can't load BarnOwl::ModuleLoader, loadable module support disabled:\n$@");
     }
@@ -472,8 +473,6 @@ sub format_message($)
         return format_chat($m);
     }
 }
-
-BarnOwl::_create_style("default", "BarnOwl::Style::Default::format_message", "Default style");
 
 BarnOwl::_create_style("default", "BarnOwl::Style::Default::format_message", "Default style");
 
