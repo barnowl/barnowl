@@ -396,8 +396,11 @@ int main(int argc, char **argv, char **env)
   }
 
   owl_function_debugmsg("startup: set style for the view: %s", owl_global_get_default_style(&g));
-  owl_view_set_style(owl_global_get_current_view(&g), 
-		     owl_global_get_style_by_name(&g, owl_global_get_default_style(&g)));   
+  s = owl_global_get_style_by_name(&g, owl_global_get_default_style(&g));
+  if(s)
+      owl_view_set_style(owl_global_get_current_view(&g), s);
+  else
+      owl_function_error("No such style: %s", owl_global_get_default_style(&g));
 
   owl_function_debugmsg("startup: setting context interactive");
   owl_context_set_interactive(owl_global_get_context(&g));
