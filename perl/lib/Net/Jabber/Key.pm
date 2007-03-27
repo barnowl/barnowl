@@ -40,7 +40,7 @@ Net::Jabber::Key - Jabber Key Library
 
 =head2 Basic Functions
 
-    $Key = new Net::Jabber::Key();
+    $Key = Net::Jabber::Key->new();
 
     $key = $Key->Generate();
 
@@ -96,8 +96,8 @@ sub new
     my $proto = shift;
     my $self = { };
 
-    $self->{DEBUG} = new Net::Jabber::Debug(usedefault=>1,
-                      header=>"NJ::Key");
+    $self->{DEBUG} = Net::Jabber::Debug->new(usedefault=>1,
+                                             header=>"NJ::Key");
 
     $self->{VERSION} = $VERSION;
     

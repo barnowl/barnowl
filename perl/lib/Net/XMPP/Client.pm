@@ -53,7 +53,7 @@ Net::XMPP::Client - XMPP Client Module
 
     use Net::XMPP;
 
-    $Con = new Net::XMPP::Client();
+    $Con = Net::XMPP::Client->new();
 
     $Con->SetCallbacks(...);
 

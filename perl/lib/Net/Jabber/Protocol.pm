@@ -77,13 +77,13 @@ Net::Jabber::Protocol - Jabber Protocol Library
 =head2 Basic Functions
 
     use Net::Jabber qw( Client );
-    $Con = new Net::Jabber::Client();                # From
+    $Con = Net::Jabber::Client->new();                # From
     $status = $Con->Connect(hostname=>"jabber.org"); # Net::Jabber::Client
 
       or
 
     use Net::Jabber qw( Component );
-    $Con = new Net::Jabber::Component();             #
+    $Con = Net::Jabber::Component->new();             #
     $status = $Con->Connect(hostname=>"jabber.org",  # From
                             secret=>"bob");          # Net::Jabber::Component
 
@@ -1659,7 +1659,7 @@ sub FeatureNegQuery
     $tag = $Net::Jabber::Query::TAGS{'http://jabber.org/protocol/feature-neg'}
         if exists($Net::Jabber::Query::TAGS{'http://jabber.org/protocol/feature-neg'});
     
-    my $query = new Net::Jabber::Query($tag);
+    my $query = Net::Jabber::Query->new($tag);
     $query->SetXMLNS("http://jabber.org/protocol/feature-neg");
     my $xdata = $query->NewX("jabber:x:data");
     
@@ -2182,7 +2182,7 @@ sub RPCEncode
     my %args;
     while($#_ >= 0) { $args{ lc pop(@_) } = pop(@_); }
 
-    my $query = new Net::Jabber::Stanza("query");
+    my $query = Net::Jabber::Stanza->new("query");
     $query->SetXMLNS("jabber:iq:rpc");
 
     my $source;

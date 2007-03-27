@@ -40,9 +40,9 @@ Net::XMPP::Roster - XMPP Roster Object
   
 =head2 Basic Functions
 
-  my $Client = new Net::XMPP::Client(...);
+  my $Client = Net::XMPP::Client->new(...);
 
-  my $Roster = new Net::XMPP::Roster(connection=>$Client);
+  my $Roster = Net::XMPP::Roster->new(connection=>$Client);
     or
   my $Roster = $Client->Roster();
 

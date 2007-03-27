@@ -60,7 +60,7 @@ Net::XMPP - XMPP Perl Library
 =head1 EXAMPLES
 
       use Net::XMPP;
-      my $client = new Net::XMPP::Client();
+      my $client = Net::XMPP::Client->new();
 
 =head1 METHODS
 

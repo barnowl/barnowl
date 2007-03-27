@@ -1737,8 +1737,8 @@ sub NewQuery     { my $self = shift; $self->NewChild(@_);     }
 sub AddQuery     { my $self = shift; $self->AddChild(@_);     } 
 sub RemoveQuery  { my $self = shift; $self->RemoveChild(@_);  }
 
-sub _new_jid    { my $self = shift; return new Net::Jabber::JID(@_);    }
-sub _new_packet { my $self = shift; return new Net::Jabber::Stanza(@_); }
+sub _new_jid    { my $self = shift; return Net::Jabber::JID->new(@_);    }
+sub _new_packet { my $self = shift; return Net::Jabber::Stanza->new(@_); }
 
 
 sub _CustomSet_init

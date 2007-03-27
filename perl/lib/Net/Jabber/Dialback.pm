@@ -37,7 +37,7 @@ Net::Jabber::Dialback - Jabber Dialback Module
   To initialize the Dialback with a Jabber <db:*/> you must pass it
   the XML::Stream hash.  For example:
 
-    my $dialback = new Net::Jabber::Dialback(%hash);
+    my $dialback = Net::Jabber::Dialback->new(%hash);
 
   You now have access to all of the retrieval functions available.
 
@@ -45,8 +45,8 @@ Net::Jabber::Dialback - Jabber Dialback Module
 
     use Net::Jabber qw(Server);
 
-    $DB = new Net::Jabber::Dialback("verify");
-    $DB = new Net::Jabber::Dialback("result");
+    $DB = Net::Jabber::Dialback->new("verify");
+    $DB = Net::Jabber::Dialback->new("result");
 
   Please see the specific documentation for Net::Jabber::Dialback::Result
   and Net::Jabber::Dialback::Verify.
@@ -97,15 +97,15 @@ sub new
         else
         {
             my ($temp) = @_;
-            return new Net::Jabber::Dialback::Result()
+            return Net::Jabber::Dialback::Result->new()
                 if ($temp eq "result");
-            return new Net::Jabber::Dialback::Verify()
+            return Net::Jabber::Dialback::Verify->new()
                 if ($temp eq "verify");
 
             my @temp = @{$temp};
-            return new Net::Jabber::Dialback::Result(@temp)
+            return Net::Jabber::Dialback::Result->new(@temp)
                 if ($temp[0] eq "db:result");
-            return new Net::Jabber::Dialback::Verify(@temp)
+            return Net::Jabber::Dialback::Verify->new(@temp)
                 if ($temp[0] eq "db:verify");
         }
     }

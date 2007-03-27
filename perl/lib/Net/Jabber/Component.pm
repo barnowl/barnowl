@@ -53,7 +53,7 @@ Net::Jabber::Component - Jabber Component Library
 
     use Net::Jabber;
 
-    $Con = new Net::Jabber::Component();
+    $Con = Net::Jabber::Component->new();
 
     $Con->Execute(hostname=>"jabber.org",
                   componentname=>"service.jabber.org",

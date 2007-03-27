@@ -61,7 +61,7 @@ Net::XMPP::IQ - XMPP Info/Query Module
 
     use Net::XMPP;
 
-    $IQ = new Net::XMPP::IQ();
+    $IQ = Net::XMPP::IQ->new();
     $IQType = $IQ->NewChild( type );
     $IQType->SetXXXXX("yyyyy");
 
@@ -290,7 +290,7 @@ sub new
     return $self;
 }
 
-sub _iq { my $self = shift; return new Net::XMPP::IQ(); }
+sub _iq { my $self = shift; return Net::XMPP::IQ->new(); }
 
 $FUNCTIONS{Error}->{path} = 'error/text()';
 

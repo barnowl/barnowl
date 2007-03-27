@@ -60,11 +60,11 @@ Net::Jabber - Jabber Perl Library
 
     For a client:
       use Net::Jabber;
-      my $client = new Net::Jabber::Client();
+      my $client = Net::Jabber::Client->new();
 
     For a component:
       use Net::Jabber;
-      my $component = new Net::Jabber::Component();
+      my $component = Net::Jabber::Component->new();
 
 =head1 METHODS
 

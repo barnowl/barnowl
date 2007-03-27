@@ -37,7 +37,7 @@ Net::Jabber::Log - Jabber Log Module
   To initialize the Log with a Jabber <log/> you must pass it the 
   XML::Parser Tree array.  For example:
 
-    my $log = new Net::Jabber::Log(@tree);
+    my $log = Net::Jabber::Log->new(@tree);
 
   There has been a change from the old way of handling the callbacks.
   You no longer have to do the above, a Net::Jabber::Log object is passed
@@ -58,7 +58,7 @@ Net::Jabber::Log - Jabber Log Module
 
     use Net::Jabber;
 
-    $Log = new Net::Jabber::Log();
+    $Log = Net::Jabber::Log->new();
 
   Now you can call the creation functions below to populate the tag before
   sending it.
@@ -175,8 +175,8 @@ sub new
 
     bless($self, $proto);
 
-    $self->{DEBUG} = new Net::Jabber::Debug(usedefault=>1,
-                                                    header=>"NJ::Log");
+    $self->{DEBUG} = Net::Jabber::Debug->new(usedefault=>1,
+                                             header=>"NJ::Log");
 
     if ("@_" ne (""))
     {

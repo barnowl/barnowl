@@ -37,7 +37,7 @@ Net::Jabber::Dialback::Verify - Jabber Dialback Verify Module
   To initialize the Verify with a Jabber <db:*/> you must pass it
   the XML::Stream hash.  For example:
 
-    my $dialback = new Net::Jabber::Dialback::Verify(%hash);
+    my $dialback = Net::Jabber::Dialback::Verify->new(%hash);
 
   There has been a change from the old way of handling the callbacks.
   You no longer have to do the above yourself, a NJ::Dialback::Verify
@@ -62,7 +62,7 @@ Net::Jabber::Dialback::Verify - Jabber Dialback Verify Module
 
     use Net::Jabber qw(Server);
 
-    $Verify = new Net::Jabber::Dialback::Verify();
+    $Verify = Net::Jabber::Dialback::Verify->new();
 
   Now you can call the creation functions below to populate the tag before
   sending it.

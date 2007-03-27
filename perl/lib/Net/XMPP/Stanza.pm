@@ -215,8 +215,8 @@ use Carp;
 use Net::XMPP::Namespaces;
 use vars qw( $AUTOLOAD %FUNCTIONS $DEBUG );
 
-$DEBUG = new Net::XMPP::Debug(usedefault=>1,
-                              header=>"XMPP");
+$DEBUG = Net::XMPP::Debug->new(usedefault=>1,
+                               header=>"XMPP");
 
 # XXX need to look at evals and $@
 
@@ -1411,7 +1411,7 @@ sub _missing_function
 sub _new_jid
 {
     my $self = shift;
-    return new Net::XMPP::JID(@_);
+    return Net::XMPP::JID->new(@_);
 }
 
 
@@ -1423,7 +1423,7 @@ sub _new_jid
 sub _new_packet
 {
     my $self = shift;
-    return new Net::XMPP::Stanza(@_);
+    return Net::XMPP::Stanza->new(@_);
 }
 
 

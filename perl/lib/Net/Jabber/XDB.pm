@@ -43,7 +43,7 @@ Net::Jabber::XDB - Jabber XDB Library
   To initialize the XDB with a Jabber <xdb/> you must pass it the 
   XML::Parser Tree array.  For example:
 
-    my $xdb = new Net::Jabber::XDB(@tree);
+    my $xdb = Net::Jabber::XDB->new(@tree);
 
   There has been a change from the old way of handling the callbacks.
   You no longer have to do the above, a Net::Jabber::XDB object is passed
@@ -64,7 +64,7 @@ Net::Jabber::XDB - Jabber XDB Library
 
     use Net::Jabber;
 
-    $XDB = new Net::Jabber::XDB();
+    $XDB = Net::Jabber::XDB->new();
     $XDBType = $XDB->NewData( type );
     $XDBType->SetXXXXX("yyyyy");
 
@@ -417,7 +417,7 @@ sub Reply
     my %args;
     while($#_ >= 0) { $args{ lc pop(@_) } = pop(@_); }
 
-    my $reply = new Net::Jabber::XDB();
+    my $reply = Net::Jabber::XDB->new();
 
     $reply->SetID($self->GetID()) if ($self->GetID() ne "");
     $reply->SetType("result");

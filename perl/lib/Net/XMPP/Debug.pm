@@ -38,7 +38,7 @@ Net::XMPP::Debug - XMPP Debug Module
 
 =head2 Basic Functions
 
-    $Debug = new Net::XMPP::Debug();
+    $Debug = Net::XMPP::Debug->new();
 
     $Debug->Init(level=>2,
 	             file=>"stdout",
@@ -85,7 +85,7 @@ Net::XMPP::Debug - XMPP Debug Module
 
 =head1 EXAMPLE
 
-  $Debug = new Net::XMPP:Debug(level=>2,
+  $Debug = Net::XMPP:Debug->new(level=>2,
                                header=>"Example");
 
     $Debug->Log0("test");

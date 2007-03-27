@@ -57,8 +57,8 @@ sub NewX     { my $self = shift; $self->NewChild(@_);    }
 sub AddX     { my $self = shift; $self->AddChild(@_);    } 
 sub RemoveX  { my $self = shift; $self->RemoveChild(@_); }
 
-sub _new_jid    { my $self = shift; return new Net::Jabber::JID(@_);     }
-sub _new_packet { my $self = shift; return new Net::Jabber::Stanza(@_);  }
-sub _message    { my $self = shift; return new Net::Jabber::Message(@_); }
+sub _new_jid    { my $self = shift; return Net::Jabber::JID->new(@_);     }
+sub _new_packet { my $self = shift; return Net::Jabber::Stanza->new(@_);  }
+sub _message    { my $self = shift; return Net::Jabber::Message->new(@_); }
 
 1;

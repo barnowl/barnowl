@@ -54,7 +54,7 @@ Net::XMPP::Presence - XMPP Presence Module
 
     use Net::XMPP;
 
-    $Pres = new Net::XMPP::Presence();
+    $Pres = Net::XMPP::Presence->new();
 
   Now you can call the creation functions below to populate the tag
   before sending it.
@@ -269,7 +269,7 @@ sub new
     return $self;
 }
 
-sub _presence { my $self = shift; return new Net::XMPP::Presence(); }
+sub _presence { my $self = shift; return Net::XMPP::Presence->new(); }
 
 
 $FUNCTIONS{Error}->{path} = 'error/text()';

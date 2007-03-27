@@ -55,7 +55,7 @@ Net::Jabber::Data - Jabber Data Library
   a Jabber <xdb/> you must pass it the XML::Stream hash from the
   Net::Jabber::Client module.
 
-    my $xdb = new Net::Jabber::XDB(%hash);
+    my $xdb = Net::Jabber::XDB->new(%hash);
 
   There has been a change from the old way of handling the callbacks.
   You no longer have to do the above yourself, a Net::Jabber::XDB
@@ -82,7 +82,7 @@ Net::Jabber::Data - Jabber Data Library
 
     use Net::Jabber;
 
-    my $xdb = new Net::Jabber::XDB();
+    my $xdb = Net::Jabber::XDB->new();
     $data = $xdb->NewData("jabber:iq:auth");
 
   Now you can call the creation functions for the Data as defined in the

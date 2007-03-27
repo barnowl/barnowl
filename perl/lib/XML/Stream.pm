@@ -680,7 +680,7 @@ sub Connect
         $self->debug(1,"Connect: srv requested");
         if ($NETDNS)
         {
-            my $res = new Net::DNS::Resolver();
+            my $res = Net::DNS::Resolver->new();
             my $query = $res->query($self->{SIDS}->{newconnection}->{srv}.".".$self->{SIDS}->{newconnection}->{hostname},"SRV");
             
             if ($query)

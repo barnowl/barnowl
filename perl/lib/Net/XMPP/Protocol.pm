@@ -73,7 +73,7 @@ Net::XMPP::Protocol - XMPP Protocol Module
 =head2 Basic Functions
 
     use Net::XMPP qw( Client );
-    $Con = new Net::XMPP::Client();                  # From
+    $Con = Net::XMPP::Client->new();                  # From
     $status = $Con->Connect(hostname=>"jabber.org"); # Net::XMPP::Client
 
     $Con->SetCallBacks(send=>\&sendCallBack,
@@ -2048,7 +2048,7 @@ sub PrivacyLists
 {
     my $self = shift;
 
-    return new Net::XMPP::PrivacyLists(connection=>$self);
+    return Net::XMPP::PrivacyLists->new(connection=>$self);
 }
 
 
@@ -2371,7 +2371,7 @@ sub Roster
 {
     my $self = shift;
 
-    return new Net::XMPP::Roster(connection=>$self);
+    return Net::XMPP::Roster->new(connection=>$self);
 }
 
 

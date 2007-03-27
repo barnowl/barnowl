@@ -37,7 +37,7 @@ Net::Jabber::Dialback::Result - Jabber Dialback Result Module
   To initialize the Result with a Jabber <db:*/> you must pass it
   the XML::Stream hash.  For example:
 
-    my $dialback = new Net::Jabber::Dialback::Result(%hash);
+    my $dialback = Net::Jabber::Dialback::Result->new(%hash);
 
   There has been a change from the old way of handling the callbacks.
   You no longer have to do the above yourself, a NJ::Dialback::Result
@@ -62,7 +62,7 @@ Net::Jabber::Dialback::Result - Jabber Dialback Result Module
 
     use Net::Jabber qw(Server);
 
-    $Result = new Net::Jabber::Dialback::Result();
+    $Result = Net::Jabber::Dialback::Result->new();
 
   Now you can call the creation functions below to populate the tag before
   sending it.

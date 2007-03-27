@@ -53,7 +53,7 @@ Net::Jabber::Server - Jabber Server Library
 
     use Net::Jabber qw(Server);
 
-    $Server = new Net::Jabber::Server();
+    $Server = Net::Jabber::Server->new();
 
     $Server->Start();
     $Server->Start(jabberxml=>"custom_jabber.xml",
@@ -154,15 +154,15 @@ sub new
 
     bless($self, $proto);
 
-    $self->{KEY} = new Net::Jabber::Key();
+    $self->{KEY} = Net::Jabber::Key->new();
 
     $self->{DEBUG} =
-        new Net::Jabber::Debug(level=>exists($args{debuglevel}) ? $args{debuglevel} : -1,
-                               file=>exists($args{debugfile}) ? $args{debugfile} : "stdout",
-                               time=>exists($args{debugtime}) ? $args{debugtime} : 0,
-                               setdefault=>1,
-                               header=>"NJ::Server"
-                              );
+        Net::Jabber::Debug->new(level=>exists($args{debuglevel}) ? $args{debuglevel} : -1,
+                                file=>exists($args{debugfile}) ? $args{debugfile} : "stdout",
+                                time=>exists($args{debugtime}) ? $args{debugtime} : 0,
+                                setdefault=>1,
+                                header=>"NJ::Server"
+                               );
 
     $self->{SERVER} = { hostname => "localhost",
                         port => 5269,
@@ -328,7 +328,7 @@ sub dbresultHandler
 
     $self->{DEBUG}->Log2("dbresultHandler: dbresult(",$dbresult->GetXML(),")");
 
-    my $dbverify = new Net::Jabber::Dialback::Verify();
+    my $dbverify = Net::Jabber::Dialback::Verify->new();
     $dbverify->SetVerify(to=>$dbresult->GetFrom(),
                          from=>$dbresult->GetTo(),
                          id=>$self->{STREAM}->GetRoot($sid)->{id},

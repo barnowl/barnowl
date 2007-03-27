@@ -41,9 +41,9 @@ Net::XMPP::JID - XMPP JID Module
     use Net::XMPP;
 
     sub foo {
-      my $foo = new Net::XMPP::Foo(@_);
+      my $foo = Net::XMPP::Foo->new(@_);
       my $from = $foo->GetFrom();
-      my $JID = new Net::XMPP::JID($from);
+      my $JID = Net::XMPP::JID->new($from);
       .
       .
       .
@@ -55,7 +55,7 @@ Net::XMPP::JID - XMPP JID Module
 
     use Net::XMPP;
 
-    $JID = new Net::XMPP::JID();
+    $JID = Net::XMPP::JID->new();
 
   Now you can call the creation functions below to populate the tag
   before sending it.
