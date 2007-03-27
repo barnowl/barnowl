@@ -14,9 +14,6 @@ use warnings;
 
 package BarnOwl;
 
-package BarnOwl;
-
-
 BEGIN {
 # bootstrap in C bindings and glue
     *owl:: = \*BarnOwl::;
