@@ -36,6 +36,16 @@ sub load_all {
             BarnOwl::error("Unable to load module $class: $@") if $@;
         }
     }
+
+    $BarnOwl::Hooks::startup->add(\&register_keybindings);
+}
+
+sub register_keybindings {
+    BarnOwl::new_command('reload-modules', sub {BarnOwl::ModuleLoader->reload}, {
+                           summary => 'Reload all modules',
+                           usage   => 'reload',
+                           description => q{Reloads all modules located in ~/.owl/modules and the system modules directory}
+                          });
 }
 
 sub reload {
