@@ -107,6 +107,8 @@ void owl_global_init(owl_global *g) {
   owl_timer_create_countdown(&(g->zephyr_buddycheck_timer), 60*3);
 
   owl_obarray_init(&(g->obarray));
+
+  owl_message_init_fmtext_cache();
 }
 
 void _owl_global_setup_windows(owl_global *g) {

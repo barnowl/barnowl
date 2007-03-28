@@ -248,6 +248,7 @@ typedef struct _owl_variable {
 
 typedef struct _owl_fmtext {
   int textlen;
+  int bufflen;
   char *textbuff;
   char *fmbuff;
   char *fgcolorbuff;
@@ -328,14 +329,15 @@ typedef struct _owl_pair {
   void *value;
 } owl_pair;
 
+struct _owl_fmtext_cache;
+
 typedef struct _owl_message {
   int id;
   int direction;
 #ifdef HAVE_LIBZEPHYR
   ZNotice_t notice;
 #endif
-  owl_fmtext fmtext;              /* this is now only a CACHED copy */
-  int invalid_format;             /* indicates whether fmtext needs to be regenerated */
+  struct _owl_fmtext_cache * fmtext;
   int delete;
   char *hostname;
   owl_list attributes;            /* this is a list of pairs */
@@ -343,6 +345,14 @@ typedef struct _owl_message {
   time_t time;
   char *zwriteline;
 } owl_message;
+
+#define OWL_FMTEXT_CACHE_SIZE 1000
+/* We cache the saved fmtexts for the last bunch of messages we
+   rendered */
+typedef struct _owl_fmtext_cache {
+    owl_message * message;
+    owl_fmtext fmtext;
+} owl_fmtext_cache;
 
 typedef struct _owl_style {
   char *name;
