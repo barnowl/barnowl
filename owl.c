@@ -330,11 +330,11 @@ int main(int argc, char **argv, char **env)
   /* welcome message */
   owl_function_debugmsg("startup: creating splash message");
   strcpy(startupmsg, "-----------------------------------------------------------------------\n");
-  sprintf(buff,      "Welcome to barnowl version %s.  Press 'h' for on-line help. \n", OWL_VERSION_STRING);
+  sprintf(buff,      "Welcome to barnowl version %s.  Press 'h' for on-line help.            \n", OWL_VERSION_STRING);
   strcat(startupmsg, buff);
   strcat(startupmsg, "                                                                       \n");
-  strcat(startupmsg, "This is a development build of barnowl. If you are using this  \n");
-  strcat(startupmsg, "build regularly, please add yourself to barnowl-users@mit.edu      \n");
+  strcat(startupmsg, "This is a development build of barnowl. If you are using this          \n");
+  strcat(startupmsg, "build regularly, please add yourself to barnowl-users@mit.edu          \n");
   strcat(startupmsg, "                                                                 ^ ^   \n");
   strcat(startupmsg, "                                                                 OvO   \n");
   strcat(startupmsg, "Please report any bugs to dirty-owl-hackers@mit.edu             (   )  \n");

@@ -11,8 +11,8 @@ void owl_fmtext_init_null(owl_fmtext *f)
   f->bufflen=5;
   f->textbuff=owl_malloc(5);
   f->fmbuff=owl_malloc(5);
-  f->fgcolorbuff=owl_malloc(5);
-  f->bgcolorbuff=owl_malloc(5);
+  f->fgcolorbuff=owl_malloc(5 * sizeof(short));
+  f->bgcolorbuff=owl_malloc(5 * sizeof(short));
   f->textbuff[0]=0;
   f->fmbuff[0]=OWL_FMTEXT_ATTR_NONE;
   f->fgcolorbuff[0]=OWL_COLOR_DEFAULT;
@@ -59,7 +59,7 @@ void _owl_fmtext_set_fgcolor(owl_fmtext *f, int color, int first, int last)
 {
   int i;
   for (i=first; i<=last; i++) {
-    f->fgcolorbuff[i]=(unsigned char) color;
+    f->fgcolorbuff[i]=(short)color;
   }
 }
 
@@ -67,7 +67,7 @@ void _owl_fmtext_set_bgcolor(owl_fmtext *f, int color, int first, int last)
 {
   int i;
   for (i=first; i<=last; i++) {
-    f->bgcolorbuff[i]=(unsigned char) color;
+    f->bgcolorbuff[i]=(short)color;
   }
 }
 
@@ -76,8 +76,8 @@ void _owl_fmtext_realloc(owl_fmtext *f, int newlen) /*noproto*/
     if(newlen + 1 > f->bufflen) {
       f->textbuff=owl_realloc(f->textbuff, newlen+1);
       f->fmbuff=owl_realloc(f->fmbuff, newlen+1);
-      f->fgcolorbuff=owl_realloc(f->fgcolorbuff, newlen+1);
-      f->bgcolorbuff=owl_realloc(f->bgcolorbuff, newlen+1);
+      f->fgcolorbuff=owl_realloc(f->fgcolorbuff, (newlen+1) * sizeof(short));
+      f->bgcolorbuff=owl_realloc(f->bgcolorbuff, (newlen+1) * sizeof(short));
       f->bufflen = newlen+1;
   }
 }
@@ -150,7 +150,7 @@ void owl_fmtext_colorize(owl_fmtext *f, int color)
 
   j=f->textlen;
   for(i=0; i<j; i++) {
-    if (f->fgcolorbuff[i]==OWL_COLOR_DEFAULT) f->fgcolorbuff[i] = color;
+    if (f->fgcolorbuff[i]==OWL_COLOR_DEFAULT) f->fgcolorbuff[i] = (short)color;
   }
 }
 
@@ -161,7 +161,7 @@ void owl_fmtext_colorizebg(owl_fmtext *f, int color)
 
   j=f->textlen;
   for(i=0; i<j; i++) {
-    if (f->bgcolorbuff[i]==OWL_COLOR_DEFAULT) f->bgcolorbuff[i] = color;
+    if (f->bgcolorbuff[i]==OWL_COLOR_DEFAULT) f->bgcolorbuff[i] = (short)color;
   }
 }
 
@@ -229,8 +229,8 @@ void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w)
   while (position<=len) {
     /* find the last char with the current format and color */
     trans1=owl_util_find_trans(f->fmbuff+position, len-position);
-    trans2=owl_util_find_trans(f->fgcolorbuff+position, len-position);
-    trans3=owl_util_find_trans(f->bgcolorbuff+position, len-position);
+    trans2=owl_util_find_trans_short(f->fgcolorbuff+position, len-position);
+    trans3=owl_util_find_trans_short(f->bgcolorbuff+position, len-position);
 
     lastsame = (trans1 < trans2) ? trans1 : trans2;
     lastsame = (lastsame < trans3) ? lastsame : trans3;
@@ -251,14 +251,13 @@ void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w)
     /* set the color */
     /* warning, this is sort of a hack */
     if (owl_global_get_hascolors(&g)) {
-      int fg, bg;
-      short pair;
+      short fg, bg, pair;
       fg = f->fgcolorbuff[position];
       bg = f->bgcolorbuff[position];
 
       pair = owl_fmtext_get_colorpair(fg, bg);
       if (pair != -1) {
-        wattron(w, COLOR_PAIR(pair));
+        wcolor_set(w,pair,NULL);
       }
     }
 
@@ -401,12 +400,12 @@ void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src)
   dst->textlen=src->textlen;
   dst->textbuff=owl_malloc(mallocsize);
   dst->fmbuff=owl_malloc(mallocsize);
-  dst->fgcolorbuff=owl_malloc(mallocsize);
-  dst->bgcolorbuff=owl_malloc(mallocsize);
+  dst->fgcolorbuff=owl_malloc(mallocsize * sizeof(short));
+  dst->bgcolorbuff=owl_malloc(mallocsize * sizeof(short));
   memcpy(dst->textbuff, src->textbuff, src->textlen+1);
   memcpy(dst->fmbuff, src->fmbuff, src->textlen);
-  memcpy(dst->fgcolorbuff, src->fgcolorbuff, src->textlen);
-  memcpy(dst->bgcolorbuff, src->bgcolorbuff, src->textlen);
+  memcpy(dst->fgcolorbuff, src->fgcolorbuff, src->textlen * sizeof(short));
+  memcpy(dst->bgcolorbuff, src->bgcolorbuff, src->textlen * sizeof(short));
 }
 
 /* highlight all instances of "string".  Return the number of
@@ -677,33 +676,41 @@ void owl_fmtext_free(owl_fmtext *f)
 void owl_fmtext_init_colorpair_mgr(owl_colorpair_mgr *cpmgr)
 {
   // This could be a bitarray if we wanted to save memory.
-  int i, j, colors;
-  cpmgr->next = COLORS;
-
-  colors = COLORS + 1; // 1 to account for "default".
-  cpmgr->pairs = owl_malloc(colors * sizeof(int*));
-  for(i = 0; i < colors; i++) {
-    // Because we're going to have a pair set for any fg and the
-    // default bg, we don't need to account for default here.
-    cpmgr->pairs[i] = owl_malloc(COLORS * sizeof(int));
-    for(j = 0; j < COLORS; j++) {
+  short i, j;
+  cpmgr->next = 8;
+  
+  // The test is <= because we allocate COLORS+1 entries.
+  cpmgr->pairs = owl_malloc((COLORS+1) * sizeof(short*));
+  for(i = 0; i <= COLORS; i++) {
+    cpmgr->pairs[i] = owl_malloc((COLORS+1) * sizeof(short));
+    for(j = 0; j <= COLORS; j++) {
       cpmgr->pairs[i][j] = -1;
     }
+  }
+  for(i = 0; i < 8; i++) {
+    short fg, bg;
+    pair_content(i, &fg, &bg);
+    cpmgr->pairs[fg+1][bg+1] = i;
   }
 }
 
 /* Reset used list */
 void owl_fmtext_reset_colorpairs()
 {
-  int i, j, colors;
+  short i, j;
   owl_colorpair_mgr *cpmgr = owl_global_get_colorpair_mgr(&g);
-  cpmgr->next = COLORS;
+  cpmgr->next = 8;
 
-  colors = COLORS + 1; // 1 to account for "default".
-  for(i = 0; i < colors; i++) {
-    for(j = 0; j < COLORS; j++) {
+  // The test is <= because we allocated COLORS+1 entries.
+  for(i = 0; i <= COLORS; i++) {
+    for(j = 0; j <= COLORS; j++) {
       cpmgr->pairs[i][j] = -1;
     }
+  }
+  for(i = 0; i < 8; i++) {
+    short fg, bg;
+    pair_content(i, &fg, &bg);
+    cpmgr->pairs[fg+1][bg+1] = i;
   }
 }
 
@@ -722,27 +729,28 @@ short owl_fmtext_get_colorpair(int fg, int bg)
   default_bg = COLOR_BLACK;
 #endif
 
-  if (bg == default_bg) {
-    // default bg -> use color pairs initialized by owl.c
-    pair = fg;
-  } else {
-    // looking for a pair we already set up for this draw.
-    cpmgr = owl_global_get_colorpair_mgr(&g);
-    pair = cpmgr->pairs[fg+1][bg];
-    if (!(pair != -1 && pair < cpmgr->next)) {
-      // If we didn't find a pair, search for a free one to assign.
-      // Skip the first COLORS, since they're static.
-      // If we ever get 256 color curses, this will need more thought.
-      pair = (cpmgr->next < COLOR_PAIRS) ? cpmgr->next : -1;
-      if (pair != -1) {
-        // We found a free pair, initialize it.
-        init_pair(pair, fg, bg);
-        cpmgr->pairs[fg+1][bg] = pair;
-        cpmgr->next++;
-      } else {
-        // We still don't have a pair, drop the background color. Too bad.
-        pair = fg;
-      }
+  // looking for a pair we already set up for this draw.
+  cpmgr = owl_global_get_colorpair_mgr(&g);
+  pair = cpmgr->pairs[fg+1][bg+1];
+  if (!(pair != -1 && pair < cpmgr->next)) {
+/*    owl_global_set_needrefresh(&g);*/
+    // If we didn't find a pair, search for a free one to assign.
+    pair = (cpmgr->next < COLOR_PAIRS) ? cpmgr->next : -1;
+    if (pair != -1) {
+      // We found a free pair, initialize it.
+      init_pair(pair, fg, bg);
+      cpmgr->pairs[fg+1][bg+1] = pair;
+      cpmgr->next++;
+    }
+    else if (bg != OWL_COLOR_DEFAULT) {
+      // We still don't have a pair, drop the background color. Too bad.
+      owl_function_debugmsg("colorpairs: color shortage - dropping background color.");
+      pair = owl_fmtext_get_colorpair(fg, OWL_COLOR_DEFAULT);
+    }
+    else {
+      // We still don't have a pair, defaults all around.
+      owl_function_debugmsg("colorpairs: color shortage - dropping foreground and background color.");
+      pair = 0;
     }
   }
   return pair;

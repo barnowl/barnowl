@@ -389,6 +389,15 @@ int owl_util_find_trans(char *in, int len)
   return(i);
 }
 
+int owl_util_find_trans_short(short *in, int len)
+{
+  int i;
+  for (i=1; i<len; i++) {
+    if (in[i] != in[0]) return(i-1);
+  }
+  return(i);
+}
+
 /* downcase the string 'foo' */
 void downstr(char *foo)
 {
@@ -487,6 +496,7 @@ char *owl_sprintf(const char *fmt, ...)
  */
 int owl_util_string_to_color(char *color)
 {
+  int c;
   if (!strcasecmp(color, "black")) {
     return(OWL_COLOR_BLACK);
   } else if (!strcasecmp(color, "red")) {
@@ -505,6 +515,10 @@ int owl_util_string_to_color(char *color)
     return(OWL_COLOR_WHITE);
   } else if (!strcasecmp(color, "default")) {
     return(OWL_COLOR_DEFAULT);
+  }
+  c = atoi(color);
+  if (c >= -1 && c < COLORS) {
+    return(c);
   }
   return(-1);
 }

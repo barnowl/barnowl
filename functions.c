@@ -1439,6 +1439,10 @@ void owl_function_full_redisplay()
   wnoutrefresh(owl_global_get_curs_sepwin(&g));
   wnoutrefresh(owl_global_get_curs_typwin(&g));
   wnoutrefresh(owl_global_get_curs_msgwin(&g));
+
+  if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
+    owl_popwin_refresh(owl_global_get_popwin(&g));
+  }
   
   sepbar("");
   owl_function_makemsg("");
@@ -3017,7 +3021,8 @@ int owl_function_color_filter(char *filtname, char *fgcolor, char *bgcolor)
 void owl_function_show_colors()
 {
   owl_fmtext fm;
-
+  int i; 
+  
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_normal(&fm, "default: ");
   owl_fmtext_append_normal_color(&fm, "default\n", OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
@@ -3043,6 +3048,15 @@ void owl_function_show_colors()
   owl_fmtext_append_normal(&fm,"white:    ");
   owl_fmtext_append_normal_color(&fm, "white\n", OWL_COLOR_WHITE, OWL_COLOR_DEFAULT);
 
+  for(i = 8; i < COLORS; ++i) {
+    char* str1 = owl_sprintf("%4i:     ",i);
+    char* str2 = owl_sprintf("%i\n",i);
+    owl_fmtext_append_normal(&fm,str1);
+    owl_fmtext_append_normal_color(&fm, str2, i, OWL_COLOR_DEFAULT);
+    owl_free(str1);
+     owl_free(str2);
+  }
+  
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);
 }
@@ -3717,4 +3731,9 @@ void owl_function_aimsearch_results(char *email, owl_list *namelist)
 
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);
+}
+
+int owl_function_get_color_count()
+{
+     return COLORS;
 }

@@ -295,3 +295,22 @@ _create_style(name, function, description)
 		owl_style_create_perl(s, name, function, description);
 		owl_global_add_style(&g, s);
 	}
+
+int
+getnumcolors()
+	CODE:
+		RETVAL = owl_function_get_color_count();
+	OUTPUT:
+		RETVAL
+
+void
+_remove_filter(filterName)
+	char *filterName
+	CODE:
+	{
+		/* Don't delete the current view, or the 'all' filter */
+		if (strcmp(filterName, owl_view_get_filtname(owl_global_get_current_view(&g)))
+		    && strcmp(filterName, "all")) {
+			owl_global_remove_filter(&g,filterName);
+		}
+	}

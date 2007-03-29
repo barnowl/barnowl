@@ -78,9 +78,12 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
     q=owl_list_get_size(filtlist);
     for (p=0; p<q; p++) {
       f=owl_list_get_element(filtlist, p);
-      if (owl_filter_message_match(f, m)) {
-	if (owl_filter_get_fgcolor(f)!=OWL_COLOR_DEFAULT) fgcolor=owl_filter_get_fgcolor(f);
-	if (owl_filter_get_bgcolor(f)!=OWL_COLOR_DEFAULT) bgcolor=owl_filter_get_bgcolor(f);
+      if ((owl_filter_get_fgcolor(f)!=OWL_COLOR_DEFAULT) ||
+          (owl_filter_get_bgcolor(f)!=OWL_COLOR_DEFAULT)) {
+        if (owl_filter_message_match(f, m)) {
+          if (owl_filter_get_fgcolor(f)!=OWL_COLOR_DEFAULT) fgcolor=owl_filter_get_fgcolor(f);
+          if (owl_filter_get_bgcolor(f)!=OWL_COLOR_DEFAULT) bgcolor=owl_filter_get_bgcolor(f);
+	}
       }
     }
 

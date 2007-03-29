@@ -216,12 +216,26 @@ void owl_filter_print(owl_filter *f, char *out)
 
   if (f->fgcolor!=OWL_COLOR_DEFAULT) {
     strcat(out, "-c ");
-    strcat(out, owl_util_color_to_string(f->fgcolor));
+    if (f->fgcolor < 8) {
+      strcat(out, owl_util_color_to_string(f->fgcolor));
+    }
+    else {
+      char* c = owl_sprintf("%i",f->fgcolor);
+      strcat(out, c);
+      owl_free(c);
+    }
     strcat(out, " ");
   }
   if (f->bgcolor!=OWL_COLOR_DEFAULT) {
     strcat(out, "-b ");
-    strcat(out, owl_util_color_to_string(f->bgcolor));
+    if (f->bgcolor < 8) {
+      strcat(out, owl_util_color_to_string(f->bgcolor));
+    }
+    else {
+      char* c = owl_sprintf("%i",f->bgcolor);
+      strcat(out, c);
+      owl_free(c);
+    }
     strcat(out, " ");
   }
   if(!f->root) return;

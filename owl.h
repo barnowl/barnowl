@@ -103,7 +103,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_COLOR_MAGENTA   5
 #define OWL_COLOR_CYAN      6
 #define OWL_COLOR_WHITE     7
-#define OWL_COLOR_DEFAULT   8
+#define OWL_COLOR_DEFAULT   -1
 
 #define OWL_EDITWIN_STYLE_MULTILINE 0
 #define OWL_EDITWIN_STYLE_ONELINE   1
@@ -251,8 +251,8 @@ typedef struct _owl_fmtext {
   int bufflen;
   char *textbuff;
   char *fmbuff;
-  char *fgcolorbuff;
-  char *bgcolorbuff;
+  short *fgcolorbuff;
+  short *bgcolorbuff;
 } owl_fmtext;
 
 typedef struct _owl_list {
@@ -525,7 +525,7 @@ typedef struct _owl_errqueue {
 
 typedef struct _owl_colorpair_mgr {
   int next;
-  int **pairs;
+  short **pairs;
 } owl_colorpair_mgr;
 
 typedef struct _owl_obarray {
