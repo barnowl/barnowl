@@ -12,13 +12,36 @@
 
 static const char fileIdent[] = "$Id$";
 
+static owl_fmtext_cache fmtext_cache[OWL_FMTEXT_CACHE_SIZE];
+static owl_fmtext_cache * fmtext_cache_next = fmtext_cache;
+
+void owl_message_init_fmtext_cache ()
+{
+    int i;
+    for(i = 0; i < OWL_FMTEXT_CACHE_SIZE; i++) {
+        owl_fmtext_init_null(&(fmtext_cache[i].fmtext));
+        fmtext_cache[i].message = NULL;
+    }
+}
+
+owl_fmtext_cache * owl_message_next_fmtext() /*noproto*/
+{
+    if(fmtext_cache_next->message != NULL) {
+        owl_message_invalidate_format(fmtext_cache_next->message);
+    }
+    owl_fmtext_cache * f = fmtext_cache_next;
+    fmtext_cache_next++;
+    if(fmtext_cache_next - fmtext_cache == OWL_FMTEXT_CACHE_SIZE)
+        fmtext_cache_next = fmtext_cache;
+    return f;
+}
+
 void owl_message_init(owl_message *m)
 {
   m->id=owl_global_get_nextmsgid(&g);
   owl_message_set_direction_none(m);
   m->delete=0;
   m->zwriteline=NULL;
-  m->invalid_format=1;
 
   owl_message_set_hostname(m, "");
   owl_list_create(&(m->attributes));
@@ -28,8 +51,7 @@ void owl_message_init(owl_message *m)
   m->timestr=owl_strdup(ctime(&(m->time)));
   m->timestr[strlen(m->timestr)-1]='\0';
 
-  /* initialize the fmtext */
-  owl_fmtext_init_null(&(m->fmtext));
+  m->fmtext = NULL;
 }
 
 /* add the named attribute to the message.  If an attribute with the
@@ -105,13 +127,17 @@ void owl_message_attributes_tofmtext(owl_message *m, owl_fmtext *fm) {
 
 void owl_message_invalidate_format(owl_message *m)
 {
-  m->invalid_format=1;
+  if(m->fmtext) {
+    m->fmtext->message = NULL;
+    owl_fmtext_clear(&(m->fmtext->fmtext));
+    m->fmtext=NULL;
+  }
 }
 
 owl_fmtext *owl_message_get_fmtext(owl_message *m)
 {
   owl_message_format(m);
-  return(&(m->fmtext));
+  return(&(m->fmtext->fmtext));
 }
 
 void owl_message_format(owl_message *m)
@@ -119,15 +145,14 @@ void owl_message_format(owl_message *m)
   owl_style *s;
   owl_view *v;
 
-  if (m->invalid_format) {
+  if (!m->fmtext) {
+    m->fmtext = owl_message_next_fmtext();
+    m->fmtext->message = m;
     /* for now we assume there's just the one view and use that style */
     v=owl_global_get_current_view(&g);
     s=owl_view_get_style(v);
 
-    owl_fmtext_free(&(m->fmtext));
-    owl_fmtext_init_null(&(m->fmtext));
-    owl_style_get_formattext(s, &(m->fmtext), m);
-    m->invalid_format=0;
+    owl_style_get_formattext(s, &(m->fmtext->fmtext), m);
   }
 }
 
@@ -391,7 +416,7 @@ int owl_message_is_pseudo(owl_message *m)
 
 char *owl_message_get_text(owl_message *m)
 {
-  return(owl_fmtext_get_text(&(m->fmtext)));
+  return(owl_fmtext_get_text(&(m->fmtext->fmtext)));
 }
 
 void owl_message_set_direction_in(owl_message *m)
@@ -436,7 +461,7 @@ int owl_message_get_numlines(owl_message *m)
 {
   if (m == NULL) return(0);
   owl_message_format(m);
-  return(owl_fmtext_num_lines(&(m->fmtext)));
+  return(owl_fmtext_num_lines(&(m->fmtext->fmtext)));
 }
 
 void owl_message_mark_delete(owl_message *m)
@@ -503,7 +528,7 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
   owl_fmtext_init_null(&a);
   owl_fmtext_init_null(&b);
   
-  owl_fmtext_truncate_lines(&(m->fmtext), aline, bline-aline+1, &a);
+  owl_fmtext_truncate_lines(&(m->fmtext->fmtext), aline, bline-aline+1, &a);
   owl_fmtext_truncate_cols(&a, acol, bcol, &b);
   if (fgcolor!=OWL_COLOR_DEFAULT) {
     owl_fmtext_colorize(&b, fgcolor);
@@ -697,7 +722,7 @@ int owl_message_search(owl_message *m, char *string)
 
   owl_message_format(m); /* is this necessary? */
   
-  return (owl_fmtext_search(&(m->fmtext), string));
+  return (owl_fmtext_search(&(m->fmtext->fmtext), string));
 }
 
 
@@ -988,5 +1013,5 @@ void owl_message_free(owl_message *m)
 
   owl_list_free_simple(&(m->attributes));
  
-  owl_fmtext_free(&(m->fmtext));
+  owl_message_invalidate_format(m);
 }

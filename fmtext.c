@@ -8,13 +8,26 @@ static const char fileIdent[] = "$Id$";
 void owl_fmtext_init_null(owl_fmtext *f)
 {
   f->textlen=0;
-  f->textbuff=owl_strdup("");
+  f->bufflen=5;
+  f->textbuff=owl_malloc(5);
   f->fmbuff=owl_malloc(5);
   f->fgcolorbuff=owl_malloc(5);
   f->bgcolorbuff=owl_malloc(5);
+  f->textbuff[0]=0;
   f->fmbuff[0]=OWL_FMTEXT_ATTR_NONE;
   f->fgcolorbuff[0]=OWL_COLOR_DEFAULT;
   f->bgcolorbuff[0]=OWL_COLOR_DEFAULT;
+}
+
+/* Clear the data from an fmtext, but don't deallocate memory. This
+   fmtext can then be appended to again. */
+void owl_fmtext_clear(owl_fmtext *f)
+{
+    f->textlen = 0;
+    f->textbuff[0] = 0;
+    f->fmbuff[0]=OWL_FMTEXT_ATTR_NONE;
+    f->fgcolorbuff[0]=OWL_COLOR_DEFAULT;
+    f->bgcolorbuff[0]=OWL_COLOR_DEFAULT;
 }
 
 /* Internal function.  Set the attribute 'attr' from index 'first' to
@@ -58,19 +71,26 @@ void _owl_fmtext_set_bgcolor(owl_fmtext *f, int color, int first, int last)
   }
 }
 
+void _owl_fmtext_realloc(owl_fmtext *f, int newlen) /*noproto*/
+{
+    if(newlen + 1 > f->bufflen) {
+      f->textbuff=owl_realloc(f->textbuff, newlen+1);
+      f->fmbuff=owl_realloc(f->fmbuff, newlen+1);
+      f->fgcolorbuff=owl_realloc(f->fgcolorbuff, newlen+1);
+      f->bgcolorbuff=owl_realloc(f->bgcolorbuff, newlen+1);
+      f->bufflen = newlen+1;
+  }
+}
+
 /* append text to the end of 'f' with attribute 'attr' and color
  * 'color'
  */
 void owl_fmtext_append_attr(owl_fmtext *f, char *text, int attr, int fgcolor, int bgcolor)
 {
   int newlen;
-
   newlen=strlen(f->textbuff)+strlen(text);
-  f->textbuff=owl_realloc(f->textbuff, newlen+2);
-  f->fmbuff=owl_realloc(f->fmbuff, newlen+2);
-  f->fgcolorbuff=owl_realloc(f->fgcolorbuff, newlen+2);
-  f->bgcolorbuff=owl_realloc(f->bgcolorbuff, newlen+2);
-
+  _owl_fmtext_realloc(f, newlen);
+  
   strcat(f->textbuff, text);
   _owl_fmtext_set_attr(f, attr, f->textlen, newlen);
   _owl_fmtext_set_fgcolor(f, fgcolor, f->textlen, newlen);
@@ -153,10 +173,7 @@ void _owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in, int start, int sto
   int newlen, i;
 
   newlen=strlen(f->textbuff)+(stop-start+1);
-  f->textbuff=owl_realloc(f->textbuff, newlen+1);
-  f->fmbuff=owl_realloc(f->fmbuff, newlen+1);
-  f->fgcolorbuff=owl_realloc(f->fgcolorbuff, newlen+1);
-  f->bgcolorbuff=owl_realloc(f->bgcolorbuff, newlen+1);
+  _owl_fmtext_realloc(f, newlen);
 
   strncat(f->textbuff, in->textbuff+start, stop-start+1);
   f->textbuff[newlen]='\0';

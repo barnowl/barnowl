@@ -6,15 +6,13 @@
 #####################################################################
 # XXX NOTE: This file is sourced before almost any barnowl
 # architecture is loaded. This means, for example, that it cannot
-# execute any owl commands. Any code that needs to do so, should
-# create a function wrapping it and push it onto @onStartSubs
-
+# execute any owl commands. Any code that needs to do so should live
+# in BarnOwl::Hooks::_startup
 
 use strict;
 use warnings;
 
 package BarnOwl;
-
 
 BEGIN {
 # bootstrap in C bindings and glue
@@ -43,7 +41,7 @@ sub _format_msg_legacy_wrap {
 sub _receive_msg_legacy_wrap {
     my ($m) = @_;
     $m->legacy_populate_global();
-    return &BarnOwl::Hooks::receive_msg($m);
+    return &BarnOwl::Hooks::_receive_msg($m);
 }
 
 # make BarnOwl::<command>("foo") be aliases to BarnOwl::command("<command> foo");
@@ -203,7 +201,7 @@ sub legacy_populate_global {
 }
 
 sub smartfilter {
-    die("smartfilter not supported for this message");
+    die("smartfilter not supported for this message\n");
 }
 
 # Display fields -- overridden by subclasses when needed
@@ -350,89 +348,51 @@ sub zsig        { return shift->{"zsig"}; }
 #####################################################################
 #####################################################################
 ################################################################################
-package BarnOwl;
 
-################################################################################
-# Mainloop hook
-################################################################################
+package BarnOwl::Hook;
 
-our $shutdown;
-$shutdown = 0;
-our $reload;
-$reload = 0;
-
-#Run this on start and reload. Adds modules
-sub onStart
-{
-    _load_owlconf();
-    reload_init();
-    loadModules();
-}
-################################################################################
-# Reload Code, taken from /afs/sipb/user/jdaniel/project/owl/perl
-################################################################################
-sub reload_hook (@)
-{
-    BarnOwl::Hooks::startup();
-    return 1;
+sub new {
+    my $class = shift;
+    return bless [], $class;
 }
 
-sub reload
-{
-    # Use $reload to tell modules that we're performing a reload.
-  {
-      local $reload = 1;
-      BarnOwl::mainloop_hook() if *BarnOwl::mainloop_hook{CODE};
-  }
-
-  @BarnOwl::Hooks::onMainLoop = ();
-  @BarnOwl::Hooks::onStartSubs = ();
-
-  # Do reload
-  package main;
-  if (-r $BarnOwl::configfile) {
-      undef $@;
-      do $BarnOwl::configfile;
-      BarnOwl::error("Error reloading $BarnOwl::configfile: $@") if $@;
-  }
-  BarnOwl::reload_hook(@_);
-  package BarnOwl;
+sub run {
+    my $self = shift;
+    my @args = @_;
+    return map {$_->(@args)} @$self;
 }
 
-sub reload_init ()
-{
-    BarnOwl::command('alias reload perl BarnOwl::reload()');
-    BarnOwl::command('bindkey global "C-x C-r" command reload');
+sub add {
+    my $self = shift;
+    my $func = shift;
+    die("Not a coderef!") unless ref($func) eq 'CODE';
+    push @$self, $func;
 }
 
-################################################################################
-# Loads modules from ~/.owl/modules and owl's data directory
-################################################################################
-
-sub loadModules () {
-    my @modules;
-    my $rv;
-    foreach my $dir ( BarnOwl::get_data_dir() . "/modules",
-                      $ENV{HOME} . "/.owl/modules" )
-    {
-        opendir( MODULES, $dir );
-
-        # source ./modules/*.pl
-        @modules = sort grep( /\.pl$/, readdir(MODULES) );
-
-        foreach my $mod (@modules) {
-            unless ($rv = do "$dir/$mod") {
-                BarnOwl::error("Couldn't load $dir/$mod:\n $@") if $@;
-                BarnOwl::error("Couldn't run $dir/$mod:\n $!") unless defined $rv;
-            }
-        }
-        closedir(MODULES);
-    }
+sub clear {
+    my $self = shift;
+    @$self = ();
 }
+
+package BarnOwl::Hooks;
+
+use Exporter;
+
+our @EXPORT_OK = qw($startup $shutdown
+                    $receiveMessage $mainLoop
+                    $getBuddyList);
+
+our %EXPORT_TAGS = (all => [@EXPORT_OK]);
+
+our $startup = BarnOwl::Hook->new;
+our $shutdown = BarnOwl::Hook->new;
+our $receiveMessage = BarnOwl::Hook->new;
+our $mainLoop = BarnOwl::Hook->new;
+our $getBuddyList = BarnOwl::Hook->new;
+
+# Internal startup/shutdown routines called by the C code
 
 sub _load_owlconf {
-    # Only do this the first time
-    return if $BarnOwl::reload;
     # load the config  file
     if ( -r $BarnOwl::configfile ) {
         undef $@;
@@ -450,86 +410,43 @@ sub _load_owlconf {
     }
 }
 
-package BarnOwl::Hooks;
+sub _startup {
+    _load_owlconf();
 
-# Arrays of subrefs to be called at specific times.
-our @onStartSubs = ();
-our @onReceiveMsg = ();
-our @onMainLoop = ();
-our @onGetBuddyList = ();
-
-# Functions to call hook lists
-sub runHook($@)
-{
-    my $hook = shift;
-    my @args = @_;
-    $_->(@args) for (@$hook);
-}
-
-sub runHook_accumulate($@)
-{
-    my $hook = shift;
-    my @args = @_;
-    return join("\n", map {$_->(@args)} @$hook);
-}
-
-################################################################################
-# Startup and Shutdown code
-################################################################################
-sub startup
-{
-    # Modern versions of owl provides a great place to have startup stuff.
-    # Put things in ~/.owl/startup
-
-    #So that the user's .owlconf can have startsubs, we don't clear
-    #onStartSubs; reload does however
-    @onReceiveMsg = ();
-    @onMainLoop = ();
-    @onGetBuddyList = ();
-
-    BarnOwl::onStart();
-
-    runHook(\@onStartSubs);
-
+    if(eval {require BarnOwl::ModuleLoader}) {
+        eval {
+            BarnOwl::ModuleLoader->load_all;
+        };
+        BarnOwl::error("Error loading modules: $@") if $@;
+    } else {
+        BarnOwl::error("Can't load BarnOwl::ModuleLoader, loadable module support disabled:\n$@");
+    }
+    
+    $startup->run(0);
     BarnOwl::startup() if *BarnOwl::startup{CODE};
 }
 
-sub shutdown
-{
-# Modern versions of owl provides a great place to have shutdown stuff.
-# Put things in ~/.owl/shutdown
-
-    # use $shutdown to tell modules that that's what we're doing.
-    $BarnOwl::shutdown = 1;
-    BarnOwl::mainloop_hook() if *BarnOwl::mainloop_hook{CODE};
-
+sub _shutdown {
+    $shutdown->run;
+    
     BarnOwl::shutdown() if *BarnOwl::shutdown{CODE};
 }
 
-sub mainloop_hook
-{
-    runHook(\@onMainLoop);
-    BarnOwl::mainloop_hook() if *BarnOwl::mainloop_hook{CODE};
-}
-
-################################################################################
-# Hooks into receive_msg()
-################################################################################
-
-sub receive_msg
-{
+sub _receive_msg {
     my $m = shift;
-    runHook(\@onReceiveMsg, $m);
+
+    $receiveMessage->run($m);
+    
     BarnOwl::receive_msg($m) if *BarnOwl::receive_msg{CODE};
 }
 
-################################################################################
-# Hooks into get_blist()
-################################################################################
+sub _mainloop_hook {
+    $mainLoop->run;
+    BarnOwl::mainloop_hook() if *BarnOwl::mainloop_hook{CODE};
+}
 
-sub get_blist
-{
-    return runHook_accumulate(\@onGetBuddyList);
+sub _get_blist {
+    return join("\n", $getBuddyList->run);
 }
 
 ################################################################################
@@ -643,16 +560,11 @@ sub boldify($)
 
 # switch to package main when we're done
 package main;
-# alias the hooks
-{
-    no strict 'refs';
-    foreach my $hook  qw (onStartSubs
-                          onReceiveMsg
-                          onMainLoop
-                          onGetBuddyList ) {
-        *{"main::".$hook} = \*{"BarnOwl::Hooks::".$hook};
-        *{"owl::".$hook} = \*{"BarnOwl::Hooks::".$hook};
-    }
-}
+
+# Shove a bunch of fake entries into @INC so modules can use or
+# require them without choking
+$::INC{$_} = 1 for (qw(BarnOwl.pm BarnOwl/Hooks.pm
+                       BarnOwl/Message.pm BarnOwl/Style.pm));
 
 1;
+

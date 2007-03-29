@@ -421,7 +421,7 @@ char *owl_perlconfig_getmsg(owl_message *m, int mode, char *subname)
     return ret;
   } else {
     char *ptr = NULL;
-    if (owl_perlconfig_is_function("BarnOwl::Hooks::receive_msg")) {
+    if (owl_perlconfig_is_function("BarnOwl::Hooks::_receive_msg")) {
       ptr = owl_perlconfig_call_with_message(subname?subname
 				       :"BarnOwl::_receive_msg_legacy_wrap", m);
     }
@@ -505,11 +505,11 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
 
 void owl_perlconfig_mainloop()
 {
-  if (!owl_perlconfig_is_function("BarnOwl::Hooks::mainloop_hook"))
+  if (!owl_perlconfig_is_function("BarnOwl::Hooks::_mainloop_hook"))
     return;
   dSP ;
   PUSHMARK(SP) ;
-  call_pv("BarnOwl::Hooks::mainloop_hook", G_DISCARD|G_EVAL);
+  call_pv("BarnOwl::Hooks::_mainloop_hook", G_DISCARD|G_EVAL);
   if(SvTRUE(ERRSV)) {
     STRLEN n_a;
     owl_function_error("%s", SvPV(ERRSV, n_a));

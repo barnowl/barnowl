@@ -1034,7 +1034,7 @@ void owl_function_quit()
   }
 
   /* execute the commands in shutdown */
-  ret = owl_perlconfig_execute("BarnOwl::Hooks::shutdown();");
+  ret = owl_perlconfig_execute("BarnOwl::Hooks::_shutdown();");
   if (ret) owl_free(ret);
 
   /* signal our child process, if any */
@@ -3364,8 +3364,8 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
 #endif
 
   if(aim && zephyr) {
-      if(owl_perlconfig_is_function("BarnOwl::Hooks::get_blist")) {
-          char * perlblist = owl_perlconfig_execute("BarnOwl::Hooks::get_blist()");
+      if(owl_perlconfig_is_function("BarnOwl::Hooks::_get_blist")) {
+          char * perlblist = owl_perlconfig_execute("BarnOwl::Hooks::_get_blist()");
           if(perlblist) {
               owl_fmtext_append_ztext(&fm, perlblist);
               owl_free(perlblist);

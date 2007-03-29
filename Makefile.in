@@ -30,6 +30,8 @@ OWL_SRC = owl.c
 TESTER_SRC = tester.c
 
 EXE = barnowl
+PERL_MODULES = Jabber
+MODULE_DIRS = $(PERL_MODULES:%=perl/modules/%)
 
 BASE_OBJS = $(BASE_SRCS:.c=.o)
 
@@ -56,11 +58,25 @@ tester: $(AUTOGEN) $(OBJS) tester.o
 test: tester
 	./tester reg
 
-clean: libfaimclean
+clean: libfaimclean modules_clean
 	$(RM) $(EXE) tester *.o $(AUTOGEN) owl_prototypes.h.new
 
 distclean: clean libfaimdistclean
 	$(RM) config.cache config.log config.status  Makefile config.h TAGS *~ core
+
+.PHONY: $(MODULE_DIRS)
+
+modules: $(MODULE_DIRS)
+modules_clean:
+	for i in $(MODULE_DIRS); do \
+		cd $$i; test ! -f Makefile || make clean; \
+	done
+
+$(MODULE_DIRS): %: %/Makefile
+	( cd $@ && make $(notdir $@).par )
+
+$(MODULE_DIRS:=/Makefile): %/Makefile: %/Makefile.PL
+	( cd $(dir $@) && perl -I../../lib Makefile.PL )
 
 proto: owl_prototypes.h
 
@@ -103,12 +119,17 @@ libfaimclean:
 libfaimdistclean:
 	(cd libfaim; $(MAKE) distclean)
 
-all: $(EXE)
+all: $(EXE) $(MODULE_DIRS)
 
 install: all installdirs
 	${INSTALL_PROGRAM} $(EXE) ${DESTDIR}${bindir}/$(EXE)
 	${INSTALL_DATA} doc/owl.1 ${DESTDIR}${mandir}/man1/barnowl.1
-	tar -C perl -c . | tar -C ${DESTDIR}${datadir} -x
+	${INSTALL} -d ${DESTDIR}${datadir}/lib
+	${INSTALL} -d ${DESTDIR}${datadir}/modules
+	tar -C perl/lib --exclude .svn -c . | tar -C ${DESTDIR}${datadir}/lib -x
+	for i in $(PERL_MODULES); do \
+		${INSTALL_DATA} perl/modules/$$i/$$i.par ${DESTDIR}${datadir}/modules/$$i.par; \
+	done
 
 installdirs: mkinstalldirs
 	${srcdir}/mkinstalldirs ${DESTDIR}${bindir} ${DESTDIR}${mandir}/man1 ${DESTDIR}${datadir}
