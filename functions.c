@@ -2744,6 +2744,7 @@ char *owl_function_aimuserfilt(char *user)
 {
   owl_filter *f;
   char *argbuff, *filtname;
+  char *escuser;
 
   /* name for the filter */
   filtname=owl_malloc(strlen(user)+40);
@@ -2757,10 +2758,12 @@ char *owl_function_aimuserfilt(char *user)
   /* create the new-internal filter */
   f=owl_malloc(sizeof(owl_filter));
 
+  escuser = owl_text_quote(user, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+
   argbuff=owl_malloc(1000);
   sprintf(argbuff,
-	  "( type ^aim$ and ( ( sender ^%s$ and recipient ^%s$ ) or ( sender ^%s$ and recipient ^%s$ ) ) )",
-	  user, owl_global_get_aim_screenname(&g), owl_global_get_aim_screenname(&g), user);
+          "( type ^aim$ and ( ( sender ^%s$ and recipient ^%s$ ) or ( sender ^%s$ and recipient ^%s$ ) ) )",
+          escuser, owl_global_get_aim_screenname(&g), owl_global_get_aim_screenname(&g), escuser);
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
@@ -2769,6 +2772,7 @@ char *owl_function_aimuserfilt(char *user)
 
   /* free stuff */
   owl_free(argbuff);
+  owl_free(escuser);
 
   return(filtname);
 }
