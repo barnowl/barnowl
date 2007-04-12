@@ -1977,7 +1977,8 @@ sub AuthSASL
     if ($bind)
     {
         $self->{DEBUG}->Log1("AuthSASL: Binding to resource");
-        $self->BindResource($args{resource});
+        my $jid = $self->BindResource($args{resource});
+	$self->{SESSION}->{FULLJID} = $jid;
     }
 
     #-------------------------------------------------------------------------
@@ -2018,6 +2019,7 @@ sub BindResource
     }
 
     my $result = $self->SendAndReceiveWithID($iq);
+    return $result->GetChild(&ConstXMLNS("xmpp-bind"))->GetJID();;
 }
 
 

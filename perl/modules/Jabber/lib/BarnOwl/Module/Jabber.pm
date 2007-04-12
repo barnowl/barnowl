@@ -362,10 +362,11 @@ sub do_login {
             } else {
                 $conn->getRosterFromJID($jidStr)->fetch();
                 $client->PresenceSend( priority => 1 );
-                queue_admin_msg("Connected to jabber as $jidStr");
+		my $fullJid = $client->{SESSION}->{FULLJID};
+		$conn->renameConnection($jidStr, $fullJid);
+                queue_admin_msg("Connected to jabber as $fullJid");
             }
         }
-
     }
     delete $vars{jlogin_jid};
     $vars{jlogin_password} =~ tr/\0-\377/x/ if $vars{jlogin_password};
@@ -373,6 +374,7 @@ sub do_login {
     delete $vars{jlogin_havepass};
     delete $vars{jlogin_connhash};
     delete $vars{jlogin_authhash};
+ 
     return "";
 }
 

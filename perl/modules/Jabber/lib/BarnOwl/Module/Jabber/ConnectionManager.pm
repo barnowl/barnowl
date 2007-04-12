@@ -43,6 +43,18 @@ sub removeConnection {
     return 1;
 }
 
+sub renameConnection {
+    my $self = shift;
+    my $oldJidStr = shift;
+    my $newJidStr = shift;
+    return 0 unless exists $self->{$oldJidStr};
+    return 0 if $oldJidStr eq $newJidStr;
+
+    $self->{$newJidStr} = $self->{$oldJidStr}; 
+    delete $self->{$oldJidStr};
+    return 1;
+}
+
 sub connected {
     my $self = shift;
     return scalar keys %{ $self };
