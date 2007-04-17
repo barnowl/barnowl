@@ -380,28 +380,21 @@ int owl_zephyr_get_num_fields(void *n)
 /* return a pointer to the message, place the message length in k
  * caller must free the return
  */
-char *owl_zephyr_get_message(ZNotice_t *n)
+char *owl_zephyr_get_message(ZNotice_t *n, owl_message *m)
 {
   /* don't let ping messages have a body */
   if (!strcasecmp(n->z_opcode, "ping")) {
     return(owl_strdup(""));
   }
 
-  /* deal with MIT Athena OLC messages */
-  if (!strcasecmp(n->z_sender, "olc.matisse@ATHENA.MIT.EDU")) {
-    return(owl_zephyr_get_field(n, 1));
-  }
   /* deal with MIT NOC messages */
-  else if (!strcasecmp(n->z_sender, "rcmd.achilles@ATHENA.MIT.EDU")) {
-    /* $opcode service on $instance $3.\n$4 */
-    char *msg, *opcode, *instance, *field3, *field4;
+  if (!strcasecmp(n->z_default_format, "@center(@bold(NOC Message))\n\n@bold(Sender:) $1 <$sender>\n@bold(Time:  ) $time\n\n@italic($opcode service on $instance $3.) $4\n")) {
+    char *msg, *field3, *field4;
 
-    opcode = n->z_opcode;
-    instance = n->z_class_inst;
     field3 = owl_zephyr_get_field(n, 3);
     field4 = owl_zephyr_get_field(n, 4);
 
-    msg = owl_sprintf("%s service on %s %s\n%s", opcode, instance, field3, field4);
+    msg = owl_sprintf("%s service on %s %s\n%s", n->z_opcode, n->z_class_inst, field3, field4);
     owl_free(field3);
     owl_free(field4);
     if (msg) {
@@ -409,12 +402,7 @@ char *owl_zephyr_get_message(ZNotice_t *n)
     }
   }
   /* deal with MIT Discuss messages */
-  else if (!strcasecmp(n->z_sender, "daemon@ATHENA.MIT.EDU") &&
-	   !strcasecmp(n->z_class, "DISCUSS")) {
-    /*New transaction [$1] entered in $2
-      From: $3 ($5)
-      Subject: $4 */
-    
+  else if (!strcasecmp(n->z_default_format, "New transaction [$1] entered in $2\nFrom: $3 ($5)\nSubject: $4")) {
     char *msg, *field1, *field2, *field3, *field4, *field5;
     
     field1 = owl_zephyr_get_field(n, 1);
@@ -433,8 +421,25 @@ char *owl_zephyr_get_message(ZNotice_t *n)
       return msg;
     }
   }
+  /* deal with MIT Moira messages */
+  else if (!strcasecmp(n->z_default_format, "MOIRA $instance on $fromhost:\n $message\n")) {
+    char *msg, *field1;
+    
+    field1 = owl_zephyr_get_field(n, 1);
+    
+    msg = owl_sprintf("MOIRA %s on %s: %s", n->z_class_inst, owl_message_get_hostname(m), field1);
+    owl_free(field1);
+    if (msg) {
+      return msg;
+    }
+  }
 
-  return(owl_zephyr_get_field(n, 2));
+  if (owl_zephyr_get_num_fields(n) == 1) {
+    return(owl_zephyr_get_field(n, 1));
+  }
+  else {
+    return(owl_zephyr_get_field(n, 2));
+  }
 }
 #endif
 
@@ -449,8 +454,9 @@ char *owl_zephyr_get_zsig(ZNotice_t *n, int *k)
     return("");
   }
 
-  /* No zsig for OLC messages */
-  if (!strcasecmp(n->z_sender, "olc.matisse@ATHENA.MIT.EDU")) {
+  /* If there's only one field, no zsig */
+  if (owl_zephyr_get_num_fields(n) == 1) {
+    *k=0;
     return("");
   }
 

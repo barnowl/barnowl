@@ -850,8 +850,17 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 
   m->zwriteline=strdup("");
 
+  /* save the hostname */
+  owl_function_debugmsg("About to do gethostbyaddr");
+  hent=gethostbyaddr((char *) &(n->z_uid.zuid_addr), sizeof(n->z_uid.zuid_addr), AF_INET);
+  if (hent && hent->h_name) {
+    owl_message_set_hostname(m, hent->h_name);
+  } else {
+    owl_message_set_hostname(m, inet_ntoa(n->z_sender_addr));
+  }
+
   /* set the body */
-  tmp=owl_zephyr_get_message(n);
+  tmp=owl_zephyr_get_message(n, m);
   if (owl_global_is_newlinestrip(&g)) {
     tmp2=owl_util_stripnewlines(tmp);
     owl_message_set_body(m, tmp2);
@@ -876,15 +885,6 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
     }
   }
 #endif  
-
-  /* save the hostname */
-  owl_function_debugmsg("About to do gethostbyaddr");
-  hent=gethostbyaddr((char *) &(n->z_uid.zuid_addr), sizeof(n->z_uid.zuid_addr), AF_INET);
-  if (hent && hent->h_name) {
-    owl_message_set_hostname(m, hent->h_name);
-  } else {
-    owl_message_set_hostname(m, inet_ntoa(n->z_sender_addr));
-  }
 }
 #else
 void owl_message_create_from_znotice(owl_message *m, void *n)
