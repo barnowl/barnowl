@@ -123,7 +123,7 @@ void owl_function_show_license()
   char *text;
 
   text=""
-    "Owl version " OWL_VERSION_STRING "\n"
+    "barnowl version " OWL_VERSION_STRING "\n"
     "Copyright (c) 2004 James Kretchmar. All rights reserved.\n"
     "\n"
     "Redistribution and use in source and binary forms, with or without\n"
@@ -1511,14 +1511,18 @@ void owl_function_about()
 {
   char buff[5000];
 
-  sprintf(buff, "This is owl version %s\n", OWL_VERSION_STRING);
-  strcat(buff, "\nOwl was written by James Kretchmar at the Massachusetts\n");
-  strcat(buff, "Institute of Technology.  The first version, 0.5, was\n");
+  sprintf(buff, "This is barnowl version %s\n\n", OWL_VERSION_STRING);
+  strcat(buff, "barnowl is a fork of the Owl zephyr client, written and\n");
+  strcat(buff, "maintained by Alejandro Sedeno and Nelson Elhage at the\n");
+  strcat(buff, "Massachusetts Institute of Technology. \n");
+  strcat(buff, "\n");
+  strcat(buff, "Owl was written by James Kretchmar. The first version, 0.5, was\n");
   strcat(buff, "released in March 2002.\n");
   strcat(buff, "\n");
   strcat(buff, "The name 'owl' was chosen in reference to the owls in the\n");
   strcat(buff, "Harry Potter novels, who are tasked with carrying messages\n");
-  strcat(buff, "between Witches and Wizards.\n");
+  strcat(buff, "between Witches and Wizards. The name 'barnowl' was chosen\n");
+  strcat(buff, "because we feel our owls should live closer to our ponies.\n");
   strcat(buff, "\n");
   strcat(buff, "Copyright 2002 Massachusetts Institute of Technology\n");
   strcat(buff, "\n");
