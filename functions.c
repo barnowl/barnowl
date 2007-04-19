@@ -2652,8 +2652,10 @@ char *owl_function_classinstfilt(char *c, char *i)
   }
   /* downcase it */
   downstr(filtname);
-  /* turn spaces into dots */
+  /* turn spaces, single quotes, and double quotes into dots */
   owl_text_tr(filtname, ' ', '.');
+  owl_text_tr(filtname, '\'', '.');
+  owl_text_tr(filtname, '"', '.');
   
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2663,9 +2665,13 @@ char *owl_function_classinstfilt(char *c, char *i)
   /* create the new filter */
   tmpclass=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   owl_text_tr(tmpclass, ' ', '.');
+  owl_text_tr(tmpclass, '\'', '.');
+  owl_text_tr(tmpclass, '"', '.');
   if (instance) {
     tmpinstance=owl_text_quote(instance, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(tmpinstance, ' ', '.');
+    owl_text_tr(tmpinstance, '\'', '.');
+    owl_text_tr(tmpinstance, '"', '.');
   }
   len = strlen(tmpclass);
   if(tmpinstance) len += strlen(tmpinstance);
@@ -3084,6 +3090,8 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   } else {
     quoted=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
+    owl_text_tr(quoted, '\'', '.');
+    owl_text_tr(quoted, '"', '.');
     sprintf(buff, "%s ^(un)*%s(\\.d)*$", buff, quoted);
     owl_free(quoted);
   }
@@ -3092,12 +3100,16 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   } else {
     quoted=owl_text_quote(inst, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
+    owl_text_tr(quoted, '\'', '.');
+    owl_text_tr(quoted, '"', '.');
     sprintf(buff, "%s and instance ^(un)*%s(\\.d)*$", buff, quoted);
     owl_free(quoted);
   }
   if (strcmp(recip, "*")) {
     quoted=owl_text_quote(recip, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
+    owl_text_tr(quoted, '\'', '.');
+    owl_text_tr(quoted, '"', '.');
     sprintf(buff, "%s and recipient ^%s$", buff, quoted);
     owl_free(quoted);
   }
