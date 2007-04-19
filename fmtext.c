@@ -452,7 +452,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
 {
   int stacksize, curattrs, curcolor;
   char *ptr, *txtptr, *buff, *tmpptr;
-  int attrstack[32], chrstack[32];
+  int attrstack[32], chrstack[32], colorstack[32];
 
   curattrs=OWL_FMTEXT_ATTR_NONE;
   curcolor=OWL_COLOR_DEFAULT;
@@ -507,6 +507,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
       if (!strcasecmp(buff, "@bold")) {
         attrstack[stacksize]=OWL_FMTEXT_ATTR_BOLD;
         chrstack[stacksize]=tmpptr[0];
+	colorstack[stacksize]=curcolor;
         stacksize++;
         curattrs|=OWL_FMTEXT_ATTR_BOLD;
         txtptr+=6;
@@ -515,6 +516,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
       } else if (!strcasecmp(buff, "@b")) {
         attrstack[stacksize]=OWL_FMTEXT_ATTR_BOLD;
         chrstack[stacksize]=tmpptr[0];
+	colorstack[stacksize]=curcolor;
         stacksize++;
         curattrs|=OWL_FMTEXT_ATTR_BOLD;
         txtptr+=3;
@@ -523,6 +525,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
       } else if (!strcasecmp(buff, "@i")) {
         attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
         chrstack[stacksize]=tmpptr[0];
+	colorstack[stacksize]=curcolor;
         stacksize++;
         curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
         txtptr+=3;
@@ -531,9 +534,18 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
       } else if (!strcasecmp(buff, "@italic")) {
         attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
         chrstack[stacksize]=tmpptr[0];
+	colorstack[stacksize]=curcolor;
         stacksize++;
         curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
         txtptr+=8;
+        owl_free(buff);
+        continue;
+      } else if (!strcasecmp(buff, "@")) {
+	attrstack[stacksize]=OWL_FMTEXT_ATTR_NONE;
+	chrstack[stacksize]=tmpptr[0];
+	colorstack[stacksize]=curcolor;
+        stacksize++;
+        txtptr+=2;
         owl_free(buff);
         continue;
 
@@ -607,6 +619,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
         int i;
         stacksize--;
         curattrs=OWL_FMTEXT_ATTR_NONE;
+	curcolor = colorstack[stacksize];
         for (i=0; i<stacksize; i++) {
           curattrs|=attrstack[i];
         }
