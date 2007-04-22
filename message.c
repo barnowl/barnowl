@@ -549,15 +549,12 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
 
 int owl_message_is_personal(owl_message *m)
 {
-  if (owl_message_is_type_zephyr(m)) {
-    if (strcasecmp(owl_message_get_class(m), "message")) return(0);
-    if (strcasecmp(owl_message_get_instance(m), "personal")) return(0);
-    if (!strcasecmp(owl_message_get_recipient(m), owl_zephyr_get_sender()) ||
-	!strcasecmp(owl_message_get_sender(m), owl_zephyr_get_sender())) {
-      return(1);
-    }
+  owl_filter * f = owl_global_get_filter(&g, "personal");
+  if(!f) {
+      owl_function_error("personal filter is not defined");
+      return (0);
   }
-  return(0);
+  return owl_filter_message_match(f, m);
 }
 
 int owl_message_is_question(owl_message *m)
@@ -837,7 +834,8 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 
   
   /* set the "isprivate" attribute if it's a private zephyr.
-   ``private'' means recipient is */
+   ``private'' means recipient is non-empty and doesn't start wit 
+   `@' */
   if (*n->z_recipient && *n->z_recipient != '@') {
     owl_message_set_isprivate(m);
   }
@@ -975,10 +973,13 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   } else {
     owl_message_set_hostname(m, hostbuff);
   }
-  owl_zwrite_free(&z);
 
-  if(owl_message_is_personal(m))
+  /* set the "isprivate" attribute if it's a private zephyr. */
+  if (owl_zwrite_is_personal(&z)) {
     owl_message_set_isprivate(m);
+  }
+
+  owl_zwrite_free(&z);
 }
 
 void owl_message_pretty_zsig(owl_message *m, char *buff)

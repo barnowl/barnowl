@@ -2892,7 +2892,7 @@ char *owl_function_smartfilter(int type)
 
   /* narrow personal and login messages to the sender or recip as appropriate */
   if (owl_message_is_type_zephyr(m)) {
-    if (owl_message_is_personal(m) || owl_message_is_loginout(m)) {
+    if (owl_message_is_private(m) || owl_message_is_loginout(m)) {
       if (owl_message_is_direction_in(m)) {
         zperson=short_zuser(owl_message_get_sender(m));
       } else {
@@ -2904,7 +2904,7 @@ char *owl_function_smartfilter(int type)
     }
 
     /* narrow class MESSAGE, instance foo, recip * messages to class, inst */
-    if (!strcasecmp(owl_message_get_class(m), "message") && !owl_message_is_personal(m)) {
+    if (!strcasecmp(owl_message_get_class(m), "message")) {
       filtname=owl_function_classinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
       return(filtname);
     }
