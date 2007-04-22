@@ -537,7 +537,7 @@ int main(int argc, char **argv, char **env)
       if (!strcmp(owl_global_get_personalbell(&g), "on")) {
 	  if (!owl_message_is_loginout(m) &&
 	      !owl_message_is_mail(m) &&
-	      owl_message_is_private(m)) {
+	      owl_message_is_personal(m)) {
 	    owl_function_beep();
 	  }
       } else if (!strcmp(owl_global_get_personalbell(&g), "off")) {
