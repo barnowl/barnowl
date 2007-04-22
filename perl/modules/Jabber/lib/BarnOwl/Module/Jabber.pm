@@ -362,7 +362,7 @@ sub do_login {
             } else {
                 $conn->getRosterFromJID($jidStr)->fetch();
                 $client->PresenceSend( priority => 1 );
-		my $fullJid = $client->{SESSION}->{FULLJID};
+		my $fullJid = $client->{SESSION}->{FULLJID} || $jidStr;
 		$conn->renameConnection($jidStr, $fullJid);
                 queue_admin_msg("Connected to jabber as $fullJid");
             }
