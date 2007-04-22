@@ -31,9 +31,10 @@ BEGIN {
     if(eval {require IO::Socket::SSL;}) {
         if($IO::Socket::SSL::VERSION eq "0.97") {
             BarnOwl::error("You are using IO::Socket:SSL 0.97, which \n" .
-                           "contains bugs causing it not to work with barnowl's jabber.pl. We \n" .
-                           "recommend updating to the latest IO::Socket::SSL from CPAN. \n");
-            die("Not loading jabber.pl\n");
+                           "contains bugs causing it not to work with barnowl's\n" .
+                           "jabber support. We recommend updating to the latest\n" .
+                           "IO::Socket::SSL from CPAN. \n");
+            die("Not loading Jabber.par\n");
         }
     }       
 }
@@ -1137,7 +1138,7 @@ sub j2o {
 
 sub queue_admin_msg {
     my $err = shift;
-    BarnOwl::admin_message("jabber.pl", $err);
+    BarnOwl::admin_message("Jabber", $err);
 }
 
 sub getServerFromJID {
