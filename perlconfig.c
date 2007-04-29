@@ -32,8 +32,15 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
   char *ptr, *blessas, *type;
   int i, j;
   owl_pair *pair;
+  owl_filter *wrap;
 
   if (!m) return &PL_sv_undef;
+  wrap = owl_global_get_filter(&g, "wordwrap");
+  if(!wrap) {
+      owl_function_error("wrap filter is not defined");
+      return &PL_sv_undef;
+  }
+
   h = newHV();
 
 #define MSG2H(h,field) hv_store(h, #field, strlen(#field), \
@@ -84,6 +91,9 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
   hv_store(h, "id", strlen("id"), newSViv(owl_message_get_id(m)),0);
   hv_store(h, "deleted", strlen("deleted"), newSViv(owl_message_is_delete(m)),0);
   hv_store(h, "private", strlen("private"), newSViv(owl_message_is_private(m)),0);
+  hv_store(h, "should_wordwrap",
+	   strlen("should_wordwrap"), newSViv(
+					      owl_filter_message_match(wrap, m)),0);
 
   type = owl_message_get_type(m);
   if(!type || !*type) type = "generic";

@@ -417,7 +417,10 @@ sub _startup {
         eval {
             BarnOwl::ModuleLoader->load_all;
         };
-        BarnOwl::error("Error loading modules: $@") if $@;
+        BarnOwl::error("$@") if $@;
+open TMP, ">/tmp/error";
+print TMP $@;
+
     } else {
         BarnOwl::error("Can't load BarnOwl::ModuleLoader, loadable module support disabled:\n$@");
     }
@@ -527,6 +530,9 @@ sub indentBody($)
     my $m = shift;
 
     my $body = $m->body;
+    if ($m->{should_wordwrap}) {
+      $body = BarnOwl::wordwrap($body, BarnOwl::getnumcols()-8);
+    }
     # replace newline followed by anything with
     # newline plus four spaces and that thing.
     $body =~ s/\n(.)/\n    $1/g;

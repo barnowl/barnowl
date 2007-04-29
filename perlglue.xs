@@ -314,3 +314,17 @@ _remove_filter(filterName)
 			owl_global_remove_filter(&g,filterName);
 		}
 	}
+
+char *
+wordwrap(in, cols)
+	char *in
+	int cols
+	PREINIT:
+		char *rv = NULL;
+	CODE:
+rv = owl_text_wordwrap(in, cols);
+		RETVAL = rv;	
+	OUTPUT:
+		RETVAL
+	CLEANUP:
+		if (rv) owl_free(rv);
