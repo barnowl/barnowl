@@ -1,8 +1,20 @@
+barnowl (0.0.r705-1) UNRELEASED; urgency=low
+
+  * New upstream version
+
+ -- Sam Hartman <hartmans@debian.org>  Sat, 21 Apr 2007 17:02:00 -0400
+
+barnowl (0.0.r650-1) unstable; urgency=low
+
+  * new build
+
+ -- Sam Hartman <hartmans@debian.org>  Thu,  5 Apr 2007 10:35:13 -0400
+
 barnowl (0.0.r643-1) unstable; urgency=low
 
   * Fork of owl.
 
- --
+ -- Sam Hartman <hartmans@debian.org>  Thu,  5 Apr 2007 10:34:47 -0400
 
 owl (2.1.8-2.1) unstable; urgency=low
 
