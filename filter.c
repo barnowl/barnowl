@@ -75,6 +75,7 @@ static owl_filterelement * owl_filter_parse_primitive_expression(int argc, char 
     op = owl_filter_parse_expression(argc-i, argv+i, &skip);
     if(!op) goto err;
     i += skip;
+    if(i >= argc) goto err;
     if(strcasecmp(argv[i++], ")")) goto err;
     owl_filterelement_create_group(fe, op);
   } else if(!strcasecmp(argv[i], "not")) {
