@@ -700,30 +700,36 @@ void owl_fmtext_init_colorpair_mgr(owl_colorpair_mgr *cpmgr)
       cpmgr->pairs[i][j] = -1;
     }
   }
-  for(i = 0; i < 8; i++) {
-    short fg, bg;
-    pair_content(i, &fg, &bg);
-    cpmgr->pairs[fg+1][bg+1] = i;
+  if (owl_global_get_hascolors(&g)) {
+    for(i = 0; i < 8; i++) {
+      short fg, bg;
+      if (i >= COLORS) continue;
+      pair_content(i, &fg, &bg);
+      cpmgr->pairs[fg+1][bg+1] = i;
+    }
   }
 }
 
 /* Reset used list */
 void owl_fmtext_reset_colorpairs()
 {
-  short i, j;
-  owl_colorpair_mgr *cpmgr = owl_global_get_colorpair_mgr(&g);
-  cpmgr->next = 8;
-
-  // The test is <= because we allocated COLORS+1 entries.
-  for(i = 0; i <= COLORS; i++) {
-    for(j = 0; j <= COLORS; j++) {
-      cpmgr->pairs[i][j] = -1;
+  if (owl_global_get_hascolors(&g)) {
+    short i, j;
+    owl_colorpair_mgr *cpmgr = owl_global_get_colorpair_mgr(&g);
+    cpmgr->next = 8;
+    
+    // The test is <= because we allocated COLORS+1 entries.
+    for(i = 0; i <= COLORS; i++) {
+      for(j = 0; j <= COLORS; j++) {
+	cpmgr->pairs[i][j] = -1;
+      }
     }
-  }
-  for(i = 0; i < 8; i++) {
-    short fg, bg;
-    pair_content(i, &fg, &bg);
-    cpmgr->pairs[fg+1][bg+1] = i;
+    for(i = 0; i < 8; i++) {
+      short fg, bg;
+      if (i >= COLORS) continue;
+      pair_content(i, &fg, &bg);
+      cpmgr->pairs[fg+1][bg+1] = i;
+    }
   }
 }
 
