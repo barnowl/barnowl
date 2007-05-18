@@ -322,9 +322,48 @@ wordwrap(in, cols)
 	PREINIT:
 		char *rv = NULL;
 	CODE:
-rv = owl_text_wordwrap(in, cols);
+		rv = owl_text_wordwrap(in, cols);
 		RETVAL = rv;	
 	OUTPUT:
 		RETVAL
 	CLEANUP:
 		if (rv) owl_free(rv);
+
+void
+new_variable_string_internal(name, ival, summ, desc)
+	char * name
+	char * ival
+	char * summ
+	char * desc
+	CODE:
+	owl_variable_dict_newvar_string(owl_global_get_vardict(&g),
+					name,
+					summ,
+					desc,
+					ival);
+
+void
+new_variable_int_internal(name, ival, summ, desc)
+	char * name
+	int ival
+	char * summ
+	char * desc
+	CODE:
+	owl_variable_dict_newvar_int(owl_global_get_vardict(&g),
+				     name,
+				     summ,
+				     desc,
+				     ival);
+
+void
+new_variable_bool_internal(name, ival, summ, desc)
+	char * name
+	int ival
+	char * summ
+	char * desc
+	CODE:
+	owl_variable_dict_newvar_bool(owl_global_get_vardict(&g),
+				      name,
+				      summ,
+				      desc,
+				      ival);

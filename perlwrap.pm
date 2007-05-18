@@ -79,6 +79,34 @@ sub new_command {
     BarnOwl::new_command_internal($name, $func, $args{summary}, $args{usage}, $args{description});
 }
 
+sub new_variable_int {
+    unshift @_, \&BarnOwl::new_variable_int_internal, 0;
+    goto \&_new_variable;
+}
+
+sub new_variable_bool {
+    unshift @_, \&BarnOwl::new_variable_bool_internal, 0;
+    goto \&_new_variable;
+}
+
+sub new_variable_string {
+    unshift @_, \&BarnOwl::new_variable_string_internal, "";
+    goto \&_new_variable;
+}
+
+sub _new_variable {
+    my $func = shift;
+    my $default_default = shift;
+    my $name = shift;
+    my $args = shift || {};
+    my %args = (
+        summary     => "",
+        description => "",
+        default     => $default_default,
+        %{$args});
+    $func->($name, $args{default}, $args{summary}, $args{description});
+}
+
 #####################################################################
 #####################################################################
 

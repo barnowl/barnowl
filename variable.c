@@ -517,6 +517,63 @@ int owl_variable_dict_setup(owl_vardict *vd) {
   return 0;
 }
 
+void owl_variable_dict_add_variable(owl_vardict * vardict,
+                                    owl_variable * var) {
+  owl_dict_insert_element(vardict, var->name, (void*)var, NULL);
+}
+
+owl_variable * owl_variable_newvar(char *name, char *summary, char * description) {
+  owl_variable * var = (owl_variable*)owl_malloc(sizeof(owl_variable));
+  memset(var, 0, sizeof(owl_variable));
+  var->name = owl_strdup(name);
+  var->summary = owl_strdup(summary);
+  var->description = owl_strdup(description);
+  return var;
+}
+
+void owl_variable_dict_newvar_string(owl_vardict * vd, char *name, char *summ, char * desc, char * initval) {
+  owl_variable * var = owl_variable_newvar(name, summ, desc);
+  var->type = OWL_VARIABLE_STRING;
+  var->pval_default = owl_strdup(initval);
+  var->set_fn = owl_variable_string_set_default;
+  var->set_fromstring_fn = owl_variable_string_set_fromstring_default;
+  var->get_fn = owl_variable_get_default;
+  var->get_tostring_fn = owl_variable_string_get_tostring_default;
+  var->free_fn = owl_variable_free_default;
+  var->set_fn(var, initval);
+  owl_variable_dict_add_variable(vd, var);
+}
+
+void owl_variable_dict_newvar_int(owl_vardict * vd, char *name, char *summ, char * desc, int initval) {
+  owl_variable * var = owl_variable_newvar(name, summ, desc);
+  var->type = OWL_VARIABLE_INT;
+  var->ival_default = initval;
+  var->validate_fn = owl_variable_int_validate_default;
+  var->set_fn = owl_variable_int_set_default;
+  var->set_fromstring_fn = owl_variable_int_set_fromstring_default;
+  var->get_fn = owl_variable_get_default;
+  var->get_tostring_fn = owl_variable_int_get_tostring_default;
+  var->free_fn = owl_variable_free_default;
+  var->val = owl_malloc(sizeof(int));
+  var->set_fn(var, &initval);
+  owl_variable_dict_add_variable(vd, var);
+}
+
+void owl_variable_dict_newvar_bool(owl_vardict * vd, char *name, char *summ, char * desc, int initval) {
+  owl_variable * var = owl_variable_newvar(name, summ, desc);
+  var->type = OWL_VARIABLE_BOOL;
+  var->ival_default = initval;
+  var->validate_fn = owl_variable_bool_validate_default;
+  var->set_fn = owl_variable_bool_set_default;
+  var->set_fromstring_fn = owl_variable_bool_set_fromstring_default;
+  var->get_fn = owl_variable_get_default;
+  var->get_tostring_fn = owl_variable_bool_get_tostring_default;
+  var->free_fn = owl_variable_free_default;
+  var->val = owl_malloc(sizeof(int));
+  var->set_fn(var, &initval);
+  owl_variable_dict_add_variable(vd, var);
+}
+
 void owl_variable_dict_free(owl_vardict *d) {
   owl_dict_free_all(d, (void(*)(void*))owl_variable_free);
 }
@@ -969,7 +1026,25 @@ int owl_variable_regtest(void) {
   FAIL_UNLESS("set enum 9", -1==owl_variable_set_fromstring(&vd,"webbrowser","netscapey",0,0));
   FAIL_UNLESS("get enum 10", OWL_WEBBROWSER_NETSCAPE==owl_variable_get_int(&vd,"webbrowser"));
 
+  owl_variable * v;
+  
+  owl_variable_dict_newvar_string(&vd, "stringvar", "", "", "testval");
+  FAIL_UNLESS("get new string var", NULL != (v = owl_variable_get(&vd, "stringvar", OWL_VARIABLE_STRING)));
+  FAIL_UNLESS("get new string val", !strcmp("testval", owl_variable_get_string(&vd, "stringvar")));
+  owl_variable_set_string(&vd, "stringvar", "new val");
+  FAIL_UNLESS("update string val", !strcmp("new val", owl_variable_get_string(&vd, "stringvar")));
 
+  owl_variable_dict_newvar_int(&vd, "intvar", "", "", 47);
+  FAIL_UNLESS("get new int var", NULL != (v = owl_variable_get(&vd, "intvar", OWL_VARIABLE_INT)));
+  FAIL_UNLESS("get new int val", 47 == owl_variable_get_int(&vd, "intvar"));
+  owl_variable_set_int(&vd, "intvar", 17);
+  FAIL_UNLESS("update bool val", 17 == owl_variable_get_int(&vd, "intvar"));
+
+  owl_variable_dict_newvar_bool(&vd, "boolvar", "", "", 1);
+  FAIL_UNLESS("get new bool var", NULL != (v = owl_variable_get(&vd, "boolvar", OWL_VARIABLE_BOOL)));
+  FAIL_UNLESS("get new bool val", owl_variable_get_bool(&vd, "boolvar"));
+  owl_variable_set_bool_off(&vd, "boolvar");
+  FAIL_UNLESS("update string val", !owl_variable_get_bool(&vd, "boolvar"));
 
   owl_variable_dict_free(&vd);
 
