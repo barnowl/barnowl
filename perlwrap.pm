@@ -79,6 +79,35 @@ sub new_command {
     BarnOwl::new_command_internal($name, $func, $args{summary}, $args{usage}, $args{description});
 }
 
+=head2 new_variable_int NAME [{ARGS}]
+
+=head2 new_variable_bool NAME [{ARGS}]
+
+=head2 new_variable_string NAME [{ARGS}]
+
+Add a new owl variable, either an int, a bool, or a string, with the
+specified name.
+
+ARGS can optionally contain the following keys:
+
+=over 4
+
+=item default
+
+The default and initial value for the variable
+
+=item summary
+
+A one-line summary of the variable's purpose
+
+=item description
+
+A longer description of the function of the variable
+
+=back
+
+=cut
+
 sub new_variable_int {
     unshift @_, \&BarnOwl::new_variable_int_internal, 0;
     goto \&_new_variable;
