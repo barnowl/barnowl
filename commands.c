@@ -712,6 +712,14 @@ owl_cmd commands_to_init[]
 	      "default searches are done fowards, if -r is used the search\n"
 	      "is performed backwards"),
 
+  OWLCMD_ARGS("setsearch", owl_command_setsearch, OWL_CTX_INTERACTIVE,
+	      "set the search highlight string without searching",
+	      "setsearch <string>",
+	      "The setsearch command highlights all occurences of its\n"
+          "argument and makes it the default argument for future\n"
+          "search commands, but does not move the cursor.  With\n"
+          "no argument, it makes search inactive."),
+
   OWLCMD_ARGS("aimlogin", owl_command_aimlogin, OWL_CTX_ANY,
 	      "login to an AIM account",
 	      "aimlogin <screenname> [<password>]\n",
@@ -2379,6 +2387,23 @@ char *owl_command_search(int argc, char **argv, char *buff)
   } else {
     owl_function_search_start(buffstart, direction);
   }
+  
+  return(NULL);
+}
+
+char *owl_command_setsearch(int argc, char **argv, char *buff)
+{
+  char *buffstart;
+
+  buffstart=skiptokens(buff, 1);
+
+  owl_global_set_search_active(&g, buffstart);
+
+  if (!*buffstart) {
+    owl_global_set_search_inactive(&g);
+  }
+
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   
   return(NULL);
 }
