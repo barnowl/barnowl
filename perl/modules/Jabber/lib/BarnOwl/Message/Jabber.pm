@@ -19,6 +19,7 @@ sub jtype { shift->{jtype} };
 sub from { shift->{from} };
 sub to { shift->{to} };
 sub room { shift->{room} };
+sub subject { shift->{subject} };
 sub status { shift->{status} }
 
 sub login_extra {
@@ -38,6 +39,10 @@ sub long_sender {
 
 sub context {
     return shift->room;
+}
+
+sub subcontext {
+    return shift->subject || "";
 }
 
 sub smartfilter {

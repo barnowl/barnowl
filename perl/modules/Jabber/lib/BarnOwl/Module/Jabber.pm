@@ -502,7 +502,7 @@ sub cmd_jwrite {
 
     my $cmd = "jwrite $jwrite_to -a $jwrite_from";
     $cmd .= " -t $jwrite_thread" if $jwrite_thread;
-    $cmd .= " -t $jwrite_subject" if $jwrite_subject;
+    $cmd .= " -s $jwrite_subject" if $jwrite_subject;
     BarnOwl::start_edit_win( $cmd, \&process_owl_jwrite );
 }
 
@@ -1096,6 +1096,9 @@ sub j2hash {
         $props{replycmd} = "jwrite $room";
         $props{replycmd} .=
           " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
+	if ($props{subject}) {
+	  $props{replycmd} .= " -s " . $props{subject}
+	}
 
         if ($dir eq 'out') {
             $props{replysendercmd} = "jwrite ".$props{to}." -a ".$props{from};
