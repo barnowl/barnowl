@@ -475,8 +475,6 @@ sub _startup {
             BarnOwl::ModuleLoader->load_all;
         };
         BarnOwl::error("$@") if $@;
-open TMP, ">/tmp/error";
-print TMP $@;
 
     } else {
         BarnOwl::error("Can't load BarnOwl::ModuleLoader, loadable module support disabled:\n$@");
