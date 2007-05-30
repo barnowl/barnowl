@@ -55,7 +55,8 @@ no warnings 'redefine';
 #
 ################################################################################
 
-our $conn = BarnOwl::Module::Jabber::ConnectionManager->new unless $conn;;
+our $conn;
+$conn ||= BarnOwl::Module::Jabber::ConnectionManager->new;
 our %vars;
 
 sub onStart {
