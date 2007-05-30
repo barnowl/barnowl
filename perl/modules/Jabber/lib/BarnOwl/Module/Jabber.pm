@@ -193,8 +193,10 @@ sub onGetBuddyList {
 sub register_owl_commands() {
     BarnOwl::new_command(
         jabberlogin => \&cmd_login,
-        { summary => "Log into jabber", },
-        { usage   => "jabberlogin JID [PASSWORD]" }
+        {
+            summary => "Log into jabber", 
+            usage   => "jabberlogin JID [PASSWORD]"
+        }
     );
     BarnOwl::new_command(
         jabberlogout => \&cmd_logout,
