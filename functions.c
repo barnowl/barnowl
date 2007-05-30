@@ -163,36 +163,6 @@ void owl_function_show_license()
   owl_function_popless_text(text);
 }
 
-
-/* Add the given message to Owl's internal queue.  If displayoutgoing
- * is disabled, the message is NOT added to any internal queue, -1 is
- * returned and THE CALLER IS EXPECTED TO FREE THE GIVEN MESSAGE.
- * Otherwise 0 is returned and the caller need do nothing more
- */
-int owl_function_add_message(owl_message *m)
-{
-  /* if displayoutgoing is disabled, nuke the message and move on */
-  if (! owl_global_is_displayoutgoing(&g)) {
-    return(-1);
-  }
-
-  /* add it to the global list and current view */
-  owl_messagelist_append_element(owl_global_get_msglist(&g), m);
-  owl_view_consider_message(owl_global_get_current_view(&g), m);
-
-  /* do followlast if necessary */
-  if (owl_global_should_followlast(&g)) owl_function_lastmsg_noredisplay();
-
-  /* redisplay etc. */
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
-    owl_popwin_refresh(owl_global_get_popwin(&g));
-  }
-  wnoutrefresh(owl_global_get_curs_recwin(&g));
-  owl_global_set_needrefresh(&g);
-  return(0);
-}
-
 /* Create an admin message, append it to the global list of messages
  * and redisplay if necessary.
  */
@@ -412,15 +382,7 @@ void owl_function_zwrite(char *line, char *msg)
     m=owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
 
     if (m) {
-      /* log it */
-      owl_log_message(m);
-      
-      /* add it or nuke it */
-      if (owl_global_is_displayoutgoing(&g)) {
-	owl_function_add_message(m);
-      } else {
-	owl_message_free(m);
-      }
+      owl_global_messagequeue_addmsg(&g, m);
     } else {
       owl_function_error("Could not create outgoing zephyr message");
     }
@@ -476,15 +438,7 @@ void owl_function_zcrypt(char *line, char *msg)
     mymsg=owl_zwrite_get_message(&z);
     m=owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
     if (m) {
-      /* log it */
-      owl_log_message(m);
-      
-      /* add it or nuke it */
-      if (owl_global_is_displayoutgoing(&g)) {
-	owl_function_add_message(m);
-      } else {
-	owl_message_free(m);
-      }
+      owl_global_messagequeue_addmsg(&g, m);
     } else {
       owl_function_error("Could not create outgoing zephyr message");
     }
@@ -524,15 +478,7 @@ void owl_function_aimwrite(char *line, char *msg)
   m=owl_function_make_outgoing_aim(msg, to);
 
   if (m) {
-    /* log it */
-    owl_log_message(m);
-    
-    /* display it or nuke it */
-    if (owl_global_is_displayoutgoing(&g)) {
-      owl_function_add_message(m);
-    } else {
-      owl_message_free(m);
-    }
+    owl_global_messagequeue_addmsg(&g, m);
   } else {
     owl_function_error("Could not create outgoing AIM message");
   }
@@ -561,15 +507,7 @@ void owl_function_send_aimawymsg(char *to, char *msg)
   /* create the message */
   m=owl_function_make_outgoing_aim(msg, to);
   if (m) {
-    /* log it */
-    owl_log_message(m);
-
-    /* display it or nuke it */
-    if (owl_global_is_displayoutgoing(&g)) {
-      owl_function_add_message(m);
-    } else {
-      owl_message_free(m);
-    }
+    owl_global_messagequeue_addmsg(&g, m);
   } else {
     owl_function_error("Could not create AIM message");
   }
@@ -587,17 +525,17 @@ void owl_function_loopwrite(char *msg)
   /* create a message and put it on the message queue.  This simulates
    * an incoming message */
   min=owl_malloc(sizeof(owl_message));
-  owl_message_create_loopback(min, msg);
-  owl_message_set_direction_in(min);
-  owl_global_messagequeue_addmsg(&g, min);
-
   mout=owl_function_make_outgoing_loopback(msg);
-  owl_log_message(mout);
+
   if (owl_global_is_displayoutgoing(&g)) {
-    owl_function_add_message(mout);
+    owl_global_messagequeue_addmsg(&g, mout);
   } else {
     owl_message_free(mout);
   }
+
+  owl_message_create_loopback(min, msg);
+  owl_message_set_direction_in(min);
+  owl_global_messagequeue_addmsg(&g, min);
 
   /* fake a makemsg */
   owl_function_makemsg("loopback message sent");

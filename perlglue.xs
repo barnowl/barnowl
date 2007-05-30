@@ -128,56 +128,6 @@ void queue_message(msg)
 		owl_global_messagequeue_addmsg(&g, m);
 	}
 
-void add_message(msg) 
-	SV *msg
-	PREINIT:
-		owl_message *m;
-	CODE:
-	{
-		if(!SvROK(msg) || SvTYPE(SvRV(msg)) != SVt_PVHV) {
-			croak("Usage: BarnOwl::add_message($message)");
-		}
-
-		if (owl_global_is_displayoutgoing(&g)) {
-			m = owl_perlconfig_hashref2message(msg);
-			owl_function_add_message(m);
-		}
-	}
-
-void log_message(msg) 
-	SV *msg
-	PREINIT:
-		owl_message *m;
-	CODE:
-	{
-		if(!SvROK(msg) || SvTYPE(SvRV(msg)) != SVt_PVHV) {
-			croak("Usage: BarnOwl::log_message($message)");
-		}
-
-		m = owl_perlconfig_hashref2message(msg);
-		owl_log_message(m);
-		owl_message_free(m);
-	}
-
-void add_and_log_message(msg) 
-	SV *msg
-	PREINIT:
-		owl_message *m;
-	CODE:
-	{
-		if(!SvROK(msg) || SvTYPE(SvRV(msg)) != SVt_PVHV) {
-			croak("Usage: BarnOwl::add_and_log_message($message)");
-		}
-
-		m = owl_perlconfig_hashref2message(msg);
-		owl_log_message(m);
-		if (owl_global_is_displayoutgoing(&g)) {
-			owl_function_add_message(m);
-		} else {
-			owl_message_free(m);
-		}
-	}
-
 void admin_message(header, body) 
 	char *header
 	char *body

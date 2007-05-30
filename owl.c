@@ -69,7 +69,7 @@ int main(int argc, char **argv, char **env)
   owl_editwin *tw;
   owl_popwin *pw;
   int j, ret, initialsubs, debug, argcsave, followlast;
-  int newmsgs, zpendcount, nexttimediff;
+  int newmsgs, nexttimediff;
   struct sigaction sigact;
   char *configfile, *tty, *perlout, *perlerr, **argvsave, buff[LINE], startupmsg[LINE];
   owl_filter *f;
@@ -78,9 +78,7 @@ int main(int argc, char **argv, char **env)
   struct tm *today;
   char *dir;
   struct termios tio;
-#ifdef HAVE_LIBZEPHYR
-  ZNotice_t notice;
-#endif
+  owl_message *m;
 #if OWL_STDERR_REDIR
   int newstderr;
 #endif
@@ -452,133 +450,16 @@ int main(int argc, char **argv, char **env)
       }
     }
 
+    owl_zephyr_process_events();
+    
     /* Grab incoming messages. */
     newmsgs=0;
-    zpendcount=0;
-    while(owl_zephyr_zpending() || owl_global_messagequeue_pending(&g)) {
-#ifdef HAVE_LIBZEPHYR
-      struct sockaddr_in from;
-#endif
-      owl_message *m=NULL;
-      owl_filter *f;
+    while(owl_global_messagequeue_pending(&g)) {
 
-      /* grab the new message, stick it in 'm' */
-      if (owl_zephyr_zpending()) {
-#ifdef HAVE_LIBZEPHYR
-	/* grab a zephyr notice, but if we've done 20 without stopping,
-	   take a break to process keystrokes etc. */
-	if (zpendcount>20) break;
-	ZReceiveNotice(&notice, &from);
-	zpendcount++;
-	
-	/* is this an ack from a zephyr we sent? */
-	if (owl_zephyr_notice_is_ack(&notice)) {
-	  owl_zephyr_handle_ack(&notice);
-	  continue;
-	}
-	
-	/* if it's a ping and we're not viewing pings then skip it */
-	if (!owl_global_is_rxping(&g) && !strcasecmp(notice.z_opcode, "ping")) {
-	  continue;
-	}
+      m = owl_global_messagequeue_popmsg(&g);
 
-	/* create the new message */
-	m=owl_malloc(sizeof(owl_message));
-	owl_message_create_from_znotice(m, &notice);
-#endif
-      } else if (owl_global_messagequeue_pending(&g)) {
-	/* pick up the non-zephyr message in the message queue */
-	m=owl_global_messageuque_popmsg(&g);
-      } else {
-	/* Not supposed to happen, but we seem to get here on resizes */
-	owl_function_debugmsg("Bottomed out looking for zephyr");
-      }
-
-      /* If we didn't pick up a message for some reason, don't go on */
-      if (m==NULL) {
-	owl_function_debugmsg("m is null in main loop");
-	continue;
-      }
-      
-      /* if this message it on the puntlist, nuke it and continue */
-      if (owl_global_message_is_puntable(&g, m)) {
-	owl_message_free(m);
-	continue;
-      }
-
-      /*  login or logout that should be ignored? */
-      if (owl_global_is_ignorelogins(&g) && owl_message_is_loginout(m)) {
-	owl_message_free(m);
-	continue;
-      }
-
-      /* otherwise add it to the global list */
-      owl_messagelist_append_element(owl_global_get_msglist(&g), m);
-      newmsgs=1;
-
-      /* let the config know the new message has been received */
-      owl_perlconfig_getmsg(m, 0, NULL);
-
-      /* add it to any necessary views; right now there's only the current view */
-      owl_view_consider_message(owl_global_get_current_view(&g), m);
-
-      /* do we need to autoreply? */
-      if (owl_global_is_zaway(&g) && !owl_message_get_attribute_value(m, "isauto")) {
-	if (owl_message_is_type_zephyr(m)) {
-	  owl_zephyr_zaway(m);
-	} else if (owl_message_is_type_aim(m)) {
-	  if (owl_message_is_private(m)) {
-	    owl_function_send_aimawymsg(owl_message_get_sender(m), owl_global_get_zaway_msg(&g));
-	  }
-	}
-      }
-
-      /* ring the bell if it's a personal */
-      if (!strcmp(owl_global_get_personalbell(&g), "on")) {
-	  if (!owl_message_is_loginout(m) &&
-	      !owl_message_is_mail(m) &&
-	      owl_message_is_personal(m)) {
-	    owl_function_beep();
-	  }
-      } else if (!strcmp(owl_global_get_personalbell(&g), "off")) {
-	/* do nothing */
-      } else {
-	f=owl_global_get_filter(&g, owl_global_get_personalbell(&g));
-	if (f && owl_filter_message_match(f, m)) {
-	  owl_function_beep();
-	}
-      }
-
-
-      /* if it matches the alert filter, do the alert action */
-      f=owl_global_get_filter(&g, owl_global_get_alert_filter(&g));
-      if (f && owl_filter_message_match(f, m)) {
-	owl_function_command(owl_global_get_alert_action(&g));
-      }
-
-      /* if it's a zephyr login or logout, update the zbuddylist */
-      if (owl_message_is_type_zephyr(m) && owl_message_is_loginout(m)) {
-	if (owl_message_is_login(m)) {
-	  owl_zbuddylist_adduser(owl_global_get_zephyr_buddylist(&g), owl_message_get_sender(m));
-	} else if (owl_message_is_logout(m)) {
-	  owl_zbuddylist_deluser(owl_global_get_zephyr_buddylist(&g), owl_message_get_sender(m));
-	} else {
-	  owl_function_error("Internal error: received login notice that is neither login nor logout");
-	}
-      }
-
-      /* check for burning ears message */
-      /* this is an unsupported feature */
-      if (owl_global_is_burningears(&g) && owl_message_is_burningears(m)) {
-	char *buff;
-	buff = owl_sprintf("@i(Burning ears message on class %s)", owl_message_get_class(m));
-	owl_function_adminmsg(buff, "");
-	owl_free(buff);
-	owl_function_beep();
-      }
-
-      /* log the message if we need to */
-      owl_log_message(m);
+      if(owl_process_message(m))
+        newmsgs = 1;
     }
 
     /* is it time to check zbuddies? */
@@ -691,6 +572,108 @@ int main(int argc, char **argv, char **env)
     }
 
   }
+}
+
+/*
+ * Process a new message passed to us on the message queue from some
+ * protocol. This includes adding it to the message list, updating the
+ * view and scrolling if appropriate, logging it, and so on.
+ *
+ * Either a pointer is kept to the message internally, or it is freed
+ * if unneeded. The caller no longer ``owns'' the message's memory.
+ *
+ * Returns 1 if the message was added to the message list, and 0 if it
+ * was ignored due to user settings or otherwise.
+ */
+int owl_process_message(owl_message *m) {
+  owl_filter *f;
+  /* if this message it on the puntlist, nuke it and continue */
+  if (owl_global_message_is_puntable(&g, m)) {
+    owl_message_free(m);
+    return 0;
+  }
+
+  /*  login or logout that should be ignored? */
+  if (owl_global_is_ignorelogins(&g)
+      && owl_message_is_loginout(m)) {
+    owl_message_free(m);
+    return 0;
+  }
+
+  if (!owl_global_is_displayoutgoing(&g)
+      && owl_message_is_direction_out(m)) {
+    owl_message_free(m);
+    return 0;
+  }
+
+  /* add it to the global list */
+  owl_messagelist_append_element(owl_global_get_msglist(&g), m);
+  /* add it to any necessary views; right now there's only the current view */
+  owl_view_consider_message(owl_global_get_current_view(&g), m);
+
+  if(owl_message_is_direction_in(m)) {
+    /* let perl know about it*/
+    owl_perlconfig_getmsg(m, 0, NULL);
+
+    /* do we need to autoreply? */
+    if (owl_global_is_zaway(&g) && !owl_message_get_attribute_value(m, "isauto")) {
+      if (owl_message_is_type_zephyr(m)) {
+        owl_zephyr_zaway(m);
+      } else if (owl_message_is_type_aim(m)) {
+        if (owl_message_is_private(m)) {
+          owl_function_send_aimawymsg(owl_message_get_sender(m), owl_global_get_zaway_msg(&g));
+        }
+      }
+    }
+
+    /* ring the bell if it's a personal */
+    if (!strcmp(owl_global_get_personalbell(&g), "on")) {
+      if (!owl_message_is_loginout(m) &&
+          !owl_message_is_mail(m) &&
+          owl_message_is_personal(m)) {
+        owl_function_beep();
+      }
+    } else if (!strcmp(owl_global_get_personalbell(&g), "off")) {
+      /* do nothing */
+    } else {
+      f=owl_global_get_filter(&g, owl_global_get_personalbell(&g));
+      if (f && owl_filter_message_match(f, m)) {
+        owl_function_beep();
+      }
+    }
+
+    /* if it matches the alert filter, do the alert action */
+    f=owl_global_get_filter(&g, owl_global_get_alert_filter(&g));
+    if (f && owl_filter_message_match(f, m)) {
+      owl_function_command(owl_global_get_alert_action(&g));
+    }
+
+    /* if it's a zephyr login or logout, update the zbuddylist */
+    if (owl_message_is_type_zephyr(m) && owl_message_is_loginout(m)) {
+      if (owl_message_is_login(m)) {
+        owl_zbuddylist_adduser(owl_global_get_zephyr_buddylist(&g), owl_message_get_sender(m));
+      } else if (owl_message_is_logout(m)) {
+        owl_zbuddylist_deluser(owl_global_get_zephyr_buddylist(&g), owl_message_get_sender(m));
+      } else {
+        owl_function_error("Internal error: received login notice that is neither login nor logout");
+      }
+    }
+
+    /* check for burning ears message */
+    /* this is an unsupported feature */
+    if (owl_global_is_burningears(&g) && owl_message_is_burningears(m)) {
+      char *buff;
+      buff = owl_sprintf("@i(Burning ears message on class %s)", owl_message_get_class(m));
+      owl_function_adminmsg(buff, "");
+      owl_free(buff);
+      owl_function_beep();
+    }
+  }
+
+  /* log the message if we need to */
+  owl_log_message(m);
+
+  return 1;
 }
 
 void sig_handler(int sig, siginfo_t *si, void *data)
