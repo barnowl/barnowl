@@ -69,13 +69,12 @@ sub new_command {
     my $func = shift;
     my $args = shift || {};
     my %args = (
-        summary     => undef,
-        usage       => undef,
-        description => undef,
+        summary     => "",
+        usage       => "",
+        description => "",
         %{$args}
     );
 
-    no warnings 'uninitialized';
     BarnOwl::new_command_internal($name, $func, $args{summary}, $args{usage}, $args{description});
 }
 
