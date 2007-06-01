@@ -32,17 +32,8 @@ void owl_log_message(owl_message *m) {
   }
 
   /* handle outgoing messages */
-  if (owl_message_is_type_aim(m)) {
-    owl_log_outgoing_aim(m);
-  } else if (owl_message_is_type_zephyr(m)) {
-    owl_log_outgoing_zephyr(m);
-  } else if (owl_message_is_type_loopback(m)) {
-    owl_log_outgoing_loopback(m);
-  } else if (owl_message_is_type_jabber(m)) {
-   owl_log_outgoing_jabber(m);	  
-  }else {
-    owl_function_error("Unknown message type for logging");
-  }
+  owl_log_outgoing(m);
+
   owl_function_debugmsg("owl_log_message: leaving");
 }
 
@@ -83,50 +74,93 @@ int owl_log_shouldlog_message(owl_message *m) {
   return(1);
 }
 
-void owl_log_outgoing_zephyr(owl_message *m)
-{
-  FILE *file;
-  char filename[MAXPATHLEN], *logpath;
-  char *to, *text;
+void owl_log_zephyr(owl_message *m, FILE *file) {
+    char *tmp;
+    tmp=short_zuser(owl_message_get_sender(m));
+    fprintf(file, "Class: %s Instance: %s", owl_message_get_class(m), owl_message_get_instance(m));
+    if (strcmp(owl_message_get_opcode(m), "")) fprintf(file, " Opcode: %s", owl_message_get_opcode(m));
+    fprintf(file, "\n");
+    fprintf(file, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
+    fprintf(file, "From: %s <%s>\n\n", owl_message_get_zsig(m), tmp);
+    fprintf(file, "%s\n\n", owl_message_get_body(m));
+    owl_free(tmp);
+}
 
-  /* strip local realm */
-  to=short_zuser(owl_message_get_recipient(m));
+void owl_log_aim(owl_message *m, FILE *file) {
+    fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
+    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
+    if (owl_message_is_login(m))
+        fprintf(file, "LOGIN\n\n");
+    else if (owl_message_is_logout(m))
+        fprintf(file, "LOGOUT\n\n");
+    else
+        fprintf(file, "%s\n\n", owl_message_get_body(m));
+}
+
+void owl_log_jabber(owl_message *m, FILE *file) {
+    fprintf(file, "From: <%s> To: <%s>\n",owl_message_get_sender(m), owl_message_get_recipient(m));
+    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
+    fprintf(file, "%s\n\n",owl_message_get_body(m));
+}
+
+void owl_log_generic(owl_message *m, FILE *file) {
+    fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
+    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
+    fprintf(file, "%s\n\n", owl_message_get_body(m));
+}
+
+void owl_log_append(owl_message *m, char *filename) {
+    FILE *file;
+    file=fopen(filename, "a");
+    if (!file) {
+        owl_function_error("Unable to open file for logging");
+        return;
+    }
+    if (owl_message_is_type_zephyr(m)) {
+        owl_log_zephyr(m, file);
+    } else if (owl_message_is_type_jabber(m)) {
+        owl_log_jabber(m, file);
+    } else if (owl_message_is_type_aim(m)) {
+        owl_log_aim(m, file);
+    } else {
+        owl_log_generic(m, file);
+    }
+    fclose(file);
+}
+
+void owl_log_outgoing(owl_message *m)
+{
+  char filename[MAXPATHLEN], *logpath;
+  char *to;
+
+  /* Figure out what path to log to */
+  if (owl_message_is_type_zephyr(m)) {
+      to = short_zuser(owl_message_get_recipient(m));
+  } else if (owl_message_is_type_jabber(m)) {
+      to = owl_sprintf("jabber:%s", owl_message_get_recipient(m));
+  } else if (owl_message_is_type_aim(m)) {
+      char *temp;
+      temp = owl_aim_normalize_screenname(owl_message_get_recipient(m));
+      downstr(temp);
+      to = owl_sprintf("aim:%s", temp);
+      owl_free(temp);
+  } else {
+      to = owl_sprintf("loopback");
+  }
 
   /* expand ~ in path names */
-  logpath=owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
-
-  text=owl_message_get_body(m);
-
+  logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
   snprintf(filename, MAXPATHLEN, "%s/%s", logpath, to);
-  file=fopen(filename, "a");
-  if (!file) {
-    owl_function_error("Unable to open file for outgoing logging");
-    owl_free(logpath);
-    owl_free(to);
-    return;
-  }
-  fprintf(file, "OUTGOING (owl): %s\n%s\n", to, text);
-  if (text[strlen(text)-1]!='\n') {
-    fprintf(file, "\n");
-  }
-  fclose(file);
+  owl_free(to);
+
+  owl_log_append(m, filename);
 
   snprintf(filename, MAXPATHLEN, "%s/all", logpath);
   owl_free(logpath);
-  file=fopen(filename, "a");
-  if (!file) {
-    owl_function_error("Unable to open file for outgoing logging");
-    owl_free(to);
-    return;
-  }
-  fprintf(file, "OUTGOING (owl): %s\n%s\n", to, text);
-  if (text[strlen(text)-1]!='\n') {
-    fprintf(file, "\n");
-  }
-  fclose(file);
 
-  owl_free(to);
+  owl_log_append(m, filename);
 }
+
 
 void owl_log_outgoing_zephyr_error(char *to, char *text)
 {
@@ -184,181 +218,35 @@ void owl_log_outgoing_zephyr_error(char *to, char *text)
   owl_free(tobuff);
 }
 
-void owl_log_outgoing_jabber(owl_message *m)
-{
-  FILE *file;
-  char filename[MAXPATHLEN], *logpath;
-  char *tobuff, *normalto, *text;
-  owl_function_debugmsg("owl_log_outgoing_jabber: entering");
-  /* normalize and downcase the screenname */
-  normalto = owl_message_get_recipient(m);
-  
-  /* downstr(normalto); */
-  tobuff=owl_sprintf("jabber:%s", normalto);
-  /* owl_free(normalto); */
-
-  /* expand ~ in path names */
-  logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
-
-  text=owl_message_get_body(m);
-  
-  snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
-  file=fopen(filename, "a");
-  if (!file) {
-    owl_function_error("Unable to open file for outgoing logging");
-    owl_free(logpath);
-    owl_free(tobuff);
-    return;
-  }
-  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
-  if (text[strlen(text)-1]!='\n') {
-    fprintf(file, "\n");
-  }
-  fclose(file);
-
-  snprintf(filename, MAXPATHLEN, "%s/all", logpath);
-  owl_free(logpath);
-  file=fopen(filename, "a");
-  if (!file) {
-    owl_function_error("Unable to open file for outgoing logging");
-    owl_free(tobuff);
-    return;
-  }
-  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
-  if (text[strlen(text)-1]!='\n') {
-    fprintf(file, "\n");
-  }
-  fclose(file);
-
-  owl_free(tobuff);
-}
-
-
-void owl_log_outgoing_aim(owl_message *m)
-{
-  FILE *file;
-  char filename[MAXPATHLEN], *logpath;
-  char *tobuff, *normalto, *text;
-
-  owl_function_debugmsg("owl_log_outgoing_aim: entering");
-
-  /* normalize and downcase the screenname */
-  normalto=owl_aim_normalize_screenname(owl_message_get_recipient(m));
-  downstr(normalto);
-  tobuff=owl_sprintf("aim:%s", normalto);
-  owl_free(normalto);
-
-  /* expand ~ in path names */
-  logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
-
-  text=owl_message_get_body(m);
-  
-  snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
-  file=fopen(filename, "a");
-  if (!file) {
-    owl_function_error("Unable to open file for outgoing logging");
-    owl_free(logpath);
-    owl_free(tobuff);
-    return;
-  }
-  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
-  if (text[strlen(text)-1]!='\n') {
-    fprintf(file, "\n");
-  }
-  fclose(file);
-
-  snprintf(filename, MAXPATHLEN, "%s/all", logpath);
-  owl_free(logpath);
-  file=fopen(filename, "a");
-  if (!file) {
-    owl_function_error("Unable to open file for outgoing logging");
-    owl_free(tobuff);
-    return;
-  }
-  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
-  if (text[strlen(text)-1]!='\n') {
-    fprintf(file, "\n");
-  }
-  fclose(file);
-
-  owl_free(tobuff);
-}
-
-void owl_log_outgoing_loopback(owl_message *m)
-{
-  FILE *file;
-  char filename[MAXPATHLEN], *logpath;
-  char *tobuff, *text;
-
-  tobuff=owl_sprintf("loopback");
-
-  /* expand ~ in path names */
-  logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
-
-  text=owl_message_get_body(m);
-
-  snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
-  file=fopen(filename, "a");
-  if (!file) {
-    owl_function_error("Unable to open file for outgoing logging");
-    owl_free(logpath);
-    owl_free(tobuff);
-    return;
-  }
-  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
-  if (text[strlen(text)-1]!='\n') {
-    fprintf(file, "\n");
-  }
-  fclose(file);
-
-  snprintf(filename, MAXPATHLEN, "%s/all", logpath);
-  owl_free(logpath);
-  file=fopen(filename, "a");
-  if (!file) {
-    owl_function_error("Unable to open file for outgoing logging");
-    owl_free(tobuff);
-    return;
-  }
-  fprintf(file, "OUTGOING (owl): %s\n%s\n", tobuff, text);
-  if (text[strlen(text)-1]!='\n') {
-    fprintf(file, "\n");
-  }
-  fclose(file);
-
-  owl_free(tobuff);
-}
-
 void owl_log_incoming(owl_message *m)
 {
-  FILE *file, *allfile;
   char filename[MAXPATHLEN], allfilename[MAXPATHLEN], *logpath;
-  char *frombuff=NULL, *from=NULL, *zsig=NULL;
+  char *frombuff=NULL, *from=NULL;
   int len, ch, i, personal;
 
   /* figure out if it's a "personal" message or not */
   if (owl_message_is_type_zephyr(m)) {
     if (owl_message_is_personal(m)) {
-      personal=1;
+      personal = 1;
     } else {
-      personal=0;
+      personal = 0;
     }
   } else if (owl_message_is_type_jabber(m)) {
-	  /* This needs to be fixed to handle groupchat */
-	  char* msgtype = owl_message_get_attribute_value(m,"jtype");
-	  if (msgtype && !strcmp(msgtype,"groupchat")) {
-		  personal =0;
-	  } else {
-  	     personal=1;
-	  }
+    /* This needs to be fixed to handle groupchat */
+    char* msgtype = owl_message_get_attribute_value(m,"jtype");
+    if (msgtype && !strcmp(msgtype,"groupchat")) {
+      personal = 0;
+    } else {
+      personal = 1;
+    }
   } else {
     if (owl_message_is_private(m) || owl_message_is_loginout(m)) {
-      personal=1;
+      personal = 1;
     } else {
-      personal=0;
+      personal = 0;
     }
   }
 
-  
 
   if (owl_message_is_type_zephyr(m)) {
     if (personal) {
@@ -414,89 +302,11 @@ void owl_log_incoming(owl_message *m)
     snprintf(filename, MAXPATHLEN, "%s/%s", logpath, from);
   }
   owl_free(logpath);
-  
-  file=fopen(filename, "a");
-  if (!file) {
-    owl_function_error("Unable to open file for incoming logging");
-    owl_free(frombuff);
-    return;
-  }
-
-  allfile=NULL;
-  if (personal) {
-    allfile=fopen(allfilename, "a");
-    if (!allfile) {
-      owl_function_error("Unable to open file for incoming logging");
-      owl_free(frombuff);
-      fclose(file);
-      return;
-    }
-  }
-
-  /* write to the main file */
-  if (owl_message_is_type_zephyr(m)) {
-    char *tmp;
-    
-    tmp=short_zuser(owl_message_get_sender(m));
-    fprintf(file, "Class: %s Instance: %s", owl_message_get_class(m), owl_message_get_instance(m));
-    if (strcmp(owl_message_get_opcode(m), "")) fprintf(file, " Opcode: %s", owl_message_get_opcode(m));
-    fprintf(file, "\n");
-    fprintf(file, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
-    zsig=owl_message_get_zsig(m);
-    fprintf(file, "From: %s <%s>\n\n", zsig, tmp);
-    fprintf(file, "%s\n\n", owl_message_get_body(m));
-    owl_free(tmp);
-  } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
-    fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
-    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
-    fprintf(file, "%s\n\n", owl_message_get_body(m));
-  } else if (owl_message_is_type_aim(m) && owl_message_is_loginout(m)) {
-    fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
-    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
-    if (owl_message_is_login(m)) fprintf(file, "LOGIN\n\n");
-    if (owl_message_is_logout(m)) fprintf(file, "LOGOUT\n\n");
-  } else if (owl_message_is_type_jabber(m)) {
-    fprintf(file, "From: <%s> To: <%s>\n",owl_message_get_sender(m), owl_message_get_recipient(m));
-    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
-    fprintf(file, "%s\n\n",owl_message_get_body(m));
-  }
-  else {
-    fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
-    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
-    fprintf(file, "%s\n\n", owl_message_get_body(m));
-  }
-
-  fclose(file);
-
-  /* if it's a personal message, also write to the 'all' file */
-  if (personal) {
-    if (owl_message_is_type_zephyr(m)) {
-      char *tmp;
-
-      tmp=short_zuser(owl_message_get_sender(m));
-      fprintf(allfile, "Class: %s Instance: %s", owl_message_get_class(m), owl_message_get_instance(m));
-      if (strcmp(owl_message_get_opcode(m), "")) fprintf(allfile, " Opcode: %s", owl_message_get_opcode(m));
-      fprintf(allfile, "\n");
-      fprintf(allfile, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
-      fprintf(allfile, "From: %s <%s>\n\n", zsig, tmp);
-      fprintf(allfile, "%s\n\n", owl_message_get_body(m));
-      owl_free(tmp);
-    } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
-      fprintf(allfile, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
-      fprintf(allfile, "Time: %s\n\n", owl_message_get_timestr(m));
-      fprintf(allfile, "%s\n\n", owl_message_get_body(m));
-    } else if (owl_message_is_type_aim(m) && owl_message_is_loginout(m)) {
-      fprintf(allfile, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
-      fprintf(allfile, "Time: %s\n\n", owl_message_get_timestr(m));
-      if (owl_message_is_login(m)) fprintf(allfile, "LOGIN\n\n");
-      if (owl_message_is_logout(m)) fprintf(allfile, "LOGOUT\n\n");
-    } else {
-      fprintf(allfile, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
-      fprintf(allfile, "Time: %s\n\n", owl_message_get_timestr(m));
-      fprintf(allfile, "%s\n\n", owl_message_get_body(m));
-    }
-    fclose(allfile);
-  }
-
   owl_free(frombuff);
+
+  owl_log_append(m, filename);
+
+  if (personal)
+      owl_log_append(m, allfilename);
+
 }

@@ -571,7 +571,7 @@ sub format_chat($) {
     my $sender = $m->long_sender;
     $sender =~ s/\n.*$//s;
     $header .= " " x (4 - ((length $header) % 4));
-    $header .= "(" . $sender . ")";
+    $header .= "(" . $sender . '@color[default]' . ")";
     my $message = $header . "\n". indentBody($m);
     if($m->is_personal && $m->direction eq "in") {
         $message = BarnOwl::Style::boldify($message);
