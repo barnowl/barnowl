@@ -816,8 +816,16 @@ int owl_global_get_style_names(owl_global *g, owl_list *l) {
 
 void owl_global_add_style(owl_global *g, owl_style *s)
 {
-  owl_dict_insert_element(&(g->styledict), owl_style_get_name(s), 
-			  s, (void(*)(void*))owl_style_free);
+  /*
+   * If we're redefining the current style, make sure to update
+   * pointers to it.
+   */
+  if(g->current_view.style
+     && !strcmp(owl_style_get_name(g->current_view.style),
+                owl_style_get_name(s)))
+    g->current_view.style = s;
+  owl_dict_insert_element(&(g->styledict), owl_style_get_name(s),
+                          s, (void(*)(void*))owl_style_free);
 }
 
 void owl_global_set_haveaim(owl_global *g)
