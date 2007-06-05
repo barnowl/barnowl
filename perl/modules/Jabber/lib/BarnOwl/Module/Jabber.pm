@@ -36,7 +36,7 @@ BEGIN {
                            "IO::Socket::SSL from CPAN. \n");
             die("Not loading Jabber.par\n");
         }
-    }       
+    }
 }
 
 no warnings 'redefine';
@@ -67,6 +67,17 @@ sub onStart {
         $BarnOwl::Hooks::mainLoop->add(\&onMainLoop);
         $BarnOwl::Hooks::getBuddyList->add(\&onGetBuddyList);
         $vars{show} = '';
+	BarnOwl::new_variable_bool("jabber:show_offline_buddies",
+				   { default => 1,
+				     summary => 'Show offline or pending buddies.'});
+	BarnOwl::new_variable_int("jabber:auto_away_timeout",
+				  { default => 5,
+				    summary => 'After minutes idle, auto away.',
+				  });
+	BarnOwl::new_variable_int("jabber:auto_xa_timeout",
+				  { default => 15,
+				    summary => 'After minutes idle, auto extended away.'
+				});
     } else {
         # Our owl doesn't support queue_message. Unfortunately, this
         # means it probably *also* doesn't support BarnOwl::error. So just
@@ -80,14 +91,16 @@ sub onMainLoop {
     return if ( !$conn->connected() );
 
     $vars{status_changed} = 0;
+    my $auto_away = BarnOwl::getvar('jabber:auto_away_timeout');
+    my $auto_xa = BarnOwl::getvar('jabber:auto_xa_timeout');
     my $idletime = BarnOwl::getidletime();
-    if ($idletime >= 900 && $vars{show} eq 'away') {
+    if ($auto_xa != 0 && $idletime >= (60 * $auto_xa) && ($vars{show} eq 'away' || $vars{show} eq '' )) {
         $vars{show} = 'xa';
-        $vars{status} = 'Auto extended-away after 15 minutes idle.';
+        $vars{status} = 'Auto extended-away after '.$auto_xa.' minute'.($auto_xa == 1 ? '' : 's').' idle.';
         $vars{status_changed} = 1;
-    } elsif ($idletime >= 300 && $vars{show} eq '') {
+    } elsif ($auto_away != 0 && $idletime >= (60 * $auto_away) && $vars{show} eq '') {
         $vars{show} = 'away';
-        $vars{status} = 'Auto away after 5 minutes idle.';
+        $vars{status} = 'Auto away after '.$auto_away.' minute'.($auto_away == 1 ? '' : 's').' idle.';
         $vars{status_changed} = 1;
     } elsif ($idletime == 0 && $vars{show} ne '') {
         $vars{show} = '';
@@ -139,6 +152,7 @@ sub blist_listBuddy {
         $blistStr = BarnOwl::Style::boldify($blistStr);
     }
     else {
+        return '' unless BarnOwl::getvar('jabber:show_offline_buddies') != 'on';
 	if ($jq{ask}) {
             $blistStr .= " [pending]";
 	}
@@ -194,7 +208,7 @@ sub register_owl_commands() {
     BarnOwl::new_command(
         jabberlogin => \&cmd_login,
         {
-            summary => "Log into jabber", 
+            summary => "Log into jabber",
             usage   => "jabberlogin JID [PASSWORD]"
         }
     );
@@ -378,7 +392,7 @@ sub do_login {
     delete $vars{jlogin_havepass};
     delete $vars{jlogin_connhash};
     delete $vars{jlogin_authhash};
- 
+
     return "";
 }
 
