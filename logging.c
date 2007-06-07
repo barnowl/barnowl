@@ -306,17 +306,34 @@ void owl_log_incoming(owl_message *m)
     logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
     snprintf(filename, MAXPATHLEN, "%s/%s", logpath, from);
     snprintf(allfilename, MAXPATHLEN, "%s/all", logpath);
+    owl_log_append(m, allfilename);
 
   } else {
     logpath = owl_text_substitute(owl_global_get_classlogpath(&g), "~", owl_global_get_homedir(&g));
     snprintf(filename, MAXPATHLEN, "%s/%s", logpath, from);
   }
-  owl_free(logpath);
-  owl_free(frombuff);
 
   owl_log_append(m, filename);
 
-  if (personal)
-      owl_log_append(m, allfilename);
+  if (personal && owl_message_is_type_zephyr(m)) {
+    // We want to log to all of the CC'd people who were not us, or
+    // the sender, as well.
+    char *cc, *temp;
+    cc = owl_message_get_cc_without_recipient(m);
+    if (cc != NULL) {
+      temp = strtok(cc, " ");
+      while (temp != NULL) {
+        temp = short_zuser(temp);
+        if (strcasecmp(temp, frombuff) != 0) {
+          snprintf(filename, MAXPATHLEN, "%s/%s", logpath, temp);
+          owl_log_append(m, filename);
+        }
+        temp = strtok(NULL, " ");
+      }
+      owl_free(cc);
+    }
+  }
 
+  owl_free(frombuff);
+  owl_free(logpath);
 }
