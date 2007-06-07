@@ -2086,7 +2086,7 @@ void owl_function_reply(int type, int enter)
 	class=owl_message_get_class(m);
 	inst=owl_message_get_instance(m);
 	to=owl_message_get_recipient(m);
-	cc=owl_message_get_cc(m);
+	cc=owl_message_get_cc_without_recipient(m);
 	if (!strcmp(to, "") || !strcmp(to, "*")) {
 	  to="";
 	} else if (to[0]=='@') {

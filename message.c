@@ -659,6 +659,30 @@ char *owl_message_get_cc(owl_message *m)
   return(out);
 }
 
+/* caller must free return value */
+char *owl_message_get_cc_without_recipient(owl_message *m)
+{
+  char *cc, *out, *end, *user;
+
+  cc = owl_message_get_cc(m);
+  out = owl_malloc(strlen(cc));
+  end = out;
+
+  user = strtok(cc, " ");
+  while (user != NULL) {
+    if (strcasecmp(user, short_zuser(owl_message_get_recipient(m))) != 0) {
+      strcpy(end, user);
+      end[strlen(user)] = ' ';
+      end += strlen(user) + 1;
+    }
+    user = strtok(NULL, " ");
+  }
+  end[0] = '\0';
+
+  owl_free(cc);
+  return(out);
+}
+
 int owl_message_get_id(owl_message *m)
 {
   return(m->id);
