@@ -131,34 +131,44 @@ void owl_log_append(owl_message *m, char *filename) {
 void owl_log_outgoing(owl_message *m)
 {
   char filename[MAXPATHLEN], *logpath;
-  char *to;
-
-  /* Figure out what path to log to */
-  if (owl_message_is_type_zephyr(m)) {
-      to = short_zuser(owl_message_get_recipient(m));
-  } else if (owl_message_is_type_jabber(m)) {
-      to = owl_sprintf("jabber:%s", owl_message_get_recipient(m));
-  } else if (owl_message_is_type_aim(m)) {
-      char *temp;
-      temp = owl_aim_normalize_screenname(owl_message_get_recipient(m));
-      downstr(temp);
-      to = owl_sprintf("aim:%s", temp);
-      owl_free(temp);
-  } else {
-      to = owl_sprintf("loopback");
-  }
+  char *to, *temp;
 
   /* expand ~ in path names */
   logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
+
+  /* Figure out what path to log to */
+  if (owl_message_is_type_zephyr(m)) {
+    // If this has CC's, do all but the "recipient" which we'll do below
+    to = owl_message_get_cc_without_recipient(m);
+    if (to != NULL) {
+      temp = strtok(to, " ");
+      while (temp != NULL) {
+          temp = short_zuser(temp);
+          snprintf(filename, MAXPATHLEN, "%s/%s", logpath, temp);
+          owl_log_append(m, filename);
+          temp = strtok(NULL, " ");
+      }
+      owl_free(to);
+    }
+    to = short_zuser(owl_message_get_recipient(m));
+  } else if (owl_message_is_type_jabber(m)) {
+    to = owl_sprintf("jabber:%s", owl_message_get_recipient(m));
+  } else if (owl_message_is_type_aim(m)) {
+    temp = owl_aim_normalize_screenname(owl_message_get_recipient(m));
+    downstr(temp);
+    to = owl_sprintf("aim:%s", temp);
+    owl_free(temp);
+  } else {
+    to = owl_sprintf("loopback");
+  }
+
   snprintf(filename, MAXPATHLEN, "%s/%s", logpath, to);
+  owl_log_append(m, filename);
   owl_free(to);
 
-  owl_log_append(m, filename);
-
   snprintf(filename, MAXPATHLEN, "%s/all", logpath);
-  owl_free(logpath);
-
   owl_log_append(m, filename);
+  owl_free(logpath);
 }
 
 
