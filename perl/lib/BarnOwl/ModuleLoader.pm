@@ -58,6 +58,10 @@ sub reload {
                          BarnOwl/Message.pm BarnOwl/Style.pm));
 
     $BarnOwl::Hooks::startup->clear;
+    $BarnOwl::Hooks::getBuddyList->clear;
+    $BarnOwl::Hooks::mainLoop->clear;
+    $BarnOwl::Hooks::shutdown->clear;
+    $BarnOwl::Hooks::receiveMessage->clear;
     local $SIG{__WARN__} = \&squelch_redefine;
     $class->load_all;
     $BarnOwl::Hooks::startup->run(1);
