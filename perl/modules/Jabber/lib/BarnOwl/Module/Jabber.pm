@@ -152,7 +152,7 @@ sub blist_listBuddy {
         $blistStr = BarnOwl::Style::boldify($blistStr);
     }
     else {
-        return '' unless BarnOwl::getvar('jabber:show_offline_buddies') != 'on';
+        return '' if (BarnOwl::getvar('jabber:show_offline_buddies') eq 'off');
 	if ($jq{ask}) {
             $blistStr .= " [pending]";
 	}
