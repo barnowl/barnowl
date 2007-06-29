@@ -23,8 +23,8 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->topline=0;
   e->winlines=winlines;
   e->wincols=wincols;
-  e->fillcol=owl_editwin_limit_maxcols(wincols-1, owl_global_get_edit_maxfillcols(&g));
-  e->wrapcol=owl_editwin_limit_maxcols(wincols-1, owl_global_get_edit_maxwrapcols(&g));
+  e->fillcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxfillcols(&g));
+  e->wrapcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxwrapcols(&g));
   e->curswin=win;
   e->style=style;
   if ((style!=OWL_EDITWIN_STYLE_MULTILINE) &&
@@ -50,8 +50,8 @@ void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincol
   e->curswin=w;
   e->winlines=winlines;
   e->wincols=wincols;
-  e->fillcol=owl_editwin_limit_maxcols(wincols-1, owl_global_get_edit_maxfillcols(&g));
-  e->wrapcol=owl_editwin_limit_maxcols(wincols-1, owl_global_get_edit_maxwrapcols(&g));
+  e->fillcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxfillcols(&g));
+  e->wrapcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxwrapcols(&g));
 }
 
 /* echo the character 'ch' for each normal character keystroke,
