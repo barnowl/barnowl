@@ -282,19 +282,19 @@ int owl_filter_test_string(char * filt, owl_message *m, int shouldmatch) /* nopr
   int ok;
   int failed = 0;
   if(owl_filter_init_fromstring(&f, "test-filter", filt)) {
-    printf("\tFAIL: parse %s\n", filt);
+    printf("not ok can't parse %s\n", filt);
     failed = 1;
     goto out;
   }
   ok = owl_filter_message_match(&f, m);
   if((shouldmatch && !ok) || (!shouldmatch && ok)) {
-    printf("\tFAIL: match %s (got %d, expected %d)\n", filt, ok, shouldmatch);
+    printf("not ok match %s (got %d, expected %d)\n", filt, ok, shouldmatch);
     failed = 1;
   }
  out:
   owl_filter_free(&f);
   if(!failed) {
-    printf("\tok  : %s %s\n", shouldmatch ? "matches" : "doesn't match", filt);
+    printf("ok %s %s\n", shouldmatch ? "matches" : "doesn't match", filt);
   }
   return failed;
 }

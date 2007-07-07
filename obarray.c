@@ -79,7 +79,7 @@ int owl_obarray_regtest(void) {
   owl_obarray oa;
   owl_obarray_init(&oa);
 
-  printf("BEGIN testing owl_obarray\n");
+  printf("# BEGIN testing owl_obarray\n");
 
   p = owl_obarray_insert(&oa, "test");
   FAIL_UNLESS("returned string is equal", p && !strcmp(p, "test"));
@@ -95,7 +95,7 @@ int owl_obarray_regtest(void) {
   p = owl_obarray_find(&oa, "nothere");
   FAIL_UNLESS("Didn't find a string that isn't there", p == NULL);
 
-  printf("END testing owl_obarray (%d failures)\n", numfailed);
+  printf("# END testing owl_obarray (%d failures)\n", numfailed);
 
   return numfailed;
 }
