@@ -758,7 +758,6 @@ int owl_util_min(int a, int b)
 */
 char * owl_util_baseclass(char * class)
 {
-  char *ret;
   char *start, *end;
 
   start = class;
