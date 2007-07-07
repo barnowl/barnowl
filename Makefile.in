@@ -44,7 +44,7 @@ OBJS = $(BASE_OBJS) $(GEN_O)
 AUTOGEN=$(GEN_C) $(GEN_H)
 #AUTOGEN=$(GEN_C)
 
-HEADERS=$(GEN_H) owl.h config.h
+HEADERS=$(GEN_H) owl.h config.h test.h
 
 %.o: %.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $< -o $@

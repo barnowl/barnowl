@@ -976,7 +976,7 @@ int owl_variable_regtest(void) {
 
   in_regtest = 1;
 
-  printf("BEGIN testing owl_variable\n");
+  printf("# BEGIN testing owl_variable\n");
   FAIL_UNLESS("setup", 0==owl_variable_dict_setup(&vd));
 
   FAIL_UNLESS("get bool", 0==owl_variable_get_bool(&vd,"rxping"));
@@ -1048,8 +1048,8 @@ int owl_variable_regtest(void) {
 
   owl_variable_dict_free(&vd);
 
-  if (numfailed) printf("*** WARNING: failures encountered with owl_variable\n");
-  printf("END testing owl_variable (%d failures)\n", numfailed);
+  // if (numfailed) printf("*** WARNING: failures encountered with owl_variable\n");
+  printf("# END testing owl_variable (%d failures)\n", numfailed);
   return(numfailed);
 }
 
