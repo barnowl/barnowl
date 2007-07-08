@@ -20,9 +20,11 @@ BEGIN {
     bootstrap BarnOwl 1.2;
 };
 
-use lib(get_data_dir()."/lib");
-use lib($ENV{HOME}."/.owl/lib");
+use lib(get_data_dir() . "/lib");
+use lib(get_config_dir() . "/lib");
 
+# perlconfig.c will set this to the value of the -c command-line
+# switch, if present.
 our $configfile;
 
 if(!$configfile && -f $ENV{HOME} . "/.barnowlconf") {

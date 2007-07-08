@@ -3460,17 +3460,15 @@ void owl_function_addstartup(char *buff)
   FILE *file;
   char *filename;
 
-  filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
+  filename=owl_global_get_startupfile(&g);
   file=fopen(filename, "a");
   if (!file) {
     owl_function_error("Error opening startupfile for new command");
-    owl_free(filename);
     return;
   }
 
   /* delete earlier copies */
   owl_util_file_deleteline(filename, buff, 1);
-  owl_free(filename);
 
   /* add this line */
   fprintf(file, "%s\n", buff);
@@ -3482,9 +3480,8 @@ void owl_function_addstartup(char *buff)
 void owl_function_delstartup(char *buff)
 {
   char *filename;
-  filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
+  filename=owl_global_get_startupfile(&g);
   owl_util_file_deleteline(filename, buff, 1);
-  owl_free(filename);
 }
 
 /* Execute owl commands from the given filename.  If the filename
@@ -3496,9 +3493,8 @@ void owl_function_source(char *filename)
   char buff[LINE];
 
   if (!filename) {
-    filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
+    filename=owl_global_get_startupfile(&g);
     file=fopen(filename, "r");
-    owl_free(filename);
   } else {
     file=fopen(filename, "r");
   }

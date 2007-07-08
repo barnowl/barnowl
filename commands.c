@@ -2141,9 +2141,8 @@ char *owl_command_show(int argc, char **argv, char *buff)
   } else if (!strcmp(argv[1], "startup")) {
     char *filename;
     
-    filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
+    filename=owl_global_get_startupfile(&g);
     owl_function_popless_file(filename);
-    owl_free(filename);
   } else if (!strcmp(argv[1], "errors")) {
     owl_function_showerrs();
   } else {

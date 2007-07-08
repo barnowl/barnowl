@@ -558,6 +558,8 @@ typedef struct _owl_global {
   int typwinactive;
   char *thishost;
   char *homedir;
+  char *confdir;
+  char *startupfile;
   int direction;
   int zaway;
   char *cur_zaway_msg;
