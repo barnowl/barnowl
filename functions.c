@@ -579,6 +579,7 @@ void owl_function_nextmsg_full(char *filter, int skip_deleted, int last_if_none)
   }
 
   if (i>owl_view_get_size(v)-1) i=owl_view_get_size(v)-1;
+  if (i<0) i=0;
 
   if (!found) {
     owl_function_makemsg("already at last%s message%s%s",
