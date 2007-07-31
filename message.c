@@ -840,7 +840,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   } else {
     owl_message_set_opcode(m, "");
   }
-  owl_message_set_zsig(m, n->z_message);
+  owl_message_set_zsig(m, owl_zephyr_get_zsig(n));
 
   if ((ptr=strchr(n->z_recipient, '@'))!=NULL) {
     owl_message_set_realm(m, ptr+1);

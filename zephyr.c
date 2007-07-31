@@ -366,6 +366,9 @@ int owl_zephyr_get_num_fields(ZNotice_t *n)
 {
   int i, fields;
 
+  if(n->z_message_len == 0)
+    return 0;
+
   fields=1;
   for (i=0; i<n->z_message_len; i++) {
     if (n->z_message[i]=='\0') fields++;
