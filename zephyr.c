@@ -327,6 +327,10 @@ char *owl_zephyr_get_field(ZNotice_t *n, int j)
   int i, count, save;
   char *out;
 
+  /* If there's no message here, just run along now */
+  if (n->z_message_len == 0)
+    return(owl_strdup(""));
+
   count=save=0;
   for (i=0; i<n->z_message_len; i++) {
     if (n->z_message[i]=='\0') {
