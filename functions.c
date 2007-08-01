@@ -2670,9 +2670,9 @@ char *owl_function_zuserfilt(char *user)
   f=owl_malloc(sizeof(owl_filter));
 
   argbuff=owl_malloc(strlen(longuser)+1000);
-  sprintf(argbuff, "( type ^zephyr$ and ( class ^message$ and instance ^personal$ and ");
+  sprintf(argbuff, "( type ^zephyr$ and filter personal and ");
   sprintf(argbuff, "%s ( ( direction ^in$ and sender ^%s$ ) or ( direction ^out$ and recipient ^%s$ ) ) )", argbuff, longuser, longuser);
-  sprintf(argbuff, "%s or ( ( class ^login$ ) and ( sender ^%s$ ) ) )", argbuff, longuser);
+  sprintf(argbuff, "%s or ( ( class ^login$ ) and ( sender ^%s$ ) )", argbuff, longuser);
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
@@ -2831,7 +2831,7 @@ char *owl_function_smartfilter(int type)
 
   /* narrow personal and login messages to the sender or recip as appropriate */
   if (owl_message_is_type_zephyr(m)) {
-    if (owl_message_is_private(m) || owl_message_is_loginout(m)) {
+    if (owl_message_is_personal(m) || owl_message_is_loginout(m)) {
       if (owl_message_is_direction_in(m)) {
         zperson=short_zuser(owl_message_get_sender(m));
       } else {
