@@ -276,7 +276,9 @@ int main(int argc, char **argv, char **env)
    *  included.  Also, there should be an %aimme% */
   owl_function_debugmsg("startup: creating default filters");
   f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "personal", "isprivate ^true$");
+  owl_filter_init_fromstring(f, "personal", "isprivate ^true$ and ( not type ^zephyr$"
+                             " or ( class ^message and"
+                             " ( instance ^personal$ or instance ^urgent$ ) ) )");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   f=owl_malloc(sizeof(owl_filter));
