@@ -416,6 +416,7 @@ int owl_message_is_pseudo(owl_message *m)
 
 char *owl_message_get_text(owl_message *m)
 {
+  owl_message_format(m);
   return(owl_fmtext_get_text(&(m->fmtext->fmtext)));
 }
 
