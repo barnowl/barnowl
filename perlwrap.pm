@@ -569,6 +569,9 @@ sub format_chat($) {
         $header .= ' / @b{' . $m->pretty_sender . '}';
     }
 
+    if($m->opcode) {
+        $header .= " [" . $m->opcode . "]";
+    }
     $header .= "  " . time_hhmm($m);
     my $sender = $m->long_sender;
     $sender =~ s/\n.*$//s;
