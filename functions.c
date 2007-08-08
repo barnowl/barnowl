@@ -2800,6 +2800,7 @@ char *owl_function_smartfilter(int type)
   owl_view *v;
   owl_message *m;
   char *zperson, *filtname=NULL;
+  char *argv[1];
   
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
@@ -2858,7 +2859,6 @@ char *owl_function_smartfilter(int type)
   }
 
   /* pass it off to perl */
-  char *argv[1];
   if(type) {
     argv[0] = "-i";
   };

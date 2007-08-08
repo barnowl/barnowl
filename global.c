@@ -17,6 +17,7 @@ static const char fileIdent[] = "$Id$";
 void owl_global_init(owl_global *g) {
   struct hostent *hent;
   char hostname[MAXHOSTNAMELEN];
+  char *cd;
 
   g->malloced=0;
   g->freed=0;
@@ -87,7 +88,7 @@ void owl_global_init(owl_global *g) {
 
   g->confdir = NULL;
   g->startupfile = NULL;
-  char * cd = owl_sprintf("%s/%s", g->homedir, OWL_CONFIG_DIR);
+  cd = owl_sprintf("%s/%s", g->homedir, OWL_CONFIG_DIR);
   owl_global_set_confdir(g, cd);
   owl_free(cd);
 

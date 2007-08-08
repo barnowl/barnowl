@@ -2467,6 +2467,7 @@ void owl_command_yes(void)
 {
   owl_message *m;
   owl_view *v;
+  char *cmd;
 
   v = owl_global_get_current_view(&g);
 
@@ -2485,7 +2486,7 @@ void owl_command_yes(void)
     owl_function_error("You already answered that question.");
     return;
   }
-  char * cmd = owl_message_get_attribute_value(m, "yescommand");
+  cmd = owl_message_get_attribute_value(m, "yescommand");
   if(!cmd) {
     owl_function_error("No yes command!");
     return;
@@ -2500,6 +2501,7 @@ void owl_command_no(void)
 {
   owl_message *m;
   owl_view *v;
+  char *cmd;
 
   v = owl_global_get_current_view(&g);
 
@@ -2518,7 +2520,7 @@ void owl_command_no(void)
     owl_function_error("You already answered that question.");
     return;
   }
-  char * cmd = owl_message_get_attribute_value(m, "nocommand");
+  cmd = owl_message_get_attribute_value(m, "nocommand");
   if(!cmd) {
     owl_function_error("No no command!");
     return;

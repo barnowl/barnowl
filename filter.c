@@ -62,13 +62,13 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
 
 static owl_filterelement * owl_filter_parse_primitive_expression(int argc, char **argv, int *next)
 {
+  owl_filterelement *fe, *op;
+  int i = 0, skip;
+
   if(!argc) return NULL;
 
-  owl_filterelement * fe = owl_malloc(sizeof(owl_filterelement));
-  owl_filterelement *op;
-
+  fe = owl_malloc(sizeof(owl_filterelement));
   owl_filterelement_create(fe);
-  int i = 0, skip;
 
   if(!strcasecmp(argv[i], "(")) {
     i++;
@@ -117,7 +117,7 @@ err:
 owl_filterelement * owl_filter_parse_expression(int argc, char **argv, int *next)
 {
   int i = 0, skip;
-  owl_filterelement * op1 = NULL, * op2 = NULL;
+  owl_filterelement * op1 = NULL, * op2 = NULL, *tmp;
 
   op1 = owl_filter_parse_primitive_expression(argc-i, argv+i, &skip);
   i += skip;
@@ -128,7 +128,7 @@ owl_filterelement * owl_filter_parse_expression(int argc, char **argv, int *next
        strcasecmp(argv[i], "or")) break;
     op2 = owl_filter_parse_primitive_expression(argc-i-1, argv+i+1, &skip);
     if(!op2) goto err;
-    owl_filterelement * tmp = owl_malloc(sizeof(owl_filterelement));
+    tmp = owl_malloc(sizeof(owl_filterelement));
     if(!strcasecmp(argv[i], "and")) {
       owl_filterelement_create_and(tmp, op1, op2);
     } else {
@@ -203,8 +203,9 @@ int owl_filter_get_cachedmsgid(owl_filter *f)
  */
 int owl_filter_message_match(owl_filter *f, owl_message *m)
 {
+  int ret;
   if(!f->root) return 0;
-  int ret = owl_filterelement_match(f->root, m);
+  ret = owl_filterelement_match(f->root, m);
   if(f->polarity) ret = !ret;
   return ret;
 }
@@ -304,9 +305,11 @@ int owl_filter_test_string(char * filt, owl_message *m, int shouldmatch) /* nopr
 
 
 int owl_filter_regtest(void) {
-  owl_list_create(&(g.filterlist));
   int numfailed=0;
   owl_message m;
+  owl_filter f1, f2, f3, f4;
+
+  owl_list_create(&(g.filterlist));
   owl_message_init(&m);
   owl_message_set_type_zephyr(&m);
   owl_message_set_direction_in(&m);
@@ -343,8 +346,6 @@ int owl_filter_regtest(void) {
   TEST_FILTER("true and true and false or true", 1);
   TEST_FILTER("false and false or true", 1);
   TEST_FILTER("true and false or false", 0);
-
-  owl_filter f1, f2, f3, f4;
 
   owl_filter_init_fromstring(&f1, "f1", "class owl");
   owl_global_add_filter(&g, &f1);

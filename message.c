@@ -26,10 +26,10 @@ void owl_message_init_fmtext_cache ()
 
 owl_fmtext_cache * owl_message_next_fmtext() /*noproto*/
 {
+    owl_fmtext_cache * f = fmtext_cache_next;
     if(fmtext_cache_next->message != NULL) {
         owl_message_invalidate_format(fmtext_cache_next->message);
     }
-    owl_fmtext_cache * f = fmtext_cache_next;
     fmtext_cache_next++;
     if(fmtext_cache_next - fmtext_cache == OWL_FMTEXT_CACHE_SIZE)
         fmtext_cache_next = fmtext_cache;
@@ -566,8 +566,9 @@ int owl_message_is_question(owl_message *m)
 }
 
 int owl_message_is_answered(owl_message *m) {
+  char *q;
   if(!owl_message_is_question(m)) return 0;
-  char * q = owl_message_get_attribute_value(m, "question");
+  q = owl_message_get_attribute_value(m, "question");
   if(!q) return 0;
   return !strcmp(q, "answered");
 }
