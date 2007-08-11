@@ -521,7 +521,7 @@ sub format_message($)
 
     if ( $m->is_loginout) {
         return format_login($m);
-    } elsif($m->is_ping) {
+    } elsif($m->is_ping && $m->is_personal) {
         return ( "\@b(PING) from \@b(" . $m->pretty_sender . ")\n" );
     } elsif($m->is_admin) {
         return "\@bold(OWL ADMIN)\n" . indentBody($m);
