@@ -280,6 +280,25 @@ owl_cmd commands_to_init[]
 	      "suppressed to be received again.\n\n"
 	      "SEE ALSO:  zpunt, show zpunts\n"),
 
+  OWLCMD_ARGS("punt", owl_command_punt, OWL_CTX_ANY,
+	      "suppress an arbitrary filter",
+	      "punt <filter-name>",
+	      "punt <filter-text (multiple words)>\n"
+	      "The punt command will supress message to the specified\n"
+	      "filter\n\n"
+	      "SEE ALSO:  unpunt, zpunt, show zpunts\n"),
+
+  OWLCMD_ARGS("unpunt", owl_command_unpunt, OWL_CTX_ANY,
+	      "remove an entry from the punt list",
+	      "zpunt <filter-name>\n"
+	      "zpunt <filter-text>\n"
+	      "zpunt <number>\n",
+	      "The unpunt command will remove an entry from the puntlist.\n"
+	      "The first two forms correspond to the first two forms of the :punt\n"
+	      "command. The latter allows you to remove a specific entry from the\n"
+	      "the list (see :show zpunts)\n\n"
+	      "SEE ALSO:  punt, zpunt, zunpunt, show zpunts\n"),
+
   OWLCMD_VOID("info", owl_command_info, OWL_CTX_INTERACTIVE,
 	      "display detailed information about the current message",
 	      "", ""),
@@ -2293,7 +2312,6 @@ char *owl_command_zunpunt(int argc, char **argv, char *buff)
   return NULL;
 }
 
-
 void owl_command_zpunt_and_zunpunt(int argc, char **argv, int type)
 {
   /* if type==0 then zpunt
@@ -2342,6 +2360,52 @@ char *owl_command_smartzpunt(int argc, char **argv, char *buff)
   }
   return NULL;
 }
+
+char *owl_command_punt(int argc, char **argv, char *buff)
+{
+  owl_command_punt_unpunt(argc, argv, buff, 0);
+  return NULL;
+}
+
+char *owl_command_unpunt(int argc, char **argv, char *buff)
+{
+  owl_command_punt_unpunt(argc, argv, buff, 1);
+  return NULL;
+}
+
+void owl_command_punt_unpunt(int argc, char ** argv, char *buff, int unpunt)
+{
+  owl_list * fl;
+  owl_filter * f;
+  char * text;
+  int i;
+
+  fl = owl_global_get_puntlist(&g);
+  if(argc == 1) {
+    owl_function_show_zpunts();
+  }
+
+  if(argc == 2) {
+    /* Handle :unpunt <number> */
+    if(unpunt && (i=atoi(argv[1])) !=0) {
+      i--;      /* Accept 1-based indexing */
+      if(i < owl_list_get_size(fl)) {
+        f = (owl_filter*)owl_list_get_element(fl, i);
+        owl_list_remove_element(fl, i);
+        owl_filter_free(f);
+        return;
+      } else {
+        owl_function_error("No such filter number: %d", i+1);
+      }
+    }
+    text = owl_sprintf("filter %s", argv[1]);
+  } else {
+    text = skiptokens(buff, 1);
+  }
+
+  owl_function_punt(text, unpunt);
+}
+
 
 char *owl_command_getview(int argc, char **argv, char *buff)
 {

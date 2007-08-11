@@ -2557,6 +2557,8 @@ void owl_function_show_zpunts()
 
   for (i=0; i<j; i++) {
     f=owl_list_get_element(fl, i);
+    snprintf(buff, sizeof(buff), "[% 2d] ", i+1);
+    owl_fmtext_append_normal(&fm, buff);
     owl_filter_print(f, buff);
     owl_fmtext_append_normal(&fm, buff);
   }
@@ -3016,16 +3018,9 @@ void owl_function_show_colors()
  */
 void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
 {
-  owl_filter *f;
-  owl_list *fl;
   char *buff;
   char *quoted;
-  int ret, i, j;
 
-  fl=owl_global_get_puntlist(&g);
-
-  /* first, create the filter */
-  f=malloc(sizeof(owl_filter));
   buff=malloc(strlen(class)+strlen(inst)+strlen(recip)+100);
   strcpy(buff, "class");
   if (!strcmp(class, "*")) {
@@ -3056,10 +3051,23 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
     sprintf(buff, "%s and recipient ^%s$", buff, quoted);
     owl_free(quoted);
   }
-  
-  owl_function_debugmsg("About to filter %s", buff);
-  ret=owl_filter_init_fromstring(f, "punt-filter", buff);
+
+  owl_function_punt(buff, direction);
   owl_free(buff);
+}
+
+void owl_function_punt(char *filter, int direction)
+{
+  owl_filter *f;
+  owl_list *fl;
+  int ret, i, j;
+  fl=owl_global_get_puntlist(&g);
+
+  /* first, create the filter */
+  f=malloc(sizeof(owl_filter));
+
+  owl_function_debugmsg("About to filter %s", filter);
+  ret=owl_filter_init_fromstring(f, "punt-filter", filter);
   if (ret) {
     owl_function_error("Error creating filter for zpunt");
     owl_filter_free(f);
@@ -3070,6 +3078,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   j=owl_list_get_size(fl);
   for (i=0; i<j; i++) {
     if (owl_filter_equiv(f, owl_list_get_element(fl, i))) {
+      owl_function_debugmsg("found an equivalent punt filter");
       /* if we're punting, then just silently bow out on this duplicate */
       if (direction==0) {
 	owl_filter_free(f);
@@ -3080,11 +3089,13 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
       if (direction==1) {
 	owl_filter_free(owl_list_get_element(fl, i));
 	owl_list_remove_element(fl, i);
+        owl_filter_free(f);
 	return;
       }
     }
   }
 
+  owl_function_debugmsg("punting");
   /* If we're punting, add the filter to the global punt list */
   if (direction==0) {
     owl_list_append_element(fl, f);
