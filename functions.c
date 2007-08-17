@@ -2624,7 +2624,7 @@ char *owl_function_classinstfilt(char *c, char *i)
   argbuff = owl_malloc(len);
   sprintf(argbuff, "class ^(un)*%s(\\.d)*$", tmpclass);
   if (tmpinstance) {
-    sprintf(argbuff, "%s and ( instance ^%s(\\.d)*$ )", argbuff, tmpinstance);
+    sprintf(argbuff, "%s and ( instance ^(un)*%s(\\.d)*$ )", argbuff, tmpinstance);
   }
   owl_free(tmpclass);
   if (tmpinstance) owl_free(tmpinstance);
