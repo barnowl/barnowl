@@ -767,7 +767,7 @@ char * owl_util_baseclass(char * class)
 
   start = owl_strdup(start);
   end = start + strlen(start) - 1;
-  while(*end == 'd' && *(end-1) == '.') {
+  while(end > start && *end == 'd' && *(end-1) == '.') {
     end -= 2;
   }
   *(end + 1) = 0;
