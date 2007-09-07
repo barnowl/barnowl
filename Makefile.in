@@ -126,7 +126,7 @@ install: all installdirs
 	${INSTALL_DATA} doc/owl.1 ${DESTDIR}${mandir}/man1/barnowl.1
 	${INSTALL} -d ${DESTDIR}${datadir}/lib
 	${INSTALL} -d ${DESTDIR}${datadir}/modules
-	tar -C perl/lib --exclude .svn -c . | tar -C ${DESTDIR}${datadir}/lib -x
+	tar -C perl/lib --exclude .svn -cf - . | tar -C ${DESTDIR}${datadir}/lib -xf -
 	for i in $(PERL_MODULES); do \
 		${INSTALL_DATA} perl/modules/$$i/$$i.par ${DESTDIR}${datadir}/modules/$$i.par; \
 	done
