@@ -176,9 +176,7 @@ int main(int argc, char **argv, char **env)
 
   /* screen init */
   if (!getenv("TERMINFO")) {
-    sprintf(buff, "TERMINFO=%s", TERMINFO);
-    putenv(buff);
-    owl_function_debugmsg("startup: setting TERMINFO to %s", TERMINFO);
+    owl_function_debugmsg("startup: Not setting TERMINFO");
   } else {
     owl_function_debugmsg("startup: leaving TERMINFO as %s from envrionment", getenv("TERMINFO"));
   }

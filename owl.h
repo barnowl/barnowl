@@ -62,7 +62,10 @@
 /* Perl and curses don't play nice. */
 #ifdef OWL_PERL
 typedef void WINDOW;
+/* logout is defined in FreeBSD. */
+#define logout logout_
 #include <perl.h>
+#undef logout
 #include "XSUB.h"
 #else
 typedef void SV;
