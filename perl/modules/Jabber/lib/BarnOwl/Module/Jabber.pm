@@ -903,6 +903,7 @@ sub process_incoming_error_message {
     my %jhash = j2hash( $j, { direction => 'in',
                               sid => $sid } );
     $jhash{type} = 'admin';
+    
     BarnOwl::queue_message( BarnOwl::Message->new(%jhash) );
 }
 
@@ -1133,14 +1134,14 @@ sub j2hash {
         }
     }
     elsif ( $jtype eq 'normal' ) {
-        $props{replycmd}  = undef;
+        $props{replycmd}  = "";
         $props{private} = 1;
     }
     elsif ( $jtype eq 'headline' ) {
-        $props{replycmd} = undef;
+        $props{replycmd} = "";
     }
     elsif ( $jtype eq 'error' ) {
-        $props{replycmd} = undef;
+        $props{replycmd} = "";
         $props{body}     = "Error "
           . $props{error_code}
           . " sending to "
