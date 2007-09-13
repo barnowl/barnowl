@@ -848,12 +848,14 @@ void owl_function_unsuball()
 void owl_function_loadsubs(char *file)
 {
   int ret, ret2;
-  char *foo;
+  char *foo, *path;
 
   if (file==NULL) {
     ret=owl_zephyr_loadsubs(NULL, 0);
   } else {
-    ret=owl_zephyr_loadsubs(file, 1);
+    path = owl_util_makepath(file);
+    ret=owl_zephyr_loadsubs(path, 1);
+    free(path);
   }
 
   /* for backwards compatibility for now */
