@@ -580,15 +580,17 @@ sub jmuc_join {
     $muc = shift @ARGV
       or die("Usage: jmuc join MUC [-p password] [-a account]");
 
+    die("Error: Must specify a fully-qualified MUC name (e.g. barnowl\@conference.mit.edu)\n")
+        unless $muc =~ /@/;
     $muc = Net::Jabber::JID->new($muc);
     $jid = Net::Jabber::JID->new($jid);
     $muc->SetResource($jid->GetJID('full')) unless length $muc->GetResource();
 
     $conn->getConnectionFromJID($jid)->MUCJoin(JID      => $muc,
-                                                  Password => $password,
-                                                  History  => {
-                                                      MaxChars => 0
-                                                     });
+                                               Password => $password,
+                                               History  => {
+                                                   MaxChars => 0
+                                                  });
     return;
 }
 
