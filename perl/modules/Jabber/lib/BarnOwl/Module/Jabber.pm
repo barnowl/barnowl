@@ -600,8 +600,11 @@ sub jmuc_part {
     $muc = shift @args if scalar @args;
     die("Usage: jmuc part MUC [-a account]") unless $muc;
 
-    $conn->getConnectionFromJID($jid)->MUCLeave(JID => $muc);
-    queue_admin_msg("$jid has left $muc.");
+    if($conn->getConnectionFromJID($jid)->MUCLeave(JID => $muc)) {
+        queue_admin_msg("$jid has left $muc.");
+    } else {
+        die("Error: Not joined to $muc");
+    }
 }
 
 sub jmuc_invite {
@@ -640,8 +643,25 @@ sub jmuc_configure {
 sub jmuc_presence_single {
     my $m = shift;
     my @jids = $m->Presence();
-    return "JIDs present in " . $m->BaseJID . "\n\t"
-      . join("\n\t", map {$_->GetResource}@jids) . "\n";
+
+    my $presence = "JIDs present in " . $m->BaseJID;
+    if($m->Anonymous) {
+        $presence .= " [anonymous MUC]";
+    }
+    $presence .= "\n\t";
+    $presence .= join("\n\t", map {pp_jid($m, $_);} @jids) . "\n";
+    return $presence;
+}
+
+sub pp_jid {
+    my ($m, $jid) = @_;
+    my $nick = $jid->GetResource;
+    my $full = $m->GetFullJID($jid);
+    if($full && $full ne $nick) {
+        return "$nick ($full)";
+    } else {
+        return "$nick";
+    }
 }
 
 sub jmuc_presence {

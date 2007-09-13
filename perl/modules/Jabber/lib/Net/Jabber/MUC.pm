@@ -63,6 +63,7 @@ sub new {
     $self->{CONNECTION} = $args{connection};
     $self->{JID} = $args{jid};
     $self->{PRESENCE} = { };
+    $self->{ANONYMOUS} = 1;
 
     bless($self, $class);
 
@@ -187,7 +188,15 @@ sub _handlePresence {
     if($type eq 'unavailable') {
         delete $self->{PRESENCE}->{$from->GetJID('full')};
     } elsif($type eq 'available') {
-        $self->{PRESENCE}->{$from->GetJID('full')} = $from;
+        $self->{PRESENCE}->{$from->GetJID('full')} = {ROOMNICK => $from};
+        my $x = $presence->GetX('http://jabber.org/protocol/muc#user');
+        if($x && $x->DefinedItem()) {
+            my $item = $x->GetItem();
+            if($item->DefinedJID()) {
+                $self->{PRESENCE}->{$from->GetJID('full')}->{FULLJID} = $item->GetJID();
+                $self->{ANONYMOUS} = 0;
+            }
+        }
     }
 }
 
@@ -206,6 +215,24 @@ sub Contains {
     return exists $self->{PRESENCE}->{$jid};
 }
 
+=head2 GetFullJID roomjid
+
+Given the roomnick of a user in the MUC, return their full NIC if the
+MUC makes it available. If the MUC is anonymous or the user does not
+exist in the MUC, return undef.
+
+=cut
+
+sub GetFullJID {
+    my $self = shift;
+    my $jid = shift;
+
+    $jid = $jid->GetJID('full') if UNIVERSAL::isa($jid, 'Net::Jabber::JID');
+    my $pres = $self->{PRESENCE}->{$jid};
+    return unless $pres;
+    return $pres->{FULLJID};
+}
+
 =head2 Presence
 
 Returns a list of JIDS in the MUC, as Net::Jabber::JID objects
@@ -214,7 +241,18 @@ Returns a list of JIDS in the MUC, as Net::Jabber::JID objects
 
 sub Presence {
     my $self = shift;
-    return values %{$self->{PRESENCE}};
+    return map {$_->{ROOMNICK}} values %{$self->{PRESENCE}};
+}
+
+=head2 Anonymous
+
+Returns true if the MUC is anonymous (hides participants real JIDs)
+
+=cut
+
+sub Anonymous {
+    my $self = shift;
+    return $self->{ANONYMOUS};
 }
 
 1;
