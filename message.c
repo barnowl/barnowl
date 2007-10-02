@@ -120,6 +120,11 @@ void owl_message_attributes_tofmtext(owl_message *m, owl_fmtext *fm) {
   for (i=0; i<j; i++) {
     p=owl_list_get_element(&(m->attributes), i);
     buff=owl_sprintf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), owl_pair_get_value(p));
+    if(buff == NULL) {
+      buff=owl_sprintf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), "<error>");
+      if(buff == NULL)
+        buff=owl_strdup("   <error>\n");
+    }
     owl_fmtext_append_normal(fm, buff);
     owl_free(buff);
   }
