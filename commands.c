@@ -131,7 +131,7 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("aimwrite", owl_command_aimwrite, OWL_CTX_INTERACTIVE,
 	      "send an AIM message",
-	      "aimzwrite <user>",
+	      "aimwrite <user>",
 	      "Send an aim message to a user.\n"),
 
   OWLCMD_ARGS("loopwrite", owl_command_loopwrite, OWL_CTX_INTERACTIVE,
