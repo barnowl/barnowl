@@ -131,12 +131,10 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("aimwrite", owl_command_aimwrite, OWL_CTX_INTERACTIVE,
 	      "send an AIM message",
-	      "aimzwrite <user> [-m <message...>]",
+	      "aimwrite <user> [-m <message...>]",
 	      "Send an aim message to a user.\n\n" 
               "The following options are available:\n\n"
-              "-m    Specifies a message to send without prompting.\n"
-              "      Note that this does not yet log an outgoing message.\n"
-              "      or display the sent message.\n"),
+              "-m    Specifies a message to send without prompting.\n"),
 
   OWLCMD_ARGS("loopwrite", owl_command_loopwrite, OWL_CTX_INTERACTIVE,
 	      "send a loopback message",
@@ -1891,6 +1889,7 @@ char *owl_command_aimwrite(int argc, char **argv, char *buff)
 {
   char *newbuff, *recip, **myargv;
   int i, j, myargc;
+  owl_message *m;
   
   if (!owl_global_is_aimloggedin(&g)) {
     owl_function_makemsg("You are not logged in to AIM.");
@@ -1935,6 +1934,13 @@ char *owl_command_aimwrite(int argc, char **argv, char *buff)
       recip=owl_malloc(strlen(argv[0])+5);
       sprintf(recip, "%s ", argv[1]);
       owl_aim_send_im(recip, newbuff);
+      m=owl_function_make_outgoing_aim(newbuff, recip);
+      if (m) { 
+          owl_global_messagequeue_addmsg(&g, m);
+      } else {
+          owl_function_error("Could not create outgoing AIM message");
+      }
+
       owl_free(recip);
       owl_free(newbuff);
       return(NULL);
