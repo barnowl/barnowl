@@ -546,7 +546,7 @@ int main(int argc, char **argv, char **env)
      * as quickly as possbile */
     j=wgetch(typwin);
     if (j==ERR) {
-      usleep(10);
+      usleep(10000);
     } else {
       owl_global_update_lastinputtime(&g);
       /* find and activate the current keymap.
