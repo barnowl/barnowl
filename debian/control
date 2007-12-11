@@ -2,7 +2,7 @@ Source: barnowl
 Section: net
 Priority: optional
 Maintainer: Sam Hartman <hartmans@debian.org>
-Build-Depends: debhelper (>> 4.0.0), libzephyr-dev (>= 2.1.20010518.SNAPSHOT-7), libncurses5-dev, libkrb5-dev, libperl-dev
+Build-Depends: debhelper (>> 4.0.0), libzephyr-dev (>= 2.1.20010518.SNAPSHOT-7), libncurses5-dev, libkrb5-dev, libperl-dev, zip
 Standards-Version: 3.5.2
 
 Package: barnowl
