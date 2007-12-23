@@ -2059,80 +2059,79 @@ void owl_function_reply(int type, int enter)
     if (owl_message_is_type_zephyr(m)) {
       /* if it's a zephyr we sent, send it out the same way again */
       if (owl_message_is_direction_out(m)) {
-	owl_function_zwrite_setup(owl_message_get_zwriteline(m));
-	owl_global_set_buffercommand(&g, owl_message_get_zwriteline(m));
-	return;
-      }
+          buff = owl_strdup(owl_message_get_zwriteline(m));
+      } else {
 
-      /* Special case a personal reply to a webzephyr user on a class */
-      if ((type==1) && !strcasecmp(owl_message_get_opcode(m), OWL_WEBZEPHYR_OPCODE)) {
-	class=OWL_WEBZEPHYR_CLASS;
-	inst=owl_message_get_sender(m);
-	to=OWL_WEBZEPHYR_PRINCIPAL;
-      } else if (!strcasecmp(owl_message_get_class(m), OWL_WEBZEPHYR_CLASS) && owl_message_is_loginout(m)) {
-	/* Special case LOGIN/LOGOUT notifications on class "webzephyr" */
-	class=OWL_WEBZEPHYR_CLASS;
-	inst=owl_message_get_instance(m);
-	to=OWL_WEBZEPHYR_PRINCIPAL;
-      } else if (owl_message_is_loginout(m)) {
-	/* Normal LOGIN/LOGOUT messages */
-	class="MESSAGE";
-	inst="PERSONAL";
-	to=owl_message_get_sender(m);
-      } else if (type==1) {
-	/* Personal reply */
-	class="MESSAGE";
-	inst="PERSONAL";
-	to=owl_message_get_sender(m);
-      } else {
-	/* General reply */
-	class=owl_message_get_class(m);
-	inst=owl_message_get_instance(m);
-	to=owl_message_get_recipient(m);
-	cc=owl_message_get_cc_without_recipient(m);
-	if (!strcmp(to, "") || !strcmp(to, "*")) {
-	  to="";
-	} else if (to[0]=='@') {
-	  /* leave it, to get the realm */
-	} else {
-	  to=owl_message_get_sender(m);
-	}
+        /* Special case a personal reply to a webzephyr user on a class */
+        if ((type==1) && !strcasecmp(owl_message_get_opcode(m), OWL_WEBZEPHYR_OPCODE)) {
+          class=OWL_WEBZEPHYR_CLASS;
+          inst=owl_message_get_sender(m);
+          to=OWL_WEBZEPHYR_PRINCIPAL;
+        } else if (!strcasecmp(owl_message_get_class(m), OWL_WEBZEPHYR_CLASS) && owl_message_is_loginout(m)) {
+          /* Special case LOGIN/LOGOUT notifications on class "webzephyr" */
+          class=OWL_WEBZEPHYR_CLASS;
+          inst=owl_message_get_instance(m);
+          to=OWL_WEBZEPHYR_PRINCIPAL;
+        } else if (owl_message_is_loginout(m)) {
+          /* Normal LOGIN/LOGOUT messages */
+          class="MESSAGE";
+          inst="PERSONAL";
+          to=owl_message_get_sender(m);
+        } else if (type==1) {
+          /* Personal reply */
+          class="MESSAGE";
+          inst="PERSONAL";
+          to=owl_message_get_sender(m);
+        } else {
+          /* General reply */
+          class=owl_message_get_class(m);
+          inst=owl_message_get_instance(m);
+          to=owl_message_get_recipient(m);
+          cc=owl_message_get_cc_without_recipient(m);
+          if (!strcmp(to, "") || !strcmp(to, "*")) {
+            to="";
+          } else if (to[0]=='@') {
+            /* leave it, to get the realm */
+          } else {
+            to=owl_message_get_sender(m);
+          }
+        }
+
+        /* create the command line */
+        if (!strcasecmp(owl_message_get_opcode(m), "CRYPT")) {
+          buff=owl_strdup("zcrypt");
+        } else {
+          buff = owl_strdup("zwrite");
+        }
+        if (strcasecmp(class, "message")) {
+          buff = owl_sprintf("%s -c %s%s%s", oldbuff=buff, owl_getquoting(class), class, owl_getquoting(class));
+          owl_free(oldbuff);
+        }
+        if (strcasecmp(inst, "personal")) {
+          buff = owl_sprintf("%s -i %s%s%s", oldbuff=buff, owl_getquoting(inst), inst, owl_getquoting(inst));
+          owl_free(oldbuff);
+        }
+        if (*to != '\0') {
+          char *tmp, *oldtmp, *tmp2;
+          tmp=short_zuser(to);
+          if (cc) {
+            tmp = owl_util_uniq(oldtmp=tmp, cc, "-");
+            owl_free(oldtmp);
+            buff = owl_sprintf("%s -C %s", oldbuff=buff, tmp);
+            owl_free(oldbuff);
+          } else {
+            if (owl_global_is_smartstrip(&g)) {
+              tmp2=tmp;
+              tmp=owl_zephyr_smartstripped_user(tmp2);
+              owl_free(tmp2);
+            }
+            buff = owl_sprintf("%s %s", oldbuff=buff, tmp);
+            owl_free(oldbuff);
+          }
+          owl_free(tmp);
+        }
+        if (cc) owl_free(cc);
       }
-	
-      /* create the command line */
-      if (!strcasecmp(owl_message_get_opcode(m), "CRYPT")) {
-	buff=owl_strdup("zcrypt");
-      } else {
-	buff = owl_strdup("zwrite");
-      }
-      if (strcasecmp(class, "message")) {
-	buff = owl_sprintf("%s -c %s%s%s", oldbuff=buff, owl_getquoting(class), class, owl_getquoting(class));
-	owl_free(oldbuff);
-      }
-      if (strcasecmp(inst, "personal")) {
-	buff = owl_sprintf("%s -i %s%s%s", oldbuff=buff, owl_getquoting(inst), inst, owl_getquoting(inst));
-	owl_free(oldbuff);
-      }
-      if (*to != '\0') {
-	char *tmp, *oldtmp, *tmp2;
-	tmp=short_zuser(to);
-	if (cc) {
-	  tmp = owl_util_uniq(oldtmp=tmp, cc, "-");
-	  owl_free(oldtmp);
-	  buff = owl_sprintf("%s -C %s", oldbuff=buff, tmp);
-	  owl_free(oldbuff);
-	} else {
-	  if (owl_global_is_smartstrip(&g)) {
-	    tmp2=tmp;
-	    tmp=owl_zephyr_smartstripped_user(tmp2);
-	    owl_free(tmp2);
-	  }
-	  buff = owl_sprintf("%s %s", oldbuff=buff, tmp);
-	  owl_free(oldbuff);
-	}
-	owl_free(tmp);
-      }
-      if (cc) owl_free(cc);
     } else if (owl_message_is_type_aim(m)) {
       /* aim */
       if (owl_message_is_direction_out(m)) {
