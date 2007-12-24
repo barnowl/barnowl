@@ -3024,8 +3024,8 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   fl=owl_global_get_puntlist(&g);
 
   /* first, create the filter */
-  f=malloc(sizeof(owl_filter));
-  buff=malloc(strlen(class)+strlen(inst)+strlen(recip)+100);
+  f=owl_malloc(sizeof(owl_filter));
+  buff=owl_malloc(strlen(class)+strlen(inst)+strlen(recip)+100);
   strcpy(buff, "class");
   if (!strcmp(class, "*")) {
     strcat(buff, " .*");
@@ -3313,7 +3313,7 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
           ret=ZGetLocations(location, &numlocs);
           if (ret==0) {
             for (x=0; x<numlocs; x++) {
-              line=malloc(strlen(location[x].host)+strlen(location[x].time)+strlen(location[x].tty)+100);
+              line=owl_malloc(strlen(location[x].host)+strlen(location[x].time)+strlen(location[x].tty)+100);
               tmp=short_zuser(user);
               sprintf(line, "  %-10.10s %-24.24s %-12.12s  %20.20s\n",
                       tmp,
@@ -3419,7 +3419,7 @@ void owl_function_do_newmsgproc(void)
 	if (myargc <= 0) {
 	  _exit(127);
 	}
-	parsed=realloc(parsed, sizeof(*parsed) * (myargc+1));
+	parsed=owl_realloc(parsed, sizeof(*parsed) * (myargc+1));
 	parsed[myargc] = NULL;
 	
 	owl_function_debugmsg("About to exec \"%s\" with %d arguments", parsed[0], myargc);

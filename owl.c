@@ -47,6 +47,7 @@
 #include <sys/types.h>
 #include <termios.h>
 #include <sys/stat.h>
+#include <locale.h>
 #include "owl.h"
 
 #if OWL_STDERR_REDIR
@@ -89,6 +90,9 @@ int main(int argc, char **argv, char **env)
   tty=NULL;
   debug=0;
   initialsubs=1;
+
+  setlocale(LC_ALL, "");
+  
   if (argc>0) {
     argv++;
     argc--;

@@ -94,7 +94,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       myargc--;
       z->message=owl_strdup("");
       while (myargc) {
-	z->message=realloc(z->message, strlen(z->message)+strlen(myargv[0])+5);
+	z->message=owl_realloc(z->message, strlen(z->message)+strlen(myargv[0])+5);
 	strcat(z->message, myargv[0]);
 	strcat(z->message, " ");
 	myargc--;
@@ -112,7 +112,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       myargc--;
     } else {
       /* anything unattached is a recipient */
-      owl_list_append_element(&(z->recips), strdup(myargv[0]));
+      owl_list_append_element(&(z->recips), owl_strdup(myargv[0]));
       myargv++;
       myargc--;
     }
@@ -176,7 +176,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
     } else if (zsigzvar) {
       z->zsig=owl_strdup(zsigzvar);
     } else if (((pw=getpwuid(getuid()))!=NULL) && (pw->pw_gecos)) {
-      z->zsig=strdup(pw->pw_gecos);
+      z->zsig=owl_strdup(pw->pw_gecos);
       ptr=strchr(z->zsig, ',');
       if (ptr) {
 	ptr[0]='\0';

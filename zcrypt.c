@@ -384,7 +384,7 @@ int owl_zcrypt_encrypt(char *out, char *in, char *class, char *instance) {
 }
 
 /* Build a space-separated string from argv from elements between start  *
- * and end - 1.  malloc()'s the returned string. */
+ * and end - 1.  owl_malloc()'s the returned string. */
 char *BuildArgString(char **argv, int start, int end) {
   int len = 1;
   int i;
@@ -396,7 +396,7 @@ char *BuildArgString(char **argv, int start, int end) {
   }
 
   /* Allocate memory */
-  result = (char *)malloc(len);
+  result = (char *)owl_malloc(len);
   if (result) {
     /* Build the string */
     char *ptr = result;
@@ -481,7 +481,7 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance) {
     } else {
       /* Prepare result to be returned */
       char *temp = keyfile;
-      keyfile = (char *)malloc(strlen(temp) + 1);
+      keyfile = (char *)owl_malloc(strlen(temp) + 1);
       if (keyfile) {
 	strcpy(keyfile, temp);
       } else {
@@ -610,7 +610,7 @@ static int do_encrypt(char *keystring, int zephyr, char *class, char *instance, 
 	printf("Type your message now.  End with control-D or a dot on a line by itself.\n");
       }
       use_buffer = TRUE;
-      if ((inptr = inbuff = (char *)malloc(MAX_RESULT)) == NULL) {
+      if ((inptr = inbuff = (char *)owl_malloc(MAX_RESULT)) == NULL) {
 	printf("Memory allocation error\n");
 	return FALSE;
       }
@@ -638,7 +638,7 @@ static int do_encrypt(char *keystring, int zephyr, char *class, char *instance, 
     if (!outfile) {
       printf("Could not run zwrite\n");
       if (freein && inbuff) {
-	free(inbuff);
+	owl_free(inbuff);
       }
       return(FALSE);
     }
@@ -684,7 +684,7 @@ static int do_encrypt(char *keystring, int zephyr, char *class, char *instance, 
   if (zephyr) CloseZephyrPipe(outfile);
 
   /* Free the input buffer, if necessary */
-  if (freein && inbuff) free(inbuff);
+  if (freein && inbuff) owl_free(inbuff);
 
   return(!error);
 }

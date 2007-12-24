@@ -445,22 +445,22 @@ char *owl_util_uniq(char *A, char *B, char *prohibit)
 
 void *owl_malloc(size_t size)
 {
-  return(malloc(size));
+  return(g_malloc(size));
 }
 
 void owl_free(void *ptr)
 {
-  free(ptr);
+  g_free(ptr);
 }
 
 char *owl_strdup(const char *s1)
 {
-  return(strdup(s1));
+  return(g_strdup(s1));
 }
 
 void *owl_realloc(void *ptr, size_t size)
 {
-  return(realloc(ptr, size));
+  return(g_realloc(ptr, size));
 }
 
 /* allocates memory and returns the string or null.

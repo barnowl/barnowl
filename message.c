@@ -486,7 +486,7 @@ char *owl_message_get_zwriteline(owl_message *m)
 void owl_message_set_zwriteline(owl_message *m, char *line)
 {
   if(m->zwriteline) owl_free(m->zwriteline);
-  m->zwriteline=strdup(line);
+  m->zwriteline=owl_strdup(line);
 }
 
 int owl_message_is_delete(owl_message *m)
@@ -881,7 +881,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
     owl_message_set_attribute(m, "isauto", "");
   }
 
-  m->zwriteline=strdup("");
+  m->zwriteline=owl_strdup("");
 
   /* save the hostname */
   owl_function_debugmsg("About to do gethostbyaddr");
@@ -963,7 +963,7 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, char *user,
     owl_message_set_realm(m, owl_zephyr_get_realm());
   }
 
-  m->zwriteline=strdup("");
+  m->zwriteline=owl_strdup("");
 
   owl_message_set_body(m, "<uninitialized>");
 
