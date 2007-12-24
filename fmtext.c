@@ -315,7 +315,7 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
 void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *out)
 {
   char *ptr_s, *ptr_e, *ptr_c, *last;
-  int col, cnt;
+  int col, cnt, padding;
 
   last=in->textbuff+in->textlen-1;
   ptr_s=in->textbuff;
@@ -334,26 +334,32 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
 
     col = 0;
     cnt = 0;
+    padding = 0;
     ptr_c = ptr_s;
     while(col < bcol && ptr_c < ptr_e) {
       gunichar c = g_utf8_get_char(ptr_c);
-      if (g_unichar_iswide(c)) {
-	if (col + 2 > bcol) break;
-	else col += 2;
-      }
-      else if (g_unichar_type(c) == G_UNICODE_NON_SPACING_MARK) ; /*do nothing*/
-      /* We may need more special cases here... unicode spacing is hard. */
-      else {
-	if (col + 1 > bcol) break;
-	else ++col;
-      }
+      if (col + wcwidth(c) > bcol) break;
+      col += wcwidth(c);
       ptr_c = g_utf8_next_char(ptr_c);
-      if (col >= acol) ++cnt;
-      if (col <= acol) ptr_s = ptr_c;
+      if (col >= acol) {
+	if (cnt == 0) {
+	  ptr_s = ptr_c;
+	  padding = col - acol;
+	}
+	++cnt;
+      }
     }
-    _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
+    if (cnt) {
+      while(padding-- > 0) {
+	owl_fmtext_append_normal(out, " ");
+      }
+      _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
+    }
+    else {
+      owl_fmtext_append_normal(out, "\n");
+    }
     ptr_s=ptr_e+1;
-    
+      
 #if 0
     /* we need to check that we won't run over here */
     len=bcol-acol;

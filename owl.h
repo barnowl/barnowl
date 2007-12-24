@@ -51,6 +51,7 @@
 #include <signal.h>
 #include <termios.h>
 #include <libfaim/aim.h>
+#include <wchar.h>
 #include "config.h"
 #include "glib.h"
 #ifdef HAVE_LIBZEPHYR

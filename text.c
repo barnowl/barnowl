@@ -50,7 +50,7 @@ int owl_text_truncate_lines(char *out, char *in, int aline, int lines)
 void owl_text_truncate_cols(char *out, char *in, int acol, int bcol)
 {
   char *ptr_s, *ptr_e, *ptr_c, *tmpbuff, *last;
-  int col, cnt;
+  int col, cnt, padding;
   
   tmpbuff=owl_malloc(strlen(in)+20);
 
@@ -72,24 +72,27 @@ void owl_text_truncate_cols(char *out, char *in, int acol, int bcol)
 
     col = 0;
     cnt = 0;
+    padding = 0;
     ptr_c = ptr_s;
     while(col < bcol && ptr_c < ptr_e) {
       gunichar c = g_utf8_get_char(ptr_c);
-      if (g_unichar_iswide(c)) {
-	if (col + 2 > bcol) break;
-	else col += 2;
-      }
-      else if (g_unichar_type(c) == G_UNICODE_NON_SPACING_MARK) ; /*do nothing*/
-      /* We may need more special cases here... unicode spacing is hard. */
-      else {
-	if (col + 1 > bcol) break;
-	else ++col;
-      }
+      if (col + wcwidth(c) > bcol) break;
+      col += wcwidth(c);
       ptr_c = g_utf8_next_char(ptr_c);
-      if (col >= acol) ++cnt;
-      if (col <= acol) ptr_s = ptr_c;
+      if (col >= acol) {
+	if (cnt == 0) {
+	  ptr_s = ptr_c;
+	  padding = col - acol;
+	}
+	++cnt;
+      }
     }
-    strncat(tmpbuff, ptr_s, ptr_c - ptr_s - 1);
+    if (cnt) {
+      while(padding-- > 0) {
+	strcat(tmpbuff, " ");
+      }
+      strncat(tmpbuff, ptr_s, ptr_c - ptr_s - 1);
+    }
     strcat(tmpbuff, "\n");
     ptr_s = ptr_e + 1;
 #if 0
