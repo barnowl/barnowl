@@ -64,13 +64,6 @@ static const char fileIdent[] = "$Id$";
 
 owl_global g;
 
-char * owl_get_datadir() {
-    char * datadir = getenv("BARNOWL_DATA_DIR");
-    if(datadir != NULL)
-        return strchr(datadir, '=') + 1;
-    return DATADIR;
-}
-
 int main(int argc, char **argv, char **env)
 {
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
