@@ -775,6 +775,13 @@ char * owl_util_baseclass(char * class)
   return start;
 }
 
+char * owl_get_datadir() {
+    char * datadir = getenv("BARNOWL_DATA_DIR");
+    if(datadir != NULL)
+        return strchr(datadir, '=') + 1;
+    return DATADIR;
+}
+
 /**************************************************************************/
 /************************* REGRESSION TESTS *******************************/
 /**************************************************************************/
