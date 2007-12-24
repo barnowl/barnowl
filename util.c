@@ -398,15 +398,6 @@ int owl_util_find_trans_short(short *in, int len)
   return(i);
 }
 
-/* downcase the string 'foo' */
-void downstr(char *foo)
-{
-  int i;
-  for (i=0; foo[i]!='\0'; i++) {
-    foo[i]=tolower(foo[i]);
-  }
-}
-
 /* Caller must free response. 
  * Takes in strings which are space-separated lists of tokens
  * and returns a single string containing no token more than once.
@@ -465,31 +456,17 @@ void *owl_realloc(void *ptr, size_t size)
 
 /* allocates memory and returns the string or null.
  * caller must free the string. 
- * from Linux sprintf man page. 
  */
 char *owl_sprintf(const char *fmt, ...)
 {
-  int n, size = 100;
-  char *p;
   va_list ap;
-  if ((p = owl_malloc (size)) == NULL) return (NULL);
-  while (1) {
-    /* Try to print in the allocated space. */
-    va_start(ap, fmt);
-    n = vsnprintf (p, size, fmt, ap);
-    va_end(ap);
-    /* If that worked, return the string. */
-    if (n > -1 && n < size)
-      return p;
-    /* Else try again with more space. */
-    if (n > -1)    /* glibc 2.1 */
-      size = n+1; /* precisely what is needed */
-    else           /* glibc 2.0 */
-      size *= 2;  /* twice the old size */
-    if ((p = owl_realloc (p, size)) == NULL)
-      return NULL;
-  }
+  char *ret = NULL;
+  va_start(ap, fmt);
+  ret = g_strdup_vprintf(fmt, ap);
+  va_end(ap);
+  return ret;
 }
+
 
 /* Return the owl color associated with the named color.  Return -1
  * if the named color is not available

@@ -49,41 +49,65 @@ int owl_text_truncate_lines(char *out, char *in, int aline, int lines)
  * new line for now */
 void owl_text_truncate_cols(char *out, char *in, int acol, int bcol)
 {
-  char *ptr1, *ptr2, *tmpbuff, *last;
-  int len;
-
+  char *ptr_s, *ptr_e, *ptr_c, *tmpbuff, *last;
+  int col, cnt;
+  
   tmpbuff=owl_malloc(strlen(in)+20);
 
   strcpy(tmpbuff, "");
   last=in+strlen(in)-1;
-  ptr1=in;
-  while (ptr1<last) {
-    ptr2=strchr(ptr1, '\n');
-    if (!ptr2) {
+  ptr_s=in;
+  while (ptr_s<last) {
+    ptr_e=strchr(ptr_s, '\n');
+    if (!ptr_e) {
       /* but this shouldn't happen if we end in a \n */
       break;
     }
     
-    if (ptr2==ptr1) {
+    if (ptr_e==ptr_s) {
       strcat(tmpbuff, "\n");
-      ptr1++;
+      ptr_s++;
       continue;
     }
 
+    col = 0;
+    cnt = 0;
+    ptr_c = ptr_s;
+    while(col < bcol && ptr_c < ptr_e) {
+      gunichar c = g_utf8_get_char(ptr_c);
+      if (g_unichar_iswide(c)) {
+	if (col + 2 > bcol) break;
+	else col += 2;
+      }
+      else if (g_unichar_type(c) == G_UNICODE_NON_SPACING_MARK) ; /*do nothing*/
+      /* We may need more special cases here... unicode spacing is hard. */
+      else {
+	if (col + 1 > bcol) break;
+	else ++col;
+      }
+      ptr_c = g_utf8_next_char(ptr_c);
+      if (col >= acol) ++cnt;
+      if (col <= acol) ptr_s = ptr_c;
+    }
+    strncat(tmpbuff, ptr_s, ptr_c - ptr_s - 1);
+    strcat(tmpbuff, "\n");
+    ptr_s = ptr_e + 1;
+#if 0
     /* we need to check that we won't run over here */
-    if ( (ptr2-ptr1) < (bcol-acol) ) {
-      len=ptr2-(ptr1+acol);
+    if ( (ptr_e-ptr_s) < (bcol-acol) ) {
+      len=ptr_e-(ptr_s+acol);
     } else {
       len=bcol-acol;
     }
-    if ((ptr1+len)>=last) {
-      len-=last-(ptr1+len);
+    if ((ptr_s+len)>=last) {
+      len-=last-(ptr_s+len);
     }
 
-    strncat(tmpbuff, ptr1+acol, len);
+    strncat(tmpbuff, ptr_s+acol, len);
     strcat(tmpbuff, "\n");
 
-    ptr1=ptr2+1;
+    ptr_s=ptr_e+1;
+#endif
   }
   strcpy(out, tmpbuff);
   owl_free(tmpbuff);
@@ -274,30 +298,35 @@ void owl_text_wordunwrap(char *in)
 /* exactly like strstr but case insensitive */
 char *stristr(char *a, char *b)
 {
-  char *x, *y, *ret;
-
-  if ((x=owl_strdup(a))==NULL) return(NULL);
-  if ((y=owl_strdup(b))==NULL) return(NULL);
-  downstr(x);
-  downstr(y);
-  ret=strstr(x, y);
-  if (ret==NULL) {
-    owl_free(x);
-    owl_free(y);
-    return(NULL);
+  char *x, *y;
+  char *ret = NULL;
+  if ((x = g_utf8_casefold(a, -1)) != NULL) {
+    if ((y = g_utf8_casefold(b, -1)) != NULL) {
+      ret = strstr(x, y);
+      if (ret != NULL) {
+	ret = ret - x + a;
+      }
+      g_free(y);
+    }
+    g_free(x);
   }
-  ret=ret-x+a;
-  owl_free(x);
-  owl_free(y);
   return(ret);
 }
 
 /* return 1 if a string is only whitespace, otherwise 0 */
 int only_whitespace(char *s)
 {
-  int i;
-  for (i=0; s[i]; i++) {
-    if (!isspace((int) s[i])) return(0);
+  if (g_utf8_validate(s,-1,NULL)) {
+    char *p;
+    for(p = s; p[0]; p=g_utf8_next_char(p)) {
+      if (!g_unichar_isspace(g_utf8_get_char(p))) return 0;
+    }
+  }
+  else {
+    int i;
+    for (i=0; s[i]; i++) {
+      if (!isspace((int) s[i])) return(0);
+    }
   }
   return(1);
 }

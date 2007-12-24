@@ -314,45 +314,69 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
  */
 void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *out)
 {
-  char *ptr1, *ptr2, *last;
-  int len, offset;
+  char *ptr_s, *ptr_e, *ptr_c, *last;
+  int col, cnt;
 
   last=in->textbuff+in->textlen-1;
-  ptr1=in->textbuff;
-  while (ptr1<=last) {
-    ptr2=strchr(ptr1, '\n');
-    if (!ptr2) {
+  ptr_s=in->textbuff;
+  while (ptr_s<=last) {
+    ptr_e=strchr(ptr_s, '\n');
+    if (!ptr_e) {
       /* but this shouldn't happen if we end in a \n */
       break;
     }
     
-    if (ptr2==ptr1) {
+    if (ptr_e==ptr_s) {
       owl_fmtext_append_normal(out, "\n");
-      ptr1++;
+      ptr_s++;
       continue;
     }
 
+    col = 0;
+    cnt = 0;
+    ptr_c = ptr_s;
+    while(col < bcol && ptr_c < ptr_e) {
+      gunichar c = g_utf8_get_char(ptr_c);
+      if (g_unichar_iswide(c)) {
+	if (col + 2 > bcol) break;
+	else col += 2;
+      }
+      else if (g_unichar_type(c) == G_UNICODE_NON_SPACING_MARK) ; /*do nothing*/
+      /* We may need more special cases here... unicode spacing is hard. */
+      else {
+	if (col + 1 > bcol) break;
+	else ++col;
+      }
+      ptr_c = g_utf8_next_char(ptr_c);
+      if (col >= acol) ++cnt;
+      if (col <= acol) ptr_s = ptr_c;
+    }
+    _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
+    ptr_s=ptr_e+1;
+    
+#if 0
     /* we need to check that we won't run over here */
     len=bcol-acol;
-    if (len > (ptr2-(ptr1+acol))) {
+    if (len > (ptr_e-(ptr_s+acol))) {
       /* the whole line fits with room to spare, don't take a full 'len' */
-      len=ptr2-(ptr1+acol);
+      len=ptr_e-(ptr_s+acol);
     }
-    if (len>last-ptr1) {
+    if (len>last-ptr_s) {
       /* the whole rest of the text fits with room to spare, adjust for it */
-      len-=(last-ptr1);
+      len-=(last-ptr_s);
     }
     if (len<=0) {
       /* saftey check */
       owl_fmtext_append_normal(out, "\n");
-      ptr1=ptr2+1;
+      ptr_s=ptr_e+1;
       continue;
     }
 
-    offset=ptr1-in->textbuff;
+    offset = ptr_s - in->textbuff;
     _owl_fmtext_append_fmtext(out, in, offset+acol, offset+acol+len);
 
-    ptr1=ptr2+1;
+    ptr_s=ptr_e+1;
+#endif
   }
 }
 

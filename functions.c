@@ -2597,7 +2597,13 @@ char *owl_function_classinstfilt(char *c, char *i)
     sprintf(filtname, "class-%s-instance-%s", class, instance);
   }
   /* downcase it */
-  downstr(filtname);
+  {
+    char *temp = g_utf8_strdown(filtname, -1);
+    if (temp) {
+      owl_free(filtname);
+      filtname = temp;
+    }
+  }
   /* turn spaces, single quotes, and double quotes into dots */
   owl_text_tr(filtname, ' ', '.');
   owl_text_tr(filtname, '\'', '.');

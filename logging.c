@@ -154,9 +154,11 @@ void owl_log_outgoing(owl_message *m)
   } else if (owl_message_is_type_jabber(m)) {
     to = owl_sprintf("jabber:%s", owl_message_get_recipient(m));
   } else if (owl_message_is_type_aim(m)) {
+    char *temp2;
     temp = owl_aim_normalize_screenname(owl_message_get_recipient(m));
-    downstr(temp);
-    to = owl_sprintf("aim:%s", temp);
+    temp2 = g_utf8_strdown(temp,-1);
+    to = owl_sprintf("aim:%s", temp2);
+    owl_free(temp2);
     owl_free(temp);
   } else {
     to = owl_sprintf("loopback");
@@ -266,11 +268,12 @@ void owl_log_incoming(owl_message *m)
     }
   } else if (owl_message_is_type_aim(m)) {
     /* we do not yet handle chat rooms */
-    char *normalto;
-    normalto=owl_aim_normalize_screenname(owl_message_get_sender(m));
-    downstr(normalto);
+    char *normalto, *temp;
+    temp = owl_aim_normalize_screenname(owl_message_get_sender(m));
+    normalto = g_utf8_strdown(temp, -1);
     from=frombuff=owl_sprintf("aim:%s", normalto);
     owl_free(normalto);
+    owl_free(temp);
   } else if (owl_message_is_type_loopback(m)) {
     from=frombuff=owl_strdup("loopback");
   } else if (owl_message_is_type_jabber(m)) {
@@ -289,7 +292,7 @@ void owl_log_incoming(owl_message *m)
   if (strchr(frombuff, '/')) from="weird";
 
   ch=frombuff[0];
-  if (!isalnum(ch)) from="weird";
+  if (!g_ascii_isalnum(ch)) from="weird";
 
   for (i=0; i<len; i++) {
     if (frombuff[i]<'!' || frombuff[i]>='~') from="weird";
@@ -298,7 +301,13 @@ void owl_log_incoming(owl_message *m)
   if (!strcmp(frombuff, ".") || !strcasecmp(frombuff, "..")) from="weird";
 
   if (!personal) {
-    if (strcmp(from, "weird")) downstr(from);
+    if (strcmp(from, "weird")) {
+      char* temp = g_utf8_strdown(frombuff, -1);
+      if (temp) {
+	owl_free(frombuff);
+	from = frombuff = temp;
+      }
+    }
   }
 
   /* create the filename (expanding ~ in path names) */
