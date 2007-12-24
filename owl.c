@@ -64,6 +64,13 @@ static const char fileIdent[] = "$Id$";
 
 owl_global g;
 
+char * owl_get_datadir() {
+    char * datadir = getenv("BARNOWL_DATA_DIR");
+    if(datadir != NULL)
+        return strchr(datadir, '=') + 1;
+    return DATADIR;
+}
+
 int main(int argc, char **argv, char **env)
 {
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
@@ -73,6 +80,7 @@ int main(int argc, char **argv, char **env)
   int newmsgs, nexttimediff;
   struct sigaction sigact;
   char *configfile, *tty, *perlout, *perlerr, **argvsave, buff[LINE], startupmsg[LINE];
+  char *confdir;
   owl_filter *f;
   owl_style *s;
   time_t nexttime, now;
@@ -87,6 +95,7 @@ int main(int argc, char **argv, char **env)
   argcsave=argc;
   argvsave=argv;
   configfile=NULL;
+  confdir = NULL;
   tty=NULL;
   debug=0;
   initialsubs=1;
@@ -104,20 +113,29 @@ int main(int argc, char **argv, char **env)
       argc--;
     } else if (!strcmp(argv[0], "-c")) {
       if (argc<2) {
-	fprintf(stderr, "Too few arguments to -c\n");
-	usage();
-	exit(1);
+        fprintf(stderr, "Too few arguments to -c\n");
+        usage();
+        exit(1);
       }
       configfile=argv[1];
       argv+=2;
       argc-=2;
     } else if (!strcmp(argv[0], "-t")) {
       if (argc<2) {
-	fprintf(stderr, "Too few arguments to -t\n");
-	usage();
-	exit(1);
+        fprintf(stderr, "Too few arguments to -t\n");
+        usage();
+        exit(1);
       }
       tty=argv[1];
+      argv+=2;
+      argc-=2;
+    } else if (!strcmp(argv[0], "-s")){
+      if (argc<2) {
+        fprintf(stderr, "Too few arguments to -s\n");
+        usage();
+        exit(1);
+      }
+      confdir = argv[1];
       argv+=2;
       argc-=2;
     } else if (!strcmp(argv[0], "-d")) {
@@ -130,7 +148,7 @@ int main(int argc, char **argv, char **env)
       argv++;
       argc--;
     } else if (!strcmp(argv[0], "-v")) {
-      printf("This is owl version %s\n", OWL_VERSION_STRING);
+      printf("This is barnowl version %s\n", OWL_VERSION_STRING);
       exit(0);
     } else {
       fprintf(stderr, "Uknown argument\n");
@@ -162,9 +180,7 @@ int main(int argc, char **argv, char **env)
 
   /* screen init */
   if (!getenv("TERMINFO")) {
-    sprintf(buff, "TERMINFO=%s", TERMINFO);
-    putenv(buff);
-    owl_function_debugmsg("startup: setting TERMINFO to %s", TERMINFO);
+    owl_function_debugmsg("startup: Not setting TERMINFO");
   } else {
     owl_function_debugmsg("startup: leaving TERMINFO as %s from envrionment", getenv("TERMINFO"));
   }
@@ -194,7 +210,8 @@ int main(int argc, char **argv, char **env)
 
   /* owl global init */
   owl_global_init(&g);
-    if (debug) owl_global_set_debug_on(&g);
+  if (debug) owl_global_set_debug_on(&g);
+  if (confdir) owl_global_set_confdir(&g, confdir);
   owl_function_debugmsg("startup: first available debugging message");
   owl_global_set_startupargs(&g, argcsave, argvsave);
   owl_global_set_haveaim(&g);
@@ -216,9 +233,8 @@ int main(int argc, char **argv, char **env)
 
   /* create the owl directory, in case it does not exist */
   owl_function_debugmsg("startup: creating owl directory, if not present");
-  dir=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_CONFIG_DIR);
+  dir=owl_global_get_confdir(&g);
   mkdir(dir, S_IRWXU);
-  owl_free(dir);
 
   /* set the tty, either from the command line, or by figuring it out */
   owl_function_debugmsg("startup: setting tty name");
@@ -262,7 +278,9 @@ int main(int argc, char **argv, char **env)
    *  included.  Also, there should be an %aimme% */
   owl_function_debugmsg("startup: creating default filters");
   f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "personal", "isprivate ^true$");
+  owl_filter_init_fromstring(f, "personal", "isprivate ^true$ and ( not type ^zephyr$"
+                             " or ( class ^message and"
+                             " ( instance ^personal$ or instance ^urgent$ ) ) )");
   owl_list_append_element(owl_global_get_filterlist(&g), f);
 
   f=owl_malloc(sizeof(owl_filter));
@@ -532,7 +550,7 @@ int main(int argc, char **argv, char **env)
      * as quickly as possbile */
     j=wgetch(typwin);
     if (j==ERR) {
-      usleep(10);
+      usleep(10000);
     } else {
       owl_global_update_lastinputtime(&g);
       /* find and activate the current keymap.
@@ -699,14 +717,15 @@ void sig_handler(int sig, siginfo_t *si, void *data)
 
 void usage()
 {
-  fprintf(stderr, "Owl version %s\n", OWL_VERSION_STRING);
-  fprintf(stderr, "Usage: owl [-n] [-d] [-D] [-v] [-h] [-c <configfile>] [-t <ttyname>]\n");
+  fprintf(stderr, "Barnowl version %s\n", OWL_VERSION_STRING);
+  fprintf(stderr, "Usage: barnowl [-n] [-d] [-D] [-v] [-h] [-c <configfile>] [-s <confdir>] [-t <ttyname>]\n");
   fprintf(stderr, "  -n      don't load zephyr subscriptions\n");
   fprintf(stderr, "  -d      enable debugging\n");
   fprintf(stderr, "  -D      enable debugging and delete previous debug file\n");
-  fprintf(stderr, "  -v      print the Owl version number and exit\n");
+  fprintf(stderr, "  -v      print the Barnowl version number and exit\n");
   fprintf(stderr, "  -h      print this help message\n");
   fprintf(stderr, "  -c      specify an alternate config file\n");
+  fprintf(stderr, "  -s      specify an alternate config dir (default ~/.owl)\n");
   fprintf(stderr, "  -t      set the tty name\n");
 }
 

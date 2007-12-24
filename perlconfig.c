@@ -136,6 +136,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
   I32 count, len;
   char *key,*val;
   HV * hash;
+  struct tm tm;
 
   hash = (HV*)SvRV(msg);
 
@@ -161,7 +162,6 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
       owl_message_set_zwriteline(m, val);
     } else if (!strcmp(key, "time")) {
       m->timestr = owl_strdup(val);
-      struct tm tm;
       strptime(val, "%a %b %d %T %Y", &tm);
       m->time = mktime(&tm);
     } else {
@@ -444,6 +444,7 @@ char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
 {
   int i, count;
   char * ret = NULL;
+  SV *rv;
   STRLEN n_a;
   dSP;
 
@@ -466,7 +467,7 @@ char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
   } else {
     if(count != 1)
       croak("Perl command %s returned more than one value!", cmd->name);
-    SV * rv = POPs;
+    rv = POPs;
     if(SvTRUE(rv)) {
       ret = owl_strdup(SvPV(rv, n_a));
     }
@@ -487,11 +488,11 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
 {
   SV *cb = (SV*)(e->cbdata);
   unsigned int n_a;
+  dSP;
+
   if(cb == NULL) {
     owl_function_error("Perl callback is NULL!");
   }
-
-  dSP;
 
   ENTER;
   SAVETMPS;
@@ -515,9 +516,9 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
 
 void owl_perlconfig_mainloop()
 {
+  dSP;
   if (!owl_perlconfig_is_function("BarnOwl::Hooks::_mainloop_hook"))
     return;
-  dSP ;
   PUSHMARK(SP) ;
   call_pv("BarnOwl::Hooks::_mainloop_hook", G_DISCARD|G_EVAL);
   if(SvTRUE(ERRSV)) {

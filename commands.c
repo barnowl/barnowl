@@ -131,8 +131,10 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("aimwrite", owl_command_aimwrite, OWL_CTX_INTERACTIVE,
 	      "send an AIM message",
-	      "aimzwrite <user>",
-	      "Send an aim message to a user.\n"),
+	      "aimwrite <user> [-m <message...>]",
+	      "Send an aim message to a user.\n\n" 
+              "The following options are available:\n\n"
+              "-m    Specifies a message to send without prompting.\n"),
 
   OWLCMD_ARGS("loopwrite", owl_command_loopwrite, OWL_CTX_INTERACTIVE,
 	      "send a loopback message",
@@ -279,6 +281,25 @@ owl_cmd commands_to_init[]
 	      "The zunpunt command will allow messages that were previosly\n"
 	      "suppressed to be received again.\n\n"
 	      "SEE ALSO:  zpunt, show zpunts\n"),
+
+  OWLCMD_ARGS("punt", owl_command_punt, OWL_CTX_ANY,
+	      "suppress an arbitrary filter",
+	      "punt <filter-name>",
+	      "punt <filter-text (multiple words)>\n"
+	      "The punt command will supress message to the specified\n"
+	      "filter\n\n"
+	      "SEE ALSO:  unpunt, zpunt, show zpunts\n"),
+
+  OWLCMD_ARGS("unpunt", owl_command_unpunt, OWL_CTX_ANY,
+	      "remove an entry from the punt list",
+	      "zpunt <filter-name>\n"
+	      "zpunt <filter-text>\n"
+	      "zpunt <number>\n",
+	      "The unpunt command will remove an entry from the puntlist.\n"
+	      "The first two forms correspond to the first two forms of the :punt\n"
+	      "command. The latter allows you to remove a specific entry from the\n"
+	      "the list (see :show zpunts)\n\n"
+	      "SEE ALSO:  punt, zpunt, zunpunt, show zpunts\n"),
 
   OWLCMD_VOID("info", owl_command_info, OWL_CTX_INTERACTIVE,
 	      "display detailed information about the current message",
@@ -1866,8 +1887,9 @@ char *owl_command_zwrite(int argc, char **argv, char *buff)
 
 char *owl_command_aimwrite(int argc, char **argv, char *buff)
 {
-  char *newbuff;
-  int i, j;
+  char *newbuff, *recip, **myargv;
+  int i, j, myargc;
+  owl_message *m;
   
   if (!owl_global_is_aimloggedin(&g)) {
     owl_function_makemsg("You are not logged in to AIM.");
@@ -1877,6 +1899,56 @@ char *owl_command_aimwrite(int argc, char **argv, char *buff)
   if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the aimwrite command.");
     return(NULL);
+  }
+
+  myargv=argv;
+  if (argc<0) {
+    owl_function_error("Unbalanced quotes in aimwrite");
+    return(NULL);
+  }
+  myargc=argc;
+  if (myargc && *(myargv[0])!='-') {
+    myargc--;
+    myargv++;
+  }
+  while (myargc) {
+    if (!strcmp(myargv[0], "-m")) {
+      if (myargc<2) {
+	break;
+      }
+
+      /* Once we have -m, gobble up everything else on the line */
+      myargv++;
+      myargc--;
+      newbuff=owl_malloc(1);
+      newbuff=owl_strdup("");
+      while (myargc) {
+	newbuff=realloc(newbuff, strlen(newbuff)+strlen(myargv[0])+5);
+	strcat(newbuff, myargv[0]);
+	strcat(newbuff, " ");
+	myargc--;
+	myargv++;
+      }
+      newbuff[strlen(newbuff)-1]='\0'; /* remove last space */
+
+      recip=owl_malloc(strlen(argv[0])+5);
+      sprintf(recip, "%s ", argv[1]);
+      owl_aim_send_im(recip, newbuff);
+      m=owl_function_make_outgoing_aim(newbuff, recip);
+      if (m) { 
+          owl_global_messagequeue_addmsg(&g, m);
+      } else {
+          owl_function_error("Could not create outgoing AIM message");
+      }
+
+      owl_free(recip);
+      owl_free(newbuff);
+      return(NULL);
+    } else {
+      /* we don't care */
+      myargv++;
+      myargc--;
+    }
   }
 
   /* squish arguments together to make one screenname w/o spaces for now */
@@ -2141,9 +2213,8 @@ char *owl_command_show(int argc, char **argv, char *buff)
   } else if (!strcmp(argv[1], "startup")) {
     char *filename;
     
-    filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
+    filename=owl_global_get_startupfile(&g);
     owl_function_popless_file(filename);
-    owl_free(filename);
   } else if (!strcmp(argv[1], "errors")) {
     owl_function_showerrs();
   } else {
@@ -2294,7 +2365,6 @@ char *owl_command_zunpunt(int argc, char **argv, char *buff)
   return NULL;
 }
 
-
 void owl_command_zpunt_and_zunpunt(int argc, char **argv, int type)
 {
   /* if type==0 then zpunt
@@ -2343,6 +2413,52 @@ char *owl_command_smartzpunt(int argc, char **argv, char *buff)
   }
   return NULL;
 }
+
+char *owl_command_punt(int argc, char **argv, char *buff)
+{
+  owl_command_punt_unpunt(argc, argv, buff, 0);
+  return NULL;
+}
+
+char *owl_command_unpunt(int argc, char **argv, char *buff)
+{
+  owl_command_punt_unpunt(argc, argv, buff, 1);
+  return NULL;
+}
+
+void owl_command_punt_unpunt(int argc, char ** argv, char *buff, int unpunt)
+{
+  owl_list * fl;
+  owl_filter * f;
+  char * text;
+  int i;
+
+  fl = owl_global_get_puntlist(&g);
+  if(argc == 1) {
+    owl_function_show_zpunts();
+  }
+
+  if(argc == 2) {
+    /* Handle :unpunt <number> */
+    if(unpunt && (i=atoi(argv[1])) !=0) {
+      i--;      /* Accept 1-based indexing */
+      if(i < owl_list_get_size(fl)) {
+        f = (owl_filter*)owl_list_get_element(fl, i);
+        owl_list_remove_element(fl, i);
+        owl_filter_free(f);
+        return;
+      } else {
+        owl_function_error("No such filter number: %d", i+1);
+      }
+    }
+    text = owl_sprintf("filter %s", argv[1]);
+  } else {
+    text = skiptokens(buff, 1);
+  }
+
+  owl_function_punt(text, unpunt);
+}
+
 
 char *owl_command_getview(int argc, char **argv, char *buff)
 {
@@ -2468,6 +2584,7 @@ void owl_command_yes(void)
 {
   owl_message *m;
   owl_view *v;
+  char *cmd;
 
   v = owl_global_get_current_view(&g);
 
@@ -2486,7 +2603,7 @@ void owl_command_yes(void)
     owl_function_error("You already answered that question.");
     return;
   }
-  char * cmd = owl_message_get_attribute_value(m, "yescommand");
+  cmd = owl_message_get_attribute_value(m, "yescommand");
   if(!cmd) {
     owl_function_error("No yes command!");
     return;
@@ -2501,6 +2618,7 @@ void owl_command_no(void)
 {
   owl_message *m;
   owl_view *v;
+  char *cmd;
 
   v = owl_global_get_current_view(&g);
 
@@ -2519,7 +2637,7 @@ void owl_command_no(void)
     owl_function_error("You already answered that question.");
     return;
   }
-  char * cmd = owl_message_get_attribute_value(m, "nocommand");
+  cmd = owl_message_get_attribute_value(m, "nocommand");
   if(!cmd) {
     owl_function_error("No no command!");
     return;

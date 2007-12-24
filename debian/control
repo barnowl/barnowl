@@ -2,7 +2,7 @@ Source: barnowl
 Section: net
 Priority: optional
 Maintainer: Sam Hartman <hartmans@debian.org>
-Build-Depends: debhelper (>> 4.0.0), libzephyr-dev (>= 2.1.20010518.SNAPSHOT-7), libncurses5-dev, libkrb5-dev, libperl-dev
+Build-Depends: debhelper (>> 4.0.0), libzephyr-dev (>= 2.1.20010518.SNAPSHOT-7), libncurses5-dev, libkrb5-dev, libperl-dev, zip
 Standards-Version: 3.5.2
 
 Package: barnowl
@@ -11,8 +11,8 @@ Depends: ${shlibs:Depends}, ${perl:Depends}, libnet-dns-perl, libauthen-sasl-per
 Recommends: zephyr-clients
 Description: A curses-based tty Jabber and Zephyr client.
  An alternative standalone (doesn't use zwgc) Zephyr (instant
- messaging) client.  Also supports Jabber.
+ messaging) client.  Also supports AIM and Jabber.
  Much of the functionality is written in Perl, which is supported as 
  an extension language.
  .
- ktools software -- The 'k' is for Quality!
+ This is a fork of ktools software's owl Zephyr/AIM client

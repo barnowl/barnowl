@@ -17,6 +17,7 @@ static const char fileIdent[] = "$Id$";
 void owl_global_init(owl_global *g) {
   struct hostent *hent;
   char hostname[MAXHOSTNAMELEN];
+  char *cd;
 
   g->malloced=0;
   g->freed=0;
@@ -84,6 +85,12 @@ void owl_global_init(owl_global *g) {
   /* Fill in some variables which don't have constant defaults */
   /* TODO: come back later and check passwd file first */
   g->homedir=owl_strdup(getenv("HOME"));
+
+  g->confdir = NULL;
+  g->startupfile = NULL;
+  cd = owl_sprintf("%s/%s", g->homedir, OWL_CONFIG_DIR);
+  owl_global_set_confdir(g, cd);
+  owl_free(cd);
 
   owl_messagelist_create(&(g->msglist));
   owl_mainwin_init(&(g->mw));
@@ -315,6 +322,26 @@ void owl_global_set_resize_pending(owl_global *g) {
 
 char *owl_global_get_homedir(owl_global *g) {
   if (g->homedir) return(g->homedir);
+  return("/");
+}
+
+char *owl_global_get_confdir(owl_global *g) {
+  if (g->confdir) return(g->confdir);
+  return("/");
+}
+
+/*
+ * Setting this also sets startupfile to confdir/startup
+ */
+void owl_global_set_confdir(owl_global *g, char *cd) {
+  free(g->confdir);
+  g->confdir = owl_strdup(cd);
+  free(g->startupfile);
+  g->startupfile = owl_sprintf("%s/startup", cd);
+}
+
+char *owl_global_get_startupfile(owl_global *g) {
+  if(g->startupfile) return(g->startupfile);
   return("/");
 }
 

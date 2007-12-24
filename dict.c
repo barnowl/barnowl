@@ -151,7 +151,7 @@ int owl_dict_regtest(void) {
   int numfailed=0;
   char *av="aval", *bv="bval", *cv="cval", *dv="dval";
 
-  printf("BEGIN testing owl_dict\n");
+  printf("# BEGIN testing owl_dict\n");
   FAIL_UNLESS("create", 0==owl_dict_create(&d));
   FAIL_UNLESS("insert b", 0==owl_dict_insert_element(&d, "b", (void*)bv, owl_dict_noop_free));
   FAIL_UNLESS("insert d", 0==owl_dict_insert_element(&d, "d", (void*)dv, owl_dict_noop_free));
@@ -178,8 +178,8 @@ int owl_dict_regtest(void) {
   owl_list_free_all(&l, owl_free);
   owl_dict_free_all(&d, NULL);
 
-  if (numfailed) printf("*** WARNING: failures encountered with owl_dict\n");
-  printf("END testing owl_dict (%d failures)\n", numfailed);
+  //  if (numfailed) printf("*** WARNING: failures encountered with owl_dict\n");
+  printf("# END testing owl_dict (%d failures)\n", numfailed);
   return(numfailed);
 }
 

@@ -580,15 +580,17 @@ sub jmuc_join {
     $muc = shift @ARGV
       or die("Usage: jmuc join MUC [-p password] [-a account]");
 
+    die("Error: Must specify a fully-qualified MUC name (e.g. barnowl\@conference.mit.edu)\n")
+        unless $muc =~ /@/;
     $muc = Net::Jabber::JID->new($muc);
     $jid = Net::Jabber::JID->new($jid);
     $muc->SetResource($jid->GetJID('full')) unless length $muc->GetResource();
 
     $conn->getConnectionFromJID($jid)->MUCJoin(JID      => $muc,
-                                                  Password => $password,
-                                                  History  => {
-                                                      MaxChars => 0
-                                                     });
+                                               Password => $password,
+                                               History  => {
+                                                   MaxChars => 0
+                                                  });
     return;
 }
 
@@ -598,8 +600,11 @@ sub jmuc_part {
     $muc = shift @args if scalar @args;
     die("Usage: jmuc part MUC [-a account]") unless $muc;
 
-    $conn->getConnectionFromJID($jid)->MUCLeave(JID => $muc);
-    queue_admin_msg("$jid has left $muc.");
+    if($conn->getConnectionFromJID($jid)->MUCLeave(JID => $muc)) {
+        queue_admin_msg("$jid has left $muc.");
+    } else {
+        die("Error: Not joined to $muc");
+    }
 }
 
 sub jmuc_invite {
@@ -638,8 +643,25 @@ sub jmuc_configure {
 sub jmuc_presence_single {
     my $m = shift;
     my @jids = $m->Presence();
-    return "JIDs present in " . $m->BaseJID . "\n\t"
-      . join("\n\t", map {$_->GetResource}@jids) . "\n";
+
+    my $presence = "JIDs present in " . $m->BaseJID;
+    if($m->Anonymous) {
+        $presence .= " [anonymous MUC]";
+    }
+    $presence .= "\n\t";
+    $presence .= join("\n\t", map {pp_jid($m, $_);} @jids) . "\n";
+    return $presence;
+}
+
+sub pp_jid {
+    my ($m, $jid) = @_;
+    my $nick = $jid->GetResource;
+    my $full = $m->GetFullJID($jid);
+    if($full && $full ne $nick) {
+        return "$nick ($full)";
+    } else {
+        return "$nick";
+    }
 }
 
 sub jmuc_presence {
@@ -903,6 +925,7 @@ sub process_incoming_error_message {
     my %jhash = j2hash( $j, { direction => 'in',
                               sid => $sid } );
     $jhash{type} = 'admin';
+    
     BarnOwl::queue_message( BarnOwl::Message->new(%jhash) );
 }
 
@@ -1133,14 +1156,14 @@ sub j2hash {
         }
     }
     elsif ( $jtype eq 'normal' ) {
-        $props{replycmd}  = undef;
+        $props{replycmd}  = "";
         $props{private} = 1;
     }
     elsif ( $jtype eq 'headline' ) {
-        $props{replycmd} = undef;
+        $props{replycmd} = "";
     }
     elsif ( $jtype eq 'error' ) {
-        $props{replycmd} = undef;
+        $props{replycmd} = "";
         $props{body}     = "Error "
           . $props{error_code}
           . " sending to "

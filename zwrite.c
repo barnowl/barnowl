@@ -124,6 +124,13 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
     return(-1);
   }
 
+  if (z->class == NULL &&
+      z->inst == NULL &&
+      owl_list_get_size(&(z->recips))==0) {
+    owl_function_error("You must specify a recipient for zwrite");
+    return(-1);
+  }
+
   /* now deal with defaults */
   if (z->class==NULL) z->class=owl_strdup("message");
   if (z->inst==NULL) z->inst=owl_strdup("personal");
@@ -131,13 +138,6 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
   if (z->opcode==NULL) z->opcode=owl_strdup("");
   /* z->message is allowed to stay NULL */
   
-  if (!strcasecmp(z->class, "message") &&
-      !strcasecmp(z->inst, "personal") &&
-      owl_list_get_size(&(z->recips))==0) {
-    owl_function_error("You must specify a recipient for zwrite");
-    return(-1);
-  }
-
   /* get a zsig, if not given */
   if (z->zsig==NULL) {
     zsigproc = owl_global_get_zsigproc(&g);

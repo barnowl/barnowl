@@ -198,9 +198,16 @@ void start_edit_win(line, callback)
 char * 
 get_data_dir ()
 	CODE:
-		RETVAL = (char *) DATADIR;
+		RETVAL = (char *) owl_get_datadir();
 	OUTPUT:
 	RETVAL
+
+char * 
+get_config_dir ()
+	CODE:
+		RETVAL = (char *) owl_global_get_confdir(&g);
+	OUTPUT:
+	RETVAL	
 
 void
 popless_text(text) 

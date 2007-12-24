@@ -1160,7 +1160,8 @@ sub OpenStream
         $self->{SOCKETS}->{*STDIN} = $sid;
     }
 
-    delete($self->{SIDS}->{$currsid});
+    # 08.04.05(Fri) slipstream@yandex.ru for compapility with ejabberd since it reuses stream id
+    delete($self->{SIDS}->{$currsid}) unless ($currsid eq $sid);
 
     if (exists($self->GetRoot($sid)->{version}) &&
         ($self->GetRoot($sid)->{version} ne ""))

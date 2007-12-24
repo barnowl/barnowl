@@ -5,14 +5,17 @@ package BarnOwl::ModuleLoader;
 
 use lib (BarnOwl::get_data_dir() . "/modules/");
 use PAR (BarnOwl::get_data_dir() . "/modules/*.par");
-use PAR ($ENV{HOME} . "/.owl/modules/*.par");
+use PAR (BarnOwl::get_config_dir() . "/modules/*.par");
 
 sub load_all {
     my %modules;
     my @modules;
+
+    my @moddirs = ();
+    push @moddirs, BarnOwl::get_data_dir() . "/modules";
+    push @moddirs, BarnOwl::get_config_dir() . "/modules";
     
-    for my $dir ( BarnOwl::get_data_dir() . "/modules",
-                  $ENV{HOME} . "/.owl/modules" ) {
+    for my $dir (@moddirs) {
         opendir(my $dh, $dir) or next;
         while(defined(my $f = readdir($dh))) {
             next if $f =~ /^\./;

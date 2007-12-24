@@ -63,7 +63,10 @@
 /* Perl and curses don't play nice. */
 #ifdef OWL_PERL
 typedef void WINDOW;
+/* logout is defined in FreeBSD. */
+#define logout logout_
 #include <perl.h>
+#undef logout
 #include "XSUB.h"
 #else
 typedef void SV;
@@ -559,6 +562,8 @@ typedef struct _owl_global {
   int typwinactive;
   char *thishost;
   char *homedir;
+  char *confdir;
+  char *startupfile;
   int direction;
   int zaway;
   char *cur_zaway_msg;

@@ -51,6 +51,9 @@ sub MUCJoin {
 
 Leave a MUC. The MUC is specified in the same form as L</FindMUC>
 
+Returns true if successful, false if this connection was not in the
+named MUC.
+
 =cut
 
 sub MUCLeave {
@@ -60,6 +63,7 @@ sub MUCLeave {
 
     $muc->Leave();
     $self->{_BARNOWL_MUCS} = [grep {$_->BaseJID ne $muc->BaseJID} $self->MUCs];
+    return 1;
 }
 
 =head2 FindMUC ARGS

@@ -26,10 +26,10 @@ void owl_message_init_fmtext_cache ()
 
 owl_fmtext_cache * owl_message_next_fmtext() /*noproto*/
 {
+    owl_fmtext_cache * f = fmtext_cache_next;
     if(fmtext_cache_next->message != NULL) {
         owl_message_invalidate_format(fmtext_cache_next->message);
     }
-    owl_fmtext_cache * f = fmtext_cache_next;
     fmtext_cache_next++;
     if(fmtext_cache_next - fmtext_cache == OWL_FMTEXT_CACHE_SIZE)
         fmtext_cache_next = fmtext_cache;
@@ -120,6 +120,11 @@ void owl_message_attributes_tofmtext(owl_message *m, owl_fmtext *fm) {
   for (i=0; i<j; i++) {
     p=owl_list_get_element(&(m->attributes), i);
     buff=owl_sprintf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), owl_pair_get_value(p));
+    if(buff == NULL) {
+      buff=owl_sprintf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), "<error>");
+      if(buff == NULL)
+        buff=owl_strdup("   <error>\n");
+    }
     owl_fmtext_append_normal(fm, buff);
     owl_free(buff);
   }
@@ -416,6 +421,7 @@ int owl_message_is_pseudo(owl_message *m)
 
 char *owl_message_get_text(owl_message *m)
 {
+  owl_message_format(m);
   return(owl_fmtext_get_text(&(m->fmtext->fmtext)));
 }
 
@@ -565,8 +571,9 @@ int owl_message_is_question(owl_message *m)
 }
 
 int owl_message_is_answered(owl_message *m) {
+  char *q;
   if(!owl_message_is_question(m)) return 0;
-  char * q = owl_message_get_attribute_value(m, "question");
+  q = owl_message_get_attribute_value(m, "question");
   if(!q) return 0;
   return !strcmp(q, "answered");
 }
@@ -812,6 +819,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 {
   struct hostent *hent;
   char *ptr, *tmp, *tmp2;
+  int len;
 
   owl_message_init(m);
   
@@ -840,7 +848,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   } else {
     owl_message_set_opcode(m, "");
   }
-  owl_message_set_zsig(m, n->z_message);
+  owl_message_set_zsig(m, owl_zephyr_get_zsig(n, &len));
 
   if ((ptr=strchr(n->z_recipient, '@'))!=NULL) {
     owl_message_set_realm(m, ptr+1);

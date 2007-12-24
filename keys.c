@@ -179,6 +179,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("<",           "popless:scroll-to-top", "");
   BIND_CMD("M-<",         "popless:scroll-to-top", "");
 
+  BIND_CMD("END",         "popless:scroll-to-bottom", "");
   BIND_CMD(">",           "popless:scroll-to-bottom", "");
   BIND_CMD("M->",         "popless:scroll-to-bottom", "");
 
