@@ -145,7 +145,7 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
       /* make personal messages bold for smaat users */
       if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
 	if (owl_message_is_personal(m)) {
-	  owl_fmtext_addattr((&m->fmtext), OWL_FMTEXT_ATTR_BOLD);
+	  owl_fmtext_addattr(fm, OWL_FMTEXT_ATTR_BOLD);
 	}
       }
     }
@@ -308,7 +308,7 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
       /* make private messages bold for smaat users */
       if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
 	if (owl_message_is_personal(m)) {
-	  owl_fmtext_addattr((&m->fmtext), OWL_FMTEXT_ATTR_BOLD);
+	  owl_fmtext_addattr(fm, OWL_FMTEXT_ATTR_BOLD);
 	}
       }
     }
@@ -626,7 +626,7 @@ void owl_stylefunc_vt(owl_fmtext *fm, owl_message *m)
       /* make private messages bold for smaat users */
       if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
 	if (owl_message_is_personal(m)) {
-	  owl_fmtext_addattr((&m->fmtext), OWL_FMTEXT_ATTR_BOLD);
+	  owl_fmtext_addattr(fm, OWL_FMTEXT_ATTR_BOLD);
 	}
       }
     }
