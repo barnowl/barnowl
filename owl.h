@@ -100,6 +100,26 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_FMTEXT_ATTR_REVERSE   2
 #define OWL_FMTEXT_ATTR_UNDERLINE 4
 
+#define OWL_FMTEXT_UC_BASE 0x100000 /* Unicode Plane 16 - Supplementary Private Use Area-B*/
+#define OWL_FMTEXT_UC_ATTR ( OWL_FMTEXT_UC_BASE | 0x800 )
+#define OWL_FMTEXT_UC_ATTR_MASK 0x7
+#define OWL_FMTEXT_UC_COLOR_BASE ( OWL_FMTEXT_UC_BASE | 0x400 )
+#define OWL_FMTEXT_UC_FGCOLOR OWL_FMTEXT_UC_COLOR_BASE
+#define OWL_FMTEXT_UC_BGCOLOR ( OWL_FMTEXT_UC_COLOR_BASE | 0x200 )
+#define OWL_FMTEXT_UC_DEFAULT_COLOR 0x100
+#define OWL_FMTEXT_UC_FGDEFAULT ( OWL_FMTEXT_UC_FGCOLOR | OWL_FMTEXT_UC_DEFAULT_COLOR )
+#define OWL_FMTEXT_UC_BGDEFAULT ( OWL_FMTEXT_UC_BGCOLOR | OWL_FMTEXT_UC_DEFAULT_COLOR )
+#define OWL_FMTEXT_UC_COLOR_MASK 0xFF
+#define OWL_FMTEXT_UC_ALLCOLOR_MASK ( OWL_FMTEXT_UC_COLOR_MASK | OWL_FMTEXT_UC_DEFAULT_COLOR | 0x200)
+#define OWL_FMTEXT_UC_STARTBYTE_UTF8 '\xf4'
+
+#define OWL_FMTEXT_UTF8_ATTR_NONE "\xf4\x80\xa0\x80"
+#define OWL_FMTEXT_UTF8_FGDEFAULT "\xf4\x80\x94\x80"
+#define OWL_FMTEXT_UTF8_BGDEFAULT "\xf4\x80\x96\x80"
+
+
+
+
 #define OWL_COLOR_BLACK     0
 #define OWL_COLOR_RED       1
 #define OWL_COLOR_GREEN     2
@@ -255,9 +275,9 @@ typedef struct _owl_fmtext {
   int textlen;
   int bufflen;
   char *textbuff;
-  char *fmbuff;
-  short *fgcolorbuff;
-  short *bgcolorbuff;
+  char default_attrs;
+  short default_fgcolor;
+  short default_bgcolor;
 } owl_fmtext;
 
 typedef struct _owl_list {

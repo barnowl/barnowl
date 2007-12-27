@@ -536,18 +536,10 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
   
   owl_fmtext_truncate_lines(&(m->fmtext->fmtext), aline, bline-aline+1, &a);
   owl_fmtext_truncate_cols(&a, acol, bcol, &b);
-  if (fgcolor!=OWL_COLOR_DEFAULT) {
-    owl_fmtext_colorize(&b, fgcolor);
-  }
-  if (bgcolor!=OWL_COLOR_DEFAULT) {
-    owl_fmtext_colorizebg(&b, bgcolor);
-  }
+  owl_fmtext_colorize(&b, fgcolor);
+  owl_fmtext_colorizebg(&b, bgcolor);
 
-  if (owl_global_is_search_active(&g)) {
-    owl_fmtext_search_and_highlight(&b, owl_global_get_search_string(&g));
-  }
-      
-  owl_fmtext_curs_waddstr(&b, win);
+  owl_fmtext_curs_waddstr(&b, win, owl_global_is_search_active(&g));
 
   owl_fmtext_free(&a);
   owl_fmtext_free(&b);
