@@ -752,11 +752,64 @@ char * owl_util_baseclass(char * class)
   return start;
 }
 
-char * owl_get_datadir() {
-    char * datadir = getenv("BARNOWL_DATA_DIR");
-    if(datadir != NULL)
-        return strchr(datadir, '=') + 1;
-    return DATADIR;
+char * owl_get_datadir()
+{
+  char * datadir = getenv("BARNOWL_DATA_DIR");
+  if(datadir != NULL)
+    return strchr(datadir, '=') + 1;
+  return DATADIR;
+}
+
+/* Strips format characters from a valid utf-8 string. Returns the
+   empty string if 'in' does not validate. */
+char * owl_strip_format_chars(char *in)
+{
+  char *r;
+  if (g_utf8_validate(in, -1, NULL)) {
+    char *s, *p;
+    r = owl_malloc(strlen(in)+1);
+    r[0] = '\0';
+    s = in;
+    p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
+    while(p) {
+      /* If it's a format character, copy up to it, and skip all
+	 immediately following format characters. */
+      if (_owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+	strncat(r, s, p-s);
+	p = g_utf8_next_char(p);
+	while (p && _owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+	  p = g_utf8_next_char(p);
+	}
+	s = p;
+	p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
+      }
+      else {
+	p = strchr(p+1, OWL_FMTEXT_UC_STARTBYTE_UTF8);
+      }
+    }
+    if (s) strcat(r,s);
+  }
+  else {
+    r = owl_strdup("");
+  }
+  return r;
+}
+
+/* If in is not UTF-8, convert from ISO-8859-1. We may want to allow
+ * the caller to specify an alternative in the future. We also strip
+ * out characters in Unicode Plane 16, as we use that plane internally
+ * for formatting.
+ */
+char * owl_validate_or_convert(char *in, int len)
+{
+  if (g_utf8_validate(in, len , NULL)) {
+    return owl_strip_format_chars(in);
+  }
+  else {
+    return g_convert(in, len,
+		     "UTF-8", "ISO-8859-1",
+		     NULL, NULL, NULL);
+  }
 }
 
 /**************************************************************************/

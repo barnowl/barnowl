@@ -234,30 +234,7 @@ void owl_fmtext_append_spaces(owl_fmtext *f, int nspaces)
  */
 char *owl_fmtext_print_plain(owl_fmtext *f)
 {
-  char *r, *s, *p;
-  r = owl_malloc(f->bufflen);
-  r[0] = '\0';
-  s = f->textbuff;
-  /* Find next possible format character. */
-  p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
-  while(p) {
-    /* If it's a format character, copy up to it, and skip all
-       immediately following format characters. */
-    if (_owl_fmtext_is_format_char(g_utf8_get_char(p))) {
-      strncat(r, s, p-s);
-      p = g_utf8_next_char(p);
-      while (p && _owl_fmtext_is_format_char(g_utf8_get_char(p))) {
-	p = g_utf8_next_char(p);
-      }
-      s = p;
-      p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
-    }
-    else {
-      p = strchr(p+1, OWL_FMTEXT_UC_STARTBYTE_UTF8);
-    }
-  }
-  if (s) strcat(r,s);
-  return(r);
+  return owl_strip_format_chars(f->textbuff);
 }
 
 void _owl_fmtext_wattrset(WINDOW *w, int attrs) /*noproto*/

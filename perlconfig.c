@@ -54,7 +54,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
     av_zfields = newAV();
     j=owl_zephyr_get_num_fields(owl_message_get_notice(m));
     for (i=0; i<j; i++) {
-      ptr=owl_zephyr_get_field(owl_message_get_notice(m), i+1);
+      ptr=owl_zephyr_get_field_as_utf8(owl_message_get_notice(m), i+1);
       av_push(av_zfields, newSVpvn(ptr, strlen(ptr)));
       owl_free(ptr);
     }

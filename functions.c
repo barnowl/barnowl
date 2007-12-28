@@ -1604,7 +1604,7 @@ void owl_function_info()
 	for (i=0; i<fields; i++) {
 	  sprintf(buff, "  Field %i   : ", i+1);
 	  
-	  ptr=owl_zephyr_get_field(n, i+1);
+	  ptr=owl_zephyr_get_field_as_utf8(n, i+1);
 	  len=strlen(ptr);
 	  if (len<30) {
 	    strncpy(tmpbuff, ptr, len);
