@@ -800,13 +800,13 @@ char * owl_strip_format_chars(char *in)
  * out characters in Unicode Plane 16, as we use that plane internally
  * for formatting.
  */
-char * owl_validate_or_convert(char *in, int len)
+char * owl_validate_or_convert(char *in)
 {
-  if (g_utf8_validate(in, len , NULL)) {
+  if (g_utf8_validate(in, -1, NULL)) {
     return owl_strip_format_chars(in);
   }
   else {
-    return g_convert(in, len,
+    return g_convert(in, -1,
 		     "UTF-8", "ISO-8859-1",
 		     NULL, NULL, NULL);
   }

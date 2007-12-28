@@ -78,7 +78,7 @@ void owl_message_set_attribute(owl_message *m, char *attrname, char *attrvalue)
     owl_pair_create(pair, owl_global_intern(&g, attrname), NULL);
     owl_list_append_element(&(m->attributes), pair);
   }
-  owl_pair_set_value(pair, owl_validate_or_convert(attrvalue, -1));
+  owl_pair_set_value(pair, owl_validate_or_convert(attrvalue));
 }
 
 /* return the value associated with the named attribute, or NULL if

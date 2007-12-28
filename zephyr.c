@@ -368,7 +368,7 @@ char *owl_zephyr_get_field_as_utf8(ZNotice_t *n, int j)
       count++;
       if (count == j) {
 	/* just found the end of the field we're looking for */
-	return(owl_validate_or_convert(n->z_message + save, -1));
+	return(owl_validate_or_convert(n->z_message + save));
       } else {
 	save = i + 1;
       }
@@ -376,7 +376,13 @@ char *owl_zephyr_get_field_as_utf8(ZNotice_t *n, int j)
   }
   /* catch the last field, which might not be null terminated */
   if (count == j - 1) {
-    return owl_validate_or_convert(n->z_message + save, n->z_message_len - save);
+    char *tmp, *out;
+    tmp = owl_malloc(n->z_message_len-save+5);
+    memcpy(tmp, n->z_message+save, n->z_message_len-save);
+    tmp[n->z_message_len-save]='\0';
+    out = owl_validate_or_convert(tmp);
+    owl_free(tmp);
+    return out;
   }
 
   return(owl_strdup(""));
