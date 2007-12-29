@@ -811,6 +811,25 @@ char * owl_validate_or_convert(char *in)
 		     NULL, NULL, NULL);
   }
 }
+/* Attempts to convert 'in' to ISO-8859-1. Returns that if possible,
+   else returns UTF-8.
+ */
+char * owl_get_iso_8859_1_if_possible(char *in)
+{
+  char *out;
+  if (g_utf8_validate(in, -1, NULL)) {
+    out = g_convert(in, -1,
+		    "ISO-8859-1", "UTF-8",
+		    NULL, NULL, NULL);
+    if (!out) {
+      out = owl_strdup(in);
+    }
+  }
+  else {
+    out = owl_strdup("");
+  }
+  return out;
+}
 
 /**************************************************************************/
 /************************* REGRESSION TESTS *******************************/
