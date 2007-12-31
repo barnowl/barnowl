@@ -1337,7 +1337,7 @@ void owl_function_beep()
   }
 }
 
-void owl_function_subscribe(char *class, char *inst, char *recip)
+int owl_function_subscribe(char *class, char *inst, char *recip)
 {
   int ret;
 
@@ -1347,6 +1347,7 @@ void owl_function_subscribe(char *class, char *inst, char *recip)
   } else {
     owl_function_makemsg("Subscribed.");
   }
+  return(ret);
 }
 
 void owl_function_unsubscribe(char *class, char *inst, char *recip)

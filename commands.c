@@ -1767,6 +1767,7 @@ char *owl_command_subscribe(int argc, char **argv, char *buff)
 {
   char *recip="";
   int temp=0;
+  int ret=0;
   
   if (argc<3) {
     owl_function_makemsg("Not enough arguments to the subscribe command");
@@ -1796,8 +1797,8 @@ char *owl_command_subscribe(int argc, char **argv, char *buff)
     recip=argv[2];
   }
 
-  owl_function_subscribe(argv[0], argv[1], recip);
-  if (!temp) {
+  ret = owl_function_subscribe(argv[0], argv[1], recip);
+  if (!temp && !ret) {
     owl_zephyr_addsub(NULL, argv[0], argv[1], recip);
   }
   return(NULL);
