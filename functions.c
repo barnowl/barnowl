@@ -2186,7 +2186,6 @@ void owl_function_zlocate(int argc, char **argv, int auth)
 
 void owl_function_start_command(char *line)
 {
-  int i, j;
   owl_editwin *tw;
 
   tw=owl_global_get_typwin(&g);
@@ -2197,10 +2196,7 @@ void owl_function_start_command(char *line)
   owl_editwin_set_locktext(tw, "command: ");
   owl_global_set_needrefresh(&g);
 
-  j=strlen(line);
-  for (i=0; i<j; i++) {
-    owl_editwin_process_char(tw, line[i]);
-  }
+  owl_editwin_insert_string(tw, line);
   owl_editwin_redisplay(tw, 0);
 
   owl_context_set_editline(owl_global_get_context(&g), tw);

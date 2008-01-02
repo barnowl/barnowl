@@ -69,7 +69,8 @@ int main(int argc, char **argv, char **env)
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
   owl_editwin *tw;
   owl_popwin *pw;
-  int j, ret, initialsubs, debug, argcsave, followlast;
+  int ret, initialsubs, debug, argcsave, followlast;
+  gunichar j;
   int newmsgs, nexttimediff;
   struct sigaction sigact;
   char *configfile, *tty, *perlout, *perlerr, **argvsave, buff[LINE], startupmsg[LINE];
@@ -545,6 +546,30 @@ int main(int argc, char **argv, char **env)
     if (j==ERR) {
       usleep(10000);
     } else {
+      /* Pull in a full utf-8 character. */
+      if (j & 0x80) {
+	char utf8buf[7];
+	int bytes, i;
+	memset(utf8buf,'\0',7);
+	utf8buf[0] = j;
+
+	if (~j & 0x20) bytes = 2;
+	else if (~j & 0x10) bytes = 3;
+	else if (~j & 0x08) bytes = 4;
+	else if (~j & 0x04) bytes = 5;
+	else if (~j & 0x02) bytes = 6;
+	else bytes = 1; /* This won't validate */
+
+	for (i = 1; i < bytes; i++) {
+	  utf8buf[i] = wgetch(typwin);
+	}
+	if (g_utf8_validate(utf8buf, -1, NULL)) {
+	  j = g_utf8_get_char(utf8buf);
+	}
+	else {
+	  j = ERR;
+	}
+      }
       owl_global_update_lastinputtime(&g);
       /* find and activate the current keymap.
        * TODO: this should really get fixed by activating

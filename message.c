@@ -539,7 +539,7 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
   owl_fmtext_colorize(&b, fgcolor);
   owl_fmtext_colorizebg(&b, bgcolor);
 
-  owl_fmtext_curs_waddstr(&b, win, owl_global_is_search_active(&g));
+  owl_fmtext_curs_waddstr(&b, win);
 
   owl_fmtext_free(&a);
   owl_fmtext_free(&b);

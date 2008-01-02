@@ -201,7 +201,7 @@ owl_keymap *owl_keyhandler_activate(owl_keyhandler *kh, char *mapname)
 
 /* processes a keypress.  returns 0 if the keypress was handled,
  * 1 if not handled, -1 on error, and -2 if j==ERR. */
-int owl_keyhandler_process(owl_keyhandler *kh, int j)
+int owl_keyhandler_process(owl_keyhandler *kh, gunichar j)
 {
   owl_keymap     *km;
   owl_keybinding *kb;

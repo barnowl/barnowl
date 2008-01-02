@@ -76,8 +76,8 @@ void owl_text_truncate_cols(char *out, char *in, int acol, int bcol)
     ptr_c = ptr_s;
     while(col < bcol && ptr_c < ptr_e) {
       gunichar c = g_utf8_get_char(ptr_c);
-      if (col + wcwidth(c) > bcol) break;
-      col += wcwidth(c);
+      if (col + mk_wcwidth(c) > bcol) break;
+      col += mk_wcwidth(c);
       ptr_c = g_utf8_next_char(ptr_c);
       if (col >= acol) {
 	if (cnt == 0) {

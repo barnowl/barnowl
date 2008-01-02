@@ -247,7 +247,7 @@ void _owl_fmtext_wattrset(WINDOW *w, int attrs) /*noproto*/
 /* add the formatted text to the curses window 'w'.  The window 'w'
  * must already be initiatlized with curses
  */
-void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search)
+void _owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search) /*noproto*/
 {
   /* char *tmpbuff; */
   /* int position, trans1, trans2, trans3, len, lastsame; */
@@ -263,8 +263,10 @@ void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search)
 
   search_results = (do_search
 		    ? owl_fmtext_search(f, owl_global_get_search_string(&g))
-		    : NULL);
-  if (search_results) search_len = strlen(owl_global_get_search_string(&g));
+		    : 0);
+  search_len = (search_results
+		? strlen(owl_global_get_search_string(&g))
+		: 0);
   s = f->textbuff;
   /* Set default attributes. */
   attr = f->default_attrs;
@@ -349,6 +351,15 @@ void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search)
   }
 }
 
+void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w)
+{
+  _owl_fmtext_curs_waddstr(f, w, owl_global_is_search_active(&g));
+}
+
+void owl_fmtext_curs_waddstr_without_search(owl_fmtext *f, WINDOW *w)
+{
+  _owl_fmtext_curs_waddstr(f, w, 0);
+}
 
 /* start with line 'aline' (where the first line is 0) and print
  * 'lines' number of lines into 'out'
@@ -412,11 +423,12 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
     col = 0;
     st = 0;
     padding = 0;
+    chwidth = 0;
     ptr_c = ptr_s;
     while(col <= bcol && ptr_c < ptr_e) {
       gunichar c = g_utf8_get_char(ptr_c);
       if (!_owl_fmtext_is_format_char(c)) {
-	chwidth = wcwidth(c);
+	chwidth = mk_wcwidth(c);
       
 	if (col + chwidth > bcol)
 	  break;
