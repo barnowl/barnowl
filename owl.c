@@ -85,6 +85,9 @@ int main(int argc, char **argv, char **env)
 #if OWL_STDERR_REDIR
   int newstderr;
 #endif
+  
+  if (!GLIB_CHECK_VERSION (2, 12, 0))
+    g_error ("GLib version 2.12.0 or above is needed.");
 
   argcsave=argc;
   argvsave=argv;
