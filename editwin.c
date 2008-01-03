@@ -315,6 +315,7 @@ void _owl_editwin_remove_bytes(owl_editwin *e, int n) /*noproto*/
   e->bufflen -= n;
   e->buff[e->bufflen] = '\0';
 }
+
 /* Insert n bytes at cursor.*/
 void _owl_editwin_insert_bytes(owl_editwin *e, int n) /*noproto*/
 {
@@ -370,7 +371,7 @@ void owl_editwin_insert_char(owl_editwin *e, gunichar c)
   int z, i, ret, len;
   char tmp[6];
   memset(tmp, '\0', 6);
-  
+
   /* \r is \n */
   if (c == '\r') {
     c = '\n';
@@ -384,7 +385,7 @@ void owl_editwin_insert_char(owl_editwin *e, gunichar c)
 
   g_unichar_to_utf8(c, tmp);
   len = strlen(tmp);
-  
+
   /* make sure there is enough memory for the new text */
   if ((e->bufflen + len) > (e->allocated - 5)) {
     _owl_editwin_addspace(e);
@@ -403,7 +404,9 @@ void owl_editwin_insert_char(owl_editwin *e, gunichar c)
   }
 
   /* shift all the other characters right */
-  _owl_editwin_insert_bytes(e, len);
+  if (z != e->bufflen) {
+    _owl_editwin_insert_bytes(e, len);
+  }
 
   /* insert the new character */
   for(i = 0; i < len; i++) {
@@ -413,7 +416,7 @@ void owl_editwin_insert_char(owl_editwin *e, gunichar c)
   /* housekeeping */
   e->bufflen += len;
   e->buff[e->bufflen] = '\0';
-
+  
   /* advance the cursor */
   z += len;
   _owl_editwin_set_xy_by_index(e, z);
@@ -425,12 +428,12 @@ void owl_editwin_overwrite_char(owl_editwin *e, gunichar c)
   int z, oldlen, newlen, i;
   char tmp[6];
   memset(tmp, '\0', 6);
-  
+
   /* \r is \n */
   if (c == '\r') {
     c = '\n';
   }
-
+  
   if (c == '\n' && e->style == OWL_EDITWIN_STYLE_ONELINE) {
     /* perhaps later this will change some state that allows the string
        to be read */
@@ -443,14 +446,17 @@ void owl_editwin_overwrite_char(owl_editwin *e, gunichar c)
   z = _owl_editwin_get_index_from_xy(e);
   {
     char *t = g_utf8_find_next_char(e->buff + z, NULL);
-    oldlen = (t ? (t - (e->buff + z)) : 1);
+    oldlen = (t ? (t - (e->buff + z)) : 0);
   }
 
-  if ((e->bufflen + newlen - oldlen + 1) > (e->allocated - 5)) {
-    _owl_editwin_addspace(e);
+  /* only if we are at the end of the buffer do we create new space here */
+  if (z == e->bufflen) {
+    if ((e->bufflen+newlen) > (e->allocated-5)) {
+      _owl_editwin_addspace(e);
+    }
   }
-
-  if (oldlen > newlen) {
+  /* if not at the end of the buffer, adjust based in char size difference. */ 
+  else if (oldlen > newlen) {
     _owl_editwin_remove_bytes(e, oldlen-newlen);
   }
   else /* oldlen < newlen */ {
@@ -462,8 +468,11 @@ void owl_editwin_overwrite_char(owl_editwin *e, gunichar c)
   }
        
   /* housekeeping */
-  e->buff[e->bufflen] = '\0';
-
+  if (z == e->bufflen) {
+    e->bufflen += newlen;
+    e->buff[e->bufflen] = '\0';
+  }
+  
   /* advance the cursor */
   z += newlen;
   _owl_editwin_set_xy_by_index(e, z);
