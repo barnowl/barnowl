@@ -302,7 +302,7 @@ void _owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search) /*noproto
 	  waddstr(w, s);
 	  ss[0] = tmp2;
 
-	  _owl_fmtext_wattrset(w,attr ^ A_REVERSE);
+	  _owl_fmtext_wattrset(w, attr ^ OWL_FMTEXT_ATTR_REVERSE);
 
 	  tmp2 = ss[search_len];
 	  ss[search_len] = '\0';
