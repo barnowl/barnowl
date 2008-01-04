@@ -451,19 +451,16 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
       owl_fmtext_append_spaces(out, padding);
       if (ptr_c == ptr_e) {
 	/* We made it to the newline. */
-	owl_function_debugmsg("fmtc: reached newline");	
 	_owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
       }
       else {
 	if (chwidth > 1) {
 	  /* Last char is wide, truncate. */
-	  owl_function_debugmsg("fmtc: truncating.");
 	  _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff - 1);
 	  owl_fmtext_append_normal(out, "\n");
 	}
 	else {
 	  /* Last char fits perfectly, leave alone.*/
-	  owl_function_debugmsg("fmtc: fits fine.");
 	  _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
 	}
       }
