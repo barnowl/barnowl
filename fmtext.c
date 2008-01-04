@@ -398,7 +398,10 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
 /* Truncate the message so that each line begins at column 'acol' and
  * ends at 'bcol' or sooner.  The first column is number 0.  The new
  * message is placed in 'out'.  The message is * expected to end in a
- * new line for now
+ * new line for now. NOTE: This needs to be modified to deal with
+ * backing up if we find a SPACING COMBINING MARK at the end of a
+ * line. If that happens, we should back up to the last non-mark
+ * character and stop there.
  */
 void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *out)
 {
@@ -425,13 +428,12 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
     padding = 0;
     chwidth = 0;
     ptr_c = ptr_s;
-    while(col <= bcol && ptr_c < ptr_e) {
+    while(ptr_c < ptr_e) {
       gunichar c = g_utf8_get_char(ptr_c);
       if (!_owl_fmtext_is_format_char(c)) {
 	chwidth = mk_wcwidth(c);
-      
-	if (col + chwidth > bcol)
-	  break;
+	if (col + chwidth > bcol) break;
+	
 	if (col >= acol) {
 	  if (st == 0) {
 	    ptr_s = ptr_c;
@@ -447,14 +449,23 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
     if (st) {
       /* lead padding */
       owl_fmtext_append_spaces(out, padding);
-      if (ptr_c[0] & 0x80) {
-	if (col + chwidth == bcol)
-	  ptr_c = g_utf8_next_char(ptr_c);
-	_owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - 1 - in->textbuff);	
-	owl_fmtext_append_normal(out, "\n");
+      if (ptr_c == ptr_e) {
+	/* We made it to the newline. */
+	owl_function_debugmsg("fmtc: reached newline");	
+	_owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
       }
       else {
-	_owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
+	if (chwidth > 1) {
+	  /* Last char is wide, truncate. */
+	  owl_function_debugmsg("fmtc: truncating.");
+	  _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff - 1);
+	  owl_fmtext_append_normal(out, "\n");
+	}
+	else {
+	  /* Last char fits perfectly, leave alone.*/
+	  owl_function_debugmsg("fmtc: fits fine.");
+	  _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
+	}
       }
     }
     else {
