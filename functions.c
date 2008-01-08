@@ -3372,6 +3372,7 @@ void owl_function_dump(char *filename)
   owl_message *m;
   owl_view *v;
   FILE *file;
+  char *plaintext;
 
   v=owl_global_get_current_view(&g);
 
@@ -3394,7 +3395,11 @@ void owl_function_dump(char *filename)
   j=owl_view_get_size(v);
   for (i=0; i<j; i++) {
     m=owl_view_get_element(v, i);
-    fputs(owl_message_get_text(m), file);
+    plaintext = owl_strip_format_chars(owl_message_get_text(m));
+    if (plaintext) {
+      fputs(plaintext, file);
+      owl_free(plaintext);
+    }
   }
   fclose(file);
   owl_function_makemsg("Messages dumped to %s", filename);
