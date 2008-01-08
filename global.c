@@ -434,6 +434,10 @@ void owl_global_resize(owl_global *g, int x, int y) {
   /* in case any styles rely on the current width */
   owl_messagelist_invalidate_formats(owl_global_get_msglist(g));
 
+  /* recalculate the topmsg to make sure the current message is on
+   * screen */
+  owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
+
   /* refresh stuff */
   g->needrefresh=1;
   owl_mainwin_redisplay(&(g->mw));
