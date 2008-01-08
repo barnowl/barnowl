@@ -556,13 +556,13 @@ int main(int argc, char **argv, char **env)
 	memset(utf8buf,'\0',7);
 	utf8buf[0] = j;
 
-	if (~j & 0x20) bytes = 2;
-	else if (~j & 0x10) bytes = 3;
-	else if (~j & 0x08) bytes = 4;
-	else if (~j & 0x04) bytes = 5;
-	else if (~j & 0x02) bytes = 6;
-	else bytes = 1; /* This won't validate */
-
+	if ((j & 0xc0) && (~j & 0x20)) bytes = 2;
+	else if ((j & 0xe0) && (~j & 0x10)) bytes = 3;
+	else if ((j & 0xf0) && (~j & 0x08)) bytes = 4;
+	else if ((j & 0xf8) && (~j & 0x04)) bytes = 5;
+	else if ((j & 0xfc) && (~j & 0x02)) bytes = 6;
+	else bytes = 1;
+	
 	for (i = 1; i < bytes; i++) {
 	  utf8buf[i] = wgetch(typwin);
 	}
