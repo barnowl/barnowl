@@ -546,7 +546,11 @@ int main(int argc, char **argv, char **env)
      * little bit, but otherwise do not.  This lets input be grabbed
      * as quickly as possbile */
     j=wgetch(typwin);
-    if (j==ERR) {
+    if (j == ERR
+#ifdef KEY_RESIZE
+	|| j == KEY_RESIZE
+#endif
+	 ) {
       usleep(10000);
     } else {
       /* Pull in a full utf-8 character. */
