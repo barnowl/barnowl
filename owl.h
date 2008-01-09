@@ -271,6 +271,12 @@ typedef struct _owl_variable {
 				/* frees val as needed */
 } owl_variable;
 
+typedef struct _owl_input {
+  int ch;
+  char utf8buf[8];
+  gunichar uch;
+} owl_input;
+
 typedef struct _owl_fmtext {
   int textlen;
   int bufflen;
@@ -510,9 +516,9 @@ typedef struct _owl_keymap {
   char     *desc;		/* description */
   owl_list  bindings;		/* key bindings */
   struct _owl_keymap *submap;	/* submap */
-  void (*default_fn)(int j);	/* default action (takes a keypress) */
-  void (*prealways_fn)(int j);	/* always called before a keypress is received */
-  void (*postalways_fn)(int j);	/* always called after keypress is processed */
+  void (*default_fn)(owl_input j);	/* default action (takes a keypress) */
+  void (*prealways_fn)(owl_input  j);	/* always called before a keypress is received */
+  void (*postalways_fn)(owl_input  j);	/* always called after keypress is processed */
 } owl_keymap;
 
 typedef struct _owl_keyhandler {

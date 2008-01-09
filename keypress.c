@@ -147,7 +147,7 @@ int owl_keypress_tostring(int j, int esc, char *buff, int bufflen)
     }
   }
   if (!*kb) {
-    if (j&OWL_META(0)) {
+    if (j & OWL_META(0)) {
       strcat(kb, "M-");
       j &= ~OWL_META(0);
     }
@@ -162,6 +162,7 @@ int owl_keypress_tostring(int j, int esc, char *buff, int bufflen)
       kb2[1] = 0;
       strcat(kb, kb2);    
     }
+    
   }  
   if (!*kb) {
     /* not a valid key */

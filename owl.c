@@ -70,7 +70,7 @@ int main(int argc, char **argv, char **env)
   owl_editwin *tw;
   owl_popwin *pw;
   int ret, initialsubs, debug, argcsave, followlast;
-  gunichar j;
+  owl_input j;
   int newmsgs, nexttimediff;
   struct sigaction sigact;
   char *configfile, *tty, *perlout, *perlerr, **argvsave, buff[LINE], startupmsg[LINE];
@@ -545,38 +545,43 @@ int main(int argc, char **argv, char **env)
     /* Handle all keypresses.  If no key has been pressed, sleep for a
      * little bit, but otherwise do not.  This lets input be grabbed
      * as quickly as possbile */
-    j=wgetch(typwin);
-    if (j == ERR
-#ifdef KEY_RESIZE
-	|| j == KEY_RESIZE
-#endif
-	 ) {
+    j.ch = wgetch(typwin);
+    if (j.ch == ERR) {
       usleep(10000);
     } else {
-      /* Pull in a full utf-8 character. */
-      if (j & 0x80) {
-	char utf8buf[7];
+      j.uch = '\0';
+      if (j.ch >= KEY_MIN && j.ch <= KEY_MAX) {
+	/* This is a curses control character. */
+      }
+      else if (j.ch > 0x7f && j.ch < 0xfe) {
+	/* Pull in a full utf-8 character. */
 	int bytes, i;
-	memset(utf8buf,'\0',7);
-	utf8buf[0] = j;
+	char *utf8buf[7];
+	memset(utf8buf, '\0', 7);
 
-	if ((j & 0xc0) && (~j & 0x20)) bytes = 2;
-	else if ((j & 0xe0) && (~j & 0x10)) bytes = 3;
-	else if ((j & 0xf0) && (~j & 0x08)) bytes = 4;
-	else if ((j & 0xf8) && (~j & 0x04)) bytes = 5;
-	else if ((j & 0xfc) && (~j & 0x02)) bytes = 6;
+	utf8buf[0] = j.ch;
+
+	if ((j.ch & 0xc0) && (~j.ch & 0x20)) bytes = 2;
+	else if ((j.ch & 0xe0) && (~j.ch & 0x10)) bytes = 3;
+	else if ((j.ch & 0xf0) && (~j.ch & 0x08)) bytes = 4;
+	else if ((j.ch & 0xf8) && (~j.ch & 0x04)) bytes = 5;
+	else if ((j.ch & 0xfc) && (~j.ch & 0x02)) bytes = 6;
 	else bytes = 1;
 	
 	for (i = 1; i < bytes; i++) {
 	  utf8buf[i] = wgetch(typwin);
 	}
 	if (g_utf8_validate(utf8buf, -1, NULL)) {
-	  j = g_utf8_get_char(utf8buf);
+	  j.uch = g_utf8_get_char(utf8buf);
 	}
 	else {
-	  j = ERR;
+	  j.ch = ERR;
 	}
       }
+      else if (j.ch <= 0x7f) {
+	j.uch = j.ch;
+      }
+      
       owl_global_update_lastinputtime(&g);
       /* find and activate the current keymap.
        * TODO: this should really get fixed by activating
