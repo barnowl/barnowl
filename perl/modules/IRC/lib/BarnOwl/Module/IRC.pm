@@ -64,6 +64,7 @@ sub register_commands {
     BarnOwl::new_command('irc-disconnect' => \&cmd_disconnect);
     BarnOwl::new_command('irc-msg'     => \&cmd_msg);
     BarnOwl::new_command('irc-join' => \&cmd_join);
+    BarnOwl::new_command('irc-nick' => \&cmd_nick);
 }
 
 $BarnOwl::Hooks::startup->add(\&startup);
@@ -165,6 +166,13 @@ sub cmd_join {
     my $conn = get_connection(\@_);
     my $chan = shift or die("Usage: $cmd channel\n");
     $conn->join($chan);
+}
+
+sub cmd_nick {
+    my $cmd = shift;
+    my $conn = get_connection(\@_);
+    my $nick = shift or die("Usage: $cmd <new nick>");
+    $conn->nick($nick);
 }
 
 ################################################################################
