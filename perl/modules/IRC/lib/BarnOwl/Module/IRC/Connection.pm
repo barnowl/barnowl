@@ -14,8 +14,9 @@ support
 
 =cut
 
-use base qw(Net::IRC::Connection Class::Accessor);
+use base qw(Net::IRC::Connection Class::Accessor Exporter);
 __PACKAGE__->mk_accessors(qw(alias channels));
+our @EXPORT_OK = qw(&is_private);
 
 use BarnOwl;
 
@@ -29,9 +30,10 @@ sub new {
     $self->channels([]);
     bless($self, $class);
 
-    $self->add_global_handler(endofmotd => sub { goto &on_connect });
-    $self->add_global_handler(msg => sub { goto &on_msg });
-    $self->add_global_handler(notice => sub { goto &on_msg });
+    $self->add_global_handler(376 => sub { goto &on_connect });
+    $self->add_global_handler(['msg', 'notice', 'public', 'caction'],
+            sub { goto &on_msg });
+    $self->add_global_handler(cping => sub { goto &on_ping });
     $self->add_default_handler(sub { goto &on_event; });
 
     return $self;
@@ -48,23 +50,41 @@ sub on_connect {
 
 sub on_msg {
     my ($self, $evt) = @_;
-    my $replycmd = "irc-msg " . $evt->nick;
+    my ($recipient) = $evt->to;
+    my $body = strip_irc_formatting([$evt->args]->[0]);
+    $body = BarnOwl::Style::boldify($evt->nick.' '.$body) if $evt->type eq 'caction';
     my $msg = BarnOwl::Message->new(
         type        => 'IRC',
         direction   => 'in',
         server      => $self->server,
         network     => $self->alias,
-        recipient   => $self->nick,
-        body        => strip_irc_formatting([$evt->args]->[0]),
+        recipient   => $recipient,
+        body        => $body,
         sender      => $evt->nick,
         hostname    => $evt->host,
         from        => $evt->from,
-        notice      => $evt->type eq 'notice' ? 'true' : '',
-        isprivate   => 'true',
-        replycmd    => $replycmd,
-        replysendercmd => $replycmd
+        $evt->type eq 'notice' ?
+          (notice     => 'true') : (),
+        is_private($recipient) ?
+          (isprivate  => 'true') : (),
+        replycmd    => 'irc-msg ' .
+            (is_private($recipient) ? $evt->nick : $recipient),
+        replysendercmd => 'irc-msg ' . $evt->nick,
        );
     BarnOwl::queue_message($msg);
+}
+
+sub on_ping {
+    my ($self, $evt) = @_;
+    $self->ctcp_reply($evt->nick, join (' ', ($evt->args)));
+}
+
+sub on_event {
+    my ($self, $evt) = @_;
+    BarnOwl::admin_message("IRC",
+            "Unhandled IRC event of type " . $evt->type . ":\n"
+            . strip_irc_formatting(join("\n", $evt->args)))
+        if BarnOwl::getvar('irc:spew') eq 'on';
 }
 
 ################################################################################
@@ -82,5 +102,10 @@ sub strip_irc_formatting {
     return $out;
 }
 
+# Determines if the given message recipient is a username, as opposed to
+# a channel that starts with # or &.
+sub is_private {
+    return shift !~ /^[\#\&]/;
+}
 
 1;

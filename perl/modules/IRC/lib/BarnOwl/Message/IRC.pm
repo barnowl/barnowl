@@ -44,7 +44,8 @@ sub server {shift->{server}}
 sub network {shift->{network}}
 
 # display
-sub context {shift->{channel};}
+sub context {shift->{network};}
+sub subcontext {shift->{recipient};}
 
 sub long_sender {shift->{from} || ""};
 
