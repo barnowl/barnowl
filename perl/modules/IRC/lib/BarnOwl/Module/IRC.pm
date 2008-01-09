@@ -16,7 +16,7 @@ This module implements IRC support for barnowl.
 use BarnOwl;
 use BarnOwl::Hooks;
 use BarnOwl::Message::IRC;
-use BarnOwl::Module::IRC::Connection;
+use BarnOwl::Module::IRC::Connection qw(is_private);
 
 use Net::IRC;
 use Getopt::Long;
@@ -191,12 +191,6 @@ sub get_connection_by_alias {
     my $key = shift;
     die("No such ircnet: $key\n") unless exists $ircnets{$key};
     return $ircnets{$key};
-}
-
-# Determines if the given message recipient is a username, as opposed to
-# a channel that starts with # or &.
-sub is_private {
-    return shift !~ /^[\#\&]/;
 }
 
 1;
