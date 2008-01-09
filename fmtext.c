@@ -244,6 +244,21 @@ void _owl_fmtext_wattrset(WINDOW *w, int attrs) /*noproto*/
   if (attrs & OWL_FMTEXT_ATTR_REVERSE) wattron(w, A_REVERSE);
   if (attrs & OWL_FMTEXT_ATTR_UNDERLINE) wattron(w, A_UNDERLINE);
 }
+
+void _owl_fmtext_update_colorpair(short fg, short bg, short *pair) /*noproto*/
+{
+  if (owl_global_get_hascolors(&g)) {
+    *pair = owl_fmtext_get_colorpair(fg, bg);
+  }
+}
+
+void _owl_fmtext_wcolor_set(WINDOW *w, short pair) /*noproto*/
+{
+  if (owl_global_get_hascolors(&g)) {
+      wcolor_set(w,pair,NULL);
+  }
+}
+
 /* add the formatted text to the curses window 'w'.  The window 'w'
  * must already be initiatlized with curses
  */
@@ -253,7 +268,7 @@ void _owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search) /*noproto
   /* int position, trans1, trans2, trans3, len, lastsame; */
   char *s, *p;
   char attr;
-  short fg, bg;
+  short fg, bg, pair;
   int search_results, search_len;
   
   if (w==NULL) {
@@ -273,13 +288,8 @@ void _owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search) /*noproto
   fg = f->default_fgcolor;
   bg = f->default_bgcolor;
   _owl_fmtext_wattrset(w, attr);
-  if (owl_global_get_hascolors(&g)) {
-    short pair;
-    pair = owl_fmtext_get_colorpair(fg, bg);
-    if (pair != -1) {
-      wcolor_set(w,pair,NULL);
-    }
-  }
+  _owl_fmtext_update_colorpair(fg, bg, &pair);
+  _owl_fmtext_wcolor_set(w, pair);
 
   /* Find next possible format character. */
   p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
@@ -303,13 +313,15 @@ void _owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search) /*noproto
 	  ss[0] = tmp2;
 
 	  _owl_fmtext_wattrset(w, attr ^ OWL_FMTEXT_ATTR_REVERSE);
-
+	  _owl_fmtext_wcolor_set(w, pair);
+	  
 	  tmp2 = ss[search_len];
 	  ss[search_len] = '\0';
 	  waddstr(w, ss);
 	  ss[search_len] = tmp2;
 
-	  _owl_fmtext_wattrset(w,attr);
+	  _owl_fmtext_wattrset(w, attr);
+	  _owl_fmtext_wcolor_set(w, pair);
 
 	  s = ss + search_len;
 	  ss = stristr(s, owl_global_get_search_string(&g));
@@ -329,15 +341,11 @@ void _owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search) /*noproto
 	p = g_utf8_next_char(p);
       }
       _owl_fmtext_wattrset(w, attr | f->default_attrs);
-      if (owl_global_get_hascolors(&g)) {
-	if (fg == OWL_COLOR_DEFAULT) fg = f->default_fgcolor;
-	if (bg == OWL_COLOR_DEFAULT) bg = f->default_bgcolor;
-	short pair;
-	pair = owl_fmtext_get_colorpair(fg, bg);
-	if (pair != -1) {
-	  wcolor_set(w,pair,NULL);
-	}
-      }
+      if (fg == OWL_COLOR_DEFAULT) fg = f->default_fgcolor;
+      if (bg == OWL_COLOR_DEFAULT) bg = f->default_bgcolor;
+      _owl_fmtext_update_colorpair(fg, bg, &pair);
+      _owl_fmtext_wcolor_set(w, pair);
+
       /* Advance to next non-formatting character. */
       s = p;
       p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
