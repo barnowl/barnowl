@@ -153,7 +153,7 @@ sub process_msg {
         body        => $body,
         sender      => $conn->nick,
         is_private($to) ?
-          (isprivate  => 'true') : (),
+          (isprivate  => 'true') : (channel => $to),
         replycmd    => "irc-msg $to",
         replysendercmd => "irc-msg $to"
        );

@@ -66,7 +66,7 @@ sub on_msg {
         $evt->type eq 'notice' ?
           (notice     => 'true') : (),
         is_private($recipient) ?
-          (isprivate  => 'true') : (),
+          (isprivate  => 'true') : (channel => $recipient),
         replycmd    => 'irc-msg ' .
             (is_private($recipient) ? $evt->nick : $recipient),
         replysendercmd => 'irc-msg ' . $evt->nick,
