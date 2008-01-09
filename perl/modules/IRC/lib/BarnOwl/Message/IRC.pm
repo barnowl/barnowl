@@ -35,16 +35,23 @@ sub smartfilter {
         BarnOwl::filter("$filter $ftext");
         return $filter;
     } else {
-        # Unimplemented
-        return undef;
+        # To a Channel
+        my $network = $self->network;
+        my $channel = $self->channel;
+        my $filter = "irc-$network-channel-$channel";
+        my $ftext = qq{type ^irc\$ and network ^$network\$ and channel ^$channel\$};
+        BarnOwl::filter("$filter $ftext");
+        return $filter;
     }
 }
 
 sub server {shift->{server}}
 sub network {shift->{network}}
+sub channel {shift->{channel}}
 
 # display
-sub context {shift->{channel};}
+sub context {shift->{network};}
+sub subcontext {shift->{recipient};}
 
 sub long_sender {shift->{from} || ""};
 

@@ -5,23 +5,23 @@ package BarnOwl::Module::IRC;
 
 =head1 NAME
 
-BarnOwl::Module::Jabber
+BarnOwl::Module::IRC
 
 =head1 DESCRIPTION
 
-This module implements Jabber support for barnowl.
+This module implements IRC support for barnowl.
 
 =cut
 
 use BarnOwl;
 use BarnOwl::Hooks;
 use BarnOwl::Message::IRC;
-use BarnOwl::Module::IRC::Connection;
+use BarnOwl::Module::IRC::Connection qw(is_private);
 
 use Net::IRC;
 use Getopt::Long;
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 our $irc;
 
@@ -29,9 +29,10 @@ our $irc;
 our %ircnets;
 
 sub startup {
-    BarnOwl::new_variable_string(ircnick => {default => $ENV{USER}});
-    BarnOwl::new_variable_string(ircuser => {default => $ENV{USER}});
-    BarnOwl::new_variable_string(ircname => {default => ""});
+    BarnOwl::new_variable_string('irc:nick', {default => $ENV{USER}});
+    BarnOwl::new_variable_string('irc:user', {default => $ENV{USER}});
+    BarnOwl::new_variable_string('irc:name', {default => ""});
+    BarnOwl::new_variable_bool('irc:spew', {default => 0});
     register_commands();
     register_handlers();
     BarnOwl::filter('irc type ^IRC$');
@@ -39,7 +40,7 @@ sub startup {
 
 sub shutdown {
     for my $conn (values %ircnets) {
-        $conn->disconnect;
+        $conn->disconnect();
     }
 }
 
@@ -62,6 +63,8 @@ sub register_commands {
     BarnOwl::new_command('irc-connect' => \&cmd_connect);
     BarnOwl::new_command('irc-disconnect' => \&cmd_disconnect);
     BarnOwl::new_command('irc-msg'     => \&cmd_msg);
+    BarnOwl::new_command('irc-join' => \&cmd_join);
+    BarnOwl::new_command('irc-nick' => \&cmd_nick);
 }
 
 $BarnOwl::Hooks::startup->add(\&startup);
@@ -75,9 +78,9 @@ $BarnOwl::Hooks::mainLoop->add(\&mainloop_hook);
 sub cmd_connect {
     my $cmd = shift;
 
-    my $nick = BarnOwl::getvar('ircnick');
-    my $username = BarnOwl::getvar('ircuser');
-    my $ircname = BarnOwl::getvar('ircname');
+    my $nick = BarnOwl::getvar('irc:nick');
+    my $username = BarnOwl::getvar('irc:user');
+    my $ircname = BarnOwl::getvar('irc:name');
     my $host;
     my $port;
     my $alias;
@@ -89,7 +92,9 @@ sub cmd_connect {
         GetOptions(
             "alias=s"    => \$alias,
             "ssl"        => \$ssl,
-            "password=s" => \$password);
+            "password=s" => \$password,
+            "port=i"     => \$port,
+        );
         $host = shift @ARGV or die("Usage: $cmd HOST\n");
         if(!$alias) {
             $alias = $1 if $host =~ /^(?:irc[.])?(\w+)[.]\w+$/;
@@ -125,6 +130,7 @@ sub cmd_msg {
     my $cmd = shift;
     my $conn = get_connection(\@_);
     my $to = shift or die("Usage: $cmd NICK\n");
+    # handle multiple recipients?
     if(@_) {
         process_msg($conn, $to, join(" ", @_));
     } else {
@@ -147,13 +153,27 @@ sub process_msg {
         recipient   => $to,
         body        => $body,
         sender      => $conn->nick,
-        isprivate   => 'true',
+        is_private($to) ?
+          (isprivate  => 'true') : (channel => $to),
         replycmd    => "irc-msg $to",
-        replysendercmd => "irc-msg " . $conn->nick
+        replysendercmd => "irc-msg $to"
        );
     BarnOwl::queue_message($msg);
 }
 
+sub cmd_join {
+    my $cmd = shift;
+    my $conn = get_connection(\@_);
+    my $chan = shift or die("Usage: $cmd channel\n");
+    $conn->join($chan);
+}
+
+sub cmd_nick {
+    my $cmd = shift;
+    my $conn = get_connection(\@_);
+    my $nick = shift or die("Usage: $cmd <new nick>");
+    $conn->nick($nick);
+}
 
 ################################################################################
 ########################### Utilities/Helpers ##################################
@@ -176,7 +196,8 @@ sub get_connection {
 }
 
 sub get_connection_by_alias {
-    die("No such ircnet: $alias\n") unless exists $ircnets{$key};
+    my $key = shift;
+    die("No such ircnet: $key\n") unless exists $ircnets{$key};
     return $ircnets{$key};
 }
 
