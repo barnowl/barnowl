@@ -29,10 +29,33 @@ our $irc;
 our %ircnets;
 
 sub startup {
-    BarnOwl::new_variable_string('irc:nick', {default => $ENV{USER}});
-    BarnOwl::new_variable_string('irc:user', {default => $ENV{USER}});
-    BarnOwl::new_variable_string('irc:name', {default => ""});
-    BarnOwl::new_variable_bool('irc:spew', {default => 0});
+    BarnOwl::new_variable_string('irc:nick', {
+        default     => $ENV{USER},
+        summary     => 'The default IRC nickname',
+        description => 'By default, irc-connect will use this nick '  .
+        'when connecting to a new server. See :help irc-connect for ' .
+        'more information.'
+       });
+
+    BarnOwl::new_variable_string('irc:user', {
+        default => $ENV{USER},
+        summary => 'The IRC "username" field'
+       });
+        BarnOwl::new_variable_string('irc:name', {
+        default => "",
+        summary     => 'A short name field for IRC',
+        description => 'A short (maybe 60 or so chars) piece of text, ' .
+        'originally intended to display your real name, which people '  .
+        'often use for pithy quotes and URLs.'
+       });
+    
+    BarnOwl::new_variable_bool('irc:spew', {
+        default     => 0,
+        summary     => 'Show unhandled IRC events',
+        description => 'If set, display all unrecognized IRC events as ' .
+        'admin messages. Intended for debugging and development use only '
+       });
+    
     register_commands();
     register_handlers();
     BarnOwl::filter('irc type ^IRC$');
@@ -96,6 +119,7 @@ sub cmd_connect {
             "ssl"        => \$ssl,
             "password=s" => \$password,
             "port=i"     => \$port,
+            "nick=s"     => \$nick,
         );
         $host = shift @ARGV or die("Usage: $cmd HOST\n");
         if(!$alias) {
