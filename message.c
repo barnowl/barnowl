@@ -329,7 +329,7 @@ int owl_message_is_private(owl_message *m)
 
   res=owl_message_get_attribute_value(m, "isprivate");
   if (!res) return(0);
-  return(1);
+  return !strcmp(res, "true");
 }
 
 char *owl_message_get_timestr(owl_message *m)
