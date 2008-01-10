@@ -454,9 +454,11 @@ int owl_variable_tty_set(owl_variable *v, void *newval)
 /**************************************************************************/
 
 int owl_variable_dict_setup(owl_vardict *vd) {
-  owl_variable *cur;
+  owl_variable *var, *cur;
   if (owl_dict_create(vd)) return(-1);
-  for (cur = variables_to_init; cur->name != NULL; cur++) {
+  for (var = variables_to_init; var->name != NULL; var++) {
+    cur = owl_malloc(sizeof(owl_variable));
+    memcpy(cur, var, sizeof(owl_variable));
     switch (cur->type) {
     case OWL_VARIABLE_OTHER:
       cur->set_fn(cur, cur->pval_default);
@@ -519,7 +521,7 @@ int owl_variable_dict_setup(owl_vardict *vd) {
 
 void owl_variable_dict_add_variable(owl_vardict * vardict,
                                     owl_variable * var) {
-  owl_dict_insert_element(vardict, var->name, (void*)var, NULL);
+  owl_dict_insert_element(vardict, var->name, (void*)var, (void(*)(void*))owl_variable_free);
 }
 
 owl_variable * owl_variable_newvar(char *name, char *summary, char * description) {
@@ -531,47 +533,73 @@ owl_variable * owl_variable_newvar(char *name, char *summary, char * description
   return var;
 }
 
+void owl_variable_update(owl_variable *var, char *summary, char *desc) {
+  if(var->summary) owl_free(var->summary);
+  var->summary = owl_strdup(summary);
+  if(var->description) owl_free(var->description);
+  var->description = owl_strdup(desc);
+}
+
 void owl_variable_dict_newvar_string(owl_vardict * vd, char *name, char *summ, char * desc, char * initval) {
-  owl_variable * var = owl_variable_newvar(name, summ, desc);
-  var->type = OWL_VARIABLE_STRING;
-  var->pval_default = owl_strdup(initval);
-  var->set_fn = owl_variable_string_set_default;
-  var->set_fromstring_fn = owl_variable_string_set_fromstring_default;
-  var->get_fn = owl_variable_get_default;
-  var->get_tostring_fn = owl_variable_string_get_tostring_default;
-  var->free_fn = owl_variable_free_default;
-  var->set_fn(var, initval);
-  owl_variable_dict_add_variable(vd, var);
+  owl_variable *old = owl_variable_get_var(vd, name, OWL_VARIABLE_STRING);
+  if(old) {
+    owl_variable_update(old, summ, desc);
+    if(old->pval_default) owl_free(old->pval_default);
+    old->pval_default = owl_strdup(initval);
+  } else {
+    owl_variable * var = owl_variable_newvar(name, summ, desc);
+    var->type = OWL_VARIABLE_STRING;
+    var->pval_default = owl_strdup(initval);
+    var->set_fn = owl_variable_string_set_default;
+    var->set_fromstring_fn = owl_variable_string_set_fromstring_default;
+    var->get_fn = owl_variable_get_default;
+    var->get_tostring_fn = owl_variable_string_get_tostring_default;
+    var->free_fn = owl_variable_free_default;
+    var->set_fn(var, initval);
+    owl_variable_dict_add_variable(vd, var);
+  }
 }
 
 void owl_variable_dict_newvar_int(owl_vardict * vd, char *name, char *summ, char * desc, int initval) {
-  owl_variable * var = owl_variable_newvar(name, summ, desc);
-  var->type = OWL_VARIABLE_INT;
-  var->ival_default = initval;
-  var->validate_fn = owl_variable_int_validate_default;
-  var->set_fn = owl_variable_int_set_default;
-  var->set_fromstring_fn = owl_variable_int_set_fromstring_default;
-  var->get_fn = owl_variable_get_default;
-  var->get_tostring_fn = owl_variable_int_get_tostring_default;
-  var->free_fn = owl_variable_free_default;
-  var->val = owl_malloc(sizeof(int));
-  var->set_fn(var, &initval);
-  owl_variable_dict_add_variable(vd, var);
+  owl_variable *old = owl_variable_get_var(vd, name, OWL_VARIABLE_INT);
+  if(old) {
+    owl_variable_update(old, summ, desc);
+    old->ival_default = initval;
+  } else {
+    owl_variable * var = owl_variable_newvar(name, summ, desc);
+    var->type = OWL_VARIABLE_INT;
+    var->ival_default = initval;
+    var->validate_fn = owl_variable_int_validate_default;
+    var->set_fn = owl_variable_int_set_default;
+    var->set_fromstring_fn = owl_variable_int_set_fromstring_default;
+    var->get_fn = owl_variable_get_default;
+    var->get_tostring_fn = owl_variable_int_get_tostring_default;
+    var->free_fn = owl_variable_free_default;
+    var->val = owl_malloc(sizeof(int));
+    var->set_fn(var, &initval);
+    owl_variable_dict_add_variable(vd, var);
+  }
 }
 
 void owl_variable_dict_newvar_bool(owl_vardict * vd, char *name, char *summ, char * desc, int initval) {
-  owl_variable * var = owl_variable_newvar(name, summ, desc);
-  var->type = OWL_VARIABLE_BOOL;
-  var->ival_default = initval;
-  var->validate_fn = owl_variable_bool_validate_default;
-  var->set_fn = owl_variable_bool_set_default;
-  var->set_fromstring_fn = owl_variable_bool_set_fromstring_default;
-  var->get_fn = owl_variable_get_default;
-  var->get_tostring_fn = owl_variable_bool_get_tostring_default;
-  var->free_fn = owl_variable_free_default;
-  var->val = owl_malloc(sizeof(int));
-  var->set_fn(var, &initval);
-  owl_variable_dict_add_variable(vd, var);
+  owl_variable *old = owl_variable_get_var(vd, name, OWL_VARIABLE_BOOL);
+  if(old) {
+    owl_variable_update(old, summ, desc);
+    old->ival_default = initval;
+  } else {
+    owl_variable * var = owl_variable_newvar(name, summ, desc);
+    var->type = OWL_VARIABLE_BOOL;
+    var->ival_default = initval;
+    var->validate_fn = owl_variable_bool_validate_default;
+    var->set_fn = owl_variable_bool_set_default;
+    var->set_fromstring_fn = owl_variable_bool_set_fromstring_default;
+    var->get_fn = owl_variable_get_default;
+    var->get_tostring_fn = owl_variable_bool_get_tostring_default;
+    var->free_fn = owl_variable_free_default;
+    var->val = owl_malloc(sizeof(int));
+    var->set_fn(var, &initval);
+    owl_variable_dict_add_variable(vd, var);
+  }
 }
 
 void owl_variable_dict_free(owl_vardict *d) {
@@ -589,6 +617,7 @@ void owl_variable_dict_namelist_free(owl_list *l) {
 
 void owl_variable_free(owl_variable *v) {
   if (v->free_fn) v->free_fn(v);
+  owl_free(v);
 }
 
 
@@ -686,12 +715,18 @@ int owl_variable_get_default_tostring(owl_vardict *d, char *name, char *buf, int
   }
 }
 
-/* returns a reference */
-void *owl_variable_get(owl_vardict *d, char *name, int require_type) {
+owl_variable *owl_variable_get_var(owl_vardict *d, char *name, int require_type) {
   owl_variable *v;
   if (!name) return(NULL);
   v = owl_dict_find_element(d, name);
   if (v == NULL || !v->get_fn || v->type != require_type) return(NULL);
+  return v;
+}
+
+/* returns a reference */
+void *owl_variable_get(owl_vardict *d, char *name, int require_type) {
+  owl_variable *v = owl_variable_get_var(d, name, require_type);
+  if(v == NULL) return NULL;
   return v->get_fn(v);
 }
 
