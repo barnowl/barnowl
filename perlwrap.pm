@@ -557,16 +557,43 @@ sub zsig        { return shift->{"zsig"}; }
 
 package BarnOwl::Hook;
 
+=head1 BarnOwl::Hook
+
+=head1 DESCRIPTION
+
+A C<BarnOwl::Hook> represents a list of functions to be triggered on
+some event. C<BarnOwl> exports a default set of these (see
+C<BarnOwl::Hooks>), but can also be created and used by module code.
+
+=head2 new
+
+Creates a new Hook object
+
+=cut
+
 sub new {
     my $class = shift;
     return bless [], $class;
 }
+
+=head2 run [ARGS]
+
+Calls each of the functions registered with this hook with the given
+arguments.
+
+=cut
 
 sub run {
     my $self = shift;
     my @args = @_;
     return map {$_->(@args)} @$self;
 }
+
+=head2 add SUBREF
+
+Registers a given subroutine with this hook
+
+=cut
 
 sub add {
     my $self = shift;
@@ -575,12 +602,68 @@ sub add {
     push @$self, $func;
 }
 
+=head2 clear
+
+Remove all functions registered with this hook.
+
+=cut
+
 sub clear {
     my $self = shift;
     @$self = ();
 }
 
 package BarnOwl::Hooks;
+
+=head1 BarnOwl::Hooks
+
+=head1 DESCRIPTION
+
+C<BarnOwl::Hooks> exports a set of C<BarnOwl::Hook> objects made
+available by BarnOwl internally. 
+
+=head2 USAGE
+
+Modules wishing to respond to events in BarnOwl should register
+functions with these hooks.
+
+=head2 EXPORTS
+
+None by default. Either import the hooks you need explicitly, or refer
+to them with fully-qualified names. Available hooks are:
+
+=over 4
+
+=item $startup
+
+Called on BarnOwl startup, and whenever modules are
+reloaded. Functions registered with the C<$startup> hook get a true
+argument if this is a reload, and false if this is a true startup
+
+=item $shutdown
+
+Called before BarnOwl shutdown
+
+=item $receiveMessage
+
+Called with a C<BarnOwl::Message> object every time BarnOwl appends a
+new message to its message list
+
+=item $mainLoop
+
+Called on B<every pass> through the C<BarnOwl> main loop. Any
+functions with this hook should be very cheap, as they are very
+frequently by the runtime.
+
+=item $getBuddyList
+
+Called to display buddy lists for all protocol handlers. The result
+from every function registered with this hook will be appended and
+displayed in a popup window, with zephyr formatting parsed.
+
+=back
+
+=cut
 
 use Exporter;
 
