@@ -324,3 +324,8 @@ new_variable_bool_internal(name, ival, summ, desc)
 				      summ,
 				      desc,
 				      ival);
+
+void
+beep()
+    CODE:
+    owl_function_beep();

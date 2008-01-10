@@ -15,7 +15,7 @@ support
 =cut
 
 use base qw(Net::IRC::Connection Class::Accessor Exporter);
-__PACKAGE__->mk_accessors(qw(alias channels));
+__PACKAGE__->mk_accessors(qw(alias channels motd));
 our @EXPORT_OK = qw(&is_private);
 
 use BarnOwl;
@@ -28,11 +28,21 @@ sub new {
     my $self = $class->SUPER::new($irc, %args);
     $self->alias($alias);
     $self->channels([]);
+    $self->motd("");
     bless($self, $class);
 
     $self->add_global_handler(376 => sub { goto &on_connect });
     $self->add_global_handler(['msg', 'notice', 'public', 'caction'],
             sub { goto &on_msg });
+    $self->add_global_handler(['welcome', 'yourhost', 'created',
+            'luserclient', 'luserop', 'luserchannels', 'luserme'],
+            sub { goto &on_admin_msg });
+    $self->add_global_handler(['myinfo', 'map', 'n_local', 'n_global',
+            'luserconns'],
+            sub { });
+    $self->add_handler(375 => sub { goto &on_motdstart });
+    $self->add_handler(372 => sub { goto &on_motd });
+    $self->add_handler(376 => sub { goto &on_endofmotd });
     $self->add_global_handler(cping => sub { goto &on_ping });
     $self->add_global_handler(join  => sub { goto &on_join });
     $self->add_global_handler(part  => sub { goto &on_part });
@@ -68,6 +78,8 @@ sub on_msg {
     my ($self, $evt) = @_;
     my ($recipient) = $evt->to;
     my $body = strip_irc_formatting([$evt->args]->[0]);
+    my $nick = $self->nick;
+    BarnOwl::beep() if $body =~ /\b\Q$nick\E\b/;
     $body = BarnOwl::Style::boldify($evt->nick.' '.$body) if $evt->type eq 'caction';
     my $msg = $self->new_message($evt,
         direction   => 'in',
@@ -88,6 +100,32 @@ sub on_msg {
 sub on_ping {
     my ($self, $evt) = @_;
     $self->ctcp_reply($evt->nick, join (' ', ($evt->args)));
+}
+
+sub on_admin_msg {
+    my ($self, $evt) = @_;
+    BarnOwl::admin_message("IRC",
+            BarnOwl::Style::boldify('IRC ' . $evt->type . ' message from '
+                . $evt->alias) . "\n"
+            . strip_irc_formatting(join '\n', cdr $evt->args));
+}
+
+sub on_motdstart {
+    my ($self, $evt) = @_;
+    $self->motd(join "\n", cdr $evt->args);
+}
+
+sub on_motd {
+    my ($self, $evt) = @_;
+    $self->motd(join "\n", $self->motd, cdr $evt->args);
+}
+
+sub on_endofmotd {
+    my ($self, $evt) = @_;
+    $self->motd(join "\n", $self->motd, cdr $evt->args);
+    BarnOwl::admin_message("IRC",
+            BarnOwl::Style::boldify('MOTD for ' . $evt->alias) . "\n"
+            . strip_irc_formatting($self->motd));
 }
 
 sub on_join {
@@ -135,6 +173,11 @@ sub strip_irc_formatting {
 # a channel that starts with # or &.
 sub is_private {
     return shift !~ /^[\#\&]/;
+}
+
+sub cdr {
+    shift;
+    return @_;
 }
 
 1;
