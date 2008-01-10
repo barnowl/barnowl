@@ -63,8 +63,10 @@ sub register_commands {
     BarnOwl::new_command('irc-connect' => \&cmd_connect);
     BarnOwl::new_command('irc-disconnect' => \&cmd_disconnect);
     BarnOwl::new_command('irc-msg'     => \&cmd_msg);
-    BarnOwl::new_command('irc-join' => \&cmd_join);
-    BarnOwl::new_command('irc-nick' => \&cmd_nick);
+    BarnOwl::new_command('irc-join'    => \&cmd_join);
+    BarnOwl::new_command('irc-part'    => \&cmd_part);
+    BarnOwl::new_command('irc-nick'    => \&cmd_nick);
+    BarnOwl::new_command('irc-names'   => \&cmd_names);
 }
 
 $BarnOwl::Hooks::startup->add(\&startup);
@@ -147,7 +149,7 @@ sub process_msg {
     $conn->privmsg($to, $body);
     my $msg = BarnOwl::Message->new(
         type        => 'IRC',
-        direction   => 'out',
+        direction   => is_private($to) ? 'out' : 'in',
         server      => $conn->server,
         network     => $conn->alias,
         recipient   => $to,
@@ -168,11 +170,25 @@ sub cmd_join {
     $conn->join($chan);
 }
 
+sub cmd_part {
+    my $cmd = shift;
+    my $conn = get_connection(\@_);
+    my $chan = get_channel(\@_) || die("Usage: $cmd <channel>");
+    $conn->part($chan);
+}
+
 sub cmd_nick {
     my $cmd = shift;
     my $conn = get_connection(\@_);
     my $nick = shift or die("Usage: $cmd <new nick>");
     $conn->nick($nick);
+}
+
+sub cmd_names {
+    my $cmd = shift;
+    my $conn = get_connection(\@_);
+    my $chan = get_channel(\@_) || die("Usage: $cmd <channel>");
+    $conn->names($chan);
 }
 
 ################################################################################
@@ -193,6 +209,18 @@ sub get_connection {
         return [values(%ircnets)]->[0];
     }
     die("You must specify a network with -a\n");
+}
+
+sub get_channel {
+    my $args = shift;
+    if(scalar @$args) {
+        return shift @$args;
+    }
+    my $m = BarnOwl::getcurmsg();
+    if($m && $m->type eq 'IRC') {
+        return $m->channel if !$m->is_private;
+    }
+    return undef;
 }
 
 sub get_connection_by_alias {
