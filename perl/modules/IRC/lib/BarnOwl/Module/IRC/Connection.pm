@@ -160,7 +160,12 @@ sub on_event {
 
 sub strip_irc_formatting {
     my $body = shift;
-    my @pieces = split /\x02/, $body;
+    # Strip mIRC colors. If someone wants to write code to convert
+    # these to zephyr colors, be my guest.
+    $body =~ s/\cC\d+(?:,\d+)?//g;
+    $body =~ s/\cO//g;
+    
+    my @pieces = split /\cB/, $body;
      my $out;
     while(@pieces) {
         $out .= shift @pieces;
