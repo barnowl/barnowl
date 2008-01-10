@@ -34,6 +34,8 @@ sub new {
     $self->add_global_handler(['msg', 'notice', 'public', 'caction'],
             sub { goto &on_msg });
     $self->add_global_handler(cping => sub { goto &on_ping });
+    $self->add_global_handler(join  => sub { goto &on_join });
+    $self->add_global_handler(part  => sub { goto &on_part });
     $self->add_default_handler(sub { goto &on_event; });
 
     return $self;
@@ -48,29 +50,38 @@ sub on_connect {
     BarnOwl::admin_message("IRC", "Connected to " . $self->server . " (" . $self->alias . ")");
 }
 
+sub new_message {
+    my $self = shift;
+    my $evt = shift;
+    return BarnOwl::Message->new(
+        type        => 'IRC',
+        server      => $self->server,
+        network     => $self->alias,
+        sender      => $evt->nick,
+        hostname    => $evt->host,
+        from        => $evt->from,
+        @_
+       );
+}
+
 sub on_msg {
     my ($self, $evt) = @_;
     my ($recipient) = $evt->to;
     my $body = strip_irc_formatting([$evt->args]->[0]);
     $body = BarnOwl::Style::boldify($evt->nick.' '.$body) if $evt->type eq 'caction';
-    my $msg = BarnOwl::Message->new(
-        type        => 'IRC',
+    my $msg = $self->new_message($evt,
         direction   => 'in',
-        server      => $self->server,
-        network     => $self->alias,
         recipient   => $recipient,
-        body        => $body,
-        sender      => $evt->nick,
-        hostname    => $evt->host,
-        from        => $evt->from,
+        body => $body,
         $evt->type eq 'notice' ?
           (notice     => 'true') : (),
         is_private($recipient) ?
           (isprivate  => 'true') : (channel => $recipient),
         replycmd    => 'irc-msg ' .
             (is_private($recipient) ? $evt->nick : $recipient),
-        replysendercmd => 'irc-msg ' . $evt->nick,
+        replysendercmd => 'irc-msg ' . $evt->nick
        );
+
     BarnOwl::queue_message($msg);
 }
 
@@ -79,10 +90,28 @@ sub on_ping {
     $self->ctcp_reply($evt->nick, join (' ', ($evt->args)));
 }
 
+sub on_join {
+    my ($self, $evt) = @_;
+    my $msg = $self->new_message($evt,
+        loginout   => 'login',
+        channel    => $evt->to,
+        );
+    BarnOwl::queue_message($msg);
+}
+
+sub on_part {
+    my ($self, $evt) = @_;
+    my $msg = $self->new_message($evt,
+        loginout   => 'logout',
+        channel    => $evt->to,
+        );
+    BarnOwl::queue_message($msg);
+}
+
 sub on_event {
     my ($self, $evt) = @_;
     BarnOwl::admin_message("IRC",
-            "Unhandled IRC event of type " . $evt->type . ":\n"
+            "[" . $self->alias . "] Unhandled IRC event of type " . $evt->type . ":\n"
             . strip_irc_formatting(join("\n", $evt->args)))
         if BarnOwl::getvar('irc:spew') eq 'on';
 }
