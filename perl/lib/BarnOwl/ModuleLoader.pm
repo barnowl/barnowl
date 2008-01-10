@@ -8,6 +8,7 @@ use PAR (BarnOwl::get_data_dir() . "/modules/*.par");
 use PAR (BarnOwl::get_config_dir() . "/modules/*.par");
 
 sub load_all {
+    PAR::reload_libs();
     my %modules;
     my @modules;
 
@@ -35,7 +36,7 @@ sub load_all {
     }
     for my $class (keys %modules) {
         if(!defined eval "use BarnOwl::Module::$class") {
-            BarnOwl::error("Unable to load module $class: $!") if $!;
+            # BarnOwl::error("Unable to load module $class: $!") if $!;
             BarnOwl::error("Unable to load module $class: $@") if $@;
         }
     }
