@@ -556,7 +556,7 @@ int main(int argc, char **argv, char **env)
       else if (j.ch > 0x7f && j.ch < 0xfe) {
 	/* Pull in a full utf-8 character. */
 	int bytes, i;
-	char *utf8buf[7];
+	char utf8buf[7];
 	memset(utf8buf, '\0', 7);
 
 	utf8buf[0] = j.ch;

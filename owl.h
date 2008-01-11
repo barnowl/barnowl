@@ -273,7 +273,6 @@ typedef struct _owl_variable {
 
 typedef struct _owl_input {
   int ch;
-  char utf8buf[8];
   gunichar uch;
 } owl_input;
 
