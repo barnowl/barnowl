@@ -1,0 +1,13 @@
+The Twitter modules automatically mirrors selected zephyrs to your
+personal class to your twitter feed.
+
+To configure it, first
+
+* Add your twitter credentials to ~/.owl/twitter as a JSON hash, e.g.
+{"user":"nelhage", "password":"sekrit" }
+* Load the modules
+* Set the twitter:class, twitter:instance, and twitter:opcode
+  variables to the destination you want messages to be mirrored
+  from. By default, they are -c $YOUR_USERNAME -i status -O twitter
+  Setting twitter:opcode to "" will cause "normal" (i.e. no opcode)
+  messages to that class/instance to be mirrored.
