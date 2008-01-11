@@ -31,22 +31,24 @@ sub new {
     $self->motd("");
     bless($self, $class);
 
-    $self->add_global_handler(376 => sub { goto &on_connect });
-    $self->add_global_handler(['msg', 'notice', 'public', 'caction'],
+    $self->add_default_handler(sub { goto &on_event; });
+    $self->add_handler(376 => sub { goto &on_connect });
+    $self->add_handler(['msg', 'notice', 'public', 'caction'],
             sub { goto &on_msg });
-    $self->add_global_handler(['welcome', 'yourhost', 'created',
+    $self->add_handler(['welcome', 'yourhost', 'created',
             'luserclient', 'luserop', 'luserchannels', 'luserme'],
             sub { goto &on_admin_msg });
-    $self->add_global_handler(['myinfo', 'map', 'n_local', 'n_global',
+    $self->add_handler(['myinfo', 'map', 'n_local', 'n_global',
             'luserconns'],
             sub { });
-    $self->add_handler(375 => sub { goto &on_motdstart });
-    $self->add_handler(372 => sub { goto &on_motd });
-    $self->add_handler(376 => sub { goto &on_endofmotd });
-    $self->add_global_handler(cping => sub { goto &on_ping });
-    $self->add_global_handler(join  => sub { goto &on_join });
-    $self->add_global_handler(part  => sub { goto &on_part });
-    $self->add_default_handler(sub { goto &on_event; });
+    $self->add_handler(motdstart => sub { goto &on_motdstart });
+    $self->add_handler(motd      => sub { goto &on_motd });
+    $self->add_handler(endofmotd => sub { goto &on_endofmotd });
+    $self->add_handler(join      => sub { goto &on_join });
+    $self->add_handler(part      => sub { goto &on_part });
+    $self->add_handler(disconnect => sub { goto &on_disconnect });
+    $self->add_handler(nicknameinuse => sub { goto &on_nickinuse });
+    $self->add_handler(cping     => sub { goto &on_ping });
 
     return $self;
 }
@@ -146,6 +148,21 @@ sub on_part {
     BarnOwl::queue_message($msg);
 }
 
+sub on_disconnect {
+    my $self = shift;
+    delete $BarnOwl::Module::IRC::ircnets{$self->alias};
+
+    BarnOwl::admin_message('IRC',
+                           "[" . $self->alias . "] Disconnected from server");
+}
+
+sub on_nickinuse {
+    my ($self, $evt) = @_;
+    BarnOwl::admin_message("IRC",
+                           "[" . $self->alias . "] " .
+                           [$evt->args]->[1] . ": Nick already in use");
+}
+
 sub on_event {
     my ($self, $evt) = @_;
     BarnOwl::admin_message("IRC",
@@ -153,6 +170,7 @@ sub on_event {
             . strip_irc_formatting(join("\n", $evt->args)))
         if BarnOwl::getvar('irc:spew') eq 'on';
 }
+
 
 ################################################################################
 ########################### Utilities/Helpers ##################################
