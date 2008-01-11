@@ -14,6 +14,117 @@ use warnings;
 
 package BarnOwl;
 
+=head1 NAME
+
+BarnOwl
+
+=head1 DESCRIPTION
+
+The BarnOwl module contains the core of BarnOwl's perl
+bindings. Source in this module is also run at startup to bootstrap
+barnowl by defining things like the default style.
+
+=for NOTE
+These following functions are defined in perlglue.xs. Keep the
+documentation here in sync with the user-visible commands defined
+there!
+
+=head2 command STRING
+
+Executes a BarnOwl command in the same manner as if the user had
+executed it at the BarnOwl command prompt. If the command returns a
+value, return it as a string, otherwise return undef.
+
+=head2 getcurmsg
+
+Returns the current message as a C<BarnOwl::Message> subclass, or
+undef if there is no message selected
+
+=head2 getnumcols
+
+Returns the width of the display window BarnOwl is currently using
+
+=head2 getidletime
+
+Returns the length of time since the user has pressed a key, in
+seconds.
+
+=head2 zephyr_getrealm
+
+Returns the zephyr realm barnowl is running in
+
+=head2 zephyr_getsender
+
+Returns the fully-qualified name of the zephyr sender barnowl is
+running as, e.g. C<nelhage@ATHENA.MIT.EDU>
+
+=head2 zephyr_zwrite COMMAND MESSAGE
+
+Sends a zephyr programmatically. C<COMMAND> should be a C<zwrite>
+command line, and C<MESSAGE> is the zephyr body to send.
+
+=head2 ztext_stylestrip STRING
+
+Strips zephyr formatting from a string and returns the result
+
+=head2 queue_message MESSAGE
+
+Enqueue a message in the BarnOwl message list, logging it and
+processing it appropriately. C<MESSAGE> should be an instance of
+BarnOwl::Message or a subclass.
+
+=head2 admin_message HEADER BODY
+
+Display a BarnOwl B<Admin> message, with the given header and body.
+
+=head2 start_question PROMPT CALLBACK
+
+Displays C<PROMPT> on the screen and lets the user enter a line of
+text, and calls C<CALLBACK>, which must be a perl subroutine
+reference, with the text the user entered
+
+=head2 start_password PROMPT CALLBACK
+
+Like C<start_question>, but echoes the user's input as C<*>s when they
+input.
+
+=head2 start_editwin PROMPT CALLBACK
+
+Like C<start_question>, but displays C<PROMPT> on a line of its own
+and opens the editwin. If the user cancels the edit win, C<CALLBACK>
+is not invoked.
+
+=head2 get_data_dir
+
+Returns the BarnOwl system data directory, where system libraries and
+modules are stored
+
+=head2 get_config_dir
+
+Returns the BarnOwl user configuration directory, where user modules
+and configuration are stored (by default, C<$HOME/.owl>)
+
+=head2 popless_text TEXT
+
+Show a popup window containing the given C<TEXT>
+
+=head2 popless_ztext TEXT
+
+Show a popup window containing the provided zephyr-formatted C<TEXT>
+
+=head2 error STRING
+
+Reports an error and log it in `show errors'. Note that in any
+callback or hook called in perl code from BarnOwl, a C<die> will be
+caught and passed to C<error>.
+
+=head2 getnumcolors
+
+Returns the number of colors this BarnOwl is capable of displaying
+
+=cut
+
+
 BEGIN {
 # bootstrap in C bindings and glue
     *owl:: = \*BarnOwl::;
@@ -46,6 +157,26 @@ sub _receive_msg_legacy_wrap {
     return &BarnOwl::Hooks::_receive_msg($m);
 }
 
+=head2 AUTOLOAD
+
+BarnOwl.pm has a C<AUTOLOAD> method that translates unused names in
+the BarnOwl:: namespace to a call to BarnOwl::command() with that
+command. Underscores are also translated to C<->s, so you can do
+e.g. C<BarnOwl::start_command()> and it will be translated into
+C<start-command>.
+
+So, if you're looking for functionality that you can't find in the
+perl interface, check C<:show commands> or C<commands.c> in the
+BarnOwl source tree -- there's a good chance it exists as a BarnOwl
+command.
+
+=head3 BUGS
+
+There are horrible quoting issues here. The AUTOLOAD simple joins your
+commands with spaces and passes them unmodified to C<::command>
+
+=cut
+
 # make BarnOwl::<command>("foo") be aliases to BarnOwl::command("<command> foo");
 sub AUTOLOAD {
     our $AUTOLOAD;
@@ -62,7 +193,24 @@ be called with the arguments passed to the command, with NAME as the
 first argument.
 
 ARGS should be a hashref containing any or all of C<summary>,
-C<usage>, or C<description> keys.
+C<usage>, or C<description> keys:
+
+=over 4
+
+=item summary
+
+A one-line summary of the purpose of the command
+
+=item usage
+
+A one-line usage synopsis, showing available options and syntax
+
+=item description
+
+A longer description of the syntax and semantics of the command,
+explaining usage and options
+
+=back
 
 =cut
 
@@ -409,16 +557,43 @@ sub zsig        { return shift->{"zsig"}; }
 
 package BarnOwl::Hook;
 
+=head1 BarnOwl::Hook
+
+=head1 DESCRIPTION
+
+A C<BarnOwl::Hook> represents a list of functions to be triggered on
+some event. C<BarnOwl> exports a default set of these (see
+C<BarnOwl::Hooks>), but can also be created and used by module code.
+
+=head2 new
+
+Creates a new Hook object
+
+=cut
+
 sub new {
     my $class = shift;
     return bless [], $class;
 }
+
+=head2 run [ARGS]
+
+Calls each of the functions registered with this hook with the given
+arguments.
+
+=cut
 
 sub run {
     my $self = shift;
     my @args = @_;
     return map {$_->(@args)} @$self;
 }
+
+=head2 add SUBREF
+
+Registers a given subroutine with this hook
+
+=cut
 
 sub add {
     my $self = shift;
@@ -427,12 +602,68 @@ sub add {
     push @$self, $func;
 }
 
+=head2 clear
+
+Remove all functions registered with this hook.
+
+=cut
+
 sub clear {
     my $self = shift;
     @$self = ();
 }
 
 package BarnOwl::Hooks;
+
+=head1 BarnOwl::Hooks
+
+=head1 DESCRIPTION
+
+C<BarnOwl::Hooks> exports a set of C<BarnOwl::Hook> objects made
+available by BarnOwl internally. 
+
+=head2 USAGE
+
+Modules wishing to respond to events in BarnOwl should register
+functions with these hooks.
+
+=head2 EXPORTS
+
+None by default. Either import the hooks you need explicitly, or refer
+to them with fully-qualified names. Available hooks are:
+
+=over 4
+
+=item $startup
+
+Called on BarnOwl startup, and whenever modules are
+reloaded. Functions registered with the C<$startup> hook get a true
+argument if this is a reload, and false if this is a true startup
+
+=item $shutdown
+
+Called before BarnOwl shutdown
+
+=item $receiveMessage
+
+Called with a C<BarnOwl::Message> object every time BarnOwl appends a
+new message to its message list
+
+=item $mainLoop
+
+Called on B<every pass> through the C<BarnOwl> main loop. Any
+functions with this hook should be very cheap, as they are very
+frequently by the runtime.
+
+=item $getBuddyList
+
+Called to display buddy lists for all protocol handlers. The result
+from every function registered with this hook will be appended and
+displayed in a popup window, with zephyr formatting parsed.
+
+=back
+
+=cut
 
 use Exporter;
 
@@ -467,6 +698,10 @@ sub _load_owlconf {
         }
     }
 }
+
+# These are the internal hooks called by the barnowl C code, which
+# take care of dispatching to the appropriate perl hooks, and deal
+# with compatibility by calling the old, fixed-name hooks.
 
 sub _startup {
     _load_owlconf();

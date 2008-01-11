@@ -55,5 +55,7 @@ sub subcontext {shift->{recipient};}
 
 sub long_sender {shift->{from} || ""};
 
+sub login_extra { shift->channel; }
+
 
 1;

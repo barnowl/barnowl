@@ -12,7 +12,24 @@ SV *owl_perlconfig_curmessage2hashref(void);
 
 #define SV_IS_CODEREF(sv) (SvROK((sv)) && SvTYPE(SvRV((sv))) == SVt_PVCV)
 
-MODULE = BarnOwl		PACKAGE = BarnOwl		
+	/*************************************************************
+	 * NOTE
+	 *************************************************************
+	 * These functions, when they are intended to be user-visible,
+	 * are document in perlwrap.pm. If you add functions to this
+	 * file, add the appropriate documentation there!
+	 *
+	 * If the function is simple enough, we simply define its
+	 * entire functionality here in XS. If, however, it needs
+	 * complex argument processing or something, we define a
+	 * simple version here that takes arguments in as flat a
+	 * manner as possible, to simplify the XS code, with a name
+	 * with a trailing `_internal', and write a perl wrapper in
+	 * perlwrap.pm that munges the arguments as appropriate and
+	 * calls the internal version.
+	 */
+
+MODULE = BarnOwl		PACKAGE = BarnOwl
 
 char *
 command(cmd)

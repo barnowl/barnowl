@@ -600,16 +600,28 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
       owl_function_makemsg("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
     }
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
-    if (strcasecmp(retnotice->z_class, "message")) {
-      char buff[1024];
-      owl_function_error("No one subscribed to class class %s", retnotice->z_class);
-      sprintf(buff, "Could not send message to class %s: no one subscribed.\n", retnotice->z_class);
+    #define BUFFLEN 1024
+    if (retnotice->z_recipient == NULL
+        || *retnotice->z_recipient == NULL
+        || *retnotice->z_recipient == '@') {
+      char buff[BUFFLEN];
+      owl_function_error("No one subscribed to class %s", retnotice->z_class);
+      snprintf(buff, BUFFLEN, "Could not send message to class %s: no one subscribed.\n", retnotice->z_class);
       owl_function_adminmsg("", buff);
     } else {
-      char buff[1024];
+      char buff[BUFFLEN];
       tmp = short_zuser(retnotice->z_recipient);
-      owl_function_error("%s: Not logged in or subscribing to messages.", tmp);
-      sprintf(buff, "Could not send message to %s: not logged in or subscribing to messages.\n", tmp);
+      owl_function_error("%s: Not logged in or subscribing.", tmp);
+      snprintf(buff, BUFFLEN, "Could not send message to %s: not logged in or subscribing to", tmp);
+      if(strcmp(retnotice->z_class, "message")) {
+        snprintf(buff, BUFFLEN,
+                 "%s class %s, instance %s.\n", buff,
+                 retnotice->z_class,
+                 retnotice->z_class_inst);
+      } else {
+        snprintf(buff, BUFFLEN,
+                 "%s messages.\n", buff);
+      }
       owl_function_adminmsg("", buff);
       owl_log_outgoing_zephyr_error(tmp, buff);
       owl_free(tmp);
