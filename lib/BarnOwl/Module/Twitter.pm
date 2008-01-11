@@ -30,6 +30,9 @@ my ($class)  = ($user =~ /(^[^@]+)/);
 my $instance = "status";
 my $opcode   = "twitter";
 
+# Don't redefine variables if they already exist
+# This is a workaround for  http://barnowl.mit.edu/trac/ticket/44
+# Which was fixed in svn r819
 if(BarnOwl::getvar('twitter:class') eq '') {
     BarnOwl::new_variable_string('twitter:class',
                                {
@@ -48,7 +51,8 @@ if(BarnOwl::getvar('twitter:class') eq '') {
                                   });
 }
 
-open(my $fh, "<", "$ENV{HOME}/.owl/twitter") || fail("Unable to read ~/.owl/twitter");
+my $conffile = BarnOwl::get_config_dir() . "/twitter";
+open(my $fh, "<", "$conffile") || fail("Unable to read $conffile");
 my $cfg = do {local $/; <$fh>};
 close($fh);
 eval {
@@ -63,7 +67,7 @@ my $twitter  = Net::Twitter->new(username   => $cfg->{user} || $user,
                                  clientname => 'BarnOwl');
 
 if(!defined($twitter->verify_credentials())) {
-    fail("Invalid twitter credentials found");
+    fail("Invalid twitter credentials");
 }
 
 sub handle_message {
