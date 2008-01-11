@@ -12,8 +12,6 @@ SV *owl_perlconfig_curmessage2hashref(void);
 
 #define SV_IS_CODEREF(sv) (SvROK((sv)) && SvTYPE(SvRV((sv))) == SVt_PVCV)
 
-MODULE = BarnOwl		PACKAGE = BarnOwl
-
 	/*************************************************************
 	 * NOTE
 	 *************************************************************
@@ -30,6 +28,8 @@ MODULE = BarnOwl		PACKAGE = BarnOwl
 	 * perlwrap.pm that munges the arguments as appropriate and
 	 * calls the internal version.
 	 */
+
+MODULE = BarnOwl		PACKAGE = BarnOwl
 
 char *
 command(cmd)
