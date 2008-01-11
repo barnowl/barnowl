@@ -567,7 +567,7 @@ void owl_editwin_insert_string(owl_editwin *e, char *string)
   p = string;
   c = g_utf8_get_char(p);
   while (c) {
-    owl_editwin_process_char(e, c);
+    _owl_editwin_process_char(e, c);
     p = g_utf8_next_char(p);
     c = g_utf8_get_char(p);
   }
@@ -1074,27 +1074,33 @@ int owl_editwin_check_dotsend(owl_editwin *e)
   return(0);
 }
 
-void owl_editwin_post_process_char(owl_editwin *e, gunichar j)
+void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
 {
   /* check if we need to scroll down */
   if (e->buffy-e->topline >= e->winlines) {
     e->topline+=e->winlines/2;
   }
-  if ((j==13 || j==10) && owl_editwin_check_dotsend(e)) {
+  if ((j.ch==13 || j.ch==10) && owl_editwin_check_dotsend(e)) {
     owl_command_editmulti_done(e);
     return;
   }
   owl_editwin_redisplay(e, 0);  
 }
 
-void owl_editwin_process_char(owl_editwin *e, gunichar j)
+void _owl_editwin_process_char(owl_editwin *e, gunichar j)
 {
-  if (j == ERR) return;
-  if (g_unichar_iscntrl(j) && (j != 10) && (j != 13)) {
-    return;
-  }
-  else {
+  if (!(g_unichar_iscntrl(j) && (j != 10) && (j != 13))) {
     owl_editwin_insert_char(e, j);
+  }
+}
+
+
+void owl_editwin_process_char(owl_editwin *e, owl_input j)
+{
+  if (j.ch == ERR) return;
+  /* Ignore ncurses control characters. */
+  if (j.ch < 0x100) { 
+    _owl_editwin_process_char(e, j.uch);
   }
 }
 

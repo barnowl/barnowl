@@ -300,18 +300,16 @@ void owl_keys_recwin_prealways(owl_input j) {
 
 void owl_keys_editwin_default(owl_input j) {
   owl_editwin *e;
-  if (NULL != (e=owl_global_get_typwin(&g))
-      && j.ch < 0x100) {
-       owl_editwin_process_char(e, j.uch);
+  if (NULL != (e=owl_global_get_typwin(&g))) {
+       owl_editwin_process_char(e, j);
   }
 }
 
 void owl_keys_editwin_postalways(owl_input j) {
   owl_editwin *e;
-  if (NULL != (e=owl_global_get_typwin(&g))
-      && j.ch < 0x100) {
-    owl_editwin_post_process_char(e, j.uch);
-  }  
+  if (NULL != (e=owl_global_get_typwin(&g))) {
+    owl_editwin_post_process_char(e, j);
+  }
   owl_global_set_needrefresh(&g);
 }
 
