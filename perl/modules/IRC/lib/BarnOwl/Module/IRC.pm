@@ -27,6 +27,7 @@ our $irc;
 
 # Hash alias -> BarnOwl::Module::IRC::Connection object
 our %ircnets;
+our %channels;
 
 sub startup {
     BarnOwl::new_variable_string('irc:nick', {
@@ -209,6 +210,8 @@ sub cmd_join {
     my $cmd = shift;
     my $conn = get_connection(\@_);
     my $chan = shift or die("Usage: $cmd channel\n");
+    $channels{$chan} ||= [];
+    push @{$channels{$chan}}, $conn;
     $conn->join($chan);
 }
 
@@ -216,6 +219,7 @@ sub cmd_part {
     my $cmd = shift;
     my $conn = get_connection(\@_);
     my $chan = get_channel(\@_) || die("Usage: $cmd <channel>\n");
+    $channels{$chan} = [grep {$_ ne $conn} @{$channels{$chan} || []}];
     $conn->part($chan);
 }
 
@@ -249,6 +253,10 @@ sub get_connection {
     if(scalar @$args >= 2 && $args->[0] eq '-a') {
         shift @$args;
         return get_connection_by_alias(shift @$args);
+    }
+    my $channel = $args->[-1];
+    if ($channel =~ /^#/ and $channels{$channel} and @{$channels{$channel}} == 1) {
+        return $channels{$channel}[0];
     }
     my $m = BarnOwl::getcurmsg();
     if($m && $m->type eq 'IRC') {
