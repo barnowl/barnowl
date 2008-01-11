@@ -83,13 +83,25 @@ sub register_handlers {
 }
 
 sub register_commands {
-    BarnOwl::new_command('irc-connect' => \&cmd_connect);
+    BarnOwl::new_command('irc-connect' => \&cmd_connect,
+                       {
+                           summary      => 'Connect to an IRC server',
+                           usage        => 'irc-connect [-a ALIAS ] [-s] [-p PASSWORD] [-n NICK] SERVER [port]',
+                           description  =>
+
+                           "Connect to an IRC server. Supported options are\n\n" .
+                           "-a <alias>          Define an alias for this server\n" .
+                           "-s                  Use SSL\n" .
+                           "-p <password>       Specify the password to use\n" .
+                           "-n <nick>           Use a non-default nick"
+                       });
     BarnOwl::new_command('irc-disconnect' => \&cmd_disconnect);
-    BarnOwl::new_command('irc-msg'     => \&cmd_msg);
-    BarnOwl::new_command('irc-join'    => \&cmd_join);
-    BarnOwl::new_command('irc-part'    => \&cmd_part);
-    BarnOwl::new_command('irc-nick'    => \&cmd_nick);
-    BarnOwl::new_command('irc-names'   => \&cmd_names);
+    BarnOwl::new_command('irc-msg'        => \&cmd_msg);
+    BarnOwl::new_command('irc-join'       => \&cmd_join);
+    BarnOwl::new_command('irc-part'       => \&cmd_part);
+    BarnOwl::new_command('irc-nick'       => \&cmd_nick);
+    BarnOwl::new_command('irc-names'      => \&cmd_names);
+    BarnOwl::new_command('irc-whois'      => \&cmd_whois);
 }
 
 $BarnOwl::Hooks::startup->add(\&startup);
@@ -118,16 +130,22 @@ sub cmd_connect {
             "alias=s"    => \$alias,
             "ssl"        => \$ssl,
             "password=s" => \$password,
-            "port=i"     => \$port,
             "nick=s"     => \$nick,
         );
         $host = shift @ARGV or die("Usage: $cmd HOST\n");
         if(!$alias) {
-            $alias = $1 if $host =~ /^(?:irc[.])?(\w+)[.]\w+$/;
-            $alias ||= $host;
+            if($host =~ /^(?:irc[.])?(\w+)[.]\w+$/) {
+                $alias = $1;
+            } else {
+                $alias = $host;
+            }
         }
-        $port ||= 6667;
+        $port = shift @ARGV || 6667;
         $ssl ||= 0;
+    }
+
+    if(exists $ircnets{$alias}) {
+        die("Already connected to a server with alias '$alias'. Either disconnect or specify an alias with -a.\n");
     }
 
     my $conn = BarnOwl::Module::IRC::Connection->new($irc, $alias,
@@ -197,22 +215,29 @@ sub cmd_join {
 sub cmd_part {
     my $cmd = shift;
     my $conn = get_connection(\@_);
-    my $chan = get_channel(\@_) || die("Usage: $cmd <channel>");
+    my $chan = get_channel(\@_) || die("Usage: $cmd <channel>\n");
     $conn->part($chan);
 }
 
 sub cmd_nick {
     my $cmd = shift;
     my $conn = get_connection(\@_);
-    my $nick = shift or die("Usage: $cmd <new nick>");
+    my $nick = shift or die("Usage: $cmd <new nick>\n");
     $conn->nick($nick);
 }
 
 sub cmd_names {
     my $cmd = shift;
     my $conn = get_connection(\@_);
-    my $chan = get_channel(\@_) || die("Usage: $cmd <channel>");
+    my $chan = get_channel(\@_) || die("Usage: $cmd <channel>\n");
     $conn->names($chan);
+}
+
+sub cmd_whois {
+    my $cmd = shift;
+    my $conn = get_connection(\@_);
+    my $who = shift || die("Usage: $cmd <user>\n");
+    $conn->whois($who);
 }
 
 ################################################################################

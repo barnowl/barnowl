@@ -47,7 +47,7 @@ sub load_all {
 sub register_keybindings {
     BarnOwl::new_command('reload-modules', sub {BarnOwl::ModuleLoader->reload}, {
                            summary => 'Reload all modules',
-                           usage   => 'reload',
+                           usage   => 'reload-modules',
                            description => q{Reloads all modules located in ~/.owl/modules and the system modules directory}
                           });
 }

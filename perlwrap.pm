@@ -699,6 +699,10 @@ sub _load_owlconf {
     }
 }
 
+# These are the internal hooks called by the barnowl C code, which
+# take care of dispatching to the appropriate perl hooks, and deal
+# with compatibility by calling the old, fixed-name hooks.
+
 sub _startup {
     _load_owlconf();
 
