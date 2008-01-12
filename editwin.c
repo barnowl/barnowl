@@ -196,6 +196,7 @@ void owl_editwin_clear(owl_editwin *e)
   int lock;
   int dotsend=e->dotsend;
   char *locktext=NULL;
+  char echochar=e->echochar;
 
   lock=0;
   if (e->lock > 0) {
@@ -214,6 +215,9 @@ void owl_editwin_clear(owl_editwin *e)
   }
   if (dotsend) {
     owl_editwin_set_dotsend(e);
+  }
+  if (echochar) {
+    owl_editwin_set_echochar(e, echochar);
   }
 
   if (locktext) owl_free(locktext);
