@@ -13,7 +13,7 @@ void owl_fmtext_init_null(owl_fmtext *f)
   f->textbuff[0] = 0;
   f->default_attrs = OWL_FMTEXT_ATTR_NONE;
   f->default_fgcolor = OWL_COLOR_DEFAULT;
-  f->default_fgcolor = OWL_COLOR_DEFAULT;
+  f->default_bgcolor = OWL_COLOR_DEFAULT;
 }
 
 /* Clear the data from an fmtext, but don't deallocate memory. This
@@ -24,7 +24,7 @@ void owl_fmtext_clear(owl_fmtext *f)
   f->textbuff[0] = 0;
   f->default_attrs = OWL_FMTEXT_ATTR_NONE;
   f->default_fgcolor = OWL_COLOR_DEFAULT;
-  f->default_fgcolor = OWL_COLOR_DEFAULT;
+  f->default_bgcolor = OWL_COLOR_DEFAULT;
 }
 
 void _owl_fmtext_realloc(owl_fmtext *f, int newlen) /*noproto*/
@@ -387,6 +387,11 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
   
   /* ptr1 now holds the starting point */
 
+  /* copy the default attributes */
+  out->default_attrs = in->default_attrs;
+  out->default_fgcolor = in->default_fgcolor;
+  out->default_bgcolor = in->default_bgcolor;
+    
   /* copy in the next 'lines' lines */
   if (lines < 1) return(-1);
 
@@ -415,6 +420,11 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
 {
   char *ptr_s, *ptr_e, *ptr_c, *last;
   int col, st, padding, chwidth;
+
+  /* copy the default attributes */
+  out->default_attrs = in->default_attrs;
+  out->default_fgcolor = in->default_fgcolor;
+  out->default_bgcolor = in->default_bgcolor;
 
   last=in->textbuff+in->textlen-1;
   ptr_s=in->textbuff;
