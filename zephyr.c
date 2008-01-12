@@ -564,7 +564,7 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
     #define BUFFLEN 1024
     if (retnotice->z_recipient == NULL
-        || *retnotice->z_recipient == NULL
+        || *retnotice->z_recipient == 0
         || *retnotice->z_recipient == '@') {
       char buff[BUFFLEN];
       owl_function_error("No one subscribed to class %s", retnotice->z_class);
