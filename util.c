@@ -774,10 +774,10 @@ char * owl_strip_format_chars(char *in)
     while(p) {
       /* If it's a format character, copy up to it, and skip all
 	 immediately following format characters. */
-      if (_owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+      if (owl_fmtext_is_format_char(g_utf8_get_char(p))) {
 	strncat(r, s, p-s);
 	p = g_utf8_next_char(p);
-	while (p && _owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+	while (p && owl_fmtext_is_format_char(g_utf8_get_char(p))) {
 	  p = g_utf8_next_char(p);
 	}
 	s = p;

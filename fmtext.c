@@ -35,7 +35,7 @@ void _owl_fmtext_realloc(owl_fmtext *f, int newlen) /*noproto*/
   }
 }
 
-int _owl_fmtext_is_format_char(gunichar c) /*noproto*/
+int owl_fmtext_is_format_char(gunichar c)
 {
   if ((c & ~OWL_FMTEXT_UC_ATTR_MASK) == OWL_FMTEXT_UC_ATTR) return 1;
   if ((c & ~(OWL_FMTEXT_UC_ALLCOLOR_MASK)) == OWL_FMTEXT_UC_COLOR_BASE) return 1;
@@ -294,7 +294,7 @@ void _owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search) /*noproto
   /* Find next possible format character. */
   p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
   while(p) {
-    if (_owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+    if (owl_fmtext_is_format_char(g_utf8_get_char(p))) {
       /* Deal with all text from last insert to here. */
       char tmp;
    
@@ -336,7 +336,7 @@ void _owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search) /*noproto
       attr = f->default_attrs;
       fg = f->default_fgcolor;
       bg = f->default_bgcolor;
-      while (p && _owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+      while (p && owl_fmtext_is_format_char(g_utf8_get_char(p))) {
 	_owl_fmtext_update_attributes(g_utf8_get_char(p), &attr, &fg, &bg);
 	p = g_utf8_next_char(p);
       }
@@ -438,7 +438,7 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
     ptr_c = ptr_s;
     while(ptr_c < ptr_e) {
       gunichar c = g_utf8_get_char(ptr_c);
-      if (!_owl_fmtext_is_format_char(c)) {
+      if (!owl_fmtext_is_format_char(c)) {
 	chwidth = mk_wcwidth(c);
 	if (col + chwidth > bcol) break;
 	
