@@ -66,6 +66,8 @@
 typedef void WINDOW;
 /* logout is defined in FreeBSD. */
 #define logout logout_
+/* aim.h defines bool */
+#define HAS_BOOL
 #include <perl.h>
 #undef logout
 #include "XSUB.h"
@@ -75,14 +77,14 @@ typedef void SV;
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define STRINGIFY(x) _STRINGIFY(x)
+#define BARNOWL_STRINGIFY(x) _STRINGIFY(x)
 #define _STRINGIFY(x) #x
 
 #ifndef OWL_SVN_REVNO
 #define OWL_SVN_REVNO ????
 #endif
 
-#define OWL_VERSION_STRING "r" STRINGIFY(OWL_SVN_REVNO)
+#define OWL_VERSION_STRING "r" BARNOWL_STRINGIFY(OWL_SVN_REVNO)
 
 
 /* Feature that is being tested to redirect stderr through a pipe. 
