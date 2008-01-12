@@ -231,7 +231,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_ENABLE_ZCRYPT 1
 #endif
 
-#define OWL_META(key) ((key)|0200)
+#define OWL_META(key) ((key)|010000)
 /* OWL_CTRL is definied in kepress.c */
 
 #define LINE 2048
