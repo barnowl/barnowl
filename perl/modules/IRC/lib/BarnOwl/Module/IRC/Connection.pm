@@ -15,7 +15,7 @@ support
 =cut
 
 use base qw(Net::IRC::Connection Class::Accessor Exporter);
-__PACKAGE__->mk_accessors(qw(alias channels connected _motd));
+__PACKAGE__->mk_accessors(qw(alias channels _connected _motd));
 our @EXPORT_OK = qw(&is_private);
 
 use BarnOwl;
@@ -29,7 +29,7 @@ sub new {
     $self->alias($alias);
     $self->channels([]);
     $self->_motd("");
-    $self->connected(0);
+    $self->_connected(0);
     bless($self, $class);
 
     $self->add_default_handler(sub { goto &on_event; });
@@ -120,10 +120,10 @@ sub on_motd {
 sub on_endofmotd {
     my ($self, $evt) = @_;
     $self->_motd(join "\n", $self->_motd, cdr $evt->args);
-    if(!$self->connected) {
+    if(!$self->_connected) {
         BarnOwl::admin_message("IRC", "Connected to " .
                                $self->server . " (" . $self->alias . ")");
-        $self->connected(1);
+        $self->_connected(1);
         
     }
     BarnOwl::admin_message("IRC",
