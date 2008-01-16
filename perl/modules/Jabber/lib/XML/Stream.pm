@@ -1658,8 +1658,13 @@ sub Send
     if ($self->{SIDS}->{$sid}->{select}->can_write(0))
     {
         $self->debug(3,"Send: can_write");
-        
-        $self->{SENDSTRING} = Encode::encode_utf8(join("",@_));
+
+        my $sendstring = join("",@_);
+
+        Encode::_utf8_on($sendstring);
+        Encode::_utf8_off($sendstring) unless (Encode::is_utf8($sendstring, 1));
+
+        $self->{SENDSTRING} = Encode::encode_utf8($sendstring);
 
         $self->{SENDWRITTEN} = 0;
         $self->{SENDOFFSET} = 0;

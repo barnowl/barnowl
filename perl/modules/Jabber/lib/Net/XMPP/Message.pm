@@ -134,7 +134,7 @@ Net::XMPP::Message - XMPP Message Module
 
                             $Mess->SetMessage(TO=>"bob\@jabber.org",
                                               Subject=>"Lunch",
-                                              BoDy=>"Let's do lunch!");
+                                              Body=>"Let's do lunch!");
                             $Mess->SetMessage(to=>"bob\@jabber.org",
                                               from=>"jabber.org",
                                               errorcode=>404,
