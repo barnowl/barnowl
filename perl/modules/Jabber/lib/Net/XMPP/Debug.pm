@@ -185,10 +185,10 @@ sub Init
                     if (-w $args{file})
                     {
                         $self->{HANDLE} = new FileHandle(">$args{file}");
-                        binmode $self->{HANDLE}, ":utf8";
                         if (defined($self->{HANDLE}))
                         {
                             $self->{HANDLE}->autoflush(1);
+			    binmode $self->{HANDLE}, ":utf8";
                             $Net::XMPP::Debug::HANDLES{$args{file}} = $self->{HANDLE};
                         }
                         else
