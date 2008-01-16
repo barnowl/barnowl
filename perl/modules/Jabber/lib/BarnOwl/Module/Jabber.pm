@@ -369,7 +369,7 @@ sub do_login {
             my @result = $client->AuthSend( %{ $vars{jlogin_authhash} } );
 
             if ( !@result || $result[0] ne 'ok' ) {
-                if ( !$vars{jlogin_havepass} && ( !@result || $result[0] eq '401' ) ) {
+                if ( !$vars{jlogin_havepass} && ( !@result || $result[0] eq '401' || $result[0] eq 'error') ) {
                     $vars{jlogin_havepass} = 1;
                     $conn->removeConnection($jidStr);
                     BarnOwl::start_password( "Password for $jidStr: ", \&do_login );

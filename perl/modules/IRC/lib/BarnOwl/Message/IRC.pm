@@ -55,6 +55,11 @@ sub subcontext {shift->{recipient};}
 
 sub long_sender {shift->{from} || ""};
 
+sub login_type {
+    my $self = shift;
+    return " (" . ($self->is_login ? "JOIN" : "PART") . ")";
+}
+
 sub login_extra { shift->channel; }
 
 

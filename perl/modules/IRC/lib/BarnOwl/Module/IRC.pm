@@ -103,6 +103,7 @@ sub register_commands {
     BarnOwl::new_command('irc-nick'       => \&cmd_nick);
     BarnOwl::new_command('irc-names'      => \&cmd_names);
     BarnOwl::new_command('irc-whois'      => \&cmd_whois);
+    BarnOwl::new_command('irc-motd'       => \&cmd_motd);
 }
 
 $BarnOwl::Hooks::startup->add(\&startup);
@@ -244,6 +245,12 @@ sub cmd_whois {
     $conn->whois($who);
 }
 
+sub cmd_motd {
+    my $cmd = shift;
+    my $conn = get_connection(\@_);
+    $conn->motd;
+}
+
 ################################################################################
 ########################### Utilities/Helpers ##################################
 ################################################################################
@@ -255,7 +262,8 @@ sub get_connection {
         return get_connection_by_alias(shift @$args);
     }
     my $channel = $args->[-1];
-    if ($channel =~ /^#/ and $channels{$channel} and @{$channels{$channel}} == 1) {
+    if (defined($channel) && $channel =~ /^#/
+        and $channels{$channel} and @{$channels{$channel}} == 1) {
         return $channels{$channel}[0];
     }
     my $m = BarnOwl::getcurmsg();

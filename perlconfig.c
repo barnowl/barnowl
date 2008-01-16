@@ -481,7 +481,7 @@ char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
 
 void owl_perlconfig_cmd_free(owl_cmd *cmd)
 {
-  SvREFCNT_dec(cmd);
+  SvREFCNT_dec(cmd->cmd_perl);
 }
 
 void owl_perlconfig_edit_callback(owl_editwin *e)

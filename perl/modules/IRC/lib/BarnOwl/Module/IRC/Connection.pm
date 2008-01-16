@@ -15,7 +15,7 @@ support
 =cut
 
 use base qw(Net::IRC::Connection Class::Accessor Exporter);
-__PACKAGE__->mk_accessors(qw(alias channels motd));
+__PACKAGE__->mk_accessors(qw(alias channels owl_connected owl_motd));
 our @EXPORT_OK = qw(&is_private);
 
 use BarnOwl;
@@ -28,11 +28,11 @@ sub new {
     my $self = $class->SUPER::new($irc, %args);
     $self->alias($alias);
     $self->channels([]);
-    $self->motd("");
+    $self->owl_motd("");
+    $self->owl_connected(0);
     bless($self, $class);
 
     $self->add_default_handler(sub { goto &on_event; });
-    $self->add_handler(376 => sub { goto &on_connect });
     $self->add_handler(['msg', 'notice', 'public', 'caction'],
             sub { goto &on_msg });
     $self->add_handler(['welcome', 'yourhost', 'created',
@@ -56,11 +56,6 @@ sub new {
 ################################################################################
 ############################### IRC callbacks ##################################
 ################################################################################
-
-sub on_connect {
-    my ($self, $evt) = @_;
-    BarnOwl::admin_message("IRC", "Connected to " . $self->server . " (" . $self->alias . ")");
-}
 
 sub new_message {
     my $self = shift;
@@ -114,20 +109,26 @@ sub on_admin_msg {
 
 sub on_motdstart {
     my ($self, $evt) = @_;
-    $self->motd(join "\n", cdr $evt->args);
+    $self->owl_motd(join "\n", cdr $evt->args);
 }
 
 sub on_motd {
     my ($self, $evt) = @_;
-    $self->motd(join "\n", $self->motd, cdr $evt->args);
+    $self->owl_motd(join "\n", $self->owl_motd, cdr $evt->args);
 }
 
 sub on_endofmotd {
     my ($self, $evt) = @_;
-    $self->motd(join "\n", $self->motd, cdr $evt->args);
+    $self->owl_motd(join "\n", $self->owl_motd, cdr $evt->args);
+    if(!$self->owl_connected) {
+        BarnOwl::admin_message("IRC", "Connected to " .
+                               $self->server . " (" . $self->alias . ")");
+        $self->owl_connected(1);
+        
+    }
     BarnOwl::admin_message("IRC",
-            BarnOwl::Style::boldify('MOTD for ' . $evt->alias) . "\n"
-            . strip_irc_formatting($self->motd));
+            BarnOwl::Style::boldify('MOTD for ' . $self->alias) . "\n"
+            . strip_irc_formatting($self->owl_motd));
 }
 
 sub on_join {
@@ -161,6 +162,9 @@ sub on_nickinuse {
     BarnOwl::admin_message("IRC",
                            "[" . $self->alias . "] " .
                            [$evt->args]->[1] . ": Nick already in use");
+    unless($self->owl_connected) {
+        $self->disconnect;
+    }
 }
 
 sub on_event {

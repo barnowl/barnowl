@@ -27,3 +27,8 @@ Digest::SHA1
 (Note that these are all available as Debian packages)
 We plan to soon add targets to the Makefile to check for and install
 these for you.
+
+The IRC module requires:
+
+Net::IRC
+Class::Accessor

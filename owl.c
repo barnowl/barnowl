@@ -261,9 +261,6 @@ int main(int argc, char **argv, char **env)
   s=owl_malloc(sizeof(owl_style));
   owl_style_create_internal(s, "basic", &owl_stylefunc_basic, "Basic message formatting.");
   owl_global_add_style(&g, s);
-  s=owl_malloc(sizeof(owl_style));
-  owl_style_create_internal(s, "oneline", &owl_stylefunc_oneline, "Formats for one-line-per-message");
-  owl_global_add_style(&g, s);
 
   /* setup the default filters */
   /* the personal filter will need to change again when AIM chat's are
