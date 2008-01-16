@@ -830,10 +830,110 @@ sub indentBody($)
     # replace newline followed by anything with
     # newline plus four spaces and that thing.
     $body =~ s/\n(.)/\n    $1/g;
-
+    # Trim trailing newlines.
+    $body =~ s/\n*$//;
     return "    ".$body;
 }
 
+package BarnOwl::Style::OneLine;
+################################################################################
+# Branching point for various formatting functions in this style.
+################################################################################
+use constant BASE_FORMAT => '%s %-13.13s %-11.11s %-12.12s ';
+sub format_message($) {
+  my $m = shift;
+
+#  if ( $m->is_zephyr ) {
+#    return format_zephyr($m);
+#  }
+  if ( $m->is_login ) {
+    return format_login($m);
+  }
+  elsif ( $m->is_ping) {
+    return format_ping($m);
+  }
+  elsif ( $m->is_admin || $m->is_loopback) {
+    return format_local($m);
+  }
+  else {
+    return format_chat($m);
+  }
+}
+
+BarnOwl::_create_style("oneline", "BarnOwl::Style::OneLine::format_message", "Formats for one-line-per-message");
+
+################################################################################
+
+sub format_login($) {
+  my $m = shift;
+  return sprintf(
+    BASE_FORMAT,
+    '<',
+    $m->type,
+    uc( $m->login ),
+    $m->pretty_sender)
+    . ($m->login_extra ? "at ".$m->login_extra : '');
+}
+
+sub format_ping($) {
+  my $m = shift;
+  return sprintf(
+    BASE_FORMAT,
+    '<',
+    $m->type,
+    'PING',
+    $m->pretty_sender)
+}
+
+sub format_chat($)
+{
+  my $m = shift;
+  my $dir = lc($m->{direction});
+  my $dirsym = '-';
+  if ($dir eq 'in') {
+    $dirsym = '<';
+  }
+  elsif ($dir eq 'out') {
+    $dirsym = '>';
+  }
+
+  my $line;
+  if ($m->is_personal) {
+    $line= sprintf(BASE_FORMAT,
+		   $dirsym,
+		   $m->type,
+		   '',
+		   ($dir eq 'out'
+		      ? $m->pretty_recipient
+		      : $m->pretty_sender));
+  }
+  else {
+    $line = sprintf(BASE_FORMAT,
+		    $dirsym,
+		    $m->context,
+		    $m->subcontext,
+		    ($dir eq 'out'
+		       ? $m->pretty_recipient
+		       : $m->pretty_sender));
+  }
+
+  my $body = $m->{body};
+  $body =~ tr/\n/ /;
+  $line .= $body;
+  $line = BarnOwl::Style::boldify($line) if ($m->is_personal && lc($m->direction) eq 'in');
+  return $line;
+}
+
+# Format locally generated messages
+sub format_local($)
+{
+  my $m = shift;
+  my $type = uc($m->{type});
+  my $line = sprintf(BASE_FORMAT, '<', $type, '', '');
+  my $body = $m->{body};
+  $body =~ tr/\n/ /;
+  return $line.$body;
+}
 
 package BarnOwl::Style;
 
