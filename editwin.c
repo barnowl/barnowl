@@ -367,11 +367,10 @@ int _owl_editwin_linewrap_word(owl_editwin *e)
     c = g_utf8_get_char(ptr1);
     if (owl_util_can_break_after(c)) {
       if (c != ' ') {
-        _owl_editwin_set_xy_by_index(e, ptr1 - e->buff);
-        owl_editwin_key_right(e);
-        /* _owl_editwin_insert_bytes may move e->buff. */
         i = ptr1 - e->buff;
-        _owl_editwin_insert_bytes(e,1);
+        _owl_editwin_set_xy_by_index(e, i);
+        _owl_editwin_insert_bytes(e, 1);
+        /* _owl_editwin_insert_bytes may move e->buff. */
         ptr1 = e->buff + i;
       }
       *ptr1 = '\n';
@@ -1044,7 +1043,10 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
 
     /* if we've travelled too far, linewrap */
     if ((e->buffx) >= e->fillcol) {
+      int len = e->bufflen;
       _owl_editwin_linewrap_word(e);
+      /* we may have added a character. */
+      if (i < save) save += e->bufflen - len;
     }
 
     /* did we hit the end of a line too soon? */
@@ -1056,7 +1058,7 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
       /* ********* we need to make sure we don't pull in a word that's too long ***********/
       e->buff[i]=' ';
     }
-    
+
     /* fix spacing */
     i = _owl_editwin_get_index_from_xy(e);
     if (e->buff[i] == ' ' && e->buff[i+1] == ' ') {
@@ -1072,7 +1074,6 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
     } else {
       owl_editwin_key_right(e);
     }
-
   }
 
   /* put cursor back at starting point */
