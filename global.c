@@ -479,8 +479,8 @@ time_t owl_global_get_lastinputtime(owl_global *g) {
   return(g->lastinputtime);
 }
 
-void owl_global_update_lastinputtime(owl_global *g) {
-  g->lastinputtime = time(NULL);
+void owl_global_set_lastinputtime(owl_global *g, time_t time) {
+  g->lastinputtime = time;
 }
 
 time_t owl_global_get_idletime(owl_global *g) {
