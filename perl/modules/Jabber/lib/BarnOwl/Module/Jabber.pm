@@ -523,7 +523,7 @@ sub cmd_jwrite {
     $cmd .= " -t $jwrite_thread" if $jwrite_thread;
     $cmd .= " -s $jwrite_subject" if $jwrite_subject;
 
-    BarnOwl::start_edit_win( Encode::encode_utf8($cmd), \&process_owl_jwrite );
+    BarnOwl::start_edit_win($cmd, \&process_owl_jwrite );
 }
 
 sub cmd_jmuc {
