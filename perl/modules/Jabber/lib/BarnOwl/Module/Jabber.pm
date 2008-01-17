@@ -25,6 +25,8 @@ use Net::Jabber::MUC;
 use Net::DNS;
 use Getopt::Long;
 
+use utf8;
+
 our $VERSION = 0.1;
 
 BEGIN {
@@ -293,9 +295,9 @@ sub register_filters {
 sub cmd_login {
     my $cmd = shift;
     my $jid = new Net::Jabber::JID;
-    $jid->SetJID(shift);
+    $jid->SetJID(check_utf8(shift));
     my $password = '';
-    $password = shift if @_;
+    $password = check_utf8(shift) if @_;
 
     my $uid           = $jid->GetUserID();
     my $componentname = $jid->GetServer();
@@ -372,7 +374,7 @@ sub do_login {
                 if ( !$vars{jlogin_havepass} && ( !@result || $result[0] eq '401' || $result[0] eq 'error') ) {
                     $vars{jlogin_havepass} = 1;
                     $conn->removeConnection($jidStr);
-                    BarnOwl::start_password( "Password for $jidStr: ", \&do_login );
+                    BarnOwl::start_password("Password for $jidStr: ", \&do_login );
                     return "";
                 }
                 $conn->removeConnection($jidStr);
@@ -476,7 +478,7 @@ sub cmd_jwrite {
         return;
     }
     else {
-        $to = shift @ARGV;
+      $to = check_utf8(shift @ARGV);
     }
 
     my @candidates = guess_jwrite($from, $to);
@@ -520,7 +522,9 @@ sub cmd_jwrite {
     my $cmd = "jwrite $jwrite_to -a $jwrite_from";
     $cmd .= " -t $jwrite_thread" if $jwrite_thread;
     $cmd .= " -s $jwrite_subject" if $jwrite_subject;
-    BarnOwl::start_edit_win( $cmd, \&process_owl_jwrite );
+    queue_admin_msg("$cmd - utf8: ".Encode::is_utf8($cmd));
+
+    BarnOwl::start_edit_win( Encode::encode_utf8($cmd), \&process_owl_jwrite );
 }
 
 sub cmd_jmuc {
@@ -1078,6 +1082,14 @@ sub process_presence_error {
 
 ### Helper functions
 
+sub check_utf8
+{
+  my $str = shift;
+  Encode::_utf8_on($str);
+  Encode::_utf8_off($str) unless (Encode::is_utf8($str, 1));
+  return $str;
+}
+
 sub j2hash {
     my $j   = shift;
     my %initProps = %{ shift() };
@@ -1212,7 +1224,7 @@ sub baseJID {
 }
 
 sub resolveConnectedJID {
-    my $givenJIDStr = shift;
+    my $givenJIDStr = check_utf8(shift);
     my $givenJID    = new Net::Jabber::JID;
     $givenJID->SetJID($givenJIDStr);
 

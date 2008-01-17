@@ -147,7 +147,7 @@ void owl_editwin_set_locktext(owl_editwin *e, char *text)
   /* if (text[e->lock-1]=='\n') e->lock--; */
   /*  e->buffx=x; */
   /*  e->buffy=y; */
-  owl_editwin_adjust_for_locktext(e);
+  _owl_editwin_set_xy_by_index(e, e->lock);
   owl_editwin_redisplay(e, 0);
 }
 
@@ -291,10 +291,15 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
     /* translate to echochar, *except* for the locktext */
     int len;
     int dolocklen = e->lock - (ptr1 - e->buff);
+    char *locktext;
+    char tmp = e->buff[dolocklen];
 
-    for (i = 0; i < dolocklen; i++) {
-      waddch(e->curswin, buff[i]);
-    }
+    e->buff[dolocklen] = '\0';
+    locktext = owl_strdup(e->buff);
+    e->buff[dolocklen] = tmp;
+
+    waddstr(e->curswin, locktext);
+    
     len = strlen(buff);
     for (i = 0; i < len-dolocklen; i++) {
       waddch(e->curswin, e->echochar);
