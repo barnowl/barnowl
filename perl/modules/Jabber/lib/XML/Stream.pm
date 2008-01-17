@@ -1659,12 +1659,7 @@ sub Send
     {
         $self->debug(3,"Send: can_write");
 
-        my $sendstring = join("",@_);
-
-        Encode::_utf8_on($sendstring);
-        Encode::_utf8_off($sendstring) unless (Encode::is_utf8($sendstring, 1));
-
-        $self->{SENDSTRING} = Encode::encode_utf8($sendstring);
+        $self->{SENDSTRING} = Encode::encode_utf8(join("",@_));
 
         $self->{SENDWRITTEN} = 0;
         $self->{SENDOFFSET} = 0;
