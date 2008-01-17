@@ -295,9 +295,9 @@ sub register_filters {
 sub cmd_login {
     my $cmd = shift;
     my $jid = new Net::Jabber::JID;
-    $jid->SetJID(check_utf8(shift));
+    $jid->SetJID(shift);
     my $password = '';
-    $password = check_utf8(shift) if @_;
+    $password = shift if @_;
 
     my $uid           = $jid->GetUserID();
     my $componentname = $jid->GetServer();
@@ -478,7 +478,7 @@ sub cmd_jwrite {
         return;
     }
     else {
-      $to = check_utf8(shift @ARGV);
+      $to = shift @ARGV;
     }
 
     my @candidates = guess_jwrite($from, $to);
@@ -522,7 +522,6 @@ sub cmd_jwrite {
     my $cmd = "jwrite $jwrite_to -a $jwrite_from";
     $cmd .= " -t $jwrite_thread" if $jwrite_thread;
     $cmd .= " -s $jwrite_subject" if $jwrite_subject;
-    queue_admin_msg("$cmd - utf8: ".Encode::is_utf8($cmd));
 
     BarnOwl::start_edit_win( Encode::encode_utf8($cmd), \&process_owl_jwrite );
 }
@@ -1082,14 +1081,6 @@ sub process_presence_error {
 
 ### Helper functions
 
-sub check_utf8
-{
-  my $str = shift;
-  Encode::_utf8_on($str);
-  Encode::_utf8_off($str) unless (Encode::is_utf8($str, 1));
-  return $str;
-}
-
 sub j2hash {
     my $j   = shift;
     my %initProps = %{ shift() };
@@ -1224,7 +1215,7 @@ sub baseJID {
 }
 
 sub resolveConnectedJID {
-    my $givenJIDStr = check_utf8(shift);
+    my $givenJIDStr = shift;
     my $givenJID    = new Net::Jabber::JID;
     $givenJID->SetJID($givenJIDStr);
 
