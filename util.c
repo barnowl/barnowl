@@ -831,6 +831,27 @@ char * owl_get_iso_8859_1_if_possible(char *in)
   return out;
 }
 
+/* This is based on _extract() and _isCJ() from perl's Text::WrapI18N */
+int owl_util_can_break_after(gunichar c)
+{
+  
+  if (c == ' ') return 1;
+  if (c >= 0x3000 && c <= 0x312f) {
+    /* CJK punctuations, Hiragana, Katakana, Bopomofo */
+    if (c == 0x300a || c == 0x300c || c == 0x300e ||
+        c == 0x3010 || c == 0x3014 || c == 0x3016 ||
+        c == 0x3018 || c == 0x301a)
+      return 0;
+    return 1;
+  }
+  if (c >= 0x31a0 && c <= 0x31bf) {return 1;}  /* Bopomofo */
+  if (c >= 0x31f0 && c <= 0x31ff) {return 1;}  /* Katakana extension */
+  if (c >= 0x3400 && c <= 0x9fff) {return 1;}  /* Han Ideogram */
+  if (c >= 0xf900 && c <= 0xfaff) {return 1;}  /* Han Ideogram */
+  if (c >= 0x20000 && c <= 0x2ffff) {return 1;}  /* Han Ideogram */
+  return 0;
+}
+
 /**************************************************************************/
 /************************* REGRESSION TESTS *******************************/
 /**************************************************************************/

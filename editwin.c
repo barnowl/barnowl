@@ -350,26 +350,36 @@ void _owl_editwin_insert_bytes(owl_editwin *e, int n) /*noproto*/
  */
 int _owl_editwin_linewrap_word(owl_editwin *e)
 {
-  int i, z;
+  int x, y;
+  int i;
+  char *ptr1, *start;
+  gunichar c;
 
-  z = _owl_editwin_get_index_from_xy(e);
-  /* move back and line wrap the previous word */
-  for (i = z - 1; ; i--) {
-    /* move back until you find a space or hit the beginning of the line */
-    if (e->buff[i] == ' ') {
-      /* replace the space with a newline */
-      e->buff[i] = '\n';
-      e->buffy++;
-      e->buffx = z - i - 1;
-      /* were we on the last line */
-      return(0);
-    } else if (e->buff[i] == '\n' || i <= e->lock) {
-      /* we hit the beginning of the line or the buffer, we cannot
-       * wrap.
-       */
-      return(-1);
+  /* saving values */
+  x = e->buffx;
+  y = e->buffy;
+  start = e->buff + e->lock;
+
+  ptr1 = e->buff + _owl_editwin_get_index_from_xy(e);
+  ptr1 = g_utf8_find_prev_char(start, ptr1);
+
+  while (ptr1) {
+    c = g_utf8_get_char(ptr1);
+    if (owl_util_can_break_after(c)) {
+      if (c != ' ') {
+        _owl_editwin_set_xy_by_index(e, ptr1 - e->buff);
+        owl_editwin_key_right(e);
+        /* _owl_editwin_insert_bytes may move e->buff. */
+        i = ptr1 - e->buff;
+        _owl_editwin_insert_bytes(e,1);
+        ptr1 = e->buff + i;
+      }
+      *ptr1 = '\n';
+      return 0;
     }
+    ptr1 = g_utf8_find_prev_char(start, ptr1);
   }
+  return -1;
 }
 
 /* insert a character at the current point (shift later
@@ -641,6 +651,13 @@ int _owl_editwin_get_index_from_xy(owl_editwin *e)
   return(ptr2 - e->buff);
 }
 
+/* We assume x,y are not set to point to a mid-char */
+gunichar _owl_editwin_get_char_at_xy(owl_editwin *e)
+{
+  return g_utf8_get_char(e->buff + _owl_editwin_get_index_from_xy(e));
+}
+
+
 void _owl_editwin_set_xy_by_index(owl_editwin *e, int index)
 {
   char *ptr1, *ptr2, *target;
@@ -686,6 +703,7 @@ int _owl_editwin_cursor_adjustment(owl_editwin *e)
   gunichar c;
   int x, i;
 
+  /* Find line */
   ptr1 = e->buff;
   ptr2 = strchr(ptr1, '\n');
   for (i = 0; ptr2 != NULL && i < e->buffy; i++) {
@@ -693,6 +711,8 @@ int _owl_editwin_cursor_adjustment(owl_editwin *e)
     ptr2 = strchr(ptr1, '\n');
   }
   ptr2 = ptr1;
+
+  /* Find char */
   x = 0;
   while (ptr2 != NULL && x < e->buffx) {
     if (*ptr2 == '\n') return 0;
@@ -700,6 +720,8 @@ int _owl_editwin_cursor_adjustment(owl_editwin *e)
     x += mk_wcwidth(c);
     ptr2 = g_utf8_next_char(ptr2);
   }
+  
+  /* calculate x offset */
   return x - e->buffx;
 }
 
@@ -804,8 +826,8 @@ void owl_editwin_key_right(owl_editwin *e)
 
 void owl_editwin_move_to_nextword(owl_editwin *e)
 {
-  /* asedeno: needs fixing for utf-8*/
   int i, x;
+  gunichar c = '\0';
 
   /* if we're starting on a space, find the first non-space */
   i=_owl_editwin_get_index_from_xy(e);
@@ -818,20 +840,22 @@ void owl_editwin_move_to_nextword(owl_editwin *e)
     }
   }
 
-  /* find the next space, newline or end of line and go there, if
-     already at the end of the line, continue on to the next */
-  i=owl_editwin_get_numchars_on_line(e, e->buffy);
+  /* find the next space, newline or end of line and go
+     there, if already at the end of the line, continue on to the next */
+  i=owl_editwin_get_numcells_on_line(e, e->buffy);
+  c = _owl_editwin_get_char_at_xy(e);
   if (e->buffx < i) {
     /* move right till end of line */
     while (e->buffx < i) {
-      e->buffx++;
-      if (e->buff[_owl_editwin_get_index_from_xy(e)]==' ') return;
+      owl_editwin_key_right(e);
+      c = _owl_editwin_get_char_at_xy(e);
+      if (c == ' ') return;
       if (e->buffx == i) return;
     }
   } else if (e->buffx == i) {
     /* try to move down */
     if (e->style==OWL_EDITWIN_STYLE_MULTILINE) {
-      if (e->buffy+1 <  owl_editwin_get_numlines(e)) {
+      if (e->buffy+1 < owl_editwin_get_numlines(e)) {
 	e->buffx=0;
 	e->buffy++;
 	owl_editwin_move_to_nextword(e);
@@ -844,88 +868,96 @@ void owl_editwin_move_to_nextword(owl_editwin *e)
  */
 void owl_editwin_move_to_previousword(owl_editwin *e)
 {
-  /* asedeno: needs fixing for utf-8*/
-  int i, x;
+  int i;
+  gunichar c;
+  char *ptr1, *ptr2;
 
   /* are we already at the beginning of the word? */
-  i=_owl_editwin_get_index_from_xy(e);
-  if ( (e->buff[i]!=' ' && e->buff[i]!='\n' && e->buff[i]!='\0') &&
-       (e->buff[i-1]==' ' || e->buff[i-1]=='\n') ) {
-    owl_editwin_key_left(e);
-  }
-    
-  /* are we starting on a space character? */
-  i=_owl_editwin_get_index_from_xy(e);
-  if (e->buff[i]==' ' || e->buff[i]=='\n' || e->buff[i]=='\0') {
-    /* find the first non-space */
-    for (x=i; x>=e->lock; x--) {
-      if (e->buff[x]!=' ' && e->buff[x]!='\n' && e->buff[x]!='\0') {
-	_owl_editwin_set_xy_by_index(e, x);
-	break;
-      }
+  c = _owl_editwin_get_char_at_xy(e);
+  i = _owl_editwin_get_index_from_xy(e);
+  ptr1 = e->buff + i;
+  if (*ptr1 != ' ' && *ptr1 != '\n' && *ptr1 != '\0' ) {
+    ptr1 = g_utf8_find_prev_char(e->buff, ptr1);
+    c = g_utf8_get_char(ptr1);
+    if (c == ' ' || c == '\n') {
+      owl_editwin_key_left(e);      
     }
+  }
+
+  /* are we starting on a space character? */
+  i = _owl_editwin_get_index_from_xy(e);
+  while (e->buff[i] == ' ' || e->buff[i] == '\n' || e->buff[i] == '\0') {
+    /* find the first non-space */
+    owl_editwin_key_left(e);      
+    i = _owl_editwin_get_index_from_xy(e);
   }
 
   /* find the last non-space */
-  i=_owl_editwin_get_index_from_xy(e);
-  for (x=i; x>=e->lock; x--) {
-    if (e->buff[x-1]==' ' || e->buff[x-1]=='\n') {
-      _owl_editwin_set_xy_by_index(e, x);
+  owl_editwin_key_left(e);
+  ptr1 = e->buff + _owl_editwin_get_index_from_xy(e);
+  while (ptr1 >= e->buff + e->lock) {
+    ptr2 = g_utf8_find_prev_char(e->buff, ptr1);
+    if (!ptr2) break;
+    
+    c = g_utf8_get_char(ptr2);
+    if (c == ' ' || c == '\n'){
       break;
     }
+    owl_editwin_key_left(e);
+    ptr1 = e->buff + _owl_editwin_get_index_from_xy(e);
   }
-  _owl_editwin_set_xy_by_index(e, x);
 }
 
 
 void owl_editwin_delete_nextword(owl_editwin *e)
 {
-  /* asedeno: needs fixing for utf-8*/
-  int z;
+  char *ptr1, *start;
+  gunichar c;
 
   if (e->bufflen==0) return;
 
-  /* if we start out on a space character then gobble all the spaces
-     up first */
-  while (1) {
-    z=_owl_editwin_get_index_from_xy(e);
-    if (e->buff[z]==' ' || e->buff[z]=='\n') {
-      owl_editwin_delete_char(e);
-    } else {
-      break;
-    }
+  start = ptr1 = e->buff + _owl_editwin_get_index_from_xy(e);
+  /* if we start out on a space character then jump past all the
+     spaces up first */
+  while (*ptr1 == ' ' || *ptr1 == '\n') {
+    ++ptr1;
   }
 
-  /* then nuke the next word */
-  while (1) {
-    z=_owl_editwin_get_index_from_xy(e);
-    /* z == e->bufflen check added to prevent a hang I (nelhage) have
-       seen repeatedly while using owl. I'm not sure precisely what
-       conditions lead to it. */
-    if (z == e->bufflen
-        || e->buff[z+1]==' ' || e->buff[z+1]=='\n' || e->buff[z+1]=='\0') break;
-    owl_editwin_delete_char(e);
+  /* then jump past the next word */
+  
+  while (ptr1 && ptr1 - e->buff < e->bufflen) {
+    c = g_utf8_get_char(ptr1);
+    if (c == ' ' || c == '\n' || c == '\0') break;
+    ptr1 = g_utf8_find_next_char(ptr1, NULL);
   }
-  owl_editwin_delete_char(e);
+
+  if (ptr1) { /* We broke on a space, */
+    ptr1 = g_utf8_find_next_char(ptr1, NULL);
+    if (ptr1) { /* and there's a character after it, */
+      /* nuke everything back to our starting point. */
+      _owl_editwin_remove_bytes(e, ptr1 - start);
+      return;
+    }
+  }
+  
+  /* If we get here, we ran out of string, drop what's left. */
+  *start = '\0';
+  e->bufflen = start - e->buff;
 }
 
 void owl_editwin_delete_previousword(owl_editwin *e)
 {
-  /* asedeno: needs fixing for utf-8*/
   /* go backwards to the last non-space character, then delete chars */
-  int i, startpos, endpos;
+  int startpos, endpos;
 
   startpos = _owl_editwin_get_index_from_xy(e);
   owl_editwin_move_to_previousword(e);
   endpos = _owl_editwin_get_index_from_xy(e);
-  for (i=0; i<startpos-endpos; i++) {
-    owl_editwin_delete_char(e);
-  }
+  _owl_editwin_remove_bytes(e, startpos-endpos);
 }
 
 void owl_editwin_delete_to_endofline(owl_editwin *e)
 {
-  /* asedeno: needs fixing for utf-8*/
   int i;
 
   if (owl_editwin_get_numchars_on_line(e, e->buffy) > e->buffx) {
@@ -986,7 +1018,6 @@ void owl_editwin_move_to_top(owl_editwin *e)
 
 void owl_editwin_fill_paragraph(owl_editwin *e)
 {
-  /* asedeno: needs fixing for utf-8*/
   int i, save;
 
   /* save our starting point */
@@ -1017,6 +1048,9 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
     }
 
     /* did we hit the end of a line too soon? */
+    /* asedeno: Here we replace a newline with a space. We may want to
+       consider removing the space if the characters to either side
+       are CJK ideograms.*/
     i = _owl_editwin_get_index_from_xy(e);
     if (e->buff[i] == '\n' && e->buffx < e->fillcol - 1) {
       /* ********* we need to make sure we don't pull in a word that's too long ***********/
@@ -1030,7 +1064,9 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
 	owl_editwin_key_right(e);
       } else {
 	owl_editwin_delete_char(e);
-	/* if we did this ahead of the save point, adjust it */
+	/* if we did this ahead of the save point, adjust it. Changing
+           by one is fine here because we're only removing an ASCII
+           space. */
 	if (i < save) save--;
       }
     } else {
