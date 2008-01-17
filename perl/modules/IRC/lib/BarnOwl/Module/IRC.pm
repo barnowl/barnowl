@@ -64,7 +64,7 @@ sub startup {
 
 sub shutdown {
     for my $conn (values %ircnets) {
-        $conn->disconnect();
+        $conn->conn->disconnect();
     }
 }
 
@@ -168,7 +168,7 @@ sub cmd_connect {
 sub cmd_disconnect {
     my $cmd = shift;
     my $conn = get_connection(\@_);
-    $conn->disconnect;
+    $conn->conn->disconnect;
     delete $ircnets{$conn->alias};
 }
 
@@ -190,7 +190,7 @@ sub process_msg {
     my $body = shift;
     # Strip whitespace. In the future -- send one message/line?
     $body =~ tr/\n\r/  /;
-    $conn->privmsg($to, $body);
+    $conn->conn->privmsg($to, $body);
     my $msg = BarnOwl::Message->new(
         type        => 'IRC',
         direction   => is_private($to) ? 'out' : 'in',
@@ -213,7 +213,7 @@ sub cmd_join {
     my $chan = shift or die("Usage: $cmd channel\n");
     $channels{$chan} ||= [];
     push @{$channels{$chan}}, $conn;
-    $conn->join($chan);
+    $conn->conn->join($chan);
 }
 
 sub cmd_part {
@@ -221,34 +221,34 @@ sub cmd_part {
     my $conn = get_connection(\@_);
     my $chan = get_channel(\@_) || die("Usage: $cmd <channel>\n");
     $channels{$chan} = [grep {$_ ne $conn} @{$channels{$chan} || []}];
-    $conn->part($chan);
+    $conn->conn->part($chan);
 }
 
 sub cmd_nick {
     my $cmd = shift;
     my $conn = get_connection(\@_);
     my $nick = shift or die("Usage: $cmd <new nick>\n");
-    $conn->nick($nick);
+    $conn->conn->nick($nick);
 }
 
 sub cmd_names {
     my $cmd = shift;
     my $conn = get_connection(\@_);
     my $chan = get_channel(\@_) || die("Usage: $cmd <channel>\n");
-    $conn->names($chan);
+    $conn->conn->names($chan);
 }
 
 sub cmd_whois {
     my $cmd = shift;
     my $conn = get_connection(\@_);
     my $who = shift || die("Usage: $cmd <user>\n");
-    $conn->whois($who);
+    $conn->conn->whois($who);
 }
 
 sub cmd_motd {
     my $cmd = shift;
     my $conn = get_connection(\@_);
-    $conn->motd;
+    $conn->conn->motd;
 }
 
 ################################################################################
