@@ -561,14 +561,26 @@ int main(int argc, char **argv, char **env)
 	else bytes = 1;
 	
 	for (i = 1; i < bytes; i++) {
-	  utf8buf[i] = wgetch(typwin);
-	}
-	if (g_utf8_validate(utf8buf, -1, NULL)) {
-	  j.uch = g_utf8_get_char(utf8buf);
-	}
-	else {
-	  j.ch = ERR;
-	}
+          int tmp =  wgetch(typwin);
+          /* If what we got was not a byte, or not a continuation byte */
+          if (tmp > 0xff || !(tmp & 0x80 && ~tmp & 0x40)) {
+            /* ill-formed UTF-8 code unit subsequence, put back the
+               char we just got. */
+            ungetch(tmp);
+            j.ch = ERR;
+            break;
+          }
+	  utf8buf[i] = tmp;
+        }
+        
+	if (j.ch != ERR) {
+          if (g_utf8_validate(utf8buf, -1, NULL)) {
+            j.uch = g_utf8_get_char(utf8buf);
+          }
+          else {
+            j.ch = ERR;
+          }
+        }
       }
       else if (j.ch <= 0x7f) {
 	j.uch = j.ch;
