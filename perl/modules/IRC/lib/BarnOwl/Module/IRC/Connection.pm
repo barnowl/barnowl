@@ -45,11 +45,13 @@ sub new {
     $self->motd("");
     $self->connected(0);
 
+    $self->conn->add_handler(376 => sub { shift; $self->on_connect(@_) });
     $self->conn->add_default_handler(sub { shift; $self->on_event(@_) });
     $self->conn->add_handler(['msg', 'notice', 'public', 'caction'],
             sub { shift; $self->on_msg(@_) });
     $self->conn->add_handler(['welcome', 'yourhost', 'created',
-            'luserclient', 'luserop', 'luserchannels', 'luserme'],
+            'luserclient', 'luserop', 'luserchannels', 'luserme',
+            'notice', 'error'],
             sub { shift; $self->on_admin_msg(@_) });
     $self->conn->add_handler(['myinfo', 'map', 'n_local', 'n_global',
             'luserconns'],
