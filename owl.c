@@ -586,7 +586,7 @@ int main(int argc, char **argv, char **env)
 	j.uch = j.ch;
       }
       
-      owl_global_update_lastinputtime(&g);
+      owl_global_set_lastinputtime(&g, now);
       /* find and activate the current keymap.
        * TODO: this should really get fixed by activating
        * keymaps as we switch between windows... 

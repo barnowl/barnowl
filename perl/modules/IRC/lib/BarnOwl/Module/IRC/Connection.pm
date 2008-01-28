@@ -9,46 +9,61 @@ BarnOwl::Module::IRC::Connection
 
 =head1 DESCRIPTION
 
-This module is a Net::IRC::Connection subclass for BarnOwl's IRC
+This module is a wrapper around Net::IRC::Connection for BarnOwl's IRC
 support
 
 =cut
 
-use base qw(Net::IRC::Connection Class::Accessor Exporter);
-__PACKAGE__->mk_accessors(qw(alias channels owl_connected owl_motd));
+use Net::IRC::Connection;
+
+use base qw(Class::Accessor Exporter);
+__PACKAGE__->mk_accessors(qw(conn alias channels connected motd));
 our @EXPORT_OK = qw(&is_private);
 
 use BarnOwl;
+
+BEGIN {
+    no strict 'refs';
+    my @delegate = qw(nick server);
+    for my $meth (@delegate) {
+        *{"BarnOwl::Module::IRC::Connection::$meth"} = sub {
+            shift->conn->$meth(@_);
+        }
+    }
+};
 
 sub new {
     my $class = shift;
     my $irc = shift;
     my $alias = shift;
     my %args = (@_);
-    my $self = $class->SUPER::new($irc, %args);
+    my $conn = Net::IRC::Connection->new($irc, %args);
+    my $self = bless({}, $class);
+    $self->conn($conn);
     $self->alias($alias);
     $self->channels([]);
-    $self->owl_motd("");
-    $self->owl_connected(0);
-    bless($self, $class);
+    $self->motd("");
+    $self->connected(0);
 
-    $self->add_default_handler(sub { goto &on_event; });
-    $self->add_handler(['msg', 'notice', 'public', 'caction'],
-            sub { goto &on_msg });
-    $self->add_handler(['welcome', 'yourhost', 'created',
-            'luserclient', 'luserop', 'luserchannels', 'luserme'],
-            sub { goto &on_admin_msg });
-    $self->add_handler(['myinfo', 'map', 'n_local', 'n_global',
+    $self->conn->add_handler(376 => sub { shift; $self->on_connect(@_) });
+    $self->conn->add_default_handler(sub { shift; $self->on_event(@_) });
+    $self->conn->add_handler(['msg', 'notice', 'public', 'caction'],
+            sub { shift; $self->on_msg(@_) });
+    $self->conn->add_handler(['welcome', 'yourhost', 'created',
+            'luserclient', 'luserop', 'luserchannels', 'luserme',
+            'notice', 'error'],
+            sub { shift; $self->on_admin_msg(@_) });
+    $self->conn->add_handler(['myinfo', 'map', 'n_local', 'n_global',
             'luserconns'],
             sub { });
-    $self->add_handler(motdstart => sub { goto &on_motdstart });
-    $self->add_handler(motd      => sub { goto &on_motd });
-    $self->add_handler(endofmotd => sub { goto &on_endofmotd });
-    $self->add_handler(join      => sub { goto &on_join });
-    $self->add_handler(part      => sub { goto &on_part });
-    $self->add_handler(disconnect => sub { goto &on_disconnect });
-    $self->add_handler(nicknameinuse => sub { goto &on_nickinuse });
-    $self->add_handler(cping     => sub { goto &on_ping });
+    $self->conn->add_handler(motdstart => sub { shift; $self->on_motdstart(@_) });
+    $self->conn->add_handler(motd      => sub { shift; $self->on_motd(@_) });
+    $self->conn->add_handler(endofmotd => sub { shift; $self->on_endofmotd(@_) });
+    $self->conn->add_handler(join      => sub { shift; $self->on_join(@_) });
+    $self->conn->add_handler(part      => sub { shift; $self->on_part(@_) });
+    $self->conn->add_handler(disconnect => sub { shift; $self->on_disconnect(@_) });
+    $self->conn->add_handler(nicknameinuse => sub { shift; $self->on_nickinuse(@_) });
+    $self->conn->add_handler(cping     => sub { shift; $self->on_ping(@_) });
 
     return $self;
 }
@@ -96,7 +111,7 @@ sub on_msg {
 
 sub on_ping {
     my ($self, $evt) = @_;
-    $self->ctcp_reply($evt->nick, join (' ', ($evt->args)));
+    $self->conn->ctcp_reply($evt->nick, join (' ', ($evt->args)));
 }
 
 sub on_admin_msg {
@@ -109,26 +124,26 @@ sub on_admin_msg {
 
 sub on_motdstart {
     my ($self, $evt) = @_;
-    $self->owl_motd(join "\n", cdr $evt->args);
+    $self->motd(join "\n", cdr $evt->args);
 }
 
 sub on_motd {
     my ($self, $evt) = @_;
-    $self->owl_motd(join "\n", $self->owl_motd, cdr $evt->args);
+    $self->motd(join "\n", $self->motd, cdr $evt->args);
 }
 
 sub on_endofmotd {
     my ($self, $evt) = @_;
-    $self->owl_motd(join "\n", $self->owl_motd, cdr $evt->args);
-    if(!$self->owl_connected) {
+    $self->motd(join "\n", $self->motd, cdr $evt->args);
+    if(!$self->connected) {
         BarnOwl::admin_message("IRC", "Connected to " .
                                $self->server . " (" . $self->alias . ")");
-        $self->owl_connected(1);
+        $self->connected(1);
         
     }
     BarnOwl::admin_message("IRC",
             BarnOwl::Style::boldify('MOTD for ' . $self->alias) . "\n"
-            . strip_irc_formatting($self->owl_motd));
+            . strip_irc_formatting($self->motd));
 }
 
 sub on_join {
@@ -162,8 +177,8 @@ sub on_nickinuse {
     BarnOwl::admin_message("IRC",
                            "[" . $self->alias . "] " .
                            [$evt->args]->[1] . ": Nick already in use");
-    unless($self->owl_connected) {
-        $self->disconnect;
+    unless($self->connected) {
+        $self->conn->disconnect;
     }
 }
 

@@ -612,15 +612,18 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
       char buff[BUFFLEN];
       tmp = short_zuser(retnotice->z_recipient);
       owl_function_error("%s: Not logged in or subscribing.", tmp);
-      snprintf(buff, BUFFLEN, "Could not send message to %s: not logged in or subscribing to", tmp);
       if(strcmp(retnotice->z_class, "message")) {
         snprintf(buff, BUFFLEN,
-                 "%s class %s, instance %s.\n", buff,
+                 "Could not send message to %s: "
+                 "not logged in or subscribing to class %s, instance %s.\n", 
+                 tmp,
                  retnotice->z_class,
                  retnotice->z_class_inst);
       } else {
         snprintf(buff, BUFFLEN,
-                 "%s messages.\n", buff);
+                 "Could not send message to %s: "
+                 "not logged in or subscribing to messages.\n",
+                 tmp);
       }
       owl_function_adminmsg("", buff);
       owl_log_outgoing_zephyr_error(tmp, buff);

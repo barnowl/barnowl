@@ -846,7 +846,7 @@ sub format_message($) {
 #  if ( $m->is_zephyr ) {
 #    return format_zephyr($m);
 #  }
-  if ( $m->is_login ) {
+  if ( $m->is_loginout ) {
     return format_login($m);
   }
   elsif ( $m->is_ping) {

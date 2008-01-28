@@ -10,7 +10,7 @@ mandir = @mandir@
 
 CC=@CC@
 LIBS=@LIBS@ -L./libfaim -lfaim
-CFLAGS=@CFLAGS@ -I. -I./libfaim -DDATADIR=\"${datadir}\" -DOWL_SVN_REVNO=`./svkversion`
+CFLAGS=@CFLAGS@ -I. -I./libfaim -DDATADIR=\"${datadir}\" -DOWL_SVN_REVNO=$(shell ./svkversion)
 LDFLAGS=@LDFLAGS@
 XSUBPPDIR=@XSUBPPDIR@
 XSUBPPFLAGS=@XSUBPPFLAGS@
