@@ -161,7 +161,7 @@ sub cmd_connect {
         SSL       => $ssl
        );
 
-    if ($conn->connected) {
+    if ($conn->conn->connected) {
         BarnOwl::admin_message("IRC", "Connected to $alias as $nick");
         $ircnets{$alias} = $conn;
     } else {
