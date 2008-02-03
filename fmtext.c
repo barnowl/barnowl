@@ -739,6 +739,10 @@ short owl_fmtext_get_colorpair(int fg, int bg)
   owl_colorpair_mgr *cpmgr;
   short pair, default_bg;
 
+  /* Sanity (Bounds) Check */
+  if (fg > COLORS || fg < OWL_COLOR_DEFAULT) fg = OWL_COLOR_DEFAULT;
+  if (bg > COLORS || bg < OWL_COLOR_DEFAULT) bg = OWL_COLOR_DEFAULT;
+	    
 #ifdef HAVE_USE_DEFAULT_COLORS
   if (fg == OWL_COLOR_DEFAULT) fg = -1;
   default_bg = OWL_COLOR_DEFAULT;
