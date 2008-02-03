@@ -138,7 +138,7 @@ void owl_log_outgoing(owl_message *m)
 
   /* Figure out what path to log to */
   if (owl_message_is_type_zephyr(m)) {
-    // If this has CC's, do all but the "recipient" which we'll do below
+    /* If this has CC's, do all but the "recipient" which we'll do below */
     to = owl_message_get_cc_without_recipient(m);
     if (to != NULL) {
       temp = strtok(to, " ");
@@ -316,8 +316,9 @@ void owl_log_incoming(owl_message *m)
   owl_log_append(m, filename);
 
   if (personal && owl_message_is_type_zephyr(m)) {
-    // We want to log to all of the CC'd people who were not us, or
-    // the sender, as well.
+    /* We want to log to all of the CC'd people who were not us, or
+     * the sender, as well.
+     */
     char *cc, *temp;
     cc = owl_message_get_cc_without_recipient(m);
     if (cc != NULL) {

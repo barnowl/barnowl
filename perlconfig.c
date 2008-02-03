@@ -13,7 +13,7 @@ extern char *owl_perlwrap_codebuff;
 
 extern XS(boot_BarnOwl);
 extern XS(boot_DynaLoader);
-// extern XS(boot_DBI);
+/* extern XS(boot_DBI); */
 
 static void owl_perl_xs_init(pTHX)
 {

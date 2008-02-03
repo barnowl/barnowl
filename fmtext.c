@@ -688,11 +688,11 @@ void owl_fmtext_free(owl_fmtext *f)
 /*** Color Pair manager ***/
 void owl_fmtext_init_colorpair_mgr(owl_colorpair_mgr *cpmgr)
 {
-  // This could be a bitarray if we wanted to save memory.
+  /* This could be a bitarray if we wanted to save memory. */
   short i, j;
   cpmgr->next = 8;
   
-  // The test is <= because we allocate COLORS+1 entries.
+  /* The test is <= because we allocate COLORS+1 entries. */
   cpmgr->pairs = owl_malloc((COLORS+1) * sizeof(short*));
   for(i = 0; i <= COLORS; i++) {
     cpmgr->pairs[i] = owl_malloc((COLORS+1) * sizeof(short));
@@ -718,7 +718,7 @@ void owl_fmtext_reset_colorpairs()
     owl_colorpair_mgr *cpmgr = owl_global_get_colorpair_mgr(&g);
     cpmgr->next = 8;
     
-    // The test is <= because we allocated COLORS+1 entries.
+    /* The test is <= because we allocated COLORS+1 entries. */
     for(i = 0; i <= COLORS; i++) {
       for(j = 0; j <= COLORS; j++) {
 	cpmgr->pairs[i][j] = -1;
@@ -752,26 +752,25 @@ short owl_fmtext_get_colorpair(int fg, int bg)
   default_bg = COLOR_BLACK;
 #endif
 
-  // looking for a pair we already set up for this draw.
+  /* looking for a pair we already set up for this draw. */
   cpmgr = owl_global_get_colorpair_mgr(&g);
   pair = cpmgr->pairs[fg+1][bg+1];
   if (!(pair != -1 && pair < cpmgr->next)) {
-/*    owl_global_set_needrefresh(&g);*/
-    // If we didn't find a pair, search for a free one to assign.
+    /* If we didn't find a pair, search for a free one to assign. */
     pair = (cpmgr->next < COLOR_PAIRS) ? cpmgr->next : -1;
     if (pair != -1) {
-      // We found a free pair, initialize it.
+      /* We found a free pair, initialize it. */
       init_pair(pair, fg, bg);
       cpmgr->pairs[fg+1][bg+1] = pair;
       cpmgr->next++;
     }
     else if (bg != OWL_COLOR_DEFAULT) {
-      // We still don't have a pair, drop the background color. Too bad.
+      /* We still don't have a pair, drop the background color. Too bad. */
       owl_function_debugmsg("colorpairs: color shortage - dropping background color.");
       pair = owl_fmtext_get_colorpair(fg, OWL_COLOR_DEFAULT);
     }
     else {
-      // We still don't have a pair, defaults all around.
+      /* We still don't have a pair, defaults all around. */
       owl_function_debugmsg("colorpairs: color shortage - dropping foreground and background color.");
       pair = 0;
     }

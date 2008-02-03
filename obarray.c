@@ -9,9 +9,10 @@
  * rare)
  */
 
-// Helper method: Lookup a key in the obarray. If the key exists,
-// return its index, and the interned value in *val. Otherwise, return
-// the index it should be inserted at.
+/* Helper method: Lookup a key in the obarray. If the key exists,
+ * return its index, and the interned value in *val. Otherwise, return
+ * the index it should be inserted at.
+ */
 int owl_obarray_lookup(owl_obarray *oa, char * key, char ** val) /*noproto*/
 {
   int first, last, mid;
@@ -38,7 +39,7 @@ int owl_obarray_lookup(owl_obarray *oa, char * key, char ** val) /*noproto*/
   return mid;
 }
 
-// Returns NULL if the string doesn't exist in the obarray
+/* Returns NULL if the string doesn't exist in the obarray */
 char * owl_obarray_find(owl_obarray *oa, char * string)
 {
   char *v;
@@ -46,7 +47,7 @@ char * owl_obarray_find(owl_obarray *oa, char * string)
   return v;
 }
 
-// Inserts the string into the obarray if it doesn't exist
+/* Inserts the string into the obarray if it doesn't exist */
 char * owl_obarray_insert(owl_obarray *oa, char * string)
 {
   char *v;

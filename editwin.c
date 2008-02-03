@@ -35,9 +35,9 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->dotsend=0;
   e->echochar='\0';
 
+  /* We get initialized multiple times, but we need to hold on to
+     the callbacks, so we can't NULL them here. */
   /*
-    // We get initialized multiple times, but we need to hold on to
-    // the callbacks, so we can't NULL them here.
     e->command = NULL;
     e->callback = NULL;
     e->cbdata = NULL;
@@ -115,7 +115,7 @@ void owl_editwin_do_callback(owl_editwin *e) {
   if(!cb) {
     owl_function_error("Internal error: No editwin callback!");
   } else {
-    // owl_function_error("text: |%s|", owl_editwin_get_text(e));
+    /* owl_function_error("text: |%s|", owl_editwin_get_text(e)); */
     cb(e);
   }
 }

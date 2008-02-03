@@ -1371,7 +1371,7 @@ void owl_function_full_redisplay()
 {
   redrawwin(owl_global_get_curs_recwin(&g));
   redrawwin(owl_global_get_curs_sepwin(&g));
-  // Work around curses segfualts with windows off the screen
+  /* Work around curses segfualts with windows off the screen */
   if (g.lines >= owl_global_get_typwin_lines(&g)+2)
       redrawwin(owl_global_get_curs_typwin(&g));
   if (g.lines >= 2)
