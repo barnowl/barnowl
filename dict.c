@@ -178,7 +178,7 @@ int owl_dict_regtest(void) {
   owl_list_free_all(&l, owl_free);
   owl_dict_free_all(&d, NULL);
 
-  //  if (numfailed) printf("*** WARNING: failures encountered with owl_dict\n");
+  /*  if (numfailed) printf("*** WARNING: failures encountered with owl_dict\n"); */
   printf("# END testing owl_dict (%d failures)\n", numfailed);
   return(numfailed);
 }

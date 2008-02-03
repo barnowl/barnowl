@@ -123,7 +123,7 @@ static int owl_filterelement_match_not(owl_filterelement *fe, owl_message *m)
   return !owl_filterelement_match(fe->left, m);
 }
 
-// Print methods
+/* Print methods */
 
 static void owl_filterelement_print_true(owl_filterelement *fe, char *buf)
 {
@@ -181,7 +181,7 @@ static void owl_filterelement_print_not(owl_filterelement *fe, char *buf)
   owl_filterelement_print(fe->left, buf);
 }
 
-// Constructors
+/* Constructors */
 
 void owl_filterelement_create(owl_filterelement *fe) {
   fe->field = NULL;

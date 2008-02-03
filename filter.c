@@ -340,7 +340,7 @@ int owl_filter_regtest(void) {
   TEST_FILTER("class owl and instance tester", 1);
   TEST_FILTER("type ^zephyr$ and direction ^in$ and ( class ^owl$ or instance ^owl$ )", 1);
 
-  // Order of operations and precedence
+  /* Order of operations and precedence */
   TEST_FILTER("not true or false", 0);
   TEST_FILTER("true or true and false", 0);
   TEST_FILTER("true and true and false or true", 1);
@@ -351,10 +351,10 @@ int owl_filter_regtest(void) {
   owl_global_add_filter(&g, &f1);
   TEST_FILTER("filter f1", 1);
 
-  // Test recursion prevention
+  /* Test recursion prevention */
   FAIL_UNLESS("self reference", owl_filter_init_fromstring(&f2, "test", "filter test"));
 
-  // mutual recursion
+  /* mutual recursion */
   owl_filter_init_fromstring(&f3, "f3", "filter f4");
   owl_global_add_filter(&g, &f3);
   FAIL_UNLESS("mutual recursion",   owl_filter_init_fromstring(&f4, "f4", "filter f3"));

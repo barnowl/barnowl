@@ -136,6 +136,8 @@ sub onMainLoop {
     }
 }
 
+our $showOffline = 0;
+
 sub blist_listBuddy {
     my $roster = shift;
     my $buddy  = shift;
@@ -151,10 +153,10 @@ sub blist_listBuddy {
         my %rq = $roster->resourceQuery( $buddy, $res );
         $blistStr .= " [" . ( $rq{show} ? $rq{show} : 'online' ) . "]";
         $blistStr .= " " . $rq{status} if $rq{status};
-        $blistStr = BarnOwl::Style::boldify($blistStr);
+        $blistStr = BarnOwl::Style::boldify($blistStr) if $showOffline;
     }
     else {
-        return '' if (BarnOwl::getvar('jabber:show_offline_buddies') eq 'off');
+        return '' unless $showOffline;
 	if ($jq{ask}) {
             $blistStr .= " [pending]";
 	}
@@ -197,6 +199,7 @@ sub getSingleBuddyList {
 }
 
 sub onGetBuddyList {
+    $showOffline = BarnOwl::getvar('jabber:show_offline_buddies') eq 'on';
     my $blist = "";
     foreach my $jid ($conn->getJIDs()) {
         $blist .= getSingleBuddyList($jid);

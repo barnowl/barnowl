@@ -887,7 +887,7 @@ int owl_util_regtest(void)
   FAIL_UNLESS("owl_util_uniq 3", 
 	      !strcmp("meep foo bar", owl_util_uniq("meep foo", "bar foo meep", "-")));
 
-  // if (numfailed) printf("*** WARNING: failures encountered with owl_util\n");
+  /* if (numfailed) printf("*** WARNING: failures encountered with owl_util\n"); */
   printf("# END testing owl_util (%d failures)\n", numfailed);
   return(numfailed);
 }
