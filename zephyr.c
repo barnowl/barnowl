@@ -500,7 +500,10 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
     notice.z_recipient=recipient;
   }
   notice.z_default_format="Class $class, Instance $instance:\nTo: @bold($recipient) at $time $date\nFrom: @bold{$1 <$sender>}\n\n$2";
-  notice.z_sender=NULL;
+  if (*owl_global_get_zsender(&g))
+      notice.z_sender=owl_global_get_zsender(&g);
+  else
+      notice.z_sender=NULL;
   if (opcode) notice.z_opcode=opcode;
 
   notice.z_message_len=strlen(zsig)+1+strlen(message);
