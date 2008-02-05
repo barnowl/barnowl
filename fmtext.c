@@ -398,6 +398,7 @@ void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src)
     mallocsize=src->textlen+2;
   }
   dst->textlen=src->textlen;
+  dst->bufflen=mallocsize;
   dst->textbuff=owl_malloc(mallocsize);
   dst->fmbuff=owl_malloc(mallocsize);
   dst->fgcolorbuff=owl_malloc(mallocsize * sizeof(short));
