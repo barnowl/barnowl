@@ -889,6 +889,7 @@ void owl_editwin_move_to_previousword(owl_editwin *e)
     /* find the first non-space */
     owl_editwin_key_left(e);      
     i = _owl_editwin_get_index_from_xy(e);
+    if (i == e->lock) break;
   }
 
   /* find the last non-space */
