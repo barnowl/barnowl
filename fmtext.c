@@ -142,15 +142,17 @@ void _owl_fmtext_update_attributes(gunichar c, char *attr, short *fgcolor, short
   if ((c & OWL_FMTEXT_UC_ATTR) == OWL_FMTEXT_UC_ATTR) {
     *attr = c & OWL_FMTEXT_UC_ATTR_MASK;
   }
-  else if ((c & OWL_FMTEXT_UC_FGCOLOR) == OWL_FMTEXT_UC_FGCOLOR) {
-    *fgcolor = (c == OWL_FMTEXT_UC_FGDEFAULT
-		? OWL_COLOR_DEFAULT
-		: c & OWL_FMTEXT_UC_COLOR_MASK);
-  }
-  else if ((c & OWL_FMTEXT_UC_BGCOLOR) == OWL_FMTEXT_UC_BGCOLOR) {
-    *bgcolor = (c == OWL_FMTEXT_UC_BGDEFAULT
-		? OWL_COLOR_DEFAULT
-		: c & OWL_FMTEXT_UC_COLOR_MASK);
+  else if ((c & OWL_FMTEXT_UC_COLOR_BASE) == OWL_FMTEXT_UC_COLOR_BASE) {
+    if ((c & OWL_FMTEXT_UC_BGCOLOR) == OWL_FMTEXT_UC_BGCOLOR) {
+      *bgcolor = (c == OWL_FMTEXT_UC_BGDEFAULT
+                  ? OWL_COLOR_DEFAULT
+                  : c & OWL_FMTEXT_UC_COLOR_MASK);
+    }
+    else if ((c & OWL_FMTEXT_UC_FGCOLOR) == OWL_FMTEXT_UC_FGCOLOR) {
+      *fgcolor = (c == OWL_FMTEXT_UC_FGDEFAULT
+                  ? OWL_COLOR_DEFAULT
+                  : c & OWL_FMTEXT_UC_COLOR_MASK);
+    }
   }
 }
 

@@ -117,10 +117,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 
 #define OWL_FMTEXT_UTF8_ATTR_NONE "\xf4\x80\xa0\x80"
 #define OWL_FMTEXT_UTF8_FGDEFAULT "\xf4\x80\x94\x80"
-#define OWL_FMTEXT_UTF8_BGDEFAULT "\xf4\x80\x96\x80"
-
-
-
+#define OWL_FMTEXT_UTF8_BGDEFAULT "\xf4\x80\x9C\x80"
 
 #define OWL_COLOR_BLACK     0
 #define OWL_COLOR_RED       1
