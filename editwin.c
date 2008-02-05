@@ -885,11 +885,10 @@ void owl_editwin_move_to_previousword(owl_editwin *e)
 
   /* are we starting on a space character? */
   i = _owl_editwin_get_index_from_xy(e);
-  while (e->buff[i] == ' ' || e->buff[i] == '\n' || e->buff[i] == '\0') {
+  while (i > e->lock && (e->buff[i] == ' ' || e->buff[i] == '\n' || e->buff[i] == '\0')) {
     /* find the first non-space */
     owl_editwin_key_left(e);      
     i = _owl_editwin_get_index_from_xy(e);
-    if (i == e->lock) break;
   }
 
   /* find the last non-space */
