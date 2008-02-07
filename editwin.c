@@ -892,7 +892,6 @@ void owl_editwin_move_to_previousword(owl_editwin *e)
   }
 
   /* find the last non-space */
-  owl_editwin_key_left(e);
   ptr1 = e->buff + _owl_editwin_get_index_from_xy(e);
   while (ptr1 >= e->buff + e->lock) {
     ptr2 = g_utf8_find_prev_char(e->buff, ptr1);
