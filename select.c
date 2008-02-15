@@ -134,7 +134,9 @@ void owl_select_dispatch(fd_set *fds, int max_fd)
   len = owl_select_dispatch_count();
   for(i = 0; i < len; i++) {
     d = (owl_dispatch*)owl_list_get_element(dl, i);
-    if (FD_ISSET(d->fd, fds)) {
+    /* While d shouldn't normally be null, the list may be altered by
+     * functions we dispatch to. */
+    if (d != NULL && FD_ISSET(d->fd, fds)) {
       if (d->cfunc != NULL) {
         (d->cfunc)();
       }
