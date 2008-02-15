@@ -68,13 +68,22 @@ sub shutdown {
     }
 }
 
-sub mainloop_hook {
+#sub mainloop_hook {
+#    return unless defined $irc;
+#    eval {
+#        $irc->do_one_loop();
+#    };
+#    return;
+#}
+
+sub OwlProcess {
     return unless defined $irc;
     eval {
         $irc->do_one_loop();
     };
     return;
 }
+
 
 sub register_handlers {
     if(!$irc) {
@@ -108,7 +117,7 @@ sub register_commands {
 
 $BarnOwl::Hooks::startup->add(\&startup);
 $BarnOwl::Hooks::shutdown->add(\&shutdown);
-$BarnOwl::Hooks::mainLoop->add(\&mainloop_hook);
+#$BarnOwl::Hooks::mainLoop->add(\&mainloop_hook);
 
 ################################################################################
 ######################## Owl command handlers ##################################
@@ -164,6 +173,9 @@ sub cmd_connect {
     if ($conn->conn->connected) {
         BarnOwl::admin_message("IRC", "Connected to $alias as $nick");
         $ircnets{$alias} = $conn;
+        my $fd = $conn->getSocket()->fileno();
+        BarnOwl::add_dispatch($fd, \&OwlProcess);
+        $conn->{FD} = $fd;
     } else {
         die("IRC::Connection->connect failed: $!");
     }
