@@ -23,7 +23,7 @@ sub load_all {
             if(-f "$dir/$f" && $f =~ /^(.+)\.par$/) {
                 $modules{$1} = 1;
             } elsif(-d "$dir/$f" && -d "$dir/$f/lib") {
-                push @INC, "$dir/$f/lib" unless grep m{^$dir/$f/lib$}, @INC;
+                unshift @INC, "$dir/$f/lib" unless grep m{^$dir/$f/lib$}, @INC;
                 $modules{$f} = 1;
             }
         }
