@@ -129,7 +129,7 @@ Returns the IO::Socket for this connection.
 sub getSocket {
     my $self = shift;
     my $sid = getStreamID($self);
-    return $self->{STREAM}->{SIDS}->{$sid}->{sock} || -1;
+    return $self->{STREAM}->GetSock($sid) || -1;
 }
 
 =head2 OwlProcess
@@ -144,7 +144,7 @@ sub OwlProcess {
     if ( !defined($status) ) {
         my $jid = $self->{SESSION}->{FULLJID};
         BarnOwl::error("Jabber account $jid disconnected!");
-        do_logout($jid);
+        BarnOwl::Module::Jabber::do_logout($jid);
     }
 }
 

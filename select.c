@@ -104,7 +104,7 @@ int owl_select_remove_perl_dispatch(int fd)
   return 1;
 }
 
-int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
+int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *w, fd_set *e)
 {
   int i, len, max_fd;
   owl_dispatch *d;
@@ -118,6 +118,7 @@ int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
   for(i = 0; i < len; i++) {
     d = (owl_dispatch*)owl_list_get_element(dl, i);
     FD_SET(d->fd, r);
+    FD_SET(d->fd, w);
     FD_SET(d->fd, e);
     if (max_fd < d->fd) max_fd = d->fd;
   }
@@ -185,7 +186,7 @@ void owl_select()
   timeout.tv_sec = 1;
   timeout.tv_usec = 0;
 
-  max_fd = owl_select_dispatch_prepare_fd_sets(&r, &e);
+  max_fd = owl_select_dispatch_prepare_fd_sets(&r, &w, &e);
 
   /* AIM HACK: 
    *
