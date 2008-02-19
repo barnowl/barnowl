@@ -36,6 +36,7 @@ sub removeConnection {
     my $jidStr = shift;
     return 0 unless exists $self->{$jidStr};
 
+    BarnOwl::remove_dispatch($self->{$jidStr}->{Client}->{fileno}) if $self->{$jidStr}->{Client}->{fileno};
     $self->{$jidStr}->{Client}->Disconnect()
       if $self->{$jidStr}->{Client};
     delete $self->{$jidStr};
@@ -50,7 +51,7 @@ sub renameConnection {
     return 0 unless exists $self->{$oldJidStr};
     return 0 if $oldJidStr eq $newJidStr;
 
-    $self->{$newJidStr} = $self->{$oldJidStr}; 
+    $self->{$newJidStr} = $self->{$oldJidStr};
     delete $self->{$oldJidStr};
     return 1;
 }

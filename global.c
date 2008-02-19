@@ -116,6 +116,7 @@ void owl_global_init(owl_global *g) {
   owl_obarray_init(&(g->obarray));
 
   owl_message_init_fmtext_cache();
+  owl_list_create(&(g->dispatchlist));
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -930,4 +931,9 @@ struct termios *owl_global_get_startup_tio(owl_global *g)
 char * owl_global_intern(owl_global *g, char * string)
 {
   return owl_obarray_insert(&(g->obarray), string);
+}
+
+owl_list *owl_global_get_dispatchlist(owl_global *g)
+{
+  return &(g->dispatchlist);
 }

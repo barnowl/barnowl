@@ -29,7 +29,6 @@ int owl_zephyr_initialize()
   return(0);
 }
 
-
 int owl_zephyr_shutdown()
 {
 #ifdef HAVE_LIBZEPHYR

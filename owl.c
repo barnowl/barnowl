@@ -45,6 +45,7 @@
 #include <time.h>
 #include <sys/param.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <termios.h>
 #include <sys/stat.h>
 #include <locale.h>
@@ -60,6 +61,8 @@
 int stderr_replace(void);
 #endif
 
+#define STDIN 0
+
 static const char fileIdent[] = "$Id$";
 
 owl_global g;
@@ -70,7 +73,6 @@ int main(int argc, char **argv, char **env)
   owl_editwin *tw;
   owl_popwin *pw;
   int ret, initialsubs, debug, argcsave, followlast;
-  owl_input j;
   int newmsgs, nexttimediff;
   struct sigaction sigact;
   char *configfile, *tty, *perlout, *perlerr, **argvsave, buff[LINE], startupmsg[LINE];
@@ -213,11 +215,27 @@ int main(int argc, char **argv, char **env)
   owl_global_set_startupargs(&g, argcsave, argvsave);
   owl_global_set_haveaim(&g);
 
+  /* prepare stdin dispatch */
+  {
+    owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
+    d->fd = STDIN;
+    d->cfunc = &owl_process_input;
+    d->pfunc = NULL;
+    owl_select_add_dispatch(d);
+  }
+  
 #ifdef HAVE_LIBZEPHYR
   /* zephyr init */
   ret=owl_zephyr_initialize();
-  if (!ret)
-      owl_global_set_havezephyr(&g);
+  if (!ret) {
+    owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
+    d->fd = ZGetFD();
+    d->cfunc = &owl_zephyr_process_events;
+    d->pfunc = NULL;
+    owl_select_add_dispatch(d);
+    owl_global_set_havezephyr(&g);
+  }
+
 #endif
 
 #if OWL_STDERR_REDIR
@@ -432,18 +450,6 @@ int main(int argc, char **argv, char **env)
 
     followlast=owl_global_should_followlast(&g);
     
-    /* Do AIM stuff */
-    if (owl_global_is_doaimevents(&g)) {
-      owl_aim_process_events();
-
-      if (owl_global_is_aimloggedin(&g)) {
-	if (owl_timer_is_expired(owl_global_get_aim_buddyinfo_timer(&g))) {
-	  /* owl_buddylist_request_idletimes(owl_global_get_buddylist(&g)); */
-	  owl_timer_reset(owl_global_get_aim_buddyinfo_timer(&g));
-	}
-      }
-    }
-
     owl_perlconfig_mainloop();
 
     /* little hack */
@@ -461,8 +467,6 @@ int main(int argc, char **argv, char **env)
       }
     }
 
-    owl_zephyr_process_events();
-    
     /* Grab incoming messages. */
     newmsgs=0;
     while(owl_global_messagequeue_pending(&g)) {
@@ -534,87 +538,8 @@ int main(int argc, char **argv, char **env)
       owl_global_set_noneedrefresh(&g);
     }
 
-    /* Handle all keypresses.  If no key has been pressed, sleep for a
-     * little bit, but otherwise do not.  This lets input be grabbed
-     * as quickly as possbile */
-    j.ch = wgetch(typwin);
-    if (j.ch == ERR) {
-      usleep(10000);
-    } else {
-      j.uch = '\0';
-      if (j.ch >= KEY_MIN && j.ch <= KEY_MAX) {
-	/* This is a curses control character. */
-      }
-      else if (j.ch > 0x7f && j.ch < 0xfe) {
-	/* Pull in a full utf-8 character. */
-	int bytes, i;
-	char utf8buf[7];
-	memset(utf8buf, '\0', 7);
-
-	utf8buf[0] = j.ch;
-
-	if ((j.ch & 0xc0) && (~j.ch & 0x20)) bytes = 2;
-	else if ((j.ch & 0xe0) && (~j.ch & 0x10)) bytes = 3;
-	else if ((j.ch & 0xf0) && (~j.ch & 0x08)) bytes = 4;
-	else if ((j.ch & 0xf8) && (~j.ch & 0x04)) bytes = 5;
-	else if ((j.ch & 0xfc) && (~j.ch & 0x02)) bytes = 6;
-	else bytes = 1;
-	
-	for (i = 1; i < bytes; i++) {
-          int tmp =  wgetch(typwin);
-          /* If what we got was not a byte, or not a continuation byte */
-          if (tmp > 0xff || !(tmp & 0x80 && ~tmp & 0x40)) {
-            /* ill-formed UTF-8 code unit subsequence, put back the
-               char we just got. */
-            ungetch(tmp);
-            j.ch = ERR;
-            break;
-          }
-	  utf8buf[i] = tmp;
-        }
-        
-	if (j.ch != ERR) {
-          if (g_utf8_validate(utf8buf, -1, NULL)) {
-            j.uch = g_utf8_get_char(utf8buf);
-          }
-          else {
-            j.ch = ERR;
-          }
-        }
-      }
-      else if (j.ch <= 0x7f) {
-	j.uch = j.ch;
-      }
-      
-      owl_global_set_lastinputtime(&g, now);
-      /* find and activate the current keymap.
-       * TODO: this should really get fixed by activating
-       * keymaps as we switch between windows... 
-       */
-      if (pw && owl_popwin_is_active(pw) && owl_global_get_viewwin(&g)) {
-	owl_context_set_popless(owl_global_get_context(&g), 
-				owl_global_get_viewwin(&g));
-	owl_function_activate_keymap("popless");
-      } else if (owl_global_is_typwin_active(&g) 
-		 && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_ONELINE) {
-	/*
-	  owl_context_set_editline(owl_global_get_context(&g), tw);
-	  owl_function_activate_keymap("editline");
-	*/
-      } else if (owl_global_is_typwin_active(&g) 
-		 && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_MULTILINE) {
-	owl_context_set_editmulti(owl_global_get_context(&g), tw);
-	owl_function_activate_keymap("editmulti");
-      } else {
-	owl_context_set_recv(owl_global_get_context(&g));
-	owl_function_activate_keymap("recv");
-      }
-      /* now actually handle the keypress */
-      ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
-      if (ret!=0 && ret!=1) {
-	owl_function_makemsg("Unable to handle keypress");
-      }
-    }
+    /* select on FDs we know about. */
+    owl_select();
 
     /* Log any error signals */
     {
@@ -732,6 +657,111 @@ int owl_process_message(owl_message *m) {
   return 1;
 }
 
+void owl_process_aim()
+{
+  if (owl_global_is_doaimevents(&g)) {
+    owl_aim_process_events();
+    
+    if (owl_global_is_aimloggedin(&g)) {
+      if (owl_timer_is_expired(owl_global_get_aim_buddyinfo_timer(&g))) {
+        /* owl_buddylist_request_idletimes(owl_global_get_buddylist(&g)); */
+        owl_timer_reset(owl_global_get_aim_buddyinfo_timer(&g));
+      }
+    }
+  }
+}
+
+void owl_process_input()
+{
+  int ret;
+  owl_input j;
+  owl_popwin *pw;
+  owl_editwin *tw;
+  WINDOW *typwin;
+
+  typwin = owl_global_get_curs_typwin(&g);
+  j.ch = wgetch(typwin);
+  if (j.ch == ERR) return;
+
+  owl_global_set_lastinputtime(&g, time(NULL));
+  pw=owl_global_get_popwin(&g);
+  tw=owl_global_get_typwin(&g);
+
+  j.uch = '\0';
+  if (j.ch >= KEY_MIN && j.ch <= KEY_MAX) {
+    /* This is a curses control character. */
+  }
+  else if (j.ch > 0x7f && j.ch < 0xfe) {
+    /* Pull in a full utf-8 character. */
+    int bytes, i;
+    char utf8buf[7];
+    memset(utf8buf, '\0', 7);
+
+    utf8buf[0] = j.ch;
+
+    if ((j.ch & 0xc0) && (~j.ch & 0x20)) bytes = 2;
+    else if ((j.ch & 0xe0) && (~j.ch & 0x10)) bytes = 3;
+    else if ((j.ch & 0xf0) && (~j.ch & 0x08)) bytes = 4;
+    else if ((j.ch & 0xf8) && (~j.ch & 0x04)) bytes = 5;
+    else if ((j.ch & 0xfc) && (~j.ch & 0x02)) bytes = 6;
+    else bytes = 1;
+
+    for (i = 1; i < bytes; i++) {
+      int tmp =  wgetch(typwin);
+      /* If what we got was not a byte, or not a continuation byte */
+      if (tmp > 0xff || !(tmp & 0x80 && ~tmp & 0x40)) {
+        /* ill-formed UTF-8 code unit subsequence, put back the
+           char we just got. */
+        ungetch(tmp);
+        j.ch = ERR;
+        break;
+      }
+      utf8buf[i] = tmp;
+    }
+    
+    if (j.ch != ERR) {
+      if (g_utf8_validate(utf8buf, -1, NULL)) {
+        j.uch = g_utf8_get_char(utf8buf);
+      }
+      else {
+        j.ch = ERR;
+      }
+    }
+  }
+  else if (j.ch <= 0x7f) {
+    j.uch = j.ch;
+  }
+      
+  owl_global_set_lastinputtime(&g, time(NULL));
+  /* find and activate the current keymap.
+   * TODO: this should really get fixed by activating
+   * keymaps as we switch between windows... 
+   */
+  if (pw && owl_popwin_is_active(pw) && owl_global_get_viewwin(&g)) {
+    owl_context_set_popless(owl_global_get_context(&g), 
+                            owl_global_get_viewwin(&g));
+    owl_function_activate_keymap("popless");
+  } else if (owl_global_is_typwin_active(&g) 
+             && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_ONELINE) {
+    /*
+      owl_context_set_editline(owl_global_get_context(&g), tw);
+      owl_function_activate_keymap("editline");
+    */
+  } else if (owl_global_is_typwin_active(&g) 
+             && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_MULTILINE) {
+    owl_context_set_editmulti(owl_global_get_context(&g), tw);
+    owl_function_activate_keymap("editmulti");
+  } else {
+    owl_context_set_recv(owl_global_get_context(&g));
+    owl_function_activate_keymap("recv");
+  }
+  /* now actually handle the keypress */
+  ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
+  if (ret!=0 && ret!=1) {
+    owl_function_makemsg("Unable to handle keypress");
+  }
+}
+
 void sig_handler(int sig, siginfo_t *si, void *data)
 {
   if (sig==SIGWINCH) {
@@ -746,7 +776,6 @@ void sig_handler(int sig, siginfo_t *si, void *data)
   } else if (sig==SIGTERM || sig==SIGHUP) {
     owl_function_quit();
   }
-
 }
 
 void usage()

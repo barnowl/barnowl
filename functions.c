@@ -797,7 +797,7 @@ void owl_function_lastmsg_noredisplay()
     owl_global_set_topmsg(&g, curmsg+1);
     owl_global_set_curmsg(&g, curmsg+1);
   } 
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  /* owl_mainwin_redisplay(owl_global_get_mainwin(&g)); */
   owl_global_set_direction_downwards(&g);
 }
 

@@ -561,6 +561,12 @@ typedef struct _owl_obarray {
   owl_list strings;
 } owl_obarray;
 
+typedef struct _owl_dispatch {
+  int fd;           /* FD to watch for dispatch. */
+  void (*cfunc)();  /* C function to dispatch to. */
+  SV *pfunc;        /* Perl function to dispatch to. */
+} owl_dispatch;
+
 typedef struct _owl_global {
   owl_mainwin mw;
   owl_popwin pw;
@@ -631,6 +637,7 @@ typedef struct _owl_global {
   owl_timer zephyr_buddycheck_timer;
   struct termios startup_tio;
   owl_obarray obarray;
+  owl_list dispatchlist;
 } owl_global;
 
 /* globals */
