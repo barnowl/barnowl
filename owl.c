@@ -60,8 +60,6 @@
 int stderr_replace(void);
 #endif
 
-#define STDIN 0
-
 static const char fileIdent[] = "$Id$";
 
 owl_global g;
@@ -211,7 +209,7 @@ int main(int argc, char **argv, char **env)
   /* prepare stdin dispatch */
   {
     owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
-    d->fd = STDIN;
+    d->fd = fileno(stdin);
     d->cfunc = &owl_process_input;
     d->pfunc = NULL;
     owl_select_add_dispatch(d);
@@ -527,6 +525,7 @@ int main(int argc, char **argv, char **env)
       } else {
 	owl_function_set_cursor(sepwin);
       }
+      owl_function_debugmsg("owl.c -- doupdate()");
       doupdate();
       owl_global_set_noneedrefresh(&g);
     }
@@ -674,39 +673,41 @@ void owl_process_input()
   owl_popwin *pw;
   owl_editwin *tw;
 
-  j = wgetch(owl_global_get_curs_typwin(&g));
-  if (j == ERR) return;
+  while (1) {
+    j = wgetch(owl_global_get_curs_typwin(&g));
+    if (j == ERR) return;
 
-  owl_global_set_lastinputtime(&g, time(NULL));
-  pw=owl_global_get_popwin(&g);
-  tw=owl_global_get_typwin(&g);
-
-  /* find and activate the current keymap.
-   * TODO: this should really get fixed by activating
-   * keymaps as we switch between windows... 
-   */
-  if (pw && owl_popwin_is_active(pw) && owl_global_get_viewwin(&g)) {
-    owl_context_set_popless(owl_global_get_context(&g), 
-                            owl_global_get_viewwin(&g));
-    owl_function_activate_keymap("popless");
-  } else if (owl_global_is_typwin_active(&g) 
-             && owl_editwin_get_style(tw) == OWL_EDITWIN_STYLE_ONELINE) {
-    /*
-      owl_context_set_editline(owl_global_get_context(&g), tw);
-      owl_function_activate_keymap("editline");
-    */
-  } else if (owl_global_is_typwin_active(&g) 
-             && owl_editwin_get_style(tw) == OWL_EDITWIN_STYLE_MULTILINE) {
-    owl_context_set_editmulti(owl_global_get_context(&g), tw);
-    owl_function_activate_keymap("editmulti");
-  } else {
-    owl_context_set_recv(owl_global_get_context(&g));
-    owl_function_activate_keymap("recv");
-  }
-  /* now actually handle the keypress */
-  ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
-  if (ret != 0 && ret != 1) {
-    owl_function_makemsg("Unable to handle keypress");
+    owl_global_set_lastinputtime(&g, time(NULL));
+    pw=owl_global_get_popwin(&g);
+    tw=owl_global_get_typwin(&g);
+    
+    /* find and activate the current keymap.
+     * TODO: this should really get fixed by activating
+     * keymaps as we switch between windows... 
+     */
+    if (pw && owl_popwin_is_active(pw) && owl_global_get_viewwin(&g)) {
+      owl_context_set_popless(owl_global_get_context(&g), 
+                              owl_global_get_viewwin(&g));
+      owl_function_activate_keymap("popless");
+    } else if (owl_global_is_typwin_active(&g) 
+               && owl_editwin_get_style(tw) == OWL_EDITWIN_STYLE_ONELINE) {
+      /*
+        owl_context_set_editline(owl_global_get_context(&g), tw);
+        owl_function_activate_keymap("editline");
+      */
+    } else if (owl_global_is_typwin_active(&g) 
+               && owl_editwin_get_style(tw) == OWL_EDITWIN_STYLE_MULTILINE) {
+      owl_context_set_editmulti(owl_global_get_context(&g), tw);
+      owl_function_activate_keymap("editmulti");
+    } else {
+      owl_context_set_recv(owl_global_get_context(&g));
+      owl_function_activate_keymap("recv");
+    }
+    /* now actually handle the keypress */
+    ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
+    if (ret != 0 && ret != 1) {
+      owl_function_makemsg("Unable to handle keypress");
+    }
   }
 }
 
