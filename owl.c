@@ -680,85 +680,87 @@ void owl_process_input()
   WINDOW *typwin;
 
   typwin = owl_global_get_curs_typwin(&g);
-  j.ch = wgetch(typwin);
-  if (j.ch == ERR) return;
+  while (1) {
+    j.ch = wgetch(typwin);
+    if (j.ch == ERR) return;
+    
+    owl_global_set_lastinputtime(&g, time(NULL));
+    pw=owl_global_get_popwin(&g);
+    tw=owl_global_get_typwin(&g);
 
-  owl_global_set_lastinputtime(&g, time(NULL));
-  pw=owl_global_get_popwin(&g);
-  tw=owl_global_get_typwin(&g);
-
-  j.uch = '\0';
-  if (j.ch >= KEY_MIN && j.ch <= KEY_MAX) {
-    /* This is a curses control character. */
-  }
-  else if (j.ch > 0x7f && j.ch < 0xfe) {
-    /* Pull in a full utf-8 character. */
-    int bytes, i;
-    char utf8buf[7];
-    memset(utf8buf, '\0', 7);
-
-    utf8buf[0] = j.ch;
-
-    if ((j.ch & 0xc0) && (~j.ch & 0x20)) bytes = 2;
-    else if ((j.ch & 0xe0) && (~j.ch & 0x10)) bytes = 3;
-    else if ((j.ch & 0xf0) && (~j.ch & 0x08)) bytes = 4;
-    else if ((j.ch & 0xf8) && (~j.ch & 0x04)) bytes = 5;
-    else if ((j.ch & 0xfc) && (~j.ch & 0x02)) bytes = 6;
-    else bytes = 1;
-
-    for (i = 1; i < bytes; i++) {
-      int tmp =  wgetch(typwin);
-      /* If what we got was not a byte, or not a continuation byte */
-      if (tmp > 0xff || !(tmp & 0x80 && ~tmp & 0x40)) {
-        /* ill-formed UTF-8 code unit subsequence, put back the
-           char we just got. */
-        ungetch(tmp);
-        j.ch = ERR;
-        break;
+    j.uch = '\0';
+    if (j.ch >= KEY_MIN && j.ch <= KEY_MAX) {
+      /* This is a curses control character. */
+    }
+    else if (j.ch > 0x7f && j.ch < 0xfe) {
+      /* Pull in a full utf-8 character. */
+      int bytes, i;
+      char utf8buf[7];
+      memset(utf8buf, '\0', 7);
+      
+      utf8buf[0] = j.ch;
+      
+      if ((j.ch & 0xc0) && (~j.ch & 0x20)) bytes = 2;
+      else if ((j.ch & 0xe0) && (~j.ch & 0x10)) bytes = 3;
+      else if ((j.ch & 0xf0) && (~j.ch & 0x08)) bytes = 4;
+      else if ((j.ch & 0xf8) && (~j.ch & 0x04)) bytes = 5;
+      else if ((j.ch & 0xfc) && (~j.ch & 0x02)) bytes = 6;
+      else bytes = 1;
+      
+      for (i = 1; i < bytes; i++) {
+        int tmp =  wgetch(typwin);
+        /* If what we got was not a byte, or not a continuation byte */
+        if (tmp > 0xff || !(tmp & 0x80 && ~tmp & 0x40)) {
+          /* ill-formed UTF-8 code unit subsequence, put back the
+             char we just got. */
+          ungetch(tmp);
+          j.ch = ERR;
+          break;
+        }
+        utf8buf[i] = tmp;
       }
-      utf8buf[i] = tmp;
+      
+      if (j.ch != ERR) {
+        if (g_utf8_validate(utf8buf, -1, NULL)) {
+          j.uch = g_utf8_get_char(utf8buf);
+        }
+        else {
+          j.ch = ERR;
+        }
+      }
+    }
+    else if (j.ch <= 0x7f) {
+      j.uch = j.ch;
     }
     
-    if (j.ch != ERR) {
-      if (g_utf8_validate(utf8buf, -1, NULL)) {
-        j.uch = g_utf8_get_char(utf8buf);
-      }
-      else {
-        j.ch = ERR;
-      }
+    owl_global_set_lastinputtime(&g, time(NULL));
+    /* find and activate the current keymap.
+     * TODO: this should really get fixed by activating
+     * keymaps as we switch between windows... 
+     */
+    if (pw && owl_popwin_is_active(pw) && owl_global_get_viewwin(&g)) {
+      owl_context_set_popless(owl_global_get_context(&g), 
+                              owl_global_get_viewwin(&g));
+      owl_function_activate_keymap("popless");
+    } else if (owl_global_is_typwin_active(&g) 
+               && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_ONELINE) {
+      /*
+        owl_context_set_editline(owl_global_get_context(&g), tw);
+        owl_function_activate_keymap("editline");
+      */
+    } else if (owl_global_is_typwin_active(&g) 
+               && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_MULTILINE) {
+      owl_context_set_editmulti(owl_global_get_context(&g), tw);
+      owl_function_activate_keymap("editmulti");
+    } else {
+      owl_context_set_recv(owl_global_get_context(&g));
+      owl_function_activate_keymap("recv");
     }
-  }
-  else if (j.ch <= 0x7f) {
-    j.uch = j.ch;
-  }
-      
-  owl_global_set_lastinputtime(&g, time(NULL));
-  /* find and activate the current keymap.
-   * TODO: this should really get fixed by activating
-   * keymaps as we switch between windows... 
-   */
-  if (pw && owl_popwin_is_active(pw) && owl_global_get_viewwin(&g)) {
-    owl_context_set_popless(owl_global_get_context(&g), 
-                            owl_global_get_viewwin(&g));
-    owl_function_activate_keymap("popless");
-  } else if (owl_global_is_typwin_active(&g) 
-             && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_ONELINE) {
-    /*
-      owl_context_set_editline(owl_global_get_context(&g), tw);
-      owl_function_activate_keymap("editline");
-    */
-  } else if (owl_global_is_typwin_active(&g) 
-             && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_MULTILINE) {
-    owl_context_set_editmulti(owl_global_get_context(&g), tw);
-    owl_function_activate_keymap("editmulti");
-  } else {
-    owl_context_set_recv(owl_global_get_context(&g));
-    owl_function_activate_keymap("recv");
-  }
-  /* now actually handle the keypress */
-  ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
-  if (ret!=0 && ret!=1) {
-    owl_function_makemsg("Unable to handle keypress");
+    /* now actually handle the keypress */
+    ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
+    if (ret!=0 && ret!=1) {
+      owl_function_makemsg("Unable to handle keypress");
+    }
   }
 }
 
