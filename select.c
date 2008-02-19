@@ -104,7 +104,7 @@ int owl_select_remove_perl_dispatch(int fd)
   return 1;
 }
 
-int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *w, fd_set *e)
+int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
 {
   int i, len, max_fd;
   owl_dispatch *d;
@@ -118,7 +118,6 @@ int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *w, fd_set *e)
   for(i = 0; i < len; i++) {
     d = (owl_dispatch*)owl_list_get_element(dl, i);
     FD_SET(d->fd, r);
-    FD_SET(d->fd, w);
     FD_SET(d->fd, e);
     if (max_fd < d->fd) max_fd = d->fd;
   }
@@ -148,29 +147,29 @@ void owl_select_dispatch(fd_set *fds, int max_fd)
   }
 }
 
-int owl_select_aim_hack(fd_set *fds)
+int owl_select_aim_hack(fd_set *rfds, fd_set *wfds)
 {
   aim_conn_t *cur;
   aim_session_t *sess;
   int max_fd;
 
-  FD_ZERO(fds);
+  FD_ZERO(rfds);
+  FD_ZERO(wfds);
   max_fd = 0;
   sess = owl_global_get_aimsess(&g);
   for (cur = sess->connlist, max_fd = 0; cur; cur = cur->next) {
     if (cur->fd != -1) {
-      FD_SET(cur->fd, fds);
+      FD_SET(cur->fd, rfds);
+      if (cur->status & AIM_CONN_STATUS_INPROGRESS) {
+        /* Yes, we're checking writable sockets here. Without it, AIM
+           login is really slow. */
+        FD_SET(cur->fd, wfds);
+      }
+      
       if (cur->fd > max_fd)
         max_fd = cur->fd;
     }
   }
-  cur = owl_global_get_bosconn(&g);
-  if (cur->fd != -1) {
-    FD_SET(cur->fd, fds);
-    if (cur->fd > max_fd)
-      max_fd = cur->fd;
-  }
-  
   return max_fd;
 }
 
@@ -178,15 +177,14 @@ void owl_select()
 {
   int i, max_fd, aim_max_fd, aim_done;
   fd_set r;
-  fd_set w;
   fd_set e;
-  fd_set aim_fds;
+  fd_set aim_rfds, aim_wfds;
   struct timeval timeout;
 
   timeout.tv_sec = 1;
   timeout.tv_usec = 0;
 
-  max_fd = owl_select_dispatch_prepare_fd_sets(&r, &w, &e);
+  max_fd = owl_select_dispatch_prepare_fd_sets(&r, &e);
 
   /* AIM HACK: 
    *
@@ -199,33 +197,30 @@ void owl_select()
    *  dispatchers. --asedeno
    */
   aim_done = 1;
-  FD_ZERO(&aim_fds);
-  FD_ZERO(&w);
+  FD_ZERO(&aim_rfds);
+  FD_ZERO(&aim_wfds);
   if (owl_global_is_doaimevents(&g)) {
     aim_done = 0;
-    aim_max_fd = owl_select_aim_hack(&aim_fds);
+    aim_max_fd = owl_select_aim_hack(&aim_rfds, &aim_wfds);
     if (max_fd < aim_max_fd) max_fd = aim_max_fd;
     for(i = 0; i <= aim_max_fd; i++) {
-      if (FD_ISSET(i, &aim_fds)) {
+      if (FD_ISSET(i, &aim_rfds)) {
         FD_SET(i, &r);
-        FD_SET(i, &w); /* Yes, we're checking writable sockets
-                          here. Without it, AIM login is really
-                          slow. */
         FD_SET(i, &e);
       }
     }
   }
   /* END AIM HACK */
-  
-  if ( select(max_fd, &r, &w, &e, &timeout) ) {
+
+  if ( select(max_fd+1, &r, &aim_wfds, &e, &timeout) ) {
     /* Merge fd_sets and clear AIM FDs. */
     for(i = 0; i <= max_fd; i++) {
       /* Merge all interesting FDs into one set, since we have a
          single dispatch per FD. */
-      if (FD_ISSET(i, &r) || FD_ISSET(i, &w) || FD_ISSET(i, &e)) {
+      if (FD_ISSET(i, &r) || FD_ISSET(i, &aim_wfds) || FD_ISSET(i, &e)) {
         /* AIM HACK: no separate dispatch, just process here if
            needed, and only once per run through. */
-        if (!aim_done && FD_ISSET(i, &aim_fds)) {
+        if (!aim_done && (FD_ISSET(i, &aim_rfds) || FD_ISSET(i, &aim_wfds))) {
           owl_process_aim();
           aim_done = 1;
         }
@@ -234,7 +229,6 @@ void owl_select()
         }
       }
     }
-
     /* NOTE: the same dispatch function is called for both exceptional
        and read ready FDs. */
     owl_select_dispatch(&r, max_fd);
