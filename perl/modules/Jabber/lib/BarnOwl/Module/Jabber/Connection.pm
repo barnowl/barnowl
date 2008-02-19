@@ -109,6 +109,45 @@ sub MUCs {
 }
 
 
+=head2 getSID
+
+Returns the StreamID for this connection.
+
+=cut
+
+sub getStreamID {
+    my $self = shift;
+    return $self->{SESSION}->{id} || "";
+}
+
+=head2 getSocket
+
+Returns the IO::Socket for this connection.
+
+=cut
+
+sub getSocket {
+    my $self = shift;
+    my $sid = getStreamID($self);
+    return $self->{STREAM}->GetSock($sid) || -1;
+}
+
+=head2 OwlProcess
+
+Non-blocking connection processing. For use in a select loop.
+
+=cut
+
+sub OwlProcess {
+    my $self = shift;
+    my $status = $self->Process(0);
+    if ( !defined($status) ) {
+        my $jid = $self->{SESSION}->{FULLJID};
+        BarnOwl::error("Jabber account $jid disconnected!");
+        BarnOwl::Module::Jabber::do_logout($jid);
+    }
+}
+
 =head1 SEE ALSO
 
 L<Net::Jabber::Client>, L<BarnOwl::Module::Jabber>

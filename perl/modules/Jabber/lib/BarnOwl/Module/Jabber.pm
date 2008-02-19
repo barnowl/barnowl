@@ -115,7 +115,7 @@ sub onMainLoop {
             $conn->removeConnection($jid);
             BarnOwl::error("Connection for $jid undefined -- error in reload?");
         }
-
+        # We keep this in the mainloop hook for keep-alives
         my $status = $client->Process(0);
         if ( !defined($status) ) {
             BarnOwl::error("Jabber account $jid disconnected!");
@@ -123,8 +123,9 @@ sub onMainLoop {
         }
         if ($::shutdown) {
             do_logout($jid);
-            return;
+            next;
         }
+
         if ($vars{status_changed}) {
             my $p = new Net::Jabber::Presence;
             $p->SetShow($vars{show}) if $vars{show};
@@ -386,6 +387,11 @@ sub do_login {
 		my $fullJid = $client->{SESSION}->{FULLJID} || $jidStr;
 		$conn->renameConnection($jidStr, $fullJid);
                 queue_admin_msg("Connected to jabber as $fullJid");
+                # The remove_dispatch() method is called from the
+                # ConnectionManager's removeConnection() method.
+                $client->{fileno} = $client->getSocket()->fileno();
+                #queue_admin_msg("Connected to jabber as $fullJid ($client->{fileno})");
+                BarnOwl::add_dispatch($client->{fileno}, sub { $client->OwlProcess() });
             }
         }
     }

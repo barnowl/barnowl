@@ -341,3 +341,17 @@ new_variable_bool_internal(name, ival, summ, desc)
 				      summ,
 				      desc,
 				      ival);
+
+void
+add_dispatch(fd, cb)
+	int fd
+	SV * cb
+	CODE:
+        SvREFCNT_inc(cb);
+	owl_select_add_perl_dispatch(fd, cb);
+
+void
+remove_dispatch(fd)
+	int fd
+	CODE:
+	owl_select_remove_perl_dispatch(fd);
