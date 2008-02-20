@@ -1046,6 +1046,7 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
       _owl_editwin_linewrap_word(e);
       /* we may have added a character. */
       if (i < save) save += e->bufflen - len;
+      _owl_editwin_set_xy_by_index(e, i);
     }
 
     /* did we hit the end of a line too soon? */
