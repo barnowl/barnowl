@@ -124,7 +124,7 @@ sub on_admin_msg {
     my ($self, $evt) = @_;
     BarnOwl::admin_message("IRC",
             BarnOwl::Style::boldify('IRC ' . $evt->type . ' message from '
-                . $evt->alias) . "\n"
+                . $self->alias) . "\n"
             . strip_irc_formatting(join '\n', cdr $evt->args));
 }
 

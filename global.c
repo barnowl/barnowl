@@ -443,10 +443,8 @@ void owl_global_resize(owl_global *g, int x, int y) {
   g->needrefresh=1;
   owl_mainwin_redisplay(&(g->mw));
   sepbar(NULL);
+  owl_editwin_redisplay(&(g->tw), 0);
 
-  if (owl_global_is_typwin_active(g)) {
-    owl_editwin_redisplay(&(g->tw), 0);
-  }	
   /* TODO: this should handle other forms of popwins */
   if (owl_popwin_is_active(owl_global_get_popwin(g)) 
       && owl_global_get_viewwin(g)) {
