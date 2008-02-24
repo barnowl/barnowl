@@ -166,7 +166,7 @@ char *owl_text_htmlstrip(char *in)
     }
 
     /* look for things we know */
-    if (!strncasecmp(ptr2, "<BODY ", 6) ||
+    if (!strncasecmp(ptr2, "<BODY", 5) ||
 	!strncasecmp(ptr2, "<FONT", 5) ||
 	!strncasecmp(ptr2, "<HTML", 5) ||
 	!strncasecmp(ptr2, "</FONT", 6) ||
