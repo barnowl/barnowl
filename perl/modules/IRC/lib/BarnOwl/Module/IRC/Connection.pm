@@ -125,22 +125,22 @@ sub on_admin_msg {
     BarnOwl::admin_message("IRC",
             BarnOwl::Style::boldify('IRC ' . $evt->type . ' message from '
                 . $self->alias) . "\n"
-            . strip_irc_formatting(join '\n', cdr $evt->args));
+            . strip_irc_formatting(join '\n', cdr($evt->args)));
 }
 
 sub on_motdstart {
     my ($self, $evt) = @_;
-    $self->motd(join "\n", cdr $evt->args);
+    $self->motd(join "\n", cdr($evt->args));
 }
 
 sub on_motd {
     my ($self, $evt) = @_;
-    $self->motd(join "\n", $self->motd, cdr $evt->args);
+    $self->motd(join "\n", $self->motd, cdr($evt->args));
 }
 
 sub on_endofmotd {
     my ($self, $evt) = @_;
-    $self->motd(join "\n", $self->motd, cdr $evt->args);
+    $self->motd(join "\n", $self->motd, cdr($evt->args));
     if(!$self->connected) {
         BarnOwl::admin_message("IRC", "Connected to " .
                                $self->server . " (" . $self->alias . ")");
