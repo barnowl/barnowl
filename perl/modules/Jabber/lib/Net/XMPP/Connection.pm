@@ -213,6 +213,7 @@ sub Disconnect
     $self->{CONNECTED} = 0;
     $self->{DISCONNECTED} = 1;
     $self->{DEBUG}->Log1("Disconnect: bye bye");
+    $self->{DEBUG}->GetHandle()->close();
 }
 
 
