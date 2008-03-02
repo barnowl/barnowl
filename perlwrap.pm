@@ -122,6 +122,16 @@ caught and passed to C<error>.
 
 Returns the number of colors this BarnOwl is capable of displaying
 
+=head2 add_dispatch FD CALLBACK
+
+Adds a file descriptor to C<BarnOwl>'s internal C<select()>
+loop. C<CALLBACK> will be invoked whenever data is available to be
+read from C<FD>.
+
+=head2 remove_dispatch FD
+
+Remove a file descriptor previously registered via C<add_dispatch>
+
 =cut
 
 
@@ -651,9 +661,9 @@ new message to its message list
 
 =item $mainLoop
 
-Called on B<every pass> through the C<BarnOwl> main loop. Any
-functions with this hook should be very cheap, as they are very
-frequently by the runtime.
+Called on every pass through the C<BarnOwl> main loop. This is
+guaranteed to be called at least once/sec and may be called more
+frequently.
 
 =item $getBuddyList
 
