@@ -376,6 +376,9 @@ int _owl_editwin_linewrap_word(owl_editwin *e)
       *ptr1 = '\n';
       return 0;
     }
+    else if (c == '\n') {
+      return 0;
+    }
     ptr1 = g_utf8_find_prev_char(start, ptr1);
   }
   return -1;
