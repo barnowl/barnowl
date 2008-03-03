@@ -414,13 +414,21 @@ void owl_global_resize(owl_global *g, int x, int y) {
   /* get the new size */
   ioctl(STDIN_FILENO, TIOCGWINSZ, &size);
   if (x==0) {
-    g->lines=size.ws_row;
+    if (size.ws_row) {
+      g->lines=size.ws_row;
+    } else {
+      g->lines=LINES;
+    } 
   } else {
-    g->lines=x;
+      g->lines=x;
   }
 
   if (y==0) {
-    g->cols=size.ws_col;
+    if (size.ws_col) {
+      g->cols=size.ws_col;
+    } else {
+      g->cols=COLS;
+    } 
   } else {
     g->cols=y;
   }
