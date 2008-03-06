@@ -22,7 +22,7 @@ use BarnOwl::Hooks;
 sub fail {
     my $msg = shift;
     BarnOwl::admin_message('Twitter Error', $msg);
-    die;
+    die("Twitter Error: $msg\n");
 }
 
 my $user     = BarnOwl::zephyr_getsender();
@@ -31,7 +31,7 @@ my $instance = "status";
 my $opcode   = "twitter";
 
 # Don't redefine variables if they already exist
-# This is a workaround for  http://barnowl.mit.edu/trac/ticket/44
+# This is a workaround for http://barnowl.mit.edu/trac/ticket/44
 # Which was fixed in svn r819
 if(BarnOwl::getvar('twitter:class') eq '') {
     BarnOwl::new_variable_string('twitter:class',
@@ -85,6 +85,23 @@ sub handle_message {
 sub twitter {
     my $msg = shift;
     $twitter->update($msg);
+}
+
+BarnOwl::new_command(twitter => \&cmd_twitter, {
+    summary     => 'Update Twitter from BarnOwl',
+    usage       => 'twitter [message]',
+    description => 'Update Twitter. If MESSAGE is provided, use it as your status.'
+    . "\nOtherwise, prompt for a status message to use."
+   });
+
+sub cmd_twitter {
+    my $cmd = shift;
+    if(@_) {
+        my $status = join(" ", @_);
+        twitter($status);
+    } else {
+      BarnOwl::start_edit_win('What are you doing?', \&twitter);
+    }
 }
 
 $BarnOwl::Hooks::receiveMessage->add(\&handle_message);
