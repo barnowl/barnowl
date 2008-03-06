@@ -9,6 +9,8 @@ use PAR (BarnOwl::get_config_dir() . "/modules/*.par");
 
 sub load_all {
     PAR::reload_libs();
+    PAR->import(BarnOwl::get_data_dir() . "/modules/*.par");
+    PAR->import(BarnOwl::get_config_dir() . "/modules/*.par");
     my %modules;
     my @modules;
 

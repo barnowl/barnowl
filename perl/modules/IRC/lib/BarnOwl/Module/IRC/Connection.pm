@@ -50,8 +50,8 @@ sub new {
     $self->conn->add_handler(['msg', 'notice', 'public', 'caction'],
             sub { shift; $self->on_msg(@_) });
     $self->conn->add_handler(['welcome', 'yourhost', 'created',
-            'luserclient', 'luserop', 'luserchannels', 'luserme',
-            'notice', 'error'],
+                              'luserclient', 'luserop', 'luserchannels', 'luserme',
+                              'error'],
             sub { shift; $self->on_admin_msg(@_) });
     $self->conn->add_handler(['myinfo', 'map', 'n_local', 'n_global',
             'luserconns'],
