@@ -88,7 +88,7 @@ reference, with the text the user entered
 Like C<start_question>, but echoes the user's input as C<*>s when they
 input.
 
-=head2 start_editwin PROMPT CALLBACK
+=head2 start_edit_win PROMPT CALLBACK
 
 Like C<start_question>, but displays C<PROMPT> on a line of its own
 and opens the editwin. If the user cancels the edit win, C<CALLBACK>
