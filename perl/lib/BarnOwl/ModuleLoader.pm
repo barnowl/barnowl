@@ -39,7 +39,7 @@ sub load_all {
     for my $class (keys %modules) {
         if(!defined eval "use BarnOwl::Module::$class") {
             # BarnOwl::error("Unable to load module $class: $!") if $!;
-            BarnOwl::error("Unable to load module $class: $@") if $@;
+            BarnOwl::error("Unable to load module $class: \n$@\n") if $@;
         }
     }
 
