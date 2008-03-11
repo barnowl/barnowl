@@ -33,7 +33,7 @@ my $opcode   = "twitter";
 # Don't redefine variables if they already exist
 # This is a workaround for http://barnowl.mit.edu/trac/ticket/44
 # Which was fixed in svn r819
-if(BarnOwl::getvar('twitter:class') eq '') {
+if((BarnOwl::getvar('twitter:class')||'') eq '') {
     BarnOwl::new_variable_string('twitter:class',
                                {
                                    default => $class,
