@@ -280,6 +280,8 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
 		  
   BIND_CMD("w",   "openurl",          "open a URL using a webbrowser");
 
+  BIND_CMD("W",   "start-command webzephyr ", "start a webzephyr command");
+
   BIND_CMD("C-c",  "",                "no effect in this mode");
   BIND_CMD("C-g",  "",                "no effect in this mode");
 

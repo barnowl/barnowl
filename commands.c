@@ -962,6 +962,8 @@ owl_cmd commands_to_init[]
 		  "exits the popless window",
 		  "", ""),
 
+  OWLCMD_ALIAS("webzephyr", "zwrite daemon.webzephyr -c webzephyr -i"),
+
   /* This line MUST be last! */
   { NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
