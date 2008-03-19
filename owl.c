@@ -426,6 +426,11 @@ int main(int argc, char **argv, char **env)
   nexttimediff=10;
   nexttime=time(NULL);
 
+#ifdef HAVE_LIBZEPHYR
+  /* Check for any zephyrs that have come in while we've done init. */
+  owl_zephyr_process_events();
+#endif
+  
   owl_function_debugmsg("startup: entering main loop");
   /* main loop */
   while (1) {
