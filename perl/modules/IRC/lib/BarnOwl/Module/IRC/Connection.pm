@@ -157,7 +157,7 @@ sub on_join {
     my $msg = $self->new_message($evt,
         loginout   => 'login',
         channel    => $evt->to,
-        replycmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
+        replycmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick,
         replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
         );
     BarnOwl::queue_message($msg);
@@ -168,7 +168,7 @@ sub on_part {
     my $msg = $self->new_message($evt,
         loginout   => 'logout',
         channel    => $evt->to,
-        replycmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
+        replycmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick,
         replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
         );
     BarnOwl::queue_message($msg);
