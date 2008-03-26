@@ -24,6 +24,7 @@ use Net::Jabber;
 use Net::Jabber::MUC;
 use Net::DNS;
 use Getopt::Long;
+Getopt::Long::Configure(qw(no_getopt_compat prefix_pattern="-|--"));
 
 our $VERSION = 0.1;
 
@@ -476,7 +477,7 @@ sub cmd_jwrite {
         'subject=s' => \$jwrite_subject,
         'account=s' => \$from,
         'id=s'     =>  \$jwrite_sid,
-    );
+    ) or die("Usage: jwrite JID [-t thread] [-s 'subject'] [-a account]\n");
     $jwrite_type = 'groupchat' if $gc;
 
     if ( scalar @ARGV != 1 ) {
@@ -566,7 +567,7 @@ sub cmd_jmuc {
         }
 
         my $getopt = Getopt::Long::Parser->new;
-        $getopt->configure('pass_through');
+        $getopt->configure('pass_through', 'no_getopt_compat');
         $getopt->getoptions( 'account=s' => \$jid );
         $jid ||= defaultJID();
         if ($jid) {
@@ -730,7 +731,7 @@ sub cmd_jroster {
         my @groups;
         my $purgeGroups;
         my $getopt = Getopt::Long::Parser->new;
-        $getopt->configure('pass_through');
+        $getopt->configure('pass_through', 'no_getopt_compat');
         $getopt->getoptions(
             'account=s' => \$jid,
             'group=s' => \@groups,
