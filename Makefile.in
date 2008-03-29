@@ -46,14 +46,19 @@ AUTOGEN=$(GEN_C) $(GEN_H)
 
 HEADERS=$(GEN_H) owl.h config.h test.h
 
-%.o: %.c $(HEADERS)
-	$(CC) -c $(CFLAGS) $< -o $@
-
 $(EXE): $(AUTOGEN) $(OBJS) owl.o libfaim
 	$(ATHSTATIC) $(CC) -o $(EXE) owl.o $(OBJS) $(LDFLAGS) $(LIBS)
 
 tester: $(AUTOGEN) $(OBJS) tester.o
 	$(ATHSTATIC) $(CC) -o tester tester.o $(OBJS) $(LDFLAGS) $(LIBS)
+
+%.o: %.c $(HEADERS)
+	$(CC) -c $(CFLAGS) $< -o $@
+
+# zcrypt is old crufty DES code I don't want to touch
+# Disable all warnings when compiling it
+zcrypt.o: zcrypt.c $(HEADERS)
+	$(CC) -c $(CFLAGS) $< -w -o $@
 
 test: tester
 	./tester reg
@@ -105,8 +110,7 @@ tags: TAGS
 TAGS: $(BASE_SRCS) $(OWL_SRC) $(TESTER_SRC) $(GEN_C) owl.h $(GEN_H)
 	etags $(BASE_SRCS) $(OWL_SRC) $(TESTER_SRC) $(GEN_C) owl.h $(GEN_H)
 
-$(BASE_OBJS) varstubs.h:: owl.h config.h owl_prototypes.h
-#$(BASE_OBJS) varstubs.h:: owl.h config.h
+$(BASE_OBJS) varstubs.h: owl.h config.h owl_prototypes.h
 
 libfaim: libfaim/libfaim.a
 
