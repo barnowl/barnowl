@@ -103,7 +103,7 @@ owl_prototypes.h: codelist.pl varstubs.c $(BASE_SRCS)
 	      mv -f owl_prototypes.h.new $@; }
 #owl_prototypes.h:
 
-.PHONY: tags clean distclean proto test
+.PHONY: tags clean distclean proto test check-syntax
 
 tags: TAGS
 
@@ -137,3 +137,7 @@ install: all installdirs
 
 installdirs: mkinstalldirs
 	${srcdir}/mkinstalldirs ${DESTDIR}${bindir} ${DESTDIR}${mandir}/man1 ${DESTDIR}${datadir}
+
+# For emacs flymake-mode
+check-syntax: proto
+	$(CC) $(CFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES)
