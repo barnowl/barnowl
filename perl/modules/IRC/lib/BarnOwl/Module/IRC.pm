@@ -208,7 +208,12 @@ sub process_msg {
     my $body = shift;
     # Strip whitespace. In the future -- send one message/line?
     $body =~ tr/\n\r/  /;
-    $conn->conn->privmsg($to, $body);
+    if ($body =~ /^\/me (.*)/) {
+        $conn->conn->me($to, $1);
+        $body = BarnOwl::Style::boldify($conn->nick.' '.$1);
+    } else {
+        $conn->conn->privmsg($to, $body);
+    }
     my $msg = BarnOwl::Message->new(
         type        => 'IRC',
         direction   => is_private($to) ? 'out' : 'in',
