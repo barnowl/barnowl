@@ -257,7 +257,7 @@ void owl_function_zwrite_setup(char *line)
   /* check the arguments */
   ret=owl_zwrite_create_from_line(&z, line);
   if (ret) {
-    owl_function_error("Error in zwrite arugments");
+    owl_function_error("Error in zwrite arguments");
     owl_zwrite_free(&z);
     return;
   }

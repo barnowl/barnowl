@@ -179,7 +179,7 @@ owl_cmd commands_to_init[]
 	      "print a variable value",
 	      "print <variable>\n"
 	      "print",
-	      "Print the value of the named variable.  If no arugments\n"
+	      "Print the value of the named variable.  If no arguments\n"
 	      "are used print the value of all variables.\n"),
 
   OWLCMD_ARGS("startup", owl_command_startup, OWL_CTX_ANY,
@@ -598,7 +598,7 @@ owl_cmd commands_to_init[]
 	      "view only messages similar to the current message",
 	      "smartnarrow [-i | --instance]",
 	      "If the curmsg is a personal message narrow\n"
-	      "   to the converstaion with that user.\n"
+	      "   to the conversation with that user.\n"
 	      "If the curmsg is a class message, instance foo, recip *\n"
 	      "   message, narrow to the class, inst.\n"
 	      "If the curmsg is a class message then narrow\n"
@@ -610,7 +610,7 @@ owl_cmd commands_to_init[]
 	      "returns the name of a filter based on the current message",
 	      "smartfilter [-i | --instance]",
 	      "If the curmsg is a personal message, the filter is\n"
-	      "   the converstaion with that user.\n"
+	      "   the conversation with that user.\n"
 	      "If the curmsg is a class message, instance foo, recip *\n"
 	      "   message, the filter is the class, inst.\n"
 	      "If the curmsg is a class message, the filter is that class.\n"
