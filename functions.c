@@ -1924,7 +1924,7 @@ void owl_function_status()
   owl_fmtext_append_normal(&fm, OWL_VERSION_STRING);
   owl_fmtext_append_normal(&fm, "\n");
 
-  owl_fmtext_append_normal(&fm, "  Startup Arugments: ");
+  owl_fmtext_append_normal(&fm, "  Startup Arguments: ");
   owl_fmtext_append_normal(&fm, owl_global_get_startupargs(&g));
   owl_fmtext_append_normal(&fm, "\n");
 
