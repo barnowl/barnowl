@@ -391,7 +391,7 @@ char *owl_zephyr_get_field(void *n, int j)
 {
   return(owl_strdup(""));
 }
-char *owl_zephyr_get_field_as_utf8(ZNotice_t *n, int j)
+char *owl_zephyr_get_field_as_utf8(void *n, int j)
 {
   return owl_zephyr_get_field(n, j);
 }
