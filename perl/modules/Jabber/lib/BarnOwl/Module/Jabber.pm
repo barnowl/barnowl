@@ -24,7 +24,7 @@ use Net::Jabber;
 use Net::Jabber::MUC;
 use Net::DNS;
 use Getopt::Long;
-Getopt::Long::Configure(qw(no_getopt_compat prefix_pattern="-|--"));
+Getopt::Long::Configure(qw(no_getopt_compat prefix_pattern=-|--));
 
 our $VERSION = 0.1;
 
