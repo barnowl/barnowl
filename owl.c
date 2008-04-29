@@ -392,12 +392,8 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: setting startup and default style");
   if (0 != strcmp(owl_global_get_default_style(&g), "__unspecified__")) {
     /* the style was set by the user: leave it alone */
-  } else if (owl_global_is_config_format(&g)) {
-    owl_global_set_default_style(&g, "perl");
-  } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
-    owl_global_set_default_style(&g, "default");
   } else {
-    owl_global_set_default_style(&g, "basic");
+    owl_global_set_default_style(&g, "default");
   }
 
   /* zlog in if we need to */
