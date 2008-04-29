@@ -67,6 +67,7 @@ typedef void WINDOW;
 /* aim.h defines bool */
 #define HAS_BOOL
 #include <perl.h>
+#include "owl_perl.h"
 #undef logout
 #include "XSUB.h"
 #else
@@ -142,9 +143,6 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_SCROLLMODE_CENTER      3
 #define OWL_SCROLLMODE_PAGED       4
 #define OWL_SCROLLMODE_PAGEDCENTER 5
-
-#define OWL_STYLE_TYPE_INTERNAL  0
-#define OWL_STYLE_TYPE_PERL      1
 
 #define OWL_TAB               3  /* This *HAS* to be the size of TABSTR below */
 #define OWL_TABSTR        "   "
@@ -361,10 +359,7 @@ typedef struct _owl_fmtext_cache {
 
 typedef struct _owl_style {
   char *name;
-  char *description;
-  int type;
-  char *perlfuncname;
-  void (*formatfunc) (owl_fmtext *fm, owl_message *m);
+  SV *perlobj;
 } owl_style;
 
 typedef struct _owl_mainwin {
