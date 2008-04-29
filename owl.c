@@ -588,7 +588,7 @@ int owl_process_message(owl_message *m) {
 
   if(owl_message_is_direction_in(m)) {
     /* let perl know about it*/
-    owl_perlconfig_getmsg(m, 0, NULL);
+    owl_perlconfig_getmsg(m, NULL);
 
     /* do we need to autoreply? */
     if (owl_global_is_zaway(&g) && !owl_message_get_attribute_value(m, "isauto")) {

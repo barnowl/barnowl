@@ -154,13 +154,6 @@ if(!$configfile && -f $ENV{HOME} . "/.barnowlconf") {
 $configfile ||= $ENV{HOME}."/.owlconf";
 
 # populate global variable space for legacy owlconf files
-sub _format_msg_legacy_wrap {
-    my ($m) = @_;
-    $m->legacy_populate_global();
-    return &BarnOwl::format_msg($m);
-}
-
-# populate global variable space for legacy owlconf files
 sub _receive_msg_legacy_wrap {
     my ($m) = @_;
     $m->legacy_populate_global();
@@ -701,10 +694,12 @@ sub _load_owlconf {
         package BarnOwl;
         if(*BarnOwl::format_msg{CODE}) {
             # if the config defines a legacy formatting function, add 'perl' as a style 
-            # BarnOwl::_create_style("perl", "BarnOwl::_format_msg_legacy_wrap",
-            #                        "User-defined perl style that calls BarnOwl::format_msg"
-            #                        . " with legacy global variable support");
-            # BarnOwl::set("-q default_style perl");
+            BarnOwl::create_style("perl", BarnOwl::Style::Legacy->new(
+                "BarnOwl::format_msg",
+                "User-defined perl style that calls BarnOwl::format_msg"
+                . " with legacy global variable support",
+                1));
+             BarnOwl::set("-q default_style perl");
         }
     }
 }
@@ -778,7 +773,7 @@ sub format_message($)
 
 sub description {"Default style";}
 
-BarnOwl::_create_style("default", "BarnOwl::Style::Default");
+BarnOwl::create_style("default", "BarnOwl::Style::Default");
 
 ################################################################################
 
@@ -868,7 +863,7 @@ our @ISA=qw(BarnOwl::Style::Default);
 
 sub description {"Compatability alias for the default style";}
 
-BarnOwl::_create_style("basic", "BarnOwl::Style::Basic");
+BarnOwl::create_style("basic", "BarnOwl::Style::Basic");
 
 package BarnOwl::Style::OneLine;
 ################################################################################
@@ -895,7 +890,7 @@ sub format_message($) {
 
 sub description {"Formats for one-line-per-message"}
 
-BarnOwl::_create_style("oneline", "BarnOwl::Style::OneLine");
+BarnOwl::create_style("oneline", "BarnOwl::Style::OneLine");
 
 ################################################################################
 
@@ -993,6 +988,30 @@ sub boldify($)
         $txt =~ s/\)/\)\@b\[\)\]\@b\(/g;
         return $txt . ')';
     }
+}
+
+package BarnOwl::Style::Legacy;
+
+sub new {
+    my $class = shift;
+    my $func  = shift;
+    my $desc  = shift;
+    my $useglobals = shift;
+    $useglobals = 0 unless defined($useglobals);
+    return bless {function    => $func,
+                  description => $desc,
+                  useglobals  => $useglobals}, $class;
+}
+
+sub description {shift->{description}};
+
+sub format_message {
+    my $self = shift;
+    if($self->{useglobals}) {
+        $_[0]->legacy_populate_global();
+    }
+    no strict 'refs';
+    goto \&{$self->{function}};
 }
 
 

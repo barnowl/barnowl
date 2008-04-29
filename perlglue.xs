@@ -255,12 +255,10 @@ error(text)
 	}
 
 void
-_create_style(name, object)
+create_style(name, object)
      char *name
      SV  *object
      PREINIT:
-		/* This is to allow us to bootstrap the default style before the
-		command architecture has been initialized */
 		owl_style *s;
      CODE:
 	{
