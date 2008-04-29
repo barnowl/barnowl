@@ -255,10 +255,9 @@ error(text)
 	}
 
 void
-_create_style(name, function, description)
+_create_style(name, object)
      char *name
-     char *function
-     char *description
+     SV  *object
      PREINIT:
 		/* This is to allow us to bootstrap the default style before the
 		command architecture has been initialized */
@@ -266,7 +265,7 @@ _create_style(name, function, description)
      CODE:
 	{
 		s = owl_malloc(sizeof(owl_style));
-		owl_style_create_perl(s, name, function, description);
+		owl_style_create_perl(s, name, object);
 		owl_global_add_style(&g, s);
 	}
 

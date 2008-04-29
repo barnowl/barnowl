@@ -701,10 +701,10 @@ sub _load_owlconf {
         package BarnOwl;
         if(*BarnOwl::format_msg{CODE}) {
             # if the config defines a legacy formatting function, add 'perl' as a style 
-            BarnOwl::_create_style("perl", "BarnOwl::_format_msg_legacy_wrap",
-                                   "User-defined perl style that calls BarnOwl::format_msg"
-                                   . " with legacy global variable support");
-            BarnOwl::set("-q default_style perl");
+            # BarnOwl::_create_style("perl", "BarnOwl::_format_msg_legacy_wrap",
+            #                        "User-defined perl style that calls BarnOwl::format_msg"
+            #                        . " with legacy global variable support");
+            # BarnOwl::set("-q default_style perl");
         }
     }
 }
@@ -762,20 +762,23 @@ package BarnOwl::Style::Default;
 ################################################################################
 sub format_message($)
 {
+    my $self = shift;
     my $m = shift;
 
     if ( $m->is_loginout) {
-        return format_login($m);
+        return $self->format_login($m);
     } elsif($m->is_ping && $m->is_personal) {
-        return ( "\@b(PING) from \@b(" . $m->pretty_sender . ")\n" );
+        return $self->format_ping($m);
     } elsif($m->is_admin) {
-        return "\@bold(OWL ADMIN)\n" . indentBody($m);
+        return $self->format_admin($m);
     } else {
-        return format_chat($m);
+        return $self->format_chat($m);
     }
 }
 
-BarnOwl::_create_style("default", "BarnOwl::Style::Default::format_message", "Default style");
+sub description {"Default style";}
+
+BarnOwl::_create_style("default", "BarnOwl::Style::Default");
 
 ################################################################################
 
@@ -786,6 +789,7 @@ sub time_hhmm {
 }
 
 sub format_login($) {
+    my $self = shift;
     my $m = shift;
     return sprintf(
         '@b<%s%s> for @b(%s) (%s) %s',
@@ -797,7 +801,20 @@ sub format_login($) {
        );
 }
 
+sub format_ping {
+    my $self = shift;
+    my $m = shift;
+    return "\@b(PING) from \@b(" . $m->pretty_sender . ")\n";
+}
+
+sub format_admin {
+    my $self = shift;
+    my $m = shift;
+    return "\@bold(OWL ADMIN)\n" . indentBody($m);
+}
+
 sub format_chat($) {
+    my $self = shift;
     my $m = shift;
     my $header;
     if ( $m->is_personal ) {
@@ -845,36 +862,45 @@ sub indentBody($)
     return "    ".$body;
 }
 
+package BarnOwl::Style::Basic;
+
+our @ISA=qw(BarnOwl::Style::Default);
+
+sub description {"Compatability alias for the default style";}
+
+BarnOwl::_create_style("basic", "BarnOwl::Style::Basic");
+
 package BarnOwl::Style::OneLine;
 ################################################################################
 # Branching point for various formatting functions in this style.
 ################################################################################
 use constant BASE_FORMAT => '%s %-13.13s %-11.11s %-12.12s ';
 sub format_message($) {
+  my $self = shift;
   my $m = shift;
 
-#  if ( $m->is_zephyr ) {
-#    return format_zephyr($m);
-#  }
   if ( $m->is_loginout ) {
-    return format_login($m);
+    return $self->format_login($m);
   }
   elsif ( $m->is_ping) {
-    return format_ping($m);
+    return $self->format_ping($m);
   }
   elsif ( $m->is_admin || $m->is_loopback) {
-    return format_local($m);
+    return $self->format_local($m);
   }
   else {
-    return format_chat($m);
+    return $self->format_chat($m);
   }
 }
 
-BarnOwl::_create_style("oneline", "BarnOwl::Style::OneLine::format_message", "Formats for one-line-per-message");
+sub description {"Formats for one-line-per-message"}
+
+BarnOwl::_create_style("oneline", "BarnOwl::Style::OneLine");
 
 ################################################################################
 
 sub format_login($) {
+  my $self = shift;
   my $m = shift;
   return sprintf(
     BASE_FORMAT,
@@ -897,6 +923,7 @@ sub format_ping($) {
 
 sub format_chat($)
 {
+  my $self = shift;
   my $m = shift;
   my $dir = lc($m->{direction});
   my $dirsym = '-';
@@ -937,6 +964,7 @@ sub format_chat($)
 # Format locally generated messages
 sub format_local($)
 {
+  my $self = shift;
   my $m = shift;
   my $type = uc($m->{type});
   my $line = sprintf(BASE_FORMAT, '<', $type, '', '');

@@ -101,14 +101,6 @@ owl_cmd commands_to_init[]
 	      "Use 'show keymaps' to see the existing keymaps.\n"
 	      "Key sequences may be things like M-C-t or NPAGE.\n"),
 
-  OWLCMD_ARGS("style", owl_command_style, OWL_CTX_ANY,
-	      "creates a new style",
-	      "style <name> perl <function_name>",
-	      "Creates a new style for formatting messages.\n"
-	      "A style named <name> will be created that will\n"
-	      "format messages using the perl function <function_name>.\n\n"
-	      "SEE ALSO: show styles, view -s, filter -s\n"),
-
   OWLCMD_ARGS("zwrite", owl_command_zwrite, OWL_CTX_INTERACTIVE,
 	      "send a zephyr",
 	      "zwrite [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcde] [<user> ...] [-m <message...>]",
@@ -1674,27 +1666,6 @@ char *owl_command_bindkey(int argc, char **argv, char *buff)
   }
   return NULL;
 }
-
-char *owl_command_style(int argc, char **argv, char *buff) {
-  owl_style *s;
-
-  /* Usage: style <name> perl <function> */
-  if (argc != 4 || strcmp(argv[2], "perl")) {
-    owl_function_makemsg("Usage: style <name> perl <function>");
-    return NULL;
-  }
-  if (!owl_perlconfig_is_function(argv[3])) {
-    owl_function_makemsg("Unable to create style '%s': no perl function '%s'",
-			 argv[1], argv[3]);
-    return NULL;
-  }
-  s=owl_malloc(sizeof(owl_style));
-  owl_style_create_perl(s, argv[1], argv[3], NULL);
-  owl_global_add_style(&g, s);
-
-  return NULL;
-}
-
 
 void owl_command_quit()
 {
