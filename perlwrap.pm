@@ -684,6 +684,20 @@ our $getBuddyList = BarnOwl::Hook->new;
 
 # Internal startup/shutdown routines called by the C code
 
+sub _load_perl_commands {
+    # Load builtin perl commands
+    BarnOwl::new_command(style => \&BarnOwl::Style::style_command,
+                       {
+                           summary => "creates a new style",
+                           usage   => "style <name> perl <function_name>",
+                           description =>
+                           "A style named <name> will be created that will\n" .
+                           "format messages using the perl function <function_name>.\n\n" .
+                           "SEE ALSO: show styles, view -s, filter -s\n\n" .
+                           "DEPRECATED in favor of BarnOwl::create_style(NAME, OBJECT)",
+                          });
+}
+
 sub _load_owlconf {
     # load the config  file
     if ( -r $BarnOwl::configfile ) {
@@ -709,6 +723,7 @@ sub _load_owlconf {
 # with compatibility by calling the old, fixed-name hooks.
 
 sub _startup {
+    _load_perl_commands();
     _load_owlconf();
 
     if(eval {require BarnOwl::ModuleLoader}) {
@@ -990,6 +1005,23 @@ sub boldify($)
     }
 }
 
+sub style_command {
+    my $command = shift;
+    if(scalar @_ != 3 || $_[1] ne 'perl') {
+        die("Usage: style <name> perl <function>\n");
+    }
+    my $name = shift;
+    my $perl = shift;
+    my $fn   = shift;
+    {
+        no strict 'refs';
+        unless(*{$fn}{CODE}) {
+            die("Unable to create style '$name': no perl function '$fn'\n");
+        }
+    }
+    BarnOwl::create_style($name, BarnOwl::Style::Legacy->new($fn));
+}
+
 package BarnOwl::Style::Legacy;
 
 sub new {
@@ -1003,7 +1035,11 @@ sub new {
                   useglobals  => $useglobals}, $class;
 }
 
-sub description {shift->{description}};
+sub description {
+    my $self = shift;
+    return $self->{description} ||
+    ("User-defined perl style that calls " . $self->{function});
+};
 
 sub format_message {
     my $self = shift;
