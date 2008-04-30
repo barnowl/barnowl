@@ -773,17 +773,26 @@ package BarnOwl::Style::Default;
 sub format_message($)
 {
     my $self = shift;
-    my $m = shift;
+    my $m    = shift;
+    my $fmt;
 
     if ( $m->is_loginout) {
-        return $self->format_login($m);
+        $fmt = $self->format_login($m);
     } elsif($m->is_ping && $m->is_personal) {
-        return $self->format_ping($m);
+        $fmt = $self->format_ping($m);
     } elsif($m->is_admin) {
-        return $self->format_admin($m);
+        $fmt = $self->format_admin($m);
     } else {
-        return $self->format_chat($m);
+        $fmt = $self->format_chat($m);
     }
+    $fmt = BarnOwl::Style::boldify($fmt) if $self->should_bold($m);
+    return $fmt;
+}
+
+sub should_bold {
+    my $self = shift;
+    my $m = shift;
+    return $m->is_personal && $m->direction eq "in";
 }
 
 sub description {"Default style";}
@@ -820,10 +829,17 @@ sub format_ping {
 sub format_admin {
     my $self = shift;
     my $m = shift;
-    return "\@bold(OWL ADMIN)\n" . indentBody($m);
+    return "\@bold(OWL ADMIN)\n" . $self->indent_body($m);
 }
 
 sub format_chat($) {
+    my $self = shift;
+    my $m = shift;
+    my $header = $self->chat_header($m);
+    return $header . "\n". $self->indent_body($m);
+}
+
+sub chat_header {
     my $self = shift;
     my $m = shift;
     my $header;
@@ -845,19 +861,21 @@ sub format_chat($) {
         $header .= " [" . $m->opcode . "]";
     }
     $header .= "  " . time_hhmm($m);
-    my $sender = $m->long_sender;
-    $sender =~ s/\n.*$//s;
-    $header .= " " x (4 - ((length $header) % 4));
-    $header .= "(" . $sender . '@color[default]' . ")";
-    my $message = $header . "\n". indentBody($m);
-    if($m->is_personal && $m->direction eq "in") {
-        $message = BarnOwl::Style::boldify($message);
-    }
-    return $message;
+    $header .= $self->format_sender($m);
+    return $header;
 }
 
-sub indentBody($)
+sub format_sender {
+    my $self = shift;
+    my $m = shift;
+    my $sender = $m->long_sender;
+    $sender =~ s/\n.*$//s;
+    return "  (" . $sender . '@color[default]' . ")";
+}
+
+sub indent_body($)
 {
+    my $self = shift;
     my $m = shift;
 
     my $body = $m->body;
@@ -873,7 +891,6 @@ sub indentBody($)
 }
 
 package BarnOwl::Style::Basic;
-
 our @ISA=qw(BarnOwl::Style::Default);
 
 sub description {"Compatability alias for the default style";}
@@ -881,27 +898,10 @@ sub description {"Compatability alias for the default style";}
 BarnOwl::create_style("basic", "BarnOwl::Style::Basic");
 
 package BarnOwl::Style::OneLine;
-################################################################################
-# Branching point for various formatting functions in this style.
-################################################################################
-use constant BASE_FORMAT => '%s %-13.13s %-11.11s %-12.12s ';
-sub format_message($) {
-  my $self = shift;
-  my $m = shift;
+# Inherit format_message to dispatch
+our @ISA = qw(BarnOwl::Style::Default);
 
-  if ( $m->is_loginout ) {
-    return $self->format_login($m);
-  }
-  elsif ( $m->is_ping) {
-    return $self->format_ping($m);
-  }
-  elsif ( $m->is_admin || $m->is_loopback) {
-    return $self->format_local($m);
-  }
-  else {
-    return $self->format_chat($m);
-  }
-}
+use constant BASE_FORMAT => '%s %-13.13s %-11.11s %-12.12s ';
 
 sub description {"Formats for one-line-per-message"}
 
@@ -947,37 +947,35 @@ sub format_chat($)
   my $line;
   if ($m->is_personal) {
     $line= sprintf(BASE_FORMAT,
-		   $dirsym,
-		   $m->type,
-		   '',
-		   ($dir eq 'out'
-		      ? $m->pretty_recipient
-		      : $m->pretty_sender));
+                   $dirsym,
+                   $m->type,
+                   '',
+                   ($dir eq 'out'
+                    ? $m->pretty_recipient
+                    : $m->pretty_sender));
   }
   else {
     $line = sprintf(BASE_FORMAT,
-		    $dirsym,
-		    $m->context,
-		    $m->subcontext,
-		    ($dir eq 'out'
-		       ? $m->pretty_recipient
-		       : $m->pretty_sender));
+                    $dirsym,
+                    $m->context,
+                    $m->subcontext,
+                    ($dir eq 'out'
+                     ? $m->pretty_recipient
+                     : $m->pretty_sender));
   }
 
   my $body = $m->{body};
   $body =~ tr/\n/ /;
   $line .= $body;
-  $line = BarnOwl::Style::boldify($line) if ($m->is_personal && lc($m->direction) eq 'in');
   return $line;
 }
 
-# Format locally generated messages
-sub format_local($)
+# Format owl admin messages
+sub format_admin($)
 {
   my $self = shift;
   my $m = shift;
-  my $type = uc($m->{type});
-  my $line = sprintf(BASE_FORMAT, '<', $type, '', '');
+  my $line = sprintf(BASE_FORMAT, '<', 'ADMIN', '', '');
   my $body = $m->{body};
   $body =~ tr/\n/ /;
   return $line.$body;
