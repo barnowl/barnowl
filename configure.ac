@@ -112,9 +112,9 @@ dnl Add CFLAGS and LDFLAGS for glib-2.0
 PKG_CHECK_MODULES(GLIB,glib-2.0)
 
 echo Adding glib-2.0 CFLAGS ${GLIB_CFLAGS}
-CFLAGS=${CFLAGS}\ ${GLIB_CFLAGS}
+CFLAGS="${GLIB_CFLAGS} ${CFLAGS}"
 echo Adding glib-2.0 LDFLAGS ${GLIB_LIBS}
-LDFLAGS=${LDFLAGS}\ ${GLIB_LIBS}
+LDFLAGS="${GLIB_LIBS} ${LDFLAGS}"
 
 
 dnl Checks for typedefs, structures, and compiler characteristics.
