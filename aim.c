@@ -1451,7 +1451,8 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
      * containing Smart Quotes.
      *
      */
-    strncpy(realmsg, args->msg, sizeof(realmsg));
+    if (args->msg && args->msglen)
+      strncpy(realmsg, args->msg, sizeof(realmsg));
   }
 
   owl_function_debugmsg("faimtest_parse_incoming_im_chan1: message from: %s", userinfo->sn?userinfo->sn:"");

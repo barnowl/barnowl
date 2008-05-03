@@ -119,7 +119,7 @@ Net::Jabber::Data - Jabber Data Library
 In an effort to make maintaining this document easier, I am not going
 to go into full detail on each of these functions.  Rather I will
 present the functions in a list with a type in the first column to
-show what they return, or take as arugments.  Here is the list of
+show what they return, or take as arguments.  Here is the list of
 types I will use:
 
   string  - just a string

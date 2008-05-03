@@ -273,13 +273,6 @@ int main(int argc, char **argv, char **env)
     exit(1);
   }
 
-  /* setup the built-in styles */
-  owl_function_debugmsg("startup: creating built-in styles");
-
-  s=owl_malloc(sizeof(owl_style));
-  owl_style_create_internal(s, "basic", &owl_stylefunc_basic, "Basic message formatting.");
-  owl_global_add_style(&g, s);
-
   /* setup the default filters */
   /* the personal filter will need to change again when AIM chat's are
    *  included.  Also, there should be an %aimme% */
@@ -408,12 +401,8 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: setting startup and default style");
   if (0 != strcmp(owl_global_get_default_style(&g), "__unspecified__")) {
     /* the style was set by the user: leave it alone */
-  } else if (owl_global_is_config_format(&g)) {
-    owl_global_set_default_style(&g, "perl");
-  } else if (owl_global_is_userclue(&g, OWL_USERCLUE_CLASSES)) {
-    owl_global_set_default_style(&g, "default");
   } else {
-    owl_global_set_default_style(&g, "basic");
+    owl_global_set_default_style(&g, "default");
   }
 
   /* zlog in if we need to */
@@ -435,6 +424,11 @@ int main(int argc, char **argv, char **env)
   nexttimediff=10;
   nexttime=time(NULL);
 
+#ifdef HAVE_LIBZEPHYR
+  /* Check for any zephyrs that have come in while we've done init. */
+  owl_zephyr_process_events();
+#endif
+  
   owl_function_debugmsg("startup: entering main loop");
   /* main loop */
   while (1) {
@@ -594,7 +588,7 @@ int owl_process_message(owl_message *m) {
 
   if(owl_message_is_direction_in(m)) {
     /* let perl know about it*/
-    owl_perlconfig_getmsg(m, 0, NULL);
+    owl_perlconfig_getmsg(m, NULL);
 
     /* do we need to autoreply? */
     if (owl_global_is_zaway(&g) && !owl_message_get_attribute_value(m, "isauto")) {

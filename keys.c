@@ -229,11 +229,15 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("?",   "start-command search -r ", "start a reverse search command");
 
   BIND_CMD("LEFT",   "recv:shiftleft", "");
+  BIND_CMD("M-[ D",  "recv:shiftleft", "");
   BIND_CMD("RIGHT",  "recv:shiftright","");
+  BIND_CMD("M-[ C",  "recv:shiftleft", "");
   BIND_CMD("DOWN",   "recv:next",      "");
   BIND_CMD("C-n",    "recv:next",      "");
+  BIND_CMD("M-[ B",  "recv:next",      "");
   BIND_CMD("M-C-n",  "recv:next --smart-filter", "move to next message matching the current one"); 
   BIND_CMD("UP",     "recv:prev",      "");
+  BIND_CMD("M-[ A",  "recv:prev",      "");
   BIND_CMD("n",      "recv:next-notdel", "");
   BIND_CMD("p",      "recv:prev-notdel", "");
   BIND_CMD("C-p",    "recv:prev",        "");
@@ -279,6 +283,8 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-R", "reply -e sender",  "reply to sender of the current message, but allow editing of recipient");
 		  
   BIND_CMD("w",   "openurl",          "open a URL using a webbrowser");
+
+  BIND_CMD("W",   "start-command webzephyr ", "start a webzephyr command");
 
   BIND_CMD("C-c",  "",                "no effect in this mode");
   BIND_CMD("C-g",  "",                "no effect in this mode");

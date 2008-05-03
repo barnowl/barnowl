@@ -257,7 +257,7 @@ void owl_function_zwrite_setup(char *line)
   /* check the arguments */
   ret=owl_zwrite_create_from_line(&z, line);
   if (ret) {
-    owl_function_error("Error in zwrite arugments");
+    owl_function_error("Error in zwrite arguments");
     owl_zwrite_free(&z);
     return;
   }
@@ -1924,7 +1924,7 @@ void owl_function_status()
   owl_fmtext_append_normal(&fm, OWL_VERSION_STRING);
   owl_fmtext_append_normal(&fm, "\n");
 
-  owl_fmtext_append_normal(&fm, "  Startup Arugments: ");
+  owl_fmtext_append_normal(&fm, "  Startup Arguments: ");
   owl_fmtext_append_normal(&fm, owl_global_get_startupargs(&g));
   owl_fmtext_append_normal(&fm, "\n");
 

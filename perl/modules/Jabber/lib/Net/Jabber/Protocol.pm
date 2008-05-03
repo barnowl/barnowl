@@ -939,7 +939,7 @@ sub DefineNamespace
 
         if (!exists($funcHash{set}) && exists($funcHash{get}))
         {
-            croak("The DefineNamespace arugments have changed, and I cannot determine the\nnew values automatically for name($name).  Please read the man page\nfor Net::Jabber::Namespaces.  I apologize for this incompatability.\n");
+            croak("The DefineNamespace arguments have changed, and I cannot determine the\nnew values automatically for name($name).  Please read the man page\nfor Net::Jabber::Namespaces.  I apologize for this incompatability.\n");
         }
 
         if (exists($funcHash{type}) || exists($funcHash{path}) ||

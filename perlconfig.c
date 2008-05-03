@@ -410,34 +410,14 @@ char *owl_perlconfig_execute(char *line)
   return(out);
 }
 
-char *owl_perlconfig_getmsg(owl_message *m, int mode, char *subname)
-{ 
-  /* if mode==1 we are doing message formatting.  The returned
-   * formatted message needs to be freed by the caller.
-   *
-   * if mode==0 we are just doing the message-has-been-received
-   * thing.
-   */
-  if (!owl_global_have_config(&g)) return(NULL);
-  
-  /* run the procedure corresponding to the mode */
-  if (mode==1) {
-    char *ret = NULL;
-    ret = owl_perlconfig_call_with_message(subname?subname
-					   :"BarnOwl::_format_msg_legacy_wrap", m);
-    if (!ret) {
-      ret = owl_sprintf("@b([Perl Message Formatting Failed!])\n");
-    } 
-    return ret;
-  } else {
-    char *ptr = NULL;
-    if (owl_perlconfig_is_function("BarnOwl::Hooks::_receive_msg")) {
-      ptr = owl_perlconfig_call_with_message(subname?subname
-				       :"BarnOwl::_receive_msg_legacy_wrap", m);
-    }
-    if (ptr) owl_free(ptr);
-    return(NULL);
+void owl_perlconfig_getmsg(owl_message *m, char *subname)
+{
+  char *ptr = NULL;
+  if (owl_perlconfig_is_function("BarnOwl::Hooks::_receive_msg")) {
+    ptr = owl_perlconfig_call_with_message(subname?subname
+                                           :"BarnOwl::_receive_msg_legacy_wrap", m);
   }
+  if (ptr) owl_free(ptr);
 }
 
 char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)

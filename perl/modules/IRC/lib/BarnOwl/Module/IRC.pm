@@ -198,7 +198,7 @@ sub cmd_msg {
     if(@_) {
         process_msg($conn, $to, join(" ", @_));
     } else {
-        BarnOwl::start_edit_win("/msg $to -a " . $conn->alias, sub {process_msg($conn, $to, @_)});
+        BarnOwl::start_edit_win("/msg -a " . $conn->alias . " $to", sub {process_msg($conn, $to, @_)});
     }
 }
 
@@ -208,7 +208,12 @@ sub process_msg {
     my $body = shift;
     # Strip whitespace. In the future -- send one message/line?
     $body =~ tr/\n\r/  /;
-    $conn->conn->privmsg($to, $body);
+    if ($body =~ /^\/me (.*)/) {
+        $conn->conn->me($to, $1);
+        $body = BarnOwl::Style::boldify($conn->nick.' '.$1);
+    } else {
+        $conn->conn->privmsg($to, $body);
+    }
     my $msg = BarnOwl::Message->new(
         type        => 'IRC',
         direction   => is_private($to) ? 'out' : 'in',
@@ -219,8 +224,8 @@ sub process_msg {
         sender      => $conn->nick,
         is_private($to) ?
           (isprivate  => 'true') : (channel => $to),
-        replycmd    => "irc-msg $to",
-        replysendercmd => "irc-msg $to"
+        replycmd    => "irc-msg -a " . $conn->alias . " $to",
+        replysendercmd => "irc-msg -a " . $conn->alias . " $to"
        );
     BarnOwl::queue_message($msg);
 }

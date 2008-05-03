@@ -272,7 +272,6 @@ static owl_variable variables_to_init[] = {
 		 "Styles may be created with the 'style' command.\n"
 		 "Some built-in styles include:\n"
 		 "   default  - the default owl formatting\n"
-		 "   basic    - simple formatting\n"
 		 "   oneline  - one line per-message\n"
 		 "   perl     - legacy perl interface\n"
 		 "\nSEE ALSO: style, show styles, view -s <style>\n"

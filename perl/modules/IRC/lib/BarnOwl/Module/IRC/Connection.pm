@@ -107,9 +107,9 @@ sub on_msg {
           (notice     => 'true') : (),
         is_private($recipient) ?
           (isprivate  => 'true') : (channel => $recipient),
-        replycmd    => 'irc-msg ' .
+        replycmd    => 'irc-msg -a ' . $self->alias . ' ' .
             (is_private($recipient) ? $evt->nick : $recipient),
-        replysendercmd => 'irc-msg ' . $evt->nick
+        replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
        );
 
     BarnOwl::queue_message($msg);
@@ -157,6 +157,8 @@ sub on_join {
     my $msg = $self->new_message($evt,
         loginout   => 'login',
         channel    => $evt->to,
+        replycmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick,
+        replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
         );
     BarnOwl::queue_message($msg);
 }
@@ -166,6 +168,8 @@ sub on_part {
     my $msg = $self->new_message($evt,
         loginout   => 'logout',
         channel    => $evt->to,
+        replycmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick,
+        replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
         );
     BarnOwl::queue_message($msg);
 }

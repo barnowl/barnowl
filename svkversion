@@ -14,7 +14,11 @@ my $newline = $no_newline ? "" : "\n";
 my $p = shift @ARGV;
 $p ||= ".";
 
-my @lines = `svk info $p`;
+my @lines = `svk info $p 2>&1`;
+if($! || $lines[0] =~ "not a checkout path") {
+    print "exported$newline";
+    exit;
+}
 my @merged = grep {/^Merged From: /} @lines;
 
 unless (@merged) {
