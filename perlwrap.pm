@@ -823,7 +823,7 @@ sub format_login($) {
 sub format_ping {
     my $self = shift;
     my $m = shift;
-    return "\@b(PING) from \@b(" . $m->pretty_sender . ")\n";
+    return "\@b(PING) from \@b(" . $m->pretty_sender . ")";
 }
 
 sub format_admin {
@@ -922,6 +922,7 @@ sub format_login($) {
 }
 
 sub format_ping($) {
+  my $self = shift;
   my $m = shift;
   return sprintf(
     BASE_FORMAT,
