@@ -132,6 +132,14 @@ read from C<FD>.
 
 Remove a file descriptor previously registered via C<add_dispatch>
 
+=head2 create_style NAME OBJECT
+
+Creates a new barnowl style with the given NAME defined by the given
+object. The object must have a C<description> method which returns a
+string description of the style, and a and C<format_message> method
+which accepts a C<BarnOwl::Message> object and returns a string that
+is the result of formatting the message for display.
+
 =cut
 
 
