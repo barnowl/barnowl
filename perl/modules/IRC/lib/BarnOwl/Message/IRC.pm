@@ -38,8 +38,15 @@ sub smartfilter {
         # To a Channel
         my $network = $self->network;
         my $channel = $self->channel;
-        my $filter = "irc-$network-channel-$channel";
-        my $ftext = qq{type ^irc\$ and network ^$network\$ and channel ^$channel\$};
+        my $sender = $self->sender;
+        my ($filter, $ftext);
+        if ($inst && $self->body =~ /^(\S+):/) {
+            $filter = "irc-$network-channel-$channel-$sender-$1";
+            $ftext = qq{type ^irc\$ and network ^$network\$ and channel ^$channel\$ and ( sender ^$sender\$ or sender ^$1\$ )};
+        } else {
+            $filter = "irc-$network-channel-$channel";
+            $ftext = qq{type ^irc\$ and network ^$network\$ and channel ^$channel\$};
+        }
         BarnOwl::filter("$filter $ftext");
         return $filter;
     }
