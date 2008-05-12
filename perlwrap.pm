@@ -778,7 +778,7 @@ package BarnOwl::Style::Default;
 ################################################################################
 # Branching point for various formatting functions in this style.
 ################################################################################
-sub format_message($)
+sub format_message
 {
     my $self = shift;
     my $m    = shift;
@@ -809,13 +809,14 @@ BarnOwl::create_style("default", "BarnOwl::Style::Default");
 
 ################################################################################
 
-sub time_hhmm {
+sub format_time {
+    my $m = shift;
     my $m = shift;
     my ($time) = $m->time =~ /(\d\d:\d\d)/;
     return $time;
 }
 
-sub format_login($) {
+sub format_login {
     my $self = shift;
     my $m = shift;
     return sprintf(
@@ -824,7 +825,7 @@ sub format_login($) {
         $m->login_type,
         $m->pretty_sender,
         $m->login_extra,
-        time_hhmm($m)
+        $self->format_time($m)
        );
 }
 
@@ -840,7 +841,7 @@ sub format_admin {
     return "\@bold(OWL ADMIN)\n" . $self->indent_body($m);
 }
 
-sub format_chat($) {
+sub format_chat {
     my $self = shift;
     my $m = shift;
     my $header = $self->chat_header($m);
@@ -868,7 +869,7 @@ sub chat_header {
     if($m->opcode) {
         $header .= " [" . $m->opcode . "]";
     }
-    $header .= "  " . time_hhmm($m);
+    $header .= "  " . $self->format_time($m);
     $header .= $self->format_sender($m);
     return $header;
 }
@@ -881,7 +882,7 @@ sub format_sender {
     return "  (" . $sender . '@color[default]' . ")";
 }
 
-sub indent_body($)
+sub indent_body
 {
     my $self = shift;
     my $m = shift;
@@ -917,7 +918,7 @@ BarnOwl::create_style("oneline", "BarnOwl::Style::OneLine");
 
 ################################################################################
 
-sub format_login($) {
+sub format_login {
   my $self = shift;
   my $m = shift;
   return sprintf(
@@ -929,7 +930,7 @@ sub format_login($) {
     . ($m->login_extra ? "at ".$m->login_extra : '');
 }
 
-sub format_ping($) {
+sub format_ping {
   my $self = shift;
   my $m = shift;
   return sprintf(
@@ -940,7 +941,7 @@ sub format_ping($) {
     $m->pretty_sender)
 }
 
-sub format_chat($)
+sub format_chat
 {
   my $self = shift;
   my $m = shift;
@@ -980,7 +981,7 @@ sub format_chat($)
 }
 
 # Format owl admin messages
-sub format_admin($)
+sub format_admin
 {
   my $self = shift;
   my $m = shift;
@@ -994,7 +995,7 @@ package BarnOwl::Style;
 
 # This takes a zephyr to be displayed and modifies it to be displayed
 # entirely in bold.
-sub boldify($)
+sub boldify
 {
     local $_ = shift;
     if ( !(/\)/) ) {
