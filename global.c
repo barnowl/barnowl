@@ -556,7 +556,7 @@ void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
   for (i=0; i<argc; i++) {
     len+=strlen(argv[i])+5;
   }
-  g->startupargs=malloc(len+5);
+  g->startupargs=owl_malloc(len+5);
 
   strcpy(g->startupargs, "");
   for (i=0; i<argc; i++) {

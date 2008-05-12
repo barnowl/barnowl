@@ -352,10 +352,48 @@ char *owl_zephyr_get_field(ZNotice_t *n, int j)
 
   return(owl_strdup(""));
 }
+
+char *owl_zephyr_get_field_as_utf8(ZNotice_t *n, int j)
+{
+  int i, count, save;
+
+  /* If there's no message here, just run along now */
+  if (n->z_message_len == 0)
+    return(owl_strdup(""));
+
+  count=save=0;
+  for (i = 0; i < n->z_message_len; i++) {
+    if (n->z_message[i]=='\0') {
+      count++;
+      if (count == j) {
+	/* just found the end of the field we're looking for */
+	return(owl_validate_or_convert(n->z_message + save));
+      } else {
+	save = i + 1;
+      }
+    }
+  }
+  /* catch the last field, which might not be null terminated */
+  if (count == j - 1) {
+    char *tmp, *out;
+    tmp = owl_malloc(n->z_message_len-save+5);
+    memcpy(tmp, n->z_message+save, n->z_message_len-save);
+    tmp[n->z_message_len-save]='\0';
+    out = owl_validate_or_convert(tmp);
+    owl_free(tmp);
+    return out;
+  }
+
+  return(owl_strdup(""));
+}
 #else
 char *owl_zephyr_get_field(void *n, int j)
 {
   return(owl_strdup(""));
+}
+char *owl_zephyr_get_field_as_utf8(void *n, int j)
+{
+  return owl_zephyr_get_field(n, j);
 }
 #endif
 

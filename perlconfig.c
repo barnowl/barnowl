@@ -54,7 +54,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
     av_zfields = newAV();
     j=owl_zephyr_get_num_fields(owl_message_get_notice(m));
     for (i=0; i<j; i++) {
-      ptr=owl_zephyr_get_field(owl_message_get_notice(m), i+1);
+      ptr=owl_zephyr_get_field_as_utf8(owl_message_get_notice(m), i+1);
       av_push(av_zfields, newSVpvn(ptr, strlen(ptr)));
       owl_free(ptr);
     }
@@ -433,7 +433,9 @@ char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
 
   PUSHMARK(SP);
   for(i=0;i<argc;i++) {
-    XPUSHs(sv_2mortal(newSVpv(argv[i], 0)));
+    SV *tmp = newSVpv(argv[i], 0);
+    SvUTF8_on(tmp);
+    XPUSHs(sv_2mortal(tmp));
   }
   PUTBACK;
 
@@ -472,18 +474,21 @@ void owl_perlconfig_dispatch_free(owl_dispatch *d)
 void owl_perlconfig_edit_callback(owl_editwin *e)
 {
   SV *cb = (SV*)(e->cbdata);
+  SV *text;
   unsigned int n_a;
   dSP;
 
   if(cb == NULL) {
     owl_function_error("Perl callback is NULL!");
   }
+  text = newSVpv(owl_editwin_get_text(e), 0);
+  SvUTF8_on(text);
 
   ENTER;
   SAVETMPS;
 
   PUSHMARK(SP);
-  XPUSHs(sv_2mortal(newSVpv(owl_editwin_get_text(e), 0)));
+  XPUSHs(sv_2mortal(text));
   PUTBACK;
   
   call_sv(cb, G_DISCARD|G_KEEPERR|G_EVAL);

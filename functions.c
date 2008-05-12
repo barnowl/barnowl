@@ -1605,7 +1605,7 @@ void owl_function_info()
 	for (i=0; i<fields; i++) {
 	  sprintf(buff, "  Field %i   : ", i+1);
 	  
-	  ptr=owl_zephyr_get_field(n, i+1);
+	  ptr=owl_zephyr_get_field_as_utf8(n, i+1);
 	  len=strlen(ptr);
 	  if (len<30) {
 	    strncpy(tmpbuff, ptr, len);
@@ -2186,7 +2186,6 @@ void owl_function_zlocate(int argc, char **argv, int auth)
 
 void owl_function_start_command(char *line)
 {
-  int i, j;
   owl_editwin *tw;
 
   tw=owl_global_get_typwin(&g);
@@ -2197,10 +2196,7 @@ void owl_function_start_command(char *line)
   owl_editwin_set_locktext(tw, "command: ");
   owl_global_set_needrefresh(&g);
 
-  j=strlen(line);
-  for (i=0; i<j; i++) {
-    owl_editwin_process_char(tw, line[i]);
-  }
+  owl_editwin_insert_string(tw, line);
   owl_editwin_redisplay(tw, 0);
 
   owl_context_set_editline(owl_global_get_context(&g), tw);
@@ -2598,7 +2594,13 @@ char *owl_function_classinstfilt(char *c, char *i)
     sprintf(filtname, "class-%s-instance-%s", class, instance);
   }
   /* downcase it */
-  downstr(filtname);
+  {
+    char *temp = g_utf8_strdown(filtname, -1);
+    if (temp) {
+      owl_free(filtname);
+      filtname = temp;
+    }
+  }
   /* turn spaces, single quotes, and double quotes into dots */
   owl_text_tr(filtname, ' ', '.');
   owl_text_tr(filtname, '\'', '.');
@@ -3023,7 +3025,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   char *buff;
   char *quoted;
 
-  buff=malloc(strlen(class)+strlen(inst)+strlen(recip)+100);
+  buff=owl_malloc(strlen(class)+strlen(inst)+strlen(recip)+100);
   strcpy(buff, "class");
   if (!strcmp(class, "*")) {
     strcat(buff, " .*");
@@ -3327,7 +3329,7 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
           ret=ZGetLocations(location, &numlocs);
           if (ret==0) {
             for (x=0; x<numlocs; x++) {
-              line=malloc(strlen(location[x].host)+strlen(location[x].time)+strlen(location[x].tty)+100);
+              line=owl_malloc(strlen(location[x].host)+strlen(location[x].time)+strlen(location[x].tty)+100);
               tmp=short_zuser(user);
               sprintf(line, "  %-10.10s %-24.24s %-12.12s  %20.20s\n",
                       tmp,
@@ -3370,6 +3372,7 @@ void owl_function_dump(char *filename)
   owl_message *m;
   owl_view *v;
   FILE *file;
+  char *plaintext;
 
   v=owl_global_get_current_view(&g);
 
@@ -3392,7 +3395,11 @@ void owl_function_dump(char *filename)
   j=owl_view_get_size(v);
   for (i=0; i<j; i++) {
     m=owl_view_get_element(v, i);
-    fputs(owl_message_get_text(m), file);
+    plaintext = owl_strip_format_chars(owl_message_get_text(m));
+    if (plaintext) {
+      fputs(plaintext, file);
+      owl_free(plaintext);
+    }
   }
   fclose(file);
   owl_function_makemsg("Messages dumped to %s", filename);
@@ -3433,7 +3440,7 @@ void owl_function_do_newmsgproc(void)
 	if (myargc <= 0) {
 	  _exit(127);
 	}
-	parsed=realloc(parsed, sizeof(*parsed) * (myargc+1));
+	parsed=owl_realloc(parsed, sizeof(*parsed) * (myargc+1));
 	parsed[myargc] = NULL;
 	
 	owl_function_debugmsg("About to exec \"%s\" with %d arguments", parsed[0], myargc);

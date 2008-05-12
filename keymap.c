@@ -4,7 +4,7 @@
 static const char fileIdent[] = "$Id$";
 
 /* returns 0 on success */
-int owl_keymap_init(owl_keymap *km, char *name, char *desc, void (*default_fn)(int), void (*prealways_fn)(int), void (*postalways_fn)(int))
+int owl_keymap_init(owl_keymap *km, char *name, char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
 {
   if (!name || !desc) return(-1);
   if ((km->name = owl_strdup(name)) == NULL) return(-1);
@@ -150,7 +150,7 @@ void owl_keyhandler_add_keymap(owl_keyhandler *kh, owl_keymap *km)
   owl_dict_insert_element(&kh->keymaps, km->name, km, NULL);
 }
 
-owl_keymap *owl_keyhandler_create_and_add_keymap(owl_keyhandler *kh, char *name, char *desc, void (*default_fn)(int), void (*prealways_fn)(int), void (*postalways_fn)(int))
+owl_keymap *owl_keyhandler_create_and_add_keymap(owl_keyhandler *kh, char *name, char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
 {
   owl_keymap *km;
   km = (owl_keymap*)owl_malloc(sizeof(owl_keymap));
@@ -201,7 +201,7 @@ owl_keymap *owl_keyhandler_activate(owl_keyhandler *kh, char *mapname)
 
 /* processes a keypress.  returns 0 if the keypress was handled,
  * 1 if not handled, -1 on error, and -2 if j==ERR. */
-int owl_keyhandler_process(owl_keyhandler *kh, int j)
+int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
 {
   owl_keymap     *km;
   owl_keybinding *kb;
@@ -213,7 +213,7 @@ int owl_keyhandler_process(owl_keyhandler *kh, int j)
   }
 
   /* temporarily disallow C-`/C-SPACE until we fix associated bugs */
-  if (j==ERR || j==0) {
+  if (j.ch == ERR || j.ch == 0) {
 	return(-1);
   }
 
@@ -223,16 +223,16 @@ int owl_keyhandler_process(owl_keyhandler *kh, int j)
   */
 
   /* deal with ESC prefixing */
-  if (!kh->in_esc && j==27) {
+  if (!kh->in_esc && j.ch == 27) {
     kh->in_esc = 1;
     return(0);
   }
   if (kh->in_esc) {
-    j = OWL_META(j);
+    j.ch = OWL_META(j.ch);
     kh->in_esc = 0;
   }
   
-  kh->kpstack[++(kh->kpstackpos)] = j;
+  kh->kpstack[++(kh->kpstackpos)] = j.ch;
   if (kh->kpstackpos >= OWL_KEYMAP_MAXSTACK) {
     owl_keyhandler_reset(kh);
     owl_function_makemsg("Too many prefix keys pressed...");
@@ -259,7 +259,7 @@ int owl_keyhandler_process(owl_keyhandler *kh, int j)
 	return(0);
       } else if (match == 2) {	/* exact match */
 	/* owl_function_debugmsg("processkey: found exact match in %s", km->name); */
-	owl_keybinding_execute(kb, j);
+	owl_keybinding_execute(kb, j.ch);
 	owl_keyhandler_reset(kh);
 	if (km->postalways_fn) {
 	  km->postalways_fn(j);

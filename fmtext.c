@@ -7,94 +7,79 @@ static const char fileIdent[] = "$Id$";
 /* initialize an fmtext with no data */
 void owl_fmtext_init_null(owl_fmtext *f)
 {
-  f->textlen=0;
-  f->bufflen=5;
-  f->textbuff=owl_malloc(5);
-  f->fmbuff=owl_malloc(5);
-  f->fgcolorbuff=owl_malloc(5 * sizeof(short));
-  f->bgcolorbuff=owl_malloc(5 * sizeof(short));
-  f->textbuff[0]=0;
-  f->fmbuff[0]=OWL_FMTEXT_ATTR_NONE;
-  f->fgcolorbuff[0]=OWL_COLOR_DEFAULT;
-  f->bgcolorbuff[0]=OWL_COLOR_DEFAULT;
+  f->textlen = 0;
+  f->bufflen = 5;
+  f->textbuff = owl_malloc(5);
+  f->textbuff[0] = 0;
+  f->default_attrs = OWL_FMTEXT_ATTR_NONE;
+  f->default_fgcolor = OWL_COLOR_DEFAULT;
+  f->default_bgcolor = OWL_COLOR_DEFAULT;
 }
 
 /* Clear the data from an fmtext, but don't deallocate memory. This
    fmtext can then be appended to again. */
 void owl_fmtext_clear(owl_fmtext *f)
 {
-    f->textlen = 0;
-    f->textbuff[0] = 0;
-    f->fmbuff[0]=OWL_FMTEXT_ATTR_NONE;
-    f->fgcolorbuff[0]=OWL_COLOR_DEFAULT;
-    f->bgcolorbuff[0]=OWL_COLOR_DEFAULT;
-}
-
-/* Internal function.  Set the attribute 'attr' from index 'first' to
- * index 'last'
- */
-void _owl_fmtext_set_attr(owl_fmtext *f, int attr, int first, int last)
-{
-  int i;
-  for (i=first; i<=last; i++) {
-    f->fmbuff[i]=(unsigned char) attr;
-  }
-}
-
-/* Internal function.  Add the attribute 'attr' to the existing
- * attributes from index 'first' to index 'last'
- */
-void _owl_fmtext_add_attr(owl_fmtext *f, int attr, int first, int last)
-{
-  int i;
-  for (i=first; i<=last; i++) {
-    f->fmbuff[i]|=(unsigned char) attr;
-  }
-}
-
-/* Internal function.  Set the color to be 'color' from index 'first'
- * to index 'last
- */
-void _owl_fmtext_set_fgcolor(owl_fmtext *f, int color, int first, int last)
-{
-  int i;
-  for (i=first; i<=last; i++) {
-    f->fgcolorbuff[i]=(short)color;
-  }
-}
-
-void _owl_fmtext_set_bgcolor(owl_fmtext *f, int color, int first, int last)
-{
-  int i;
-  for (i=first; i<=last; i++) {
-    f->bgcolorbuff[i]=(short)color;
-  }
+  f->textlen = 0;
+  f->textbuff[0] = 0;
+  f->default_attrs = OWL_FMTEXT_ATTR_NONE;
+  f->default_fgcolor = OWL_COLOR_DEFAULT;
+  f->default_bgcolor = OWL_COLOR_DEFAULT;
 }
 
 void _owl_fmtext_realloc(owl_fmtext *f, int newlen) /*noproto*/
 {
     if(newlen + 1 > f->bufflen) {
-      f->textbuff=owl_realloc(f->textbuff, newlen+1);
-      f->fmbuff=owl_realloc(f->fmbuff, newlen+1);
-      f->fgcolorbuff=owl_realloc(f->fgcolorbuff, (newlen+1) * sizeof(short));
-      f->bgcolorbuff=owl_realloc(f->bgcolorbuff, (newlen+1) * sizeof(short));
+      f->textbuff = owl_realloc(f->textbuff, newlen + 1);
       f->bufflen = newlen+1;
   }
 }
 
+int owl_fmtext_is_format_char(gunichar c)
+{
+  if ((c & ~OWL_FMTEXT_UC_ATTR_MASK) == OWL_FMTEXT_UC_ATTR) return 1;
+  if ((c & ~(OWL_FMTEXT_UC_ALLCOLOR_MASK)) == OWL_FMTEXT_UC_COLOR_BASE) return 1;
+  return 0;
+}
 /* append text to the end of 'f' with attribute 'attr' and color
  * 'color'
  */
-void owl_fmtext_append_attr(owl_fmtext *f, char *text, int attr, int fgcolor, int bgcolor)
+void owl_fmtext_append_attr(owl_fmtext *f, char *text, char attr, short fgcolor, short bgcolor)
 {
-  int newlen;
-  newlen=strlen(f->textbuff)+strlen(text);
+  char attrbuff[6];
+  int newlen, a = 0, fg = 0, bg = 0;
+  
+  if (attr != OWL_FMTEXT_ATTR_NONE) a=1;
+  if (fgcolor != OWL_COLOR_DEFAULT) fg=1;
+  if (bgcolor != OWL_COLOR_DEFAULT) bg=1;
+
+  /* Plane-16 characters in UTF-8 are 4 bytes long. */
+  newlen = strlen(f->textbuff) + strlen(text) + (8 * (a + fg + bg));
   _owl_fmtext_realloc(f, newlen);
+
+  /* Set attributes */
+  if (a) {
+    memset(attrbuff,0,6);
+    g_unichar_to_utf8(OWL_FMTEXT_UC_ATTR | attr, attrbuff);
+    strcat(f->textbuff, attrbuff);      
+  }
+  if (fg) {
+    memset(attrbuff,0,6);
+    g_unichar_to_utf8(OWL_FMTEXT_UC_FGCOLOR | fgcolor, attrbuff);
+    strcat(f->textbuff, attrbuff);      
+  }
+  if (bg) {
+    memset(attrbuff,0,6);
+    g_unichar_to_utf8(OWL_FMTEXT_UC_BGCOLOR | bgcolor, attrbuff);
+    strcat(f->textbuff, attrbuff);      
+  }
   
   strcat(f->textbuff, text);
-  _owl_fmtext_set_attr(f, attr, f->textlen, newlen);
-  _owl_fmtext_set_fgcolor(f, fgcolor, f->textlen, newlen);
-  _owl_fmtext_set_bgcolor(f, bgcolor, f->textlen, newlen);
+
+  /* Reset attributes */
+  if (bg) strcat(f->textbuff, OWL_FMTEXT_UTF8_BGDEFAULT);
+  if (fg) strcat(f->textbuff, OWL_FMTEXT_UTF8_FGDEFAULT);
+  if (a)  strcat(f->textbuff, OWL_FMTEXT_UTF8_ATTR_NONE);
   f->textlen=newlen;
 }
 
@@ -128,60 +113,105 @@ void owl_fmtext_append_reversebold(owl_fmtext *f, char *text)
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_REVERSE | OWL_FMTEXT_ATTR_BOLD, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
 }
 
-/* Add the attribute 'attr' to all text in 'f' */
-void owl_fmtext_addattr(owl_fmtext *f, int attr)
+/* Add the attribute 'attr' to the default atts for the text in 'f' */
+void owl_fmtext_addattr(owl_fmtext *f, char attr)
 {
   /* add the attribute to all text */
-  int i, j;
-
-  j=f->textlen;
-  for (i=0; i<j; i++) {
-    f->fmbuff[i] |= attr;
-  }
+  f->default_attrs |= attr;
 }
 
-/* Anywhere the color is NOT ALREDY SET, set the color to 'color'.
- * Other colors are left unchanged
+/* Set the default foreground color for this fmtext to 'color'.
+ * Only affects text that is colored default.
  */
 void owl_fmtext_colorize(owl_fmtext *f, int color)
 {
-  /* everywhere the fgcolor is OWL_COLOR_DEFAULT, change it to be 'color' */
-  int i, j;
-
-  j=f->textlen;
-  for(i=0; i<j; i++) {
-    if (f->fgcolorbuff[i]==OWL_COLOR_DEFAULT) f->fgcolorbuff[i] = (short)color;
-  }
+  f->default_fgcolor = color;
 }
 
+/* Set the default foreground color for this fmtext to 'color'.
+ * Only affects text that is colored default.
+ */
 void owl_fmtext_colorizebg(owl_fmtext *f, int color)
 {
-  /* everywhere the bgcolor is OWL_COLOR_DEFAULT, change it to be 'color' */
-  int i, j;
+  f->default_bgcolor = color;
+}
 
-  j=f->textlen;
-  for(i=0; i<j; i++) {
-    if (f->bgcolorbuff[i]==OWL_COLOR_DEFAULT) f->bgcolorbuff[i] = (short)color;
+/* Internal function. Parse attrbute character. */
+void _owl_fmtext_update_attributes(gunichar c, char *attr, short *fgcolor, short *bgcolor) /*noproto*/
+{
+  if ((c & OWL_FMTEXT_UC_ATTR) == OWL_FMTEXT_UC_ATTR) {
+    *attr = c & OWL_FMTEXT_UC_ATTR_MASK;
+  }
+  else if ((c & OWL_FMTEXT_UC_COLOR_BASE) == OWL_FMTEXT_UC_COLOR_BASE) {
+    if ((c & OWL_FMTEXT_UC_BGCOLOR) == OWL_FMTEXT_UC_BGCOLOR) {
+      *bgcolor = (c == OWL_FMTEXT_UC_BGDEFAULT
+                  ? OWL_COLOR_DEFAULT
+                  : c & OWL_FMTEXT_UC_COLOR_MASK);
+    }
+    else if ((c & OWL_FMTEXT_UC_FGCOLOR) == OWL_FMTEXT_UC_FGCOLOR) {
+      *fgcolor = (c == OWL_FMTEXT_UC_FGDEFAULT
+                  ? OWL_COLOR_DEFAULT
+                  : c & OWL_FMTEXT_UC_COLOR_MASK);
+    }
   }
 }
+
+/* Internal function. Scan for attribute characters. */
+void _owl_fmtext_scan_attributes(owl_fmtext *f, int start, char *attr, short *fgcolor, short *bgcolor) /*noproto*/
+{
+  char *p;
+  p = strchr(f->textbuff, OWL_FMTEXT_UC_STARTBYTE_UTF8);
+  while (p && p < f->textbuff + start) {
+    _owl_fmtext_update_attributes(g_utf8_get_char(p), attr, fgcolor, bgcolor);
+    p = strchr(p+1, OWL_FMTEXT_UC_STARTBYTE_UTF8);
+  }
+}  
 
 /* Internal function.  Append text from 'in' between index 'start' and
  * 'stop' to the end of 'f'
  */
-void _owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in, int start, int stop)
+void _owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in, int start, int stop) /*noproto*/
 {
-  int newlen, i;
+  char attrbuff[6];
+  int newlen, a = 0, fg = 0, bg = 0;
+  char attr = 0;
+  short fgcolor = OWL_COLOR_DEFAULT;
+  short bgcolor = OWL_COLOR_DEFAULT;
 
-  newlen=strlen(f->textbuff)+(stop-start+1);
+  _owl_fmtext_scan_attributes(in, start, &attr, &fgcolor, &bgcolor);
+  if (attr != OWL_FMTEXT_ATTR_NONE) a=1;
+  if (fgcolor != OWL_COLOR_DEFAULT) fg=1;
+  if (bgcolor != OWL_COLOR_DEFAULT) bg=1;
+
+  /* We will reset to defaults after appending the text. We may need
+     to set initial attributes. */
+  newlen=strlen(f->textbuff)+(stop-start+1) + (4 * (a + fg + bg)) + 12;
   _owl_fmtext_realloc(f, newlen);
 
-  strncat(f->textbuff, in->textbuff+start, stop-start+1);
-  f->textbuff[newlen]='\0';
-  for (i=start; i<=stop; i++) {
-    f->fmbuff[f->textlen+(i-start)]=in->fmbuff[i];
-    f->fgcolorbuff[f->textlen+(i-start)]=in->fgcolorbuff[i];
-    f->bgcolorbuff[f->textlen+(i-start)]=in->bgcolorbuff[i];
+  if (a) {
+    memset(attrbuff,0,6);
+    g_unichar_to_utf8(OWL_FMTEXT_UC_ATTR | attr, attrbuff);
+    strcat(f->textbuff, attrbuff);      
   }
+  if (fg) {
+    memset(attrbuff,0,6);
+    g_unichar_to_utf8(OWL_FMTEXT_UC_FGCOLOR | fgcolor, attrbuff);
+    strcat(f->textbuff, attrbuff);      
+  }
+  if (bg) {
+    memset(attrbuff,0,6);
+    g_unichar_to_utf8(OWL_FMTEXT_UC_BGCOLOR | bgcolor, attrbuff);
+    strcat(f->textbuff, attrbuff);      
+  }
+
+  strncat(f->textbuff, in->textbuff+start, stop-start+1);
+
+  /* Reset attributes */
+  strcat(f->textbuff, OWL_FMTEXT_UTF8_BGDEFAULT);
+  strcat(f->textbuff, OWL_FMTEXT_UTF8_FGDEFAULT);
+  strcat(f->textbuff, OWL_FMTEXT_UTF8_ATTR_NONE);
+
+  f->textbuff[newlen]='\0';
   f->textlen=newlen;
 }
 
@@ -206,71 +236,140 @@ void owl_fmtext_append_spaces(owl_fmtext *f, int nspaces)
  */
 char *owl_fmtext_print_plain(owl_fmtext *f)
 {
-  return(owl_strdup(f->textbuff));
+  return owl_strip_format_chars(f->textbuff);
+}
+
+void _owl_fmtext_wattrset(WINDOW *w, int attrs) /*noproto*/
+{
+  wattrset(w, A_NORMAL);
+  if (attrs & OWL_FMTEXT_ATTR_BOLD) wattron(w, A_BOLD);
+  if (attrs & OWL_FMTEXT_ATTR_REVERSE) wattron(w, A_REVERSE);
+  if (attrs & OWL_FMTEXT_ATTR_UNDERLINE) wattron(w, A_UNDERLINE);
+}
+
+void _owl_fmtext_update_colorpair(short fg, short bg, short *pair) /*noproto*/
+{
+  if (owl_global_get_hascolors(&g)) {
+    *pair = owl_fmtext_get_colorpair(fg, bg);
+  }
+}
+
+void _owl_fmtext_wcolor_set(WINDOW *w, short pair) /*noproto*/
+{
+  if (owl_global_get_hascolors(&g)) {
+      wcolor_set(w,pair,NULL);
+  }
 }
 
 /* add the formatted text to the curses window 'w'.  The window 'w'
  * must already be initiatlized with curses
  */
-void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w)
+void _owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search) /*noproto*/
 {
-  char *tmpbuff;
-  int position, trans1, trans2, trans3, len, lastsame;
-
+  /* char *tmpbuff; */
+  /* int position, trans1, trans2, trans3, len, lastsame; */
+  char *s, *p;
+  char attr;
+  short fg, bg, pair;
+  int search_results, search_len;
+  
   if (w==NULL) {
     owl_function_debugmsg("Hit a null window in owl_fmtext_curs_waddstr.");
     return;
   }
 
-  tmpbuff=owl_malloc(f->textlen+10);
+  search_results = (do_search
+		    ? owl_fmtext_search(f, owl_global_get_search_string(&g))
+		    : 0);
+  search_len = (search_results
+		? strlen(owl_global_get_search_string(&g))
+		: 0);
+  s = f->textbuff;
+  /* Set default attributes. */
+  attr = f->default_attrs;
+  fg = f->default_fgcolor;
+  bg = f->default_bgcolor;
+  _owl_fmtext_wattrset(w, attr);
+  _owl_fmtext_update_colorpair(fg, bg, &pair);
+  _owl_fmtext_wcolor_set(w, pair);
 
-  position=0;
-  len=f->textlen;
-  while (position<=len) {
-    /* find the last char with the current format and color */
-    trans1=owl_util_find_trans(f->fmbuff+position, len-position);
-    trans2=owl_util_find_trans_short(f->fgcolorbuff+position, len-position);
-    trans3=owl_util_find_trans_short(f->bgcolorbuff+position, len-position);
+  /* Find next possible format character. */
+  p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
+  while(p) {
+    if (owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+      /* Deal with all text from last insert to here. */
+      char tmp;
+   
+      tmp = p[0];
+      p[0] = '\0';
+      if (search_results) {
+	/* Search is active, so highlight search results. */
+	char tmp2, *ss;
+	ss = stristr(s, owl_global_get_search_string(&g));
+	while (ss) {
+	  /* Found search string, highlight it. */
 
-    lastsame = (trans1 < trans2) ? trans1 : trans2;
-    lastsame = (lastsame < trans3) ? lastsame : trans3;
-    lastsame += position;
+	  tmp2 = ss[0];
+	  ss[0] = '\0';
+	  waddstr(w, s);
+	  ss[0] = tmp2;
 
-    /* set the format */
-    wattrset(w, A_NORMAL);
-    if (f->fmbuff[position] & OWL_FMTEXT_ATTR_BOLD) {
-      wattron(w, A_BOLD);
-    }
-    if (f->fmbuff[position] & OWL_FMTEXT_ATTR_REVERSE) {
-      wattron(w, A_REVERSE);
-    }
-    if (f->fmbuff[position] & OWL_FMTEXT_ATTR_UNDERLINE) {
-      wattron(w, A_UNDERLINE);
-    }
+	  _owl_fmtext_wattrset(w, attr ^ OWL_FMTEXT_ATTR_REVERSE);
+	  _owl_fmtext_wcolor_set(w, pair);
+	  
+	  tmp2 = ss[search_len];
+	  ss[search_len] = '\0';
+	  waddstr(w, ss);
+	  ss[search_len] = tmp2;
 
-    /* set the color */
-    /* warning, this is sort of a hack */
-    if (owl_global_get_hascolors(&g)) {
-      short fg, bg, pair;
-      fg = f->fgcolorbuff[position];
-      bg = f->bgcolorbuff[position];
+	  _owl_fmtext_wattrset(w, attr);
+	  _owl_fmtext_wcolor_set(w, pair);
 
-      pair = owl_fmtext_get_colorpair(fg, bg);
-      if (pair != -1) {
-        wcolor_set(w,pair,NULL);
+	  s = ss + search_len;
+	  ss = stristr(s, owl_global_get_search_string(&g));
+	}
       }
+      /* Deal with remaining part of string. */
+      waddstr(w, s);
+      p[0] = tmp;
+
+      /* Deal with new attributes. Initialize to defaults, then
+	 process all consecutive formatting characters. */
+      attr = f->default_attrs;
+      fg = f->default_fgcolor;
+      bg = f->default_bgcolor;
+      while (p && owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+	_owl_fmtext_update_attributes(g_utf8_get_char(p), &attr, &fg, &bg);
+	p = g_utf8_next_char(p);
+      }
+      _owl_fmtext_wattrset(w, attr | f->default_attrs);
+      if (fg == OWL_COLOR_DEFAULT) fg = f->default_fgcolor;
+      if (bg == OWL_COLOR_DEFAULT) bg = f->default_bgcolor;
+      _owl_fmtext_update_colorpair(fg, bg, &pair);
+      _owl_fmtext_wcolor_set(w, pair);
+
+      /* Advance to next non-formatting character. */
+      s = p;
+      p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
     }
-
-    /* add the text */
-    strncpy(tmpbuff, f->textbuff + position, lastsame-position+1);
-    tmpbuff[lastsame-position+1]='\0';
-    waddstr(w, tmpbuff);
-
-    position=lastsame+1;
+    else {
+      p = strchr(p+1, OWL_FMTEXT_UC_STARTBYTE_UTF8);
+    }
   }
-  owl_free(tmpbuff);
+  if (s) {
+    waddstr(w, s);
+  }
 }
 
+void owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w)
+{
+  _owl_fmtext_curs_waddstr(f, w, owl_global_is_search_active(&g));
+}
+
+void owl_fmtext_curs_waddstr_without_search(owl_fmtext *f, WINDOW *w)
+{
+  _owl_fmtext_curs_waddstr(f, w, 0);
+}
 
 /* start with line 'aline' (where the first line is 0) and print
  * 'lines' number of lines into 'out'
@@ -281,28 +380,32 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
   int i, offset;
   
   /* find the starting line */
-  ptr1=in->textbuff;
-  if (aline!=0) {
-    for (i=0; i<aline; i++) {
-      ptr1=strchr(ptr1, '\n');
-      if (!ptr1) return(-1);
-      ptr1++;
-    }
+  ptr1 = in->textbuff;
+  for (i = 0; i < aline; i++) {
+    ptr1 = strchr(ptr1, '\n');
+    if (!ptr1) return(-1);
+    ptr1++;
   }
+  
   /* ptr1 now holds the starting point */
 
+  /* copy the default attributes */
+  out->default_attrs = in->default_attrs;
+  out->default_fgcolor = in->default_fgcolor;
+  out->default_bgcolor = in->default_bgcolor;
+    
   /* copy in the next 'lines' lines */
-  if (lines<1) return(-1);
+  if (lines < 1) return(-1);
 
-  for (i=0; i<lines; i++) {
-    offset=ptr1-in->textbuff;
-    ptr2=strchr(ptr1, '\n');
+  for (i = 0; i < lines; i++) {
+    offset = ptr1 - in->textbuff;
+    ptr2 = strchr(ptr1, '\n');
     if (!ptr2) {
-      _owl_fmtext_append_fmtext(out, in, offset, (in->textlen)-1);
+      _owl_fmtext_append_fmtext(out, in, offset, (in->textlen) - 1);
       return(-1);
     }
-    _owl_fmtext_append_fmtext(out, in, offset, (ptr2-ptr1)+offset);
-    ptr1=ptr2+1;
+    _owl_fmtext_append_fmtext(out, in, offset, (ptr2 - ptr1) + offset);
+    ptr1 = ptr2 + 1;
   }
   return(0);
 }
@@ -310,49 +413,82 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
 /* Truncate the message so that each line begins at column 'acol' and
  * ends at 'bcol' or sooner.  The first column is number 0.  The new
  * message is placed in 'out'.  The message is * expected to end in a
- * new line for now
+ * new line for now. NOTE: This needs to be modified to deal with
+ * backing up if we find a SPACING COMBINING MARK at the end of a
+ * line. If that happens, we should back up to the last non-mark
+ * character and stop there.
  */
 void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *out)
 {
-  char *ptr1, *ptr2, *last;
-  int len, offset;
+  char *ptr_s, *ptr_e, *ptr_c, *last;
+  int col, st, padding, chwidth;
+
+  /* copy the default attributes */
+  out->default_attrs = in->default_attrs;
+  out->default_fgcolor = in->default_fgcolor;
+  out->default_bgcolor = in->default_bgcolor;
 
   last=in->textbuff+in->textlen-1;
-  ptr1=in->textbuff;
-  while (ptr1<=last) {
-    ptr2=strchr(ptr1, '\n');
-    if (!ptr2) {
+  ptr_s=in->textbuff;
+  while (ptr_s <= last) {
+    ptr_e=strchr(ptr_s, '\n');
+    if (!ptr_e) {
       /* but this shouldn't happen if we end in a \n */
       break;
     }
     
-    if (ptr2==ptr1) {
+    if (ptr_e == ptr_s) {
       owl_fmtext_append_normal(out, "\n");
-      ptr1++;
+      ++ptr_s;
       continue;
     }
 
-    /* we need to check that we won't run over here */
-    len=bcol-acol;
-    if (len > (ptr2-(ptr1+acol))) {
-      /* the whole line fits with room to spare, don't take a full 'len' */
-      len=ptr2-(ptr1+acol);
+    col = 0;
+    st = 0;
+    padding = 0;
+    chwidth = 0;
+    ptr_c = ptr_s;
+    while(ptr_c < ptr_e) {
+      gunichar c = g_utf8_get_char(ptr_c);
+      if (!owl_fmtext_is_format_char(c)) {
+	chwidth = mk_wcwidth(c);
+	if (col + chwidth > bcol) break;
+	
+	if (col >= acol) {
+	  if (st == 0) {
+	    ptr_s = ptr_c;
+	    padding = col - acol;
+	    ++st;
+	  }
+	}
+	col += chwidth;
+	chwidth = 0;
+      }
+      ptr_c = g_utf8_next_char(ptr_c);
     }
-    if (len>last-ptr1) {
-      /* the whole rest of the text fits with room to spare, adjust for it */
-      len-=(last-ptr1);
+    if (st) {
+      /* lead padding */
+      owl_fmtext_append_spaces(out, padding);
+      if (ptr_c == ptr_e) {
+	/* We made it to the newline. */
+	_owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
+      }
+      else {
+	if (chwidth > 1) {
+	  /* Last char is wide, truncate. */
+	  _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff - 1);
+	  owl_fmtext_append_normal(out, "\n");
+	}
+	else {
+	  /* Last char fits perfectly, leave alone.*/
+	  _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
+	}
+      }
     }
-    if (len<=0) {
-      /* saftey check */
+    else {
       owl_fmtext_append_normal(out, "\n");
-      ptr1=ptr2+1;
-      continue;
     }
-
-    offset=ptr1-in->textbuff;
-    _owl_fmtext_append_fmtext(out, in, offset+acol, offset+acol+len);
-
-    ptr1=ptr2+1;
+    ptr_s = g_utf8_next_char(ptr_e);
   }
 }
 
@@ -380,10 +516,13 @@ char *owl_fmtext_get_text(owl_fmtext *f)
 }
 
 /* set the charater at 'index' to be 'char'.  If index is out of
- * bounds don't do anything */
-void owl_fmtext_set_char(owl_fmtext *f, int index, int ch)
+ * bounds don't do anything. If c or char at index is not ASCII, don't
+ * do anything because it's not UTF-8 safe. */
+void owl_fmtext_set_char(owl_fmtext *f, int index, char ch)
 {
   if ((index < 0) || (index > f->textlen-1)) return;
+  /* NOT ASCII*/
+  if (f->textbuff[index] & 0x80 || ch & 0x80) return; 
   f->textbuff[index]=ch;
 }
 
@@ -400,39 +539,10 @@ void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src)
   dst->textlen=src->textlen;
   dst->bufflen=mallocsize;
   dst->textbuff=owl_malloc(mallocsize);
-  dst->fmbuff=owl_malloc(mallocsize);
-  dst->fgcolorbuff=owl_malloc(mallocsize * sizeof(short));
-  dst->bgcolorbuff=owl_malloc(mallocsize * sizeof(short));
   memcpy(dst->textbuff, src->textbuff, src->textlen+1);
-  memcpy(dst->fmbuff, src->fmbuff, src->textlen);
-  memcpy(dst->fgcolorbuff, src->fgcolorbuff, src->textlen * sizeof(short));
-  memcpy(dst->bgcolorbuff, src->bgcolorbuff, src->textlen * sizeof(short));
-}
-
-/* highlight all instances of "string".  Return the number of
- * instances found.  This is a case insensitive search.
- */
-int owl_fmtext_search_and_highlight(owl_fmtext *f, char *string)
-{
-
-  int found, len;
-  char *ptr1, *ptr2;
-
-  len=strlen(string);
-  found=0;
-  ptr1=f->textbuff;
-  while (ptr1-f->textbuff <= f->textlen) {
-    ptr2=stristr(ptr1, string);
-    if (!ptr2) return(found);
-
-    found++;
-    _owl_fmtext_add_attr(f, OWL_FMTEXT_ATTR_REVERSE,
-                         ptr2 - f->textbuff,
-                         ptr2 - f->textbuff + len - 1);
-
-    ptr1=ptr2+len;
-  }
-  return(found);
+  dst->default_attrs = src->default_attrs;
+  dst->default_fgcolor = src->default_fgcolor;
+  dst->default_bgcolor = src->default_bgcolor;
 }
 
 /* return 1 if the string is found, 0 if not.  This is a case
@@ -440,7 +550,6 @@ int owl_fmtext_search_and_highlight(owl_fmtext *f, char *string)
  */
 int owl_fmtext_search(owl_fmtext *f, char *string)
 {
-
   if (stristr(f->textbuff, string)) return(1);
   return(0);
 }
@@ -681,9 +790,6 @@ void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(
 void owl_fmtext_free(owl_fmtext *f)
 {
   if (f->textbuff) owl_free(f->textbuff);
-  if (f->fmbuff) owl_free(f->fmbuff);
-  if (f->fgcolorbuff) owl_free(f->fgcolorbuff);
-  if (f->bgcolorbuff) owl_free(f->bgcolorbuff);
 }
 
 /*** Color Pair manager ***/

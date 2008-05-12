@@ -1658,7 +1658,7 @@ sub Send
     if ($self->{SIDS}->{$sid}->{select}->can_write(0))
     {
         $self->debug(3,"Send: can_write");
-        
+
         $self->{SENDSTRING} = Encode::encode_utf8(join("",@_));
 
         $self->{SENDWRITTEN} = 0;

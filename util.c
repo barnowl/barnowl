@@ -398,15 +398,6 @@ int owl_util_find_trans_short(short *in, int len)
   return(i);
 }
 
-/* downcase the string 'foo' */
-void downstr(char *foo)
-{
-  int i;
-  for (i=0; foo[i]!='\0'; i++) {
-    foo[i]=tolower(foo[i]);
-  }
-}
-
 /* Caller must free response. 
  * Takes in strings which are space-separated lists of tokens
  * and returns a single string containing no token more than once.
@@ -445,51 +436,37 @@ char *owl_util_uniq(char *A, char *B, char *prohibit)
 
 void *owl_malloc(size_t size)
 {
-  return(malloc(size));
+  return(g_malloc(size));
 }
 
 void owl_free(void *ptr)
 {
-  free(ptr);
+  g_free(ptr);
 }
 
 char *owl_strdup(const char *s1)
 {
-  return(strdup(s1));
+  return(g_strdup(s1));
 }
 
 void *owl_realloc(void *ptr, size_t size)
 {
-  return(realloc(ptr, size));
+  return(g_realloc(ptr, size));
 }
 
 /* allocates memory and returns the string or null.
  * caller must free the string. 
- * from Linux sprintf man page. 
  */
 char *owl_sprintf(const char *fmt, ...)
 {
-  int n, size = 100;
-  char *p;
   va_list ap;
-  if ((p = owl_malloc (size)) == NULL) return (NULL);
-  while (1) {
-    /* Try to print in the allocated space. */
-    va_start(ap, fmt);
-    n = vsnprintf (p, size, fmt, ap);
-    va_end(ap);
-    /* If that worked, return the string. */
-    if (n > -1 && n < size)
-      return p;
-    /* Else try again with more space. */
-    if (n > -1)    /* glibc 2.1 */
-      size = n+1; /* precisely what is needed */
-    else           /* glibc 2.0 */
-      size *= 2;  /* twice the old size */
-    if ((p = owl_realloc (p, size)) == NULL)
-      return NULL;
-  }
+  char *ret = NULL;
+  va_start(ap, fmt);
+  ret = g_strdup_vprintf(fmt, ap);
+  va_end(ap);
+  return ret;
 }
+
 
 /* Return the owl color associated with the named color.  Return -1
  * if the named color is not available
@@ -775,11 +752,104 @@ char * owl_util_baseclass(char * class)
   return start;
 }
 
-char * owl_get_datadir() {
-    char * datadir = getenv("BARNOWL_DATA_DIR");
-    if(datadir != NULL)
-        return strchr(datadir, '=') + 1;
-    return DATADIR;
+char * owl_get_datadir()
+{
+  char * datadir = getenv("BARNOWL_DATA_DIR");
+  if(datadir != NULL)
+    return strchr(datadir, '=') + 1;
+  return DATADIR;
+}
+
+/* Strips format characters from a valid utf-8 string. Returns the
+   empty string if 'in' does not validate. */
+char * owl_strip_format_chars(char *in)
+{
+  char *r;
+  if (g_utf8_validate(in, -1, NULL)) {
+    char *s, *p;
+    r = owl_malloc(strlen(in)+1);
+    r[0] = '\0';
+    s = in;
+    p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
+    while(p) {
+      /* If it's a format character, copy up to it, and skip all
+	 immediately following format characters. */
+      if (owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+	strncat(r, s, p-s);
+	p = g_utf8_next_char(p);
+	while (p && owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+	  p = g_utf8_next_char(p);
+	}
+	s = p;
+	p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
+      }
+      else {
+	p = strchr(p+1, OWL_FMTEXT_UC_STARTBYTE_UTF8);
+      }
+    }
+    if (s) strcat(r,s);
+  }
+  else {
+    r = owl_strdup("");
+  }
+  return r;
+}
+
+/* If in is not UTF-8, convert from ISO-8859-1. We may want to allow
+ * the caller to specify an alternative in the future. We also strip
+ * out characters in Unicode Plane 16, as we use that plane internally
+ * for formatting.
+ */
+char * owl_validate_or_convert(char *in)
+{
+  if (g_utf8_validate(in, -1, NULL)) {
+    return owl_strip_format_chars(in);
+  }
+  else {
+    return g_convert(in, -1,
+		     "UTF-8", "ISO-8859-1",
+		     NULL, NULL, NULL);
+  }
+}
+/* Attempts to convert 'in' to ISO-8859-1. Returns that if possible,
+   else returns UTF-8.
+ */
+char * owl_get_iso_8859_1_if_possible(char *in)
+{
+  char *out;
+  if (g_utf8_validate(in, -1, NULL)) {
+    out = g_convert(in, -1,
+		    "ISO-8859-1", "UTF-8",
+		    NULL, NULL, NULL);
+    if (!out) {
+      out = owl_strdup(in);
+    }
+  }
+  else {
+    out = owl_strdup("");
+  }
+  return out;
+}
+
+/* This is based on _extract() and _isCJ() from perl's Text::WrapI18N */
+int owl_util_can_break_after(gunichar c)
+{
+  
+  if (c == ' ') return 1;
+  if (c >= 0x3000 && c <= 0x312f) {
+    /* CJK punctuations, Hiragana, Katakana, Bopomofo */
+    if (c == 0x300a || c == 0x300c || c == 0x300e ||
+        c == 0x3010 || c == 0x3014 || c == 0x3016 ||
+        c == 0x3018 || c == 0x301a)
+      return 0;
+    return 1;
+  }
+  if (c >= 0x31a0 && c <= 0x31bf) {return 1;}  /* Bopomofo */
+  if (c >= 0x31f0 && c <= 0x31ff) {return 1;}  /* Katakana extension */
+  if (c >= 0x3400 && c <= 0x9fff) {return 1;}  /* Han Ideogram */
+  if (c >= 0xf900 && c <= 0xfaff) {return 1;}  /* Han Ideogram */
+  if (c >= 0x20000 && c <= 0x2ffff) {return 1;}  /* Han Ideogram */
+  return 0;
 }
 
 /**************************************************************************/

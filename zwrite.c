@@ -43,7 +43,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	badargs=1;
 	break;
       }
-      z->class=owl_strdup(myargv[1]);
+      z->class=owl_get_iso_8859_1_if_possible(myargv[1]);
       myargv+=2;
       myargc-=2;
     } else if (!strcmp(myargv[0], "-i")) {
@@ -51,7 +51,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	badargs=1;
 	break;
       }
-      z->inst=owl_strdup(myargv[1]);
+      z->inst=owl_get_iso_8859_1_if_possible(myargv[1]);
       myargv+=2;
       myargc-=2;
     } else if (!strcmp(myargv[0], "-r")) {
@@ -59,7 +59,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	badargs=1;
 	break;
       }
-      z->realm=owl_strdup(myargv[1]);
+      z->realm=owl_get_iso_8859_1_if_possible(myargv[1]);
       myargv+=2;
       myargc-=2;
     } else if (!strcmp(myargv[0], "-s")) {
@@ -67,7 +67,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	badargs=1;
 	break;
       }
-      z->zsig=owl_strdup(myargv[1]);
+      z->zsig=owl_get_iso_8859_1_if_possible(myargv[1]);
       myargv+=2;
       myargc-=2;
     } else if (!strcmp(myargv[0], "-O")) {
@@ -75,7 +75,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	badargs=1;
 	break;
       }
-      z->opcode=owl_strdup(myargv[1]);
+      z->opcode=owl_get_iso_8859_1_if_possible(myargv[1]);
       myargv+=2;
       myargc-=2;
     } else if (!strcmp(myargv[0], "-m")) {
@@ -92,9 +92,9 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       /* Once we have -m, gobble up everything else on the line */
       myargv++;
       myargc--;
-      z->message=owl_strdup("");
+      z->message=owl_get_iso_8859_1_if_possible("");
       while (myargc) {
-	z->message=realloc(z->message, strlen(z->message)+strlen(myargv[0])+5);
+	z->message=owl_realloc(z->message, strlen(z->message)+strlen(myargv[0])+5);
 	strcat(z->message, myargv[0]);
 	strcat(z->message, " ");
 	myargc--;
@@ -112,7 +112,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       myargc--;
     } else {
       /* anything unattached is a recipient */
-      owl_list_append_element(&(z->recips), strdup(myargv[0]));
+      owl_list_append_element(&(z->recips), owl_get_iso_8859_1_if_possible(myargv[0]));
       myargv++;
       myargc--;
     }
@@ -145,7 +145,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
     zsigzvar = owl_zephyr_get_variable("zwrite-signature");
 
     if (zsigowlvar && *zsigowlvar) {
-      z->zsig=owl_strdup(zsigowlvar);
+      z->zsig=owl_get_iso_8859_1_if_possible(zsigowlvar);
     } else if (zsigproc && *zsigproc) {
       FILE *file;
       char buff[LINE], *openline;
@@ -160,7 +160,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       owl_free(openline);
       if (!file) {
 	if (zsigzvar && *zsigzvar) {
-	  z->zsig=owl_strdup(zsigzvar);
+	  z->zsig=owl_get_iso_8859_1_if_possible(zsigzvar);
 	}
       } else {
 	z->zsig=owl_malloc(LINE*5);
@@ -174,9 +174,9 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	}
       }
     } else if (zsigzvar) {
-      z->zsig=owl_strdup(zsigzvar);
+      z->zsig=owl_get_iso_8859_1_if_possible(zsigzvar);
     } else if (((pw=getpwuid(getuid()))!=NULL) && (pw->pw_gecos)) {
-      z->zsig=strdup(pw->pw_gecos);
+      z->zsig=owl_get_iso_8859_1_if_possible(pw->pw_gecos);
       ptr=strchr(z->zsig, ',');
       if (ptr) {
 	ptr[0]='\0';
@@ -217,6 +217,7 @@ void owl_zwrite_set_message(owl_zwrite *z, char *msg)
 {
   int i, j;
   char toline[LINE];
+  char *tmp = NULL;
 
   if (z->message) owl_free(z->message);
 
@@ -230,10 +231,12 @@ void owl_zwrite_set_message(owl_zwrite *z, char *msg)
 	sprintf(toline, "%s%s ", toline, (char *) owl_list_get_element(&(z->recips), i));
       }
     }
-    z->message=owl_sprintf("%s\n%s", toline, msg);
+    tmp = owl_get_iso_8859_1_if_possible(msg);
+    z->message=owl_sprintf("%s\n%s", toline, tmp);
   } else {
-    z->message=owl_strdup(msg);
+    z->message=owl_get_iso_8859_1_if_possible(msg);
   }
+  if (tmp) owl_free(tmp);
 }
 
 char *owl_zwrite_get_message(owl_zwrite *z)
@@ -304,7 +307,7 @@ char *owl_zwrite_get_opcode(owl_zwrite *z)
 void owl_zwrite_set_opcode(owl_zwrite *z, char *opcode)
 {
   if (z->opcode) owl_free(z->opcode);
-  z->opcode=owl_strdup(opcode);
+  z->opcode=owl_get_iso_8859_1_if_possible(opcode);
 }
 
 char *owl_zwrite_get_realm(owl_zwrite *z)

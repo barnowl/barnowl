@@ -301,27 +301,27 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
 /********************* Support Functions ************************/
 /****************************************************************/
 
-void owl_keys_recwin_prealways(int j) {
+void owl_keys_recwin_prealways(owl_input j) {
   /* Clear the message line on subsequent key presses */
   owl_function_makemsg("");
 }
 
-void owl_keys_editwin_default(int j) {
+void owl_keys_editwin_default(owl_input j) {
   owl_editwin *e;
   if (NULL != (e=owl_global_get_typwin(&g))) {
-    owl_editwin_process_char(e, j);
+       owl_editwin_process_char(e, j);
   }
 }
 
-void owl_keys_editwin_postalways(int j) {
+void owl_keys_editwin_postalways(owl_input j) {
   owl_editwin *e;
   if (NULL != (e=owl_global_get_typwin(&g))) {
     owl_editwin_post_process_char(e, j);
-  }  
+  }
   owl_global_set_needrefresh(&g);
 }
 
-void owl_keys_popless_postalways(int j) {
+void owl_keys_popless_postalways(owl_input j) {
   owl_viewwin *v = owl_global_get_viewwin(&g);
   owl_popwin *pw = owl_global_get_popwin(&g);
 
@@ -330,9 +330,9 @@ void owl_keys_popless_postalways(int j) {
   }  
 }
 
-void owl_keys_default_invalid(int j) {
-  if (j==ERR) return;
-  if (j==410) return;
+void owl_keys_default_invalid(owl_input j) {
+  if (j.ch==ERR) return;
+  if (j.ch==410) return;
   owl_keyhandler_invalidkey(owl_global_get_keyhandler(&g));
 }
 

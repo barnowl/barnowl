@@ -26,6 +26,8 @@ use Net::DNS;
 use Getopt::Long;
 Getopt::Long::Configure(qw(no_getopt_compat prefix_pattern=-|--));
 
+use utf8;
+
 our $VERSION = 0.1;
 
 BEGIN {
@@ -377,7 +379,7 @@ sub do_login {
                 if ( !$vars{jlogin_havepass} && ( !@result || $result[0] eq '401' || $result[0] eq 'error') ) {
                     $vars{jlogin_havepass} = 1;
                     $conn->removeConnection($jidStr);
-                    BarnOwl::start_password( "Password for $jidStr: ", \&do_login );
+                    BarnOwl::start_password("Password for $jidStr: ", \&do_login );
                     return "";
                 }
                 $conn->removeConnection($jidStr);
@@ -486,7 +488,7 @@ sub cmd_jwrite {
         return;
     }
     else {
-        $to = shift @ARGV;
+      $to = shift @ARGV;
     }
 
     my @candidates = guess_jwrite($from, $to);
@@ -530,7 +532,8 @@ sub cmd_jwrite {
     my $cmd = "jwrite $jwrite_to -a $jwrite_from";
     $cmd .= " -t $jwrite_thread" if $jwrite_thread;
     $cmd .= " -s $jwrite_subject" if $jwrite_subject;
-    BarnOwl::start_edit_win( $cmd, \&process_owl_jwrite );
+
+    BarnOwl::start_edit_win($cmd, \&process_owl_jwrite );
 }
 
 sub cmd_jmuc {

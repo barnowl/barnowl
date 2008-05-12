@@ -73,7 +73,7 @@ char *owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char *cmdbuff) {
   char *retval = NULL;
   owl_cmd *cmd;
 
-  tmpbuff=strdup(cmdbuff);
+  tmpbuff=owl_strdup(cmdbuff);
   argv=owl_parseline(tmpbuff, &argc);
   if (argc < 0) {
     owl_free(tmpbuff);

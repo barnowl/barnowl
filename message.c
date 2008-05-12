@@ -78,7 +78,7 @@ void owl_message_set_attribute(owl_message *m, char *attrname, char *attrvalue)
     owl_pair_create(pair, owl_global_intern(&g, attrname), NULL);
     owl_list_append_element(&(m->attributes), pair);
   }
-  owl_pair_set_value(pair, owl_strdup(attrvalue));
+  owl_pair_set_value(pair, owl_validate_or_convert(attrvalue));
 }
 
 /* return the value associated with the named attribute, or NULL if
@@ -492,7 +492,7 @@ char *owl_message_get_zwriteline(owl_message *m)
 void owl_message_set_zwriteline(owl_message *m, char *line)
 {
   if(m->zwriteline) owl_free(m->zwriteline);
-  m->zwriteline=strdup(line);
+  m->zwriteline=owl_strdup(line);
 }
 
 int owl_message_is_delete(owl_message *m)
@@ -534,19 +534,11 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
   owl_fmtext_init_null(&a);
   owl_fmtext_init_null(&b);
   
-  owl_fmtext_truncate_lines(&(m->fmtext->fmtext), aline, bline-aline+1, &a);
+  owl_fmtext_truncate_lines(&(m->fmtext->fmtext), aline, bline-aline, &a);
   owl_fmtext_truncate_cols(&a, acol, bcol, &b);
-  if (fgcolor!=OWL_COLOR_DEFAULT) {
-    owl_fmtext_colorize(&b, fgcolor);
-  }
-  if (bgcolor!=OWL_COLOR_DEFAULT) {
-    owl_fmtext_colorizebg(&b, bgcolor);
-  }
+  owl_fmtext_colorize(&b, fgcolor);
+  owl_fmtext_colorizebg(&b, bgcolor);
 
-  if (owl_global_is_search_active(&g)) {
-    owl_fmtext_search_and_highlight(&b, owl_global_get_search_string(&g));
-  }
-      
   owl_fmtext_curs_waddstr(&b, win);
 
   owl_fmtext_free(&a);
@@ -891,7 +883,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
     owl_message_set_attribute(m, "isauto", "");
   }
 
-  m->zwriteline=strdup("");
+  m->zwriteline=owl_strdup("");
 
   /* save the hostname */
   owl_function_debugmsg("About to do gethostbyaddr");
@@ -973,7 +965,7 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, char *user,
     owl_message_set_realm(m, owl_zephyr_get_realm());
   }
 
-  m->zwriteline=strdup("");
+  m->zwriteline=owl_strdup("");
 
   owl_message_set_body(m, "<uninitialized>");
 

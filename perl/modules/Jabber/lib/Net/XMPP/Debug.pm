@@ -188,6 +188,7 @@ sub Init
                         if (defined($self->{HANDLE}))
                         {
                             $self->{HANDLE}->autoflush(1);
+                            binmode $self->{HANDLE}, ":utf8";
                             $Net::XMPP::Debug::HANDLES{$args{file}} = $self->{HANDLE};
                         }
                         else

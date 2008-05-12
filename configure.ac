@@ -11,6 +11,8 @@ if test "$GCC" = yes; then
      CFLAGS="$CFLAGS -Wall -g";
 fi
 
+m4_include(/usr/share/aclocal/pkg.m4)
+dnl m4_include(pkg.m4)
 
 dnl Check for Athena
 AC_MSG_CHECKING(for /usr/athena/include)
@@ -43,9 +45,7 @@ else
         AC_MSG_RESULT(no)
 fi
 
-AC_CHECK_LIB(ncursesw, initscr,,
-  AC_CHECK_LIB(ncurses, initscr,,
-    AC_CHECK_LIB(curses, initscr,, AC_MSG_ERROR(No curses library found.))))
+AC_CHECK_LIB(ncursesw, initscr,, AC_MSG_ERROR(No curses library found.))
 AC_CHECK_LIB(com_err, com_err)
 AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
@@ -107,6 +107,15 @@ dnl Add LDFLAGS for embedded perl
 FOO=`perl -MExtUtils::Embed -e ldopts`
 echo Adding perl LDFLAGS ${FOO}
 LDFLAGS=${LDFLAGS}\ ${FOO}
+
+dnl Add CFLAGS and LDFLAGS for glib-2.0
+PKG_CHECK_MODULES(GLIB,glib-2.0)
+
+echo Adding glib-2.0 CFLAGS ${GLIB_CFLAGS}
+CFLAGS="${GLIB_CFLAGS} ${CFLAGS}"
+echo Adding glib-2.0 LDFLAGS ${GLIB_LIBS}
+LDFLAGS="${GLIB_LIBS} ${LDFLAGS}"
+
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 

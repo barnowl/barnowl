@@ -72,7 +72,7 @@ void owl_viewwin_redisplay(owl_viewwin *v, int update)
   owl_fmtext_truncate_lines(&(v->fmtext), v->topline, v->winlines-BOTTOM_OFFSET, &fm1);
   owl_fmtext_truncate_cols(&fm1, v->rightshift, v->wincols-1+v->rightshift, &fm2);
 
-  owl_fmtext_curs_waddstr(&fm2, v->curswin);
+  owl_fmtext_curs_waddstr_without_search(&fm2, v->curswin);
 
   /* print the message at the bottom */
   wmove(v->curswin, v->winlines-1, 0);
