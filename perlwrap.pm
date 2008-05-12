@@ -810,7 +810,7 @@ BarnOwl::create_style("default", "BarnOwl::Style::Default");
 ################################################################################
 
 sub format_time {
-    my $m = shift;
+    my $self = shift;
     my $m = shift;
     my ($time) = $m->time =~ /(\d\d:\d\d)/;
     return $time;
