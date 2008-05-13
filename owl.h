@@ -620,6 +620,7 @@ typedef struct _owl_global {
   int aim_loggedin;         /* true if currently logged into AIM */
   int aim_doprocessing;     /* true if we should process AIM events (like pending login) */
   char *aim_screenname;     /* currently logged in AIM screen name */
+  char *aim_screenname_for_filters;     /* currently logged in AIM screen name */
   owl_buddylist buddylist;  /* list of logged in AIM buddies */
   owl_list messagequeue;    /* for queueing up aim and other messages */
   owl_dict styledict;       /* global dictionary of available styles */

@@ -2722,7 +2722,8 @@ char *owl_function_aimuserfilt(char *user)
   argbuff=owl_malloc(1000);
   sprintf(argbuff,
           "( type ^aim$ and ( ( sender ^%s$ and recipient ^%s$ ) or ( sender ^%s$ and recipient ^%s$ ) ) )",
-          escuser, owl_global_get_aim_screenname(&g), owl_global_get_aim_screenname(&g), escuser);
+          escuser, owl_global_get_aim_screenname_for_filters(&g),
+          owl_global_get_aim_screenname_for_filters(&g), escuser);
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 

@@ -137,9 +137,15 @@ static void owl_filterelement_print_false(owl_filterelement *fe, char *buf)
 
 static void owl_filterelement_print_re(owl_filterelement *fe, char *buf)
 {
+  char *re, *q;
   strcat(buf, fe->field);
   strcat(buf, " ");
-  strcat(buf, owl_regex_get_string(&(fe->re)));
+
+  re = owl_regex_get_string(&(fe->re));
+  q = owl_getquoting(re);
+  strcat(buf, q);
+  strcat(buf, re); 
+  strcat(buf, q);
 }
 
 static void owl_filterelement_print_filter(owl_filterelement *fe, char *buf)
