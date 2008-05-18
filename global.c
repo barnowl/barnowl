@@ -765,7 +765,7 @@ void owl_global_set_aimloggedin(owl_global *g, char *screenname)
   g->aim_screenname=owl_strdup(screenname);
   sn_escaped = owl_text_quote(screenname, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   quote = owl_getquoting(sn_escaped);
-  g->aim_screenname_for_filters=sprintf("%s%s%s", quote, sn_escaped, quote);
+  g->aim_screenname_for_filters=owl_sprintf("%s%s%s", quote, sn_escaped, quote);
   owl_free(sn_escaped);
 }
 
