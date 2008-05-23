@@ -1,9 +1,0 @@
-barnowl for Debian
---------------
-
-owl is one of the simpler (while still being extensible) non-graphical
-zephyr clients, which may make it simpler to get started as a user.
-
-Barnowl is a fork of owl with Jabber support.
-
- -- Sam Hartman <hartmans@debian.org>, Sat,  3 Mar 2007 14:49:31 -0500
