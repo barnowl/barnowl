@@ -47,6 +47,8 @@ AUTOGEN=$(GEN_C) $(GEN_H)
 
 HEADERS=$(GEN_H) owl.h config.h test.h
 
+all: $(EXE) $(MODULE_DIRS)
+
 $(EXE): $(AUTOGEN) $(OBJS) owl.o libfaim
 	$(ATHSTATIC) $(CC) -o $(EXE) owl.o $(OBJS) $(LDFLAGS) $(LIBS)
 
@@ -123,8 +125,6 @@ libfaimclean:
 
 libfaimdistclean:
 	(cd libfaim; $(MAKE) distclean)
-
-all: $(EXE) $(MODULE_DIRS)
 
 install: all installdirs
 	${INSTALL_PROGRAM} $(EXE) ${DESTDIR}${bindir}/$(EXE)
