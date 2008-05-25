@@ -1466,16 +1466,13 @@ void owl_function_about()
   strcat(buff, "between Witches and Wizards. The name 'barnowl' was chosen\n");
   strcat(buff, "because we feel our owls should live closer to our ponies.\n");
   strcat(buff, "\n");
+  strcat(buff, "Copyright (c) 2006-2008 The BarnOwl Developers. All rights reserved.\n");
+  strcat(buff, "Copyright (c) 2004 James Kretchmar. All rights reserved.\n");
   strcat(buff, "Copyright 2002 Massachusetts Institute of Technology\n");
   strcat(buff, "\n");
-  strcat(buff, "Permission to use, copy, modify, and distribute this\n");
-  strcat(buff, "software and its documentation for any purpose and without\n");
-  strcat(buff, "fee is hereby granted, provided that the above copyright\n");
-  strcat(buff, "notice and this permission notice appear in all copies\n");
-  strcat(buff, "and in supporting documentation.  No representation is\n");
-  strcat(buff, "made about the suitability of this software for any\n");
-  strcat(buff, "purpose.  It is provided \"as is\" without express\n");
-  strcat(buff, "or implied warranty.\n");
+  strcat(buff, "This program is free software. You can redistribute it and/or\n");
+  strcat(buff,  "modify under the terms of the Sleepycat License. Use the \n");
+  strcat(buff,  "':show license' command to display the full license\n");
   owl_function_popless_text(buff);
 }
 
