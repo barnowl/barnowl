@@ -322,11 +322,11 @@ int main(int argc, char **argv, char **env)
   sprintf(buff,      "Welcome to barnowl version %s.  Press 'h' for on-line help.            \n", OWL_VERSION_STRING);
   strcat(startupmsg, buff);
   strcat(startupmsg, "                                                                       \n");
-  strcat(startupmsg, "This is a development build of barnowl. If you are using this          \n");
-  strcat(startupmsg, "build regularly, please add yourself to barnowl-users@mit.edu          \n");
+  strcat(startupmsg, "BarnOwl is free software. Type ':show license' for more                \n");
+  strcat(startupmsg, "information.                                                           \n");
   strcat(startupmsg, "                                                                 ^ ^   \n");
   strcat(startupmsg, "                                                                 OvO   \n");
-  strcat(startupmsg, "Please report any bugs to dirty-owl-hackers@mit.edu             (   )  \n");
+  strcat(startupmsg, "Please report any bugs or suggestions to bug-barnowl@mit.edu    (   )  \n");
   strcat(startupmsg, "-----------------------------------------------------------------m-m---\n");
   owl_function_adminmsg("", startupmsg);
   sepbar(NULL);
