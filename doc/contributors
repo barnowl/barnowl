@@ -1,12 +1,23 @@
+BarnOwl was primarily written by Nelson Elhage and Alejandro Sedeno at
+the Massachusetts Institute of Technology.
 
-$Id$
+The following people have provided patches or other contributions:
+  Sam Hartman
+  Alex Vandiver
+  Geoffrey Thomas
+  Derrick Brashear
+  David Glasser
+  Matthew Goldstein
+  Arun Tharuvai
+  Kevin Chen
+  Eric Price
 
-Owl was primarly written by James Kretchmar at the Massachusetts
-Institute of Technogloy.  Erik Nygren has also made substantial
+BarnOwl is based on code from Owl, which was originally primarly
+written by James Kretchmar.  Erik Nygren also made substantial
 contributions and improvemnts to the program.
 
-The following people have provided patches and other techincal
-support:
+The following people provided patches and other techincal support for
+Owl:
 
   Stephen Gildea
   Greg Hudson
