@@ -1,5 +1,337 @@
 $Id$
 
+1.0.0
+ * Merge the unicode branch to trunk. BarnOwl is now unicode aware
+   and can send, receive, input and display UTF-8 encoded
+   messages. Unicode changelog:
+   * Put glib's CFLAGS and LDFLAGS at the beginning of the corresponding
+     variables. - nelhage
+   * Unicode branch: Fix building without zephyr. - asedeno
+   * Fix a unicode branch wordwrap problem. - asedeno
+   * Fixing an obscure wrapping bug that nelhage and I tracked down. - asedeno
+   * Rename configure.in to configure.ac so Debian autoconf DTRT. - nelhage
+   *  Fix a bug in owl_editwin_move_to_previousword() which would skip over
+       single letter words. - asedeno
+   * I think I like this better. - asedeno
+   * Fix nelhage's key_left bug. Don't spin at the locktext boundary. - asedeno
+   * fix a typo in OWL_FMTEXT_UTF8_BGDEFAULT
+   * fix a parsing issue for attributes - asedeno
+   * Better compliance with UTF-8 processing. Stop trying
+     to pull in a UTF-8 character as soon as we know something has gone
+     wrong. - asedeno
+   * Removing more hackery I left behind after doing things
+     the right way. - asedeno
+   * editwin.c - fix a wrapping bug I introduced in the
+     last revision. It could leave us with a buffer that was not valid UTF-
+     8 - asedeno
+   * editwin.c - lots of utf-8 cleanup that I had been
+     putting off. util.c - a can we break here'' function based on perl's
+     Text::WrapI18N - asedeno
+   * Remove more bad hacks. - asedeno
+   * Remove a debug message I accidentally left in. Remove
+     the hours old check_utf8 hackery in favor of actually marking strings as
+     UTF-8 from the C side. - asedeno
+   * editwin.c: make locktext deal with UTF-8
+   * Jabber - More utf-8 sanitizing.
+   * Pet peeve - tabs. That should be the end of it for
+     now. - asedeno
+   * Shuffling a line of code to where it actually should
+     be. - asedeno
+   * Patches to jabber libraries for better UTF-8
+     handling. - asedeno
+   * fix a typo that was causing background problems
+   * pass defaults attributes through in the truncate functions - asedeno
+   * Eliminating a warning by un-internalizing a new fmtext
+     function. - asedeno
+   * Do not use bit 0x80 to indicate meta. We have other uses for that bit.
+   * shift it above ncurses's KEY_MAX instead. - asedeno
+   * drop unused struct member
+   * fixing post-processing in the editwin. - asedeno
+   * Preserve colors when highlighting search terms. - asedeno
+   * ignore KEY_RESIZE if we know what that is. We don't need an
+     unhandled keypress every time we resize the terminal. - asedeno
+   * more strict utf-8 byte fetching.
+     This probably still needs more work. - asedeno
+   * Strip formmating characters when dumping to
+     file. - asedeno
+   * fixing bugs in editwin bufflen calculations. - asedeno
+   * Fix search code so higlighting actually works. - asedeno
+   * Remove options for libcurses and libncurses. This really only works with
+     libncursesw. - asedeno
+   * text entry:
+    first pass at utf-8 text entry. 
+   * Change wcwidth() calls to mk_wcwidth() - asedeno
+   * First pass at outbound zephyr -> iso-8859-1 sanitizing.
+     Not that we can input anything other than ascii yet...
+   * Fixing bug encountered when last field was not null-
+     terminated. - asedeno
+   * First pass at incoming zephyr -> UTF-8 sanitizing.
+     This only operates on incoming data so far. We still need to clean outgoing
+     data -- the plan is to attempt conversion to ISO-8859-1, and use that if it
+     works. - asedeno
+   * Reworked the fmtext format to use in-line formatting.  Characters used
+     for formatting are part of Unicode Supplemental Private Area-B, or
+     Plane 16.
+   * include wchar.h
+   * replace hand-rolled width detection with wcswidth.
+   * pad with space if we end up halfway into a character at the start of a line.
+   * UTF-8 - first pass
+   * make owl_text_truncate_cols() and owl_fmtext_truncate_cols() understand character width.
+     This may need more work. Some code duplication - see if we can refactor.
+   * stristr() rewritten to yse g_utf_casefold() instead of downstr(), and restructured to have a single return.
+   * only_whitespace() rewritten for unicode.
+ * Fix sending jabbers to JIDs beginning with `+' - nelhage
+ * Compile zcrypt.c with -w so I don't get all these warnings in my compile
+   output whenever I change any headers - nelhage
+ * Implement /me for outgoing IRC messages - geofft
+ * Add a makefile rule to support emacs flymake-mode - nelhage
+ * Bind the combinations the iPhone sends for arrow keys [probably other
+   terminals, too] - nelhage
+ * avoid null pointer dereference if msg is NULL (or a 0 length is
+   claimed) - shadow
+ * Move styles from the current mishmash of different options to a unified
+   perl object interface. - nelhage
+ * Refactor default style code somewhat to be more easily extensible - nelhage
+ * Put glib's CFLAGS and LDFLAGS at the beginning of the corresponding
+   variables. - nelhage
+ * IRC: /list, /who, and /stats commands - geofft
+ * IRC: Make M-N mostly, rather than completely, useless. - geofft
+ * Fix two small bugs in styling pointed out by broder - nelhage
+ * Document create_style - nelhage
+ * Move time_hhmm into a format_time method - nelhage
+ * Remove prototypes from perlwrap.pm - nelhage
+ * Quote regexp filter elements with spaces in them. - asedeno
+ * Deal with smart-narrowing when the user's screenname has spaces in it. - asedeno
+ * Add a new struct member to the global to hold an escaped aim screenname.
+    populate the aforementioned new struct member. - asedeno
+ * Removed our debian subdirectory, per Debian guidelines, at broder's
+   request. - geofft
+ * Make `all' the first target so we build the modules by default - nelhage
+ * Commit inc/ under IRC so we build on systems with too old a M::I - nelhage
+ * updating contributors - nelhage
+ * Clean up licensing information and add a COPYING file - nelhage
+ * Update bugs email to a more professional looking address, and remove the
+   Development build warning. - nelhage
+
+BarnOwl r989 (2008-03-21)
+ * Stick modules on the beginning of @INC, not the end - nelhage
+ * Merge in the select branch. BarnOwl's main loop now uses a select()
+   based event loop rather than continually polling, and uses much less
+   CPU. - asedeno
+ * Fix a bug where an explicit (local) realm foiled
+   owl_message_get_cc_without_recipient(). (per quentin) - geofft
+ * HTML Filtering fix for BODY tag - austein
+ * Add parenthesis to fix a perl error in IRC - nelhage
+ * Make IRC admin messages actually display their content - nelhage
+ * Fix a file descriptor leak. - asedeno
+ * Fix loading PAR modules that weren't present at startup - nelhage
+ * Update perlwrap.pm documentation for the select() BarnOwl - nelhage
+ * Render IRC notices as normal messages - nelhage
+ * ensure that even if ioctl(,TIOCGWINSZ,) returns 0s we never set g->lines
+   (and g->cols) to 0 - shadow
+ * Generate less ugly error spew if a module fails to load - nelhage
+ * Added :webzephyr command with keybinding W. - geofft
+ * Fix a race condition in which zephyrs received during init are not noticed
+   until the next zephyr after entering the mainloop. - asedeno
+
+BarnOwl r941 (2008-02-18)
+ * unicode/glib branch Remove a debug message I accidentally left in. Remove
+   the hours old check_utf8 hackery in favor of actually marking strings as
+   UTF-8 from the C side. - asedeno
+ * unicode/glib branch Remove more bad hacks. - asedeno
+ * Rewrite ::Connection to not subclass Net::IRC::Connection to avoid stupid
+   namespace conflicts - nelhage
+ * svn:ignore for great justice - nelhage
+ * Attempt to load BarnOwl::MessageList::SQL and error if it fails. Note that
+   the aforementioned class n'existe pas - nelhage
+ * unicode/glib branch editwin.c - lots of utf-8 cleanup that I had been
+   putting off. util.c - a can we break here'' function based on perl's
+   Text::WrapI18N - asedeno
+ * unicode/glib branch editwin.c - fix a wrapping bug I introduced in the
+   last revision. It could leave us with a buffer that was not valid UTF-
+   8 - asedeno
+ * dropping one unnecessary time(NULL) call. - asedeno
+ * unicode/glib branch removing more hackery I left behind after doing things
+   the right way. - asedeno
+ * unicode/glib branch better compliance with UTF-8 processing. Stop trying
+   to pull in a UTF-8 character as soon as we know something has gone
+   wrong. - asedeno
+*        First prototype of a SQL-backed message list. This is probably
+        horribly broken, and is painfully slow at the moment. - nelhage
+ * minor changes to IRC
+ * Resizing should not leave the current message off screen. - asedeno
+ * Added initial IRC support. Not built or installed by default. - geofft
+ * Preserve colors when highlighting search terms. - asedeno
+ * Handle zephyrs to users on non -c message better [trac #39] - nelhage
+ * Make :reload-modules work correctly with PARs - nelhage
+ * Document (nearly) every public function in the BarnOwl:: namespace -
+   nelhage
+ * strip IRC coloring from IRC messages - nelhage
+ * Document ::Hook and ::Hooks - nelhage
+ * Nuke the stylefunc_default C code - nelhage
+ * Nuke some refs to owl_message_get_notice - nelhage
+ * Clearing the line should preserve the echochar. - asedeno
+ * Fix logins to jabber.org - reported by gendalia - asedeno
+ * Move oneline style to perl. [trac #43] - nelhage
+ * Fix the error messages sending to users who don't exist or aren't signed
+   on. - nelhage
+ * Jabber Buddy Lists:
+  * Query the jabber:show_offline_buddies once when invoking onGetBuddyList()
+  * Don't bold online roster entries when hiding offline ones - asedeno
+ * Portability - removing C++ style comments. - asedeno
+ * Add the variable 'zsender' to customize the outgoing Zephyr
+   username. - geofft
+ * Bind M-left and M-right by default in the editor - nelhage
+ * eliminate a segfault. - asedeno
+
+BarnOwl r796 (2008-01-08)
+ * Define variables at the top of blocks for better ANSI C-ness (patch by
+   Chris Laas) [trac #18] - nelhage
+ * Implement :punt and :unpunt to punt arbitrary filters, rather than just z-
+   triplets. [trac #6] - nelhage
+ * Show non-personal pings like stock owl does. [trac #12] - nelhage
+ * Fix problems with jabber servers keeping the same stream id when
+   negotiating TLS tracked down by Greg Hudson. - asedeno
+ * When we're narrowing to an instance, properly include un-instances. This
+   fixes narrowing to any instance that starts with ``un-'' - nelhage
+ * Don't read before the start of the string for an instance - nelhage
+ * Adding an explicit -f - to the tar commands for FreeBSD compatibility
+   (reported by ecprice) - nelhage
+ * Some fixes for FreeBSD. - ecprice
+ * Do ~-expansion in :loadsubs. [trac #26] - nelhage
+ * Validate JIDs passed to jmuc join. [trac #25] - nelhage
+ * Show full JIDs for users in non-anonymous JIDs in :jmuc presence. [trac
+   #24] - nelhage
+ * Don't crash if we hit `i' on a zephyr containing non-ASCII iso-8859-
+   *. - nelhage
+ * added -m flag to aimwrite - matt
+ * aimwrite -m displays according to displayoutgoing - austein
+ * Make the usleep call more reasonable for less CPU usage - asedeno
+ * Add zip as build-depends - nelhage
+ * bind END in popless windows. [trac #41] - nelhage
+ * Allow C-r on outgoing messages (useful for CCs) - chmrr
+ * Identify ourselves as barnowl more consistently - chmrr
+ * Report subscription errors more accurately. - chmrr
+
+BarnOwl r751 (2007-08-01)
+ * Refactored message processing: All new messages, incoming or outgoing, get
+   added to the owl_global_messagequeue by protocol code, and then passed to
+   owl_proces_message, which serves as a single central code path for adding
+   messages to the message list. - nelhage
+ * Properly pass the usage when defining the jabberlogin command - nelhage
+ * Outgoing messages now log as much information as incoming messages - chmrr
+ * Fix a pointer corruption issue if we redefine the current style. - nelhage
+ * Adding 3 variables for the Jabber module: jabber:show_offline_buddies,
+   jabber:auto_away_timeout, jabber:auto_xa_timeout - asedeno
+ * Don't include self when replying to CC'd messages - chmrr
+ * Outgoing CC'd messages get logged to all recipients - chmrr
+ * Incoming CC'd zephyrs logged to all people they were sent to - chmrr
+ * Change the width at which we hard-wrap outgoing zephyrs by default so
+   that zephyrs will fit on screen with the default style. (suggested by
+   andersk) - nelhage
+ * Added a -s switch to change the location of the config dir (~/.owl) -
+   nelhage
+ * Don't allow you to go off the end of an empty message list. [trac
+   #9] - nelhage
+ * Allow you to send to -c message -i personal * - nelhage
+ * Make zephyr smartnarrow use the `personal' and `private' distinction
+   properly [trac #2] - nelhage
+ * Change the default personal filter to <message,personal,*> for
+   zephyr. - nelhage
+ * Display opcodes with the default style - nelhage
+
+BarnOwl r720 (2007-05-29)
+ * Correctly define a ``private'' zephyr as one that is sent to a
+    recipient that is neither empty nor starts with ``@'' - nelhage
+ * Fix builds under make -j - nelhage
+ * Fix sending of zcrypted zephyrs - nelhage
+ * Rewrite perl internals to factor out module loading. - nelhage
+ * Fix display of zephyrs with empty instances - nelhage
+ * Implemented a Module::Install plugin for building barnowl plugins - nelhage
+ * Modified the makefile to build and install perl modules - nelhage
+ * Fix the bug in which rejoining a MUC you're already in (nick change)
+   results in the MUC appearing multiple times when you show presence info for
+   all MUCs. - asedeno
+ * Implemented loading of both PAR and unpacked modules, and module
+   reloading. - nelhage
+ * Make the Makefile build and install perl modules on a clean install.
+   - nelhage
+ * Implemented an LRU cache of the message list fmtexts. This reduces
+   memory usage by roughly 1MB/kilo-zephyrs in steady state. - nelhage
+ * Escape $ in regexes (e.g. smartnarrowed instances)
+  - nelhage
+ * Adding 256-color support. This requires a version of ncurses that supports
+   ABI-6. Colors beyond the first eight are refered to by number. - asedeno
+ * Correctly escape {} and () in regular expressions - nelhage
+ * When generating filters, change single quotes and double quotes into
+   dots, so they line parser doesn't choke on them. This fixes problems
+   smart-narrowing to instances such as "this'll break it". - asedeno
+ * Improving the private/personal distinction:
+ * ``private'' means to/or from an individual, not a chat/class/etc.
+ * ``personal'' means ``matches the personal filter'' - nelhage
+ * Beep on personal messages, not private, by default.
+  - nelhage
+ * Some small doc fixes (thanks to jwalden for pointing them out). - nelhage
+ * Added the ability to define new variables from perl. - nelhage
+ * Documented said ability via BarnOwl::new_variable_* - nelhage
+ * Add a "setsearch" command which sets the search highlight string without
+   moving the cursor. - glasser
+
+BarnOwl r657 (2007-03-06)
+ * Fix libfaim to make it compile - nelhage
+ * Apply some memory leak patches by alexmv and yoz - nelhage
+ * Make smartnarrow un- and .d-aware - chmrr
+ * Add a `getstyle' command - asedeno
+ * Make Test failures print file/line numbers - nelhage
+ * Fixed regression tests for booleans variables. - asedeno
+ * Add a perl perl hook into owl's main loop. - asedeno
+ * Added the ability to install real commands from perl code - nelhage
+ * Fix a hang in owl_editwin_move_to_previousword - nelhage
+ * Updated the version number and startup message - nelhage
+ * Added initial support for creating and injecting messages into the display
+   from perl. - nelhage
+ * Added the ability for perl code to hang arbitrary reply commands off of
+   messages. - nelhage
+ * Expose the edit window hooks to perl - nelhage
+ * Removed references to -ldes - kchen
+ * Exposed owl_function_error and owl_function_makemsg as commands - nelhage
+ * Implemented initial Jabber support. - asedeno
+ * Implemented initial Jabber groupchat support. - asedeno
+ * Added a perl hook to the buddy list display - nelhage
+ * Added a get_data_dir function to the perl interface - hartmans
+ * Don't include the default typemap in xsubpp compile line - hartmans
+ * Cause perl to always be loaded, even if no owlconf is present. - hartmans
+ * Implemented an extensible perl module system - hartmans
+ * Exposed owl_fuction_popless_text() and owl_fuction_popless_ztext() to
+   perl - asedeno
+ * Support multiple simaltaneous Jabber connections - asedeno
+ * Fixed a segfault on subbing without a .zephyr.subs file - nelhage
+ * Implemented Jabber Roster support - asedeno
+ * Don't quit if we can't contact the hostmaster. - nelhage
+ * Support filters based on arbitrary message attributes - nelhage
+ * Rewrote and massively cleaned up the filter system internals. - nelhage
+ * Fixed the ``personal'' filter to work better with all protocols - nelhage
+ * Made `smartnarrow' more generic, and implemented it for jabber. - nelhage
+ * Changed executable name to "barnowl" - nelhage
+ * Renamed the `owl::' package to BarnOwl:: - nelhage
+ * Dynamically link perl libraries - nelhage
+ * Added background color support - asedeno
+ * Added idle-time tracking, and updated jabber to automatically set away
+   status - asedeno
+ * Implemented shortnames for jabber rosters and jwriting. - nelhage
+ * Fixed a crash when smartnarrowing to instances with lots of periods or
+   other regular expression metacharacters. - nelhage
+ * Support comments in ~/.owl/startup - asedeno
+ * Dispal tweaks for MIT's -c discuss messages. - asedeno
+ * Don't override perl's idea of the switches we need to do embedding. -
+   shadow
+ * Make the default style perl, rather than C. - nelhage
+ * Refactor the default style to be protocol generic - nelhage
+ * Prefer ~/.barnowlconf to .owlconf, if it exists. - nelhage
+ * Intern hostnames and message attribute keys for a slight memory
+   saving. - nelhage
+ * Use libncursesw when available - asedeno
+
 2.1.12pre
         Don't crash when sending/logging outgoing 
 	   AIM message and not logged in [BZ 90]
