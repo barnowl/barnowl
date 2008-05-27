@@ -3518,7 +3518,7 @@ void owl_function_source(char *filename)
     file=fopen(filename, "r");
   }
   if (!file) {
-    /* just fail silently if it doesn't exist */
+    owl_function_error("Error opening file: %s", filename);
     return;
   }
   while (fgets(buff, LINE, file)!=NULL) {
