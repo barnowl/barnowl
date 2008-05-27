@@ -1,6 +1,7 @@
 $Id$
 
 1.0.0
+ * Only hang for 1s, rather than 10s, if there is no zhm - nelhage
  * Merge the unicode branch to trunk. BarnOwl is now unicode aware
    and can send, receive, input and display UTF-8 encoded
    messages. Unicode changelog:
