@@ -16,7 +16,17 @@ int owl_zephyr_initialize()
 {
 #ifdef HAVE_LIBZEPHYR
   int ret;
-  
+  ZNotice_t notice;
+
+  /* Stat the zhm manually, with a shorter timeout */
+  if ((ret = ZOpenPort(NULL)) != ZERR_NONE)
+    return(ret);
+
+  if ((ret = owl_zhm_stat(&notice)) != ZERR_NONE)
+    return(ret);
+
+  ZClosePort();
+
   if ((ret = ZInitialize()) != ZERR_NONE) {
     com_err("owl",ret,"while initializing");
     return(1);
@@ -28,6 +38,65 @@ int owl_zephyr_initialize()
 #endif
   return(0);
 }
+
+#ifdef HAVE_LIBZEPHYR
+#define HM_SVC_FALLBACK		htons((unsigned short) 2104)
+
+/*
+ * Code modified from libzephyr's ZhmStat.c
+ *
+ * Modified to only wait one second to time out if there is no
+ * hostmanager present, rather than a rather excessive 10 seconds.
+ */
+Code_t owl_zhm_stat(ZNotice_t *notice) {
+  struct servent *sp;
+  struct sockaddr_in sin;
+  ZNotice_t req;
+  Code_t code;
+  struct timeval tv;
+  fd_set readers;
+
+  (void) memset((char *)&sin, 0, sizeof(struct sockaddr_in));
+
+  sp = getservbyname(HM_SVCNAME, "udp");
+
+  sin.sin_port = (sp) ? sp->s_port : HM_SVC_FALLBACK;
+  sin.sin_family = AF_INET;
+
+  sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+  (void) memset((char *)&req, 0, sizeof(req));
+  req.z_kind = STAT;
+  req.z_port = 0;
+  req.z_class = HM_STAT_CLASS;
+  req.z_class_inst = HM_STAT_CLIENT;
+  req.z_opcode = HM_GIMMESTATS;
+  req.z_sender = "";
+  req.z_recipient = "";
+  req.z_default_format = "";
+  req.z_message_len = 0;
+	
+  if ((code = ZSetDestAddr(&sin)) != ZERR_NONE)
+    return(code);
+
+  if ((code = ZSendNotice(&req, ZNOAUTH)) != ZERR_NONE)
+    return(code);
+
+  /* Wait up to 1 second for a response. */
+  FD_ZERO(&readers);
+  FD_SET(ZGetFD(), &readers);
+  tv.tv_sec = 1;
+  tv.tv_usec = 0;
+  code = select(ZGetFD() + 1, &readers, NULL, NULL, &tv);
+  if (code < 0 && errno != EINTR)
+    return(errno);
+  if (code == 0 || (code < 0 && errno == EINTR) || ZPending() == 0)
+    return(ZERR_HMDEAD);
+
+  return(ZReceiveNotice(notice, (struct sockaddr_in *) 0));
+}
+
+#endif
 
 int owl_zephyr_shutdown()
 {
