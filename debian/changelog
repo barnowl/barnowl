@@ -1,3 +1,9 @@
+barnowl (1.0.0-1) unstable; urgency=low
+
+  * First upstream release
+
+ -- Sam Hartman <hartmans@debian.org>  Wed, 28 May 2008 10:40:54 -0400
+
 barnowl (1.0-0debathena1) unstable; urgency=low
 
   * New upstream version - 1.0 release
