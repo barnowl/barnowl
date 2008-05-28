@@ -31,7 +31,7 @@ OWL_SRC = owl.c
 TESTER_SRC = tester.c
 
 EXE = barnowl
-PERL_MODULES = Jabber
+PERL_MODULES = Jabber IRC
 MODULE_DIRS = $(PERL_MODULES:%=perl/modules/%)
 
 BASE_OBJS = $(BASE_SRCS:.c=.o)
