@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+
+DEB_AUTO_UPDATE_AUTOCONF = 2.50
+DEB_AUTO_UPDATE_DEBIAN_CONTROL = yes
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/rules/patchsys-quilt.mk
+include /usr/share/cdbs/1/class/autotools.mk
+
+DEB_DH_INSTALL_SOURCEDIR = $(DEB_DESTDIR)
+CFLAGS += -DOWL_VERSION_STRING=\"\\\"$(shell dpkg-parsechangelog | sed -ne 's/Version: //p')\\\"\"
+
+clean::
+	rm -f configure
+	rm -f perl/modules/Jabber/Makefile.old
+	rm -f perl/modules/Jabber/Jabber.par
+	rm -f perl/modules/IRC/Makefile.old
+	rm -f perl/modules/IRC/IRC.par

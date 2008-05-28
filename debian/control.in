@@ -1,0 +1,30 @@
+Source: barnowl
+Section: net
+Priority: optional
+Maintainer: Debian-Athena Project <debathena@mit.edu>
+Build-Depends: @cdbs@, libglib2.0-dev, libzephyr-dev, libncurses5-dev, libncursesw5-dev, libkrb5-dev, libperl-dev, pkg-config, zip
+Standards-Version: 3.7.2
+
+Package: barnowl
+Architecture: any
+Depends: ${shlibs:Depends}, ${perl:Depends}, libnet-dns-perl, libauthen-sasl-perl, libdigest-sha1-perl, libgssapi-perl, libio-socket-ssl-perl, libpar-perl
+Recommends: zephyr-clients
+Description: A curses-based tty Jabber and Zephyr client
+ A curses-based instant-messaging client supporting the Zephyr,
+ Jabber, and AIM protocols.  Much of the functionality is written in
+ Perl, which is supported as an extension language.
+ .
+ This is a fork of ktools software's owl Zephyr/AIM client.
+
+Package: barnowl-irc
+Architecture: all
+Depends: ${shlibs:Depends}, ${perl:Depends}, libnet-irc-perl, libclass-accessor-perl, barnowl
+Description: Provide IRC support for the BarnOwl Zephyr client
+ Install the Perl-based IRC module which will add IRC support to
+ BarnOwl the next time it is reloaded.
+ .
+ BarnOwl is a curses-based instant-messaging client supporting the
+ Zephyr, Jabber, and AIM protocols. Much of the functionality is
+ written in Perl, which is supported as an etension language.
+ .
+ BarnOwl is a fork of ktools software's owl Zephyr/AIM client.
