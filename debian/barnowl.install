@@ -1,3 +1,4 @@
 usr/bin/barnowl
 usr/share/barnowl/lib/*
 usr/share/man/man1/barnowl.1
+usr/share/barnowl/modules/Jabber.par
