@@ -73,6 +73,9 @@ sub onStart {
 	BarnOwl::new_variable_bool("jabber:show_offline_buddies",
 				   { default => 1,
 				     summary => 'Show offline or pending buddies.'});
+	BarnOwl::new_variable_bool("jabber:spew",
+				   { default => 0,
+				     summary => 'Display unrecognized Jabber messages.'});
 	BarnOwl::new_variable_int("jabber:auto_away_timeout",
 				  { default => 5,
 				    summary => 'After minutes idle, auto away.',
@@ -973,7 +976,9 @@ sub process_incoming_normal_message {
     #	}
     #    }
     #
-    BarnOwl::queue_message( BarnOwl::Message->new(%jhash) );
+    if(BarnOwl::getvar('jabber:spew') eq 'on') {
+        BarnOwl::queue_message( BarnOwl::Message->new(%jhash) );
+    }
 }
 
 sub process_muc_presence {
