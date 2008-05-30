@@ -1022,6 +1022,9 @@ sub style_command {
     my $perl = shift;
     my $fn   = shift;
     {
+        # For historical reasons, assume unqualified references are
+        # in main::
+        package main;
         no strict 'refs';
         unless(*{$fn}{CODE}) {
             die("Unable to create style '$name': no perl function '$fn'\n");
@@ -1054,8 +1057,11 @@ sub format_message {
     if($self->{useglobals}) {
         $_[0]->legacy_populate_global();
     }
-    no strict 'refs';
-    goto \&{$self->{function}};
+    {
+      package main;
+      no strict 'refs';
+      goto \&{$self->{function}};
+    }
 }
 
 

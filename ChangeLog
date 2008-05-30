@@ -1,5 +1,14 @@
 $Id$
 
+1.0.1
+ * Remove an unneeded .orig file from libfaim/ - hartmans
+ * Update the copyright notice in ':show license' - nelhage
+ * Add a jabber:spew variable that controls whether unrecognized
+   Jabber messages (such as pubsub requests) are displayed. - nelhage
+ * Make the 'style' command assume the main:: package for
+   unqualified subroutine references. Reported by Jesse Vincent. - nelhage
+ * Rename doc/contributors to the more canonical AUTHORS - nelson
+
 1.0.0
  * Don't fail silently when sourcing a file; actually let the user know. - asedeno
  * Only hang for 1s, rather than 10s, if there is no zhm - nelhage
