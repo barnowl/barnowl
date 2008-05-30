@@ -1,3 +1,13 @@
+barnowl (1.0.1-1) unstable; urgency=low
+
+  * New Upstream version
+  * Upload to Debian, Closes: #483382
+      - The IRC module is split into its own package at the request of
+    upstream.  They believe it is less stable than the rest of the
+    project.  
+
+ -- Sam Hartman <hartmans@debian.org>  Fri, 30 May 2008 19:38:19 -0400
+
 barnowl (1.0.0-1) unstable; urgency=low
 
   * First upstream release
