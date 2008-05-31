@@ -10,7 +10,8 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${perl:Depends}, libnet-dns-perl, libauthen-sasl-perl, libdigest-sha1-perl, libgssapi-perl, libio-socket-ssl-perl, libpar-perl
 Suggests: zephyr-clients
 Description: A curses-based tty Jabber and Zephyr client
- A curses-based instant-messaging client supporting the Jabber, IRC, AIM and Zephyr  protocols.  Much of the functionality is written in
+ A curses-based instant-messaging client supporting the Jabber, IRC, AIM 
+ and Zephyr  protocols.  Much of the functionality is written in
  Perl, which is supported as an extension language.
  .
  This is a fork of ktools software's owl Zephyr/AIM client.
