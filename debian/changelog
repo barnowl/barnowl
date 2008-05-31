@@ -1,3 +1,10 @@
+barnowl (1.0.1-2) unstable; urgency=low
+
+  * Don't include LGPL in debian/copyright
+  * Fix description line
+
+ -- Sam Hartman <hartmans@debian.org>  Sat, 31 May 2008 10:55:08 -0400
+
 barnowl (1.0.1-1) unstable; urgency=low
 
   * New Upstream version
