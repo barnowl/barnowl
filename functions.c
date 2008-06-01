@@ -1632,10 +1632,6 @@ void owl_function_info()
 #endif    
   }
 
-  if (owl_message_is_type_aim(m)) {
-    owl_fmtext_append_bold(&fm, "\nAIM Specific Information:\n");
-  }
-
   owl_fmtext_append_bold(&fm, "\nOwl Message Attributes:\n");
   owl_message_attributes_tofmtext(m, &attrfm);
   owl_fmtext_append_fmtext(&fm, &attrfm);
@@ -1963,14 +1959,6 @@ void owl_function_status()
   owl_fmtext_append_normal(&fm, "no\n");
 #endif
   
-
-  owl_fmtext_append_normal(&fm, "\nMemory Usage:\n");
-  owl_fmtext_append_normal(&fm, "  Not currently available.\n");
-  /*
-  sprintf(buff, "%sMemory Malloced: %i\n", buff, owl_global_get_malloced(&g));
-  sprintf(buff, "%sMemory Freed: %i\n", buff, owl_global_get_freed(&g));
-  sprintf(buff, "%sMemory In Use: %i\n", buff, owl_global_get_meminuse(&g));
-  */
 
   owl_fmtext_append_normal(&fm, "\nAIM Status:\n");
   owl_fmtext_append_normal(&fm, "  Logged in: ");

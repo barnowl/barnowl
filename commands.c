@@ -244,7 +244,7 @@ owl_cmd commands_to_init[]
   OWLCMD_ARGS("delbuddy", owl_command_delbuddy, OWL_CTX_INTERACTIVE,
 	      "delete a buddy from a buddylist",
 	      "delbuddy <protocol> <screenname>",
-	      "Delete the named buddy to your buddylist.  <protocol< can be aim or zephyr\n"),
+	      "Delete the named buddy from your buddylist.  <protocol> can be aim or zephyr\n"),
 
   OWLCMD_ARGS("join", owl_command_join, OWL_CTX_INTERACTIVE,
 	      "join a chat group",
@@ -749,7 +749,7 @@ owl_cmd commands_to_init[]
               ""),
 
   OWLCMD_ARGS("message", owl_command_message, OWL_CTX_ANY,
-              "Display an informatative message",
+              "Display an informative message",
               "message <message>",
               ""),
 
