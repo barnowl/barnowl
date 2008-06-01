@@ -182,7 +182,6 @@ int main(int argc, char **argv, char **env)
   if (confdir) owl_global_set_confdir(&g, confdir);
   owl_function_debugmsg("startup: first available debugging message");
   owl_global_set_startupargs(&g, argcsave, argvsave);
-  owl_global_set_haveaim(&g);
 
   /* prepare stdin dispatch */
   {
@@ -299,10 +298,6 @@ int main(int argc, char **argv, char **env)
   /* set the current view */
   owl_function_debugmsg("startup: setting the current view");
   owl_view_create(owl_global_get_current_view(&g), "main", f, owl_global_get_style_by_name(&g, "default"));
-
-  /* AIM init */
-  owl_function_debugmsg("startup: doing AIM initialization");
-  owl_aim_init();
 
   /* execute the startup function in the configfile */
   owl_function_debugmsg("startup: executing perl startup, if applicable");
@@ -563,11 +558,8 @@ int owl_process_message(owl_message *m) {
     if (owl_global_is_zaway(&g) && !owl_message_get_attribute_value(m, "isauto")) {
       if (owl_message_is_type_zephyr(m)) {
         owl_zephyr_zaway(m);
-      } else if (owl_message_is_type_aim(m)) {
-        if (owl_message_is_private(m)) {
-          owl_function_send_aimawymsg(owl_message_get_sender(m), owl_global_get_zaway_msg(&g));
-        }
       }
+      /* TODO add perl hooks for away messages */
     }
 
     /* ring the bell if it's a personal */
@@ -608,20 +600,6 @@ int owl_process_message(owl_message *m) {
   owl_log_message(m);
 
   return 1;
-}
-
-void owl_process_aim()
-{
-  if (owl_global_is_doaimevents(&g)) {
-    owl_aim_process_events();
-    
-    if (owl_global_is_aimloggedin(&g)) {
-      if (owl_timer_is_expired(owl_global_get_aim_buddyinfo_timer(&g))) {
-        /* owl_buddylist_request_idletimes(owl_global_get_buddylist(&g)); */
-        owl_timer_reset(owl_global_get_aim_buddyinfo_timer(&g));
-      }
-    }
-  }
 }
 
 void owl_process_input()

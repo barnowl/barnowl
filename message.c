@@ -574,26 +574,6 @@ void owl_message_set_isanswered(owl_message *m) {
   owl_message_set_attribute(m, "question", "answered");
 }
 
-int owl_message_is_from_me(owl_message *m)
-{
-  if (owl_message_is_type_zephyr(m)) {
-    if (!strcasecmp(owl_message_get_sender(m), owl_zephyr_get_sender())) {
-      return(1);
-    } else {
-      return(0);
-    }
-  } else if (owl_message_is_type_aim(m)) {
-    if (!strcasecmp(owl_message_get_sender(m), owl_global_get_aim_screenname(&g))) {
-      return(1);
-    } else {
-      return(0);
-    }
-  } else if (owl_message_is_type_admin(m)) {
-    return(0);
-  }
-  return(0);
-}
-
 int owl_message_is_mail(owl_message *m)
 {
   if (owl_message_is_type_zephyr(m)) {
@@ -614,30 +594,6 @@ int owl_message_is_ping(owl_message *m)
     } else {
       return(0);
     }
-  }
-  return(0);
-}
-
-int owl_message_is_burningears(owl_message *m)
-{
-  /* we should add a global to cache the short zsender */
-  char sender[LINE], *ptr;
-
-  /* if the message is from us or to us, it doesn't count */
-  if (owl_message_is_from_me(m) || owl_message_is_private(m)) return(0);
-
-  if (owl_message_is_type_zephyr(m)) {
-    strcpy(sender, owl_zephyr_get_sender());
-    ptr=strchr(sender, '@');
-    if (ptr) *ptr='\0';
-  } else if (owl_message_is_type_aim(m)) {
-    strcpy(sender, owl_global_get_aim_screenname(&g));
-  } else {
-    return(0);
-  }
-
-  if (stristr(owl_message_get_body(m), sender)) {
-    return(1);
   }
   return(0);
 }

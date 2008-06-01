@@ -86,17 +86,6 @@ void owl_log_zephyr(owl_message *m, FILE *file) {
     owl_free(tmp);
 }
 
-void owl_log_aim(owl_message *m, FILE *file) {
-    fprintf(file, "From: <%s> To: <%s>\n", owl_message_get_sender(m), owl_message_get_recipient(m));
-    fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
-    if (owl_message_is_login(m))
-        fprintf(file, "LOGIN\n\n");
-    else if (owl_message_is_logout(m))
-        fprintf(file, "LOGOUT\n\n");
-    else
-        fprintf(file, "%s\n\n", owl_message_get_body(m));
-}
-
 void owl_log_jabber(owl_message *m, FILE *file) {
     fprintf(file, "From: <%s> To: <%s>\n",owl_message_get_sender(m), owl_message_get_recipient(m));
     fprintf(file, "Time: %s\n\n", owl_message_get_timestr(m));
@@ -120,8 +109,6 @@ void owl_log_append(owl_message *m, char *filename) {
         owl_log_zephyr(m, file);
     } else if (owl_message_is_type_jabber(m)) {
         owl_log_jabber(m, file);
-    } else if (owl_message_is_type_aim(m)) {
-        owl_log_aim(m, file);
     } else {
         owl_log_generic(m, file);
     }
@@ -153,13 +140,6 @@ void owl_log_outgoing(owl_message *m)
     to = short_zuser(owl_message_get_recipient(m));
   } else if (owl_message_is_type_jabber(m)) {
     to = owl_sprintf("jabber:%s", owl_message_get_recipient(m));
-  } else if (owl_message_is_type_aim(m)) {
-    char *temp2;
-    temp = owl_aim_normalize_screenname(owl_message_get_recipient(m));
-    temp2 = g_utf8_strdown(temp,-1);
-    to = owl_sprintf("aim:%s", temp2);
-    owl_free(temp2);
-    owl_free(temp);
   } else {
     to = owl_sprintf("loopback");
   }
@@ -266,14 +246,6 @@ void owl_log_incoming(owl_message *m)
     } else {
       from=frombuff=owl_strdup(owl_message_get_class(m));
     }
-  } else if (owl_message_is_type_aim(m)) {
-    /* we do not yet handle chat rooms */
-    char *normalto, *temp;
-    temp = owl_aim_normalize_screenname(owl_message_get_sender(m));
-    normalto = g_utf8_strdown(temp, -1);
-    from=frombuff=owl_sprintf("aim:%s", normalto);
-    owl_free(normalto);
-    owl_free(temp);
   } else if (owl_message_is_type_loopback(m)) {
     from=frombuff=owl_strdup("loopback");
   } else if (owl_message_is_type_jabber(m)) {

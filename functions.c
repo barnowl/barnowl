@@ -210,28 +210,6 @@ owl_message *owl_function_make_outgoing_zephyr(char *body, char *zwriteline, cha
   return(m);
 }
 
-/* Create an outgoing AIM message, returns a pointer to the created
- * message or NULL if we're not logged into AIM (and thus unable to
- * create the message).  Does not put it on the global queue.  Use
- * owl_function_add_message() for that .
- */
-owl_message *owl_function_make_outgoing_aim(char *body, char *to)
-{
-  owl_message *m;
-
-  /* error if we're not logged into aim */
-  if (!owl_global_is_aimloggedin(&g)) return(NULL);
-  
-  m=owl_malloc(sizeof(owl_message));
-  owl_message_create_aim(m,
-			 owl_global_get_aim_screenname(&g),
-			 to,
-			 body,
-			 OWL_MESSAGE_DIRECTION_OUT,
-			 0);
-  return(m);
-}
-
 /* Create an outgoing loopback message and return a pointer to it.
  * Does not append it to the global queue, use
  * owl_function_add_message() for that.
@@ -291,37 +269,6 @@ void owl_function_zwrite_setup(char *line)
 
   owl_global_set_buffercommand(&g, line);
   owl_global_set_buffercallback(&g, &owl_callback_zwrite);
-}
-
-void owl_function_aimwrite_setup(char *line)
-{
-  owl_editwin *e;
-  char buff[1024];
-
-  /* check the arguments */
-
-  /* create and setup the editwin */
-  e=owl_global_get_typwin(&g);
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE, owl_global_get_msg_history(&g));
-
-  if (!owl_global_get_lockout_ctrld(&g)) {
-    owl_function_makemsg("Type your message below.  End with ^D or a dot on a line by itself.  ^C will quit.");
-  } else {
-    owl_function_makemsg("Type your message below.  End with a dot on a line by itself.  ^C will quit.");
-  }
-
-  owl_editwin_clear(e);
-  owl_editwin_set_dotsend(e);
-  strcpy(buff, "----> ");
-  strcat(buff, line);
-  strcat(buff, "\n");
-  owl_editwin_set_locktext(e, buff);
-
-  /* make it active */
-  owl_global_set_typwin_active(&g);
-
-  owl_global_set_buffercommand(&g, line);
-  owl_global_set_buffercallback(&g, &owl_callback_aimwrite);
 }
 
 void owl_function_loopwrite_setup()
@@ -448,71 +395,6 @@ void owl_function_zcrypt(char *line, char *msg)
   /* free the zwrite */
   owl_free(cryptmsg);
   owl_zwrite_free(&z);
-}
-
-void owl_callback_aimwrite(owl_editwin *e) {
-  owl_function_aimwrite(owl_editwin_get_command(e),
-                        owl_editwin_get_text(e));
-}
-
-void owl_function_aimwrite(char *line, char *msg)
-{
-  int ret;
-  char *to, *format_msg;
-  owl_message *m;
-
-  to = line + 9;
-
-  /* make a formatted copy of the message */
-  format_msg=owl_strdup(msg);
-  owl_text_wordunwrap(format_msg);
-  
-  /* send the message */
-  ret=owl_aim_send_im(to, format_msg);
-  if (!ret) {
-    owl_function_makemsg("AIM message sent.");
-  } else {
-    owl_function_error("Could not send AIM message.");
-  }
-
-  /* create the outgoing message */
-  m=owl_function_make_outgoing_aim(msg, to);
-
-  if (m) {
-    owl_global_messagequeue_addmsg(&g, m);
-  } else {
-    owl_function_error("Could not create outgoing AIM message");
-  }
-
-  owl_free(format_msg);
-}
-
-void owl_function_send_aimawymsg(char *to, char *msg)
-{
-  int ret;
-  char *format_msg;
-  owl_message *m;
-
-  /* make a formatted copy of the message */
-  format_msg=owl_strdup(msg);
-  owl_text_wordunwrap(format_msg);
-  
-  /* send the message */
-  ret=owl_aim_send_awaymsg(to, format_msg);
-  if (!ret) {
-    /* owl_function_makemsg("AIM message sent."); */
-  } else {
-    owl_function_error("Could not send AIM message.");
-  }
-
-  /* create the message */
-  m=owl_function_make_outgoing_aim(msg, to);
-  if (m) {
-    owl_global_messagequeue_addmsg(&g, m);
-  } else {
-    owl_function_error("Could not create AIM message");
-  }
-  owl_free(format_msg);
 }
 
 void owl_callback_loopwrite(owl_editwin *e) {
@@ -894,22 +776,6 @@ void owl_function_loadloginsubs(char *file)
   }
 }
 
-void owl_callback_aimlogin(owl_editwin *e) {
-  owl_function_aimlogin(owl_editwin_get_command(e),
-                        owl_editwin_get_text(e));
-}
-
-void owl_function_aimlogin(char *user, char *passwd) {
-  int ret;
-
-  /* clear the buddylist */
-  owl_buddylist_clear(owl_global_get_buddylist(&g));
-
-  /* try to login */
-  ret=owl_aim_login(user, passwd);
-  if (ret) owl_function_makemsg("Warning: login for %s failed.\n", user);
-}
-
 void owl_function_suspend()
 {
   endwin();
@@ -942,30 +808,6 @@ void owl_function_zaway_off()
   owl_function_makemsg("zaway off");
 }
 
-void owl_function_aaway_toggle()
-{
-  if (!owl_global_is_aaway(&g)) {
-    owl_global_set_aaway_msg(&g, owl_global_get_aaway_msg_default(&g));
-    owl_function_aaway_on();
-  } else {
-    owl_function_aaway_off();
-  }
-}
-
-void owl_function_aaway_on()
-{
-  owl_global_set_aaway_on(&g);
-  /* owl_aim_set_awaymsg(owl_global_get_zaway_msg(&g)); */
-  owl_function_makemsg("AIM away set (%s)", owl_global_get_aaway_msg(&g));
-}
-
-void owl_function_aaway_off()
-{
-  owl_global_set_aaway_off(&g);
-  /* owl_aim_set_awaymsg(""); */
-  owl_function_makemsg("AIM away off");
-}
-
 void owl_function_quit()
 {
   char *ret;
@@ -987,11 +829,6 @@ void owl_function_quit()
   /* Quit zephyr */
   owl_zephyr_shutdown();
   
-  /* Quit AIM */
-  if (owl_global_is_aimloggedin(&g)) {
-    owl_aim_logout();
-  }
-
   /* done with curses */
   endwin();
 
@@ -1947,7 +1784,7 @@ void owl_function_status()
   } else {
     owl_fmtext_append_normal(&fm, "no\n");
   }
-  owl_fmtext_append_normal(&fm, "  AIM included       : yes\n");
+  owl_fmtext_append_normal(&fm, "  AIM included       : no\n");
   owl_fmtext_append_normal(&fm, "  Loopback included  : yes\n");
 
 
@@ -1959,22 +1796,6 @@ void owl_function_status()
   owl_fmtext_append_normal(&fm, "no\n");
 #endif
   
-
-  owl_fmtext_append_normal(&fm, "\nAIM Status:\n");
-  owl_fmtext_append_normal(&fm, "  Logged in: ");
-  if (owl_global_is_aimloggedin(&g)) {
-    owl_fmtext_append_normal(&fm, owl_global_get_aim_screenname(&g));
-    owl_fmtext_append_normal(&fm, "\n");
-  } else {
-    owl_fmtext_append_normal(&fm, "(not logged in)\n");
-  }
-
-  owl_fmtext_append_normal(&fm, "  Processing events: ");
-  if (owl_global_is_doaimevents(&g)) {
-    owl_fmtext_append_normal(&fm, "yes\n");
-  } else {
-    owl_fmtext_append_normal(&fm, "no\n");
-  }
 
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);
@@ -2118,13 +1939,6 @@ void owl_function_reply(int type, int enter)
           owl_free(tmp);
         }
         if (cc) owl_free(cc);
-      }
-    } else if (owl_message_is_type_aim(m)) {
-      /* aim */
-      if (owl_message_is_direction_out(m)) {
-	buff=owl_sprintf("aimwrite %s", owl_message_get_recipient(m));
-      } else {
-	buff=owl_sprintf("aimwrite %s", owl_message_get_sender(m));
       }
     } else {
       char *cmd;
@@ -2679,50 +2493,6 @@ char *owl_function_zuserfilt(char *user)
   return(filtname);
 }
 
-/* Create a filter for AIM IM messages to or from the specified
- * screenname.  The name of the filter will be 'aimuser-<user>'.  If a
- * filter already exists with this name, no new filter will be
- * created.  This allows the configuration to override this function.
- * Returns the name of the filter, which the caller must free.
- */
-char *owl_function_aimuserfilt(char *user)
-{
-  owl_filter *f;
-  char *argbuff, *filtname;
-  char *escuser;
-
-  /* name for the filter */
-  filtname=owl_malloc(strlen(user)+40);
-  sprintf(filtname, "aimuser-%s", user);
-
-  /* if it already exists then go with it.  This lets users override */
-  if (owl_global_get_filter(&g, filtname)) {
-    return(owl_strdup(filtname));
-  }
-
-  /* create the new-internal filter */
-  f=owl_malloc(sizeof(owl_filter));
-
-  escuser = owl_text_quote(user, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
-
-  argbuff=owl_malloc(1000);
-  sprintf(argbuff,
-          "( type ^aim$ and ( ( sender ^%s$ and recipient ^%s$ ) or ( sender ^%s$ and recipient ^%s$ ) ) )",
-          escuser, owl_global_get_aim_screenname_for_filters(&g),
-          owl_global_get_aim_screenname_for_filters(&g), escuser);
-
-  owl_filter_init_fromstring(f, filtname, argbuff);
-
-  /* add it to the global list */
-  owl_global_add_filter(&g, f);
-
-  /* free stuff */
-  owl_free(argbuff);
-  owl_free(escuser);
-
-  return(filtname);
-}
-
 char *owl_function_typefilt(char *type)
 {
   owl_filter *f;
@@ -2811,16 +2581,6 @@ char *owl_function_smartfilter(int type)
   /* very simple handling of loopback messages for now */
   if (owl_message_is_type_loopback(m)) {
     return(owl_function_typefilt("loopback"));
-  }
-
-  /* aim messages */
-  if (owl_message_is_type_aim(m)) {
-    if (owl_message_is_direction_in(m)) {
-      filtname=owl_function_aimuserfilt(owl_message_get_sender(m));
-    } else if (owl_message_is_direction_out(m)) {
-      filtname=owl_function_aimuserfilt(owl_message_get_recipient(m));
-    }
-    return(filtname);
   }
 
   /* narrow personal and login messages to the sender or recip as appropriate */
@@ -3256,12 +3016,9 @@ char *owl_function_ztext_stylestrip(char *zt)
 /* Popup a buddylisting.  If filename is NULL use the default .anyone */
 void owl_function_buddylist(int aim, int zephyr, char *filename)
 {
-  int i, j, x, idle;
+  int i, j, x;
   owl_fmtext fm;
-  owl_buddylist *bl;
-  owl_buddy *b;
   owl_list anyone;
-  char *foo, *timestr;
 #ifdef HAVE_LIBZEPHYR
   char *tmp, *user, *line;
   ZLocations_t location[200];
@@ -3270,27 +3027,8 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
 
   owl_fmtext_init_null(&fm);
 
-  /* AIM first */
-  if (aim && owl_global_is_aimloggedin(&g)) {
-    bl=owl_global_get_buddylist(&g);
-
-    owl_fmtext_append_bold(&fm, "AIM users logged in:\n");
-    /* we're assuming AIM for now */
-    j=owl_buddylist_get_size(bl);
-    for (i=0; i<j; i++) {
-      b=owl_buddylist_get_buddy_n(bl, i);
-      idle=owl_buddy_get_idle_time(b);
-      if (idle!=0) {
-	timestr=owl_util_minutes_to_timestr(idle);
-      } else {
-	timestr=owl_strdup("");
-      }
-      foo=owl_sprintf("  %-20.20s %-12.12s\n", owl_buddy_get_name(b), timestr);
-      owl_fmtext_append_normal(&fm, foo);
-      owl_free(timestr);
-      owl_free(foo);
-    }
-  }
+  if (aim && !zephyr)
+    owl_fmtext_append_normal(&fm, "Warning: AIM support in C has been disabled.\n");
 
 #ifdef HAVE_LIBZEPHYR
   if (zephyr) {

@@ -9,8 +9,8 @@ bindir = @bindir@
 mandir = @mandir@
 
 CC=@CC@
-LIBS=@LIBS@ -L./libfaim -lfaim
-CFLAGS=@CFLAGS@ -I. -I./libfaim -DDATADIR=\"${datadir}\" -DOWL_SVN_REVNO=$(shell ./svkversion)
+LIBS=@LIBS@
+CFLAGS=@CFLAGS@ -DDATADIR=\"${datadir}\" -DOWL_SVN_REVNO=$(shell ./svkversion)
 LDFLAGS=@LDFLAGS@
 XSUBPPDIR=@XSUBPPDIR@
 XSUBPPFLAGS=@XSUBPPFLAGS@
@@ -24,7 +24,7 @@ BASE_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
      perlconfig.c keys.c functions.c zwrite.c viewwin.c help.c filter.c \
      regex.c history.c view.c dict.c variable.c filterelement.c pair.c \
      keypress.c keymap.c keybinding.c cmd.c context.c zcrypt.c \
-     aim.c buddy.c buddylist.c timer.c style.c errqueue.c \
+     timer.c style.c errqueue.c \
      zbuddylist.c muxevents.c popexec.c obarray.c select.c wcwidth.c \
      glib_compat.c
 OWL_SRC = owl.c
@@ -49,7 +49,7 @@ HEADERS=$(GEN_H) owl.h config.h test.h
 
 all: $(EXE) $(MODULE_DIRS)
 
-$(EXE): $(AUTOGEN) $(OBJS) owl.o libfaim
+$(EXE): $(AUTOGEN) $(OBJS) owl.o
 	$(ATHSTATIC) $(CC) -o $(EXE) owl.o $(OBJS) $(LDFLAGS) $(LIBS)
 
 tester: $(AUTOGEN) $(OBJS) tester.o
@@ -66,10 +66,10 @@ zcrypt.o: zcrypt.c $(HEADERS)
 test: tester
 	./tester reg
 
-clean: libfaimclean modules_clean
+clean: modules_clean
 	$(RM) $(EXE) tester *.o $(AUTOGEN) owl_prototypes.h.new
 
-distclean: clean libfaimdistclean
+distclean: clean
 	$(RM) config.cache config.log config.status  Makefile config.h TAGS *~ core
 
 .PHONY: $(MODULE_DIRS)
@@ -114,17 +114,6 @@ TAGS: $(BASE_SRCS) $(OWL_SRC) $(TESTER_SRC) $(GEN_C) owl.h $(GEN_H)
 	etags $(BASE_SRCS) $(OWL_SRC) $(TESTER_SRC) $(GEN_C) owl.h $(GEN_H)
 
 $(BASE_OBJS) varstubs.h: owl.h config.h owl_prototypes.h
-
-libfaim: libfaim/libfaim.a
-
-libfaim/libfaim.a:
-	(cd libfaim; $(MAKE))
-
-libfaimclean:
-	(cd libfaim; $(MAKE) clean)
-
-libfaimdistclean:
-	(cd libfaim; $(MAKE) distclean)
 
 install: all installdirs
 	${INSTALL_PROGRAM} $(EXE) ${DESTDIR}${bindir}/$(EXE)

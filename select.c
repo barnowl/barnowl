@@ -147,38 +147,11 @@ void owl_select_dispatch(fd_set *fds, int max_fd)
   }
 }
 
-int owl_select_aim_hack(fd_set *rfds, fd_set *wfds)
-{
-  aim_conn_t *cur;
-  aim_session_t *sess;
-  int max_fd;
-
-  FD_ZERO(rfds);
-  FD_ZERO(wfds);
-  max_fd = 0;
-  sess = owl_global_get_aimsess(&g);
-  for (cur = sess->connlist, max_fd = 0; cur; cur = cur->next) {
-    if (cur->fd != -1) {
-      FD_SET(cur->fd, rfds);
-      if (cur->status & AIM_CONN_STATUS_INPROGRESS) {
-        /* Yes, we're checking writable sockets here. Without it, AIM
-           login is really slow. */
-        FD_SET(cur->fd, wfds);
-      }
-      
-      if (cur->fd > max_fd)
-        max_fd = cur->fd;
-    }
-  }
-  return max_fd;
-}
-
 void owl_select()
 {
-  int i, max_fd, aim_max_fd, aim_done;
+  int max_fd;
   fd_set r;
   fd_set e;
-  fd_set aim_rfds, aim_wfds;
   struct timeval timeout;
 
   timeout.tv_sec = 1;
@@ -186,49 +159,7 @@ void owl_select()
 
   max_fd = owl_select_dispatch_prepare_fd_sets(&r, &e);
 
-  /* AIM HACK: 
-   *
-   *  The problem - I'm not sure where to hook into the owl/faim
-   *  interface to keep track of when the AIM socket(s) open and
-   *  close. In particular, the bosconn thing throws me off. So,
-   *  rather than register particular dispatchers for AIM, I look up
-   *  the relevant FDs and add them to select's watch lists, then
-   *  check for them individually before moving on to the other
-   *  dispatchers. --asedeno
-   */
-  aim_done = 1;
-  FD_ZERO(&aim_rfds);
-  FD_ZERO(&aim_wfds);
-  if (owl_global_is_doaimevents(&g)) {
-    aim_done = 0;
-    aim_max_fd = owl_select_aim_hack(&aim_rfds, &aim_wfds);
-    if (max_fd < aim_max_fd) max_fd = aim_max_fd;
-    for(i = 0; i <= aim_max_fd; i++) {
-      if (FD_ISSET(i, &aim_rfds)) {
-        FD_SET(i, &r);
-        FD_SET(i, &e);
-      }
-    }
-  }
-  /* END AIM HACK */
-
-  if ( select(max_fd+1, &r, &aim_wfds, &e, &timeout) ) {
-    /* Merge fd_sets and clear AIM FDs. */
-    for(i = 0; i <= max_fd; i++) {
-      /* Merge all interesting FDs into one set, since we have a
-         single dispatch per FD. */
-      if (FD_ISSET(i, &r) || FD_ISSET(i, &aim_wfds) || FD_ISSET(i, &e)) {
-        /* AIM HACK: no separate dispatch, just process here if
-           needed, and only once per run through. */
-        if (!aim_done && (FD_ISSET(i, &aim_rfds) || FD_ISSET(i, &aim_wfds))) {
-          owl_process_aim();
-          aim_done = 1;
-        }
-        else {
-          FD_SET(i, &r);
-        }
-      }
-    }
+  if ( select(max_fd+1, &r, NULL, &e, &timeout) ) {
     /* NOTE: the same dispatch function is called for both exceptional
        and read ready FDs. */
     owl_select_dispatch(&r, max_fd);

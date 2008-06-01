@@ -19,8 +19,10 @@
 #include <time.h>
 #include <signal.h>
 #include <termios.h>
-#include <libfaim/aim.h>
 #include <wchar.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
 #include "config.h"
 #include "glib.h"
 #ifdef HAVE_LIBZEPHYR
@@ -35,8 +37,6 @@
 typedef void WINDOW;
 /* logout is defined in FreeBSD. */
 #define logout logout_
-/* aim.h defines bool */
-#define HAS_BOOL
 #include <perl.h>
 #include "owl_perl.h"
 #undef logout
@@ -55,7 +55,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 #endif
 
 #ifndef OWL_VERSION_STRING
-#define OWL_VERSION_STRING "1.0.1"
+#define OWL_VERSION_STRING "1.0.1-perlaim-r" BARNOWL_STRINGIFY(OWL_SVN_REVNO)
 #endif
 
 /* Feature that is being tested to redirect stderr through a pipe. 
@@ -582,21 +582,11 @@ typedef struct _owl_global {
   int newmsgproc_pid;
   int malloced, freed;
   char *searchstring;
-  aim_session_t aimsess;
-  aim_conn_t bosconn;
-  owl_timer aim_noop_timer;
-  owl_timer aim_ignorelogin_timer;
-  owl_timer aim_buddyinfo_timer;
-  int aim_loggedin;         /* true if currently logged into AIM */
-  int aim_doprocessing;     /* true if we should process AIM events (like pending login) */
-  char *aim_screenname;     /* currently logged in AIM screen name */
-  char *aim_screenname_for_filters;     /* currently logged in AIM screen name */
   owl_buddylist buddylist;  /* list of logged in AIM buddies */
   owl_list messagequeue;    /* for queueing up aim and other messages */
   owl_dict styledict;       /* global dictionary of available styles */
   char *response;           /* response to the last question asked */
   int havezephyr;
-  int haveaim;
   int got_err_signal;	    /* 1 if we got an unexpected signal */
   siginfo_t err_signal_info;
   owl_zbuddylist zbuddies;
