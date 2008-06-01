@@ -26,7 +26,7 @@ sub cmd_aimlogin {
                 cmd_aimlogin($cmd, $user, @_);
                 });
     } else {
-        $oscar = Net::OSCAR->new();
+        my $oscar = Net::OSCAR->new();
         $oscar->set_callback_im_in(\&on_im_in);
         $oscar->signon($user, $pass);
     }
@@ -42,3 +42,7 @@ sub on_im_in {
             );
     BarnOwl::queue_message($msg);
 }
+
+BarnOwl::new_command(aimlogin => \&cmd_aimlogin, {});
+
+1;

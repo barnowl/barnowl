@@ -50,9 +50,14 @@ sub load_xml(;$) {
 	# Look for parsed-xml file
 	if(!$NO_XML_CACHE) {
 		foreach (@INC) {
-			next unless -f "$_/Net/OSCAR/XML/Protocol.parsed-xml";
+			next unless ref($_) eq 'CODE' || -f "$_/Net/OSCAR/XML/Protocol.parsed-xml";
 
-			open(XMLCACHE, "$_/Net/OSCAR/XML/Protocol.parsed-xml") or next;
+			if (ref($_) eq 'CODE') {
+				*XMLCACHE = $_->($_, 'Net/OSCAR/XML/Protocol.parsed-xml');
+				next if (\*XMLCACHE == undef);
+			} else {
+				open(XMLCACHE, "$_/Net/OSCAR/XML/Protocol.parsed-xml") or next;
+			}
 			my $xmlcache = join("", <XMLCACHE>);
 			close(XMLCACHE);
 
