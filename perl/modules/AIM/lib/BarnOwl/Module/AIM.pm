@@ -15,22 +15,7 @@ package BarnOwl::Module::AIM;
 
 use Net::OSCAR;
 
-sub cmd_aimlogin { 
-    my ($cmd, $user, $pass) = @_;
-    if (undef $user) {
-        BarnOwl::start_question('Username: ', sub {
-                cmd_aimlogin($cmd, @_);
-                });
-    } elsif (undef $pass) {
-        BarnOwl::start_password('Password: ', sub {
-                cmd_aimlogin($cmd, $user, @_);
-                });
-    } else {
-        my $oscar = Net::OSCAR->new();
-        $oscar->set_callback_im_in(\&on_im_in);
-        $oscar->signon($user, $pass);
-    }
-}
+our @oscars;
 
 sub on_im_in {
     my ($oscar, $sender, $message, $is_away) = @_;
@@ -43,6 +28,39 @@ sub on_im_in {
     BarnOwl::queue_message($msg);
 }
 
+sub cmd_aimlogin { 
+=comment
+    my ($cmd, $user, $pass) = @_;
+    if (!defined $user) {
+        BarnOwl::start_question('Username: ', sub {
+                cmd_aimlogin($cmd, @_);
+                });
+    } elsif (!defined $pass) {
+        BarnOwl::start_password('Password: ', sub {
+                cmd_aimlogin($cmd, $user, @_);
+                });
+    } else {
+=cut
+    {
+        my $oscar = Net::OSCAR->new();
+        my ($user, $pass) = ('...', '...');
+        $oscar->set_callback_im_in(\&on_im_in);
+        $oscar->signon(
+                screenname => $user,
+                password => $pass
+                );
+        push @oscars, $oscar;
+    }
+}
 BarnOwl::new_command(aimlogin => \&cmd_aimlogin, {});
 
+sub main_loop {
+    for my $oscar (@oscars) {
+        $oscar->do_one_loop();
+    }
+}
+$BarnOwl::Hooks::mainLoop->add(\&main_loop);
+
 1;
+
+# vim: set sw=4 et cin:

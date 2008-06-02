@@ -2469,12 +2469,12 @@ void owl_command_editline_done(owl_editwin *e)
 
 void owl_command_editresponse_done(owl_editwin *e)
 {
-  owl_function_run_buffercommand();
-
   owl_global_set_typwin_inactive(&g);
   owl_editwin_fullclear(e);
   wnoutrefresh(owl_editwin_get_curswin(e));
   owl_global_set_needrefresh(&g);
+
+  owl_function_run_buffercommand();
 }
 
 
