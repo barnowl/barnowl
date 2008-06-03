@@ -1,5 +1,8 @@
 $Id$
 
+1.0.2
+ * Don't complain about non-existant ~/.owl/startup when starting. -asedeno
+	
 1.0.1
  * Remove an unneeded .orig file from libfaim/ - hartmans
  * Update the copyright notice in ':show license' - nelhage

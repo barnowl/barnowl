@@ -3499,15 +3499,17 @@ void owl_function_source(char *filename)
 {
   FILE *file;
   char buff[LINE];
+  int fail_silent = 0;
 
   if (!filename) {
+    fail_silent = 1;
     filename=owl_global_get_startupfile(&g);
-    file=fopen(filename, "r");
-  } else {
-    file=fopen(filename, "r");
   }
+  file=fopen(filename, "r");
   if (!file) {
-    owl_function_error("Error opening file: %s", filename);
+    if (!fail_silent) {
+      owl_function_error("Error opening file: %s", filename);
+    }
     return;
   }
   while (fgets(buff, LINE, file)!=NULL) {
