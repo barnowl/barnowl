@@ -30,8 +30,8 @@ sub smartfilter {
         }
         $filter = "irc-user-$who";
         my $ftext  =
-             qq{type ^irc\$ and ( ( direction ^in\$ and sender ^$who\$ ) }
-           . qq{or ( direction ^out\$ and recipient ^$who\$ ) ) };
+             qq{( type ^irc\$ and filter personal and }
+           . qq{( ( direction ^in\$ and sender ^$who\$ ) or ( direction ^out\$ and recipient ^$who\$ ) ) ) };
         BarnOwl::filter("$filter $ftext");
         return $filter;
     } else {
