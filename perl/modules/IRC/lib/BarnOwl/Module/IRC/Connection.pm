@@ -213,7 +213,7 @@ sub strip_irc_formatting {
     $body =~ s/\cO//g;
     
     my @pieces = split /\cB/, $body;
-     my $out;
+    my $out = '';
     while(@pieces) {
         $out .= shift @pieces;
         $out .= BarnOwl::Style::boldify(shift @pieces) if @pieces;
