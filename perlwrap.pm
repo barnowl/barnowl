@@ -712,7 +712,10 @@ sub _load_owlconf {
         undef $@;
         package main;
         do $BarnOwl::configfile;
-        die $@ if $@;
+        if($@) {
+            BarnOwl::error("In startup: $@\n");
+            return;
+        }
         package BarnOwl;
         if(*BarnOwl::format_msg{CODE}) {
             # if the config defines a legacy formatting function, add 'perl' as a style 
