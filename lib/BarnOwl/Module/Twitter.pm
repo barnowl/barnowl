@@ -19,16 +19,18 @@ use JSON;
 use BarnOwl;
 use BarnOwl::Hooks;
 
-sub fail {
-    my $msg = shift;
-    BarnOwl::admin_message('Twitter Error', $msg);
-    die("Twitter Error: $msg\n");
-}
-
+my $twitter;
 my $user     = BarnOwl::zephyr_getsender();
 my ($class)  = ($user =~ /(^[^@]+)/);
 my $instance = "status";
 my $opcode   = "twitter";
+
+sub fail {
+    my $msg = shift;
+    undef $twitter;
+    BarnOwl::admin_message('Twitter Error', $msg);
+    die("Twitter Error: $msg\n");
+}
 
 # Don't redefine variables if they already exist
 # This is a workaround for http://barnowl.mit.edu/trac/ticket/44
@@ -69,13 +71,13 @@ close($fh);
 eval {
     $cfg = from_json($cfg);
 };
-if(@!) {
-    fail("Unable to parse ~/.owl/twitter: @!");
+if($@) {
+    fail("Unable to parse ~/.owl/twitter: $@");
 }
 
-my $twitter  = Net::Twitter->new(username   => $cfg->{user} || $user,
-                                 password   => $cfg->{password},
-                                 clientname => 'BarnOwl');
+$twitter  = Net::Twitter->new(username   => $cfg->{user} || $user,
+                              password   => $cfg->{password},
+                              clientname => 'BarnOwl');
 
 if(!defined($twitter->verify_credentials())) {
     fail("Invalid twitter credentials");
@@ -101,7 +103,9 @@ sub handle_message {
 
 sub twitter {
     my $msg = shift;
-    $twitter->update($msg);
+    if(defined $twitter) {
+        $twitter->update($msg);
+    }
 }
 
 BarnOwl::new_command(twitter => \&cmd_twitter, {
