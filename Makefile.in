@@ -77,7 +77,7 @@ distclean: clean
 modules: $(MODULE_DIRS)
 modules_clean:
 	for i in $(MODULE_DIRS); do \
-		cd $$i; test ! -f Makefile || make clean; \
+		(cd $$i && test ! -f Makefile || make clean) \
 	done
 
 $(MODULE_DIRS): %: %/Makefile
