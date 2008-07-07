@@ -93,11 +93,11 @@ char *owl_editwin_get_command(owl_editwin *e) {
   return "";
 }
 
-void owl_editwin_set_callback(owl_editwin *e, void (*cb)(owl_editwin*)) {
+void owl_editwin_set_callback(owl_editwin *e, void (*cb)(void*, char*)) {
   e->callback = cb;
 }
 
-void (*owl_editwin_get_callback(owl_editwin *e))(owl_editwin*) {
+void (*owl_editwin_get_callback(owl_editwin*))(void *cbdata, char *text) {
   return e->callback;
 }
 
@@ -110,13 +110,14 @@ void* owl_editwin_get_cbdata(owl_editwin *e) {
 }
 
 void owl_editwin_do_callback(owl_editwin *e) {
-  void (*cb)(owl_editwin*);
+  /* XXX get rid of me */
+  void (*cb)(void*, char*);
   cb=owl_editwin_get_callback(e);
   if(!cb) {
     owl_function_error("Internal error: No editwin callback!");
   } else {
     /* owl_function_error("text: |%s|", owl_editwin_get_text(e)); */
-    cb(e);
+    cb(e->cbdata, e->text);
   }
 }
 

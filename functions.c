@@ -1130,11 +1130,6 @@ void owl_function_resize()
   owl_global_set_resize_pending(&g);
 }
 
-void owl_function_run_buffercommand()
-{
-  owl_editwin_do_callback(owl_global_get_typwin(&g));
-}
-
 void owl_function_debugmsg(char *fmt, ...)
 {
   FILE *file;

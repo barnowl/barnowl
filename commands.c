@@ -2469,12 +2469,17 @@ void owl_command_editline_done(owl_editwin *e)
 
 void owl_command_editresponse_done(owl_editwin *e)
 {
+  char *text = owl_strdup(owl_editwin_get_text(e));
+  void (*callback)(void *, char *) = owl_editwin_get_callback(e);
+  void *cbdata = owl_editwin_get_cbdata(e);
+
   owl_global_set_typwin_inactive(&g);
   owl_editwin_fullclear(e);
   wnoutrefresh(owl_editwin_get_curswin(e));
   owl_global_set_needrefresh(&g);
 
-  owl_function_run_buffercommand();
+  callback(cbdata, text);
+  owl_free(text);
 }
 
 
@@ -2485,7 +2490,7 @@ void owl_command_editmulti_done(owl_editwin *e)
   owl_history_store(hist, owl_editwin_get_text(e));
   owl_history_reset(hist);
 
-  owl_function_run_buffercommand();
+  owl_editwin_do_callback(e);
   owl_editwin_new_style(e, OWL_EDITWIN_STYLE_ONELINE, NULL);
   owl_editwin_fullclear(e);
   owl_global_set_typwin_inactive(&g);

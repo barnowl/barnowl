@@ -452,7 +452,7 @@ typedef struct _owl_editwin {
   int echochar;
 
   char *command;
-  void (*callback)(struct _owl_editwin*);
+  void (*callback)(void *, char *);
   void *cbdata;
 } owl_editwin;
 

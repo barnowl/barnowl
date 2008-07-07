@@ -471,17 +471,18 @@ void owl_perlconfig_dispatch_free(owl_dispatch *d)
   SvREFCNT_dec(d->pfunc);
 }
 
-void owl_perlconfig_edit_callback(owl_editwin *e)
+void owl_perlconfig_edit_callback(void *cbdata, char *c_text);
 {
-  SV *cb = (SV*)(e->cbdata);
+  SV *cb = (SV*)cbdata;
   SV *text;
   unsigned int n_a;
   dSP;
 
+  e->cbdata = NULL;
   if(cb == NULL) {
     owl_function_error("Perl callback is NULL!");
   }
-  text = newSVpv(owl_editwin_get_text(e), 0);
+  text = newSVpv(c_text, 0);
   SvUTF8_on(text);
 
   ENTER;
@@ -501,7 +502,6 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
   LEAVE;
 
   SvREFCNT_dec(cb);
-  e->cbdata = NULL;
 }
 
 void owl_perlconfig_mainloop()

@@ -36,7 +36,6 @@ sub on_im_in {
 }
 
 sub cmd_aimlogin { 
-=comment
     my ($cmd, $user, $pass) = @_;
     if (!defined $user) {
         BarnOwl::start_question('Username: ', sub {
@@ -47,10 +46,7 @@ sub cmd_aimlogin {
                 cmd_aimlogin($cmd, $user, @_);
                 });
     } else {
-=cut
-    {
         my $oscar = Net::OSCAR->new();
-        my ($user, $pass) = ('...', '...');
         $oscar->set_callback_im_in(\&on_im_in);
         $oscar->set_callback_signon_done(sub ($) {
                 BarnOwl::admin_message('AIM',
