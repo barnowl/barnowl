@@ -99,6 +99,18 @@ ztext_stylestrip(ztext)
 	CLEANUP:
 		if (rv) owl_free(rv);
 
+char *
+zephyr_getsubs()
+	PREINIT:
+		char *rv = NULL;
+	CODE:
+		rv = owl_zephyr_getsubs();
+		RETVAL = rv;
+    OUTPUT:
+		RETVAL
+    CLEANUP:
+		if (rv) owl_free(rv);
+
 void
 new_command_internal(name, func, summary, usage, description)
 	char *name

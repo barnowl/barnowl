@@ -67,6 +67,11 @@ command line, and C<MESSAGE> is the zephyr body to send.
 
 Strips zephyr formatting from a string and returns the result
 
+=head2 zephyr_getsubs
+
+Returns the list of subscription triples <class,instance,recipient>,
+separated by newlines.
+
 =head2 queue_message MESSAGE
 
 Enqueue a message in the BarnOwl message list, logging it and
