@@ -17,7 +17,7 @@ support
 use Net::IRC::Connection;
 
 use base qw(Class::Accessor Exporter);
-__PACKAGE__->mk_accessors(qw(conn alias channels connected motd));
+__PACKAGE__->mk_accessors(qw(conn alias channels connected motd names_tmp whois_tmp));
 our @EXPORT_OK = qw(&is_private);
 
 use BarnOwl;
@@ -44,6 +44,8 @@ sub new {
     $self->channels([]);
     $self->motd("");
     $self->connected(0);
+    $self->names_tmp([]);
+    $self->whois_tmp("");
 
     $self->conn->add_handler(376 => sub { shift; $self->on_connect(@_) });
     $self->conn->add_default_handler(sub { shift; $self->on_event(@_) });
@@ -66,6 +68,8 @@ sub new {
     $self->conn->add_handler(cping     => sub { shift; $self->on_ping(@_) });
     $self->conn->add_handler(topic     => sub { shift; $self->on_topic(@_) });
     $self->conn->add_handler(topicinfo => sub { shift; $self->on_topicinfo(@_) });
+    $self->conn->add_handler(namreply  => sub { shift; $self->on_namreply(@_) });
+    $self->conn->add_handler(endofnames=> sub { shift; $self->on_endofnames(@_) });
 
     return $self;
 }
@@ -221,6 +225,24 @@ sub on_event {
         if BarnOwl::getvar('irc:spew') eq 'on';
 }
 
+# IRC gives us a bunch of namreply messages, followed by an endofnames.
+# We need to collect them from the namreply and wait for the endofnames message.
+# After this happens, the names_tmp variable is cleared.
+
+sub on_namreply {
+    my ($self, $evt) = @_;
+    $self->names_tmp([@{$self->names_tmp}, split(' ', [$evt->args]->[3])]);
+}
+
+sub on_endofnames {
+    my ($self, $evt) = @_;
+    my $names = BarnOwl::Style::boldify("Members of " . [$evt->args]->[1] . ":\n");
+    for my $name (@{$self->names_tmp}) {
+        $names .= "  $name\n";
+    }
+    BarnOwl::popless_ztext($names);
+    $self->names_tmp([]);
+}
 
 ################################################################################
 ########################### Utilities/Helpers ##################################
