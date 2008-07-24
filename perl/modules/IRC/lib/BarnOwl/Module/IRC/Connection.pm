@@ -64,6 +64,8 @@ sub new {
     $self->conn->add_handler(disconnect => sub { shift; $self->on_disconnect(@_) });
     $self->conn->add_handler(nicknameinuse => sub { shift; $self->on_nickinuse(@_) });
     $self->conn->add_handler(cping     => sub { shift; $self->on_ping(@_) });
+    $self->conn->add_handler(topic     => sub { shift; $self->on_topic(@_) });
+    $self->conn->add_handler(topicinfo => sub { shift; $self->on_topicinfo(@_) });
 
     return $self;
 }
@@ -190,6 +192,25 @@ sub on_nickinuse {
     unless($self->connected) {
         $self->conn->disconnect;
     }
+}
+
+sub on_topic {
+    my ($self, $evt) = @_;
+    my @args = $evt->args;
+    if (scalar @args > 1) {
+        BarnOwl::admin_message("IRC",
+                "Topic for $args[1] on " . $self->alias . " is $args[2]");
+    } else {
+        BarnOwl::admin_message("IRC",
+                "Topic changed to $args[0]");
+    }
+}
+
+sub on_topicinfo {
+    my ($self, $evt) = @_;
+    my @args = $evt->args;
+    BarnOwl::admin_message("IRC",
+        "Topic for $args[1] set by $args[2] at " . localtime($args[3]));
 }
 
 sub on_event {

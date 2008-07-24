@@ -116,6 +116,7 @@ sub register_commands {
     BarnOwl::new_command('irc-list'       => \&cmd_list);
     BarnOwl::new_command('irc-who'        => \&cmd_who);
     BarnOwl::new_command('irc-stats'      => \&cmd_stats);
+    BarnOwl::new_command('irc-topic'      => \&cmd_topic);
 }
 
 $BarnOwl::Hooks::startup->add(\&startup);
@@ -298,6 +299,12 @@ sub cmd_stats {
     my $conn = get_connection(\@_);
     my $type = shift || die("Usage: $cmd <chiklmouy> [server] \n");
     $conn->conn->stats($type, @_);
+}
+
+sub cmd_topic {
+    my $cmd = shift;
+    my $conn = get_connection(\@_);
+    $conn->conn->topic(@_);
 }
 
 ################################################################################
