@@ -44,7 +44,7 @@ sub new {
     $self->channels([]);
     $self->motd("");
     $self->connected(0);
-    $self->names_tmp([]);
+    $self->names_tmp(0);
     $self->whois_tmp("");
 
     $self->conn->add_handler(376 => sub { shift; $self->on_connect(@_) });
@@ -70,6 +70,7 @@ sub new {
     $self->conn->add_handler(topicinfo => sub { shift; $self->on_topicinfo(@_) });
     $self->conn->add_handler(namreply  => sub { shift; $self->on_namreply(@_) });
     $self->conn->add_handler(endofnames=> sub { shift; $self->on_endofnames(@_) });
+    $self->conn->add_handler(endofwhois=> sub { shift; $self->on_endofwhois(@_) });
 
     return $self;
 }
@@ -131,7 +132,7 @@ sub on_admin_msg {
     BarnOwl::admin_message("IRC",
             BarnOwl::Style::boldify('IRC ' . $evt->type . ' message from '
                 . $self->alias) . "\n"
-            . strip_irc_formatting(join '\n', $evt->args));
+            . strip_irc_formatting(join ' ', cdr($evt->args)));
 }
 
 sub on_motdstart {
@@ -163,7 +164,7 @@ sub on_join {
     my $msg = $self->new_message($evt,
         loginout   => 'login',
         channel    => $evt->to,
-        replycmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick,
+        replycmd => 'irc-msg -a ' . $self->alias . ' ' . join(' ', $evt->to),
         replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
         );
     BarnOwl::queue_message($msg);
@@ -174,7 +175,7 @@ sub on_part {
     my $msg = $self->new_message($evt,
         loginout   => 'logout',
         channel    => $evt->to,
-        replycmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick,
+        replycmd => 'irc-msg -a ' . $self->alias . ' ' . join(' ', $evt->to),
         replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
         );
     BarnOwl::queue_message($msg);
@@ -217,31 +218,51 @@ sub on_topicinfo {
         "Topic for $args[1] set by $args[2] at " . localtime($args[3]));
 }
 
-sub on_event {
-    my ($self, $evt) = @_;
-    BarnOwl::admin_message("IRC",
-            "[" . $self->alias . "] Unhandled IRC event of type " . $evt->type . ":\n"
-            . strip_irc_formatting(join("\n", $evt->args)))
-        if BarnOwl::getvar('irc:spew') eq 'on';
-}
-
 # IRC gives us a bunch of namreply messages, followed by an endofnames.
 # We need to collect them from the namreply and wait for the endofnames message.
 # After this happens, the names_tmp variable is cleared.
 
 sub on_namreply {
     my ($self, $evt) = @_;
+    return unless $self->names_tmp;
     $self->names_tmp([@{$self->names_tmp}, split(' ', [$evt->args]->[3])]);
 }
 
 sub on_endofnames {
     my ($self, $evt) = @_;
+    return unless $self->names_tmp;
     my $names = BarnOwl::Style::boldify("Members of " . [$evt->args]->[1] . ":\n");
     for my $name (@{$self->names_tmp}) {
         $names .= "  $name\n";
     }
     BarnOwl::popless_ztext($names);
-    $self->names_tmp([]);
+    $self->names_tmp(0);
+}
+
+sub on_whois {
+    my ($self, $evt) = @_;
+    $self->whois_tmp(
+      $self->whois_tmp . "\n" . $evt->type . ":\n  " .
+      join("\n  ", cdr(cdr($evt->args))) . "\n"
+    );
+}
+
+sub on_endofwhois {
+    my ($self, $evt) = @_;
+    BarnOwl::popless_ztext(
+        BarnOwl::Style::boldify("/whois for " . [$evt->args]->[1] . ":\n") .
+        $self->whois_tmp
+    );
+    $self->whois_tmp([]);
+}
+
+sub on_event {
+    my ($self, $evt) = @_;
+    return on_whois(@_) if ($evt->type =~ /^whois/);
+    BarnOwl::admin_message("IRC",
+            "[" . $self->alias . "] Unhandled IRC event of type " . $evt->type . ":\n"
+            . strip_irc_formatting(join("\n", $evt->args)))
+        if BarnOwl::getvar('irc:spew') eq 'on';
 }
 
 ################################################################################

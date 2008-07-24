@@ -262,6 +262,7 @@ sub cmd_names {
     my $cmd = shift;
     my $conn = get_connection(\@_);
     my $chan = get_channel(\@_) || die("Usage: $cmd <channel>\n");
+    $conn->names_tmp([]);
     $conn->conn->names($chan);
 }
 
