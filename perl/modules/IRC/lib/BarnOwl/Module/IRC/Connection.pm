@@ -63,6 +63,7 @@ sub new {
     $self->conn->add_handler(endofmotd => sub { shift; $self->on_endofmotd(@_) });
     $self->conn->add_handler(join      => sub { shift; $self->on_join(@_) });
     $self->conn->add_handler(part      => sub { shift; $self->on_part(@_) });
+    $self->conn->add_handler(quit      => sub { shift; $self->on_quit(@_) });
     $self->conn->add_handler(disconnect => sub { shift; $self->on_disconnect(@_) });
     $self->conn->add_handler(nicknameinuse => sub { shift; $self->on_nickinuse(@_) });
     $self->conn->add_handler(cping     => sub { shift; $self->on_ping(@_) });
@@ -163,6 +164,7 @@ sub on_join {
     my ($self, $evt) = @_;
     my $msg = $self->new_message($evt,
         loginout   => 'login',
+        action     => 'join',
         channel    => $evt->to,
         replycmd => 'irc-msg -a ' . $self->alias . ' ' . join(' ', $evt->to),
         replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
@@ -174,8 +176,22 @@ sub on_part {
     my ($self, $evt) = @_;
     my $msg = $self->new_message($evt,
         loginout   => 'logout',
+        action     => 'part',
         channel    => $evt->to,
         replycmd => 'irc-msg -a ' . $self->alias . ' ' . join(' ', $evt->to),
+        replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
+        );
+    BarnOwl::queue_message($msg);
+}
+
+sub on_quit {
+    my ($self, $evt) = @_;
+    my $msg = $self->new_message($evt,
+        loginout   => 'logout',
+        action     => 'quit',
+        from       => $evt->to,
+        reason     => [$evt->args]->[0],
+        replycmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick,
         replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
         );
     BarnOwl::queue_message($msg);

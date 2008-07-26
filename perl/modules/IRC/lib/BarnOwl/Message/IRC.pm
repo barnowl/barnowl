@@ -55,6 +55,8 @@ sub smartfilter {
 sub server {shift->{server}}
 sub network {shift->{network}}
 sub channel {shift->{channel}}
+sub action {shift->{action}}
+sub reason {shift->{reason}}
 
 # display
 sub context {shift->{network};}
@@ -64,10 +66,16 @@ sub long_sender {shift->{from} || ""};
 
 sub login_type {
     my $self = shift;
-    return " (" . ($self->is_login ? "JOIN" : "PART") . ")";
+    return " (" . uc $self->action . ")";
 }
 
-sub login_extra { shift->channel; }
-
+sub login_extra { 
+    my $self = shift;
+    if ($self->action eq "quit") {
+        return $self->reason;
+    } else {
+        return $self->channel;
+    }
+}
 
 1;
