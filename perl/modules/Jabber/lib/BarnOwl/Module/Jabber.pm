@@ -234,6 +234,13 @@ sub register_owl_commands() {
         }
     );
     BarnOwl::new_command(
+        jaway => \&cmd_jaway,
+        {
+            summary => "Set Jabber away / presence information",
+            usage   => "jaway [-s online|dnd|...] [<message>]"
+        }
+    );
+    BarnOwl::new_command(
         jlist => \&cmd_jlist,
         {
             summary => "Show your Jabber roster.",
@@ -755,6 +762,33 @@ sub cmd_jroster {
         return $func->( $jid, $name, \@groups, $purgeGroups,  @ARGV );
     }
 }
+
+sub cmd_jaway {
+    my $cmd = shift;
+    local @ARGV = @_;
+    my $getopt = Getopt::Long::Parser->new;
+    my ($jid, $show);
+    my $p = new Net::Jabber::Presence;
+
+    $getopt->configure('pass_through', 'no_getopt_compat');
+    $getopt->getoptions(
+        'account=s' => \$jid,
+        'show=s'    => \$show
+    );
+    $jid ||= defaultJID();
+    if ($jid) {
+        $jid = resolveConnectedJID($jid);
+        return unless $jid;
+    }
+    else {
+        BarnOwl::error('You must specify an account with -a {jid}');
+    }
+
+    $p->SetShow($show eq "online" ? "" : $show) if $show;
+    $p->SetStatus(join(' ', @ARGV)) if @ARGV;
+    $conn->getConnectionFromJID($jid)->Send($p);
+}
+
 
 sub jroster_sub {
     my $jid = shift;
