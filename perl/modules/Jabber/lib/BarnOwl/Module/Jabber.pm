@@ -989,12 +989,12 @@ sub process_muc_presence {
 
 sub process_presence_available {
     my ( $sid, $p ) = @_;
-    my $from = $p->GetFrom();
+    my $from = $p->GetFrom('jid')->GetJID('base');
     my $to = $p->GetTo();
     my $type = $p->GetType();
     my %props = (
         to => $to,
-        from => $from,
+        from => $p->GetFrom(),
         recipient => $to,
         sender => $from,
         type => 'jabber',
@@ -1012,10 +1012,8 @@ sub process_presence_available {
         $props{body} = "$from is now offline. ";
         $props{loginout} = 'logout';
     }
-    $props{replysendercmd} = $props{replycmd} = "jwrite $from -i $sid";
-    if(BarnOwl::getvar('debug') eq 'on') {
-        BarnOwl::queue_message(BarnOwl::Message->new(%props));
-    }
+    $props{replysendercmd} = $props{replycmd} = "jwrite $from -a $to";
+    BarnOwl::queue_message(BarnOwl::Message->new(%props));
 }
 
 sub process_presence_subscribe {

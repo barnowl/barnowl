@@ -22,6 +22,12 @@ sub room { shift->{room} };
 sub subject { shift->{subject} };
 sub status { shift->{status} }
 
+sub login_type {
+    my $self = shift;
+    my $type = $self->jtype;
+    return " ($type)" if $type;
+}
+
 sub login_extra {
     my $self = shift;
     my $show = $self->{show};
