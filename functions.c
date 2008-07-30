@@ -2391,7 +2391,7 @@ void owl_function_create_filter(int argc, char **argv)
       owl_function_error("The filter '%s' does not exist.", argv[1]);
       return;
     }
-    if (owl_util_string_to_color(argv[3])==-1) {
+    if (owl_util_string_to_color(argv[3])==OWL_COLOR_INVALID) {
       owl_function_error("The color '%s' is not available.", argv[3]);
       return;
     }
@@ -2406,7 +2406,7 @@ void owl_function_create_filter(int argc, char **argv)
       owl_function_error("The filter '%s' does not exist.", argv[1]);
       return;
     }
-    if (owl_util_string_to_color(argv[3])==-1) {
+    if (owl_util_string_to_color(argv[3])==OWL_COLOR_INVALID) {
       owl_function_error("The color '%s' is not available.", argv[3]);
       return;
     }
@@ -2940,14 +2940,14 @@ int owl_function_color_filter(char *filtname, char *fgcolor, char *bgcolor)
     return(-2);
   }
 
-  if (owl_util_string_to_color(fgcolor)==-1) {
+  if (owl_util_string_to_color(fgcolor)==OWL_COLOR_INVALID) {
     owl_function_error("No color named '%s' avilable.", fgcolor);
     return(-1);
   }
 
 
   if (bgcolor != NULL) {
-    if (owl_util_string_to_color(bgcolor)==-1) {
+    if (owl_util_string_to_color(bgcolor)==OWL_COLOR_INVALID) {
       owl_function_error("No color named '%s' avilable.", bgcolor);
       return(-1);
     }

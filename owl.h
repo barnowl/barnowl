@@ -99,6 +99,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_COLOR_CYAN      6
 #define OWL_COLOR_WHITE     7
 #define OWL_COLOR_DEFAULT   -1
+#define OWL_COLOR_INVALID   -2
 
 #define OWL_EDITWIN_STYLE_MULTILINE 0
 #define OWL_EDITWIN_STYLE_ONELINE   1
