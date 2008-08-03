@@ -177,12 +177,6 @@ static owl_variable variables_to_init[] = {
 		    "off,middle,on",
 		    NULL, owl_variable_disable_ctrl_d_set, NULL),
 
-  OWLVAR_BOOL( "_burningears" /* %OwlVarStub:burningears */, 0,
-	       "[NOT YET IMPLEMENTED] beep on messages matching patterns", "" ),
-
-  OWLVAR_BOOL( "_summarymode" /* %OwlVarStub:summarymode */, 0,
-	       "[NOT YET IMPLEMENTED]", "" ),
-
   OWLVAR_PATH( "logpath" /* %OwlVarStub */, "~/zlog/people",
 	       "path for logging personal zephyrs", 
 	       "Specifies a directory which must exist.\n"
