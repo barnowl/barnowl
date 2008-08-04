@@ -420,6 +420,17 @@ void owl_perlconfig_getmsg(owl_message *m, char *subname)
   if (ptr) owl_free(ptr);
 }
 
+/* Called on all new messages; receivemsg is only called on incoming ones */
+void owl_perlconfig_newmsg(owl_message *m, char *subname)
+{
+  char *ptr = NULL;
+  if (owl_perlconfig_is_function("BarnOwl::Hooks::_new_msg")) {
+    ptr = owl_perlconfig_call_with_message(subname?subname
+                                           :"BarnOwl::Hooks::_new_msg", m);
+  }
+  if (ptr) owl_free(ptr);
+}
+
 char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
 {
   int i, count;

@@ -604,6 +604,8 @@ int owl_process_message(owl_message *m) {
     }
   }
 
+  /* let perl know about it */
+  owl_perlconfig_newmsg(m, NULL);
   /* log the message if we need to */
   owl_log_message(m);
 

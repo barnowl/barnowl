@@ -684,14 +684,15 @@ displayed in a popup window, with zephyr formatting parsed.
 use Exporter;
 
 our @EXPORT_OK = qw($startup $shutdown
-                    $receiveMessage $mainLoop
-                    $getBuddyList);
+                    $receiveMessage $newMessage
+                    $mainLoop $getBuddyList);
 
 our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 
 our $startup = BarnOwl::Hook->new;
 our $shutdown = BarnOwl::Hook->new;
 our $receiveMessage = BarnOwl::Hook->new;
+our $newMessage = BarnOwl::Hook->new;
 our $mainLoop = BarnOwl::Hook->new;
 our $getBuddyList = BarnOwl::Hook->new;
 
@@ -768,6 +769,14 @@ sub _receive_msg {
     $receiveMessage->run($m);
     
     BarnOwl::receive_msg($m) if *BarnOwl::receive_msg{CODE};
+}
+
+sub _new_msg {
+    my $m = shift;
+
+    $newMessage->run($m);
+    
+    BarnOwl::new_msg($m) if *BarnOwl::new_msg{CODE};
 }
 
 sub _mainloop_hook {
