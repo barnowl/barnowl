@@ -211,50 +211,55 @@ int owl_filter_message_match(owl_filter *f, owl_message *m)
 }
 
 
-void owl_filter_print(owl_filter *f, char *out)
+char* owl_filter_print(owl_filter *f)
 {
-  strcpy(out, owl_filter_get_name(f));
-  strcat(out, ": ");
+  GString *out = g_string_new(owl_filter_get_name(f));
+
+  g_string_append(out, ": ");
 
   if (f->fgcolor!=OWL_COLOR_DEFAULT) {
-    strcat(out, "-c ");
+    g_string_append(out, "-c ");
     if (f->fgcolor < 8) {
-      strcat(out, owl_util_color_to_string(f->fgcolor));
+      g_string_append(out, owl_util_color_to_string(f->fgcolor));
     }
     else {
-      char* c = owl_sprintf("%i",f->fgcolor);
-      strcat(out, c);
-      owl_free(c);
+      g_string_append_printf(out, "%i",f->fgcolor);
     }
-    strcat(out, " ");
+    g_string_append(out, " ");
   }
   if (f->bgcolor!=OWL_COLOR_DEFAULT) {
-    strcat(out, "-b ");
+    g_string_append(out, "-b ");
     if (f->bgcolor < 8) {
-      strcat(out, owl_util_color_to_string(f->bgcolor));
+      g_string_append(out, owl_util_color_to_string(f->bgcolor));
     }
     else {
-      char* c = owl_sprintf("%i",f->bgcolor);
-      strcat(out, c);
-      owl_free(c);
+      g_string_append_printf(out, "%i",f->fgcolor);
     }
-    strcat(out, " ");
+    g_string_append(out, " ");
   }
-  if(!f->root) return;
-  owl_filterelement_print(f->root, out);
-  strcat(out, "\n");
+  if(f->root) {
+    owl_filterelement_print(f->root, out);
+    g_string_append(out, "\n");
+  }
+
+  return g_string_free(out, 0);
 }
 
 /* Return 1 if the filters 'a' and 'b' are equivalent, 0 otherwise */
 int owl_filter_equiv(owl_filter *a, owl_filter *b)
 {
-  char buff[LINE], buff2[LINE];
+  char *buffa, *buffb;
+  int ret;
 
-  owl_filter_print(a, buff);
-  owl_filter_print(b, buff2);
+  buffa = owl_filter_print(a);
+  buffb = owl_filter_print(b);
 
-  if (!strcmp(buff, buff2)) return(1);
-  return(0);
+  ret = !strcmp(buffa, buffb);
+
+  owl_free(buffa);
+  owl_free(buffb);
+
+  return ret;
 }
 
 

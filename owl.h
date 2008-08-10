@@ -405,7 +405,7 @@ typedef struct _owl_regex {
 typedef struct _owl_filterelement {
   int (*match_message)(struct _owl_filterelement *fe, owl_message *m);
   /* Append a string representation of the filterelement onto buf*/
-  void (*print_elt)(struct _owl_filterelement *fe, char * buf);
+  void (*print_elt)(struct _owl_filterelement *fe, GString *buf);
   /* Operands for and,or,not*/
   struct _owl_filterelement *left, *right;
   /* For regex filters*/

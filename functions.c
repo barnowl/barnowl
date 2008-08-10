@@ -2514,15 +2514,16 @@ void owl_function_show_filters()
 void owl_function_show_filter(char *name)
 {
   owl_filter *f;
-  char buff[5000];
+  char *buff;
 
   f=owl_global_get_filter(&g, name);
   if (!f) {
     owl_function_error("There is no filter named %s", name);
     return;
   }
-  owl_filter_print(f, buff);
+  buff = owl_filter_print(f);
   owl_function_popless_text(buff);
+  owl_free(buff);
 }
 
 void owl_function_show_zpunts()
@@ -2530,6 +2531,7 @@ void owl_function_show_zpunts()
   owl_filter *f;
   owl_list *fl;
   char buff[5000];
+  char *tmp;
   owl_fmtext fm;
   int i, j;
 
@@ -2543,7 +2545,9 @@ void owl_function_show_zpunts()
     f=owl_list_get_element(fl, i);
     snprintf(buff, sizeof(buff), "[% 2d] ", i+1);
     owl_fmtext_append_normal(&fm, buff);
-    owl_filter_print(f, buff);
+    tmp = owl_filter_print(f);
+    owl_fmtext_append_normal(&fm, tmp);
+    owl_free(tmp);
     owl_fmtext_append_normal(&fm, buff);
   }
   owl_function_popless_fmtext(&fm);

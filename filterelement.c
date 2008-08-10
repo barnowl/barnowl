@@ -125,65 +125,65 @@ static int owl_filterelement_match_not(owl_filterelement *fe, owl_message *m)
 
 /* Print methods */
 
-static void owl_filterelement_print_true(owl_filterelement *fe, char *buf)
+static void owl_filterelement_print_true(owl_filterelement *fe, GString *buf)
 {
-  strcat(buf, "true");
+  g_string_append(buf, "true");
 }
 
-static void owl_filterelement_print_false(owl_filterelement *fe, char *buf)
+static void owl_filterelement_print_false(owl_filterelement *fe, GString *buf)
 {
-  strcat(buf, "false");
+  g_string_append(buf, "false");
 }
 
-static void owl_filterelement_print_re(owl_filterelement *fe, char *buf)
+static void owl_filterelement_print_re(owl_filterelement *fe, GString *buf)
 {
   char *re, *q;
-  strcat(buf, fe->field);
-  strcat(buf, " ");
+  g_string_append(buf, fe->field);
+  g_string_append(buf, " ");
 
   re = owl_regex_get_string(&(fe->re));
   q = owl_getquoting(re);
-  strcat(buf, q);
-  strcat(buf, re); 
-  strcat(buf, q);
+  g_string_append(buf, q);
+  g_string_append(buf, re);
+  g_string_append(buf, q);
 }
 
-static void owl_filterelement_print_filter(owl_filterelement *fe, char *buf)
+static void owl_filterelement_print_filter(owl_filterelement *fe, GString *buf)
 {
-  strcat(buf, "filter ");
-  strcat(buf, fe->field);
+  g_string_append(buf, "filter ");
+  g_string_append(buf, fe->field);
 }
 
-static void owl_filterelement_print_perl(owl_filterelement *fe, char *buf)
+static void owl_filterelement_print_perl(owl_filterelement *fe, GString *buf)
 {
-  strcat(buf, "perl ");
-  strcat(buf, fe->field);
+  g_string_append(buf, "perl ");
+  g_string_append(buf, fe->field);
 }
 
-static void owl_filterelement_print_group(owl_filterelement *fe, char *buf)
+static void owl_filterelement_print_group(owl_filterelement *fe, GString *buf)
 {
-  strcat(buf, "( ");
+  g_string_append(buf, "( ");
   owl_filterelement_print(fe->left, buf) ;
-  strcat(buf, " )");
+  g_string_append(buf, " )");
 }
 
-static void owl_filterelement_print_or(owl_filterelement *fe, char *buf)
+static void owl_filterelement_print_or(owl_filterelement *fe, GString *buf)
 {
   owl_filterelement_print(fe->left, buf);
-  strcat(buf, " or ");
+  g_string_append(buf, " or ");
   owl_filterelement_print(fe->right, buf);
 }
 
-static void owl_filterelement_print_and(owl_filterelement *fe, char *buf)
+static void owl_filterelement_print_and(owl_filterelement *fe, GString *buf)
 {
   owl_filterelement_print(fe->left, buf);
-  strcat(buf, " and ");
+  g_string_append(buf, " and ");
   owl_filterelement_print(fe->right, buf);
 }
 
-static void owl_filterelement_print_not(owl_filterelement *fe, char *buf)
+static void owl_filterelement_print_not(owl_filterelement *fe, GString *buf)
 {
-  strcat(buf, " not ");
+  g_string_append(buf, " not ");
   owl_filterelement_print(fe->left, buf);
 }
 
@@ -320,7 +320,7 @@ void owl_filterelement_free(owl_filterelement *fe)
   owl_regex_free(&(fe->re));
 }
 
-void owl_filterelement_print(owl_filterelement *fe, char *buf)
+void owl_filterelement_print(owl_filterelement *fe, GString *buf)
 {
   if(!fe || !fe->print_elt) return;
   fe->print_elt(fe, buf);
