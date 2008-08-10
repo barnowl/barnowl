@@ -2470,7 +2470,7 @@ void owl_command_editline_done(owl_editwin *e)
 void owl_command_editresponse_done(owl_editwin *e)
 {
   char *text = owl_strdup(owl_editwin_get_text(e));
-  void (*callback)(void *, char *) = owl_editwin_get_callback(e);
+  owl_callback_t callback = owl_editwin_get_callback(e);
   void *cbdata = owl_editwin_get_cbdata(e);
 
   owl_global_set_typwin_inactive(&g);

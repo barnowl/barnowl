@@ -236,22 +236,10 @@ owl_editwin *owl_global_get_typwin(owl_global *g) {
   return(&(g->tw));
 }
 
-/* buffercommand */
+/* buffercallback */
 
-void owl_global_set_buffercommand(owl_global *g, char *command) {
-  owl_editwin_set_command(owl_global_get_typwin(g), command);
-}
-
-char *owl_global_get_buffercommand(owl_global *g) {
-  return owl_editwin_get_command(owl_global_get_typwin(g));
-}
-
-void owl_global_set_buffercallback(owl_global *g, void (*cb)(owl_editwin*)) {
-  owl_editwin_set_callback(owl_global_get_typwin(g), cb);
-}
-
-void (*owl_global_get_buffercallback(owl_global *g))(owl_editwin*) {
-  return owl_editwin_get_callback(owl_global_get_typwin(g));
+void owl_global_set_buffercallback(owl_global *g, owl_callback_t cb, char *line) {
+  owl_editwin_set_callback(owl_global_get_typwin(g), cb, line);
 }
 
 /* refresh */

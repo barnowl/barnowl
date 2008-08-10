@@ -267,8 +267,7 @@ void owl_function_zwrite_setup(char *line)
   /* make it active */
   owl_global_set_typwin_active(&g);
 
-  owl_global_set_buffercommand(&g, line);
-  owl_global_set_buffercallback(&g, &owl_callback_zwrite);
+  owl_global_set_buffercallback(&g, &owl_callback_zwrite, line);
 }
 
 void owl_function_loopwrite_setup()
@@ -292,13 +291,11 @@ void owl_function_loopwrite_setup()
   /* make it active */
   owl_global_set_typwin_active(&g);
 
-  owl_global_set_buffercommand(&g, "loopwrite");
-  owl_global_set_buffercallback(&g, &owl_callback_loopwrite);
+  owl_global_set_buffercallback(&g, &owl_callback_loopwrite, "loopwrite");
 }
 
-void owl_callback_zwrite(owl_editwin *e) {
-  owl_function_zwrite(owl_editwin_get_command(e),
-                      owl_editwin_get_text(e));
+void owl_callback_zwrite(void *cbdata, char *text) {
+  owl_function_zwrite((char *)cbdata, text);
 }
 
 /* send, log and display an outgoing zephyr.  If 'msg' is NULL
@@ -397,8 +394,8 @@ void owl_function_zcrypt(char *line, char *msg)
   owl_zwrite_free(&z);
 }
 
-void owl_callback_loopwrite(owl_editwin *e) {
-  owl_function_loopwrite(owl_editwin_get_text(e));
+void owl_callback_loopwrite(void *cbdata, char *text) {
+  owl_function_loopwrite(text);
 }
 
 void owl_function_loopwrite(char *msg)

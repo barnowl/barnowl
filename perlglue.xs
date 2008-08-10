@@ -165,8 +165,7 @@ void start_question(line, callback)
 		owl_function_start_question(line);
 
 		SvREFCNT_inc(callback);
-		owl_editwin_set_cbdata(owl_global_get_typwin(&g), callback);
-		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
+		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback, callback);
 	}
 
 void start_password(line, callback)
@@ -181,8 +180,7 @@ void start_password(line, callback)
 		owl_function_start_password(line);
 
 		SvREFCNT_inc(callback);
-		owl_editwin_set_cbdata(owl_global_get_typwin(&g), callback);
-		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
+		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback, callback);
 	}
 
 void start_edit_win(line, callback)
@@ -207,8 +205,7 @@ void start_edit_win(line, callback)
 		owl_global_set_typwin_active(&g);
 
 		SvREFCNT_inc(callback);
-		owl_editwin_set_cbdata(owl_global_get_typwin(&g), callback);
-		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
+		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback, callback);
 	}
 
 

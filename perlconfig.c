@@ -471,14 +471,13 @@ void owl_perlconfig_dispatch_free(owl_dispatch *d)
   SvREFCNT_dec(d->pfunc);
 }
 
-void owl_perlconfig_edit_callback(void *cbdata, char *c_text);
+void owl_perlconfig_edit_callback(void *cbdata, char *c_text)
 {
   SV *cb = (SV*)cbdata;
   SV *text;
   unsigned int n_a;
   dSP;
 
-  e->cbdata = NULL;
   if(cb == NULL) {
     owl_function_error("Perl callback is NULL!");
   }

@@ -203,6 +203,8 @@ static const char owl_h_fileIdent[] = "$Id$";
 
 #define LINE 2048
 
+typedef void (*owl_callback_t)(void *cbdata, char *text);
+
 typedef struct _owl_variable {
   char *name;
   int   type;  /* OWL_VARIABLE_* */
@@ -451,8 +453,7 @@ typedef struct _owl_editwin {
   int dotsend;
   int echochar;
 
-  char *command;
-  void (*callback)(void *, char *);
+  owl_callback_t callback;
   void *cbdata;
 } owl_editwin;
 
