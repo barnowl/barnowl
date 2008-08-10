@@ -282,7 +282,7 @@ void owl_function_zwrite_setup(char *line)
   owl_editwin_clear(e);
   owl_editwin_set_dotsend(e);
   strcpy(buff, "----> ");
-  strcat(buff, line);
+  strncat(buff, line, 1016);
   strcat(buff, "\n");
   owl_editwin_set_locktext(e, buff);
 
