@@ -7,12 +7,28 @@ use lib (BarnOwl::get_data_dir() . "/modules/");
 use PAR (BarnOwl::get_data_dir() . "/modules/*.par");
 use PAR (BarnOwl::get_config_dir() . "/modules/*.par");
 
+our %modules;
+
 sub load_all {
+    my $class = shift;
+    $class->rescan_modules;
+
+    for my $mod (keys %modules) {
+        if(!defined eval "use BarnOwl::Module::$mod") {
+            BarnOwl::error("Unable to load module $mod: \n$@\n") if $@;
+        }
+    }
+
+    $BarnOwl::Hooks::startup->add(\&register_keybindings);
+}
+
+sub rescan_modules {
     PAR::reload_libs();
     PAR->import(BarnOwl::get_data_dir() . "/modules/*.par");
     PAR->import(BarnOwl::get_config_dir() . "/modules/*.par");
-    my %modules;
     my @modules;
+
+    %modules = ();
 
     my @moddirs = ();
     push @moddirs, BarnOwl::get_data_dir() . "/modules";
@@ -36,14 +52,32 @@ sub load_all {
             $modules{$class} = 1;
         }
     }
-    for my $class (keys %modules) {
-        if(!defined eval "use BarnOwl::Module::$class") {
-            # BarnOwl::error("Unable to load module $class: $!") if $!;
-            BarnOwl::error("Unable to load module $class: \n$@\n") if $@;
-        }
+}
+
+sub reload_module {
+    my $class = shift;
+    my $module = shift;
+
+    $class->rescan_modules();
+
+    for my $m (keys %INC) {
+        delete $INC{$m} if $m =~ m{^BarnOwl/Module/$module};
     }
 
-    $BarnOwl::Hooks::startup->add(\&register_keybindings);
+    local $SIG{__WARN__} = \&squelch_redefine;
+    if(!defined eval "use BarnOwl::Module::$module") {
+        BarnOwl::error("Unable to load module $module: \n$@\n") if $@;
+    }
+}
+
+sub reload_cmd {
+    my $class = shift;
+    shift; # Command
+    my $module = shift;
+    unless(defined($module)) {
+        die("Usage: reload [MODULE]");
+    };
+    $class->reload_module($module);
 }
 
 sub register_keybindings {
@@ -51,6 +85,11 @@ sub register_keybindings {
                            summary => 'Reload all modules',
                            usage   => 'reload-modules',
                            description => q{Reloads all modules located in ~/.owl/modules and the system modules directory}
+                          });
+    BarnOwl::new_command('reload', sub {BarnOwl::ModuleLoader->reload_cmd(@_)}, {
+                           summary => 'Reload one module',
+                           usage   => 'reload [MODULE]',
+                           description => q{Reloads a single module located in ~/.owl/modules or the system modules directory}
                           });
 }
 
