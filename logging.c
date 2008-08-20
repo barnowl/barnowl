@@ -50,9 +50,6 @@ int owl_log_shouldlog_message(owl_message *m) {
   /* skip login/logout messages if appropriate */
   if (!owl_global_is_loglogins(&g) && owl_message_is_loginout(m)) return(0);
       
-  /* check for nolog */
-  if (!strcasecmp(owl_message_get_opcode(m), "nolog") || !strcasecmp(owl_message_get_instance(m), "nolog")) return(0);
-
   /* check direction */
   if ((owl_global_get_loggingdirection(&g)==OWL_LOGGING_DIRECTION_IN) && owl_message_is_direction_out(m)) {
     return(0);
