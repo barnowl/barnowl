@@ -125,6 +125,11 @@ sub cmd_twitter {
     }
 }
 
-$BarnOwl::Hooks::receiveMessage->add(\&handle_message);
+eval {
+    $BarnOwl::Hooks::receiveMessage->add("BarnOwl::Module::Twitter::handle_message");
+};
+if($@) {
+    $BarnOwl::Hooks::receiveMessage->add(\&handle_message);
+}
 
 1;
