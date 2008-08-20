@@ -67,8 +67,8 @@ sub onStart {
         register_owl_commands();
         register_keybindings();
         register_filters();
-        $BarnOwl::Hooks::mainLoop->add(\&onMainLoop);
-        $BarnOwl::Hooks::getBuddyList->add(\&onGetBuddyList);
+        $BarnOwl::Hooks::mainLoop->add("BarnOwl::Module::Jabber::onMainLoop");
+        $BarnOwl::Hooks::getBuddyList->add("BarnOwl::Module::Jabber::onGetBuddyList");
         $vars{show} = '';
 	BarnOwl::new_variable_bool("jabber:show_offline_buddies",
 				   { default => 1,
@@ -91,7 +91,7 @@ sub onStart {
     }
 }
 
-$BarnOwl::Hooks::startup->add(\&onStart);
+$BarnOwl::Hooks::startup->add("BarnOwl::Module::Jabber::onStart");
 
 sub onMainLoop {
     return if ( !$conn->connected() );

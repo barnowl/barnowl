@@ -119,9 +119,8 @@ sub register_commands {
     BarnOwl::new_command('irc-topic'      => \&cmd_topic);
 }
 
-$BarnOwl::Hooks::startup->add(\&startup);
-$BarnOwl::Hooks::shutdown->add(\&shutdown);
-#$BarnOwl::Hooks::mainLoop->add(\&mainloop_hook);
+$BarnOwl::Hooks::startup->add('BarnOwl::Module::IRC::startup');
+$BarnOwl::Hooks::shutdown->add('BarnOwl::Module::IRC::shutdown');
 
 ################################################################################
 ######################## Owl command handlers ##################################
