@@ -180,7 +180,8 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
 char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
 {
   dSP ;
-  int count, len;
+  int count;
+  unsigned int len;
   SV *msgref, *srv;
   char *out, *preout;
   
@@ -456,7 +457,7 @@ char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
 
   if(SvTRUE(ERRSV)) {
     owl_function_error("%s", SvPV(ERRSV, n_a));
-    POPs;
+    (void)POPs;
   } else {
     if(count != 1)
       croak("Perl command %s returned more than one value!", cmd->name);

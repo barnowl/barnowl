@@ -66,12 +66,24 @@ int owl_cmddict_add_cmd(owl_cmddict *cd, owl_cmd * cmd) {
   return owl_dict_insert_element(cd, newcmd->name, (void*)newcmd, (void(*)(void*))owl_cmd_free);
 }
 
+char *_owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char **argv, int argc, char *buff) {
+  char *retval = NULL;
+  owl_cmd *cmd;
+
+  if (!strcmp(argv[0], "")) {
+  } else if (NULL != (cmd = (owl_cmd*)owl_dict_find_element(cd, argv[0]))) {
+    retval = owl_cmd_execute(cmd, cd, ctx, argc, argv, buff);
+  } else {
+    owl_function_makemsg("Unknown command '%s'.", buff);
+  }
+  return retval;
+}
+
 char *owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char *cmdbuff) {
   char **argv;
   int argc;
   char *tmpbuff;
   char *retval = NULL;
-  owl_cmd *cmd;
 
   tmpbuff=owl_strdup(cmdbuff);
   argv=owl_parseline(tmpbuff, &argc);
@@ -84,15 +96,35 @@ char *owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char *cmdbuff) {
   
   if (argc < 1) return(NULL);
 
-  if (!strcmp(argv[0], "")) {
-  } else if (NULL != (cmd = (owl_cmd*)owl_dict_find_element(cd, argv[0]))) {
-    retval = owl_cmd_execute(cmd, cd, ctx, argc, argv, cmdbuff);
-  } else {
-    owl_function_makemsg("Unknown command '%s'.", cmdbuff);
-  }
+  retval = _owl_cmddict_execute(cd, ctx, argv, argc, cmdbuff);
+
   owl_parsefree(argv, argc);
   owl_free(tmpbuff);
   sepbar(NULL);
+  return retval;
+}
+
+char *owl_cmddict_execute_argv(owl_cmddict *cd, owl_context *ctx, char **argv, int argc) {
+  char *buff, *ptr;
+  int len = 0, i;
+  char *retval = NULL;
+
+  for(i = 0; i < argc; i++) {
+    len += strlen(argv[i]) + 1;
+  }
+
+  ptr = buff = owl_malloc(len);
+
+  for(i = 0; i < argc; i++) {
+    strcpy(ptr, argv[i]);
+    ptr += strlen(argv[i]);
+    *(ptr++) = ' ';
+  }
+  *(ptr - 1) = 0;
+
+  retval = _owl_cmddict_execute(cd, ctx, argv, argc, buff);
+
+  owl_free(buff);
   return retval;
 }
 

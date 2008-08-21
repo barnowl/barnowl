@@ -26,6 +26,13 @@ char *owl_function_command(char *cmdbuff)
 			     owl_global_get_context(&g), cmdbuff);
 }
 
+char *owl_function_command_argv(char **argv, int argc)
+{
+  return owl_cmddict_execute_argv(owl_global_get_cmddict(&g),
+                                  owl_global_get_context(&g),
+                                  argv, argc);
+}
+
 void owl_function_command_norv(char *cmdbuff)
 {
   char *rv;
