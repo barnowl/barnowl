@@ -361,6 +361,12 @@ sub zwriteline  { return undef; }
 sub login_host  { return undef; }
 sub login_tty   { return undef; }
 
+# This is for back-compat with old messages that set these properties
+# New protocol implementations are encourages to user override these
+# methods.
+sub replycmd         { return shift->{replycmd}};
+sub replysendercmd   { return shift->{replysendercmd}};
+
 sub pretty_sender    { return shift->sender; }
 sub pretty_recipient { return shift->recipient; }
 

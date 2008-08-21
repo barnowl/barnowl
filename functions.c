@@ -2135,9 +2135,11 @@ void owl_function_reply(int type, int enter)
       }
     } else {
       char *cmd;
-      if((type==0 && (cmd=owl_message_get_attribute_value(m, "replycmd")))
-         || (type==1 && (cmd=owl_message_get_attribute_value(m, "replysendercmd")))) {
-        buff = owl_strdup(cmd);
+      if((type == 0 &&
+          (cmd=owl_perlconfig_message_call_method(m, "replycmd", 0, NULL))) ||
+         (type == 1 &&
+          (cmd=owl_perlconfig_message_call_method(m, "replysendercmd", 0, NULL)))) {
+        buff = cmd;
       }
     }
 
