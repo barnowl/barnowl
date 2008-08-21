@@ -301,6 +301,25 @@ sub _new_variable {
     $func->($name, $args{default}, $args{summary}, $args{description});
 }
 
+=head2 quote STRING
+
+Return a version of STRING fully quoted to survive processing by
+BarnOwl's command parser.
+
+=cut
+
+sub quote {
+    my $str = shift;
+    if ($str !~ /'/ && $str !~ /"/) {
+        return "$str";
+    }
+    if ($str !~ /'/) {
+        return "'$str'";
+    }
+    $str =~ s/"/"'"'"/g;
+    return '"' . $str . '"';
+}
+
 #####################################################################
 #####################################################################
 
