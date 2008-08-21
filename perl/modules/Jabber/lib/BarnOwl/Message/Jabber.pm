@@ -130,9 +130,11 @@ sub replysendercmd {
 sub jwrite_cmd {
     my ($recip, $account, $subject) = @_;
     if (defined $recip) {
+        $recip   = BarnOwl::quote($recip);
+        $account = BarnOwl::quote($account);
         my $cmd = "jwrite $recip -a $account";
         if (defined $subject) {
-            $cmd .= " -s $subject";
+            $cmd .= " -s " . BarnOwl::quote($subject);
         }
         return $cmd;
     } else {
