@@ -1130,15 +1130,11 @@ sub process_presence_error {
 
 sub j2hash {
     my $j   = shift;
-    my %initProps = %{ shift() };
+    my %props = (type => 'jabber',
+                 dir  => 'none',
+                 %{$_[0]});
 
-    my $dir = 'none';
-    my %props = ( type => 'jabber' );
-
-    foreach my $k (keys %initProps) {
-        $dir = $initProps{$k} if ($k eq 'direction');
-        $props{$k} = $initProps{$k};
-    }
+    my $dir = $props{direction};
 
     my $jtype = $props{jtype} = $j->GetType();
     my $from = $j->GetFrom('jid');
@@ -1186,9 +1182,9 @@ sub j2hash {
         $props{replycmd} = "jwrite $room";
         $props{replycmd} .=
           " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
-	if ($props{subject}) {
-	  $props{replycmd} .= " -s " . $props{subject}
-	}
+        if ($props{subject}) {
+            $props{replycmd} .= " -s " . $props{subject}
+        }
 
         if ($dir eq 'out') {
             $props{replysendercmd} = "jwrite ".$props{to}." -a ".$props{from};
