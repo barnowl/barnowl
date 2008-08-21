@@ -55,7 +55,7 @@ sub smartfilter {
     my $self = shift;
     my $inst = shift;
 
-    my ($filter, $ftext);
+    my $filter;
 
     if($self->jtype eq 'chat') {
         my $user;
@@ -68,8 +68,8 @@ sub smartfilter {
     } elsif ($self->jtype eq 'groupchat') {
         my $room = $self->room;
         $filter = "jabber-room-$room";
-        $ftext = qq{type ^jabber\$ and room ^$room\$};
-        BarnOwl::filter("$filter $ftext");
+        BarnOwl::command(qw[filter], $filter,
+                         qw[type ^jabber$ and room], "^$room\$");
         return $filter;
     } elsif ($self->login ne 'none') {
         return smartfilter_user($self->from, $inst);
@@ -82,10 +82,10 @@ sub smartfilter_user {
 
     $user   = Net::Jabber::JID->new($user)->GetJID( $inst ? 'full' : 'base' );
     my $filter = "jabber-user-$user";
-    my $ftext  =
-        qq{type ^jabber\$ and ( ( direction ^in\$ and from ^$user ) }
-      . qq{or ( direction ^out\$ and to ^$user ) ) };
-    BarnOwl::filter("$filter $ftext");
+    BarnOwl::command(qw[filter], $filter, qw[type ^jabber$],
+                     qw[and ( ( direction ^in$ and from], "^$user",
+                     qw[) or ( direction ^out$ and to ], "^$user",
+                     qw[ ) ) ]);
     return $filter;
 
 }
