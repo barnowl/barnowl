@@ -70,12 +70,12 @@ sub reload_module {
     }
 }
 
-sub reload_cmd {
+sub reload_module_cmd {
     my $class = shift;
     shift; # Command
     my $module = shift;
     unless(defined($module)) {
-        die("Usage: reload [MODULE]");
+        die("Usage: reload-module [MODULE]");
     };
     $class->reload_module($module);
 }
@@ -86,9 +86,9 @@ sub register_keybindings {
                            usage   => 'reload-modules',
                            description => q{Reloads all modules located in ~/.owl/modules and the system modules directory}
                           });
-    BarnOwl::new_command('reload', sub {BarnOwl::ModuleLoader->reload_cmd(@_)}, {
+    BarnOwl::new_command('reload-module', sub {BarnOwl::ModuleLoader->reload_module_cmd(@_)}, {
                            summary => 'Reload one module',
-                           usage   => 'reload [MODULE]',
+                           usage   => 'reload-module [MODULE]',
                            description => q{Reloads a single module located in ~/.owl/modules or the system modules directory}
                           });
 }
