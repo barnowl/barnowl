@@ -90,6 +90,55 @@ sub smartfilter_user {
 
 }
 
+sub replycmd {
+    my $self = shift;
+    my ($recip, $account, $subject);
+    if ($self->is_loginout) {
+        $recip   = $self->sender;
+        $account = $self->recipient;
+    } elsif ($self->jtype eq 'chat') {
+        return $self->replysendercmd;
+    } elsif ($self->jtype eq 'groupchat') {
+        $recip = $self->room;
+        if ($self->is_incoming) {
+            $account = $self->to;
+        } else {
+            $account = $self->from;
+        }
+        $subject = $self->subject;
+    }
+    return jwrite_cmd($recip, $account, $subject);
+}
+
+sub replysendercmd {
+    my $self = shift;
+    if($self->jtype eq 'groupchat'
+       || $self->jtype eq 'chat') {
+        my ($recip, $account);
+        if ($self->is_incoming) {
+            $recip   = $self->from;
+            $account = $self->to;
+        } else {
+            $recip   = $self->to;
+            $account = $self->from;
+        }
+        return jwrite_cmd($recip, $account);
+    }
+    return $self->replycmd;
+}
+
+sub jwrite_cmd {
+    my ($recip, $account, $subject) = @_;
+    if (defined $recip) {
+        my $cmd = "jwrite $recip -a $account";
+        if (defined $subject) {
+            $cmd .= " -s $subject";
+        }
+        return $cmd;
+    } else {
+        return undef;
+    }
+}
 
 =head1 SEE ALSO
 

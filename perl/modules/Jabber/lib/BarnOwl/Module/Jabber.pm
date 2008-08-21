@@ -1046,7 +1046,6 @@ sub process_presence_available {
         $props{body} = "$from is now offline. ";
         $props{loginout} = 'logout';
     }
-    $props{replysendercmd} = $props{replycmd} = "jwrite $from -a $to";
     BarnOwl::queue_message(BarnOwl::Message->new(%props));
 }
 
@@ -1153,10 +1152,6 @@ sub j2hash {
     $props{xml}        = $j->GetXML();
 
     if ( $jtype eq 'chat' ) {
-        $props{replycmd} =
-          "jwrite " . ( ( $dir eq 'in' ) ? $props{from} : $props{to} );
-        $props{replycmd} .=
-          " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
         $props{private} = 1;
 
         my $connection;
@@ -1179,19 +1174,6 @@ sub j2hash {
     elsif ( $jtype eq 'groupchat' ) {
         my $nick = $props{nick} = $from->GetResource();
         my $room = $props{room} = $from->GetJID('base');
-        $props{replycmd} = "jwrite $room";
-        $props{replycmd} .=
-          " -a " . ( ( $dir eq 'out' ) ? $props{from} : $props{to} );
-        if ($props{subject}) {
-            $props{replycmd} .= " -s " . $props{subject}
-        }
-
-        if ($dir eq 'out') {
-            $props{replysendercmd} = "jwrite ".$props{to}." -a ".$props{from};
-        }
-        else {
-            $props{replysendercmd} = "jwrite ".$props{from}." -a ".$props{to};
-        }
 
         $props{sender} = $nick || $room;
         $props{recipient} = $room;
@@ -1202,14 +1184,11 @@ sub j2hash {
         }
     }
     elsif ( $jtype eq 'normal' ) {
-        $props{replycmd}  = "";
         $props{private} = 1;
     }
     elsif ( $jtype eq 'headline' ) {
-        $props{replycmd} = "";
     }
     elsif ( $jtype eq 'error' ) {
-        $props{replycmd} = "";
         $props{body}     = "Error "
           . $props{error_code}
           . " sending to "
@@ -1217,7 +1196,6 @@ sub j2hash {
           . $props{error};
     }
 
-    $props{replysendercmd} = $props{replycmd} unless $props{replysendercmd};
     return %props;
 }
 
