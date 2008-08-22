@@ -2523,16 +2523,18 @@ void owl_function_show_filters()
 void owl_function_show_filter(char *name)
 {
   owl_filter *f;
-  char *buff;
+  char *buff, *tmp;
 
   f=owl_global_get_filter(&g, name);
   if (!f) {
     owl_function_error("There is no filter named %s", name);
     return;
   }
-  buff = owl_filter_print(f);
+  tmp = owl_filter_print(f);
+  buff = owl_sprintf("%s: %s", owl_filter_get_name(f), tmp);
   owl_function_popless_text(buff);
   owl_free(buff);
+  owl_free(tmp);
 }
 
 void owl_function_show_zpunts()

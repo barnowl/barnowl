@@ -712,6 +712,10 @@ owl_cmd commands_to_init[]
 	      "returns the value of a variable",
 	      "getvar <varname>", ""),
 
+  OWLCMD_ARGS("getfilter", owl_command_getfilter, OWL_CTX_INTERACTIVE,
+	      "returns the definition of a filter",
+	      "getfilter <filtername>", ""),
+
   OWLCMD_ARGS("getstyle", owl_command_getstyle, OWL_CTX_INTERACTIVE,
 	      "returns the name of the style for the current view",
 	      "", ""),
@@ -2458,6 +2462,20 @@ char *owl_command_getvar(int argc, char **argv, char *buff)
     return NULL;
   }
   return owl_strdup(tmpbuff); 
+}
+
+char *owl_command_getfilter(int argc, char **argv, char *buf)
+{
+  owl_filter *f;
+  if (argc != 2) {
+    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
+    return NULL;
+  }
+  f = owl_global_get_filter(&g, argv[1]);
+  if (!f) {
+    return NULL;
+  }
+  return owl_filter_print(f);
 }
 
 char *owl_command_search(int argc, char **argv, char *buff)

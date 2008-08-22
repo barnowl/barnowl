@@ -213,9 +213,7 @@ int owl_filter_message_match(owl_filter *f, owl_message *m)
 
 char* owl_filter_print(owl_filter *f)
 {
-  GString *out = g_string_new(owl_filter_get_name(f));
-
-  g_string_append(out, ": ");
+  GString *out = g_string_new("");
 
   if (f->fgcolor!=OWL_COLOR_DEFAULT) {
     g_string_append(out, "-c ");
@@ -255,6 +253,8 @@ int owl_filter_equiv(owl_filter *a, owl_filter *b)
   buffb = owl_filter_print(b);
 
   ret = !strcmp(buffa, buffb);
+  ret = ret && !strcmp(owl_filter_get_name(a),
+                       owl_filter_get_name(b));
 
   owl_free(buffa);
   owl_free(buffb);
