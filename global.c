@@ -309,10 +309,18 @@ int owl_global_is_typwin_active(owl_global *g) {
 }
 
 void owl_global_set_typwin_active(owl_global *g) {
+  int d = owl_global_get_typewindelta(g);
+  if (d > 0)
+      owl_function_resize_typwin(owl_global_get_typwin_lines(g) + d);
+
   g->typwinactive=1;
 }
 
 void owl_global_set_typwin_inactive(owl_global *g) {
+  int d = owl_global_get_typewindelta(g);
+  if (d > 0)
+      owl_function_resize_typwin(owl_global_get_typwin_lines(g) - d);
+
   g->typwinactive=0;
 }
 

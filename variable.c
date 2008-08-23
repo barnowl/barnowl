@@ -312,6 +312,16 @@ static owl_variable variables_to_init[] = {
 		   NULL /* use default for get */
 		   ),
 
+  OWLVAR_INT( "typewindelta" /* %OwlVarStub */, 0,
+		  "number of lines to add to the typing window when in use",
+		   "On small screens you may want the typing window to\n"
+		   "auto-hide when not entering a command or message.\n"
+		   "This variable is the number of lines to add to the\n"
+           "typing window when it is in use; you can then set\n"
+           "typewinsize to 1.\n\n"
+           "This works a lot better with a non-default scrollmode;\n"
+           "try :set scrollmode pagedcenter.\n"),
+
   OWLVAR_ENUM( "scrollmode" /* %OwlVarStub */, OWL_SCROLLMODE_NORMAL,
 	       "how to scroll up and down",
 	       "This controls how the screen is scrolled as the\n"
