@@ -310,7 +310,8 @@ BarnOwl's command parser.
 
 sub quote {
     my $str = shift;
-    if ($str !~ /'/ && $str !~ /"/) {
+    return "''" if $str eq '';
+    if ($str !~ /['" ]/) {
         return "$str";
     }
     if ($str !~ /'/) {
@@ -492,6 +493,9 @@ sub is_private {
   return 1;
 }
 
+sub replycmd {return 'loopwrite';}
+sub replysendercmd {return 'loopwrite';}
+
 #####################################################################
 #####################################################################
 
@@ -504,12 +508,36 @@ sub is_private {
     return !(shift->is_loginout);
 }
 
+sub replycmd {
+    my $self = shift;
+    if ($self->is_incoming) {
+        return "aimwrite " . BarnOwl::quote($self->sender);
+    } else {
+        return "aimwrite " . BarnOwl::quote($self->recipient);
+    }
+}
+
+sub replysendercmd {
+    return shift->replycmd;
+}
+
 #####################################################################
 #####################################################################
 
 package BarnOwl::Message::Zephyr;
 
+use constant WEBZEPHYR_PRINCIPAL => "daemon.webzephyr";
+use constant WEBZEPHYR_CLASS     => "webzephyr";
+use constant WEBZEPHYR_OPCODE    => "webzephyr";
+
 use base qw( BarnOwl::Message );
+
+sub strip_realm {
+    my $sender = shift;
+    my $realm = BarnOwl::zephyr_getrealm();
+    $sender =~ s/\@$realm$//;
+    return $sender;
+}
 
 sub login_type {
     return (shift->zsig eq "") ? "(PSEUDO)" : "";
@@ -566,18 +594,12 @@ sub is_mail {
 
 sub pretty_sender {
     my ($m) = @_;
-    my $sender = $m->sender;
-    my $realm = BarnOwl::zephyr_getrealm();
-    $sender =~ s/\@$realm$//;
-    return $sender;
+    return strip_realm($m->sender);
 }
 
 sub pretty_recipient {
     my ($m) = @_;
-    my $recip = $m->recipient;
-    my $realm = BarnOwl::zephyr_getrealm();
-    $recip =~ s/\@$realm$//;
-    return $recip;
+    return strip_realm($m->recipient);
 }
 
 # These are arguably zephyr-specific
@@ -592,9 +614,85 @@ sub auth        { return shift->{"auth"}; }
 sub fields      { return shift->{"fields"}; }
 sub zsig        { return shift->{"zsig"}; }
 
+sub zephyr_cc {
+    my $self = shift;
+    return $1 if $self->body =~ /^\s*cc:\s+([^\n]+)/i;
+    return undef;
+}
+
+sub replycmd {
+    my $self = shift;
+    my $sender = shift;
+    $sender = 0 unless defined $sender;
+    my ($class, $instance, $to, $cc);
+    if($self->is_outgoing) {
+        return $self->{zwriteline};
+    }
+
+    if($sender && $self->opcode eq WEBZEPHYR_OPCODE) {
+        $class = WEBZEPHYR_CLASS;
+        $instance = $self->sender;
+        $to = WEBZEPHYR_PRINCIPAL;
+    } elsif($self->class eq WEBZEPHYR_CLASS
+            && $self->is_loginout) {
+        $class = WEBZEPHYR_CLASS;
+        $instance = $self->instance;
+        $to = WEBZEPHYR_PRINCIPAL;
+    } elsif($self->is_loginout || $sender) {
+        $class = 'MESSAGE';
+        $instance = 'PERSONAL';
+        $to = $self->sender;
+    } else {
+        $class = $self->class;
+        $instance = $self->instance;
+        $to = $self->recipient;
+        $cc = $self->zephyr_cc();
+        if($to eq '*' || $to eq '') {
+            $to = '';
+        } elsif($to !~ /^@/) {
+            $to = $self->sender;
+        }
+    }
+
+    my $cmd;
+    if(lc $self->opcode eq 'crypt') {
+        $cmd = 'zcrypt';
+    } else {
+        $cmd = 'zwrite';
+    }
+
+    if (lc $class ne 'message') {
+        $cmd .= " -c " . BarnOwl::quote($self->class);
+    }
+    if (lc $instance ne 'personal') {
+        $cmd .= " -i " . BarnOwl::quote($self->instance);
+    }
+    if ($to ne '') {
+        $to = strip_realm($to);
+        if (defined $cc) {
+            my @cc = grep /^[^-]/, ($to, split /\s+/, $cc);
+            my %cc = map {$_ => 1} @cc;
+            delete $cc{strip_realm(BarnOwl::zephyr_getsender())};
+            @cc = keys %cc;
+            $cmd .= " -C " . join(" ", @cc);
+        } else {
+            if(BarnOwl::getvar('smartstrip') eq 'on') {
+                $to = BarnOwl::zephyr_smartstrip_user($to);
+            }
+            $cmd .= " $to";
+        }
+    }
+    return $cmd;
+}
+
+sub replysendercmd {
+    my $self = shift;
+    return $self->replycmd(1);
+}
+
 #####################################################################
 #####################################################################
-################################################################################
+#####################################################################
 
 package BarnOwl::Hook;
 

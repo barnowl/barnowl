@@ -2019,14 +2019,13 @@ void owl_function_show_term()
  */
 void owl_function_reply(int type, int enter)
 {
-  char *buff=NULL, *oldbuff;
+  char *buff=NULL;
   owl_message *m;
   owl_filter *f;
   
   if (owl_view_get_size(owl_global_get_current_view(&g))==0) {
     owl_function_error("No message selected");
   } else {
-    char *class, *inst, *to, *cc=NULL;
     
     m=owl_view_get_element(owl_global_get_current_view(&g), owl_global_get_curmsg(&g));
     if (!m) {
@@ -2043,111 +2042,19 @@ void owl_function_reply(int type, int enter)
       }
     }
 
-    /* loopback */
-    if (owl_message_is_type_loopback(m)) {
-      owl_function_loopwrite_setup();
-      return;
-    }
-
-    /* zephyr */
-    if (owl_message_is_type_zephyr(m)) {
-      /* if it's a zephyr we sent, send it out the same way again */
-      if (owl_message_is_direction_out(m)) {
-          buff = owl_strdup(owl_message_get_zwriteline(m));
-      } else {
-
-        /* Special case a personal reply to a webzephyr user on a class */
-        if ((type==1) && !strcasecmp(owl_message_get_opcode(m), OWL_WEBZEPHYR_OPCODE)) {
-          class=OWL_WEBZEPHYR_CLASS;
-          inst=owl_message_get_sender(m);
-          to=OWL_WEBZEPHYR_PRINCIPAL;
-        } else if (!strcasecmp(owl_message_get_class(m), OWL_WEBZEPHYR_CLASS) && owl_message_is_loginout(m)) {
-          /* Special case LOGIN/LOGOUT notifications on class "webzephyr" */
-          class=OWL_WEBZEPHYR_CLASS;
-          inst=owl_message_get_instance(m);
-          to=OWL_WEBZEPHYR_PRINCIPAL;
-        } else if (owl_message_is_loginout(m)) {
-          /* Normal LOGIN/LOGOUT messages */
-          class="MESSAGE";
-          inst="PERSONAL";
-          to=owl_message_get_sender(m);
-        } else if (type==1) {
-          /* Personal reply */
-          class="MESSAGE";
-          inst="PERSONAL";
-          to=owl_message_get_sender(m);
-        } else {
-          /* General reply */
-          class=owl_message_get_class(m);
-          inst=owl_message_get_instance(m);
-          to=owl_message_get_recipient(m);
-          cc=owl_message_get_cc_without_recipient(m);
-          if (!strcmp(to, "") || !strcmp(to, "*")) {
-            to="";
-          } else if (to[0]=='@') {
-            /* leave it, to get the realm */
-          } else {
-            to=owl_message_get_sender(m);
-          }
-        }
-
-        /* create the command line */
-        if (!strcasecmp(owl_message_get_opcode(m), "CRYPT")) {
-          buff=owl_strdup("zcrypt");
-        } else {
-          buff = owl_strdup("zwrite");
-        }
-        if (strcasecmp(class, "message")) {
-          buff = owl_sprintf("%s -c %s%s%s", oldbuff=buff, owl_getquoting(class), class, owl_getquoting(class));
-          owl_free(oldbuff);
-        }
-        if (strcasecmp(inst, "personal")) {
-          buff = owl_sprintf("%s -i %s%s%s", oldbuff=buff, owl_getquoting(inst), inst, owl_getquoting(inst));
-          owl_free(oldbuff);
-        }
-        if (*to != '\0') {
-          char *tmp, *oldtmp, *tmp2;
-          tmp=short_zuser(to);
-          if (cc) {
-            tmp = owl_util_uniq(oldtmp=tmp, cc, "-");
-            owl_free(oldtmp);
-            buff = owl_sprintf("%s -C %s", oldbuff=buff, tmp);
-            owl_free(oldbuff);
-          } else {
-            if (owl_global_is_smartstrip(&g)) {
-              tmp2=tmp;
-              tmp=owl_zephyr_smartstripped_user(tmp2);
-              owl_free(tmp2);
-            }
-            buff = owl_sprintf("%s %s", oldbuff=buff, tmp);
-            owl_free(oldbuff);
-          }
-          owl_free(tmp);
-        }
-        if (cc) owl_free(cc);
-      }
-    } else if (owl_message_is_type_aim(m)) {
-      /* aim */
-      if (owl_message_is_direction_out(m)) {
-	buff=owl_sprintf("aimwrite %s", owl_message_get_recipient(m));
-      } else {
-	buff=owl_sprintf("aimwrite %s", owl_message_get_sender(m));
-      }
-    } else {
-      char *cmd;
-      if((type == 0 &&
-          (cmd=owl_perlconfig_message_call_method(m, "replycmd", 0, NULL))) ||
-         (type == 1 &&
-          (cmd=owl_perlconfig_message_call_method(m, "replysendercmd", 0, NULL)))) {
-        buff = cmd;
-      }
+    char *cmd;
+    if((type == 0 &&
+        (cmd=owl_perlconfig_message_call_method(m, "replycmd", 0, NULL))) ||
+       (type == 1 &&
+        (cmd=owl_perlconfig_message_call_method(m, "replysendercmd", 0, NULL)))) {
+      buff = cmd;
     }
 
     if(!buff) {
         owl_function_error("I don't know how to reply to that message.");
         return;
     }
-    
+
     if (enter) {
       owl_history *hist = owl_global_get_cmd_history(&g);
       owl_history_store(hist, buff);

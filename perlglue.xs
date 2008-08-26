@@ -114,6 +114,21 @@ ztext_stylestrip(ztext)
 		if (rv) owl_free(rv);
 
 char *
+zephyr_smartstrip_user(in)
+	char *in
+	PREINIT:
+		char *rv = NULL;
+	CODE:
+	{
+		rv = owl_zephyr_smartstripped_user(in);
+		RETVAL = rv;
+	}
+	OUTPUT:
+		RETVAL
+	CLEANUP:
+		owl_free(rv);
+
+char *
 zephyr_getsubs()
 	PREINIT:
 		char *rv = NULL;
