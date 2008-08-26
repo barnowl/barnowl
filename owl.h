@@ -341,7 +341,6 @@ typedef struct _owl_message {
   owl_list attributes;            /* this is a list of pairs */
   char *timestr;
   time_t time;
-  char *zwriteline;
 } owl_message;
 
 #define OWL_FMTEXT_CACHE_SIZE 1000
