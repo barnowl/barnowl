@@ -192,11 +192,11 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("subscribe", owl_command_subscribe, OWL_CTX_ANY,
 	      "subscribe to a zephyr class, instance, recipient",
-	      "subscribe [-t] <class> [instance] [recipient]",
+	      "subscribe [-t] <class> [instance [recipient]]",
 	      "Subscribe the specified class and instance.  If the\n"
 	      "instance or recipient is not listed on the command\n"
 	      "line they default to * (the wildcard recipient).\n"
-	      "If the -t option is present the unsubscription will\n"
+	      "If the -t option is present the subscription will\n"
 	      "only be temporary, i.e., it will not be written to\n"
 	      "the subscription file and will therefore not be\n"
 	      "present the next time owl is started.\n"),
@@ -204,14 +204,14 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("unsubscribe", owl_command_unsubscribe, OWL_CTX_ANY,
 	      "unsubscribe from a zephyr class, instance, recipient",
-	      "unsubscribe [-t] <class> [instance] [recipient]",
+	      "unsubscribe [-t] <class> [instance [recipient]]",
 	      "Unsubscribe from the specified class and instance.  If the\n"
 	      "instance or recipient is not listed on the command\n"
 	      "line they default to * (the wildcard recipient).\n"
-	      "If the -t option is present the subscription will\n"
-	      "only be temporary, i.e., it will not be written to\n"
+	      "If the -t option is present the unsubscription will\n"
+	      "only be temporary, i.e., it will not be updated in\n"
 	      "the subscription file and will therefore not be\n"
-	      "present the next time owl is started.\n"),
+	      "in effect the next time owl is started.\n"),
   OWLCMD_ALIAS("unsub", "unsubscribe"),
 
   OWLCMD_VOID("unsuball", owl_command_unsuball, OWL_CTX_ANY,
