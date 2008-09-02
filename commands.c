@@ -192,24 +192,26 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("subscribe", owl_command_subscribe, OWL_CTX_ANY,
 	      "subscribe to a zephyr class, instance, recipient",
-	      "subscribe [-t] <class> <instance> [recipient]",
-	      "Subscribe the specified class and instance.  If the recipient\n"
-	      "is not listed on the command line it defaults\n"
-	      "to * (the wildcard recipient).  If the -t option is present\n"
-	      "the subscription will only be temporary, i.e., it will not\n"
-	      "be written to the subscription file and will therefore not\n"
-	      "be present the next time owl is started.\n"),
+	      "subscribe [-t] <class> [instance] [recipient]",
+	      "Subscribe the specified class and instance.  If the\n"
+	      "instance or recipient is not listed on the command\n"
+	      "line they default to * (the wildcard recipient).\n"
+	      "If the -t option is present the unsubscription will\n"
+	      "only be temporary, i.e., it will not be written to\n"
+	      "the subscription file and will therefore not be\n"
+	      "present the next time owl is started.\n"),
   OWLCMD_ALIAS("sub", "subscribe"),
 
   OWLCMD_ARGS("unsubscribe", owl_command_unsubscribe, OWL_CTX_ANY,
 	      "unsubscribe from a zephyr class, instance, recipient",
-	      "unsubscribe [-t] <class> <instance> [recipient]",
+	      "unsubscribe [-t] <class> [instance] [recipient]",
 	      "Unsubscribe from the specified class and instance.  If the\n"
-	      "recipient is not listed on the command line it defaults\n"
-	      "to * (the wildcard recipient).  If the -t option is present\n"
-	      "the unsubscription will only be temporary, i.e., it will not\n"
-	      "be updated in the subscription file and will therefore not\n"
-	      "be in effect the next time owl is started.\n"),
+	      "instance or recipient is not listed on the command\n"
+	      "line they default to * (the wildcard recipient).\n"
+	      "If the -t option is present the subscription will\n"
+	      "only be temporary, i.e., it will not be written to\n"
+	      "the subscription file and will therefore not be\n"
+	      "present the next time owl is started.\n"),
   OWLCMD_ALIAS("unsub", "unsubscribe"),
 
   OWLCMD_VOID("unsuball", owl_command_unsuball, OWL_CTX_ANY,
@@ -1742,11 +1744,11 @@ void owl_command_zlog_out(void)
 
 char *owl_command_subscribe(int argc, char **argv, char *buff)
 {
-  char *recip="";
+  char *class, *instance, *recip="";
   int temp=0;
   int ret=0;
-  
-  if (argc<3) {
+
+  if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the subscribe command");
     return(NULL);
   }
@@ -1758,25 +1760,33 @@ char *owl_command_subscribe(int argc, char **argv, char *buff)
     argc--;
     argv++;
   }
-  if (argc<2) {
+  if (argc < 1) {
     owl_function_makemsg("Not enough arguments to the subscribe command");
     return(NULL);
   }
 
-  if (argc>3) {
+  if (argc > 3) {
     owl_function_makemsg("Too many arguments to the subscribe command");
     return(NULL);
   }
 
-  if (argc==2) {
+  class = argv[0];
+
+  if (argc == 1) {
+    instance = "*";
+  } else {
+    instance = argv[1];
+  }
+
+  if (argc <= 2) {
     recip="";
   } else if (argc==3) {
     recip=argv[2];
   }
 
-  ret = owl_function_subscribe(argv[0], argv[1], recip);
+  ret = owl_function_subscribe(class, instance, recip);
   if (!temp && !ret) {
-    owl_zephyr_addsub(NULL, argv[0], argv[1], recip);
+    owl_zephyr_addsub(NULL, class, instance, recip);
   }
   return(NULL);
 }
@@ -1784,10 +1794,10 @@ char *owl_command_subscribe(int argc, char **argv, char *buff)
 
 char *owl_command_unsubscribe(int argc, char **argv, char *buff)
 {
-  char *recip="";
+  char *class, *instance, *recip="";
   int temp=0;
 
-  if (argc<3) {
+  if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the unsubscribe command");
     return(NULL);
   }
@@ -1799,25 +1809,33 @@ char *owl_command_unsubscribe(int argc, char **argv, char *buff)
     argc--;
     argv++;
   }
-  if (argc<2) {
-    owl_function_makemsg("Not enough arguments to the subscribe command");
+  if (argc < 1) {
+    owl_function_makemsg("Not enough arguments to the unsubscribe command");
     return(NULL);
   }
 
-  if (argc>3) {
+  if (argc > 3) {
     owl_function_makemsg("Too many arguments to the unsubscribe command");
     return(NULL);
   }
 
-  if (argc==2) {
+  class = argv[0];
+
+  if (argc == 1) {
+    instance = "*";
+  } else {
+    instance = argv[1];
+  }
+
+  if (argc <= 2) {
     recip="";
   } else if (argc==3) {
     recip=argv[2];
   }
 
-  owl_function_unsubscribe(argv[0], argv[1], recip);
+  owl_function_unsubscribe(class, instance, recip);
   if (!temp) {
-    owl_zephyr_delsub(NULL, argv[0], argv[1], recip);
+    owl_zephyr_delsub(NULL, class, instance, recip);
   }
   return(NULL);
 }
