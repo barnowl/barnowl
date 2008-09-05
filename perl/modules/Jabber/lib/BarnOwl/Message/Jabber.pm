@@ -106,6 +106,9 @@ sub replycmd {
             $account = $self->from;
         }
         $subject = $self->subject;
+    } else {
+        # Unknown type
+        return;
     }
     return jwrite_cmd($recip, $account, $subject);
 }
