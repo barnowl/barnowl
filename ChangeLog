@@ -4,7 +4,20 @@ $Id$
  * Fix a segfault on retrieving zephyr subs when the user doesn't
    have any or has expired tickets. -asedeno
  * Don't complain about non-existant ~/.owl/startup when starting. -asedeno
-	
+ * Fix narrowing to personals in IRC. -alexmv
+ * Don't segfault retrieving subscriptions without valid tickets. -asedeno
+ * Load modules even if .owlconf doesn't run successfully. -nelhage
+ * Update the manpage for barnowl. -nelhage
+ * Better support for irc-names, irc-topic, and irc-whois. -geofft
+ * Display /quit messages in IRC -geofft.
+ * Add a new perl hook for all new messages. -geofft
+ * Fix a bug causing corrupted input in the editwin on end-of-line. -nelhage
+ * Add better support for adding hooks in perl that behave correctly
+       on module reload. -nelhage
+ * Added a :reload-module command to reload a single module. -nelhage
+ * Fixed quoting issues replying to jabber users or MUCs containing
+        whitespace or quites. -nelhage
+
 1.0.1
  * Remove an unneeded .orig file from libfaim/ - hartmans
  * Update the copyright notice in ':show license' - nelhage
