@@ -421,12 +421,21 @@ void owl_function_zcrypt(char *line, char *msg)
 
   mymsg=owl_zwrite_get_message(&z);
 #ifdef OWL_ENABLE_ZCRYPT
-  cryptmsg=owl_malloc(strlen(mymsg)*4);
+  /* Allocate enough space for the crypted message. For each byte of
+   * the message, the encoded cyphertext will have two bytes. Block
+   * size is 8 bytes of input, or 16 bytes of output, so make sure we
+   * have at least one block worth of space allocated. If the message
+   * is empty, no blocks are sent, but we still allocate one
+   * block. The additional 16 bytes also provide space for the null
+   * terminator, as we will never use all of it for cyphertext.
+   */
+  cryptmsg=owl_malloc((strlen(mymsg)*2)+16);
   ret=owl_zcrypt_encrypt(cryptmsg, mymsg, owl_zwrite_get_class(&z), owl_zwrite_get_instance(&z));
   if (ret) {
     owl_function_error("Error in zcrypt, possibly no key found.  Message not sent.");
     owl_function_beep();
     owl_free(cryptmsg);
+    owl_zwrite_free(&z);
     return;
   }
 #else
