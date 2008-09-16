@@ -12,6 +12,7 @@ our %modules;
 sub load_all {
     my $class = shift;
     $class->rescan_modules;
+    PAR::reload_libs();
 
     for my $mod (keys %modules) {
         if(!defined eval "use BarnOwl::Module::$mod") {
@@ -23,7 +24,6 @@ sub load_all {
 }
 
 sub rescan_modules {
-    PAR::reload_libs();
     PAR->import(BarnOwl::get_data_dir() . "/modules/*.par");
     PAR->import(BarnOwl::get_config_dir() . "/modules/*.par");
     my @modules;
@@ -64,8 +64,19 @@ sub reload_module {
         delete $INC{$m} if $m =~ m{^BarnOwl/Module/$module};
     }
 
+    my $parfile;
+    for my $p (@PAR::PAR_INC) {
+        if($p =~ m/\Q$module\E[.]par$/) {
+            $parfile = $p;
+            last;
+        }
+    }
+
     local $SIG{__WARN__} = \&squelch_redefine;
-    if(!defined eval "use BarnOwl::Module::$module") {
+
+    if(defined $parfile) {
+        PAR::reload_libs($parfile);
+    } elsif(!defined eval "use BarnOwl::Module::$module") {
         BarnOwl::error("Unable to load module $module: \n$@\n") if $@;
     }
 }
