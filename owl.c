@@ -119,7 +119,7 @@ int main(int argc, char **argv, char **env)
       printf("This is barnowl version %s\n", OWL_VERSION_STRING);
       exit(0);
     } else {
-      fprintf(stderr, "Uknown argument\n");
+      fprintf(stderr, "Unknown argument\n");
       usage();	      
       exit(1);
     }
