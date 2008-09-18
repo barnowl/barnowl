@@ -83,7 +83,7 @@ static owl_variable variables_to_init[] = {
 	       "send pings", "" ),
 
   OWLVAR_BOOL( "sepbar_disable" /* %OwlVarStub */, 0,
-	       "disable printing information in the seperator bar", "" ),
+	       "disable printing information in the separator bar", "" ),
 
   OWLVAR_BOOL( "smartstrip" /* %OwlVarStub */, 1,
 	       "strip kerberos instance for reply", ""),
@@ -141,7 +141,7 @@ static owl_variable variables_to_init[] = {
 		    "When this is enabled, Owl will periodically check the zephyr\n"
 		    "location of users in your .anyone file.  If a user is present\n"
 		    "but sent no login message, or a user is not present that sent no\n"
-		    "logout message a pseudo login or logout message wil be created\n",
+		    "logout message, a pseudo login or logout message wil be created\n",
 		    NULL, owl_variable_pseudologins_set, NULL),
 
   OWLVAR_BOOL( "ignorelogins" /* %OwlVarStub */, 0,

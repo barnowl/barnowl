@@ -805,7 +805,7 @@ void owl_zephyr_zlocate(char *user, char *out, int auth)
 
   if (numlocs==0) {
     myuser=short_zuser(user);
-    sprintf(out, "%s: Hidden or not logged-in\n", myuser);
+    sprintf(out, "%s: Hidden or not logged in\n", myuser);
     owl_free(myuser);
     return;
   }
