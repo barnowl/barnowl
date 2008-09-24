@@ -966,8 +966,10 @@ sub process_owl_jwrite {
 
 sub process_incoming_chat_message {
     my ( $sid, $j ) = @_;
-    BarnOwl::queue_message( j2o( $j, { direction => 'in',
-                                   sid => $sid } ) );
+    if ($j->DefinedBody()) {
+        BarnOwl::queue_message( j2o( $j, { direction => 'in',
+                                           sid => $sid } ) );
+    }
 }
 
 sub process_incoming_error_message {
