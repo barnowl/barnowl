@@ -76,7 +76,7 @@ sub reload_module {
 
     if(defined $parfile) {
         PAR::reload_libs($parfile);
-        $class->reload();
+        $class->run_startup_hooks();
     } elsif(!defined eval "use BarnOwl::Module::$module") {
         BarnOwl::error("Unable to load module $module: \n$@\n") if $@;
     }
@@ -113,7 +113,11 @@ sub reload {
     # Restore core modules from perlwrap.pm
     $INC{$_} = 1 for (qw(BarnOwl.pm BarnOwl/Hooks.pm
                          BarnOwl/Message.pm BarnOwl/Style.pm));
+    $class->run_startup_hooks();
+}
 
+sub run_startup_hooks {
+    my $class = shift;
     local $SIG{__WARN__} = \&squelch_redefine;
     $class->load_all;
     $BarnOwl::Hooks::startup->run(1);
