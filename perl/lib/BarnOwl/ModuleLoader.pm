@@ -76,6 +76,7 @@ sub reload_module {
 
     if(defined $parfile) {
         PAR::reload_libs($parfile);
+        $class->reload();
     } elsif(!defined eval "use BarnOwl::Module::$module") {
         BarnOwl::error("Unable to load module $module: \n$@\n") if $@;
     }
