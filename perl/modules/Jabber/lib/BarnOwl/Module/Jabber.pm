@@ -84,6 +84,12 @@ sub onStart {
 				  { default => 15,
 				    summary => 'After minutes idle, auto extended away.'
 				});
+        # Force these. Reload can screw them up.
+        # Taken from Net::Jabber::Protocol.
+        $Net::XMPP::Protocol::NEWOBJECT{'iq'}       = "Net::Jabber::IQ";
+        $Net::XMPP::Protocol::NEWOBJECT{'message'}  = "Net::Jabber::Message";
+        $Net::XMPP::Protocol::NEWOBJECT{'presence'} = "Net::Jabber::Presence";
+        $Net::XMPP::Protocol::NEWOBJECT{'jid'}      = "Net::Jabber::JID";
     } else {
         # Our owl doesn't support queue_message. Unfortunately, this
         # means it probably *also* doesn't support BarnOwl::error. So just
