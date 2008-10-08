@@ -73,6 +73,9 @@ sub onStart {
 	BarnOwl::new_variable_bool("jabber:show_offline_buddies",
 				   { default => 1,
 				     summary => 'Show offline or pending buddies.'});
+	BarnOwl::new_variable_bool("jabber:show_logins",
+				   { default => 0,
+				     summary => 'Show login/logout messages.'});
 	BarnOwl::new_variable_bool("jabber:spew",
 				   { default => 0,
 				     summary => 'Display unrecognized Jabber messages.'});
@@ -1030,6 +1033,7 @@ sub process_muc_presence {
 
 
 sub process_presence_available {
+    return unless (BarnOwl::getvar('jabber:show_logins') eq 'on');
     my ( $sid, $p ) = @_;
     my $from = $p->GetFrom('jid')->GetJID('base');
     my $to = $p->GetTo();
