@@ -150,6 +150,7 @@ void owl_log_outgoing(owl_message *m)
     to = short_zuser(owl_message_get_recipient(m));
   } else if (owl_message_is_type_jabber(m)) {
     to = owl_sprintf("jabber:%s", owl_message_get_recipient(m));
+    owl_text_tr(to, '/', '_');
   } else if (owl_message_is_type_aim(m)) {
     char *temp2;
     temp = owl_aim_normalize_screenname(owl_message_get_recipient(m));
