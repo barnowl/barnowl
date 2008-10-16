@@ -1158,7 +1158,10 @@ sub j2hash {
     $props{sender}     = $from->GetJID('base');
     $props{subject}    = $j->GetSubject() if ( $j->DefinedSubject() );
     $props{thread}     = $j->GetThread() if ( $j->DefinedThread() );
-    $props{body}       = $j->GetBody() if ( $j->DefinedBody() );
+    if ( $j->DefinedBody() ) {
+        $props{body}   = $j->GetBody();
+        $props{body}  =~ s/\xEF\xBB\xBF//g; # Strip stray Byte-Order-Marks.
+    }
     $props{error}      = $j->GetError() if ( $j->DefinedError() );
     $props{error_code} = $j->GetErrorCode() if ( $j->DefinedErrorCode() );
     $props{xml}        = $j->GetXML();
