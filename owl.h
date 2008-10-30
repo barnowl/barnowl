@@ -50,10 +50,6 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define BARNOWL_STRINGIFY(x) _STRINGIFY(x)
 #define _STRINGIFY(x) #x
 
-#ifndef OWL_SVN_REVNO
-#define OWL_SVN_REVNO ????
-#endif
-
 #ifndef OWL_VERSION_STRING
 #define OWL_VERSION_STRING "1.0.2.1"
 #endif
