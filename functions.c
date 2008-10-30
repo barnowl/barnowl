@@ -377,6 +377,7 @@ void owl_function_zwrite(char *line, char *msg)
 
   /* create the zwrite and send the message */
   owl_zwrite_create_from_line(&z, line);
+  owl_zwrite_populate_zsig(&z);
   if (msg) {
     owl_zwrite_set_message(&z, msg);
   }
@@ -415,6 +416,7 @@ void owl_function_zcrypt(char *line, char *msg)
 
   /* create the zwrite and send the message */
   owl_zwrite_create_from_line(&z, line);
+  owl_zwrite_populate_zsig(&z);
   if (msg) {
     owl_zwrite_set_message(&z, msg);
   }

@@ -10,8 +10,6 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 {
   int argc, badargs, myargc;
   char **argv, **myargv;
-  char *zsigproc, *zsigowlvar, *zsigzvar, *ptr;
-  struct passwd *pw;
 
   badargs=0;
   
@@ -138,6 +136,14 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
   if (z->opcode==NULL) z->opcode=owl_strdup("");
   /* z->message is allowed to stay NULL */
   
+  return(0);
+}
+
+void owl_zwrite_populate_zsig(owl_zwrite *z)
+{
+  char *zsigproc, *zsigowlvar, *zsigzvar, *ptr;
+  struct passwd *pw;
+
   /* get a zsig, if not given */
   if (z->zsig==NULL) {
     zsigproc = owl_global_get_zsigproc(&g);
@@ -183,8 +189,6 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       }
     }
   }
-
-  return(0);
 }
 
 void owl_zwrite_send_ping(owl_zwrite *z)
@@ -284,6 +288,7 @@ int owl_zwrite_create_and_send_from_line(char *cmd, char *msg)
   if (!owl_zwrite_is_message_set(&z)) {
     owl_zwrite_set_message(&z, msg);
   }
+  owl_zwrite_populate_zsig(&z);
   owl_zwrite_send_message(&z);
   owl_zwrite_free(&z);
   return(0);
@@ -357,7 +362,7 @@ int owl_zwrite_is_personal(owl_zwrite *z)
   }
   return(0);
 }
-  
+
 void owl_zwrite_free(owl_zwrite *z)
 {
   owl_list_free_all(&(z->recips), &owl_free);
