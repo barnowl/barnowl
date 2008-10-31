@@ -1,4 +1,13 @@
-$Id$
+1.0.3
+ * Moved BarnOwl source control to git on github.
+ * Only call the zsig proc when we actually send a message. -asedeno
+ * Strip out BOMs from Jabber messages. -asedeno
+ * Fix logging of personal jabbers from JIDs containing / -nelhage
+ * Fix Jabber breakage under reload-modules. -asedeno
+ * Make reload-moduled correctly re-run startup hooks. -asedeno
+ * Squelch Jabbers with no bodies, such as typing notifications. -asedeno
+ * Various small spelling and grammar fixes. -geofft
+ * Fix a segfault when sending short zcrypted messages. -asedeno
 
 1.0.2.1
  * Fix :reload-module's interactions with PAR modules
