@@ -50,9 +50,6 @@ int owl_log_shouldlog_message(owl_message *m) {
   /* skip login/logout messages if appropriate */
   if (!owl_global_is_loglogins(&g) && owl_message_is_loginout(m)) return(0);
       
-  /* check for nolog */
-  if (!strcasecmp(owl_message_get_opcode(m), "nolog") || !strcasecmp(owl_message_get_instance(m), "nolog")) return(0);
-
   /* check direction */
   if ((owl_global_get_loggingdirection(&g)==OWL_LOGGING_DIRECTION_IN) && owl_message_is_direction_out(m)) {
     return(0);
@@ -153,6 +150,7 @@ void owl_log_outgoing(owl_message *m)
     to = short_zuser(owl_message_get_recipient(m));
   } else if (owl_message_is_type_jabber(m)) {
     to = owl_sprintf("jabber:%s", owl_message_get_recipient(m));
+    owl_text_tr(to, '/', '_');
   } else if (owl_message_is_type_aim(m)) {
     char *temp2;
     temp = owl_aim_normalize_screenname(owl_message_get_recipient(m));

@@ -180,7 +180,8 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
 char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
 {
   dSP ;
-  int count, len;
+  int count;
+  unsigned int len;
   SV *msgref, *srv;
   char *out, *preout;
   
@@ -420,6 +421,17 @@ void owl_perlconfig_getmsg(owl_message *m, char *subname)
   if (ptr) owl_free(ptr);
 }
 
+/* Called on all new messages; receivemsg is only called on incoming ones */
+void owl_perlconfig_newmsg(owl_message *m, char *subname)
+{
+  char *ptr = NULL;
+  if (owl_perlconfig_is_function("BarnOwl::Hooks::_new_msg")) {
+    ptr = owl_perlconfig_call_with_message(subname?subname
+                                           :"BarnOwl::Hooks::_new_msg", m);
+  }
+  if (ptr) owl_free(ptr);
+}
+
 char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
 {
   int i, count;
@@ -445,7 +457,7 @@ char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
 
   if(SvTRUE(ERRSV)) {
     owl_function_error("%s", SvPV(ERRSV, n_a));
-    POPs;
+    (void)POPs;
   } else {
     if(count != 1)
       croak("Perl command %s returned more than one value!", cmd->name);

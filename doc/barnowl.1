@@ -1,0 +1,92 @@
+.TH barnowl 1 "23 Jun 2008"
+.SH NAME
+barnowl \- tty based zephyr client
+.SH SYNOPSIS
+.B barnowl
+[ \-n
+]
+[ \-d
+]
+[ \-D
+]
+[ \-v
+]
+[ \-h
+]
+[ \-c
+.I configfile
+]
+[ \-t
+.I tty
+]
+[ \-s
+.I configdir
+]
+.br
+.SH DESCRIPTION
+.B BarnOwl
+is a fully integrated tty based instant messaging client.  Currently
+it supports AOL Instant Messenger, MIT Zephyr, and Jabber.  It is
+curses-based, allows for emacs-style editing of outgoing messages and
+uses perl as an extension and configuration language.  BarnOwl will
+also run happily without a configuration file.
+
+Once BarnOwl is started, typing 'h' will display a help screen.
+Typing \':\' enters command mode, allowing the user to type a barnowl
+command line.
+
+.PP
+.SH USE
+The following command line options are avilable when running barnowl:
+
+.B \-n
+.IP
+Do not subscribe to zephyr messages on startup.  By default BarnOwl
+subscribes to the default subscriptions and to anything found in
+~/.zephyr.subs.  When this option is used no subscriptions are loaded.
+.LP
+
+.B \-c \fIconfigfile\fP
+.IP
+Specifiy an alternate config file for BarnOwl to use.  By default,
+barnowl uses ~/.barnowlconf if it exists, and ~/.owlconf otherwise.
+.LP
+
+.B \-s \fIconfigdir\fP
+.IP
+Specify an alternate configuration directory. By default, BarnOwl uses
+~/.owl/.
+.LP
+
+.B \-t \fItty\fP
+.IP
+Specifiy the tty name to use for the zephyr location.
+.LP
+
+.B \-v
+.IP
+Print the version number of barnowl and exit.
+.LP
+
+.B \-d
+.IP
+Enable debugging.  By default debugging information is placed in
+/var/tmp/owldebug.
+.LP
+
+.B \-D
+.IP
+Enable debugging, but first delete any existing debugging file.
+.LP
+
+.B \-h
+.IP
+Print command line option help.
+.LP
+
+.SH AUTHOR
+Written by Nelson Elhage and Alejandro Sedeno at the Massachusetts
+Institute of Technology. Based on Owl by James Kretchmar.
+
+Comments, questions, and bug reports may be mailed to
+\fBbug-barnowl@mit.edu\fP.

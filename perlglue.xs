@@ -16,7 +16,7 @@ SV *owl_perlconfig_curmessage2hashref(void);
 	 * NOTE
 	 *************************************************************
 	 * These functions, when they are intended to be user-visible,
-	 * are document in perlwrap.pm. If you add functions to this
+	 * are documented in perlwrap.pm. If you add functions to this
 	 * file, add the appropriate documentation there!
 	 *
 	 * If the function is simple enough, we simply define its
@@ -32,13 +32,27 @@ SV *owl_perlconfig_curmessage2hashref(void);
 MODULE = BarnOwl		PACKAGE = BarnOwl
 
 char *
-command(cmd)
+command(cmd, ...)
 	char *cmd
 	PREINIT:
 		char *rv = NULL;
+		char **argv;
+		int i;
 	CODE:
-		rv = owl_function_command(cmd);
-		RETVAL = rv;	
+	{
+		if (items == 1) {
+			rv = owl_function_command(cmd);
+		} else {
+			argv = owl_malloc((items + 1) * sizeof *argv);
+			argv[0] = cmd;
+			for(i = 1; i < items; i++) {
+				argv[i] = SvPV_nolen(ST(i));
+			}
+			rv = owl_function_command_argv(argv, items);
+			owl_free(argv);
+		}
+		RETVAL = rv;
+	}
 	OUTPUT:
 		RETVAL
 	CLEANUP:
@@ -97,6 +111,33 @@ ztext_stylestrip(ztext)
 	OUTPUT:
 		RETVAL
 	CLEANUP:
+		if (rv) owl_free(rv);
+
+char *
+zephyr_smartstrip_user(in)
+	char *in
+	PREINIT:
+		char *rv = NULL;
+	CODE:
+	{
+		rv = owl_zephyr_smartstripped_user(in);
+		RETVAL = rv;
+	}
+	OUTPUT:
+		RETVAL
+	CLEANUP:
+		owl_free(rv);
+
+char *
+zephyr_getsubs()
+	PREINIT:
+		char *rv = NULL;
+	CODE:
+		rv = owl_zephyr_getsubs();
+		RETVAL = rv;
+    OUTPUT:
+		RETVAL
+    CLEANUP:
 		if (rv) owl_free(rv);
 
 void

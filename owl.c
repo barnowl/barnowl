@@ -119,7 +119,7 @@ int main(int argc, char **argv, char **env)
       printf("This is barnowl version %s\n", OWL_VERSION_STRING);
       exit(0);
     } else {
-      fprintf(stderr, "Uknown argument\n");
+      fprintf(stderr, "Unknown argument\n");
       usage();	      
       exit(1);
     }
@@ -602,18 +602,10 @@ int owl_process_message(owl_message *m) {
         owl_function_error("Internal error: received login notice that is neither login nor logout");
       }
     }
-
-    /* check for burning ears message */
-    /* this is an unsupported feature */
-    if (owl_global_is_burningears(&g) && owl_message_is_burningears(m)) {
-      char *buff;
-      buff = owl_sprintf("@i(Burning ears message on class %s)", owl_message_get_class(m));
-      owl_function_adminmsg(buff, "");
-      owl_free(buff);
-      owl_function_beep();
-    }
   }
 
+  /* let perl know about it */
+  owl_perlconfig_newmsg(m, NULL);
   /* log the message if we need to */
   owl_log_message(m);
 

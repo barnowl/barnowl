@@ -56,6 +56,7 @@ void owl_help()
      "\n"
      "    M-n           View zephyrs in selected conversation\n"
      "    M-N           View zephyrs in selected converstaion of instance\n"
+     "    M-p           View only personal zephyrs\n"
      "    V             Change to back to home view ('all' by default)\n"
      "    v             Start a view command\n"
      "    !             Invert the current view\n"

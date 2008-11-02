@@ -805,7 +805,7 @@ void owl_zephyr_zlocate(char *user, char *out, int auth)
 
   if (numlocs==0) {
     myuser=short_zuser(user);
-    sprintf(out, "%s: Hidden or not logged-in\n", myuser);
+    sprintf(out, "%s: Hidden or not logged in\n", myuser);
     owl_free(myuser);
     return;
   }
@@ -1007,34 +1007,50 @@ char *owl_zephyr_getsubs()
 {
 #ifdef HAVE_LIBZEPHYR
   int ret, num, i, one;
+  int buffsize;
   ZSubscription_t sub;
-  char *out, *tmpbuff;
+  char *out;
   one=1;
 
   ret=ZRetrieveSubscriptions(0, &num);
   if (ret==ZERR_TOOMANYSUBS) {
     return(owl_strdup("Zephyr: too many subscriptions\n"));
-  } else if (ret) {
+  } else if (ret || (num <= 0)) {
     return(owl_strdup("Zephyr: error retriving subscriptions\n"));
   }
 
-  out=owl_malloc(num*500);
-  tmpbuff=owl_malloc(num*500);
+  buffsize = (num + 1) * 50;
+  out=owl_malloc(buffsize);
   strcpy(out, "");
   for (i=0; i<num; i++) {
     if ((ret = ZGetSubscriptions(&sub, &one)) != ZERR_NONE) {
       owl_free(out);
-      owl_free(tmpbuff);
       ZFlushSubscriptions();
       out=owl_strdup("Error while getting subscriptions\n");
       return(out);
     } else {
-      sprintf(tmpbuff, "<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, out);
+      int tmpbufflen;
+      char *tmpbuff;
+      tmpbuff = owl_sprintf("<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, out);
+      tmpbufflen = strlen(tmpbuff) + 1;
+      if (tmpbufflen > buffsize) {
+        char *out2;
+        buffsize = tmpbufflen * 2;
+        out2 = owl_realloc(out, buffsize);
+        if (out2 == NULL) {
+          owl_free(out);
+          owl_free(tmpbuff);
+          ZFlushSubscriptions();
+          out=owl_strdup("Realloc error while getting subscriptions\n");
+          return(out);    
+        }
+        out = out2;
+      }
       strcpy(out, tmpbuff);
+      owl_free(tmpbuff);
     }
   }
 
-  owl_free(tmpbuff);
   ZFlushSubscriptions();
   return(out);
 #else

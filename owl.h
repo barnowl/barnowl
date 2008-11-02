@@ -19,7 +19,7 @@
 #include <time.h>
 #include <signal.h>
 #include <termios.h>
-#include <libfaim/aim.h>
+#include "libfaim/aim.h"
 #include <wchar.h>
 #include "config.h"
 #include "glib.h"
@@ -50,12 +50,8 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define BARNOWL_STRINGIFY(x) _STRINGIFY(x)
 #define _STRINGIFY(x) #x
 
-#ifndef OWL_SVN_REVNO
-#define OWL_SVN_REVNO ????
-#endif
-
 #ifndef OWL_VERSION_STRING
-#define OWL_VERSION_STRING "1.0.1"
+#define OWL_VERSION_STRING "1.0.3"
 #endif
 
 /* Feature that is being tested to redirect stderr through a pipe. 
@@ -99,6 +95,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_COLOR_CYAN      6
 #define OWL_COLOR_WHITE     7
 #define OWL_COLOR_DEFAULT   -1
+#define OWL_COLOR_INVALID   -2
 
 #define OWL_EDITWIN_STYLE_MULTILINE 0
 #define OWL_EDITWIN_STYLE_ONELINE   1
@@ -340,7 +337,6 @@ typedef struct _owl_message {
   owl_list attributes;            /* this is a list of pairs */
   char *timestr;
   time_t time;
-  char *zwriteline;
 } owl_message;
 
 #define OWL_FMTEXT_CACHE_SIZE 1000
@@ -404,7 +400,7 @@ typedef struct _owl_regex {
 typedef struct _owl_filterelement {
   int (*match_message)(struct _owl_filterelement *fe, owl_message *m);
   /* Append a string representation of the filterelement onto buf*/
-  void (*print_elt)(struct _owl_filterelement *fe, char * buf);
+  void (*print_elt)(struct _owl_filterelement *fe, GString *buf);
   /* Operands for and,or,not*/
   struct _owl_filterelement *left, *right;
   /* For regex filters*/

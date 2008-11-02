@@ -22,6 +22,12 @@ sub room { shift->{room} };
 sub subject { shift->{subject} };
 sub status { shift->{status} }
 
+sub login_type {
+    my $self = shift;
+    my $type = $self->jtype;
+    return " ($type)" if $type;
+}
+
 sub login_extra {
     my $self = shift;
     my $show = $self->{show};
@@ -49,7 +55,7 @@ sub smartfilter {
     my $self = shift;
     my $inst = shift;
 
-    my ($filter, $ftext);
+    my $filter;
 
     if($self->jtype eq 'chat') {
         my $user;
@@ -62,8 +68,8 @@ sub smartfilter {
     } elsif ($self->jtype eq 'groupchat') {
         my $room = $self->room;
         $filter = "jabber-room-$room";
-        $ftext = qq{type ^jabber\$ and room ^$room\$};
-        BarnOwl::filter("$filter $ftext");
+        BarnOwl::command(qw[filter], $filter,
+                         qw[type ^jabber$ and room], "^$room\$");
         return $filter;
     } elsif ($self->login ne 'none') {
         return smartfilter_user($self->from, $inst);
@@ -76,14 +82,68 @@ sub smartfilter_user {
 
     $user   = Net::Jabber::JID->new($user)->GetJID( $inst ? 'full' : 'base' );
     my $filter = "jabber-user-$user";
-    my $ftext  =
-        qq{type ^jabber\$ and ( ( direction ^in\$ and from ^$user ) }
-      . qq{or ( direction ^out\$ and to ^$user ) ) };
-    BarnOwl::filter("$filter $ftext");
+    BarnOwl::command(qw[filter], $filter, qw[type ^jabber$],
+                     qw[and ( ( direction ^in$ and from], "^$user",
+                     qw[) or ( direction ^out$ and to ], "^$user",
+                     qw[ ) ) ]);
     return $filter;
 
 }
 
+sub replycmd {
+    my $self = shift;
+    my ($recip, $account, $subject);
+    if ($self->is_loginout) {
+        $recip   = $self->sender;
+        $account = $self->recipient;
+    } elsif ($self->jtype eq 'chat') {
+        return $self->replysendercmd;
+    } elsif ($self->jtype eq 'groupchat') {
+        $recip = $self->room;
+        if ($self->is_incoming) {
+            $account = $self->to;
+        } else {
+            $account = $self->from;
+        }
+        $subject = $self->subject;
+    } else {
+        # Unknown type
+        return;
+    }
+    return jwrite_cmd($recip, $account, $subject);
+}
+
+sub replysendercmd {
+    my $self = shift;
+    if($self->jtype eq 'groupchat'
+       || $self->jtype eq 'chat') {
+        my ($recip, $account);
+        if ($self->is_incoming) {
+            $recip   = $self->from;
+            $account = $self->to;
+        } else {
+            $recip   = $self->to;
+            $account = $self->from;
+        }
+        return jwrite_cmd($recip, $account);
+    }
+    return $self->replycmd;
+}
+
+sub jwrite_cmd {
+    my ($recip, $account, $subject) = @_;
+    if (defined $recip) {
+        $recip   = BarnOwl::quote($recip);
+        $account = BarnOwl::quote($account);
+        my $cmd = "jwrite $recip -a $account";
+        if (defined $subject) {
+            $cmd .= " -s " . BarnOwl::quote($subject);
+        }
+        return $cmd;
+    } else {
+        return undef;
+    }
+}
 
 =head1 SEE ALSO
 

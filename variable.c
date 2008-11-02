@@ -83,7 +83,7 @@ static owl_variable variables_to_init[] = {
 	       "send pings", "" ),
 
   OWLVAR_BOOL( "sepbar_disable" /* %OwlVarStub */, 0,
-	       "disable printing information in the seperator bar", "" ),
+	       "disable printing information in the separator bar", "" ),
 
   OWLVAR_BOOL( "smartstrip" /* %OwlVarStub */, 1,
 	       "strip kerberos instance for reply", ""),
@@ -141,7 +141,7 @@ static owl_variable variables_to_init[] = {
 		    "When this is enabled, Owl will periodically check the zephyr\n"
 		    "location of users in your .anyone file.  If a user is present\n"
 		    "but sent no login message, or a user is not present that sent no\n"
-		    "logout message a pseudo login or logout message wil be created\n",
+		    "logout message, a pseudo login or logout message wil be created\n",
 		    NULL, owl_variable_pseudologins_set, NULL),
 
   OWLVAR_BOOL( "ignorelogins" /* %OwlVarStub */, 0,
@@ -176,12 +176,6 @@ static owl_variable variables_to_init[] = {
 		    "in the editmulti keymap.\n",
 		    "off,middle,on",
 		    NULL, owl_variable_disable_ctrl_d_set, NULL),
-
-  OWLVAR_BOOL( "_burningears" /* %OwlVarStub:burningears */, 0,
-	       "[NOT YET IMPLEMENTED] beep on messages matching patterns", "" ),
-
-  OWLVAR_BOOL( "_summarymode" /* %OwlVarStub:summarymode */, 0,
-	       "[NOT YET IMPLEMENTED]", "" ),
 
   OWLVAR_PATH( "logpath" /* %OwlVarStub */, "~/zlog/people",
 	       "path for logging personal zephyrs", 
@@ -317,6 +311,16 @@ static owl_variable variables_to_init[] = {
 		   owl_variable_typewinsize_set,
 		   NULL /* use default for get */
 		   ),
+
+  OWLVAR_INT( "typewindelta" /* %OwlVarStub */, 0,
+		  "number of lines to add to the typing window when in use",
+		   "On small screens you may want the typing window to\n"
+		   "auto-hide when not entering a command or message.\n"
+		   "This variable is the number of lines to add to the\n"
+           "typing window when it is in use; you can then set\n"
+           "typewinsize to 1.\n\n"
+           "This works a lot better with a non-default scrollmode;\n"
+           "try :set scrollmode pagedcenter.\n"),
 
   OWLVAR_ENUM( "scrollmode" /* %OwlVarStub */, OWL_SCROLLMODE_NORMAL,
 	       "how to scroll up and down",
