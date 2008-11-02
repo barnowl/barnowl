@@ -1,3 +1,9 @@
+barnowl (1.0.3-0debathena1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Evan Broder <broder@mit.edu>  Sun, 02 Nov 2008 15:07:28 -0500
+
 barnowl (1.0.1-2) unstable; urgency=low
 
   * Don't include LGPL in debian/copyright
