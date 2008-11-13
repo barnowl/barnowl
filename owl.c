@@ -321,10 +321,10 @@ int main(int argc, char **argv, char **env)
   strcpy(startupmsg, "-----------------------------------------------------------------------\n");
   sprintf(buff,      "Welcome to barnowl version %s.  Press 'h' for on-line help.            \n", OWL_VERSION_STRING);
   strcat(startupmsg, buff);
+  strcat(startupmsg, "To see a quick introduction, type ':show quickstart'.                  \n");
   strcat(startupmsg, "                                                                       \n");
   strcat(startupmsg, "BarnOwl is free software. Type ':show license' for more                \n");
-  strcat(startupmsg, "information.                                                           \n");
-  strcat(startupmsg, "                                                                 ^ ^   \n");
+  strcat(startupmsg, "information.                                                     ^ ^   \n");
   strcat(startupmsg, "                                                                 OvO   \n");
   strcat(startupmsg, "Please report any bugs or suggestions to bug-barnowl@mit.edu    (   )  \n");
   strcat(startupmsg, "-----------------------------------------------------------------m-m---\n");

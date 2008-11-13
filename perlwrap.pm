@@ -809,6 +809,14 @@ Called to display buddy lists for all protocol handlers. The result
 from every function registered with this hook will be appended and
 displayed in a popup window, with zephyr formatting parsed.
 
+=item $getQuickstart
+
+Called by :show quickstart to display 2-5 lines of help on how to
+start using the protocol. The result from every function registered
+with this hook will be appended and displayed in an admin message,
+with zephyr formatting parsed. The format should be
+"@b(Protocol:)\nSome text.\nMore text.\n"
+
 =back
 
 =cut
@@ -817,7 +825,8 @@ use Exporter;
 
 our @EXPORT_OK = qw($startup $shutdown
                     $receiveMessage $newMessage
-                    $mainLoop $getBuddyList);
+                    $mainLoop $getBuddyList
+                    $getQuickstart);
 
 our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 
@@ -827,6 +836,7 @@ our $receiveMessage = BarnOwl::Hook->new;
 our $newMessage = BarnOwl::Hook->new;
 our $mainLoop = BarnOwl::Hook->new;
 our $getBuddyList = BarnOwl::Hook->new;
+our $getQuickstart = BarnOwl::Hook->new;
 
 # Internal startup/shutdown routines called by the C code
 
@@ -918,6 +928,10 @@ sub _mainloop_hook {
 
 sub _get_blist {
     return join("\n", $getBuddyList->run);
+}
+
+sub _get_quickstart {
+    return join("\n", $getQuickstart->run);
 }
 
 ################################################################################

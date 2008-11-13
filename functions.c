@@ -171,6 +171,36 @@ void owl_function_show_license()
   owl_function_popless_text(text);
 }
 
+void owl_function_show_quickstart()
+{
+    char *message =
+    "Move between messages with the arrow keys, and press 'r' to reply.\n"
+    "For more info, press 'h' or visit http://barnowl.mit.edu/\n\n"
+#ifdef HAVE_LIBZEPHYR
+    "@b(Zephyr:)\n"
+    "To send a message to a user, type ':zwrite @b(username)'. You can also\n"
+    "press 'z' and then type the username. To subscribe to a class, type\n"
+    "':sub @b(class)', and then type ':zwrite -c @b(class)' to send.\n\n"
+#endif
+    "@b(AIM:)\n"
+    "Log in to AIM with ':aimlogin @b(screenname)'. Use ':aimwrite @b(screenname)',\n"
+    "or 'a' and then the screen name, to send someone a message.\n\n"
+    ;
+
+    if (owl_perlconfig_is_function("BarnOwl::Hooks::_get_quickstart")) {
+        char *perlquickstart = owl_perlconfig_execute("BarnOwl::Hooks::_get_quickstart()");
+        if (perlquickstart) {
+            char *result = owl_sprintf("%s%s", message, perlquickstart);
+            owl_function_adminmsg("BarnOwl Quickstart", result);
+            owl_free(result);
+            owl_free(perlquickstart);
+            return;
+        }
+    }
+    owl_function_adminmsg("BarnOwl Quickstart", message);
+}
+
+
 /* Create an admin message, append it to the global list of messages
  * and redisplay if necessary.
  */
@@ -601,9 +631,11 @@ void owl_function_nextmsg_full(char *filter, int skip_deleted, int last_if_none)
   if (i<0) i=0;
 
   if (!found) {
-    owl_function_makemsg("already at last%s message%s%s",
+    owl_function_makemsg("already at last%s message%s%s%s",
 			 skip_deleted?" non-deleted":"",
-			 filter?" in ":"", filter?filter:"");
+			 filter?" in ":"", filter?filter:"",
+			 owl_mainwin_is_curmsg_truncated(owl_global_get_mainwin(&g)) ?
+			 ", press Enter to scroll" : "");
     /* if (!skip_deleted) owl_function_beep(); */
   }
 

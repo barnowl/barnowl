@@ -69,6 +69,7 @@ sub onStart {
         register_filters();
         $BarnOwl::Hooks::mainLoop->add("BarnOwl::Module::Jabber::onMainLoop");
         $BarnOwl::Hooks::getBuddyList->add("BarnOwl::Module::Jabber::onGetBuddyList");
+        $BarnOwl::Hooks::getQuickstart->add("BarnOwl::Module::Jabber::onGetQuickstart");
         $vars{show} = '';
 	BarnOwl::new_variable_bool("jabber:show_offline_buddies",
 				   { default => 1,
@@ -219,6 +220,16 @@ sub onGetBuddyList {
         $blist .= getSingleBuddyList($jid);
     }
     return $blist;
+}
+
+sub onGetQuickstart {
+    return <<'EOF'
+@b(Jabber:)
+Type ':jabberlogin @b(username@mit.edu)' to log in to Jabber. The command
+':jroster sub @b(somebody@gmail.com)' will request that they let you message
+them. Once you get a message saying you are subscribed, you can message
+them by typing ':jwrite @b(somebody@gmail.com)' or just 'j @b(somebody)'.
+EOF
 }
 
 ################################################################################
