@@ -612,20 +612,6 @@ int owl_process_message(owl_message *m) {
   return 1;
 }
 
-void owl_process_aim()
-{
-  if (owl_global_is_doaimevents(&g)) {
-    owl_aim_process_events();
-    
-    if (owl_global_is_aimloggedin(&g)) {
-      if (owl_timer_is_expired(owl_global_get_aim_buddyinfo_timer(&g))) {
-        /* owl_buddylist_request_idletimes(owl_global_get_buddylist(&g)); */
-        owl_timer_reset(owl_global_get_aim_buddyinfo_timer(&g));
-      }
-    }
-  }
-}
-
 void owl_process_input()
 {
   int ret;

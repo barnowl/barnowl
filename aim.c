@@ -2310,6 +2310,20 @@ void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
   return;	
 }
 
+void owl_process_aim()
+{
+  if (owl_global_is_doaimevents(&g)) {
+    owl_aim_process_events();
+
+    if (owl_global_is_aimloggedin(&g)) {
+      if (owl_timer_is_expired(owl_global_get_aim_buddyinfo_timer(&g))) {
+        /* owl_buddylist_request_idletimes(owl_global_get_buddylist(&g)); */
+        owl_timer_reset(owl_global_get_aim_buddyinfo_timer(&g));
+      }
+    }
+  }
+}
+
 
 /**********************************************************************************/
 
