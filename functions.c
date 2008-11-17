@@ -2085,6 +2085,12 @@ void owl_function_reply(int type, int enter)
       }
     }
 
+    /* then check if it's a question and just bring up the command prompt */
+    if (owl_message_is_question(m)) {
+      owl_function_start_command("");
+      return;
+    }
+
     char *cmd;
     if((type == 0 &&
         (cmd=owl_perlconfig_message_call_method(m, "replycmd", 0, NULL))) ||
