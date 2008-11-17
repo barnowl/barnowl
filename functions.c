@@ -2621,8 +2621,7 @@ char *owl_function_zuserfilt(char *user)
   shortuser=short_zuser(user);
 
   /* name for the filter */
-  filtname=owl_malloc(strlen(shortuser)+20);
-  sprintf(filtname, "user-%s", shortuser);
+  filtname=owl_sprintf("user-%s", shortuser);
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2632,10 +2631,10 @@ char *owl_function_zuserfilt(char *user)
   /* create the new-internal filter */
   f=owl_malloc(sizeof(owl_filter));
 
-  argbuff=owl_malloc(strlen(longuser)+1000);
-  sprintf(argbuff, "( type ^zephyr$ and filter personal and ");
-  sprintf(argbuff, "%s ( ( direction ^in$ and sender ^%s$ ) or ( direction ^out$ and recipient ^%s$ ) ) )", argbuff, longuser, longuser);
-  sprintf(argbuff, "%s or ( ( class ^login$ ) and ( sender ^%s$ ) )", argbuff, longuser);
+  argbuff=owl_sprintf("( type ^zephyr$ and filter personal and "
+      "( ( direction ^in$ and sender ^%1$s$ ) or ( direction ^out$ and "
+      "recipient ^%1$s$ ) ) ) or ( ( class ^login$ ) and ( sender ^%1$s$ ) )",
+      longuser);
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
@@ -2663,8 +2662,7 @@ char *owl_function_aimuserfilt(char *user)
   char *escuser;
 
   /* name for the filter */
-  filtname=owl_malloc(strlen(user)+40);
-  sprintf(filtname, "aimuser-%s", user);
+  filtname=owl_sprintf("aimuser-%s", user);
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2676,11 +2674,10 @@ char *owl_function_aimuserfilt(char *user)
 
   escuser = owl_text_quote(user, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
 
-  argbuff=owl_malloc(1000);
-  sprintf(argbuff,
-          "( type ^aim$ and ( ( sender ^%s$ and recipient ^%s$ ) or ( sender ^%s$ and recipient ^%s$ ) ) )",
-          escuser, owl_global_get_aim_screenname_for_filters(&g),
-          owl_global_get_aim_screenname_for_filters(&g), escuser);
+  argbuff = owl_sprintf(
+      "( type ^aim$ and ( ( sender ^%1$s$ and recipient ^%2$s$ ) or "
+      "( sender ^%2$s$ and recipient ^%1$s$ ) ) )",
+      escuser, owl_global_get_aim_screenname_for_filters(&g));
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
