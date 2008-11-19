@@ -515,7 +515,8 @@ char *owl_zephyr_get_message(ZNotice_t *n, owl_message *m)
     }
   }
   /* deal with MIT Discuss messages */
-  else if (!strcasecmp(n->z_default_format, "New transaction [$1] entered in $2\nFrom: $3 ($5)\nSubject: $4")) {
+  else if (!strcasecmp(n->z_default_format, "New transaction [$1] entered in $2\nFrom: $3 ($5)\nSubject: $4") ||
+           !strcasecmp(n->z_default_format, "New transaction [$1] entered in $2\nFrom: $3\nSubject: $4")) {
     char *msg, *field1, *field2, *field3, *field4, *field5;
     
     field1 = owl_zephyr_get_field(n, 1);
