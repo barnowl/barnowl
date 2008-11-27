@@ -77,7 +77,7 @@ if($@) {
 
 $twitter  = Net::Twitter->new(username   => $cfg->{user} || $user,
                               password   => $cfg->{password},
-                              clientname => 'barnowl');
+                              source => 'barnowl');
 
 if(!defined($twitter->verify_credentials())) {
     fail("Invalid twitter credentials");
