@@ -18,6 +18,8 @@ use JSON;
 
 use BarnOwl;
 use BarnOwl::Hooks;
+use BarnOwl::Message::Twitter;
+use HTML::Entities;
 
 my $twitter;
 my $user     = BarnOwl::zephyr_getsender();
@@ -101,6 +103,44 @@ sub handle_message {
     }
 }
 
+my $last_poll = 0;
+my $last_id   = undef;
+unless(defined($last_id)) {
+    $last_id = $twitter->friends_timeline({count => 1})->[0]{id};
+}
+
+sub poll_messages {
+    return unless ( time - $last_poll ) >= 45;
+    $last_poll = time;
+    my $timeline = $twitter->friends_timeline( { since_id => $last_id } );
+    unless(defined($timeline)) {
+        BarnOwl::error("Twitter returned error ... rate-limited?");
+        # Sleep for 15 minutes
+        $last_poll = time + 60*15;
+        return;
+    };
+    if ( scalar @$timeline ) {
+        for my $tweet ( reverse @$timeline ) {
+            if ( $tweet->{id} <= $last_id ) {
+                next;
+            }
+            my $msg = BarnOwl::Message->new(
+                type      => 'Twitter',
+                sender    => $tweet->{user}{screen_name},
+                recipient => $cfg->{user} || $user,
+                direction => 'in',
+                source    => decode_entities($tweet->{source}),
+                location  => decode_entities($tweet->{user}{location}),
+                body      => decode_entities($tweet->{text})
+               );
+            BarnOwl::queue_message($msg);
+        }
+        $last_id = $timeline->[0]{id};
+    } else {
+        # BarnOwl::message("No new tweets...");
+    }
+}
+
 sub twitter {
     my $msg = shift;
     if(defined $twitter) {
@@ -127,9 +167,13 @@ sub cmd_twitter {
 
 eval {
     $BarnOwl::Hooks::receiveMessage->add("BarnOwl::Module::Twitter::handle_message");
+    $BarnOwl::Hooks::mainLoop->add("BarnOwl::Module::Twitter::poll_messages");
 };
 if($@) {
     $BarnOwl::Hooks::receiveMessage->add(\&handle_message);
+    $BarnOwl::Hooks::mainLoop->add(\&poll_messages);
 }
+
+BarnOwl::command(qw(filter twitter type ^twitter$));
 
 1;
