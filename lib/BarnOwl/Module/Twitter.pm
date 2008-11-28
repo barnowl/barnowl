@@ -130,7 +130,7 @@ sub poll_messages {
                 recipient => $cfg->{user} || $user,
                 direction => 'in',
                 source    => decode_entities($tweet->{source}),
-                location  => decode_entities($tweet->{user}{location}),
+                location  => decode_entities($tweet->{user}{location}) || "",
                 body      => decode_entities($tweet->{text})
                );
             BarnOwl::queue_message($msg);
@@ -174,6 +174,6 @@ if($@) {
     $BarnOwl::Hooks::mainLoop->add(\&poll_messages);
 }
 
-BarnOwl::command(qw(filter twitter type ^twitter$));
+BarnOwl::filter('twitter type ^twitter$');
 
 1;
