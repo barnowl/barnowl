@@ -43,8 +43,8 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
 
   h = newHV();
 
-#define MSG2H(h,field) hv_store(h, #field, strlen(#field), \
-			      newSVpv(owl_message_get_##field(m),0), 0)
+#define MSG2H(h,field) (void)hv_store(h, #field, strlen(#field),        \
+                                      newSVpv(owl_message_get_##field(m),0), 0)
 
   if (owl_message_is_type_zephyr(m)
       && owl_message_is_direction_in(m)) {
@@ -58,17 +58,17 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
       av_push(av_zfields, newSVpvn(ptr, strlen(ptr)));
       owl_free(ptr);
     }
-    hv_store(h, "fields", strlen("fields"), newRV_noinc((SV*)av_zfields), 0);
+    (void)hv_store(h, "fields", strlen("fields"), newRV_noinc((SV*)av_zfields), 0);
 
-    hv_store(h, "auth", strlen("auth"), 
-	     newSVpv(owl_zephyr_get_authstr(owl_message_get_notice(m)),0),0);
+    (void)hv_store(h, "auth", strlen("auth"), 
+                   newSVpv(owl_zephyr_get_authstr(owl_message_get_notice(m)),0),0);
   }
 
   j=owl_list_get_size(&(m->attributes));
   for(i=0; i<j; i++) {
     pair=owl_list_get_element(&(m->attributes), i);
-    hv_store(h, owl_pair_get_key(pair), strlen(owl_pair_get_key(pair)),
-	     newSVpv(owl_pair_get_value(pair),0),0);
+    (void)hv_store(h, owl_pair_get_key(pair), strlen(owl_pair_get_key(pair)),
+                   newSVpv(owl_pair_get_value(pair),0),0);
   }
   
   MSG2H(h, type);
@@ -87,13 +87,13 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
   if (owl_message_get_header(m)) {
     MSG2H(h, header); 
   }
-  hv_store(h, "time", strlen("time"), newSVpv(owl_message_get_timestr(m),0),0);
-  hv_store(h, "id", strlen("id"), newSViv(owl_message_get_id(m)),0);
-  hv_store(h, "deleted", strlen("deleted"), newSViv(owl_message_is_delete(m)),0);
-  hv_store(h, "private", strlen("private"), newSViv(owl_message_is_private(m)),0);
-  hv_store(h, "should_wordwrap",
-	   strlen("should_wordwrap"), newSViv(
-					      owl_filter_message_match(wrap, m)),0);
+  (void)hv_store(h, "time", strlen("time"), newSVpv(owl_message_get_timestr(m),0),0);
+  (void)hv_store(h, "id", strlen("id"), newSViv(owl_message_get_id(m)),0);
+  (void)hv_store(h, "deleted", strlen("deleted"), newSViv(owl_message_is_delete(m)),0);
+  (void)hv_store(h, "private", strlen("private"), newSViv(owl_message_is_private(m)),0);
+  (void)hv_store(h, "should_wordwrap",
+                 strlen("should_wordwrap"), newSViv(
+                                                    owl_filter_message_match(wrap, m)),0);
 
   type = owl_message_get_type(m);
   if(!type || !*type) type = "generic";
