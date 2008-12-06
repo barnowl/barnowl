@@ -181,9 +181,8 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
 {
   dSP ;
   int count;
-  unsigned int len;
   SV *msgref, *srv;
-  char *out, *preout;
+  char *out;
   
   ENTER ;
   SAVETMPS;
@@ -211,10 +210,7 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
   srv = POPs;
 
   if (srv) {
-    preout=SvPV(srv, len);
-    out = owl_malloc(strlen(preout)+1);
-    strncpy(out, preout, len);
-    out[len] = '\0';
+    out = owl_strdup(SvPV_nolen(srv));
   } else {
     out = NULL;
   }
@@ -233,9 +229,9 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
 char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc, char ** argv)
 {
   dSP;
-  unsigned int count, len, i;
+  unsigned int count, i;
   SV *msgref, *srv;
-  char *out, *preout;
+  char *out;
 
   msgref = owl_perlconfig_message2hashref(m);
 
@@ -267,10 +263,7 @@ char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc
   srv = POPs;
 
   if (srv) {
-    preout=SvPV(srv, len);
-    out = owl_malloc(strlen(preout)+1);
-    strncpy(out, preout, len);
-    out[len] = '\0';
+    out = owl_strdup(SvPV_nolen(srv));
   } else {
     out = NULL;
   }
@@ -394,13 +387,10 @@ char *owl_perlconfig_execute(char *line)
   }
 
   preout=SvPV(response, len);
-  /* leave enough space in case we have to add a newline */
-  out = owl_malloc(strlen(preout)+2);
-  strncpy(out, preout, len);
-  out[len] = '\0';
-  if (!strlen(out) || out[strlen(out)-1]!='\n') {
-    strcat(out, "\n");
-  }
+  if (len == 0 || preout[len - 1] != '\n')
+    out = owl_sprintf("%s\n", preout);
+  else
+    out = owl_strdup(preout);
 
   return(out);
 }
