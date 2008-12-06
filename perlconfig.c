@@ -101,7 +101,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
   type[0] = toupper(type[0]);
   blessas = owl_sprintf("BarnOwl::Message::%s", type);
 
-  hr = sv_2mortal(newRV_noinc((SV*)h));
+  hr = newRV_noinc((SV*)h);
   stash =  gv_stashpv(blessas,0);
   if(!stash) {
     owl_function_error("No such class: %s for message type %s", blessas, owl_message_get_type(m));
@@ -190,7 +190,7 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
   
   PUSHMARK(SP) ;
   msgref = owl_perlconfig_message2hashref(m);
-  XPUSHs(msgref);
+  XPUSHs(sv_2mortal(msgref));
   PUTBACK ;
   
   count = call_pv(subname, G_SCALAR|G_EVAL|G_KEEPERR);
@@ -243,7 +243,7 @@ char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc
   SAVETMPS;
 
   PUSHMARK(SP);
-  XPUSHs(msgref);
+  XPUSHs(sv_2mortal(msgref));
   for(i=0;i<argc;i++) {
     XPUSHs(sv_2mortal(newSVpv(argv[i], 0)));
   }

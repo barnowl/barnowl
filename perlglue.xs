@@ -61,7 +61,9 @@ command(cmd, ...)
 SV *
 getcurmsg()
 	CODE:
-		ST(0) = owl_perlconfig_curmessage2hashref();
+		RETVAL = owl_perlconfig_curmessage2hashref();
+	OUTPUT:
+		RETVAL
 
 int
 getnumcols()
