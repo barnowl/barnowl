@@ -4,6 +4,7 @@ srcdir = @srcdir@
 VPATH = @srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
 datadir = @datadir@/barnowl
 bindir = @bindir@
 mandir = @mandir@
