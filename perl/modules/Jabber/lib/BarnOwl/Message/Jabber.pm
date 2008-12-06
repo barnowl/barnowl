@@ -69,7 +69,7 @@ sub smartfilter {
         my $room = $self->room;
         $filter = "jabber-room-$room";
         BarnOwl::command(qw[filter], $filter,
-                         qw[type ^jabber$ and room], "^$room\$");
+                         qw[type ^jabber$ and room], "^\Q$room\E\$");
         return $filter;
     } elsif ($self->login ne 'none') {
         return smartfilter_user($self->from, $inst);
@@ -83,8 +83,8 @@ sub smartfilter_user {
     $user   = Net::Jabber::JID->new($user)->GetJID( $inst ? 'full' : 'base' );
     my $filter = "jabber-user-$user";
     BarnOwl::command(qw[filter], $filter, qw[type ^jabber$],
-                     qw[and ( ( direction ^in$ and from], "^$user",
-                     qw[) or ( direction ^out$ and to ], "^$user",
+                     qw[and ( ( direction ^in$ and from], "^\Q$user\E(/.*)?\$",
+                     qw[) or ( direction ^out$ and to ], "^\Q$user\E(/.*)?\$",
                      qw[ ) ) ]);
     return $filter;
 
