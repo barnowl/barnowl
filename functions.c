@@ -2614,7 +2614,7 @@ char *owl_function_classinstfilt(char *c, char *i)
 char *owl_function_zuserfilt(char *user)
 {
   owl_filter *f;
-  char *argbuff, *longuser, *shortuser, *filtname;
+  char *argbuff, *longuser, *esclonguser, *shortuser, *filtname;
 
   /* stick the local realm on if it's not there */
   longuser=long_zuser(user);
@@ -2631,10 +2631,12 @@ char *owl_function_zuserfilt(char *user)
   /* create the new-internal filter */
   f=owl_malloc(sizeof(owl_filter));
 
+  esclonguser = owl_text_quote(longuser, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+
   argbuff=owl_sprintf("( type ^zephyr$ and filter personal and "
       "( ( direction ^in$ and sender ^%1$s$ ) or ( direction ^out$ and "
       "recipient ^%1$s$ ) ) ) or ( ( class ^login$ ) and ( sender ^%1$s$ ) )",
-      longuser);
+      esclonguser);
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
@@ -2644,6 +2646,7 @@ char *owl_function_zuserfilt(char *user)
   /* free stuff */
   owl_free(argbuff);
   owl_free(longuser);
+  owl_free(esclonguser);
   owl_free(shortuser);
 
   return(filtname);
@@ -2694,7 +2697,7 @@ char *owl_function_aimuserfilt(char *user)
 char *owl_function_typefilt(char *type)
 {
   owl_filter *f;
-  char *argbuff, *filtname;
+  char *argbuff, *filtname, *esctype;
 
   /* name for the filter */
   filtname=owl_sprintf("type-%s", type);
@@ -2707,7 +2710,9 @@ char *owl_function_typefilt(char *type)
   /* create the new-internal filter */
   f=owl_malloc(sizeof(owl_filter));
 
-  argbuff = owl_sprintf("type ^%s$", type);
+  esctype = owl_text_quote(type, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+
+  argbuff = owl_sprintf("type ^%s$", esctype);
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
@@ -2716,6 +2721,7 @@ char *owl_function_typefilt(char *type)
 
   /* free stuff */
   owl_free(argbuff);
+  owl_free(esctype);
 
   return filtname;
 }
