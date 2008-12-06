@@ -251,7 +251,7 @@ int owl_aim_send_im(char *to, char *msg)
 {
   int ret;
 
-  ret=aim_im_sendch1(owl_global_get_aimsess(&g), to, NULL, msg);
+  ret=aim_im_sendch1(owl_global_get_aimsess(&g), to, 0, msg);
     
   /* I don't know how to check for an error yet */
   return(ret);
