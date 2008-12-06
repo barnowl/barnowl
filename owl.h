@@ -319,8 +319,8 @@ typedef struct _owl_zwrite {
 } owl_zwrite;
 
 typedef struct _owl_pair {
-  void *key;
-  void *value;
+  char *key;
+  char *value;
 } owl_pair;
 
 struct _owl_fmtext_cache;
