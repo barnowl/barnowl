@@ -1458,7 +1458,7 @@ char *owl_command_away(int argc, char **argv, char *buff)
     owl_global_set_zaway_msg(&g, owl_global_get_zaway_msg_default(&g));
     owl_function_aaway_on();
     owl_function_zaway_on();
-    owl_function_makemsg("Away messages set.", owl_global_get_aaway_msg_default(&g));
+    owl_function_makemsg("Away messages set.");
     return NULL;
   }
 
