@@ -1953,7 +1953,7 @@ void owl_function_delete_automsgs()
 
 void owl_function_status()
 {
-  char buff[5000];
+  char buff[MAXPATHLEN+1];
   time_t start;
   int up, days, hours, minutes;
   owl_fmtext fm;
@@ -1973,8 +1973,11 @@ void owl_function_status()
   owl_fmtext_append_normal(&fm, "\n");
 
   owl_fmtext_append_normal(&fm, "  Current Directory: ");
-  (void) getcwd(buff, MAXPATHLEN);
-  owl_fmtext_append_normal(&fm, buff);
+  if(getcwd(buff, MAXPATHLEN) == NULL) {
+    owl_fmtext_append_normal(&fm, "<Error in getcwd>");
+  } else {
+    owl_fmtext_append_normal(&fm, buff);
+  }
   owl_fmtext_append_normal(&fm, "\n");
 
   sprintf(buff, "  Startup Time: %s", ctime(&start));

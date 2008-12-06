@@ -72,11 +72,6 @@ owl_popexec *owl_popexec_new(char *command)
     dup2(child_write_fd, 1 /*stdout*/);
     dup2(child_write_fd, 2 /*stderr*/);
     close(child_write_fd);
-    
-    while(0) {
-      write(child_write_fd, "meep\n", 5);
-      sleep(1);
-    }
 
     argv[0] = "sh";
     argv[1] = "-c";
