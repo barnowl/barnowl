@@ -509,7 +509,7 @@ int main(int argc, char **argv, char **env)
       siginfo_t si;
       int signum;
       if ((signum = owl_global_get_errsignal_and_clear(&g, &si)) > 0) {
-	owl_function_error("Got unexpected signal: %d %s  (code: %d band: %d  errno: %d)", 
+	owl_function_error("Got unexpected signal: %d %s  (code: %d band: %ld  errno: %d)",
 			   signum, signum==SIGPIPE?"SIGPIPE":"SIG????",
 			   si.si_code, si.si_band, si.si_errno);
       }
