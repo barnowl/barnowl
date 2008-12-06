@@ -98,7 +98,7 @@ void owl_function_show_styles() {
   owl_fmtext_free(&fm);
 }
 
-char *owl_function_style_describe(void *name) {
+char *owl_function_style_describe(char *name) {
   char *desc, *s;
   owl_style *style;
   style = owl_global_get_style_by_name(&g, name);
@@ -113,7 +113,7 @@ char *owl_function_style_describe(void *name) {
   return s;
 }
 
-char *owl_function_cmd_describe(void *name)
+char *owl_function_cmd_describe(char *name)
 {
   owl_cmd *cmd = owl_cmddict_find(owl_global_get_cmddict(&g), name);
   if (cmd) return owl_cmd_describe(cmd);
@@ -3105,7 +3105,7 @@ void owl_function_show_keymaps()
   owl_fmtext_free(&fm);
 }
 
-char *owl_function_keymap_summary(void *name)
+char *owl_function_keymap_summary(char *name)
 {
   owl_keymap *km 
     = owl_keyhandler_get_keymap(owl_global_get_keyhandler(&g), name);

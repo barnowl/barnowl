@@ -762,10 +762,10 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
  * joins the elements together with join_with. 
  * If format_fn is specified, passes it the list element value
  * and it will return a string which this needs to free. */
-void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(format_fn)(void*))
+void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(format_fn)(char *))
 {
   int i, size;
-  void *elem;
+  char *elem;
   char *text;
 
   size = owl_list_get_size(l);
