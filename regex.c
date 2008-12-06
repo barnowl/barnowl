@@ -12,7 +12,7 @@ void owl_regex_init(owl_regex *re)
 int owl_regex_create(owl_regex *re, char *string)
 {
   int ret;
-  char buff1[LINE], buff2[LINE];
+  char buff1[LINE];
   char *ptr;
   
   re->string=owl_strdup(string);
@@ -28,8 +28,7 @@ int owl_regex_create(owl_regex *re, char *string)
   ret=regcomp(&(re->re), ptr, REG_EXTENDED|REG_ICASE);
   if (ret) {
     regerror(ret, NULL, buff1, LINE);
-    sprintf(buff2, "Error in regular expression: %s", buff1);
-    owl_function_makemsg(buff2);
+    owl_function_makemsg("Error in regular expression: %s", buff1);
     owl_free(re->string);
     re->string=NULL;
     return(-1);

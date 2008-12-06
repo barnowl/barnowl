@@ -1046,10 +1046,7 @@ void owl_command_about()
 
 void owl_command_version()
 {
-  char buff[1024];
-
-  sprintf(buff, "BarnOwl version %s", OWL_VERSION_STRING);
-  owl_function_makemsg(buff);
+  owl_function_makemsg("BarnOwl version %s", OWL_VERSION_STRING);
 }
 
 char *owl_command_aim(int argc, char **argv, char *buff)
@@ -1691,7 +1688,7 @@ char *owl_command_debug(int argc, char **argv, char *buff)
     return(NULL);
   }
 
-  owl_function_debugmsg(argv[1]);
+  owl_function_debugmsg("%s", argv[1]);
   return(NULL);
 }
 
@@ -2582,14 +2579,14 @@ char *owl_command_getstyle(int argc, char **argv, char *buff)
 char *owl_command_error(int argc, char **argv, char *buff)
 {
     buff = skiptokens(buff, 1);
-    owl_function_error(buff);
+    owl_function_error("%s", buff);
     return NULL;
 }
 
 char *owl_command_message(int argc, char **argv, char *buff)
 {
     buff = skiptokens(buff, 1);
-    owl_function_makemsg(buff);
+    owl_function_makemsg("%s", buff);
     return NULL;
 }
 
