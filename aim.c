@@ -129,6 +129,13 @@ void owl_aim_init(void)
      
 }
 
+void owl_aim_send_nop(owl_timer *t, void *data) {
+    if(owl_global_is_doaimevents(&g)) {
+        aim_session_t *sess = owl_global_get_aimsess(&g);
+        aim_flap_nop(sess, aim_getconn_type(sess, AIM_CONN_TYPE_BOS));
+    }
+}
+
 
 int owl_aim_login(char *screenname, char *password)
 {
@@ -193,7 +200,13 @@ int owl_aim_login(char *screenname, char *password)
   aim_request_login(sess, conn, screenname);
   owl_function_debugmsg("owl_aim_login: connecting");
 
+  g.aim_nop_timer = owl_select_add_timer(30, 30, owl_aim_send_nop, NULL);
+
   return(0);
+}
+
+void owl_aim_unset_ignorelogin(owl_timer *t, void *data) {      /* noproto */
+    owl_global_unset_ignore_aimlogin(&g);
 }
 
 /* stuff to run once login has been successful */
@@ -211,10 +224,10 @@ void owl_aim_successful_login(char *screenname)
   owl_function_debugmsg("Successful AIM login for %s", screenname);
 
   /* start the ingorelogin timer */
-  owl_timer_reset_newstart(owl_global_get_aim_login_timer(&g),
-			   owl_global_get_aim_ignorelogin_timer(&g));
+  owl_global_set_ignore_aimlogin(&g);
+  owl_select_add_timer(owl_global_get_aim_ignorelogin_timer(&g),
+                       0, owl_aim_unset_ignorelogin, NULL);
 
-  
   /* aim_ssi_setpresence(owl_global_get_aimsess(&g), 0x00000400); */
   /* aim_bos_setidle(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), 5000); */
 }
@@ -227,6 +240,7 @@ void owl_aim_logout(void)
   if (owl_global_is_aimloggedin(&g)) owl_function_adminmsg("", "Logged out of AIM");
   owl_global_set_aimnologgedin(&g);
   owl_global_set_no_doaimevents(&g);
+  owl_select_remove_timer(g.aim_nop_timer);
 }
 
 void owl_aim_logged_out()
@@ -245,6 +259,7 @@ void owl_aim_login_error(char *message)
   owl_function_beep();
   owl_global_set_aimnologgedin(&g);
   owl_global_set_no_doaimevents(&g);
+  owl_select_remove_timer(g.aim_nop_timer);
 }
 
 int owl_aim_send_im(char *to, char *msg)
@@ -421,11 +436,6 @@ int owl_aim_process_events()
   tv.tv_sec = 0;
   tv.tv_usec = 0;
   waitingconn = aim_select(aimsess, &tv, &selstat);
-
-  if (owl_global_is_aimnop_time(&g)) {
-    aim_flap_nop(aimsess, aim_getconn_type(aimsess, AIM_CONN_TYPE_BOS));
-    owl_global_aimnop_sent(&g);
-  }
 
   if (selstat == -1) {
     owl_aim_logged_out();
@@ -2314,13 +2324,6 @@ void owl_process_aim()
 {
   if (owl_global_is_doaimevents(&g)) {
     owl_aim_process_events();
-
-    if (owl_global_is_aimloggedin(&g)) {
-      if (owl_timer_is_expired(owl_global_get_aim_buddyinfo_timer(&g))) {
-        /* owl_buddylist_request_idletimes(owl_global_get_buddylist(&g)); */
-        owl_timer_reset(owl_global_get_aim_buddyinfo_timer(&g));
-      }
-    }
   }
 }
 

@@ -50,7 +50,7 @@ void owl_buddylist_oncoming(owl_buddylist *bl, char *screenname)
     owl_buddylist_add_aim_buddy(bl, screenname);
 
     /* are we ingoring login messages for a while? */
-    if (!owl_timer_is_expired(owl_global_get_aim_login_timer(&g))) return;
+    if (owl_global_is_ignore_aimlogin(&g)) return;
 
     /* if not, create the login message */
     m=owl_malloc(sizeof(owl_message));

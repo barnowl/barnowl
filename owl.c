@@ -393,6 +393,13 @@ int main(int argc, char **argv, char **env)
   nexttimediff=10;
   nexttime=time(NULL);
 
+
+  owl_select_add_timer(180, 180, owl_zephyr_buddycheck_timer, NULL);
+
+  /* If we ever deprecate the mainloop hook, remove this. */
+  owl_select_add_timer(0, 1, owl_perlconfig_mainloop, NULL);
+
+
 #ifdef HAVE_LIBZEPHYR
   /* Check for any zephyrs that have come in while we've done init. */
   owl_zephyr_process_events();
@@ -412,8 +419,6 @@ int main(int argc, char **argv, char **env)
     typwin=owl_global_get_curs_typwin(&g);
 
     followlast=owl_global_should_followlast(&g);
-    
-    owl_perlconfig_mainloop();
 
     /* little hack */
     now=time(NULL);
@@ -438,15 +443,6 @@ int main(int argc, char **argv, char **env)
 
       if(owl_process_message(m))
         newmsgs = 1;
-    }
-
-    /* is it time to check zbuddies? */
-    if (owl_global_is_pseudologins(&g)) {
-      if (owl_timer_is_expired(owl_global_get_zephyr_buddycheck_timer(&g))) {
-	owl_function_debugmsg("Doing zephyr buddy check");
-	owl_function_zephyr_buddy_check(1);
-	owl_timer_reset(owl_global_get_zephyr_buddycheck_timer(&g));
-      }
     }
 
     /* dispatch any muxevents */
@@ -779,3 +775,9 @@ void stderr_redirect_handler(int handle, int rfd, int eventmask, void *data)
 }
 
 #endif /* OWL_STDERR_REDIR */
+
+void owl_zephyr_buddycheck_timer(owl_timer *t, void *data)
+{
+    owl_function_debugmsg("Doing zephyr buddy check");
+    owl_function_zephyr_buddy_check(1);
+}

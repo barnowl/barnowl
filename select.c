@@ -2,6 +2,80 @@
 
 static const char fileIdent[] = "$Id: select.c 894 2008-01-17 07:13:44Z asedeno $";
 
+int _owl_select_timer_cmp(owl_timer *t1, owl_timer *t2, void *data) {
+    return t1->time - t2->time;
+}
+
+int _owl_select_timer_eq(owl_timer *t1, owl_timer *t2, void *data) {
+    return t1 == t2;
+}
+
+owl_timer *owl_select_add_timer(int after, int interval, void (*cb)(struct _owl_timer *, void *), void *data)
+{
+    owl_timer *t = owl_malloc(sizeof(owl_timer));
+    GSequence *timers = owl_global_get_timerlist(&g);
+
+    t->time = time(NULL) + after;
+    t->interval = interval;
+    t->callback = cb;
+    t->data = data;
+
+    g_sequence_insert_sorted(timers, t,
+                             (GCompareDataFunc)_owl_select_timer_cmp, NULL);
+    return t;
+}
+
+void owl_select_remove_timer(owl_timer *t)
+{
+    GSequenceIter *it = g_sequence_search(owl_global_get_timerlist(&g),
+                                          t, (GCompareDataFunc)_owl_select_timer_eq, NULL);
+    if(!g_sequence_iter_is_end(it) &&
+       g_sequence_get(it) == t) {
+        owl_free(t);
+        g_sequence_remove(it);
+    }
+}
+
+void owl_select_process_timers(struct timeval *timeout)
+{
+    time_t now = time(NULL);
+    GSequenceIter *it = g_sequence_get_begin_iter(owl_global_get_timerlist(&g));
+
+    while(!g_sequence_iter_is_end(it)) {
+        owl_timer *t = g_sequence_get(it);
+        int remove = 0;
+
+        if(t->time > now)
+            break;
+
+        /* Reschedule if appropriate */
+        if(t->interval > 0) {
+            t->time = now + t->interval;
+            g_sequence_sort_changed(it, (GCompareDataFunc)_owl_select_timer_cmp, NULL);
+        } else {
+            g_sequence_remove(it);
+            remove = 1;
+        }
+
+        /* Do the callback */
+        t->callback(t, t->data);
+
+        if (remove) {
+            owl_free(t);
+        }
+        it = g_sequence_get_begin_iter(owl_global_get_timerlist(&g));
+    }
+
+    if(g_sequence_iter_is_end(it)) {
+        timeout->tv_sec = 60;
+    } else {
+        owl_timer *t = g_sequence_get(it);
+        timeout->tv_sec = t->time - now;
+    }
+
+    timeout->tv_usec = 0;
+}
+
 /* Returns the index of the dispatch for the file descriptor. */
 int owl_select_find_dispatch(int fd)
 {
@@ -181,8 +255,7 @@ void owl_select()
   fd_set aim_rfds, aim_wfds;
   struct timeval timeout;
 
-  timeout.tv_sec = 1;
-  timeout.tv_usec = 0;
+  owl_select_process_timers(&timeout);
 
   max_fd = owl_select_dispatch_prepare_fd_sets(&r, &e);
 

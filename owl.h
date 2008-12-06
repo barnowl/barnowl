@@ -504,9 +504,10 @@ typedef struct _owl_zbuddylist {
 } owl_zbuddylist;
 
 typedef struct _owl_timer {
-  int direction;
-  time_t starttime;
-  int start;
+  time_t time;
+  int interval;
+  void (*callback)(struct _owl_timer *, void *);
+  void *data;
 } owl_timer;
 
 typedef struct _owl_errqueue {
@@ -582,7 +583,6 @@ typedef struct _owl_global {
   aim_conn_t bosconn;
   owl_timer aim_noop_timer;
   owl_timer aim_ignorelogin_timer;
-  owl_timer aim_buddyinfo_timer;
   int aim_loggedin;         /* true if currently logged into AIM */
   int aim_doprocessing;     /* true if we should process AIM events (like pending login) */
   char *aim_screenname;     /* currently logged in AIM screen name */
@@ -593,6 +593,7 @@ typedef struct _owl_global {
   char *response;           /* response to the last question asked */
   int havezephyr;
   int haveaim;
+  int ignoreaimlogin;
   int got_err_signal;	    /* 1 if we got an unexpected signal */
   siginfo_t err_signal_info;
   owl_zbuddylist zbuddies;
@@ -600,6 +601,8 @@ typedef struct _owl_global {
   struct termios startup_tio;
   owl_obarray obarray;
   owl_list dispatchlist;
+  GSequence *timerlist;
+  owl_timer *aim_nop_timer;
 } owl_global;
 
 /* globals */
