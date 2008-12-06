@@ -198,8 +198,7 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
   SPAGAIN ;
 
   if (SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    owl_function_error("Perl Error: '%s'", SvPV(ERRSV, n_a));
+    owl_function_error("Perl Error: '%s'", SvPV_nolen(ERRSV));
     /* and clear the error */
     sv_setsv (ERRSV, &PL_sv_undef);
   }
@@ -260,8 +259,7 @@ char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc
   }
 
   if (SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    owl_function_error("Error: '%s'", SvPV(ERRSV, n_a));
+    owl_function_error("Error: '%s'", SvPV_nolen(ERRSV));
     /* and clear the error */
     sv_setsv (ERRSV, &PL_sv_undef);
   }
@@ -302,16 +300,14 @@ char *owl_perlconfig_initperl(char * file)
 
   ret=perl_parse(p, owl_perl_xs_init, 2, args, NULL);
   if (ret || SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    err=owl_strdup(SvPV(ERRSV, n_a));
+    err=owl_strdup(SvPV_nolen(ERRSV));
     sv_setsv(ERRSV, &PL_sv_undef);     /* and clear the error */
     return(err);
   }
 
   ret=perl_run(p);
   if (ret || SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    err=owl_strdup(SvPV(ERRSV, n_a));
+    err=owl_strdup(SvPV_nolen(ERRSV));
     sv_setsv(ERRSV, &PL_sv_undef);     /* and clear the error */
     return(err);
   }
@@ -340,8 +336,7 @@ char *owl_perlconfig_initperl(char * file)
   perl_eval_pv(owl_perlwrap_codebuff, FALSE);
 
   if (SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    err=owl_strdup(SvPV(ERRSV, n_a));
+    err=owl_strdup(SvPV_nolen(ERRSV));
     sv_setsv (ERRSV, &PL_sv_undef);     /* and clear the error */
     return(err);
   }
@@ -394,8 +389,7 @@ char *owl_perlconfig_execute(char *line)
   response = perl_eval_pv(line, FALSE);
 
   if (SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    owl_function_error("Perl Error: '%s'", SvPV(ERRSV, n_a));
+    owl_function_error("Perl Error: '%s'", SvPV_nolen(ERRSV));
     sv_setsv (ERRSV, &PL_sv_undef);     /* and clear the error */
   }
 
@@ -437,7 +431,6 @@ char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
   int i, count;
   char * ret = NULL;
   SV *rv;
-  STRLEN n_a;
   dSP;
 
   ENTER;
@@ -456,14 +449,14 @@ char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
   SPAGAIN;
 
   if(SvTRUE(ERRSV)) {
-    owl_function_error("%s", SvPV(ERRSV, n_a));
+    owl_function_error("%s", SvPV_nolen(ERRSV));
     (void)POPs;
   } else {
     if(count != 1)
       croak("Perl command %s returned more than one value!", cmd->name);
     rv = POPs;
     if(SvTRUE(rv)) {
-      ret = owl_strdup(SvPV(rv, n_a));
+      ret = owl_strdup(SvPV_nolen(rv));
     }
   }
 
@@ -487,7 +480,6 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
 {
   SV *cb = (SV*)(e->cbdata);
   SV *text;
-  unsigned int n_a;
   dSP;
 
   if(cb == NULL) {
@@ -506,7 +498,7 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
   call_sv(cb, G_DISCARD|G_KEEPERR|G_EVAL);
 
   if(SvTRUE(ERRSV)) {
-    owl_function_error("%s", SvPV(ERRSV, n_a));
+    owl_function_error("%s", SvPV_nolen(ERRSV));
   }
 
   FREETMPS;
@@ -524,8 +516,7 @@ void owl_perlconfig_mainloop()
   PUSHMARK(SP) ;
   call_pv("BarnOwl::Hooks::_mainloop_hook", G_DISCARD|G_EVAL);
   if(SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    owl_function_error("%s", SvPV(ERRSV, n_a));
+    owl_function_error("%s", SvPV_nolen(ERRSV));
   }
   return;
 }
@@ -533,7 +524,6 @@ void owl_perlconfig_mainloop()
 void owl_perlconfig_do_dispatch(owl_dispatch *d)
 {
   SV *cb = d->pfunc;
-  unsigned int n_a;
   dSP;
   if(cb == NULL) {
     owl_function_error("Perl callback is NULL!");
@@ -548,7 +538,7 @@ void owl_perlconfig_do_dispatch(owl_dispatch *d)
   call_sv(cb, G_DISCARD|G_KEEPERR|G_EVAL);
 
   if(SvTRUE(ERRSV)) {
-    owl_function_error("%s", SvPV(ERRSV, n_a));
+    owl_function_error("%s", SvPV_nolen(ERRSV));
   }
 
   FREETMPS;
