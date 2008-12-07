@@ -813,7 +813,7 @@ void owl_zephyr_zlocate(char *user, char *out, int auth)
   for (;numlocs;numlocs--) {
     ZGetLocations(&locations,&one);
     myuser=short_zuser(user);
-    sprintf(out, "%s%s: %s\t%s\t%s\n", out, myuser,
+    sprintf(out + strlen(out), "%s: %s\t%s\t%s\n", myuser,
 	    locations.host ? locations.host : "?",
 	    locations.tty ? locations.tty : "?",
 	    locations.time ? locations.time : "?");

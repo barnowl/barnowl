@@ -230,9 +230,9 @@ void owl_zwrite_set_message(owl_zwrite *z, char *msg)
     strcpy(toline, "CC: ");
     for (i=0; i<j; i++) {
       if (strcmp(z->realm, "")) {
-	sprintf(toline, "%s%s@%s ", toline, (char *) owl_list_get_element(&(z->recips), i), z->realm);
+	sprintf(toline + strlen(toline), "%s@%s ", (char *) owl_list_get_element(&(z->recips), i), z->realm);
       } else {
-	sprintf(toline, "%s%s ", toline, (char *) owl_list_get_element(&(z->recips), i));
+	sprintf(toline + strlen(toline), "%s ", (char *) owl_list_get_element(&(z->recips), i));
       }
     }
     tmp = owl_get_iso_8859_1_if_possible(msg);
