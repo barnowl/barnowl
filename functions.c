@@ -1641,9 +1641,9 @@ void owl_function_info()
 	
 	/* fix this */
 	sprintf(buff, "  Checkd Ath: %i\n", n->z_checked_auth);
-	sprintf(buff, "%s  Multi notc: %s\n", buff, n->z_multinotice);
-	sprintf(buff, "%s  Num other : %i\n", buff, n->z_num_other_fields);
-	sprintf(buff, "%s  Msg Len   : %i\n", buff, n->z_message_len);
+	sprintf(buff + strlen(buff), "  Multi notc: %s\n", n->z_multinotice);
+	sprintf(buff + strlen(buff), "  Num other : %i\n", n->z_num_other_fields);
+	sprintf(buff + strlen(buff), "  Msg Len   : %i\n", n->z_message_len);
 	owl_fmtext_append_normal(&fm, buff);
 	
 	sprintf(buff, "  Fields    : %i\n", owl_zephyr_get_num_fields(n));
@@ -2588,7 +2588,7 @@ char *owl_function_classinstfilt(char *c, char *i)
   argbuff = owl_malloc(len);
   sprintf(argbuff, "class ^(un)*%s(\\.d)*$", tmpclass);
   if (tmpinstance) {
-    sprintf(argbuff, "%s and ( instance ^(un)*%s(\\.d)*$ )", argbuff, tmpinstance);
+    sprintf(argbuff + strlen(argbuff), " and ( instance ^(un)*%s(\\.d)*$ )", tmpinstance);
   }
   owl_free(tmpclass);
   if (tmpinstance) owl_free(tmpinstance);
@@ -2998,7 +2998,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff, "%s ^(un)*%s(\\.d)*$", buff, quoted);
+    sprintf(buff + strlen(buff), " ^(un)*%s(\\.d)*$", quoted);
     owl_free(quoted);
   }
   if (!strcmp(inst, "*")) {
@@ -3008,7 +3008,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff, "%s and instance ^(un)*%s(\\.d)*$", buff, quoted);
+    sprintf(buff + strlen(buff), " and instance ^(un)*%s(\\.d)*$", quoted);
     owl_free(quoted);
   }
   if (strcmp(recip, "*")) {
@@ -3016,7 +3016,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff, "%s and recipient ^%s$", buff, quoted);
+    sprintf(buff + strlen(buff), " and recipient ^%s$", quoted);
     owl_free(quoted);
   }
 
