@@ -93,11 +93,6 @@ sub owl::startup {
     # owl::command('set -q view_home all');
 
 
-    ## Which webbrowser to use to launch URLs with the 'w' key.
-    # owl::command('set -q webbrowser netscape');
-    # owl::command('set -q webbrowser galeon');
-    # owl::command('set -q webbrowser none');
-
     ## Default message to send when zaway is on (toggle with 'A')
     # owl::command('set -q zaway_msg_default "Not here now..."');
 
