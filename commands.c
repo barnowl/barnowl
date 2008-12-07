@@ -453,13 +453,6 @@ owl_cmd commands_to_init[]
   OWLCMD_VOID("pop-message", owl_command_pop_message, OWL_CTX_RECWIN,
 	      "pops up a message in a window", "", ""),
 
-  OWLCMD_VOID("openurl", owl_command_openurl, OWL_CTX_INTERACTIVE,
-	      "opens up a URL from the current message",
-	      "", 
-	      "Uses the 'webbrowser' variable to determine\n"
-	      "which browser to use.  Currently, 'netscape'\n"
-	      "and 'galeon' are supported.\n"),
-
   OWLCMD_ARGS("zaway", owl_command_zaway, OWL_CTX_INTERACTIVE,
 	      "Set, enable or disable zephyr away message",
 	      "zaway [ on | off | toggle ]\n"
@@ -2250,11 +2243,6 @@ char *owl_command_viewuser(int argc, char **argv, char *buff)
 void owl_command_pop_message(void)
 {
   owl_function_curmsg_to_popwin();
-}
-
-void owl_command_openurl(void)
-{
-  owl_function_openurl();
 }
 
 char *owl_command_delete(int argc, char **argv, char *buff)
