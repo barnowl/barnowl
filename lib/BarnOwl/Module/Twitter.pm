@@ -81,6 +81,10 @@ $twitter  = Net::Twitter->new(username   => $cfg->{user} || $user,
                               password   => $cfg->{password},
                               source => 'barnowl');
 
+eval {
+    $twitter->{ua}->timeout(1);
+};
+
 if(!defined($twitter->verify_credentials())) {
     fail("Invalid twitter credentials");
 }
