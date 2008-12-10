@@ -66,7 +66,6 @@ BarnOwl::new_variable_string(
         description => $desc
     }
 );
-}
 
 my $conffile = BarnOwl::get_config_dir() . "/twitter";
 open(my $fh, "<", "$conffile") || fail("Unable to read $conffile");
