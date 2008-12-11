@@ -3,78 +3,78 @@
 static const char fileIdent[] = "$Id: select.c 894 2008-01-17 07:13:44Z asedeno $";
 
 int _owl_select_timer_cmp(owl_timer *t1, owl_timer *t2, void *data) {
-    return t1->time - t2->time;
+  return t1->time - t2->time;
 }
 
 int _owl_select_timer_eq(owl_timer *t1, owl_timer *t2, void *data) {
-    return t1 == t2;
+  return t1 == t2;
 }
 
 owl_timer *owl_select_add_timer(int after, int interval, void (*cb)(struct _owl_timer *, void *), void *data)
 {
-    owl_timer *t = owl_malloc(sizeof(owl_timer));
-    GSequence *timers = owl_global_get_timerlist(&g);
+  owl_timer *t = owl_malloc(sizeof(owl_timer));
+  GSequence *timers = owl_global_get_timerlist(&g);
 
-    t->time = time(NULL) + after;
-    t->interval = interval;
-    t->callback = cb;
-    t->data = data;
+  t->time = time(NULL) + after;
+  t->interval = interval;
+  t->callback = cb;
+  t->data = data;
 
-    g_sequence_insert_sorted(timers, t,
-                             (GCompareDataFunc)_owl_select_timer_cmp, NULL);
-    return t;
+  g_sequence_insert_sorted(timers, t,
+                           (GCompareDataFunc)_owl_select_timer_cmp, NULL);
+  return t;
 }
 
 void owl_select_remove_timer(owl_timer *t)
 {
-    GSequenceIter *it = g_sequence_search(owl_global_get_timerlist(&g),
-                                          t, (GCompareDataFunc)_owl_select_timer_eq, NULL);
-    if(!g_sequence_iter_is_end(it) &&
-       g_sequence_get(it) == t) {
-        owl_free(t);
-        g_sequence_remove(it);
-    }
+  GSequenceIter *it = g_sequence_search(owl_global_get_timerlist(&g),
+                                        t, (GCompareDataFunc)_owl_select_timer_eq, NULL);
+  if(!g_sequence_iter_is_end(it) &&
+     g_sequence_get(it) == t) {
+    owl_free(t);
+    g_sequence_remove(it);
+  }
 }
 
 void owl_select_process_timers(struct timeval *timeout)
 {
-    time_t now = time(NULL);
-    GSequenceIter *it = g_sequence_get_begin_iter(owl_global_get_timerlist(&g));
+  time_t now = time(NULL);
+  GSequenceIter *it = g_sequence_get_begin_iter(owl_global_get_timerlist(&g));
 
-    while(!g_sequence_iter_is_end(it)) {
-        owl_timer *t = g_sequence_get(it);
-        void (*cb)(struct _owl_timer *, void *);
-        void *data;
+  while(!g_sequence_iter_is_end(it)) {
+    owl_timer *t = g_sequence_get(it);
+    void (*cb)(struct _owl_timer *, void *);
+    void *data;
 
-        if(t->time > now)
-            break;
+    if(t->time > now)
+      break;
 
-        cb = t->callback;
-        data = t->data;
+    cb = t->callback;
+    data = t->data;
 
-        /* Reschedule if appropriate */
-        if(t->interval > 0) {
-          t->time = now + t->interval;
-          g_sequence_sort_changed(it, (GCompareDataFunc)_owl_select_timer_cmp, NULL);
-        } else {
-          owl_select_remove_timer(t);
-          t = NULL;
-        }
-
-        /* Do the callback */
-        cb(t, data);
-
-        it = g_sequence_get_begin_iter(owl_global_get_timerlist(&g));
-    }
-
-    if(g_sequence_iter_is_end(it)) {
-        timeout->tv_sec = 60;
+    /* Reschedule if appropriate */
+    if(t->interval > 0) {
+      t->time = now + t->interval;
+      g_sequence_sort_changed(it, (GCompareDataFunc)_owl_select_timer_cmp, NULL);
     } else {
-        owl_timer *t = g_sequence_get(it);
-        timeout->tv_sec = t->time - now;
+      owl_select_remove_timer(t);
+      t = NULL;
     }
 
-    timeout->tv_usec = 0;
+    /* Do the callback */
+    cb(t, data);
+
+    it = g_sequence_get_begin_iter(owl_global_get_timerlist(&g));
+  }
+
+  if(g_sequence_iter_is_end(it)) {
+    timeout->tv_sec = 60;
+  } else {
+    owl_timer *t = g_sequence_get(it);
+    timeout->tv_sec = t->time - now;
+  }
+
+  timeout->tv_usec = 0;
 }
 
 /* Returns the index of the dispatch for the file descriptor. */
