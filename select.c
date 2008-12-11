@@ -43,26 +43,27 @@ void owl_select_process_timers(struct timeval *timeout)
 
     while(!g_sequence_iter_is_end(it)) {
         owl_timer *t = g_sequence_get(it);
-        int remove = 0;
+        void (*cb)(struct _owl_timer *, void *);
+        void *data;
 
         if(t->time > now)
             break;
 
+        cb = t->callback;
+        data = t->data;
+
         /* Reschedule if appropriate */
         if(t->interval > 0) {
-            t->time = now + t->interval;
-            g_sequence_sort_changed(it, (GCompareDataFunc)_owl_select_timer_cmp, NULL);
+          t->time = now + t->interval;
+          g_sequence_sort_changed(it, (GCompareDataFunc)_owl_select_timer_cmp, NULL);
         } else {
-            g_sequence_remove(it);
-            remove = 1;
+          owl_select_remove_timer(t);
+          t = NULL;
         }
 
         /* Do the callback */
-        t->callback(t, t->data);
+        cb(t, data);
 
-        if (remove) {
-            owl_free(t);
-        }
         it = g_sequence_get_begin_iter(owl_global_get_timerlist(&g));
     }
 
