@@ -23,10 +23,10 @@ SV *owl_perlconfig_curmessage2hashref(void);
 	 * entire functionality here in XS. If, however, it needs
 	 * complex argument processing or something, we define a
 	 * simple version here that takes arguments in as flat a
-	 * manner as possible, to simplify the XS code, with a name
-	 * with a trailing `_internal', and write a perl wrapper in
-	 * perlwrap.pm that munges the arguments as appropriate and
-	 * calls the internal version.
+	 * manner as possible, to simplify the XS code, put it in
+	 * BarnOwl::Intenal::, and write a perl wrapper in perlwrap.pm
+	 * that munges the arguments as appropriate and calls the
+	 * internal version.
 	 */
 
 MODULE = BarnOwl		PACKAGE = BarnOwl
@@ -141,37 +141,6 @@ zephyr_getsubs()
 		RETVAL
     CLEANUP:
 		if (rv) owl_free(rv);
-
-void
-new_command_internal(name, func, summary, usage, description)
-	char *name
-	SV *func
-	char *summary
-	char *usage
-	char *description
-	PREINIT:
-		owl_cmd cmd;
-	CODE:
-	{
-		if(!SV_IS_CODEREF(func)) {
-			croak("Command function must be a coderef!");
-		}
-		SvREFCNT_inc(func);
-		cmd.name = name;
-		cmd.cmd_perl = func;
-		cmd.summary = summary;
-		cmd.usage = usage;
-		cmd.description = description;
-		cmd.validctx = OWL_CTX_ANY;
-		cmd.cmd_aliased_to = NULL;
-		cmd.cmd_args_fn = NULL;
-		cmd.cmd_v_fn = NULL;
-		cmd.cmd_i_fn = NULL;
-		cmd.cmd_ctxargs_fn = NULL;
-		cmd.cmd_ctxv_fn = NULL;
-		cmd.cmd_ctxi_fn = NULL;
-		owl_cmddict_add_cmd(owl_global_get_cmddict(&g), &cmd);
-	   }
 
 void queue_message(msg) 
 	SV *msg
@@ -344,45 +313,6 @@ wordwrap(in, cols)
 		if (rv) owl_free(rv);
 
 void
-new_variable_string_internal(name, ival, summ, desc)
-	char * name
-	char * ival
-	char * summ
-	char * desc
-	CODE:
-	owl_variable_dict_newvar_string(owl_global_get_vardict(&g),
-					name,
-					summ,
-					desc,
-					ival);
-
-void
-new_variable_int_internal(name, ival, summ, desc)
-	char * name
-	int ival
-	char * summ
-	char * desc
-	CODE:
-	owl_variable_dict_newvar_int(owl_global_get_vardict(&g),
-				     name,
-				     summ,
-				     desc,
-				     ival);
-
-void
-new_variable_bool_internal(name, ival, summ, desc)
-	char * name
-	int ival
-	char * summ
-	char * desc
-	CODE:
-	owl_variable_dict_newvar_bool(owl_global_get_vardict(&g),
-				      name,
-				      summ,
-				      desc,
-				      ival);
-
-void
 add_dispatch(fd, cb)
 	int fd
 	SV * cb
@@ -395,3 +325,76 @@ remove_dispatch(fd)
 	int fd
 	CODE:
 	owl_select_remove_perl_dispatch(fd);
+
+MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
+
+
+void
+new_command(name, func, summary, usage, description)
+	char *name
+	SV *func
+	char *summary
+	char *usage
+	char *description
+	PREINIT:
+		owl_cmd cmd;
+	CODE:
+	{
+		if(!SV_IS_CODEREF(func)) {
+			croak("Command function must be a coderef!");
+		}
+		SvREFCNT_inc(func);
+		cmd.name = name;
+		cmd.cmd_perl = func;
+		cmd.summary = summary;
+		cmd.usage = usage;
+		cmd.description = description;
+		cmd.validctx = OWL_CTX_ANY;
+		cmd.cmd_aliased_to = NULL;
+		cmd.cmd_args_fn = NULL;
+		cmd.cmd_v_fn = NULL;
+		cmd.cmd_i_fn = NULL;
+		cmd.cmd_ctxargs_fn = NULL;
+		cmd.cmd_ctxv_fn = NULL;
+		cmd.cmd_ctxi_fn = NULL;
+		owl_cmddict_add_cmd(owl_global_get_cmddict(&g), &cmd);
+	   }
+
+void
+new_variable_string(name, ival, summ, desc)
+	char * name
+	char * ival
+	char * summ
+	char * desc
+	CODE:
+	owl_variable_dict_newvar_string(owl_global_get_vardict(&g),
+					name,
+					summ,
+					desc,
+					ival);
+
+void
+new_variable_int(name, ival, summ, desc)
+	char * name
+	int ival
+	char * summ
+	char * desc
+	CODE:
+	owl_variable_dict_newvar_int(owl_global_get_vardict(&g),
+				     name,
+				     summ,
+				     desc,
+				     ival);
+
+void
+new_variable_bool(name, ival, summ, desc)
+	char * name
+	int ival
+	char * summ
+	char * desc
+	CODE:
+	owl_variable_dict_newvar_bool(owl_global_get_vardict(&g),
+				      name,
+				      summ,
+				      desc,
+				      ival);
