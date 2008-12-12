@@ -778,6 +778,8 @@ void stderr_redirect_handler(int handle, int rfd, int eventmask, void *data)
 
 void owl_zephyr_buddycheck_timer(owl_timer *t, void *data)
 {
+  if (owl_global_is_pseudologins(&g)) {
     owl_function_debugmsg("Doing zephyr buddy check");
     owl_function_zephyr_buddy_check(1);
+  }
 }
