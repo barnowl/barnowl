@@ -115,7 +115,7 @@ void owl_global_init(owl_global *g) {
 
   owl_message_init_fmtext_cache();
   owl_list_create(&(g->dispatchlist));
-  g->timerlist = g_sequence_new(NULL);
+  g->timerlist = NULL;
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -956,7 +956,7 @@ owl_list *owl_global_get_dispatchlist(owl_global *g)
   return &(g->dispatchlist);
 }
 
-GSequence *owl_global_get_timerlist(owl_global *g)
+GList **owl_global_get_timerlist(owl_global *g)
 {
-    return g->timerlist;
+  return &(g->timerlist);
 }

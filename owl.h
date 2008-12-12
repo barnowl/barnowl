@@ -601,7 +601,7 @@ typedef struct _owl_global {
   struct termios startup_tio;
   owl_obarray obarray;
   owl_list dispatchlist;
-  GSequence *timerlist;
+  GList *timerlist;
   owl_timer *aim_nop_timer;
 } owl_global;
 

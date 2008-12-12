@@ -2,47 +2,45 @@
 
 static const char fileIdent[] = "$Id: select.c 894 2008-01-17 07:13:44Z asedeno $";
 
-int _owl_select_timer_cmp(owl_timer *t1, owl_timer *t2, void *data) {
+int _owl_select_timer_cmp(owl_timer *t1, owl_timer *t2) {
   return t1->time - t2->time;
 }
 
-int _owl_select_timer_eq(owl_timer *t1, owl_timer *t2, void *data) {
+int _owl_select_timer_eq(owl_timer *t1, owl_timer *t2) {
   return t1 == t2;
 }
 
 owl_timer *owl_select_add_timer(int after, int interval, void (*cb)(struct _owl_timer *, void *), void *data)
 {
   owl_timer *t = owl_malloc(sizeof(owl_timer));
-  GSequence *timers = owl_global_get_timerlist(&g);
+  GList **timers = owl_global_get_timerlist(&g);
 
   t->time = time(NULL) + after;
   t->interval = interval;
   t->callback = cb;
   t->data = data;
 
-  g_sequence_insert_sorted(timers, t,
-                           (GCompareDataFunc)_owl_select_timer_cmp, NULL);
+  *timers = g_list_insert_sorted(*timers, t,
+                                 (GCompareFunc)_owl_select_timer_cmp);
   return t;
 }
 
 void owl_select_remove_timer(owl_timer *t)
 {
-  GSequenceIter *it = g_sequence_search(owl_global_get_timerlist(&g),
-                                        t, (GCompareDataFunc)_owl_select_timer_eq, NULL);
-  if(!g_sequence_iter_is_end(it) &&
-     g_sequence_get(it) == t) {
+  GList **timers = owl_global_get_timerlist(&g);
+  if (t && g_list_find(*timers, t)) {
+    *timers = g_list_remove(*timers, t);
     owl_free(t);
-    g_sequence_remove(it);
   }
 }
 
 void owl_select_process_timers(struct timeval *timeout)
 {
   time_t now = time(NULL);
-  GSequenceIter *it = g_sequence_get_begin_iter(owl_global_get_timerlist(&g));
+  GList **timers = owl_global_get_timerlist(&g);
 
-  while(!g_sequence_iter_is_end(it)) {
-    owl_timer *t = g_sequence_get(it);
+  while(*timers) {
+    owl_timer *t = (*timers)->data;
     void (*cb)(struct _owl_timer *, void *);
     void *data;
 
@@ -55,7 +53,9 @@ void owl_select_process_timers(struct timeval *timeout)
     /* Reschedule if appropriate */
     if(t->interval > 0) {
       t->time = now + t->interval;
-      g_sequence_sort_changed(it, (GCompareDataFunc)_owl_select_timer_cmp, NULL);
+      *timers = g_list_remove(*timers, t);
+      *timers = g_list_insert_sorted(*timers, t,
+                                     (GCompareFunc)_owl_select_timer_cmp);
     } else {
       owl_select_remove_timer(t);
       t = NULL;
@@ -63,15 +63,15 @@ void owl_select_process_timers(struct timeval *timeout)
 
     /* Do the callback */
     cb(t, data);
-
-    it = g_sequence_get_begin_iter(owl_global_get_timerlist(&g));
   }
 
-  if(g_sequence_iter_is_end(it)) {
-    timeout->tv_sec = 60;
-  } else {
-    owl_timer *t = g_sequence_get(it);
+  if(*timers) {
+    owl_timer *t = (*timers)->data;
     timeout->tv_sec = t->time - now;
+    if (timeout->tv_sec > 60)
+      timeout->tv_sec = 60;
+  } else {
+    timeout->tv_sec = 60;
   }
 
   timeout->tv_usec = 0;
