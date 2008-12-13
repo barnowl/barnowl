@@ -19,7 +19,8 @@ sub smartfilter {
     my $self = shift;
     my $inst = shift;
 
-    my ($filter, $ftext);
+    my $filter;
+    my @filter;
 
     if($self->is_private) {
         my $who;
@@ -29,10 +30,12 @@ sub smartfilter {
             $who = $self->sender;
         }
         $filter = "irc-user-$who";
-        my $ftext  =
-             qq{type ^irc\$ and ( ( direction ^in\$ and sender ^$who\$ ) }
-           . qq{or ( direction ^out\$ and recipient ^$who\$ ) ) };
-        BarnOwl::filter("$filter $ftext");
+        @filter  =
+             (qw{( type ^irc$ and filter personal and },
+              qw{( ( direction ^in$ and sender}, "^$who\$",
+              qw{ ) or ( direction ^out$ and recipient}, "^$who\$",
+              qw{) ) ) });
+        BarnOwl::command("filter", "$filter", @filter);
         return $filter;
     } else {
         # To a Channel
@@ -42,12 +45,17 @@ sub smartfilter {
         my ($filter, $ftext);
         if ($inst && $self->body =~ /^(\S+):/) {
             $filter = "irc-$network-channel-$channel-$sender-$1";
-            $ftext = qq{type ^irc\$ and network ^$network\$ and channel ^$channel\$ and ( sender ^$sender\$ or sender ^$1\$ )};
+            @filter =
+                 (qw{type ^irc$ and network}, "^$network\$",
+                  qw{and channel}, "^$channel\$",
+                  qw{and ( sender}, "^$sender\$",
+                  qw{or sender}, "^$1\$",qq{)});
         } else {
             $filter = "irc-$network-channel-$channel";
-            $ftext = qq{type ^irc\$ and network ^$network\$ and channel ^$channel\$};
+            @filter = (qw{type ^irc$ and network}, "^$network\$",
+                       qw{and channel}, "^$channel\$");
         }
-        BarnOwl::filter("$filter $ftext");
+        BarnOwl::command("filter", "$filter", @filter);
         return $filter;
     }
 }
@@ -55,6 +63,8 @@ sub smartfilter {
 sub server {shift->{server}}
 sub network {shift->{network}}
 sub channel {shift->{channel}}
+sub action {shift->{action}}
+sub reason {shift->{reason}}
 
 # display
 sub context {shift->{network};}
@@ -64,10 +74,16 @@ sub long_sender {shift->{from} || ""};
 
 sub login_type {
     my $self = shift;
-    return " (" . ($self->is_login ? "JOIN" : "PART") . ")";
+    return " (" . uc $self->action . ")";
 }
 
-sub login_extra { shift->channel; }
-
+sub login_extra { 
+    my $self = shift;
+    if ($self->action eq "quit") {
+        return $self->reason;
+    } else {
+        return $self->channel;
+    }
+}
 
 1;

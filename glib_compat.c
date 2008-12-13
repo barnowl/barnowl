@@ -1,4 +1,4 @@
-#include <owl.h>
+#include "owl.h"
 
 #if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 14)
 /* Our own implementation of g_unichar_is_mark for glib versions that

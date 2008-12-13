@@ -10,7 +10,7 @@ mandir = @mandir@
 
 CC=@CC@
 LIBS=@LIBS@ -L./libfaim -lfaim
-CFLAGS=@CFLAGS@ -I. -I./libfaim -DDATADIR=\"${datadir}\" -DOWL_SVN_REVNO=$(shell ./svkversion)
+CFLAGS=@CFLAGS@ -I./libfaim -DDATADIR=\"${datadir}\"
 LDFLAGS=@LDFLAGS@
 XSUBPPDIR=@XSUBPPDIR@
 XSUBPPFLAGS=@XSUBPPFLAGS@
@@ -128,7 +128,7 @@ libfaimdistclean:
 
 install: all installdirs
 	${INSTALL_PROGRAM} $(EXE) ${DESTDIR}${bindir}/$(EXE)
-	${INSTALL_DATA} doc/owl.1 ${DESTDIR}${mandir}/man1/barnowl.1
+	${INSTALL_DATA} doc/barnowl.1 ${DESTDIR}${mandir}/man1/barnowl.1
 	${INSTALL} -d ${DESTDIR}${datadir}/lib
 	${INSTALL} -d ${DESTDIR}${datadir}/modules
 	tar -C perl/lib --exclude .svn -cf - . | tar -C ${DESTDIR}${datadir}/lib -xf -

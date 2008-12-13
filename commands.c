@@ -50,7 +50,7 @@ owl_cmd commands_to_init[]
 	      "logout notification.  By default a login notification is sent\n"
 	      "when owl is started and a logout notification is sent when owl\n"
 	      "is exited.  This behavior can be changed with the 'startuplogin'\n"
-	      "and 'shudownlogout' variables.  If a tty is specified for zlog in\n"
+	      "and 'shutdownlogout' variables.  If a tty is specified for zlog in\n"
 	      "then the owl variable 'tty' will be set to that string, causing\n"
 	      "it to be used as the zephyr location tty.\n"),
 
@@ -192,24 +192,26 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("subscribe", owl_command_subscribe, OWL_CTX_ANY,
 	      "subscribe to a zephyr class, instance, recipient",
-	      "subscribe [-t] <class> <instance> [recipient]",
-	      "Subscribe the specified class and instance.  If the recipient\n"
-	      "is not listed on the command line it defaults\n"
-	      "to * (the wildcard recipient).  If the -t option is present\n"
-	      "the subscription will only be temporary, i.e., it will not\n"
-	      "be written to the subscription file and will therefore not\n"
-	      "be present the next time owl is started.\n"),
+	      "subscribe [-t] <class> [instance [recipient]]",
+	      "Subscribe to the specified class and instance.  If the\n"
+	      "instance or recipient is not listed on the command\n"
+	      "line they default to * (the wildcard recipient).\n"
+	      "If the -t option is present the subscription will\n"
+	      "only be temporary, i.e., it will not be written to\n"
+	      "the subscription file and will therefore not be\n"
+	      "present the next time owl is started.\n"),
   OWLCMD_ALIAS("sub", "subscribe"),
 
   OWLCMD_ARGS("unsubscribe", owl_command_unsubscribe, OWL_CTX_ANY,
 	      "unsubscribe from a zephyr class, instance, recipient",
-	      "unsubscribe [-t] <class> <instance> [recipient]",
+	      "unsubscribe [-t] <class> [instance [recipient]]",
 	      "Unsubscribe from the specified class and instance.  If the\n"
-	      "recipient is not listed on the command line it defaults\n"
-	      "to * (the wildcard recipient).  If the -t option is present\n"
-	      "the unsubscription will only be temporary, i.e., it will not\n"
-	      "be updated in the subscription file and will therefore not\n"
-	      "be in effect the next time owl is started.\n"),
+	      "instance or recipient is not listed on the command\n"
+	      "line they default to * (the wildcard recipient).\n"
+	      "If the -t option is present the unsubscription will\n"
+	      "only be temporary, i.e., it will not be updated in\n"
+	      "the subscription file and will therefore not be\n"
+	      "in effect the next time owl is started.\n"),
   OWLCMD_ALIAS("unsub", "unsubscribe"),
 
   OWLCMD_VOID("unsuball", owl_command_unsuball, OWL_CTX_ANY,
@@ -244,7 +246,7 @@ owl_cmd commands_to_init[]
   OWLCMD_ARGS("delbuddy", owl_command_delbuddy, OWL_CTX_INTERACTIVE,
 	      "delete a buddy from a buddylist",
 	      "delbuddy <protocol> <screenname>",
-	      "Delete the named buddy to your buddylist.  <protocol< can be aim or zephyr\n"),
+	      "Delete the named buddy from your buddylist.  <protocol> can be aim or zephyr\n"),
 
   OWLCMD_ARGS("join", owl_command_join, OWL_CTX_INTERACTIVE,
 	      "join a chat group",
@@ -262,7 +264,7 @@ owl_cmd commands_to_init[]
 	      "zpunt <class> <instance> [recipient]\n"
 	      "zpunt <instance>",
 	      "The zpunt command will supress message to the specified\n"
-	      "zephyr triplet.  In the second usage messages as supressed\n"
+	      "zephyr triplet.  In the second usage messages are suppressed\n"
 	      "for class MESSAGE and the named instance.\n\n"
 	      "SEE ALSO:  zunpunt, show zpunts\n"),
 
@@ -270,7 +272,7 @@ owl_cmd commands_to_init[]
 	      "undo a previous zpunt",
 	      "zunpunt <class> <instance> [recipient]\n"
 	      "zunpunt <instance>",
-	      "The zunpunt command will allow messages that were previosly\n"
+	      "The zunpunt command will allow messages that were previously\n"
 	      "suppressed to be received again.\n\n"
 	      "SEE ALSO:  zpunt, show zpunts\n"),
 
@@ -544,7 +546,7 @@ owl_cmd commands_to_init[]
               "And additionally you may use the static values:\n"
 	      "    true\n"
 	      "    false\n"
-	      "Spaces must be present before and after parenthesis.  If the\n"
+	      "Spaces must be present before and after parentheses.  If the\n"
 	      "optional color arguments are used they specifies the colors that\n"
 	      "messages matching this filter should be displayed in.\n\n"
 	      "SEE ALSO: view, viewclass, viewuser\n"),
@@ -591,23 +593,23 @@ owl_cmd commands_to_init[]
 	      "smartnarrow [-i | --instance]",
 	      "If the curmsg is a personal message narrow\n"
 	      "   to the conversation with that user.\n"
-	      "If the curmsg is a class message, instance foo, recip *\n"
-	      "   message, narrow to the class, inst.\n"
-	      "If the curmsg is a class message then narrow\n"
+	      "If the curmsg is a <MESSAGE, foo, *>\n"
+	      "   message, narrow to the instance.\n"
+	      "If the curmsg is a class message, narrow\n"
 	      "    to the class.\n"
-	      "If the curmsg is a class message and '-i' is specied\n"
-	      "    then narrow to the class, instance\n"),
+	      "If the curmsg is a class message and '-i' is specified\n"
+	      "    then narrow to the class and instance.\n"),
 
   OWLCMD_ARGS("smartfilter", owl_command_smartfilter, OWL_CTX_INTERACTIVE,
 	      "returns the name of a filter based on the current message",
 	      "smartfilter [-i | --instance]",
 	      "If the curmsg is a personal message, the filter is\n"
 	      "   the conversation with that user.\n"
-	      "If the curmsg is a class message, instance foo, recip *\n"
-	      "   message, the filter is the class, inst.\n"
+	      "If the curmsg is a <MESSAGE, foo, *>\n"
+	      "   message, the filter is to that instance.\n"
 	      "If the curmsg is a class message, the filter is that class.\n"
 	      "If the curmsg is a class message and '-i' is specied\n"
-	      "    the filter is that <class,instance> pair\n"),
+	      "    the filter is to that class and instance.\n"),
 
   OWLCMD_ARGS("viewclass", owl_command_viewclass, OWL_CTX_INTERACTIVE,
 	      "view messages matching a particular class",
@@ -673,7 +675,7 @@ owl_cmd commands_to_init[]
 	      "delete trash",
 	      "If no message id is specified the current message is marked\n"
 	      "for deletion.  Otherwise the message with the given message\n"
-	      "id is marked for deltion.\n"
+	      "id is marked for deletion.\n"
 	      "If '--no-move' is specified, don't move after deletion.\n"
 	      "If 'trash' is specified, deletes all trash/auto messages\n"
 	      "in the current view.\n"
@@ -687,7 +689,7 @@ owl_cmd commands_to_init[]
 	      "undelete view",
 	      "If no message id is specified the current message is\n"
 	      "unmarked for deletion.  Otherwise the message with the\n"
-	      "given message id is marked for undeltion.\n"
+	      "given message id is unmarked for deletion.\n"
 	      "If '--no-move' is specified, don't move after deletion.\n"
 	      "If 'view' is specified, undeletes all messages\n"
 	      "in the current view.\n"),
@@ -712,6 +714,10 @@ owl_cmd commands_to_init[]
 	      "returns the value of a variable",
 	      "getvar <varname>", ""),
 
+  OWLCMD_ARGS("getfilter", owl_command_getfilter, OWL_CTX_INTERACTIVE,
+	      "returns the definition of a filter",
+	      "getfilter <filtername>", ""),
+
   OWLCMD_ARGS("getstyle", owl_command_getstyle, OWL_CTX_INTERACTIVE,
 	      "returns the name of the style for the current view",
 	      "", ""),
@@ -722,7 +728,7 @@ owl_cmd commands_to_init[]
 	      "The search command will find messages that contain the\n"
 	      "specified string and move the cursor there.  If no string\n"
 	      "argument is supplied then the previous one is used.  By\n"
-	      "default searches are done fowards, if -r is used the search\n"
+	      "default searches are done forwards; if -r is used the search\n"
 	      "is performed backwards"),
 
   OWLCMD_ARGS("setsearch", owl_command_setsearch, OWL_CTX_INTERACTIVE,
@@ -731,7 +737,7 @@ owl_cmd commands_to_init[]
 	      "The setsearch command highlights all occurences of its\n"
           "argument and makes it the default argument for future\n"
           "search commands, but does not move the cursor.  With\n"
-          "no argument, it makes search inactive."),
+          "no argument, it makes search highlighting inactive."),
 
   OWLCMD_ARGS("aimlogin", owl_command_aimlogin, OWL_CTX_ANY,
 	      "login to an AIM account",
@@ -749,7 +755,7 @@ owl_cmd commands_to_init[]
               ""),
 
   OWLCMD_ARGS("message", owl_command_message, OWL_CTX_ANY,
-              "Display an informatative message",
+              "Display an informative message",
               "message <message>",
               ""),
 
@@ -1738,11 +1744,11 @@ void owl_command_zlog_out(void)
 
 char *owl_command_subscribe(int argc, char **argv, char *buff)
 {
-  char *recip="";
+  char *class, *instance, *recip="";
   int temp=0;
   int ret=0;
-  
-  if (argc<3) {
+
+  if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the subscribe command");
     return(NULL);
   }
@@ -1754,25 +1760,33 @@ char *owl_command_subscribe(int argc, char **argv, char *buff)
     argc--;
     argv++;
   }
-  if (argc<2) {
+  if (argc < 1) {
     owl_function_makemsg("Not enough arguments to the subscribe command");
     return(NULL);
   }
 
-  if (argc>3) {
+  if (argc > 3) {
     owl_function_makemsg("Too many arguments to the subscribe command");
     return(NULL);
   }
 
-  if (argc==2) {
+  class = argv[0];
+
+  if (argc == 1) {
+    instance = "*";
+  } else {
+    instance = argv[1];
+  }
+
+  if (argc <= 2) {
     recip="";
   } else if (argc==3) {
     recip=argv[2];
   }
 
-  ret = owl_function_subscribe(argv[0], argv[1], recip);
+  ret = owl_function_subscribe(class, instance, recip);
   if (!temp && !ret) {
-    owl_zephyr_addsub(NULL, argv[0], argv[1], recip);
+    owl_zephyr_addsub(NULL, class, instance, recip);
   }
   return(NULL);
 }
@@ -1780,10 +1794,10 @@ char *owl_command_subscribe(int argc, char **argv, char *buff)
 
 char *owl_command_unsubscribe(int argc, char **argv, char *buff)
 {
-  char *recip="";
+  char *class, *instance, *recip="";
   int temp=0;
 
-  if (argc<3) {
+  if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the unsubscribe command");
     return(NULL);
   }
@@ -1795,25 +1809,33 @@ char *owl_command_unsubscribe(int argc, char **argv, char *buff)
     argc--;
     argv++;
   }
-  if (argc<2) {
-    owl_function_makemsg("Not enough arguments to the subscribe command");
+  if (argc < 1) {
+    owl_function_makemsg("Not enough arguments to the unsubscribe command");
     return(NULL);
   }
 
-  if (argc>3) {
+  if (argc > 3) {
     owl_function_makemsg("Too many arguments to the unsubscribe command");
     return(NULL);
   }
 
-  if (argc==2) {
+  class = argv[0];
+
+  if (argc == 1) {
+    instance = "*";
+  } else {
+    instance = argv[1];
+  }
+
+  if (argc <= 2) {
     recip="";
   } else if (argc==3) {
     recip=argv[2];
   }
 
-  owl_function_unsubscribe(argv[0], argv[1], recip);
+  owl_function_unsubscribe(class, instance, recip);
   if (!temp) {
-    owl_zephyr_delsub(NULL, argv[0], argv[1], recip);
+    owl_zephyr_delsub(NULL, class, instance, recip);
   }
   return(NULL);
 }
@@ -2460,6 +2482,20 @@ char *owl_command_getvar(int argc, char **argv, char *buff)
   return owl_strdup(tmpbuff); 
 }
 
+char *owl_command_getfilter(int argc, char **argv, char *buf)
+{
+  owl_filter *f;
+  if (argc != 2) {
+    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
+    return NULL;
+  }
+  f = owl_global_get_filter(&g, argv[1]);
+  if (!f) {
+    return NULL;
+  }
+  return owl_filter_print(f);
+}
+
 char *owl_command_search(int argc, char **argv, char *buff)
 {
   int direction;
@@ -2579,7 +2615,7 @@ void owl_command_yes(void)
   }
   cmd = owl_message_get_attribute_value(m, "yescommand");
   if(!cmd) {
-    owl_function_error("No yes command!");
+    owl_function_error("No 'yes' command!");
     return;
   }
 
@@ -2613,7 +2649,7 @@ void owl_command_no(void)
   }
   cmd = owl_message_get_attribute_value(m, "nocommand");
   if(!cmd) {
-    owl_function_error("No no command!");
+    owl_function_error("No 'no' command!");
     return;
   }
 

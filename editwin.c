@@ -329,18 +329,22 @@ void _owl_editwin_remove_bytes(owl_editwin *e, int n) /*noproto*/
 void _owl_editwin_insert_bytes(owl_editwin *e, int n) /*noproto*/
 {
   int i, z;
-  
+
   if ((e->bufflen + n) > (e->allocated - 5)) {
     _owl_editwin_addspace(e);
   }
 
+  z = _owl_editwin_get_index_from_xy(e);
+
+  if(z != e->bufflen) {
+    for (i = e->bufflen + n - 1; i > z; i--) {
+      e->buff[i] = e->buff[i - n];
+    }
+  }
+
   e->bufflen += n;
   e->buff[e->bufflen] = '\0';
-  
-  z = _owl_editwin_get_index_from_xy(e);
-  for (i = e->bufflen - 1; i > z; i--) {
-    e->buff[i] = e->buff[i - n];
-  }
+
 }
 
 
@@ -425,19 +429,13 @@ void owl_editwin_insert_char(owl_editwin *e, gunichar c)
   }
 
   /* shift all the other characters right */
-  if (z != e->bufflen) {
-    _owl_editwin_insert_bytes(e, len);
-  }
+  _owl_editwin_insert_bytes(e, len);
 
   /* insert the new character */
   for(i = 0; i < len; i++) {
     e->buff[z + i] = tmp[i];
   }
 
-  /* housekeeping */
-  e->bufflen += len;
-  e->buff[e->bufflen] = '\0';
-  
   /* advance the cursor */
   z += len;
   _owl_editwin_set_xy_by_index(e, z);

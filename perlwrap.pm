@@ -67,6 +67,11 @@ command line, and C<MESSAGE> is the zephyr body to send.
 
 Strips zephyr formatting from a string and returns the result
 
+=head2 zephyr_getsubs
+
+Returns the list of subscription triples <class,instance,recipient>,
+separated by newlines.
+
 =head2 queue_message MESSAGE
 
 Enqueue a message in the BarnOwl message list, logging it and
@@ -296,6 +301,26 @@ sub _new_variable {
     $func->($name, $args{default}, $args{summary}, $args{description});
 }
 
+=head2 quote STRING
+
+Return a version of STRING fully quoted to survive processing by
+BarnOwl's command parser.
+
+=cut
+
+sub quote {
+    my $str = shift;
+    return "''" if $str eq '';
+    if ($str !~ /['" ]/) {
+        return "$str";
+    }
+    if ($str !~ /'/) {
+        return "'$str'";
+    }
+    $str =~ s/"/"'"'"/g;
+    return '"' . $str . '"';
+}
+
 #####################################################################
 #####################################################################
 
@@ -355,6 +380,12 @@ sub zsig        { return undef; }
 sub zwriteline  { return undef; }
 sub login_host  { return undef; }
 sub login_tty   { return undef; }
+
+# This is for back-compat with old messages that set these properties
+# New protocol implementations are encourages to user override these
+# methods.
+sub replycmd         { return shift->{replycmd}};
+sub replysendercmd   { return shift->{replysendercmd}};
 
 sub pretty_sender    { return shift->sender; }
 sub pretty_recipient { return shift->recipient; }
@@ -462,6 +493,9 @@ sub is_private {
   return 1;
 }
 
+sub replycmd {return 'loopwrite';}
+sub replysendercmd {return 'loopwrite';}
+
 #####################################################################
 #####################################################################
 
@@ -474,12 +508,36 @@ sub is_private {
     return !(shift->is_loginout);
 }
 
+sub replycmd {
+    my $self = shift;
+    if ($self->is_incoming) {
+        return "aimwrite " . BarnOwl::quote($self->sender);
+    } else {
+        return "aimwrite " . BarnOwl::quote($self->recipient);
+    }
+}
+
+sub replysendercmd {
+    return shift->replycmd;
+}
+
 #####################################################################
 #####################################################################
 
 package BarnOwl::Message::Zephyr;
 
+use constant WEBZEPHYR_PRINCIPAL => "daemon.webzephyr";
+use constant WEBZEPHYR_CLASS     => "webzephyr";
+use constant WEBZEPHYR_OPCODE    => "webzephyr";
+
 use base qw( BarnOwl::Message );
+
+sub strip_realm {
+    my $sender = shift;
+    my $realm = BarnOwl::zephyr_getrealm();
+    $sender =~ s/\@$realm$//;
+    return $sender;
+}
 
 sub login_type {
     return (shift->zsig eq "") ? "(PSEUDO)" : "";
@@ -536,18 +594,12 @@ sub is_mail {
 
 sub pretty_sender {
     my ($m) = @_;
-    my $sender = $m->sender;
-    my $realm = BarnOwl::zephyr_getrealm();
-    $sender =~ s/\@$realm$//;
-    return $sender;
+    return strip_realm($m->sender);
 }
 
 sub pretty_recipient {
     my ($m) = @_;
-    my $recip = $m->recipient;
-    my $realm = BarnOwl::zephyr_getrealm();
-    $recip =~ s/\@$realm$//;
-    return $recip;
+    return strip_realm($m->recipient);
 }
 
 # These are arguably zephyr-specific
@@ -562,9 +614,85 @@ sub auth        { return shift->{"auth"}; }
 sub fields      { return shift->{"fields"}; }
 sub zsig        { return shift->{"zsig"}; }
 
+sub zephyr_cc {
+    my $self = shift;
+    return $1 if $self->body =~ /^\s*cc:\s+([^\n]+)/i;
+    return undef;
+}
+
+sub replycmd {
+    my $self = shift;
+    my $sender = shift;
+    $sender = 0 unless defined $sender;
+    my ($class, $instance, $to, $cc);
+    if($self->is_outgoing) {
+        return $self->{zwriteline};
+    }
+
+    if($sender && $self->opcode eq WEBZEPHYR_OPCODE) {
+        $class = WEBZEPHYR_CLASS;
+        $instance = $self->sender;
+        $to = WEBZEPHYR_PRINCIPAL;
+    } elsif($self->class eq WEBZEPHYR_CLASS
+            && $self->is_loginout) {
+        $class = WEBZEPHYR_CLASS;
+        $instance = $self->instance;
+        $to = WEBZEPHYR_PRINCIPAL;
+    } elsif($self->is_loginout || $sender) {
+        $class = 'MESSAGE';
+        $instance = 'PERSONAL';
+        $to = $self->sender;
+    } else {
+        $class = $self->class;
+        $instance = $self->instance;
+        $to = $self->recipient;
+        $cc = $self->zephyr_cc();
+        if($to eq '*' || $to eq '') {
+            $to = '';
+        } elsif($to !~ /^@/) {
+            $to = $self->sender;
+        }
+    }
+
+    my $cmd;
+    if(lc $self->opcode eq 'crypt') {
+        $cmd = 'zcrypt';
+    } else {
+        $cmd = 'zwrite';
+    }
+
+    if (lc $class ne 'message') {
+        $cmd .= " -c " . BarnOwl::quote($self->class);
+    }
+    if (lc $instance ne 'personal') {
+        $cmd .= " -i " . BarnOwl::quote($self->instance);
+    }
+    if ($to ne '') {
+        $to = strip_realm($to);
+        if (defined $cc) {
+            my @cc = grep /^[^-]/, ($to, split /\s+/, $cc);
+            my %cc = map {$_ => 1} @cc;
+            delete $cc{strip_realm(BarnOwl::zephyr_getsender())};
+            @cc = keys %cc;
+            $cmd .= " -C " . join(" ", @cc);
+        } else {
+            if(BarnOwl::getvar('smartstrip') eq 'on') {
+                $to = BarnOwl::zephyr_smartstrip_user($to);
+            }
+            $cmd .= " $to";
+        }
+    }
+    return $cmd;
+}
+
+sub replysendercmd {
+    my $self = shift;
+    return $self->replycmd(1);
+}
+
 #####################################################################
 #####################################################################
-################################################################################
+#####################################################################
 
 package BarnOwl::Hook;
 
@@ -597,7 +725,15 @@ arguments.
 sub run {
     my $self = shift;
     my @args = @_;
-    return map {$_->(@args)} @$self;
+    return map {$self->_run($_,@args)} @$self;
+}
+
+sub _run {
+    my $self = shift;
+    my $fn = shift;
+    my @args = @_;
+    no strict 'refs';
+    return $fn->(@args);
 }
 
 =head2 add SUBREF
@@ -609,7 +745,8 @@ Registers a given subroutine with this hook
 sub add {
     my $self = shift;
     my $func = shift;
-    die("Not a coderef!") unless ref($func) eq 'CODE';
+    die("Not a coderef!") unless ref($func) eq 'CODE' || !ref($func);
+    return if grep {$_ eq $func} @$self;
     push @$self, $func;
 }
 
@@ -679,14 +816,15 @@ displayed in a popup window, with zephyr formatting parsed.
 use Exporter;
 
 our @EXPORT_OK = qw($startup $shutdown
-                    $receiveMessage $mainLoop
-                    $getBuddyList);
+                    $receiveMessage $newMessage
+                    $mainLoop $getBuddyList);
 
 our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 
 our $startup = BarnOwl::Hook->new;
 our $shutdown = BarnOwl::Hook->new;
 our $receiveMessage = BarnOwl::Hook->new;
+our $newMessage = BarnOwl::Hook->new;
 our $mainLoop = BarnOwl::Hook->new;
 our $getBuddyList = BarnOwl::Hook->new;
 
@@ -712,7 +850,10 @@ sub _load_owlconf {
         undef $@;
         package main;
         do $BarnOwl::configfile;
-        die $@ if $@;
+        if($@) {
+            BarnOwl::error("In startup: $@\n");
+            return;
+        }
         package BarnOwl;
         if(*BarnOwl::format_msg{CODE}) {
             # if the config defines a legacy formatting function, add 'perl' as a style 
@@ -760,6 +901,14 @@ sub _receive_msg {
     $receiveMessage->run($m);
     
     BarnOwl::receive_msg($m) if *BarnOwl::receive_msg{CODE};
+}
+
+sub _new_msg {
+    my $m = shift;
+
+    $newMessage->run($m);
+    
+    BarnOwl::new_msg($m) if *BarnOwl::new_msg{CODE};
 }
 
 sub _mainloop_hook {

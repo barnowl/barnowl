@@ -41,7 +41,6 @@ void owl_message_init(owl_message *m)
   m->id=owl_global_get_nextmsgid(&g);
   owl_message_set_direction_none(m);
   m->delete=0;
-  m->zwriteline=NULL;
 
   owl_message_set_hostname(m, "");
   owl_list_create(&(m->attributes));
@@ -484,15 +483,14 @@ void owl_message_unmark_delete(owl_message *m)
 
 char *owl_message_get_zwriteline(owl_message *m)
 {
-  if(!m->zwriteline)
-    return "";
-  return(m->zwriteline);
+  char *z = owl_message_get_attribute_value(m, "zwriteline");
+  if (!z) return "";
+  return z;
 }
 
 void owl_message_set_zwriteline(owl_message *m, char *line)
 {
-  if(m->zwriteline) owl_free(m->zwriteline);
-  m->zwriteline=owl_strdup(line);
+  owl_message_set_attribute(m, "zwriteline", line);
 }
 
 int owl_message_is_delete(owl_message *m)
@@ -614,30 +612,6 @@ int owl_message_is_ping(owl_message *m)
     } else {
       return(0);
     }
-  }
-  return(0);
-}
-
-int owl_message_is_burningears(owl_message *m)
-{
-  /* we should add a global to cache the short zsender */
-  char sender[LINE], *ptr;
-
-  /* if the message is from us or to us, it doesn't count */
-  if (owl_message_is_from_me(m) || owl_message_is_private(m)) return(0);
-
-  if (owl_message_is_type_zephyr(m)) {
-    strcpy(sender, owl_zephyr_get_sender());
-    ptr=strchr(sender, '@');
-    if (ptr) *ptr='\0';
-  } else if (owl_message_is_type_aim(m)) {
-    strcpy(sender, owl_global_get_aim_screenname(&g));
-  } else {
-    return(0);
-  }
-
-  if (stristr(owl_message_get_body(m), sender)) {
-    return(1);
   }
   return(0);
 }
@@ -883,8 +857,6 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
     owl_message_set_attribute(m, "isauto", "");
   }
 
-  m->zwriteline=owl_strdup("");
-
   /* save the hostname */
   owl_function_debugmsg("About to do gethostbyaddr");
   hent=gethostbyaddr((char *) &(n->z_uid.zuid_addr), sizeof(n->z_uid.zuid_addr), AF_INET);
@@ -965,8 +937,6 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, char *user,
     owl_message_set_realm(m, owl_zephyr_get_realm());
   }
 
-  m->zwriteline=owl_strdup("");
-
   owl_message_set_body(m, "<uninitialized>");
 
   /* save the hostname */
@@ -998,7 +968,7 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   }
   owl_message_set_opcode(m, owl_zwrite_get_opcode(&z));
   owl_message_set_realm(m, owl_zwrite_get_realm(&z)); /* also a hack, but not here */
-  m->zwriteline=owl_strdup(line);
+  owl_message_set_zwriteline(m, line);
   owl_message_set_body(m, body);
   owl_message_set_zsig(m, zsig);
   
@@ -1039,7 +1009,6 @@ void owl_message_free(owl_message *m)
   }
 #endif
   if (m->timestr) owl_free(m->timestr);
-  if (m->zwriteline) owl_free(m->zwriteline);
 
   /* free all the attributes */
   j=owl_list_get_size(&(m->attributes));

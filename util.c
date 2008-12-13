@@ -497,7 +497,7 @@ int owl_util_string_to_color(char *color)
   if (c >= -1 && c < COLORS) {
     return(c);
   }
-  return(-1);
+  return(OWL_COLOR_INVALID);
 }
 
 /* Return a string name of the given owl color */
