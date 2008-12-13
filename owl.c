@@ -20,6 +20,7 @@
 #include <locale.h>
 #include "owl.h"
 
+
 #if OWL_STDERR_REDIR
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
@@ -231,7 +232,7 @@ int main(int argc, char **argv, char **env)
   /* Initialize perl */
   owl_function_debugmsg("startup: processing config file");
   owl_context_set_readconfig(owl_global_get_context(&g));
-  perlerr=owl_perlconfig_initperl(configfile);
+  perlerr=owl_perlconfig_initperl(configfile, &argc, &argv, &env);
   if (perlerr) {
     endwin();
     owl_function_error("Internal perl error: %s\n", perlerr);
