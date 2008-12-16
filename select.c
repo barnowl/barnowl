@@ -10,7 +10,7 @@ int _owl_select_timer_eq(owl_timer *t1, owl_timer *t2) {
   return t1 == t2;
 }
 
-owl_timer *owl_select_add_timer(int after, int interval, void (*cb)(struct _owl_timer *, void *), void *data)
+owl_timer *owl_select_add_timer(int after, int interval, void (*cb)(owl_timer *, void *), void (*destroy)(owl_timer*), void *data)
 {
   owl_timer *t = owl_malloc(sizeof(owl_timer));
   GList **timers = owl_global_get_timerlist(&g);
@@ -18,6 +18,7 @@ owl_timer *owl_select_add_timer(int after, int interval, void (*cb)(struct _owl_
   t->time = time(NULL) + after;
   t->interval = interval;
   t->callback = cb;
+  t->destroy = destroy;
   t->data = data;
 
   *timers = g_list_insert_sorted(*timers, t,
@@ -30,6 +31,9 @@ void owl_select_remove_timer(owl_timer *t)
   GList **timers = owl_global_get_timerlist(&g);
   if (t && g_list_find(*timers, t)) {
     *timers = g_list_remove(*timers, t);
+    if(t->destroy) {
+      t->destroy(t);
+    }
     owl_free(t);
   }
 }
@@ -41,14 +45,10 @@ void owl_select_process_timers(struct timeval *timeout)
 
   while(*timers) {
     owl_timer *t = (*timers)->data;
-    void (*cb)(struct _owl_timer *, void *);
-    void *data;
+    int remove = 0;
 
     if(t->time > now)
       break;
-
-    cb = t->callback;
-    data = t->data;
 
     /* Reschedule if appropriate */
     if(t->interval > 0) {
@@ -57,12 +57,14 @@ void owl_select_process_timers(struct timeval *timeout)
       *timers = g_list_insert_sorted(*timers, t,
                                      (GCompareFunc)_owl_select_timer_cmp);
     } else {
-      owl_select_remove_timer(t);
-      t = NULL;
+      remove = 1;
     }
 
     /* Do the callback */
-    cb(t, data);
+    t->callback(t, t->data);
+    if(remove) {
+      owl_select_remove_timer(t);
+    }
   }
 
   if(*timers) {

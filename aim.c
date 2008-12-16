@@ -200,7 +200,7 @@ int owl_aim_login(char *screenname, char *password)
   aim_request_login(sess, conn, screenname);
   owl_function_debugmsg("owl_aim_login: connecting");
 
-  g.aim_nop_timer = owl_select_add_timer(30, 30, owl_aim_send_nop, NULL);
+  g.aim_nop_timer = owl_select_add_timer(30, 30, owl_aim_send_nop, NULL, NULL);
 
   return(0);
 }
@@ -226,7 +226,7 @@ void owl_aim_successful_login(char *screenname)
   /* start the ingorelogin timer */
   owl_global_set_ignore_aimlogin(&g);
   owl_select_add_timer(owl_global_get_aim_ignorelogin_timer(&g),
-                       0, owl_aim_unset_ignorelogin, NULL);
+                       0, owl_aim_unset_ignorelogin, NULL, NULL);
 
   /* aim_ssi_setpresence(owl_global_get_aimsess(&g), 0x00000400); */
   /* aim_bos_setidle(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), 5000); */

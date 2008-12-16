@@ -507,6 +507,7 @@ typedef struct _owl_timer {
   time_t time;
   int interval;
   void (*callback)(struct _owl_timer *, void *);
+  void (*destroy)(struct _owl_timer *);
   void *data;
 } owl_timer;
 

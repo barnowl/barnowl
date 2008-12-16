@@ -394,10 +394,10 @@ int main(int argc, char **argv, char **env)
   nexttime=time(NULL);
 
 
-  owl_select_add_timer(180, 180, owl_zephyr_buddycheck_timer, NULL);
+  owl_select_add_timer(180, 180, owl_zephyr_buddycheck_timer, NULL, NULL);
 
   /* If we ever deprecate the mainloop hook, remove this. */
-  owl_select_add_timer(0, 1, owl_perlconfig_mainloop, NULL);
+  owl_select_add_timer(0, 1, owl_perlconfig_mainloop, NULL, NULL);
 
 
 #ifdef HAVE_LIBZEPHYR
