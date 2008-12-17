@@ -132,8 +132,8 @@ void owl_select_remove_dispatch(int fd)
     owl_dispatch *d;
     d = (owl_dispatch*)owl_list_get_element(dl, elt);
     owl_list_remove_element(dl, elt);
-    if (d->pfunc) {
-      owl_perlconfig_dispatch_free(d);
+    if (d->destroy) {
+      d->destroy(d);
     }
     owl_free(d);
   }
@@ -151,7 +151,7 @@ int owl_select_add_perl_dispatch(int fd, SV *cb)
   elt = owl_select_find_dispatch(fd);
   if (elt != -1) {
     d = (owl_dispatch*)owl_list_get_element(owl_global_get_dispatchlist(&g), elt);
-    if (d->pfunc == NULL) {
+    if (d->cfunc != owl_perlconfig_dispatch) {
       /* don't mess with non-perl dispatch functions from here. */
       return 1;
     }
@@ -159,8 +159,9 @@ int owl_select_add_perl_dispatch(int fd, SV *cb)
 
   d = malloc(sizeof(owl_dispatch));
   d->fd = fd;
-  d->cfunc = NULL;
-  d->pfunc = cb;
+  d->cfunc = owl_perlconfig_dispatch;
+  d->destroy = owl_perlconfig_dispatch_free;
+  d->data = cb;
   owl_select_add_dispatch(d);
   return 0;
 }
@@ -173,7 +174,7 @@ int owl_select_remove_perl_dispatch(int fd)
   elt = owl_select_find_dispatch(fd);
   if (elt != -1) {
     d = (owl_dispatch*)owl_list_get_element(owl_global_get_dispatchlist(&g), elt);
-    if (d->pfunc != NULL) {
+    if (d->cfunc == owl_perlconfig_dispatch) {
       owl_select_remove_dispatch(fd);
       return 0;
     }
@@ -215,10 +216,7 @@ void owl_select_dispatch(fd_set *fds, int max_fd)
      * functions we dispatch to. */
     if (d != NULL && FD_ISSET(d->fd, fds)) {
       if (d->cfunc != NULL) {
-        (d->cfunc)();
-      }
-      else if (d->pfunc != NULL) {
-        owl_perlconfig_do_dispatch(d);
+        d->cfunc(d);
       }
     }
   }

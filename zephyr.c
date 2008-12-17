@@ -1202,7 +1202,7 @@ int owl_zephyr_get_anyone_list(owl_list *in, char *filename)
 }
 
 #ifdef HAVE_LIBZEPHYR
-void owl_zephyr_process_events() {
+void owl_zephyr_process_events(owl_dispatch *d) {
   int zpendcount=0;
   ZNotice_t notice;
   struct sockaddr_in from;
@@ -1234,7 +1234,7 @@ void owl_zephyr_process_events() {
 }
 
 #else
-void owl_zephyr_process_events() {
+void owl_zephyr_process_events(owl_dispatch *d) {
   
 }
 #endif

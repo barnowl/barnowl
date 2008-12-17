@@ -189,7 +189,7 @@ int main(int argc, char **argv, char **env)
     owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
     d->fd = STDIN;
     d->cfunc = &owl_process_input;
-    d->pfunc = NULL;
+    d->destroy = NULL;
     owl_select_add_dispatch(d);
   }
   
@@ -200,7 +200,7 @@ int main(int argc, char **argv, char **env)
     owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
     d->fd = ZGetFD();
     d->cfunc = &owl_zephyr_process_events;
-    d->pfunc = NULL;
+    d->destroy = NULL;
     owl_select_add_dispatch(d);
     owl_global_set_havezephyr(&g);
   }
@@ -400,11 +400,6 @@ int main(int argc, char **argv, char **env)
   owl_select_add_timer(0, 1, owl_perlconfig_mainloop, NULL, NULL);
 
 
-#ifdef HAVE_LIBZEPHYR
-  /* Check for any zephyrs that have come in while we've done init. */
-  owl_zephyr_process_events();
-#endif
-  
   owl_function_debugmsg("startup: entering main loop");
   /* main loop */
   while (1) {
@@ -608,7 +603,7 @@ int owl_process_message(owl_message *m) {
   return 1;
 }
 
-void owl_process_input()
+void owl_process_input(owl_dispatch *d)
 {
   int ret;
   owl_input j;

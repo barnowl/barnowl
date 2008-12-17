@@ -525,9 +525,10 @@ typedef struct _owl_obarray {
 } owl_obarray;
 
 typedef struct _owl_dispatch {
-  int fd;           /* FD to watch for dispatch. */
-  void (*cfunc)();  /* C function to dispatch to. */
-  SV *pfunc;        /* Perl function to dispatch to. */
+  int fd;                                 /* FD to watch for dispatch. */
+  void (*cfunc)(struct _owl_dispatch*);   /* C function to dispatch to. */
+  void (*destroy)(struct _owl_dispatch*); /* Destructor */
+  void *data;
 } owl_dispatch;
 
 typedef struct _owl_global {
