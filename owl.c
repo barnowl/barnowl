@@ -53,10 +53,7 @@ int main(int argc, char **argv, char **env)
   char *dir;
   struct termios tio;
   owl_message *m;
-#if OWL_STDERR_REDIR
-  int newstderr;
-#endif
-  
+
   if (!GLIB_CHECK_VERSION (2, 12, 0))
     g_error ("GLib version 2.12.0 or above is needed.");
 
@@ -209,11 +206,15 @@ int main(int argc, char **argv, char **env)
 
 #if OWL_STDERR_REDIR
   /* Do this only after we've started curses up... */
-  owl_function_debugmsg("startup: doing stderr redirection");
-  newstderr = stderr_replace();
-  owl_muxevents_add(owl_global_get_muxevents(&g), newstderr, OWL_MUX_READ,
-		    stderr_redirect_handler, NULL);
-#endif   
+  {
+    owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
+    owl_function_debugmsg("startup: doing stderr redirection");
+    d->fd = stderr_replace();
+    d->cfunc = stderr_redirect_handler;
+    d->destroy = NULL;
+    owl_select_add_dispatch(d);
+  }
+#endif
 
   /* create the owl directory, in case it does not exist */
   owl_function_debugmsg("startup: creating owl directory, if not present");
@@ -439,9 +440,6 @@ int main(int argc, char **argv, char **env)
       if(owl_process_message(m))
         newmsgs = 1;
     }
-
-    /* dispatch any muxevents */
-    owl_muxevents_dispatch(owl_global_get_muxevents(&g), 0);
 
     /* follow the last message if we're supposed to */
     if (newmsgs && followlast) {
@@ -748,11 +746,11 @@ int stderr_replace(void)
 }
 
 /* Sends stderr (read from rfd) messages to the error console */
-void stderr_redirect_handler(int handle, int rfd, int eventmask, void *data) 
+void stderr_redirect_handler(owl_dispatch *d)
 {
   int navail, bread;
   char *buf;
-  /*owl_function_debugmsg("stderr_redirect: called with rfd=%d\n", rfd);*/
+  int rfd = d->fd;
   if (rfd<0) return;
   if (-1 == ioctl(rfd, FIONREAD, (void*)&navail)) {
     return;
