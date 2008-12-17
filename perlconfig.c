@@ -356,6 +356,8 @@ char *owl_perlconfig_execute(char *line)
 
   if (!owl_global_have_config(&g)) return NULL;
 
+  ENTER;
+  SAVETMPS;
   /* execute the subroutine */
   response = eval_pv(line, FALSE);
 
@@ -369,6 +371,8 @@ char *owl_perlconfig_execute(char *line)
     out = owl_sprintf("%s\n", preout);
   else
     out = owl_strdup(preout);
+  FREETMPS;
+  LEAVE;
 
   return(out);
 }
