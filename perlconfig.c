@@ -290,7 +290,6 @@ char *owl_perlconfig_initperl(char * file)
 
   owl_global_set_no_have_config(&g);
 
-
   ret=perl_parse(p, owl_perl_xs_init, 2, args, NULL);
   if (ret || SvTRUE(ERRSV)) {
     err=owl_strdup(SvPV_nolen(ERRSV));
@@ -308,25 +307,25 @@ char *owl_perlconfig_initperl(char * file)
   owl_global_set_have_config(&g);
 
   /* create legacy variables */
-  perl_get_sv("BarnOwl::id", TRUE);
-  perl_get_sv("BarnOwl::class", TRUE);
-  perl_get_sv("BarnOwl::instance", TRUE);
-  perl_get_sv("BarnOwl::recipient", TRUE);
-  perl_get_sv("BarnOwl::sender", TRUE);
-  perl_get_sv("BarnOwl::realm", TRUE);
-  perl_get_sv("BarnOwl::opcode", TRUE);
-  perl_get_sv("BarnOwl::zsig", TRUE);
-  perl_get_sv("BarnOwl::msg", TRUE);
-  perl_get_sv("BarnOwl::time", TRUE);
-  perl_get_sv("BarnOwl::host", TRUE);
-  perl_get_av("BarnOwl::fields", TRUE);
+  get_sv("BarnOwl::id", TRUE);
+  get_sv("BarnOwl::class", TRUE);
+  get_sv("BarnOwl::instance", TRUE);
+  get_sv("BarnOwl::recipient", TRUE);
+  get_sv("BarnOwl::sender", TRUE);
+  get_sv("BarnOwl::realm", TRUE);
+  get_sv("BarnOwl::opcode", TRUE);
+  get_sv("BarnOwl::zsig", TRUE);
+  get_sv("BarnOwl::msg", TRUE);
+  get_sv("BarnOwl::time", TRUE);
+  get_sv("BarnOwl::host", TRUE);
+  get_av("BarnOwl::fields", TRUE);
 
   if(file) {
     SV * cfg = get_sv("BarnOwl::configfile", TRUE);
     sv_setpv(cfg, file);
   }
 
-  perl_eval_pv(owl_perlwrap_codebuff, FALSE);
+  eval_pv(owl_perlwrap_codebuff, FALSE);
 
   if (SvTRUE(ERRSV)) {
     err=owl_strdup(SvPV_nolen(ERRSV));
@@ -344,7 +343,7 @@ char *owl_perlconfig_initperl(char * file)
 
 /* returns whether or not a function exists */
 int owl_perlconfig_is_function(char *fn) {
-  if (perl_get_cv(fn, FALSE)) return(1);
+  if (get_cv(fn, FALSE)) return(1);
   else return(0);
 }
 
@@ -358,7 +357,7 @@ char *owl_perlconfig_execute(char *line)
   if (!owl_global_have_config(&g)) return NULL;
 
   /* execute the subroutine */
-  response = perl_eval_pv(line, FALSE);
+  response = eval_pv(line, FALSE);
 
   if (SvTRUE(ERRSV)) {
     owl_function_error("Perl Error: '%s'", SvPV_nolen(ERRSV));
