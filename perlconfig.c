@@ -348,27 +348,6 @@ int owl_perlconfig_is_function(char *fn) {
   else return(0);
 }
 
-/* returns 0 on success */
-int owl_perlconfig_get_hashkeys(char *hashname, owl_list *l)
-{
-  HV *hv;
-  HE *he;
-  char *key;
-  I32 i;
-
-  if (owl_list_create(l)) return(-1);
-  hv = get_hv(hashname, FALSE);
-  if (!hv) return(-1);
-  i = hv_iterinit(hv);
-  while ((he = hv_iternext(hv))) {
-    key = hv_iterkey(he, &i);
-    if (key) {
-      owl_list_append_element(l, owl_strdup(key));
-    }
-  }
-  return(0);
-}
-
 /* caller is responsible for freeing returned string */
 char *owl_perlconfig_execute(char *line)
 {
