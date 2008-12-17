@@ -446,6 +446,7 @@ void owl_perlconfig_cmd_free(owl_cmd *cmd)
 void owl_perlconfig_dispatch_free(owl_dispatch *d)
 {
   SvREFCNT_dec(d->data);
+  owl_free(d);
 }
 
 void owl_perlconfig_edit_callback(owl_editwin *e)

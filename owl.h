@@ -526,6 +526,7 @@ typedef struct _owl_obarray {
 
 typedef struct _owl_dispatch {
   int fd;                                 /* FD to watch for dispatch. */
+  int needs_gc;
   void (*cfunc)(struct _owl_dispatch*);   /* C function to dispatch to. */
   void (*destroy)(struct _owl_dispatch*); /* Destructor */
   void *data;

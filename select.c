@@ -2,6 +2,8 @@
 
 static const char fileIdent[] = "$Id: select.c 894 2008-01-17 07:13:44Z asedeno $";
 
+static int dispatch_active = 0;
+
 int _owl_select_timer_cmp(owl_timer *t1, owl_timer *t2) {
   return t1->time - t2->time;
 }
@@ -95,11 +97,26 @@ int owl_select_find_dispatch(int fd)
   return -1;
 }
 
+void owl_select_remove_dispatch_at(int elt) /* noproto */
+{
+  owl_list *dl;
+  owl_dispatch *d;
+
+  dl = owl_global_get_dispatchlist(&g);
+  d = (owl_dispatch*)owl_list_get_element(dl, elt);
+  owl_list_remove_element(dl, elt);
+  if (d->destroy) {
+    d->destroy(d);
+  }
+}
+
 /* Adds a new owl_dispatch to the list, replacing existing ones if needed. */
 void owl_select_add_dispatch(owl_dispatch *d)
 {
   int elt;
   owl_list *dl;
+
+  d->needs_gc = 0;
 
   elt = owl_select_find_dispatch(d->fd);
   dl = owl_global_get_dispatchlist(&g);
@@ -110,13 +127,10 @@ void owl_select_add_dispatch(owl_dispatch *d)
     /* Ignore if we're adding the same dispatch again.  Otherwise
        replace the old dispatch. */
     if (d_old != d) {
-      owl_list_replace_element(dl, elt, d);
-      owl_free(d_old);
+      owl_select_remove_dispatch_at(elt);
     }
   }
-  else {
-    owl_list_append_element(dl, d);
-  }
+  owl_list_append_element(dl, d);
 }
 
 /* Removes an owl_dispatch to the list, based on it's file descriptor. */
@@ -124,18 +138,18 @@ void owl_select_remove_dispatch(int fd)
 {
   int elt;
   owl_list *dl;
+  owl_dispatch *d;
 
   elt = owl_select_find_dispatch(fd);
-  dl = owl_global_get_dispatchlist(&g);
-  
-  if (elt != -1) {
-    owl_dispatch *d;
+  if(elt == -1) {
+    return;
+  } else if(dispatch_active) {
+    /* Defer the removal until dispatch is done walking the list */
+    dl = owl_global_get_dispatchlist(&g);
     d = (owl_dispatch*)owl_list_get_element(dl, elt);
-    owl_list_remove_element(dl, elt);
-    if (d->destroy) {
-      d->destroy(d);
-    }
-    owl_free(d);
+    d->needs_gc = 1;
+  } else {
+    owl_select_remove_dispatch_at(elt);
   }
 }
 
@@ -175,7 +189,7 @@ int owl_select_remove_perl_dispatch(int fd)
   if (elt != -1) {
     d = (owl_dispatch*)owl_list_get_element(owl_global_get_dispatchlist(&g), elt);
     if (d->cfunc == owl_perlconfig_dispatch) {
-      owl_select_remove_dispatch(fd);
+      owl_select_remove_dispatch_at(elt);
       return 0;
     }
   }
@@ -202,6 +216,24 @@ int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
   return max_fd + 1;
 }
 
+void owl_select_gc()
+{
+  int i;
+  owl_list *dl;
+
+  dl = owl_global_get_dispatchlist(&g);
+  /*
+   * Count down so we aren't set off by removing items from the list
+   * during the iteration.
+   */
+  for(i = owl_list_get_size(dl) - 1; i >= 0; i--) {
+    owl_dispatch *d = owl_list_get_element(dl, i);
+    if(d->needs_gc) {
+      owl_select_remove_dispatch_at(i);
+    }
+  }
+}
+
 void owl_select_dispatch(fd_set *fds, int max_fd)
 {
   int i, len;
@@ -210,16 +242,22 @@ void owl_select_dispatch(fd_set *fds, int max_fd)
 
   dl = owl_global_get_dispatchlist(&g);
   len = owl_select_dispatch_count();
+
+  dispatch_active = 1;
+
   for(i = 0; i < len; i++) {
     d = (owl_dispatch*)owl_list_get_element(dl, i);
     /* While d shouldn't normally be null, the list may be altered by
      * functions we dispatch to. */
-    if (d != NULL && FD_ISSET(d->fd, fds)) {
+    if (d != NULL && !d->needs_gc && FD_ISSET(d->fd, fds)) {
       if (d->cfunc != NULL) {
         d->cfunc(d);
       }
     }
   }
+
+  dispatch_active = 0;
+  owl_select_gc();
 }
 
 int owl_select_aim_hack(fd_set *rfds, fd_set *wfds)
