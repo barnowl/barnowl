@@ -379,14 +379,6 @@ typedef struct _owl_popwin {
   void (*handler) (int ch);
 } owl_popwin;
 
-typedef struct _owl_popexec {
-  int refcount;
-  owl_viewwin *vwin;
-  int winactive;
-  int pid;			/* or 0 if it has terminated */
-  int rfd;  
-} owl_popexec;
-
 typedef struct _owl_messagelist {
   owl_list list;
 } owl_messagelist;
@@ -531,6 +523,14 @@ typedef struct _owl_dispatch {
   void (*destroy)(struct _owl_dispatch*); /* Destructor */
   void *data;
 } owl_dispatch;
+
+typedef struct _owl_popexec {
+  int refcount;
+  owl_viewwin *vwin;
+  int winactive;
+  int pid;			/* or 0 if it has terminated */
+  owl_dispatch dispatch;
+} owl_popexec;
 
 typedef struct _owl_global {
   owl_mainwin mw;
