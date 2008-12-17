@@ -516,3 +516,40 @@ void owl_perlconfig_do_dispatch(owl_dispatch *d)
   FREETMPS;
   LEAVE;
 }
+
+void owl_perlconfig_perl_timer(owl_timer *t, void *data)
+{
+  SV *obj = data;
+
+  if(!SvROK(obj)) {
+    return;
+  }
+
+  dSP;
+  ENTER;
+  SAVETMPS;
+
+  PUSHMARK(SP);
+  XPUSHs(obj);
+  PUTBACK;
+
+  call_method("do_callback", G_DISCARD|G_KEEPERR|G_EVAL);
+
+  SPAGAIN;
+
+  if (SvTRUE(ERRSV)) {
+    owl_function_error("Error in calback: '%s'", SvPV_nolen(ERRSV));
+    sv_setsv (ERRSV, &PL_sv_undef);
+  }
+
+  PUTBACK;
+  FREETMPS;
+  LEAVE;
+}
+
+void owl_perlconfig_perl_timer_destroy(owl_timer *t)
+{
+  if(SvOK((SV*)t->data)) {
+    SvREFCNT_dec((SV*)t->data);
+  }
+}

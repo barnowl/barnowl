@@ -398,3 +398,33 @@ new_variable_bool(name, ival, summ, desc)
 				      summ,
 				      desc,
 				      ival);
+
+IV
+add_timer(after, interval, cb)
+	int after
+	int interval
+	SV *cb
+	PREINIT:
+		SV *ref;
+		owl_timer *t;
+	CODE:
+		ref = sv_rvweaken(newSVsv(cb));
+		t = owl_select_add_timer(after,
+					 interval,
+					 owl_perlconfig_perl_timer,
+					 owl_perlconfig_perl_timer_destroy,
+					 ref);
+	owl_function_debugmsg("Created timer %p", t);
+	RETVAL = (IV)t;
+	OUTPUT:
+		RETVAL
+
+void
+remove_timer(timer)
+	IV timer
+	PREINIT:
+		owl_timer *t;
+	CODE:
+		t = (owl_timer*)timer;
+		owl_function_debugmsg("Freeing timer %p", t);
+				owl_select_remove_timer(t);
