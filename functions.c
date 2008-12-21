@@ -3436,7 +3436,8 @@ void owl_function_toggleoneline()
 void owl_function_error(char *fmt, ...)
 {
   va_list ap;
-  char buff[2048], buff2[2048];
+  char *buff, *buff2;
+  char *nl;
   char *date;
   time_t now;
 
@@ -3446,18 +3447,21 @@ void owl_function_error(char *fmt, ...)
 
   va_start(ap, fmt);
 
-  vsnprintf(buff, 2048, fmt, ap);
-  sprintf(buff2, "%s %s", date, buff);
+  buff = g_strdup_vprintf(fmt, ap);
+  buff2 = owl_sprintf("%s %s", date, buff);
   owl_function_debugmsg("ERROR: %s", buff);
-  if (owl_global_get_curs_msgwin(&g)) {
-    werase(owl_global_get_curs_msgwin(&g));
-    waddstr(owl_global_get_curs_msgwin(&g), buff);  
-    wnoutrefresh(owl_global_get_curs_msgwin(&g));
-    owl_global_set_needrefresh(&g);
+  nl = strchr(buff, '\n');
+  if(nl && *(nl + 1)) {
+    /* Multiline error */
+    owl_function_adminmsg("ERROR", buff);
+  } else {
+    owl_function_makemsg("%s", buff2);
   }
   owl_errqueue_append_err(owl_global_get_errqueue(&g), buff2);
   va_end(ap);
   owl_free(date);
+  owl_free(buff);
+  owl_free(buff2);
 }
 
 void owl_function_showerrs()
