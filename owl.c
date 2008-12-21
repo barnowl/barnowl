@@ -749,22 +749,22 @@ int stderr_replace(void)
 void stderr_redirect_handler(owl_dispatch *d)
 {
   int navail, bread;
-  char *buf;
+  char buf[4096];
   int rfd = d->fd;
   if (rfd<0) return;
   if (-1 == ioctl(rfd, FIONREAD, (void*)&navail)) {
     return;
   }
   /*owl_function_debugmsg("stderr_redirect: navail = %d\n", navail);*/
-  if (navail<=0) return;
-  if (navail>256) { navail = 256; }
-  buf = owl_malloc(navail+1);
+  if (navail <= 0) return;
+  if (navail > sizeof(buf)-1) {
+    navail = sizeof(buf)-1;
+  }
   bread = read(rfd, buf, navail);
   if (buf[navail-1] != '\0') {
     buf[navail] = '\0';
   }
-  owl_function_error("Err: %s", buf);
-  owl_free(buf);
+  owl_function_error("[stderr]\n%s", buf);
 }
 
 #endif /* OWL_STDERR_REDIR */
