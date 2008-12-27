@@ -2279,24 +2279,32 @@ void owl_function_show_zpunts(void)
 /* Create a filter for a class, instance if one doesn't exist.  If
  * instance is NULL then catch all messgaes in the class.  Returns the
  * name of the filter, which the caller must free.
+ * If 'related' is nonzero, encompass unclasses and .d classes as well.
  */
-char *owl_function_classinstfilt(const char *c, const char *i) 
+char *owl_function_classinstfilt(const char *c, const char *i, int related) 
 {
   owl_filter *f;
   char *argbuff, *filtname;
   char *tmpclass, *tmpinstance = NULL;
   char *class, *instance = NULL;
 
-  class = owl_util_baseclass(c);
-  if(i) {
-    instance = owl_util_baseclass(i);
+  if (related) {
+    class = owl_util_baseclass(c);
+    if (i) {
+      instance = owl_util_baseclass(i);
+    }
+  } else {
+    class = owl_strdup(c);
+    if (i) {
+      instance = owl_strdup(i);
+    }
   }
 
   /* name for the filter */
   if (!instance) {
-    filtname = owl_sprintf("class-%s", class);
+    filtname = owl_sprintf("%sclass-%s", related ? "related-" : "", class);
   } else {
-    filtname = owl_sprintf("class-%s-instance-%s", class, instance);
+    filtname = owl_sprintf("%sclass-%s-instance-%s", related ? "related-" : "", class, instance);
   }
   /* downcase it */
   {
@@ -2328,10 +2336,10 @@ char *owl_function_classinstfilt(const char *c, const char *i)
     owl_text_tr(tmpinstance, '"', '.');
   }
 
-  argbuff = owl_sprintf("class ^(un)*%s(\\.d)*$", tmpclass);
+  argbuff = owl_sprintf(related ? "class ^(un)*%s(\\.d)*$" : "class ^%s$", tmpclass);
   if (tmpinstance) {
     char *tmp = argbuff;
-    argbuff = owl_sprintf("%s and ( instance ^(un)*%s(\\.d)*$ )", tmp, tmpinstance);
+    argbuff = owl_sprintf(related ? "%s and ( instance ^(un)*%s(\\.d)*$ )" : "%s and instance ^%s$", tmp, tmpinstance);
     owl_free(tmp);
   }
   owl_free(tmpclass);
@@ -2507,7 +2515,8 @@ char *owl_function_smartfilter(int type)
   const owl_view *v;
   const owl_message *m;
   char *zperson, *filtname=NULL;
-  const char *argv[1];
+  const char *argv[2];
+  int related = owl_global_is_narrow_related(&g);
   
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
@@ -2552,24 +2561,23 @@ char *owl_function_smartfilter(int type)
 
     /* narrow class MESSAGE, instance foo, recip * messages to class, inst */
     if (!strcasecmp(owl_message_get_class(m), "message")) {
-      filtname=owl_function_classinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
+      filtname=owl_function_classinstfilt(owl_message_get_class(m), owl_message_get_instance(m), related);
       return(filtname);
     }
 
     /* otherwise narrow to the class */
     if (type==0) {
-      filtname=owl_function_classinstfilt(owl_message_get_class(m), NULL);
+      filtname=owl_function_classinstfilt(owl_message_get_class(m), NULL, related);
     } else if (type==1) {
-      filtname=owl_function_classinstfilt(owl_message_get_class(m), owl_message_get_instance(m));
+      filtname=owl_function_classinstfilt(owl_message_get_class(m), owl_message_get_instance(m), related);
     }
     return(filtname);
   }
 
   /* pass it off to perl */
-  if(type) {
-    argv[0] = "-i";
-  };
-  return owl_perlconfig_message_call_method(m, "smartfilter", type ? 1 : 0, argv);
+  argv[0] = type ? "1" : "0";
+  argv[1] = related ? "1" : "0";
+  return owl_perlconfig_message_call_method(m, "smartfilter", 2, argv);
 }
 
 void owl_function_smartzpunt(int type)

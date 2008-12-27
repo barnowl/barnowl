@@ -2254,7 +2254,7 @@ char *owl_command_viewclass(int argc, const char *const *argv, const char *buff)
     owl_function_makemsg("Wrong number of arguments to viewclass command");
     return NULL;
   }
-  filtname = owl_function_classinstfilt(argv[1], NULL);
+  filtname = owl_function_classinstfilt(argv[1], NULL, owl_global_is_narrow_related(&g));
   owl_function_change_currentview_filter(filtname);
   owl_free(filtname);
   return NULL;
@@ -2366,7 +2366,7 @@ char *owl_command_colorclass(int argc, const char *const *argv, const char *buff
     return NULL;
   }
 
-  filtname=owl_function_classinstfilt(argv[1], NULL);
+  filtname=owl_function_classinstfilt(argv[1], NULL, owl_global_is_narrow_related(&g));
   (void) owl_function_color_filter(filtname, argv[2], (argc == 4 ? argv[3] : NULL));
   return NULL;
 }

@@ -357,6 +357,13 @@ static owl_variable variables_to_init[] = {
 	       "                 the cursor will be near the center.\n",
 	       "normal,top,neartop,center,paged,pagedcenter" ),
 
+  OWLVAR_BOOL( "narrow-related" /* %OwlVarStub:narrow_related */, 1,
+               "Make smartnarrow use broader filters",
+               "Causes smartfiler to narrow to messages \"related\" to \n"
+               "the current message, as well as ones to the same place.\n\n"
+               "for Zephyr, this controls whether to narrow to e.g. class-help or\n"
+               "class-help.d alone, or to related-class-help, which includes\n"
+               "help, unhelp, help.d, etc.\n\nDefault is true (include unclasses, etc.).\n" ),
 
   OWLVAR_BOOL( "_followlast" /* %OwlVarStub */, 0,
 	       "enable automatic following of the last zephyr",
