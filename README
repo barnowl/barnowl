@@ -5,10 +5,16 @@ To configure it, first
 
 * Add your twitter credentials to ~/.owl/twitter as a JSON hash, e.g.
 {"user":"nelhage", "password":"sekrit" }
-* Load the modules
+* Load the module
 * Set the twitter:class, twitter:instance, and twitter:opcode
   variables to the destination you want messages to be mirrored
   from. By default, they are -c $YOUR_USERNAME -i status -O twitter
   Setting twitter:opcode to "" will cause "normal" (i.e. no opcode)
   messages to that class/instance to be mirrored. A value of '*'
   works as a "match-anything" wildcard for any of the fields.
+
+As of Thanksgiving weekend 2008, Twitter.par will also receive
+twitters and inject them into barnowl as messages of type
+'twitter'. Currently, it polls every 45 seconds, and there's no way to
+disable polling once loaded. There's also no direct message
+support. Bug me if fixing any of these is important to you.
