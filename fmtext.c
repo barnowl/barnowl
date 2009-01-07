@@ -168,7 +168,8 @@ void _owl_fmtext_scan_attributes(owl_fmtext *f, int start, char *attr, short *fg
 }  
 
 /* Internal function.  Append text from 'in' between index 'start' and
- * 'stop' to the end of 'f'
+ * 'stop', inclusive, to the end of 'f'. This function works with
+ * bytes.
  */
 void _owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in, int start, int stop) /*noproto*/
 {
@@ -473,16 +474,17 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
 	/* We made it to the newline. */
 	_owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
       }
+      else if (chwidth > 1) {
+        /* Last char is wide, truncate. */
+        _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff - 1);
+        owl_fmtext_append_normal(out, "\n");
+      }
       else {
-	if (chwidth > 1) {
-	  /* Last char is wide, truncate. */
-	  _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff - 1);
-	  owl_fmtext_append_normal(out, "\n");
-	}
-	else {
-	  /* Last char fits perfectly, leave alone.*/
-	  _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
-	}
+        /* Last char fits perfectly, We skip to the next char and back
+         * up a byte to make sure we get it all.
+         */
+        ptr_c = g_utf8_next_char(ptr_c);
+        _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff - 1);
       }
     }
     else {
