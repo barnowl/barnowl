@@ -16,7 +16,19 @@ sub context {'twitter'}
 sub subcontext {undef}
 sub long_sender {"http://twitter.com/" . shift->sender}
 
-sub replycmd {'twitter'}
+sub replycmd {
+    my $self = shift;
+    if($self->isprivate) {
+        return $self->replysendercmd;
+    } else {
+        return 'twitter';
+    }
+}
+
+sub replysendercmd {
+    my $self = shift;
+    return 'twitter-direct ' . $self->sender;
+}
 
 sub smartfilter {
     my $self = shift;

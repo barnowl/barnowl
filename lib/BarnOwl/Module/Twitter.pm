@@ -67,6 +67,16 @@ BarnOwl::new_variable_string(
     }
 );
 
+BarnOwl::new_variable_bool(
+    'twitter:poll',
+    {
+        default => 1,
+        summary => 'Poll Twitter for incoming messages',
+        description => "If set, will poll Twitter every minute for normal updates,\n"
+        . 'and every two minutes for direct message'
+     }
+ );
+
 my $conffile = BarnOwl::get_config_dir() . "/twitter";
 open(my $fh, "<", "$conffile") || fail("Unable to read $conffile");
 my $cfg = do {local $/; <$fh>};
@@ -108,20 +118,49 @@ sub handle_message {
     }
 }
 
-my $last_poll = 0;
-my $last_id   = undef;
+our $last_poll        = 0;
+our $last_direct_poll = 0;
+our $last_id          = undef;
+our $last_direct      = undef;
+
 unless(defined($last_id)) {
-    $last_id = $twitter->friends_timeline({count => 1})->[0]{id};
+    eval {
+        $last_id = $twitter->friends_timeline({count => 1})->[0]{id};
+    };
+}
+
+unless(defined($last_direct)) {
+    eval {
+        $last_direct = $twitter->direct_messages()->[0]{id};
+    };
 }
 
 sub poll_messages {
-    return unless ( time - $last_poll ) >= 45;
+    poll_twitter();
+    poll_direct();
+}
+
+sub twitter_error {
+    my $ratelimit = $twitter->rate_limit_status;
+    unless(defined($ratelimit)) {
+        # Twitter's just sucking, sleep for 5 minutes
+        $last_direct_poll = $last_poll = time + 60*5;
+        die("Twitter seems to be having problems.\n");
+    }
+    if($ratelimit->{remaining_hits} <= 0) {
+        $last_direct_poll = $last_poll = $ratelimit->{reset_time_in_seconds};
+        die("Twitter: ratelimited until " . $ratelimit->{reset_time} . "\n");
+    }
+}
+
+sub poll_twitter {
+    return unless ( time - $last_poll ) >= 60;
     $last_poll = time;
+    return unless BarnOwl::getvar('twitter:poll') eq 'on';
+
     my $timeline = $twitter->friends_timeline( { since_id => $last_id } );
     unless(defined($timeline)) {
-        BarnOwl::error("Twitter returned error ... rate-limited?");
-        # Sleep for 15 minutes
-        $last_poll = time + 60*15;
+        twitter_error();
         return;
     };
     if ( scalar @$timeline ) {
@@ -146,10 +185,55 @@ sub poll_messages {
     }
 }
 
+sub poll_direct {
+    return unless ( time - $last_direct_poll) >= 120;
+    $last_direct_poll = time;
+    return unless BarnOwl::getvar('twitter:poll') eq 'on';
+
+    my $direct = $twitter->direct_messages( { since_id => $last_direct } );
+    unless(defined($direct)) {
+        twitter_error();
+        return;
+    };
+    if ( scalar @$direct ) {
+        for my $tweet ( reverse @$direct ) {
+            if ( $tweet->{id} <= $last_direct ) {
+                next;
+            }
+            my $msg = BarnOwl::Message->new(
+                type      => 'Twitter',
+                sender    => $tweet->{sender}{screen_name},
+                recipient => $cfg->{user} || $user,
+                direction => 'in',
+                location  => decode_entities($tweet->{sender}{location}||""),
+                body      => decode_entities($tweet->{text}),
+                isprivate => 'true'
+               );
+            BarnOwl::queue_message($msg);
+        }
+        $last_direct = $direct->[0]{id};
+    } else {
+        # BarnOwl::message("No new tweets...");
+    }
+}
+
 sub twitter {
     my $msg = shift;
-    if(defined $twitter) {
+    if($msg =~ m{\Ad\s+([^\s])+(.*)}sm) {
+        twitter_direct($1, $2);
+    } elsif(defined $twitter) {
         $twitter->update($msg);
+    }
+}
+
+sub twitter_direct {
+    my $who = shift;
+    my $msg = shift;
+    if(defined $twitter) {
+        $twitter->new_direct_message({
+            user => $who,
+            text => $msg
+           });
     }
 }
 
@@ -160,6 +244,12 @@ BarnOwl::new_command(twitter => \&cmd_twitter, {
     . "\nOtherwise, prompt for a status message to use."
    });
 
+BarnOwl::new_command('twitter-direct' => \&cmd_twitter_direct, {
+    summary     => 'Send a Twitter direct message',
+    usage       => 'twitter-direct USER',
+    description => 'Send a Twitter Direct Message to USER'
+   });
+
 sub cmd_twitter {
     my $cmd = shift;
     if(@_) {
@@ -168,6 +258,13 @@ sub cmd_twitter {
     } else {
       BarnOwl::start_edit_win('What are you doing?', \&twitter);
     }
+}
+
+sub cmd_twitter_direct {
+    my $cmd = shift;
+    my $user = shift;
+    die("Usage: $cmd USER\n") unless $user;
+    BarnOwl::start_edit_win("$cmd $user", sub{twitter_direct($user, shift)});
 }
 
 eval {
