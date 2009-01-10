@@ -49,8 +49,10 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-RIGHT",     "edit:move-prev-word", "");
 
   BIND_CMD("LEFT",        "edit:move-left", "");
+  BIND_CMD("M-[ D",       "edit:move-left", "");
   BIND_CMD("C-b",         "edit:move-left", "");
   BIND_CMD("RIGHT",       "edit:move-right", "");
+  BIND_CMD("M-[ C",       "edit:move-right", "");
   BIND_CMD("C-f",         "edit:move-right", "");
 
   BIND_CMD("M-<",         "edit:move-to-buffer-start", "");
@@ -92,8 +94,10 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   owl_keymap_set_submap(km_ew_multi, km_editwin);
 
   BIND_CMD("UP",      "editmulti:move-up-line", "");
+  BIND_CMD("M-[ A",   "editmulti:move-up-line", "");
   BIND_CMD("C-p",     "editmulti:move-up-line", "");
   BIND_CMD("DOWN",    "editmulti:move-down-line", "");
+  BIND_CMD("M-[ B",   "editmulti:move-down-line", "");
   BIND_CMD("C-n",     "editmulti:move-down-line", "");
 
   /* This would be nice, but interferes with C-c to cancel */
@@ -119,10 +123,12 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("C-u",         "edit:delete-all", "Clears the entire line");
 
   BIND_CMD("UP",          "edit:history-prev", "");
+  BIND_CMD("M-[ A",       "edit:history-prev", "");
   BIND_CMD("C-p",         "edit:history-prev", "");
   BIND_CMD("M-p",         "edit:history-prev", "");
 
   BIND_CMD("DOWN",        "edit:history-next", "");
+  BIND_CMD("M-[ B",       "edit:history-next", "");
   BIND_CMD("C-n",         "edit:history-next", "");
   BIND_CMD("M-n",         "edit:history-next", "");
 
@@ -165,9 +171,11 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("CR",          "popless:scroll-down-line", "");
   BIND_CMD("LF",          "popless:scroll-down-line", "");
   BIND_CMD("DOWN",        "popless:scroll-down-line", "");
+  BIND_CMD("M-[ B",       "popless:scroll-down-line", "");
   BIND_CMD("C-n",         "popless:scroll-down-line", "");
 
   BIND_CMD("UP",          "popless:scroll-up-line", "");
+  BIND_CMD("M-[ A",       "popless:scroll-up-line", "");
   BIND_CMD("C-h",         "popless:scroll-up-line", "");
   BIND_CMD("C-p",         "popless:scroll-up-line", "");
   BIND_CMD("DELETE",      "popless:scroll-up-line", "");
@@ -175,7 +183,9 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("DC",          "popless:scroll-up-line", "");
 
   BIND_CMD("RIGHT",       "popless:scroll-right 10", "scrolls right");
+  BIND_CMD("M-[ C",       "popless:scroll-right 10", "scrolls right");
   BIND_CMD("LEFT",        "popless:scroll-left  10", "scrolls left");
+  BIND_CMD("M-[ D",       "popless:scroll-left  10", "scrolls left");
 
   BIND_CMD("HOME",        "popless:scroll-to-top", "");
   BIND_CMD("<",           "popless:scroll-to-top", "");
@@ -231,7 +241,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("LEFT",   "recv:shiftleft", "");
   BIND_CMD("M-[ D",  "recv:shiftleft", "");
   BIND_CMD("RIGHT",  "recv:shiftright","");
-  BIND_CMD("M-[ C",  "recv:shiftleft", "");
+  BIND_CMD("M-[ C",  "recv:shiftright","");
   BIND_CMD("DOWN",   "recv:next",      "");
   BIND_CMD("C-n",    "recv:next",      "");
   BIND_CMD("M-[ B",  "recv:next",      "");
