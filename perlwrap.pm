@@ -794,8 +794,13 @@ Called before BarnOwl shutdown
 
 =item $receiveMessage
 
-Called with a C<BarnOwl::Message> object every time BarnOwl appends a
-new message to its message list
+Called with a C<BarnOwl::Message> object every time BarnOwl receives a
+new incoming message.
+
+=item $newMessage
+
+Called with a C<BarnOwl::Message> object every time BarnOwl appends
+I<any> new message to the message list.
 
 =item $mainLoop
 
