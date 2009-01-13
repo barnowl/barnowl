@@ -445,6 +445,7 @@ sub do_logout {
 }
 
 sub cmd_logout {
+    return "You are not logged into jabber." unless ($conn->connected() > 0);
     # Logged into multiple accounts
     if ( $conn->connected() > 1 ) {
         # Logged into multiple accounts, no accout specified.
