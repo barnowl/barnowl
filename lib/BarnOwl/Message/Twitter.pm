@@ -18,7 +18,7 @@ sub long_sender {"http://twitter.com/" . shift->sender}
 
 sub replycmd {
     my $self = shift;
-    if($self->isprivate) {
+    if($self->is_private) {
         return $self->replysendercmd;
     } else {
         return 'twitter';
