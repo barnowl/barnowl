@@ -1123,7 +1123,7 @@ sub process_presence_unsubscribe {
 
 sub process_presence_subscribed {
     my ( $sid, $p ) = @_;
-    queue_admin_msg("ignoring:".$p->GetXML());
+    queue_admin_msg("ignoring:".$p->GetXML()) if BarnOwl::getvar('jabber:spew') eq 'on';
     # RFC 3921 says we should respond to this with a "subscribe"
     # but this causes a flood of sub/sub'd presence packets with
     # some servers, so we won't. We may want to detect this condition
@@ -1133,7 +1133,7 @@ sub process_presence_subscribed {
 
 sub process_presence_unsubscribed {
     my ( $sid, $p ) = @_;
-    queue_admin_msg("ignoring:".$p->GetXML());
+    queue_admin_msg("ignoring:".$p->GetXML()) if BarnOwl::getvar('jabber:spew') eq 'on';
     # RFC 3921 says we should respond to this with a "subscribe"
     # but this causes a flood of unsub/unsub'd presence packets with
     # some servers, so we won't. We may want to detect this condition
