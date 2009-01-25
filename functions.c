@@ -98,7 +98,7 @@ void owl_function_show_styles() {
   owl_fmtext_free(&fm);
 }
 
-char *owl_function_style_describe(void *name) {
+char *owl_function_style_describe(char *name) {
   char *desc, *s;
   owl_style *style;
   style = owl_global_get_style_by_name(&g, name);
@@ -113,7 +113,7 @@ char *owl_function_style_describe(void *name) {
   return s;
 }
 
-char *owl_function_cmd_describe(void *name)
+char *owl_function_cmd_describe(char *name)
 {
   owl_cmd *cmd = owl_cmddict_find(owl_global_get_cmddict(&g), name);
   if (cmd) return owl_cmd_describe(cmd);
@@ -170,6 +170,36 @@ void owl_function_show_license()
     "IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n";
   owl_function_popless_text(text);
 }
+
+void owl_function_show_quickstart()
+{
+    char *message =
+    "Move between messages with the arrow keys, and press 'r' to reply.\n"
+    "For more info, press 'h' or visit http://barnowl.mit.edu/\n\n"
+#ifdef HAVE_LIBZEPHYR
+    "@b(Zephyr:)\n"
+    "To send a message to a user, type ':zwrite @b(username)'. You can also\n"
+    "press 'z' and then type the username. To subscribe to a class, type\n"
+    "':sub @b(class)', and then type ':zwrite -c @b(class)' to send.\n\n"
+#endif
+    "@b(AIM:)\n"
+    "Log in to AIM with ':aimlogin @b(screenname)'. Use ':aimwrite @b(screenname)',\n"
+    "or 'a' and then the screen name, to send someone a message.\n\n"
+    ;
+
+    if (owl_perlconfig_is_function("BarnOwl::Hooks::_get_quickstart")) {
+        char *perlquickstart = owl_perlconfig_execute("BarnOwl::Hooks::_get_quickstart()");
+        if (perlquickstart) {
+            char *result = owl_sprintf("%s%s", message, perlquickstart);
+            owl_function_adminmsg("BarnOwl Quickstart", result);
+            owl_free(result);
+            owl_free(perlquickstart);
+            return;
+        }
+    }
+    owl_function_adminmsg("BarnOwl Quickstart", message);
+}
+
 
 /* Create an admin message, append it to the global list of messages
  * and redisplay if necessary.
@@ -601,9 +631,11 @@ void owl_function_nextmsg_full(char *filter, int skip_deleted, int last_if_none)
   if (i<0) i=0;
 
   if (!found) {
-    owl_function_makemsg("already at last%s message%s%s",
+    owl_function_makemsg("already at last%s message%s%s%s",
 			 skip_deleted?" non-deleted":"",
-			 filter?" in ":"", filter?filter:"");
+			 filter?" in ":"", filter?filter:"",
+			 owl_mainwin_is_curmsg_truncated(owl_global_get_mainwin(&g)) ?
+			 ", press Enter to scroll" : "");
     /* if (!skip_deleted) owl_function_beep(); */
   }
 
@@ -1018,104 +1050,6 @@ void owl_function_quit()
 
   owl_function_debugmsg("Quitting Owl");
   exit(0);
-}
-
-void owl_function_openurl()
-{
-  /* visit the first url in the current message */
-  owl_message *m;
-  owl_view *v;
-  char *ptr1, *ptr2, *text, url[LINE], tmpbuff[LINE];
-  int webbrowser;
-
-  webbrowser = owl_global_get_webbrowser(&g);
-
-  if (webbrowser < 0 || webbrowser == OWL_WEBBROWSER_NONE) {
-    owl_function_error("No browser selected");
-    return;
-  }
-
-  v=owl_global_get_current_view(&g);
-  
-  m=owl_view_get_element(v, owl_global_get_curmsg(&g));
-
-  if (!m || owl_view_get_size(v)==0) {
-    owl_function_error("No current message selected");
-    return;
-  }
-
-  text=owl_message_get_text(m);
-
-  /* First look for a good URL */  
-  if ((ptr1=strstr(text, "http://"))!=NULL) {
-    ptr2=strpbrk(ptr1, " \n\t");
-    if (ptr2) {
-      strncpy(url, ptr1, ptr2-ptr1+1);
-      url[ptr2-ptr1+1]='\0';
-    } else {
-      strcpy(url, ptr1);
-    }
-
-    /* if we had <http strip a trailing > */
-    if (ptr1>text && ptr1[-1]=='<') {
-      if (url[strlen(url)-1]=='>') {
-	url[strlen(url)-1]='\0';
-      }
-    }
-  } else if ((ptr1=strstr(text, "https://"))!=NULL) {
-    /* Look for an https URL */  
-    ptr2=strpbrk(ptr1, " \n\t");
-    if (ptr2) {
-      strncpy(url, ptr1, ptr2-ptr1+1);
-      url[ptr2-ptr1+1]='\0';
-    } else {
-      strcpy(url, ptr1);
-    }
-    
-    /* if we had <http strip a trailing > */
-    if (ptr1>text && ptr1[-1]=='<') {
-      if (url[strlen(url)-1]=='>') {
-	url[strlen(url)-1]='\0';
-      }
-    }
-  } else if ((ptr1=strstr(text, "www."))!=NULL) {
-    /* if we can't find a real url look for www.something */
-    ptr2=strpbrk(ptr1, " \n\t");
-    if (ptr2) {
-      strncpy(url, ptr1, ptr2-ptr1+1);
-      url[ptr2-ptr1+1]='\0';
-    } else {
-      strcpy(url, ptr1);
-    }
-  } else {
-    owl_function_beep();
-    owl_function_error("Could not find URL to open.");
-    return;
-  }
-
-  /* Make sure there aren't any quotes or \'s in the url */
-  for (ptr1 = url; *ptr1; ptr1++) {
-    if (*ptr1 == '"' || *ptr1 == '\\') {
-      owl_function_beep();
-      owl_function_error("URL contains invalid characters.");
-      return;
-    }
-  }
-  
-  /* NOTE: There are potentially serious security issues here... */
-
-  /* open the page */
-  owl_function_makemsg("Opening %s", url);
-  if (webbrowser == OWL_WEBBROWSER_NETSCAPE) {
-    snprintf(tmpbuff, LINE, "netscape -remote \"openURL(%s)\" > /dev/null 2> /dev/null", url);
-    system(tmpbuff); 
-  } else if (webbrowser == OWL_WEBBROWSER_GALEON) {
-    snprintf(tmpbuff, LINE, "galeon \"%s\" > /dev/null 2> /dev/null &", url);
-    system(tmpbuff); 
-  } else if (webbrowser == OWL_WEBBROWSER_OPERA) {
-    snprintf(tmpbuff, LINE, "opera \"%s\" > /dev/null 2> /dev/null &", url);
-    system(tmpbuff); 
-  }
 }
 
 void owl_function_calculate_topmsg(int direction)
@@ -1609,9 +1543,9 @@ void owl_function_info()
 	
 	/* fix this */
 	sprintf(buff, "  Checkd Ath: %i\n", n->z_checked_auth);
-	sprintf(buff, "%s  Multi notc: %s\n", buff, n->z_multinotice);
-	sprintf(buff, "%s  Num other : %i\n", buff, n->z_num_other_fields);
-	sprintf(buff, "%s  Msg Len   : %i\n", buff, n->z_message_len);
+	sprintf(buff + strlen(buff), "  Multi notc: %s\n", n->z_multinotice);
+	sprintf(buff + strlen(buff), "  Num other : %i\n", n->z_num_other_fields);
+	sprintf(buff + strlen(buff), "  Msg Len   : %i\n", n->z_message_len);
 	owl_fmtext_append_normal(&fm, buff);
 	
 	sprintf(buff, "  Fields    : %i\n", owl_zephyr_get_num_fields(n));
@@ -1921,7 +1855,7 @@ void owl_function_delete_automsgs()
 
 void owl_function_status()
 {
-  char buff[5000];
+  char buff[MAXPATHLEN+1];
   time_t start;
   int up, days, hours, minutes;
   owl_fmtext fm;
@@ -1941,8 +1875,11 @@ void owl_function_status()
   owl_fmtext_append_normal(&fm, "\n");
 
   owl_fmtext_append_normal(&fm, "  Current Directory: ");
-  (void) getcwd(buff, MAXPATHLEN);
-  owl_fmtext_append_normal(&fm, buff);
+  if(getcwd(buff, MAXPATHLEN) == NULL) {
+    owl_fmtext_append_normal(&fm, "<Error in getcwd>");
+  } else {
+    owl_fmtext_append_normal(&fm, buff);
+  }
   owl_fmtext_append_normal(&fm, "\n");
 
   sprintf(buff, "  Startup Time: %s", ctime(&start));
@@ -2051,6 +1988,12 @@ void owl_function_reply(int type, int enter)
 	owl_function_error("Sorry, replies to this message have been disabled by the reply-lockout filter");
 	return;
       }
+    }
+
+    /* then check if it's a question and just bring up the command prompt */
+    if (owl_message_is_question(m)) {
+      owl_function_start_command("");
+      return;
     }
 
     char *cmd;
@@ -2547,7 +2490,7 @@ char *owl_function_classinstfilt(char *c, char *i)
   argbuff = owl_malloc(len);
   sprintf(argbuff, "class ^(un)*%s(\\.d)*$", tmpclass);
   if (tmpinstance) {
-    sprintf(argbuff, "%s and ( instance ^(un)*%s(\\.d)*$ )", argbuff, tmpinstance);
+    sprintf(argbuff + strlen(argbuff), " and ( instance ^(un)*%s(\\.d)*$ )", tmpinstance);
   }
   owl_free(tmpclass);
   if (tmpinstance) owl_free(tmpinstance);
@@ -2576,15 +2519,14 @@ char *owl_function_classinstfilt(char *c, char *i)
 char *owl_function_zuserfilt(char *user)
 {
   owl_filter *f;
-  char *argbuff, *longuser, *shortuser, *filtname;
+  char *argbuff, *longuser, *esclonguser, *shortuser, *filtname;
 
   /* stick the local realm on if it's not there */
   longuser=long_zuser(user);
   shortuser=short_zuser(user);
 
   /* name for the filter */
-  filtname=owl_malloc(strlen(shortuser)+20);
-  sprintf(filtname, "user-%s", shortuser);
+  filtname=owl_sprintf("user-%s", shortuser);
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2594,10 +2536,12 @@ char *owl_function_zuserfilt(char *user)
   /* create the new-internal filter */
   f=owl_malloc(sizeof(owl_filter));
 
-  argbuff=owl_malloc(strlen(longuser)+1000);
-  sprintf(argbuff, "( type ^zephyr$ and filter personal and ");
-  sprintf(argbuff, "%s ( ( direction ^in$ and sender ^%s$ ) or ( direction ^out$ and recipient ^%s$ ) ) )", argbuff, longuser, longuser);
-  sprintf(argbuff, "%s or ( ( class ^login$ ) and ( sender ^%s$ ) )", argbuff, longuser);
+  esclonguser = owl_text_quote(longuser, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+
+  argbuff=owl_sprintf("( type ^zephyr$ and filter personal and "
+      "( ( direction ^in$ and sender ^%1$s$ ) or ( direction ^out$ and "
+      "recipient ^%1$s$ ) ) ) or ( ( class ^login$ ) and ( sender ^%1$s$ ) )",
+      esclonguser);
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
@@ -2607,6 +2551,7 @@ char *owl_function_zuserfilt(char *user)
   /* free stuff */
   owl_free(argbuff);
   owl_free(longuser);
+  owl_free(esclonguser);
   owl_free(shortuser);
 
   return(filtname);
@@ -2625,8 +2570,7 @@ char *owl_function_aimuserfilt(char *user)
   char *escuser;
 
   /* name for the filter */
-  filtname=owl_malloc(strlen(user)+40);
-  sprintf(filtname, "aimuser-%s", user);
+  filtname=owl_sprintf("aimuser-%s", user);
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2638,11 +2582,10 @@ char *owl_function_aimuserfilt(char *user)
 
   escuser = owl_text_quote(user, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
 
-  argbuff=owl_malloc(1000);
-  sprintf(argbuff,
-          "( type ^aim$ and ( ( sender ^%s$ and recipient ^%s$ ) or ( sender ^%s$ and recipient ^%s$ ) ) )",
-          escuser, owl_global_get_aim_screenname_for_filters(&g),
-          owl_global_get_aim_screenname_for_filters(&g), escuser);
+  argbuff = owl_sprintf(
+      "( type ^aim$ and ( ( sender ^%1$s$ and recipient ^%2$s$ ) or "
+      "( sender ^%2$s$ and recipient ^%1$s$ ) ) )",
+      escuser, owl_global_get_aim_screenname_for_filters(&g));
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
@@ -2659,7 +2602,7 @@ char *owl_function_aimuserfilt(char *user)
 char *owl_function_typefilt(char *type)
 {
   owl_filter *f;
-  char *argbuff, *filtname;
+  char *argbuff, *filtname, *esctype;
 
   /* name for the filter */
   filtname=owl_sprintf("type-%s", type);
@@ -2672,7 +2615,9 @@ char *owl_function_typefilt(char *type)
   /* create the new-internal filter */
   f=owl_malloc(sizeof(owl_filter));
 
-  argbuff = owl_sprintf("type ^%s$", type);
+  esctype = owl_text_quote(type, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+
+  argbuff = owl_sprintf("type ^%s$", esctype);
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
@@ -2681,6 +2626,7 @@ char *owl_function_typefilt(char *type)
 
   /* free stuff */
   owl_free(argbuff);
+  owl_free(esctype);
 
   return filtname;
 }
@@ -2954,7 +2900,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff, "%s ^(un)*%s(\\.d)*$", buff, quoted);
+    sprintf(buff + strlen(buff), " ^(un)*%s(\\.d)*$", quoted);
     owl_free(quoted);
   }
   if (!strcmp(inst, "*")) {
@@ -2964,7 +2910,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff, "%s and instance ^(un)*%s(\\.d)*$", buff, quoted);
+    sprintf(buff + strlen(buff), " and instance ^(un)*%s(\\.d)*$", quoted);
     owl_free(quoted);
   }
   if (strcmp(recip, "*")) {
@@ -2972,7 +2918,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff, "%s and recipient ^%s$", buff, quoted);
+    sprintf(buff + strlen(buff), " and recipient ^%s$", quoted);
     owl_free(quoted);
   }
 
@@ -3064,7 +3010,7 @@ void owl_function_show_keymaps()
   owl_fmtext_free(&fm);
 }
 
-char *owl_function_keymap_summary(void *name)
+char *owl_function_keymap_summary(char *name)
 {
   owl_keymap *km 
     = owl_keyhandler_get_keymap(owl_global_get_keyhandler(&g), name);

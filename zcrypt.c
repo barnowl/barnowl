@@ -374,8 +374,8 @@ int owl_zcrypt_encrypt(char *out, char *in, char *class, char *instance) {
     des_ecb_encrypt(input, output, schedule, TRUE);
 
     for (i = 0; i < 8; i++) {
-      sprintf(out, "%s%c", out, ((output[i] & 0xf0) >> 4) + BASE_CODE);
-      sprintf(out, "%s%c", out, (output[i] & 0x0f)        + BASE_CODE);
+      sprintf(out + strlen(out), "%c", ((output[i] & 0xf0) >> 4) + BASE_CODE);
+      sprintf(out + strlen(out), "%c", (output[i] & 0x0f)        + BASE_CODE);
     }
 
     if (size < 8) break;

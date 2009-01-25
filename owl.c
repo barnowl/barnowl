@@ -322,10 +322,10 @@ int main(int argc, char **argv, char **env)
   strcpy(startupmsg, "-----------------------------------------------------------------------\n");
   sprintf(buff,      "Welcome to barnowl version %s.  Press 'h' for on-line help.            \n", OWL_VERSION_STRING);
   strcat(startupmsg, buff);
+  strcat(startupmsg, "To see a quick introduction, type ':show quickstart'.                  \n");
   strcat(startupmsg, "                                                                       \n");
   strcat(startupmsg, "BarnOwl is free software. Type ':show license' for more                \n");
-  strcat(startupmsg, "information.                                                           \n");
-  strcat(startupmsg, "                                                                 ^ ^   \n");
+  strcat(startupmsg, "information.                                                     ^ ^   \n");
   strcat(startupmsg, "                                                                 OvO   \n");
   strcat(startupmsg, "Please report any bugs or suggestions to bug-barnowl@mit.edu    (   )  \n");
   strcat(startupmsg, "-----------------------------------------------------------------m-m---\n");
@@ -510,7 +510,7 @@ int main(int argc, char **argv, char **env)
       siginfo_t si;
       int signum;
       if ((signum = owl_global_get_errsignal_and_clear(&g, &si)) > 0) {
-	owl_function_error("Got unexpected signal: %d %s  (code: %d band: %d  errno: %d)", 
+	owl_function_error("Got unexpected signal: %d %s  (code: %d band: %ld  errno: %d)",
 			   signum, signum==SIGPIPE?"SIGPIPE":"SIG????",
 			   si.si_code, si.si_band, si.si_errno);
       }
@@ -611,20 +611,6 @@ int owl_process_message(owl_message *m) {
   owl_log_message(m);
 
   return 1;
-}
-
-void owl_process_aim()
-{
-  if (owl_global_is_doaimevents(&g)) {
-    owl_aim_process_events();
-    
-    if (owl_global_is_aimloggedin(&g)) {
-      if (owl_timer_is_expired(owl_global_get_aim_buddyinfo_timer(&g))) {
-        /* owl_buddylist_request_idletimes(owl_global_get_buddylist(&g)); */
-        owl_timer_reset(owl_global_get_aim_buddyinfo_timer(&g));
-      }
-    }
-  }
 }
 
 void owl_process_input()

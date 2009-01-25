@@ -4,6 +4,7 @@ srcdir = @srcdir@
 VPATH = @srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
 datadir = @datadir@/barnowl
 bindir = @bindir@
 mandir = @mandir@
@@ -52,7 +53,7 @@ all: $(EXE) $(MODULE_DIRS)
 $(EXE): $(AUTOGEN) $(OBJS) owl.o libfaim
 	$(ATHSTATIC) $(CC) -o $(EXE) owl.o $(OBJS) $(LDFLAGS) $(LIBS)
 
-tester: $(AUTOGEN) $(OBJS) tester.o
+tester: $(AUTOGEN) $(OBJS) tester.o libfaim
 	$(ATHSTATIC) $(CC) -o tester tester.o $(OBJS) $(LDFLAGS) $(LIBS)
 
 %.o: %.c $(HEADERS)

@@ -238,7 +238,7 @@ void owl_aim_logged_out()
 void owl_aim_login_error(char *message)
 {
   if (message) {
-    owl_function_error(message);
+    owl_function_error("%s", message);
   } else {
     owl_function_error("Authentication error on login");
   }
@@ -251,7 +251,7 @@ int owl_aim_send_im(char *to, char *msg)
 {
   int ret;
 
-  ret=aim_im_sendch1(owl_global_get_aimsess(&g), to, NULL, msg);
+  ret=aim_im_sendch1(owl_global_get_aimsess(&g), to, 0, msg);
     
   /* I don't know how to check for an error yet */
   return(ret);
@@ -1697,7 +1697,7 @@ int faimtest_parse_genericerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("snac threw error (reason 0x%04x: %s)\n", reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
-  if (reason<msgerrreasonslen) owl_function_error(msgerrreasons[reason]);
+  if (reason<msgerrreasonslen) owl_function_error("%s", msgerrreasons[reason]);
   
   return 1;
 }
@@ -1714,7 +1714,7 @@ static int faimtest_parse_msgerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("message to %s bounced (reason 0x%04x: %s)\n", destsn, reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
-  if (reason<msgerrreasonslen) owl_function_error(msgerrreasons[reason]);
+  if (reason<msgerrreasonslen) owl_function_error("%s", msgerrreasons[reason]);
 
   if (reason==4) {
     owl_function_adminmsg("", "Could not send AIM message, user not logged on");
@@ -1735,7 +1735,7 @@ static int faimtest_parse_locerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("user information for %s unavailable (reason 0x%04x: %s)\n", destsn, reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
-  if (reason<msgerrreasonslen) owl_function_error(msgerrreasons[reason]);
+  if (reason<msgerrreasonslen) owl_function_error("%s", msgerrreasons[reason]);
   
   return 1;
 }
@@ -2308,6 +2308,20 @@ void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
   aim_conn_addhandler(sess, tstconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNINITDONE, conninitdone_chat, 0);
   aim_sendcookie(sess, tstconn, redir->cookielen, redir->cookie);
   return;	
+}
+
+void owl_process_aim()
+{
+  if (owl_global_is_doaimevents(&g)) {
+    owl_aim_process_events();
+
+    if (owl_global_is_aimloggedin(&g)) {
+      if (owl_timer_is_expired(owl_global_get_aim_buddyinfo_timer(&g))) {
+        /* owl_buddylist_request_idletimes(owl_global_get_buddylist(&g)); */
+        owl_timer_reset(owl_global_get_aim_buddyinfo_timer(&g));
+      }
+    }
+  }
 }
 
 

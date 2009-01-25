@@ -146,9 +146,6 @@ sub owl::startup {
     owl::command("set -q _burningears on");
     owl::command("set -q rxping on");
     owl::command("set -q typewinsize 5");
-    if ($ENV{"DISPLAY"} eq ":0.0") {
-      owl::command("set -q webbrowser galeon");	
-    }
     owl::command("filter me recipient %me% or ( sender %me% and class message and instance personal ) or class mail or type aim");
     owl::command("filter owl instance ^owl.*");
 

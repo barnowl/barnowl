@@ -3,8 +3,6 @@
 
 static const char fileIdent[] = "$Id$";
 
-#define OWL_FILTER_MAXRECURSE 20
-
 int owl_filter_init_fromstring(owl_filter *f, char *name, char *string)
 {
   char **argv;
@@ -49,7 +47,7 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
 
   /* Now check for recursion. */
   if (owl_filter_is_toodeep(f)) {
-    owl_function_error("Filter loop or exceeds recursion depth");
+    owl_function_error("Filter loop!");
     owl_filter_free(f);
     return(-1);
   }
@@ -312,7 +310,7 @@ int owl_filter_test_string(char * filt, owl_message *m, int shouldmatch) /* nopr
 int owl_filter_regtest(void) {
   int numfailed=0;
   owl_message m;
-  owl_filter f1, f2, f3, f4;
+  owl_filter f1, f2, f3, f4, f5;
 
   owl_list_create(&(g.filterlist));
   owl_message_init(&m);
@@ -363,6 +361,9 @@ int owl_filter_regtest(void) {
   owl_filter_init_fromstring(&f3, "f3", "filter f4");
   owl_global_add_filter(&g, &f3);
   FAIL_UNLESS("mutual recursion",   owl_filter_init_fromstring(&f4, "f4", "filter f3"));
+
+  /* support referencing a filter several times */
+  FAIL_UNLESS("DAG", !owl_filter_init_fromstring(&f5, "dag", "filter f1 or filter f1"));
 
   return 0;
 }

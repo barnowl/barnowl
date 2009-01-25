@@ -138,7 +138,7 @@ void _owl_global_setup_windows(owl_global *g) {
   /* create the new windows */
   g->recwin=newwin(g->recwinlines, cols, 0, 0);
   if (g->recwin==NULL) {
-    owl_function_debugmsg("_owl_global_setup_windows: newwin returned NULL\n", g->recwinlines, cols);
+    owl_function_debugmsg("_owl_global_setup_windows: newwin returned NULL\n");
     endwin();
     exit(50);
   }
@@ -569,7 +569,7 @@ void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
 
   strcpy(g->startupargs, "");
   for (i=0; i<argc; i++) {
-    sprintf(g->startupargs, "%s%s ", g->startupargs, argv[i]);
+    sprintf(g->startupargs + strlen(g->startupargs), "%s ", argv[i]);
   }
   g->startupargs[strlen(g->startupargs)-1]='\0';
 }

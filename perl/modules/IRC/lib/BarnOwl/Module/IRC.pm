@@ -213,7 +213,7 @@ sub process_msg {
     $body =~ tr/\n\r/  /;
     if ($body =~ /^\/me (.*)/) {
         $conn->conn->me($to, $1);
-        $body = BarnOwl::Style::boldify($conn->nick.' '.$1);
+        $body = '* '.$conn->nick.' '.$1;
     } else {
         $conn->conn->privmsg($to, $body);
     }

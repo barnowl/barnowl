@@ -372,9 +372,9 @@ char *owl_util_minutes_to_timestr(int in)
   run-=hours*60;
 
   if (days>0) {
-    out=owl_sprintf("%i d %2.2i:%2.2i", days, hours, run);
+    out=owl_sprintf("%i d %2.2i:%2.2li", days, hours, run);
   } else {
-    out=owl_sprintf("    %2.2i:%2.2i", hours, run);
+    out=owl_sprintf("    %2.2i:%2.2li", hours, run);
   }
   return(out);
 }

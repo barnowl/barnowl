@@ -61,7 +61,7 @@
 
 #include <wchar.h>
 
-static struct interval {
+struct interval {               /* noproto */
   int first;
   int last;
 };

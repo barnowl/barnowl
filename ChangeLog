@@ -1,3 +1,15 @@
+1.0.4
+ * Added a ':show quickstart' command. -geofft
+ * Allow filters that reference a sub filter more than once non-cyclically. -nelhage
+ * Make 'version' return 'BarnOwl' not 'Owl'
+ * Escape interpolated regexes in filters. -andersk
+ * Various code cleanups. -andersk
+ * Fix format string injection bugs. -andersk
+ * Clean up various code warnings. -nelhage
+ * Replace questionable sprintf(buf, "%s...", buf, ...) pattern. -andersk
+ * Show IRC /me messages with the conventional * instead of bold. -andersk
+ * Rip out the openurl function and webbrowser variable. -andersk
+
 1.0.3
  * Moved BarnOwl source control to git on github.
  * Only call the zsig proc when we actually send a message. -asedeno

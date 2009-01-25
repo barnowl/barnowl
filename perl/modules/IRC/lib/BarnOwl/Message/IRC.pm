@@ -32,8 +32,8 @@ sub smartfilter {
         $filter = "irc-user-$who";
         @filter  =
              (qw{( type ^irc$ and filter personal and },
-              qw{( ( direction ^in$ and sender}, "^$who\$",
-              qw{ ) or ( direction ^out$ and recipient}, "^$who\$",
+              qw{( ( direction ^in$ and sender}, "^\Q$who\E\$",
+              qw{ ) or ( direction ^out$ and recipient}, "^\Q$who\E\$",
               qw{) ) ) });
         BarnOwl::command("filter", "$filter", @filter);
         return $filter;
@@ -46,14 +46,14 @@ sub smartfilter {
         if ($inst && $self->body =~ /^(\S+):/) {
             $filter = "irc-$network-channel-$channel-$sender-$1";
             @filter =
-                 (qw{type ^irc$ and network}, "^$network\$",
-                  qw{and channel}, "^$channel\$",
-                  qw{and ( sender}, "^$sender\$",
-                  qw{or sender}, "^$1\$",qq{)});
+                 (qw{type ^irc$ and network}, "^\Q$network\E\$",
+                  qw{and channel}, "^\Q$channel\E\$",
+                  qw{and ( sender}, "^\Q$sender\E\$",
+                  qw{or sender}, "^\Q$1\E\$",qq{)});
         } else {
             $filter = "irc-$network-channel-$channel";
-            @filter = (qw{type ^irc$ and network}, "^$network\$",
-                       qw{and channel}, "^$channel\$");
+            @filter = (qw{type ^irc$ and network}, "^\Q$network\E\$",
+                       qw{and channel}, "^\Q$channel\E\$");
         }
         BarnOwl::command("filter", "$filter", @filter);
         return $filter;
