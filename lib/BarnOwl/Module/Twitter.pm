@@ -237,6 +237,12 @@ sub twitter_direct {
     }
 }
 
+sub twitter_atreply {
+    my $to  = shift;
+    my $msg = shift;
+    twitter("@".$to." ".$msg);
+}
+
 BarnOwl::new_command(twitter => \&cmd_twitter, {
     summary     => 'Update Twitter from BarnOwl',
     usage       => 'twitter [message]',
@@ -249,6 +255,15 @@ BarnOwl::new_command('twitter-direct' => \&cmd_twitter_direct, {
     usage       => 'twitter-direct USER',
     description => 'Send a Twitter Direct Message to USER'
    });
+
+BarnOwl::new_command( 'twitter-atreply' => sub { cmd_twitter_atreply(@_); },
+    {
+    summary     => 'Send a Twitter @ message',
+    usage       => 'twitter-atreply USER',
+    description => 'Send a Twitter @reply Message to USER'
+    }
+);
+
 
 sub cmd_twitter {
     my $cmd = shift;
@@ -265,6 +280,12 @@ sub cmd_twitter_direct {
     my $user = shift;
     die("Usage: $cmd USER\n") unless $user;
     BarnOwl::start_edit_win("$cmd $user", sub{twitter_direct($user, shift)});
+}
+
+sub cmd_twitter_atreply {
+    my $cmd  = shift;
+    my $user = shift;
+    BarnOwl::start_edit_win("Reply to \@" . $user, sub { twitter_atreply($user, shift) });
 }
 
 eval {

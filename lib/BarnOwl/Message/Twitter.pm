@@ -21,7 +21,7 @@ sub replycmd {
     if($self->is_private) {
         return $self->replysendercmd;
     } else {
-        return 'twitter';
+        return 'twitter-atreply '.$self->sender;
     }
 }
 
