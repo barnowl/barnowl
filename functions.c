@@ -3455,7 +3455,7 @@ void owl_function_error(char *fmt, ...)
     /* Multiline error */
     owl_function_adminmsg("ERROR", buff);
   } else {
-    owl_function_makemsg("%s", buff2);
+    owl_function_makemsg("[Error] %s", buff);
   }
   owl_errqueue_append_err(owl_global_get_errqueue(&g), buff2);
   va_end(ap);
