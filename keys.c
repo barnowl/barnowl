@@ -66,12 +66,14 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-BACKSPACE", "edit:delete-prev-word", "");
   BIND_CMD("M-DELETE",    "edit:delete-prev-word", "");
   BIND_CMD("M-d",         "edit:delete-next-word", "");
+  BIND_CMD("M-DC",        "edit:delete-next-word", "");
   BIND_CMD("M-[ 3 ; 3 ~", "edit:delete-next-word", "");
 
   BIND_CMD("C-h",         "edit:delete-prev-char", "");
   BIND_CMD("BACKSPACE",   "edit:delete-prev-char", "");
-  BIND_CMD("DC",          "edit:delete-prev-char", "");
   BIND_CMD("DELETE",      "edit:delete-prev-char", "");
+  BIND_CMD("C-d",         "edit:delete-next-char", "");
+  BIND_CMD("DC",          "edit:delete-next-char", "");
 
   BIND_CMD("C-k",         "edit:delete-to-line-end", "");
 
@@ -80,8 +82,6 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-q",         "edit:fill-paragraph", "");
 
   BIND_CMD("C-l",         "( edit:recenter ; redisplay )", "");
-
-  BIND_CMD("C-d",     "edit:delete-next-char", "");
 
 
   /****************************************************************/
