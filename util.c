@@ -640,9 +640,9 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
     if (!backupfile) {
       owl_function_error("Error opening file %s for writing", backupfilename);
       owl_free(backupfilename);
+      fclose(file);
       return;
     }
-    owl_free(backupfilename);
   }
 
   /* we'll read the entire file into memory, minus the line we don't want and
@@ -681,12 +681,14 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
   if (!file) {
     owl_function_error("WARNING: Error opening %s for writing.  Use %s to restore.", filename, backupfilename);
     owl_function_beep();
-    owl_free(line);
-    return;
+  } else {
+    fputs(text, file);
+    fclose(file);
   }
 
-  fputs(text, file);
-  fclose(file);
+  if (backup)
+    owl_free(backupfilename);
+  owl_free(text);
 }
 
 /* add the string 'str' to the list 'list' of strings, only if it
