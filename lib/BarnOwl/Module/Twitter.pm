@@ -234,6 +234,17 @@ sub twitter_direct {
             user => $who,
             text => $msg
            });
+        if(BarnOwl::getvar("displayoutgoing") eq 'on') {
+            my $tweet = BarnOwl::Message->new(
+                type      => 'Twitter',
+                sender    => $cfg->{user} || $user,
+                recipient => $who, 
+                direction => 'out',
+                body      => $msg,
+                isprivate => 'true'
+               );
+            BarnOwl::queue_message($tweet);
+        }
     }
 }
 
