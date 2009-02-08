@@ -45,7 +45,7 @@ else
         AC_MSG_RESULT(no)
 fi
 
-AC_CHECK_LIB(ncursesw, initscr,, AC_MSG_ERROR(No curses library found.))
+AC_CHECK_LIB(ncursesw, initscr,, AC_MSG_ERROR(No libncursesw found.))
 AC_CHECK_LIB(com_err, com_err)
 AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
