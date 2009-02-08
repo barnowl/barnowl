@@ -89,6 +89,20 @@ void owl_fmtext_append_normal(owl_fmtext *f, char *text)
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_NONE, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
 }
 
+/* Append normal, uncolored text specified by format string to 'f' */
+void owl_fmtext_appendf_normal(owl_fmtext *f, char *fmt, ...)
+{
+  va_list ap;
+  char *buff;
+
+  va_start(ap, fmt);
+  buff = g_strdup_vprintf(fmt, ap);
+  va_end(ap);
+  if (!buff)
+    return;
+  owl_fmtext_append_attr(f, buff, OWL_FMTEXT_ATTR_NONE, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
+}
+
 /* Append normal text 'text' to 'f' with color 'color' */
 void owl_fmtext_append_normal_color(owl_fmtext *f, char *text, int fgcolor, int bgcolor)
 {
