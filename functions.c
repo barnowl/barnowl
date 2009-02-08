@@ -1404,29 +1404,28 @@ void owl_function_popless_file(char *filename)
 
 void owl_function_about()
 {
-  char buff[5000];
-
-  sprintf(buff, "This is barnowl version %s\n\n", OWL_VERSION_STRING);
-  strcat(buff, "barnowl is a fork of the Owl zephyr client, written and\n");
-  strcat(buff, "maintained by Alejandro Sedeno and Nelson Elhage at the\n");
-  strcat(buff, "Massachusetts Institute of Technology. \n");
-  strcat(buff, "\n");
-  strcat(buff, "Owl was written by James Kretchmar. The first version, 0.5, was\n");
-  strcat(buff, "released in March 2002.\n");
-  strcat(buff, "\n");
-  strcat(buff, "The name 'owl' was chosen in reference to the owls in the\n");
-  strcat(buff, "Harry Potter novels, who are tasked with carrying messages\n");
-  strcat(buff, "between Witches and Wizards. The name 'barnowl' was chosen\n");
-  strcat(buff, "because we feel our owls should live closer to our ponies.\n");
-  strcat(buff, "\n");
-  strcat(buff, "Copyright (c) 2006-2008 The BarnOwl Developers. All rights reserved.\n");
-  strcat(buff, "Copyright (c) 2004 James Kretchmar. All rights reserved.\n");
-  strcat(buff, "Copyright 2002 Massachusetts Institute of Technology\n");
-  strcat(buff, "\n");
-  strcat(buff, "This program is free software. You can redistribute it and/or\n");
-  strcat(buff,  "modify under the terms of the Sleepycat License. Use the \n");
-  strcat(buff,  "':show license' command to display the full license\n");
-  owl_function_popless_text(buff);
+  owl_function_popless_text(
+    "This is barnowl version " OWL_VERSION_STRING ".\n\n"
+    "barnowl is a fork of the Owl zephyr client, written and\n"
+    "maintained by Alejandro Sedeno and Nelson Elhage at the\n"
+    "Massachusetts Institute of Technology. \n"
+    "\n"
+    "Owl was written by James Kretchmar. The first version, 0.5, was\n"
+    "released in March 2002.\n"
+    "\n"
+    "The name 'owl' was chosen in reference to the owls in the\n"
+    "Harry Potter novels, who are tasked with carrying messages\n"
+    "between Witches and Wizards. The name 'barnowl' was chosen\n"
+    "because we feel our owls should live closer to our ponies.\n"
+    "\n"
+    "Copyright (c) 2006-2008 The BarnOwl Developers. All rights reserved.\n"
+    "Copyright (c) 2004 James Kretchmar. All rights reserved.\n"
+    "Copyright 2002 Massachusetts Institute of Technology\n"
+    "\n"
+    "This program is free software. You can redistribute it and/or\n"
+    "modify under the terms of the Sleepycat License. Use the \n"
+    "':show license' command to display the full license\n"
+  );
 }
 
 void owl_function_info()
