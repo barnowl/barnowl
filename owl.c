@@ -45,7 +45,7 @@ int main(int argc, char **argv, char **env)
   int ret, initialsubs, debug, argcsave, followlast;
   int newmsgs, nexttimediff;
   struct sigaction sigact;
-  char *configfile, *tty, *perlout, *perlerr, **argvsave, buff[LINE], startupmsg[LINE];
+  char *configfile, *tty, *perlout, *perlerr, **argvsave;
   char *confdir;
   owl_filter *f;
   owl_style *s;
@@ -320,17 +320,17 @@ int main(int argc, char **argv, char **env)
 
   /* welcome message */
   owl_function_debugmsg("startup: creating splash message");
-  strcpy(startupmsg, "-----------------------------------------------------------------------\n");
-  sprintf(buff,      "Welcome to barnowl version %s.  Press 'h' for on-line help.            \n", OWL_VERSION_STRING);
-  strcat(startupmsg, buff);
-  strcat(startupmsg, "To see a quick introduction, type ':show quickstart'.                  \n");
-  strcat(startupmsg, "                                                                       \n");
-  strcat(startupmsg, "BarnOwl is free software. Type ':show license' for more                \n");
-  strcat(startupmsg, "information.                                                     ^ ^   \n");
-  strcat(startupmsg, "                                                                 OvO   \n");
-  strcat(startupmsg, "Please report any bugs or suggestions to bug-barnowl@mit.edu    (   )  \n");
-  strcat(startupmsg, "-----------------------------------------------------------------m-m---\n");
-  owl_function_adminmsg("", startupmsg);
+  owl_function_adminmsg("",
+    "-----------------------------------------------------------------------\n"
+    "Welcome to barnowl version " OWL_VERSION_STRING ".  Press 'h' for on-line help.\n"
+    "To see a quick introduction, type ':show quickstart'.                  \n"
+    "                                                                       \n"
+    "BarnOwl is free software. Type ':show license' for more                \n"
+    "information.                                                     ^ ^   \n"
+    "                                                                 OvO   \n"
+    "Please report any bugs or suggestions to bug-barnowl@mit.edu    (   )  \n"
+    "-----------------------------------------------------------------m-m---\n"
+  );
   sepbar(NULL);
 
   /* process the startup file */
