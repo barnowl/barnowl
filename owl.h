@@ -376,7 +376,6 @@ typedef struct _owl_popwin {
   int cols;
   int active;
   int needsfirstrefresh;
-  void (*handler) (int ch);
 } owl_popwin;
 
 typedef struct _owl_messagelist {
@@ -403,7 +402,6 @@ typedef struct _owl_filterelement {
 
 typedef struct _owl_filter {
   char *name;
-  int polarity;
   owl_filterelement * root;
   int fgcolor;
   int bgcolor;
@@ -443,16 +441,6 @@ typedef struct _owl_editwin {
   void (*callback)(struct _owl_editwin*);
   void *cbdata;
 } owl_editwin;
-
-typedef struct _owl_mux {
-  int handle;			/* for referencing this */
-  int active;			/* has this been deleted? */
-  int fd;		       
-  int eventmask;		/* bitmask of OWL_MUX_* */
-  void (*handler_fn)(int handle, int fd, int eventmask, void *data);
-  void *data;			/* data reference to pass to callback */
-} owl_mux;
-typedef owl_list owl_muxevents;
 
 typedef struct _owl_keybinding {
   int  *j;			/* keypress stack (0-terminated) */  
@@ -540,7 +528,6 @@ typedef struct _owl_global {
   owl_keyhandler kh;
   owl_list filterlist;
   owl_list puntlist;
-  owl_muxevents muxevents;	/* fds to dispatch on */
   owl_vardict vars;
   owl_cmddict cmds;
   owl_context ctx;

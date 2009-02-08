@@ -14,11 +14,6 @@
 
 static const char fileIdent[] = "$Id$";
 
-void owl_function_noop(void)
-{
-  return;
-}
-
 char *owl_function_command(char *cmdbuff)
 {
   owl_function_debugmsg("executing command: %s", cmdbuff);
@@ -716,17 +711,6 @@ void owl_function_prevmsg_notdeleted()
   owl_function_prevmsg_full(NULL, 1, 1);
 }
 
-void owl_function_nextmsg_personal()
-{
-  owl_function_nextmsg_full("personal", 0, 0);
-}
-
-void owl_function_prevmsg_personal()
-{
-  owl_function_prevmsg_full("personal", 0, 0);
-}
-
-
 /* if move_after is 1, moves after the delete */
 void owl_function_deletecur(int move_after)
 {
@@ -1277,11 +1261,6 @@ void owl_function_debugmsg(char *fmt, ...)
   va_end(ap);
 }
 
-void owl_function_refresh()
-{
-  owl_function_resize();
-}
-
 void owl_function_beep()
 {
   if (owl_global_is_bell(&g)) {
@@ -1646,24 +1625,6 @@ void owl_function_resize_typwin(int newsize)
 {
   owl_global_set_typwin_lines(&g, newsize);
   owl_function_resize();
-}
-
-void owl_function_typwin_grow()
-{
-  int i;
-
-  i=owl_global_get_typwin_lines(&g);
-  owl_function_resize_typwin(i+1);
-}
-
-void owl_function_typwin_shrink()
-{
-  int i;
-
-  i=owl_global_get_typwin_lines(&g);
-  if (i>2) {
-    owl_function_resize_typwin(i-1);
-  }
 }
 
 void owl_function_mainwin_pagedown()

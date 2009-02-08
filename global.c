@@ -50,7 +50,6 @@ void owl_global_init(owl_global *g) {
   owl_keyhandler_init(&g->kh);
   owl_keys_setup_keymaps(&g->kh);
 
-  owl_list_create(&(g->muxevents));
   owl_list_create(&(g->filterlist));
   owl_list_create(&(g->puntlist));
   owl_list_create(&(g->messagequeue));
@@ -587,12 +586,6 @@ owl_history *owl_global_get_cmd_history(owl_global *g) {
   return(&(g->cmdhist));
 }
 
-/* muxevents */
-
-owl_muxevents *owl_global_get_muxevents(owl_global *g) {
-  return(&(g->muxevents));
-}
-
 /* filterlist */
 
 owl_list *owl_global_get_filterlist(owl_global *g) {
@@ -716,26 +709,6 @@ void owl_global_set_newmsgproc_pid(owl_global *g, int i) {
 
 int owl_global_get_newmsgproc_pid(owl_global *g) {
   return(g->newmsgproc_pid);
-}
-
-void owl_global_add_to_malloced(owl_global *g, int i) {
-  g->malloced+=i;
-}
-
-void owl_global_add_to_freed(owl_global *g, int i) {
-  g->freed+=1;
-}
-
-int owl_global_get_malloced(owl_global *g) {
-  return(g->malloced);
-}
-
-int owl_global_get_freed(owl_global *g) {
-  return(g->freed);
-}
-
-int owl_global_get_meminuse(owl_global *g) {
-  return(g->malloced-g->freed);
 }
 
 /* AIM stuff */

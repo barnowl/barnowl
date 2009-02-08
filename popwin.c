@@ -56,16 +56,6 @@ int owl_popwin_up(owl_popwin *pw)
   return(0);
 }
 
-int owl_popwin_display_text(owl_popwin *pw, char *text)
-{
-  waddstr(pw->popwin, text);
-  wnoutrefresh(pw->popwin);
-  touchwin(pw->borderwin);
-  wnoutrefresh(pw->borderwin);
-  owl_global_set_needrefresh(&g);
-  return(0);
-}	      
-
 int owl_popwin_close(owl_popwin *pw)
 {
   delwin(pw->popwin);
@@ -93,16 +83,6 @@ int owl_popwin_refresh(owl_popwin *pw)
   wnoutrefresh(pw->popwin);
   owl_global_set_needrefresh(&g);
   return(0);
-}
-
-void owl_popwin_set_handler(owl_popwin *pw, void (*func)(int ch))
-{
-  pw->handler=func;
-}
-
-void owl_popwin_unset_handler(owl_popwin *pw)
-{
-  pw->handler=NULL;
 }
 
 WINDOW *owl_popwin_get_curswin(owl_popwin *pw)

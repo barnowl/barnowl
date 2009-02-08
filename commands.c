@@ -1726,13 +1726,6 @@ char *owl_command_zlog(int argc, char **argv, char *buff)
   return(NULL);
 }
 
-
-void owl_command_zlog_out(void)
-{
-  owl_zephyr_zlog_out();
-}
-
-
 char *owl_command_subscribe(int argc, char **argv, char *buff)
 {
   char *class, *instance, *recip="";

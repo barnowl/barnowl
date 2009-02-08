@@ -126,14 +126,6 @@ void sepbar(char *in)
   wnoutrefresh(sepwin);
 }
 
-
-void pophandler_quit(int ch)
-{
-  if (ch=='q') {
-    owl_popwin_close(owl_global_get_popwin(&g));
-  }
-}
-
 char **atokenize(char *buffer, char *sep, int *i)
 {
   /* each element of return must be freed by user */
@@ -377,59 +369,6 @@ char *owl_util_minutes_to_timestr(int in)
     out=owl_sprintf("    %2.2i:%2.2li", hours, run);
   }
   return(out);
-}
-
-/* return the index of the last char before a change from the first one */
-int owl_util_find_trans(char *in, int len)
-{
-  int i;
-  for (i=1; i<len; i++) {
-    if (in[i] != in[0]) return(i-1);
-  }
-  return(i);
-}
-
-int owl_util_find_trans_short(short *in, int len)
-{
-  int i;
-  for (i=1; i<len; i++) {
-    if (in[i] != in[0]) return(i-1);
-  }
-  return(i);
-}
-
-/* Caller must free response. 
- * Takes in strings which are space-separated lists of tokens
- * and returns a single string containing no token more than once.
- * If prohibit is non-null, no token may start with a character
- * in prohibit.
- */
-char *owl_util_uniq(char *A, char *B, char *prohibit)
-{
-  
-  char *cat, **tok;
-  int toklen, i, j, first=1;
-  cat = owl_malloc(strlen(A)+strlen(B)+3);
-  strcpy(cat, A);
-  strcat(cat, " ");
-  strcat(cat, B);
-  tok = atokenize(cat, " ", &toklen);
-  strcpy(cat, "");
-  for (i=0; i<toklen; i++) {
-    int dup=0;
-    for (j=0; j<i; j++) {
-      if (!strcmp(tok[i], tok[j])) dup=1;
-    }
-    if (!dup && (!prohibit || !strchr(prohibit, tok[i][0]))) {
-      if (!first) {
-	strcat(cat, " ");
-      }
-      first=0;
-      strcat(cat, tok[i]);
-    }
-  }
-  atokenize_free(tok, toklen);
-  return(cat);
 }
 
 /* hooks for doing memory allocation et. al. in owl */
@@ -691,34 +630,6 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
   owl_free(text);
 }
 
-/* add the string 'str' to the list 'list' of strings, only if it
- * is not already present
- */
-void owl_util_list_add_unique_string(owl_list *list, char *str)
-{
-  int i, j;
-
-  j=owl_list_get_size(list);
-  for (i=0; i<j; i++) {
-    if (!strcmp(str, owl_list_get_element(list, i))) return;
-  }
-  owl_list_append_element(list, owl_strdup(str));
-}
-
-int owl_util_common_strings_in_lists(owl_list *a, owl_list *b)
-{
-  int i, j, x, y;
-
-  j=owl_list_get_size(a);
-  for (i=0; i<j; i++) {
-    y=owl_list_get_size(b);
-    for (x=0; x<y; x++) {
-      if (!strcmp(owl_list_get_element(a, i), owl_list_get_element(b, x))) return(1);
-    }
-  }
-  return(0);
-}
-
 int owl_util_max(int a, int b)
 {
   if (a>b) return(a);
@@ -881,13 +792,6 @@ int owl_util_regtest(void)
 	      !strcmp("bar quux", skiptokens("foo bar quux", 1)));
   FAIL_UNLESS("skiptokens 2", 
 	      !strcmp("meep", skiptokens("foo 'bar quux' meep", 2)));
-
-  FAIL_UNLESS("owl_util_uniq 1", 
-	      !strcmp("foo bar x", owl_util_uniq("foo", "bar x", "-")));
-  FAIL_UNLESS("owl_util_uniq 2", 
-	      !strcmp("foo bar x", owl_util_uniq("foo", "bar -y x", "-")));
-  FAIL_UNLESS("owl_util_uniq 3", 
-	      !strcmp("meep foo bar", owl_util_uniq("meep foo", "bar foo meep", "-")));
 
   /* if (numfailed) printf("*** WARNING: failures encountered with owl_util\n"); */
   printf("# END testing owl_util (%d failures)\n", numfailed);
