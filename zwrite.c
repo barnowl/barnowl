@@ -194,7 +194,7 @@ void owl_zwrite_populate_zsig(owl_zwrite *z)
 void owl_zwrite_send_ping(owl_zwrite *z)
 {
   int i, j;
-  char to[LINE];
+  char *to;
 
   if (z->noping) return;
   
@@ -208,11 +208,12 @@ void owl_zwrite_send_ping(owl_zwrite *z)
   j=owl_list_get_size(&(z->recips));
   for (i=0; i<j; i++) {
     if (strcmp(z->realm, "")) {
-      sprintf(to, "%s@%s", (char *) owl_list_get_element(&(z->recips), i), z->realm);
+      to = owl_sprintf("%s@%s", (char *) owl_list_get_element(&(z->recips), i), z->realm);
     } else {
-      strcpy(to, owl_list_get_element(&(z->recips), i));
+      to = owl_strdup(owl_list_get_element(&(z->recips), i));
     }
     send_ping(to);
+    owl_free(to);
   }
 
 }
