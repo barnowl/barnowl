@@ -2843,42 +2843,46 @@ void owl_function_show_colors()
  */
 void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
 {
-  char *buff;
+  char *puntexpr, *classexpr, *instexpr, *recipexpr;
   char *quoted;
 
-  buff=owl_malloc(strlen(class)+strlen(inst)+strlen(recip)+100);
-  strcpy(buff, "class");
   if (!strcmp(class, "*")) {
-    strcat(buff, " .*");
+    classexpr = owl_sprintf("class .*");
   } else {
     quoted=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff + strlen(buff), " ^(un)*%s(\\.d)*$", quoted);
+    classexpr = owl_sprintf("class ^(un)*%s(\\.d)*$", quoted);
     owl_free(quoted);
   }
   if (!strcmp(inst, "*")) {
-    strcat(buff, " and instance .*");
+    instexpr = owl_sprintf(" and instance .*");
   } else {
     quoted=owl_text_quote(inst, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff + strlen(buff), " and instance ^(un)*%s(\\.d)*$", quoted);
+    instexpr = owl_sprintf(" and instance ^(un)*%s(\\.d)*$", quoted);
     owl_free(quoted);
   }
-  if (strcmp(recip, "*")) {
+  if (!strcmp(recip, "*")) {
+    recipexpr = owl_sprintf("");
+  } else {
     quoted=owl_text_quote(recip, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff + strlen(buff), " and recipient ^%s$", quoted);
+    owl_sprintf(" and recipient ^%s$", quoted);
     owl_free(quoted);
   }
 
-  owl_function_punt(buff, direction);
-  owl_free(buff);
+  puntexpr = owl_sprintf("%s %s %s", classexpr, instexpr, recipexpr);
+  owl_function_punt(puntexpr, direction);
+  owl_free(puntexpr);
+  owl_free(classexpr);
+  owl_free(instexpr);
+  owl_free(recipexpr);
 }
 
 void owl_function_punt(char *filter, int direction)
