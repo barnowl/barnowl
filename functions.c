@@ -3099,9 +3099,9 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
   owl_buddylist *bl;
   owl_buddy *b;
   owl_list anyone;
-  char *foo, *timestr;
+  char *timestr;
 #ifdef HAVE_LIBZEPHYR
-  char *tmp, *user, *line;
+  char *tmp, *user;
   ZLocations_t location[200];
   int numlocs, ret;
 #endif
@@ -3123,10 +3123,8 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
       } else {
 	timestr=owl_strdup("");
       }
-      foo=owl_sprintf("  %-20.20s %-12.12s\n", owl_buddy_get_name(b), timestr);
-      owl_fmtext_append_normal(&fm, foo);
+      owl_fmtext_appendf_normal(&fm, "  %-20.20s %-12.12s\n", owl_buddy_get_name(b), timestr);
       owl_free(timestr);
-      owl_free(foo);
     }
   }
 
@@ -3154,16 +3152,13 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
           ret=ZGetLocations(location, &numlocs);
           if (ret==0) {
             for (x=0; x<numlocs; x++) {
-              line=owl_malloc(strlen(location[x].host)+strlen(location[x].time)+strlen(location[x].tty)+100);
               tmp=short_zuser(user);
-              sprintf(line, "  %-10.10s %-24.24s %-12.12s  %20.20s\n",
-                      tmp,
-                      location[x].host,
-                      location[x].tty,
-                      location[x].time);
-              owl_fmtext_append_normal(&fm, line);
+              owl_fmtext_appendf_normal(&fm, "  %-10.10s %-24.24s %-12.12s  %20.20s\n",
+                                        tmp,
+                                        location[x].host,
+                                        location[x].tty,
+                                        location[x].time);
               owl_free(tmp);
-              owl_free(line);
             }
             if (numlocs>=200) {
               owl_fmtext_append_normal(&fm, "  Too many locations found for this user, truncating.\n");
