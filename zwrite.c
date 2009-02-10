@@ -221,23 +221,27 @@ void owl_zwrite_send_ping(owl_zwrite *z)
 void owl_zwrite_set_message(owl_zwrite *z, char *msg)
 {
   int i, j;
-  char toline[LINE];
+  char *toline = NULL;
   char *tmp = NULL;
 
   if (z->message) owl_free(z->message);
 
   j=owl_list_get_size(&(z->recips));
   if (j>0 && z->cc) {
-    strcpy(toline, "CC: ");
+    toline = owl_strdup( "CC: ");
     for (i=0; i<j; i++) {
+      tmp = toline;
       if (strcmp(z->realm, "")) {
-	sprintf(toline + strlen(toline), "%s@%s ", (char *) owl_list_get_element(&(z->recips), i), z->realm);
+        toline = owl_sprintf( "%s%s@%s ", toline, (char *) owl_list_get_element(&(z->recips), i), z->realm);
       } else {
-	sprintf(toline + strlen(toline), "%s ", (char *) owl_list_get_element(&(z->recips), i));
+        toline = owl_sprintf( "%s%s ", toline, (char *) owl_list_get_element(&(z->recips), i));
       }
+      owl_free(tmp);
+      tmp = NULL;
     }
     tmp = owl_get_iso_8859_1_if_possible(msg);
     z->message=owl_sprintf("%s\n%s", toline, tmp);
+    owl_free(toline);
   } else {
     z->message=owl_get_iso_8859_1_if_possible(msg);
   }
