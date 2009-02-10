@@ -1,3 +1,11 @@
+barnowl (1.0.5-1) unstable; urgency=high
+
+  * New upstream release
+  * Fix use of sprintf  in zwrite.c and zcrypt.c that is likely to be
+    exploitable 
+
+ -- Sam Hartman <hartmans@debian.org>  Tue, 10 Feb 2009 16:24:17 -0500
+
 barnowl (1.0.3-1) unstable; urgency=low
 
   * New upstream release
