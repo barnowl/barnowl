@@ -263,7 +263,7 @@ int owl_zwrite_is_message_set(owl_zwrite *z)
 int owl_zwrite_send_message(owl_zwrite *z)
 {
   int i, j;
-  char to[LINE];
+  char *to = NULL;
 
   if (z->message==NULL) return(-1);
 
@@ -271,16 +271,19 @@ int owl_zwrite_send_message(owl_zwrite *z)
   if (j>0) {
     for (i=0; i<j; i++) {
       if (strcmp(z->realm, "")) {
-	sprintf(to, "%s@%s", (char *) owl_list_get_element(&(z->recips), i), z->realm);
+        to = owl_sprintf("%s@%s", (char *) owl_list_get_element(&(z->recips), i), z->realm);
       } else {
-	strcpy(to, owl_list_get_element(&(z->recips), i));
+        to = owl_strdup( owl_list_get_element(&(z->recips), i));
       }
       send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
+      owl_free(to);
+      to = NULL;
     }
   } else {
-    sprintf(to, "@%s", z->realm);
+    to = owl_sprintf( "@%s", z->realm);
     send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
   }
+  owl_free(to);
   return(0);
 }
 
