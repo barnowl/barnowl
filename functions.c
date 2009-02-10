@@ -1848,8 +1848,7 @@ void owl_function_status()
   }
   owl_fmtext_append_normal(&fm, "\n");
 
-  sprintf(buff, "  Startup Time: %s", ctime(&start));
-  owl_fmtext_append_normal(&fm, buff);
+  owl_fmtext_appendf_normal(&fm, "  Startup Time: %s", ctime(&start));
 
   up=owl_global_get_runtime(&g);
   days=up/86400;
@@ -1858,8 +1857,7 @@ void owl_function_status()
   up-=hours*3600;
   minutes=up/60;
   up-=minutes*60;
-  sprintf(buff, "  Run Time: %i days %2.2i:%2.2i:%2.2i\n", days, hours, minutes, up);
-  owl_fmtext_append_normal(&fm, buff);
+  owl_fmtext_appendf_normal(&fm, "  Run Time: %i days %2.2i:%2.2i:%2.2i\n", days, hours, minutes, up);
 
   owl_fmtext_append_normal(&fm, "\nProtocol Options:\n");
   owl_fmtext_append_normal(&fm, "  Zephyr included    : ");
@@ -1904,20 +1902,16 @@ void owl_function_status()
 void owl_function_show_term()
 {
   owl_fmtext fm;
-  char buff[LINE];
 
   owl_fmtext_init_null(&fm);
-  sprintf(buff, "Terminal Lines: %i\nTerminal Columns: %i\n",
+  owl_fmtext_appendf_normal(&fm, "Terminal Lines: %i\nTerminal Columns: %i\n",
 	  owl_global_get_lines(&g),
 	  owl_global_get_cols(&g));
-  owl_fmtext_append_normal(&fm, buff);
 
   if (owl_global_get_hascolors(&g)) {
     owl_fmtext_append_normal(&fm, "Color: Yes\n");
-    sprintf(buff, "Number of color pairs: %i\n", owl_global_get_colorpairs(&g));
-    owl_fmtext_append_normal(&fm, buff);
-    sprintf(buff, "Can change colors: %s\n", can_change_color() ? "yes" : "no");
-    owl_fmtext_append_normal(&fm, buff);
+    owl_fmtext_appendf_normal(&fm, "Number of color pairs: %i\n", owl_global_get_colorpairs(&g));
+    owl_fmtext_appendf_normal(&fm, "Can change colors: %s\n", can_change_color() ? "yes" : "no");
   } else {
     owl_fmtext_append_normal(&fm, "Color: No\n");
   }
