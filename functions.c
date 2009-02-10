@@ -2397,7 +2397,6 @@ char *owl_function_classinstfilt(char *c, char *i)
   char *argbuff, *filtname;
   char *tmpclass, *tmpinstance = NULL;
   char *class, *instance = NULL;
-  int len;
 
   class = owl_util_baseclass(c);
   if(i) {
@@ -2407,13 +2406,10 @@ char *owl_function_classinstfilt(char *c, char *i)
   fl=owl_global_get_filterlist(&g);
 
   /* name for the filter */
-  len=strlen(class)+30;
-  if (instance) len+=strlen(instance);
-  filtname=owl_malloc(len);
   if (!instance) {
-    sprintf(filtname, "class-%s", class);
+    filtname = owl_sprintf("class-%s", class);
   } else {
-    sprintf(filtname, "class-%s-instance-%s", class, instance);
+    filtname = owl_sprintf("class-%s-instance-%s", class, instance);
   }
   /* downcase it */
   {
@@ -2444,13 +2440,12 @@ char *owl_function_classinstfilt(char *c, char *i)
     owl_text_tr(tmpinstance, '\'', '.');
     owl_text_tr(tmpinstance, '"', '.');
   }
-  len = strlen(tmpclass);
-  if(tmpinstance) len += strlen(tmpinstance);
-  len += 60;
-  argbuff = owl_malloc(len);
-  sprintf(argbuff, "class ^(un)*%s(\\.d)*$", tmpclass);
+
+  argbuff = owl_sprintf("class ^(un)*%s(\\.d)*$", tmpclass);
   if (tmpinstance) {
-    sprintf(argbuff + strlen(argbuff), " and ( instance ^(un)*%s(\\.d)*$ )", tmpinstance);
+    char *tmp = argbuff;
+    argbuff = owl_sprintf("%s and ( instance ^(un)*%s(\\.d)*$ )", tmp, tmpinstance);
+    owl_free(tmp);
   }
   owl_free(tmpclass);
   if (tmpinstance) owl_free(tmpinstance);
