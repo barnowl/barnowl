@@ -963,8 +963,10 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   owl_message_set_class(m, owl_zwrite_get_class(&z));
   owl_message_set_instance(m, owl_zwrite_get_instance(&z));
   if (owl_zwrite_get_numrecips(&z)>0) {
+    char *longzuser = long_zuser(owl_zwrite_get_recip_n(&z, 0));
     owl_message_set_recipient(m,
-			      long_zuser(owl_zwrite_get_recip_n(&z, 0))); /* only gets the first user, must fix */
+			      longzuser); /* only gets the first user, must fix */
+    owl_free(longzuser);
   }
   owl_message_set_opcode(m, owl_zwrite_get_opcode(&z));
   owl_message_set_realm(m, owl_zwrite_get_realm(&z)); /* also a hack, but not here */
