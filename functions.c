@@ -1432,7 +1432,6 @@ void owl_function_info()
 {
   owl_message *m;
   owl_fmtext fm, attrfm;
-  char buff[10000];
   owl_view *v;
 #ifdef HAVE_LIBZEPHYR
   ZNotice_t *n;
@@ -1448,10 +1447,7 @@ void owl_function_info()
   }
 
   owl_fmtext_append_bold(&fm, "General Information:\n");
-  owl_fmtext_append_normal(&fm, "  Msg Id    : ");
-  sprintf(buff, "%i", owl_message_get_id(m));
-  owl_fmtext_append_normal(&fm, buff);
-  owl_fmtext_append_normal(&fm, "\n");
+  owl_fmtext_appendf_normal(&fm, "  Msg Id    : %i\n", owl_message_get_id(m));
 
   owl_fmtext_append_normal(&fm, "  Type      : ");
   owl_fmtext_append_bold(&fm, owl_message_get_type(m));
@@ -1467,36 +1463,19 @@ void owl_function_info()
     owl_fmtext_append_normal(&fm, "  Direction : unknown\n");
   }
 
-  owl_fmtext_append_normal(&fm, "  Time      : ");
-  owl_fmtext_append_normal(&fm, owl_message_get_timestr(m));
-  owl_fmtext_append_normal(&fm, "\n");
+  owl_fmtext_appendf_normal(&fm, "  Time      : %s\n", owl_message_get_timestr(m));
 
   if (!owl_message_is_type_admin(m)) {
-    owl_fmtext_append_normal(&fm, "  Sender    : ");
-    owl_fmtext_append_normal(&fm, owl_message_get_sender(m));
-    owl_fmtext_append_normal(&fm, "\n");
-    
-    owl_fmtext_append_normal(&fm, "  Recipient : ");
-    owl_fmtext_append_normal(&fm, owl_message_get_recipient(m));
-    owl_fmtext_append_normal(&fm, "\n");
+    owl_fmtext_appendf_normal(&fm, "  Sender    : %s\n", owl_message_get_sender(m));
+    owl_fmtext_appendf_normal(&fm, "  Recipient : %s\n", owl_message_get_recipient(m));
   }
-    
+
   if (owl_message_is_type_zephyr(m)) {
     owl_fmtext_append_bold(&fm, "\nZephyr Specific Information:\n");
     
-    owl_fmtext_append_normal(&fm, "  Class     : ");
-    owl_fmtext_append_normal(&fm, owl_message_get_class(m));
-    owl_fmtext_append_normal(&fm, "\n");
-    owl_fmtext_append_normal(&fm, "  Instance  : ");
-    owl_fmtext_append_normal(&fm, owl_message_get_instance(m));
-    owl_fmtext_append_normal(&fm, "\n");
-    owl_fmtext_append_normal(&fm, "  Opcode    : ");
-    owl_fmtext_append_normal(&fm, owl_message_get_opcode(m));
-    owl_fmtext_append_normal(&fm, "\n");
-    
-    owl_fmtext_append_normal(&fm, "  Time      : ");
-    owl_fmtext_append_normal(&fm, owl_message_get_timestr(m));
-    owl_fmtext_append_normal(&fm, "\n");
+    owl_fmtext_appendf_normal(&fm, "  Class     : %s\n", owl_message_get_class(m));
+    owl_fmtext_appendf_normal(&fm, "  Instance  : %s\n", owl_message_get_instance(m));
+    owl_fmtext_appendf_normal(&fm, "  Opcode    : %s\n", owl_message_get_opcode(m));
 #ifdef HAVE_LIBZEPHYR
     if (owl_message_is_direction_in(m)) {
       char *ptr, tmpbuff[1024];
@@ -1528,32 +1507,23 @@ void owl_function_info()
 	  owl_fmtext_append_normal(&fm, "ILLEGAL VALUE\n");
 	}
       }
-      owl_fmtext_append_normal(&fm, "  Host      : ");
-      owl_fmtext_append_normal(&fm, owl_message_get_hostname(m));
+      owl_fmtext_appendf_normal(&fm, "  Host      : %s\n", owl_message_get_hostname(m));
 
       if (!owl_message_is_pseudo(m)) {
 	owl_fmtext_append_normal(&fm, "\n");
-	sprintf(buff, "  Port      : %i\n", ntohs(n->z_port));
-	owl_fmtext_append_normal(&fm, buff);
+	owl_fmtext_appendf_normal(&fm, "  Port      : %i\n", ntohs(n->z_port));
+	owl_fmtext_appendf_normal(&fm, "  Auth      : %s\n", owl_zephyr_get_authstr(n));
 
-	owl_fmtext_append_normal(&fm,    "  Auth      : ");
-	owl_fmtext_append_normal(&fm, owl_zephyr_get_authstr(n));
-	owl_fmtext_append_normal(&fm, "\n");
-	
-	/* fix this */
-	sprintf(buff, "  Checkd Ath: %i\n", n->z_checked_auth);
-	sprintf(buff + strlen(buff), "  Multi notc: %s\n", n->z_multinotice);
-	sprintf(buff + strlen(buff), "  Num other : %i\n", n->z_num_other_fields);
-	sprintf(buff + strlen(buff), "  Msg Len   : %i\n", n->z_message_len);
-	owl_fmtext_append_normal(&fm, buff);
-	
-	sprintf(buff, "  Fields    : %i\n", owl_zephyr_get_num_fields(n));
-	owl_fmtext_append_normal(&fm, buff);
-	
+	/* FIXME make these more descriptive */
+	owl_fmtext_appendf_normal(&fm, "  Checkd Ath: %i\n", n->z_checked_auth);
+	owl_fmtext_appendf_normal(&fm, "  Multi notc: %s\n", n->z_multinotice);
+	owl_fmtext_appendf_normal(&fm, "  Num other : %i\n", n->z_num_other_fields);
+	owl_fmtext_appendf_normal(&fm, "  Msg Len   : %i\n", n->z_message_len);
+
 	fields=owl_zephyr_get_num_fields(n);
+	owl_fmtext_appendf_normal(&fm, "  Fields    : %i\n", fields);
+
 	for (i=0; i<fields; i++) {
-	  sprintf(buff, "  Field %i   : ", i+1);
-	  
 	  ptr=owl_zephyr_get_field_as_utf8(n, i+1);
 	  len=strlen(ptr);
 	  if (len<30) {
@@ -1565,22 +1535,19 @@ void owl_function_info()
 	    strcat(tmpbuff, "...");
 	  }
 	  owl_free(ptr);
-	  
+
 	  for (j=0; j<strlen(tmpbuff); j++) {
 	    if (tmpbuff[j]=='\n') tmpbuff[j]='~';
 	    if (tmpbuff[j]=='\r') tmpbuff[j]='!';
 	  }
-	  
-	  strcat(buff, tmpbuff);
-	  strcat(buff, "\n");
-	  owl_fmtext_append_normal(&fm, buff);
+
+	  owl_fmtext_appendf_normal(&fm, "  Field %i   : %s\n", i+1, tmpbuff);
 	}
-	owl_fmtext_append_normal(&fm, "  Default Fm:");
-	owl_fmtext_append_normal(&fm, n->z_default_format);
+	owl_fmtext_appendf_normal(&fm, "  Default Fm: %s\n", n->z_default_format);
       }
-      
+
     }
-#endif    
+#endif
   }
 
   owl_fmtext_append_bold(&fm, "\nOwl Message Attributes:\n");
