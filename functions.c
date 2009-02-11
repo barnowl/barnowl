@@ -1663,34 +1663,31 @@ void owl_function_getsubs()
   owl_free(buff);
 }
 
-#define PABUFLEN 5000
 void owl_function_printallvars()
 {
-  char buff[PABUFLEN], *pos, *name;
+  char *name;
+  char var[LINE];
   owl_list varnames;
-  int i, numvarnames, rem;
+  int i, numvarnames;
+  GString *str   = g_string_new("");
 
-  pos = buff;
-  pos += sprintf(pos, "%-20s = %s\n", "VARIABLE", "VALUE");
-  pos += sprintf(pos, "%-20s   %s\n",  "--------", "-----");
+  g_string_append_printf(str, "%-20s = %s\n", "VARIABLE", "VALUE");
+  g_string_append_printf(str, "%-20s   %s\n",  "--------", "-----");
   owl_variable_dict_get_names(owl_global_get_vardict(&g), &varnames);
-  rem = (buff+PABUFLEN)-pos-1;
   numvarnames = owl_list_get_size(&varnames);
   for (i=0; i<numvarnames; i++) {
     name = owl_list_get_element(&varnames, i);
     if (name && name[0]!='_') {
-      rem = (buff+PABUFLEN)-pos-1;    
-      pos += snprintf(pos, rem, "\n%-20s = ", name);
-      rem = (buff+PABUFLEN)-pos-1;    
-      owl_variable_get_tostring(owl_global_get_vardict(&g), name, pos, rem);
-      pos = buff+strlen(buff);
+      g_string_append_printf(str, "\n%-20s = ", name);
+      owl_variable_get_tostring(owl_global_get_vardict(&g), name, var, LINE);
+      g_string_append(str, var);
     }
   }
-  rem = (buff+PABUFLEN)-pos-1;    
-  snprintf(pos, rem, "\n");
+  g_string_append(str, "\n");
   owl_variable_dict_namelist_free(&varnames);
-  
-  owl_function_popless_text(buff);
+
+  owl_function_popless_text(str->str);
+  g_string_free(str, TRUE);
 }
 
 void owl_function_show_variables()
