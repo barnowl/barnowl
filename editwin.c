@@ -1041,6 +1041,11 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
     /* bail if we hit the end of the paragraph */
     if (e->buff[i] == '\n' && e->buff[i+1] == '\n') break;
 
+    /* bail if we hit a trailing dot on the buffer */
+    if (e->buff[i] == '\n' && e->buff[i+1] == '.'
+        && ((i+2) >= e->bufflen || e->buff[i+2] == '\0'))
+      break;
+
     /* if we've travelled too far, linewrap */
     if ((e->buffx) >= e->fillcol) {
       int len = e->bufflen;

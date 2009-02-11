@@ -50,7 +50,6 @@ void owl_global_init(owl_global *g) {
   owl_keyhandler_init(&g->kh);
   owl_keys_setup_keymaps(&g->kh);
 
-  owl_list_create(&(g->muxevents));
   owl_list_create(&(g->filterlist));
   owl_list_create(&(g->puntlist));
   owl_list_create(&(g->messagequeue));
@@ -99,25 +98,23 @@ void owl_global_init(owl_global *g) {
   g->aim_screenname=NULL;
   g->aim_screenname_for_filters=NULL;
   g->aim_loggedin=0;
-  owl_timer_create_countdown(&(g->aim_noop_timer), 30);
-  owl_timer_create_countdown(&(g->aim_ignorelogin_timer), 0);
-  owl_timer_create_countdown(&(g->aim_buddyinfo_timer), 60);
   owl_buddylist_init(&(g->buddylist));
-    
+
   g->havezephyr=0;
   g->haveaim=0;
+  g->ignoreaimlogin=0;
   owl_global_set_no_doaimevents(g);
 
   owl_errqueue_init(&(g->errqueue));
   g->got_err_signal=0;
 
   owl_zbuddylist_create(&(g->zbuddies));
-  owl_timer_create_countdown(&(g->zephyr_buddycheck_timer), 60*3);
 
   owl_obarray_init(&(g->obarray));
 
   owl_message_init_fmtext_cache();
   owl_list_create(&(g->dispatchlist));
+  g->timerlist = NULL;
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -138,7 +135,7 @@ void _owl_global_setup_windows(owl_global *g) {
   /* create the new windows */
   g->recwin=newwin(g->recwinlines, cols, 0, 0);
   if (g->recwin==NULL) {
-    owl_function_debugmsg("_owl_global_setup_windows: newwin returned NULL\n", g->recwinlines, cols);
+    owl_function_debugmsg("_owl_global_setup_windows: newwin returned NULL\n");
     endwin();
     exit(50);
   }
@@ -569,7 +566,7 @@ void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
 
   strcpy(g->startupargs, "");
   for (i=0; i<argc; i++) {
-    sprintf(g->startupargs, "%s%s ", g->startupargs, argv[i]);
+    sprintf(g->startupargs + strlen(g->startupargs), "%s ", argv[i]);
   }
   g->startupargs[strlen(g->startupargs)-1]='\0';
 }
@@ -587,12 +584,6 @@ owl_history *owl_global_get_msg_history(owl_global *g) {
 
 owl_history *owl_global_get_cmd_history(owl_global *g) {
   return(&(g->cmdhist));
-}
-
-/* muxevents */
-
-owl_muxevents *owl_global_get_muxevents(owl_global *g) {
-  return(&(g->muxevents));
 }
 
 /* filterlist */
@@ -720,26 +711,6 @@ int owl_global_get_newmsgproc_pid(owl_global *g) {
   return(g->newmsgproc_pid);
 }
 
-void owl_global_add_to_malloced(owl_global *g, int i) {
-  g->malloced+=i;
-}
-
-void owl_global_add_to_freed(owl_global *g, int i) {
-  g->freed+=1;
-}
-
-int owl_global_get_malloced(owl_global *g) {
-  return(g->malloced);
-}
-
-int owl_global_get_freed(owl_global *g) {
-  return(g->freed);
-}
-
-int owl_global_get_meminuse(owl_global *g) {
-  return(g->malloced-g->freed);
-}
-
 /* AIM stuff */
 
 int owl_global_is_aimloggedin(owl_global *g)
@@ -811,22 +782,6 @@ aim_conn_t *owl_global_get_bosconn(owl_global *g)
 void owl_global_set_bossconn(owl_global *g, aim_conn_t *conn)
 {
   g->bosconn=*conn;
-}
-
-int owl_global_is_aimnop_time(owl_global *g)
-{
-  if (owl_timer_is_expired(&(g->aim_noop_timer))) return(1);
-  return(0);
-}
-
-void owl_global_aimnop_sent(owl_global *g)
-{
-  owl_timer_reset(&(g->aim_noop_timer));
-}
-
-owl_timer *owl_global_get_aim_login_timer(owl_global *g)
-{
-  return(&(g->aim_ignorelogin_timer));
 }
 
 /* message queue */
@@ -901,6 +856,21 @@ int owl_global_is_haveaim(owl_global *g)
   return(0);
 }
 
+void owl_global_set_ignore_aimlogin(owl_global *g)
+{
+    g->ignoreaimlogin = 1;
+}
+
+void owl_global_unset_ignore_aimlogin(owl_global *g)
+{
+    g->ignoreaimlogin = 0;
+}
+
+int owl_global_is_ignore_aimlogin(owl_global *g)
+{
+    return g->ignoreaimlogin;
+}
+
 void owl_global_set_havezephyr(owl_global *g)
 {
   g->havezephyr=1;
@@ -910,11 +880,6 @@ int owl_global_is_havezephyr(owl_global *g)
 {
   if (g->havezephyr) return(1);
   return(0);
-}
-
-owl_timer *owl_global_get_aim_buddyinfo_timer(owl_global *g)
-{
-  return(&(g->aim_buddyinfo_timer));
 }
 
 owl_errqueue *owl_global_get_errqueue(owl_global *g)
@@ -943,10 +908,6 @@ int owl_global_get_errsignal_and_clear(owl_global *g, siginfo_t *siginfo)
   return signum;
 }
 
-owl_timer *owl_global_get_zephyr_buddycheck_timer(owl_global *g)
-{
-  return(&(g->zephyr_buddycheck_timer));
-}
 
 owl_zbuddylist *owl_global_get_zephyr_buddylist(owl_global *g)
 {
@@ -966,4 +927,9 @@ char * owl_global_intern(owl_global *g, char * string)
 owl_list *owl_global_get_dispatchlist(owl_global *g)
 {
   return &(g->dispatchlist);
+}
+
+GList **owl_global_get_timerlist(owl_global *g)
+{
+  return &(g->timerlist);
 }

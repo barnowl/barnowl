@@ -77,15 +77,6 @@ int owl_list_remove_element(owl_list *l, int n)
   return(0);
 }
 
-/* todo: might leak memory */
-int owl_list_replace_element(owl_list *l, int n, void *element)
-{
-  if (n>l->size-1) return(-1);
-
-  l->list[n]=element;
-  return(0);
-}
-
 void owl_list_free_all(owl_list *l, void (*elefree)(void *))
 {
   int i;

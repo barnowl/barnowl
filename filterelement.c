@@ -278,32 +278,45 @@ int owl_filterelement_match(owl_filterelement *fe, owl_message *m)
   return fe->match_message(fe, m);
 }
 
+static int fe_visiting = 0;
+static int fe_visited  = 1;
+
 int owl_filterelement_is_toodeep(owl_filter *f, owl_filterelement *fe)
 {
-  int one = 1;
-  owl_list nodes;
+  int rv;
   owl_dict filters;
-  owl_list_create(&nodes);
   owl_dict_create(&filters);
-  
-  owl_list_append_element(&nodes, fe);
-  owl_dict_insert_element(&filters, f->name, &one, NULL);
-  while(owl_list_get_size(&nodes)) {
-    fe = owl_list_get_element(&nodes, 0);
-    owl_list_remove_element(&nodes, 0);
-    if(fe->left) owl_list_append_element(&nodes, fe->left);
-    if(fe->right) owl_list_append_element(&nodes, fe->right);
-    if(fe->match_message == owl_filterelement_match_filter) {
-      if(owl_dict_find_element(&filters, fe->field)) return 1;
-      owl_dict_insert_element(&filters, fe->field, &one, NULL);
-      f = owl_global_get_filter(&g, fe->field);
-      if(f) owl_list_append_element(&nodes, f->root);
-    }
-  }
 
-  owl_list_free_simple(&nodes);
+  owl_dict_insert_element(&filters, f->name, &fe_visiting, owl_dict_noop_free);
+
+  rv = _owl_filterelement_is_toodeep(fe, &filters);
+
   owl_dict_free_simple(&filters);
-  return 0;
+  return rv;
+}
+
+int _owl_filterelement_is_toodeep(owl_filterelement *fe, owl_dict *seen)
+{
+  int rv = 0;
+  owl_filter *f;
+
+  if(fe->match_message == owl_filterelement_match_filter) {
+    int *nval = owl_dict_find_element(seen, fe->field);
+    if(nval == &fe_visiting) {
+      return 1;
+    } else if (nval == NULL) {
+      f = owl_global_get_filter(&g, fe->field);
+      owl_dict_insert_element(seen, fe->field, &fe_visiting, owl_dict_noop_free);
+      if(f) rv = _owl_filterelement_is_toodeep(f->root, seen);
+      owl_dict_insert_element(seen, fe->field, &fe_visited, owl_dict_noop_free);
+    }
+  } else {
+    if(fe->left)
+      rv = rv || _owl_filterelement_is_toodeep(fe->left, seen);
+    if(fe->right)
+      rv = rv || _owl_filterelement_is_toodeep(fe->right, seen);
+  }
+  return rv;
 }
 
 void owl_filterelement_free(owl_filterelement *fe)

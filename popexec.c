@@ -50,15 +50,15 @@ owl_popexec *owl_popexec_new(char *command)
     owl_function_error("owl_function_popless_exec: fork failed\n");
     return NULL;
   } else if (pid != 0) {
+    close(child_write_fd);
     /* still in owl */
-    int muxhandle;
     pe->pid=pid;
     pe->winactive=1;
-    pe->rfd = parent_read_fd;
-    close(child_write_fd);
-    muxhandle = owl_muxevents_add(owl_global_get_muxevents(&g),
-    				  parent_read_fd, OWL_MUX_READ|OWL_MUX_EXCEPT,
-    				  owl_popexec_inputhandler, (void*)pe);
+    pe->dispatch.fd = parent_read_fd;
+    pe->dispatch.cfunc = owl_popexec_inputhandler;
+    pe->dispatch.destroy = owl_popexec_free_dispatch;
+    pe->dispatch.data = pe;
+    owl_select_add_dispatch(&pe->dispatch);
     pe->refcount++;
   } else {
     /* in the child process */
@@ -72,11 +72,6 @@ owl_popexec *owl_popexec_new(char *command)
     dup2(child_write_fd, 1 /*stdout*/);
     dup2(child_write_fd, 2 /*stderr*/);
     close(child_write_fd);
-    
-    while(0) {
-      write(child_write_fd, "meep\n", 5);
-      sleep(1);
-    }
 
     argv[0] = "sh";
     argv[1] = "-c";
@@ -89,9 +84,9 @@ owl_popexec *owl_popexec_new(char *command)
   return pe;
 }
 
-void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data)
+void owl_popexec_inputhandler(owl_dispatch *d)
 {
-  owl_popexec *pe = (owl_popexec*)data;
+  owl_popexec *pe = d->data;
   int navail, bread, rv_navail;
   char *buf;
   int status;
@@ -100,7 +95,7 @@ void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data)
 
   /* If pe->winactive is 0 then the vwin has closed. 
    * If pe->pid is 0 then the child has already been reaped.
-   * if pe->rfd is -1 then the fd has been closed out.
+   * if d->fd is -1 then the fd has been closed out.
    * Under these cases we want to get to a state where:
    *   - data read until end if child running
    *   - child reaped
@@ -109,14 +104,12 @@ void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data)
    */
 
   /* the viewwin has closed */
-  if (pe->rfd<0 && !pe->pid && !pe->winactive) {
-    owl_muxevents_remove(owl_global_get_muxevents(&g), handle);
-    owl_function_debugmsg("unref of %p from input handler at A", pe);
-    owl_popexec_unref(pe);
+  if (!pe->pid && !pe->winactive) {
+    owl_select_remove_dispatch(d->fd);
     return;
   }
 
-  if (0 != (rv_navail = ioctl(fd, FIONREAD, (void*)&navail))) {
+  if (0 != (rv_navail = ioctl(d->fd, FIONREAD, (void*)&navail))) {
     owl_function_debugmsg("ioctl error");
   }
 
@@ -129,17 +122,11 @@ void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data)
       owl_viewwin_append_text(pe->vwin, "\n");
       owl_viewwin_redisplay(pe->vwin, 1);
     }
-    if (pe->rfd>0) {
-      close(pe->rfd);
-      pe->rfd = -1;
-    }
-    owl_muxevents_remove(owl_global_get_muxevents(&g), handle);
-    owl_function_debugmsg("unref of %p from input handler at B", pe);
-    owl_popexec_unref(pe);
+    owl_select_remove_dispatch(d->fd);
     return;
   }
 
-  if (pe->rfd<0 || !pe->pid || !pe->winactive || rv_navail) {
+  if (d->fd<0 || !pe->pid || !pe->winactive || rv_navail) {
     owl_function_error("popexec should not have reached this point");
     return;
   }
@@ -147,8 +134,8 @@ void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data)
   if (navail<=0) return;
   if (navail>1024) { navail = 1024; }
   buf = owl_malloc(navail+1);
-  owl_function_debugmsg("about to read %d\n", navail);
-  bread = read(fd, buf, navail);
+  owl_function_debugmsg("about to read %d", navail);
+  bread = read(d->fd, buf, navail);
   if (bread<0) {
     perror("read");
     owl_function_debugmsg("read error");
@@ -156,7 +143,7 @@ void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data)
   if (buf[navail-1] != '\0') {
     buf[navail] = '\0';
   }
-  owl_function_debugmsg("got data:  <%s>\n", buf);
+  owl_function_debugmsg("got data:  <%s>", buf);
   if (pe->winactive) {
     owl_viewwin_append_text(pe->vwin, buf);
     owl_viewwin_redisplay(pe->vwin, 1);
@@ -165,15 +152,21 @@ void owl_popexec_inputhandler(int handle, int fd, int eventmask, void *data)
   
 }
 
+void owl_popexec_free_dispatch(owl_dispatch *d)
+{
+  owl_popexec *pe = d->data;
+  close(d->fd);
+  owl_popexec_unref(pe);
+}
+
 void owl_popexec_viewwin_onclose(owl_viewwin *vwin, void *data)
 {
   owl_popexec *pe = (owl_popexec*)data;
   int status, rv;
 
   pe->winactive = 0;
-  if (pe->rfd>0) {
-    close(pe->rfd);
-    pe->rfd = -1;
+  if (pe->dispatch.fd>0) {
+    owl_select_remove_dispatch(pe->dispatch.fd);
   }
   if (pe->pid) {
     /* TODO: we should handle the case where SIGTERM isn't good enough */

@@ -89,6 +89,20 @@ void owl_fmtext_append_normal(owl_fmtext *f, char *text)
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_NONE, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
 }
 
+/* Append normal, uncolored text specified by format string to 'f' */
+void owl_fmtext_appendf_normal(owl_fmtext *f, char *fmt, ...)
+{
+  va_list ap;
+  char *buff;
+
+  va_start(ap, fmt);
+  buff = g_strdup_vprintf(fmt, ap);
+  va_end(ap);
+  if (!buff)
+    return;
+  owl_fmtext_append_attr(f, buff, OWL_FMTEXT_ATTR_NONE, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
+}
+
 /* Append normal text 'text' to 'f' with color 'color' */
 void owl_fmtext_append_normal_color(owl_fmtext *f, char *text, int fgcolor, int bgcolor)
 {
@@ -168,7 +182,8 @@ void _owl_fmtext_scan_attributes(owl_fmtext *f, int start, char *attr, short *fg
 }  
 
 /* Internal function.  Append text from 'in' between index 'start' and
- * 'stop' to the end of 'f'
+ * 'stop', inclusive, to the end of 'f'. This function works with
+ * bytes.
  */
 void _owl_fmtext_append_fmtext(owl_fmtext *f, owl_fmtext *in, int start, int stop) /*noproto*/
 {
@@ -473,16 +488,17 @@ void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *ou
 	/* We made it to the newline. */
 	_owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
       }
+      else if (chwidth > 1) {
+        /* Last char is wide, truncate. */
+        _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff - 1);
+        owl_fmtext_append_normal(out, "\n");
+      }
       else {
-	if (chwidth > 1) {
-	  /* Last char is wide, truncate. */
-	  _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff - 1);
-	  owl_fmtext_append_normal(out, "\n");
-	}
-	else {
-	  /* Last char fits perfectly, leave alone.*/
-	  _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
-	}
+        /* Last char fits perfectly, We skip to the next char and back
+         * up a byte to make sure we get it all.
+         */
+        ptr_c = g_utf8_next_char(ptr_c);
+        _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff - 1);
       }
     }
     else {
@@ -762,10 +778,10 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
  * joins the elements together with join_with. 
  * If format_fn is specified, passes it the list element value
  * and it will return a string which this needs to free. */
-void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(format_fn)(void*))
+void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(format_fn)(char *))
 {
   int i, size;
-  void *elem;
+  char *elem;
   char *text;
 
   size = owl_list_get_size(l);

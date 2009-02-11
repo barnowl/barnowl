@@ -337,18 +337,6 @@ char *owl_message_get_timestr(owl_message *m)
   return("");
 }
 
-/* caller must free the return */
-char *owl_message_get_shorttimestr(owl_message *m)
-{
-  struct tm *tmstruct;
-  char *out;
-
-  tmstruct=localtime(&(m->time));
-  out=owl_sprintf("%2.2i:%2.2i", tmstruct->tm_hour, tmstruct->tm_min);
-  if (out) return(out);
-  return("??:??");
-}
-
 void owl_message_set_type_admin(owl_message *m)
 {
   owl_message_set_attribute(m, "type", "admin");
@@ -383,12 +371,6 @@ int owl_message_is_type(owl_message *m, char *type) {
 int owl_message_is_type_admin(owl_message *m)
 {
   return owl_message_is_type(m, "admin");
-}
-
-int owl_message_is_type_generic(owl_message *m)
-{
-  char * t = owl_message_get_attribute_value(m, "type");
-  return (t == NULL);
 }
 
 int owl_message_is_type_zephyr(owl_message *m)
@@ -572,42 +554,10 @@ void owl_message_set_isanswered(owl_message *m) {
   owl_message_set_attribute(m, "question", "answered");
 }
 
-int owl_message_is_from_me(owl_message *m)
-{
-  if (owl_message_is_type_zephyr(m)) {
-    if (!strcasecmp(owl_message_get_sender(m), owl_zephyr_get_sender())) {
-      return(1);
-    } else {
-      return(0);
-    }
-  } else if (owl_message_is_type_aim(m)) {
-    if (!strcasecmp(owl_message_get_sender(m), owl_global_get_aim_screenname(&g))) {
-      return(1);
-    } else {
-      return(0);
-    }
-  } else if (owl_message_is_type_admin(m)) {
-    return(0);
-  }
-  return(0);
-}
-
 int owl_message_is_mail(owl_message *m)
 {
   if (owl_message_is_type_zephyr(m)) {
     if (!strcasecmp(owl_message_get_class(m), "mail") && owl_message_is_private(m)) {
-      return(1);
-    } else {
-      return(0);
-    }
-  }
-  return(0);
-}
-
-int owl_message_is_ping(owl_message *m)
-{
-  if (owl_message_is_type_zephyr(m)) {
-    if (!strcasecmp(owl_message_get_opcode(m), "ping")) {
       return(1);
     } else {
       return(0);
@@ -963,8 +913,10 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   owl_message_set_class(m, owl_zwrite_get_class(&z));
   owl_message_set_instance(m, owl_zwrite_get_instance(&z));
   if (owl_zwrite_get_numrecips(&z)>0) {
+    char *longzuser = long_zuser(owl_zwrite_get_recip_n(&z, 0));
     owl_message_set_recipient(m,
-			      long_zuser(owl_zwrite_get_recip_n(&z, 0))); /* only gets the first user, must fix */
+			      longzuser); /* only gets the first user, must fix */
+    owl_free(longzuser);
   }
   owl_message_set_opcode(m, owl_zwrite_get_opcode(&z));
   owl_message_set_realm(m, owl_zwrite_get_realm(&z)); /* also a hack, but not here */
@@ -987,16 +939,6 @@ void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, 
   }
 
   owl_zwrite_free(&z);
-}
-
-void owl_message_pretty_zsig(owl_message *m, char *buff)
-{
-  /* stick a one line version of the zsig in buff */
-  char *ptr;
-
-  strcpy(buff, owl_message_get_zsig(m));
-  ptr=strchr(buff, '\n');
-  if (ptr) ptr[0]='\0';
 }
 
 void owl_message_free(owl_message *m)

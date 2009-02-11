@@ -453,13 +453,6 @@ owl_cmd commands_to_init[]
   OWLCMD_VOID("pop-message", owl_command_pop_message, OWL_CTX_RECWIN,
 	      "pops up a message in a window", "", ""),
 
-  OWLCMD_VOID("openurl", owl_command_openurl, OWL_CTX_INTERACTIVE,
-	      "opens up a URL from the current message",
-	      "", 
-	      "Uses the 'webbrowser' variable to determine\n"
-	      "which browser to use.  Currently, 'netscape'\n"
-	      "and 'galeon' are supported.\n"),
-
   OWLCMD_ARGS("zaway", owl_command_zaway, OWL_CTX_INTERACTIVE,
 	      "Set, enable or disable zephyr away message",
 	      "zaway [ on | off | toggle ]\n"
@@ -640,6 +633,7 @@ owl_cmd commands_to_init[]
 	      "show keymaps\n"
 	      "show keymap <keymap>\n"
 	      "show license\n"
+	      "show quickstart\n"
 	      "show startup\n"
 	      "show status\n"
 	      "show styles\n"
@@ -1045,10 +1039,7 @@ void owl_command_about()
 
 void owl_command_version()
 {
-  char buff[1024];
-
-  sprintf(buff, "Owl version %s", OWL_VERSION_STRING);
-  owl_function_makemsg(buff);
+  owl_function_makemsg("BarnOwl version %s", OWL_VERSION_STRING);
 }
 
 char *owl_command_aim(int argc, char **argv, char *buff)
@@ -1460,7 +1451,7 @@ char *owl_command_away(int argc, char **argv, char *buff)
     owl_global_set_zaway_msg(&g, owl_global_get_zaway_msg_default(&g));
     owl_function_aaway_on();
     owl_function_zaway_on();
-    owl_function_makemsg("Away messages set.", owl_global_get_aaway_msg_default(&g));
+    owl_function_makemsg("Away messages set.");
     return NULL;
   }
 
@@ -1690,7 +1681,7 @@ char *owl_command_debug(int argc, char **argv, char *buff)
     return(NULL);
   }
 
-  owl_function_debugmsg(argv[1]);
+  owl_function_debugmsg("%s", argv[1]);
   return(NULL);
 }
 
@@ -1734,13 +1725,6 @@ char *owl_command_zlog(int argc, char **argv, char *buff)
   }
   return(NULL);
 }
-
-
-void owl_command_zlog_out(void)
-{
-  owl_zephyr_zlog_out();
-}
-
 
 char *owl_command_subscribe(int argc, char **argv, char *buff)
 {
@@ -2206,6 +2190,8 @@ char *owl_command_show(int argc, char **argv, char *buff)
     owl_function_status();
   } else if (!strcmp(argv[1], "license")) {
     owl_function_show_license();
+  } else if (!strcmp(argv[1], "quickstart")) {
+    owl_function_show_quickstart();
   } else if (!strcmp(argv[1], "startup")) {
     char *filename;
     
@@ -2250,11 +2236,6 @@ char *owl_command_viewuser(int argc, char **argv, char *buff)
 void owl_command_pop_message(void)
 {
   owl_function_curmsg_to_popwin();
-}
-
-void owl_command_openurl(void)
-{
-  owl_function_openurl();
 }
 
 char *owl_command_delete(int argc, char **argv, char *buff)
@@ -2579,14 +2560,14 @@ char *owl_command_getstyle(int argc, char **argv, char *buff)
 char *owl_command_error(int argc, char **argv, char *buff)
 {
     buff = skiptokens(buff, 1);
-    owl_function_error(buff);
+    owl_function_error("%s", buff);
     return NULL;
 }
 
 char *owl_command_message(int argc, char **argv, char *buff)
 {
     buff = skiptokens(buff, 1);
-    owl_function_makemsg(buff);
+    owl_function_makemsg("%s", buff);
     return NULL;
 }
 

@@ -3,8 +3,6 @@
 
 static const char fileIdent[] = "$Id$";
 
-#define OWL_FILTER_MAXRECURSE 20
-
 int owl_filter_init_fromstring(owl_filter *f, char *name, char *string)
 {
   char **argv;
@@ -19,7 +17,6 @@ int owl_filter_init_fromstring(owl_filter *f, char *name, char *string)
 int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
 {
   f->name=owl_strdup(name);
-  f->polarity=0;
   f->fgcolor=OWL_COLOR_DEFAULT;
   f->bgcolor=OWL_COLOR_DEFAULT;
   f->cachedmsgid=-1;
@@ -49,7 +46,7 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
 
   /* Now check for recursion. */
   if (owl_filter_is_toodeep(f)) {
-    owl_function_error("Filter loop or exceeds recursion depth");
+    owl_function_error("Filter loop!");
     owl_filter_free(f);
     return(-1);
   }
@@ -158,16 +155,6 @@ char *owl_filter_get_name(owl_filter *f)
   return(f->name);
 }
 
-void owl_filter_set_polarity_match(owl_filter *f)
-{
-  f->polarity=0;
-}
-
-void owl_filter_set_polarity_unmatch(owl_filter *f)
-{
-  f->polarity=1;
-}
-
 void owl_filter_set_fgcolor(owl_filter *f, int color)
 {
   f->fgcolor=color;
@@ -206,7 +193,6 @@ int owl_filter_message_match(owl_filter *f, owl_message *m)
   int ret;
   if(!f->root) return 0;
   ret = owl_filterelement_match(f->root, m);
-  if(f->polarity) ret = !ret;
   return ret;
 }
 
@@ -312,7 +298,7 @@ int owl_filter_test_string(char * filt, owl_message *m, int shouldmatch) /* nopr
 int owl_filter_regtest(void) {
   int numfailed=0;
   owl_message m;
-  owl_filter f1, f2, f3, f4;
+  owl_filter f1, f2, f3, f4, f5;
 
   owl_list_create(&(g.filterlist));
   owl_message_init(&m);
@@ -363,6 +349,9 @@ int owl_filter_regtest(void) {
   owl_filter_init_fromstring(&f3, "f3", "filter f4");
   owl_global_add_filter(&g, &f3);
   FAIL_UNLESS("mutual recursion",   owl_filter_init_fromstring(&f4, "f4", "filter f3"));
+
+  /* support referencing a filter several times */
+  FAIL_UNLESS("DAG", !owl_filter_init_fromstring(&f5, "dag", "filter f1 or filter f1"));
 
   return 0;
 }

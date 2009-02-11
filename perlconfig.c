@@ -43,8 +43,8 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
 
   h = newHV();
 
-#define MSG2H(h,field) hv_store(h, #field, strlen(#field), \
-			      newSVpv(owl_message_get_##field(m),0), 0)
+#define MSG2H(h,field) (void)hv_store(h, #field, strlen(#field),        \
+                                      newSVpv(owl_message_get_##field(m),0), 0)
 
   if (owl_message_is_type_zephyr(m)
       && owl_message_is_direction_in(m)) {
@@ -58,17 +58,17 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
       av_push(av_zfields, newSVpvn(ptr, strlen(ptr)));
       owl_free(ptr);
     }
-    hv_store(h, "fields", strlen("fields"), newRV_noinc((SV*)av_zfields), 0);
+    (void)hv_store(h, "fields", strlen("fields"), newRV_noinc((SV*)av_zfields), 0);
 
-    hv_store(h, "auth", strlen("auth"), 
-	     newSVpv(owl_zephyr_get_authstr(owl_message_get_notice(m)),0),0);
+    (void)hv_store(h, "auth", strlen("auth"), 
+                   newSVpv(owl_zephyr_get_authstr(owl_message_get_notice(m)),0),0);
   }
 
   j=owl_list_get_size(&(m->attributes));
   for(i=0; i<j; i++) {
     pair=owl_list_get_element(&(m->attributes), i);
-    hv_store(h, owl_pair_get_key(pair), strlen(owl_pair_get_key(pair)),
-	     newSVpv(owl_pair_get_value(pair),0),0);
+    (void)hv_store(h, owl_pair_get_key(pair), strlen(owl_pair_get_key(pair)),
+                   newSVpv(owl_pair_get_value(pair),0),0);
   }
   
   MSG2H(h, type);
@@ -87,13 +87,13 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
   if (owl_message_get_header(m)) {
     MSG2H(h, header); 
   }
-  hv_store(h, "time", strlen("time"), newSVpv(owl_message_get_timestr(m),0),0);
-  hv_store(h, "id", strlen("id"), newSViv(owl_message_get_id(m)),0);
-  hv_store(h, "deleted", strlen("deleted"), newSViv(owl_message_is_delete(m)),0);
-  hv_store(h, "private", strlen("private"), newSViv(owl_message_is_private(m)),0);
-  hv_store(h, "should_wordwrap",
-	   strlen("should_wordwrap"), newSViv(
-					      owl_filter_message_match(wrap, m)),0);
+  (void)hv_store(h, "time", strlen("time"), newSVpv(owl_message_get_timestr(m),0),0);
+  (void)hv_store(h, "id", strlen("id"), newSViv(owl_message_get_id(m)),0);
+  (void)hv_store(h, "deleted", strlen("deleted"), newSViv(owl_message_is_delete(m)),0);
+  (void)hv_store(h, "private", strlen("private"), newSViv(owl_message_is_private(m)),0);
+  (void)hv_store(h, "should_wordwrap",
+                 strlen("should_wordwrap"), newSViv(
+                                                    owl_filter_message_match(wrap, m)),0);
 
   type = owl_message_get_type(m);
   if(!type || !*type) type = "generic";
@@ -101,7 +101,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
   type[0] = toupper(type[0]);
   blessas = owl_sprintf("BarnOwl::Message::%s", type);
 
-  hr = sv_2mortal(newRV_noinc((SV*)h));
+  hr = newRV_noinc((SV*)h);
   stash =  gv_stashpv(blessas,0);
   if(!stash) {
     owl_function_error("No such class: %s for message type %s", blessas, owl_message_get_type(m));
@@ -181,16 +181,15 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
 {
   dSP ;
   int count;
-  unsigned int len;
   SV *msgref, *srv;
-  char *out, *preout;
+  char *out;
   
   ENTER ;
   SAVETMPS;
   
   PUSHMARK(SP) ;
   msgref = owl_perlconfig_message2hashref(m);
-  XPUSHs(msgref);
+  XPUSHs(sv_2mortal(msgref));
   PUTBACK ;
   
   count = call_pv(subname, G_SCALAR|G_EVAL|G_KEEPERR);
@@ -198,8 +197,7 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
   SPAGAIN ;
 
   if (SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    owl_function_error("Perl Error: '%s'", SvPV(ERRSV, n_a));
+    owl_function_error("Perl Error: '%s'", SvPV_nolen(ERRSV));
     /* and clear the error */
     sv_setsv (ERRSV, &PL_sv_undef);
   }
@@ -212,10 +210,7 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
   srv = POPs;
 
   if (srv) {
-    preout=SvPV(srv, len);
-    out = owl_malloc(strlen(preout)+1);
-    strncpy(out, preout, len);
-    out[len] = '\0';
+    out = owl_strdup(SvPV_nolen(srv));
   } else {
     out = NULL;
   }
@@ -234,9 +229,9 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
 char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc, char ** argv)
 {
   dSP;
-  unsigned int count, len, i;
+  unsigned int count, i;
   SV *msgref, *srv;
-  char *out, *preout;
+  char *out;
 
   msgref = owl_perlconfig_message2hashref(m);
 
@@ -244,7 +239,7 @@ char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc
   SAVETMPS;
 
   PUSHMARK(SP);
-  XPUSHs(msgref);
+  XPUSHs(sv_2mortal(msgref));
   for(i=0;i<argc;i++) {
     XPUSHs(sv_2mortal(newSVpv(argv[i], 0)));
   }
@@ -260,8 +255,7 @@ char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc
   }
 
   if (SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    owl_function_error("Error: '%s'", SvPV(ERRSV, n_a));
+    owl_function_error("Error: '%s'", SvPV_nolen(ERRSV));
     /* and clear the error */
     sv_setsv (ERRSV, &PL_sv_undef);
   }
@@ -269,10 +263,7 @@ char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc
   srv = POPs;
 
   if (srv) {
-    preout=SvPV(srv, len);
-    out = owl_malloc(strlen(preout)+1);
-    strncpy(out, preout, len);
-    out[len] = '\0';
+    out = owl_strdup(SvPV_nolen(srv));
   } else {
     out = NULL;
   }
@@ -300,19 +291,16 @@ char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** P
 
   owl_global_set_no_have_config(&g);
 
-
   ret=perl_parse(p, owl_perl_xs_init, 2, args, NULL);
   if (ret || SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    err=owl_strdup(SvPV(ERRSV, n_a));
+    err=owl_strdup(SvPV_nolen(ERRSV));
     sv_setsv(ERRSV, &PL_sv_undef);     /* and clear the error */
     return(err);
   }
 
   ret=perl_run(p);
   if (ret || SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    err=owl_strdup(SvPV(ERRSV, n_a));
+    err=owl_strdup(SvPV_nolen(ERRSV));
     sv_setsv(ERRSV, &PL_sv_undef);     /* and clear the error */
     return(err);
   }
@@ -320,29 +308,28 @@ char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** P
   owl_global_set_have_config(&g);
 
   /* create legacy variables */
-  perl_get_sv("BarnOwl::id", TRUE);
-  perl_get_sv("BarnOwl::class", TRUE);
-  perl_get_sv("BarnOwl::instance", TRUE);
-  perl_get_sv("BarnOwl::recipient", TRUE);
-  perl_get_sv("BarnOwl::sender", TRUE);
-  perl_get_sv("BarnOwl::realm", TRUE);
-  perl_get_sv("BarnOwl::opcode", TRUE);
-  perl_get_sv("BarnOwl::zsig", TRUE);
-  perl_get_sv("BarnOwl::msg", TRUE);
-  perl_get_sv("BarnOwl::time", TRUE);
-  perl_get_sv("BarnOwl::host", TRUE);
-  perl_get_av("BarnOwl::fields", TRUE);
+  get_sv("BarnOwl::id", TRUE);
+  get_sv("BarnOwl::class", TRUE);
+  get_sv("BarnOwl::instance", TRUE);
+  get_sv("BarnOwl::recipient", TRUE);
+  get_sv("BarnOwl::sender", TRUE);
+  get_sv("BarnOwl::realm", TRUE);
+  get_sv("BarnOwl::opcode", TRUE);
+  get_sv("BarnOwl::zsig", TRUE);
+  get_sv("BarnOwl::msg", TRUE);
+  get_sv("BarnOwl::time", TRUE);
+  get_sv("BarnOwl::host", TRUE);
+  get_av("BarnOwl::fields", TRUE);
 
   if(file) {
     SV * cfg = get_sv("BarnOwl::configfile", TRUE);
     sv_setpv(cfg, file);
   }
 
-  perl_eval_pv(owl_perlwrap_codebuff, FALSE);
+  eval_pv(owl_perlwrap_codebuff, FALSE);
 
   if (SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    err=owl_strdup(SvPV(ERRSV, n_a));
+    err=owl_strdup(SvPV_nolen(ERRSV));
     sv_setsv (ERRSV, &PL_sv_undef);     /* and clear the error */
     return(err);
   }
@@ -357,29 +344,8 @@ char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** P
 
 /* returns whether or not a function exists */
 int owl_perlconfig_is_function(char *fn) {
-  if (perl_get_cv(fn, FALSE)) return(1);
+  if (get_cv(fn, FALSE)) return(1);
   else return(0);
-}
-
-/* returns 0 on success */
-int owl_perlconfig_get_hashkeys(char *hashname, owl_list *l)
-{
-  HV *hv;
-  HE *he;
-  char *key;
-  I32 i;
-
-  if (owl_list_create(l)) return(-1);
-  hv = get_hv(hashname, FALSE);
-  if (!hv) return(-1);
-  i = hv_iterinit(hv);
-  while ((he = hv_iternext(hv))) {
-    key = hv_iterkey(he, &i);
-    if (key) {
-      owl_list_append_element(l, owl_strdup(key));
-    }
-  }
-  return(0);
 }
 
 /* caller is responsible for freeing returned string */
@@ -391,23 +357,23 @@ char *owl_perlconfig_execute(char *line)
 
   if (!owl_global_have_config(&g)) return NULL;
 
+  ENTER;
+  SAVETMPS;
   /* execute the subroutine */
-  response = perl_eval_pv(line, FALSE);
+  response = eval_pv(line, FALSE);
 
   if (SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    owl_function_error("Perl Error: '%s'", SvPV(ERRSV, n_a));
+    owl_function_error("Perl Error: '%s'", SvPV_nolen(ERRSV));
     sv_setsv (ERRSV, &PL_sv_undef);     /* and clear the error */
   }
 
   preout=SvPV(response, len);
-  /* leave enough space in case we have to add a newline */
-  out = owl_malloc(strlen(preout)+2);
-  strncpy(out, preout, len);
-  out[len] = '\0';
-  if (!strlen(out) || out[strlen(out)-1]!='\n') {
-    strcat(out, "\n");
-  }
+  if (len == 0 || preout[len - 1] != '\n')
+    out = owl_sprintf("%s\n", preout);
+  else
+    out = owl_strdup(preout);
+  FREETMPS;
+  LEAVE;
 
   return(out);
 }
@@ -438,7 +404,6 @@ char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
   int i, count;
   char * ret = NULL;
   SV *rv;
-  STRLEN n_a;
   dSP;
 
   ENTER;
@@ -457,14 +422,14 @@ char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
   SPAGAIN;
 
   if(SvTRUE(ERRSV)) {
-    owl_function_error("%s", SvPV(ERRSV, n_a));
+    owl_function_error("%s", SvPV_nolen(ERRSV));
     (void)POPs;
   } else {
     if(count != 1)
       croak("Perl command %s returned more than one value!", cmd->name);
     rv = POPs;
     if(SvTRUE(rv)) {
-      ret = owl_strdup(SvPV(rv, n_a));
+      ret = owl_strdup(SvPV_nolen(rv));
     }
   }
 
@@ -481,14 +446,14 @@ void owl_perlconfig_cmd_free(owl_cmd *cmd)
 
 void owl_perlconfig_dispatch_free(owl_dispatch *d)
 {
-  SvREFCNT_dec(d->pfunc);
+  SvREFCNT_dec(d->data);
+  owl_free(d);
 }
 
 void owl_perlconfig_edit_callback(owl_editwin *e)
 {
   SV *cb = (SV*)(e->cbdata);
   SV *text;
-  unsigned int n_a;
   dSP;
 
   if(cb == NULL) {
@@ -507,7 +472,7 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
   call_sv(cb, G_DISCARD|G_KEEPERR|G_EVAL);
 
   if(SvTRUE(ERRSV)) {
-    owl_function_error("%s", SvPV(ERRSV, n_a));
+    owl_function_error("%s", SvPV_nolen(ERRSV));
   }
 
   FREETMPS;
@@ -525,19 +490,18 @@ void owl_perlconfig_mainloop()
   PUSHMARK(SP) ;
   call_pv("BarnOwl::Hooks::_mainloop_hook", G_DISCARD|G_EVAL);
   if(SvTRUE(ERRSV)) {
-    STRLEN n_a;
-    owl_function_error("%s", SvPV(ERRSV, n_a));
+    owl_function_error("%s", SvPV_nolen(ERRSV));
   }
   return;
 }
 
-void owl_perlconfig_do_dispatch(owl_dispatch *d)
+void owl_perlconfig_dispatch(owl_dispatch *d)
 {
-  SV *cb = d->pfunc;
-  unsigned int n_a;
+  SV *cb = d->data;
   dSP;
   if(cb == NULL) {
     owl_function_error("Perl callback is NULL!");
+    return;
   }
 
   ENTER;
@@ -549,9 +513,46 @@ void owl_perlconfig_do_dispatch(owl_dispatch *d)
   call_sv(cb, G_DISCARD|G_KEEPERR|G_EVAL);
 
   if(SvTRUE(ERRSV)) {
-    owl_function_error("%s", SvPV(ERRSV, n_a));
+    owl_function_error("%s", SvPV_nolen(ERRSV));
   }
 
   FREETMPS;
   LEAVE;
+}
+
+void owl_perlconfig_perl_timer(owl_timer *t, void *data)
+{
+  SV *obj = data;
+
+  if(!SvROK(obj)) {
+    return;
+  }
+
+  dSP;
+  ENTER;
+  SAVETMPS;
+
+  PUSHMARK(SP);
+  XPUSHs(obj);
+  PUTBACK;
+
+  call_method("do_callback", G_DISCARD|G_KEEPERR|G_EVAL);
+
+  SPAGAIN;
+
+  if (SvTRUE(ERRSV)) {
+    owl_function_error("Error in calback: '%s'", SvPV_nolen(ERRSV));
+    sv_setsv (ERRSV, &PL_sv_undef);
+  }
+
+  PUTBACK;
+  FREETMPS;
+  LEAVE;
+}
+
+void owl_perlconfig_perl_timer_destroy(owl_timer *t)
+{
+  if(SvOK((SV*)t->data)) {
+    SvREFCNT_dec((SV*)t->data);
+  }
 }

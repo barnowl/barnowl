@@ -17,6 +17,8 @@ void owl_help()
 
   owl_fmtext_append_normal
     (&fm, 
+     "  If you're new to BarnOwl, the first thing you should type is\n\n"
+     "    :show quickstart\n\n"
      "  For help on a specific command use 'help <command>'\n"
      "  For information on advanced keys, use 'show keymaps'.\n"
      "  For information on advanced commands, use 'show commands'.\n"

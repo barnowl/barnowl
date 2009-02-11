@@ -2,6 +2,85 @@
 
 static const char fileIdent[] = "$Id: select.c 894 2008-01-17 07:13:44Z asedeno $";
 
+static int dispatch_active = 0;
+
+int _owl_select_timer_cmp(owl_timer *t1, owl_timer *t2) {
+  return t1->time - t2->time;
+}
+
+int _owl_select_timer_eq(owl_timer *t1, owl_timer *t2) {
+  return t1 == t2;
+}
+
+owl_timer *owl_select_add_timer(int after, int interval, void (*cb)(owl_timer *, void *), void (*destroy)(owl_timer*), void *data)
+{
+  owl_timer *t = owl_malloc(sizeof(owl_timer));
+  GList **timers = owl_global_get_timerlist(&g);
+
+  t->time = time(NULL) + after;
+  t->interval = interval;
+  t->callback = cb;
+  t->destroy = destroy;
+  t->data = data;
+
+  *timers = g_list_insert_sorted(*timers, t,
+                                 (GCompareFunc)_owl_select_timer_cmp);
+  return t;
+}
+
+void owl_select_remove_timer(owl_timer *t)
+{
+  GList **timers = owl_global_get_timerlist(&g);
+  if (t && g_list_find(*timers, t)) {
+    *timers = g_list_remove(*timers, t);
+    if(t->destroy) {
+      t->destroy(t);
+    }
+    owl_free(t);
+  }
+}
+
+void owl_select_process_timers(struct timeval *timeout)
+{
+  time_t now = time(NULL);
+  GList **timers = owl_global_get_timerlist(&g);
+
+  while(*timers) {
+    owl_timer *t = (*timers)->data;
+    int remove = 0;
+
+    if(t->time > now)
+      break;
+
+    /* Reschedule if appropriate */
+    if(t->interval > 0) {
+      t->time = now + t->interval;
+      *timers = g_list_remove(*timers, t);
+      *timers = g_list_insert_sorted(*timers, t,
+                                     (GCompareFunc)_owl_select_timer_cmp);
+    } else {
+      remove = 1;
+    }
+
+    /* Do the callback */
+    t->callback(t, t->data);
+    if(remove) {
+      owl_select_remove_timer(t);
+    }
+  }
+
+  if(*timers) {
+    owl_timer *t = (*timers)->data;
+    timeout->tv_sec = t->time - now;
+    if (timeout->tv_sec > 60)
+      timeout->tv_sec = 60;
+  } else {
+    timeout->tv_sec = 60;
+  }
+
+  timeout->tv_usec = 0;
+}
+
 /* Returns the index of the dispatch for the file descriptor. */
 int owl_select_find_dispatch(int fd)
 {
@@ -18,11 +97,26 @@ int owl_select_find_dispatch(int fd)
   return -1;
 }
 
+void owl_select_remove_dispatch_at(int elt) /* noproto */
+{
+  owl_list *dl;
+  owl_dispatch *d;
+
+  dl = owl_global_get_dispatchlist(&g);
+  d = (owl_dispatch*)owl_list_get_element(dl, elt);
+  owl_list_remove_element(dl, elt);
+  if (d->destroy) {
+    d->destroy(d);
+  }
+}
+
 /* Adds a new owl_dispatch to the list, replacing existing ones if needed. */
 void owl_select_add_dispatch(owl_dispatch *d)
 {
   int elt;
   owl_list *dl;
+
+  d->needs_gc = 0;
 
   elt = owl_select_find_dispatch(d->fd);
   dl = owl_global_get_dispatchlist(&g);
@@ -33,13 +127,10 @@ void owl_select_add_dispatch(owl_dispatch *d)
     /* Ignore if we're adding the same dispatch again.  Otherwise
        replace the old dispatch. */
     if (d_old != d) {
-      owl_list_replace_element(dl, elt, d);
-      owl_free(d_old);
+      owl_select_remove_dispatch_at(elt);
     }
   }
-  else {
-    owl_list_append_element(dl, d);
-  }
+  owl_list_append_element(dl, d);
 }
 
 /* Removes an owl_dispatch to the list, based on it's file descriptor. */
@@ -47,18 +138,18 @@ void owl_select_remove_dispatch(int fd)
 {
   int elt;
   owl_list *dl;
+  owl_dispatch *d;
 
   elt = owl_select_find_dispatch(fd);
-  dl = owl_global_get_dispatchlist(&g);
-  
-  if (elt != -1) {
-    owl_dispatch *d;
+  if(elt == -1) {
+    return;
+  } else if(dispatch_active) {
+    /* Defer the removal until dispatch is done walking the list */
+    dl = owl_global_get_dispatchlist(&g);
     d = (owl_dispatch*)owl_list_get_element(dl, elt);
-    owl_list_remove_element(dl, elt);
-    if (d->pfunc) {
-      owl_perlconfig_dispatch_free(d);
-    }
-    owl_free(d);
+    d->needs_gc = 1;
+  } else {
+    owl_select_remove_dispatch_at(elt);
   }
 }
 
@@ -74,7 +165,7 @@ int owl_select_add_perl_dispatch(int fd, SV *cb)
   elt = owl_select_find_dispatch(fd);
   if (elt != -1) {
     d = (owl_dispatch*)owl_list_get_element(owl_global_get_dispatchlist(&g), elt);
-    if (d->pfunc == NULL) {
+    if (d->cfunc != owl_perlconfig_dispatch) {
       /* don't mess with non-perl dispatch functions from here. */
       return 1;
     }
@@ -82,8 +173,9 @@ int owl_select_add_perl_dispatch(int fd, SV *cb)
 
   d = malloc(sizeof(owl_dispatch));
   d->fd = fd;
-  d->cfunc = NULL;
-  d->pfunc = cb;
+  d->cfunc = owl_perlconfig_dispatch;
+  d->destroy = owl_perlconfig_dispatch_free;
+  d->data = cb;
   owl_select_add_dispatch(d);
   return 0;
 }
@@ -96,8 +188,8 @@ int owl_select_remove_perl_dispatch(int fd)
   elt = owl_select_find_dispatch(fd);
   if (elt != -1) {
     d = (owl_dispatch*)owl_list_get_element(owl_global_get_dispatchlist(&g), elt);
-    if (d->pfunc != NULL) {
-      owl_select_remove_dispatch(fd);
+    if (d->cfunc == owl_perlconfig_dispatch) {
+      owl_select_remove_dispatch_at(elt);
       return 0;
     }
   }
@@ -124,6 +216,24 @@ int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
   return max_fd + 1;
 }
 
+void owl_select_gc()
+{
+  int i;
+  owl_list *dl;
+
+  dl = owl_global_get_dispatchlist(&g);
+  /*
+   * Count down so we aren't set off by removing items from the list
+   * during the iteration.
+   */
+  for(i = owl_list_get_size(dl) - 1; i >= 0; i--) {
+    owl_dispatch *d = owl_list_get_element(dl, i);
+    if(d->needs_gc) {
+      owl_select_remove_dispatch_at(i);
+    }
+  }
+}
+
 void owl_select_dispatch(fd_set *fds, int max_fd)
 {
   int i, len;
@@ -132,19 +242,22 @@ void owl_select_dispatch(fd_set *fds, int max_fd)
 
   dl = owl_global_get_dispatchlist(&g);
   len = owl_select_dispatch_count();
+
+  dispatch_active = 1;
+
   for(i = 0; i < len; i++) {
     d = (owl_dispatch*)owl_list_get_element(dl, i);
     /* While d shouldn't normally be null, the list may be altered by
      * functions we dispatch to. */
-    if (d != NULL && FD_ISSET(d->fd, fds)) {
+    if (d != NULL && !d->needs_gc && FD_ISSET(d->fd, fds)) {
       if (d->cfunc != NULL) {
-        (d->cfunc)();
-      }
-      else if (d->pfunc != NULL) {
-        owl_perlconfig_do_dispatch(d);
+        d->cfunc(d);
       }
     }
   }
+
+  dispatch_active = 0;
+  owl_select_gc();
 }
 
 int owl_select_aim_hack(fd_set *rfds, fd_set *wfds)
@@ -181,8 +294,7 @@ void owl_select()
   fd_set aim_rfds, aim_wfds;
   struct timeval timeout;
 
-  timeout.tv_sec = 1;
-  timeout.tv_usec = 0;
+  owl_select_process_timers(&timeout);
 
   max_fd = owl_select_dispatch_prepare_fd_sets(&r, &e);
 
