@@ -2834,7 +2834,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    owl_sprintf(" and recipient ^%s$", quoted);
+    recipexpr = owl_sprintf(" and recipient ^%s$", quoted);
     owl_free(quoted);
   }
 
