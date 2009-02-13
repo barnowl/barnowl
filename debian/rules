@@ -7,7 +7,7 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/autotools.mk
 
 DEB_DH_INSTALL_SOURCEDIR = $(DEB_DESTDIR)
-CFLAGS += -DOWL_VERSION_STRING=\"\\\"$(shell dpkg-parsechangelog | sed -ne 's/Version: //p')\\\"\" -D_FORTIFY_SOURCE=2 -fstack-protector
+CFLAGS += -DOWL_VERSION_STRING=\"\\\"$(shell dpkg-parsechangelog | sed -ne 's/Version: //p')\\\"\" -D_FORTIFY_SOURCE=2 
 
 clean::
 	rm -f configure
