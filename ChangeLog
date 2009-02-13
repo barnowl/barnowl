@@ -1,3 +1,34 @@
+1.0.5
+ * Implement initial support for real timers. -nelhage
+ * Fix some compile warnings. -nelhage
+ * Don't ignore the --datarootdir setting. -andersk
+ * Replace questionable sprintf(buf, "%s...", buf, ...) pattern. -andersk
+ * Show IRC /me messages with the conventional * instead of bold -andersk
+ * Rip out the openurl function and related variables. -andersk
+ * Stop leaking perl variables in :perl. -nelhage
+ * Display multi-line error messages as admin messages. -nelhage
+ * Fix a bug rendering multi-byte characters in the last column of the window. -andersk
+ * Map Esc-A/B/C/D like arrow keys everywhere. -geofft
+ * Fix a bug trying to disconnect from Jabber with no accounts connected. -asedeno
+ * Call perl_sys_init3 to make libperl work on several other platforms. -hartmans
+ * Bind the 'Delete' key to delete the next character. -andersk
+ * Fix a double-free in owl_zephyr_delsub. -geofft
+ * Don't fill-paragraph the ending dot of the buffer. -price
+ * Fix numerous unsafe uses of sprintf(). -nelhage
+        (Fixes CVE-2009-0363)
+
+1.0.4
+ * Added a ':show quickstart' command. -geofft
+ * Allow filters that reference a sub filter more than once non-cyclically. -nelhage
+ * Make 'version' return 'BarnOwl' not 'Owl'
+ * Escape interpolated regexes in filters. -andersk
+ * Various code cleanups. -andersk
+ * Fix format string injection bugs. -andersk
+ * Clean up various code warnings. -nelhage
+ * Replace questionable sprintf(buf, "%s...", buf, ...) pattern. -andersk
+ * Show IRC /me messages with the conventional * instead of bold. -andersk
+ * Rip out the openurl function and webbrowser variable. -andersk
+
 1.0.3
  * Moved BarnOwl source control to git on github.
  * Only call the zsig proc when we actually send a message. -asedeno

@@ -51,7 +51,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define _STRINGIFY(x) #x
 
 #ifndef OWL_VERSION_STRING
-#define OWL_VERSION_STRING "1.0.3"
+#define OWL_VERSION_STRING "1.0.5"
 #endif
 
 /* Feature that is being tested to redirect stderr through a pipe. 
