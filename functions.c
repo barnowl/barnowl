@@ -126,7 +126,7 @@ void owl_function_show_license()
 
   text=""
     "barnowl version " OWL_VERSION_STRING "\n"
-    "Copyright (c) 2006-2008 The BarnOwl Developers. All rights reserved.\n"
+    "Copyright (c) 2006-2009 The BarnOwl Developers. All rights reserved.\n"
     "Copyright (c) 2004 James Kretchmar. All rights reserved.\n"
     "\n"
     "Redistribution and use in source and binary forms, with or without\n"
@@ -1397,7 +1397,7 @@ void owl_function_about()
     "between Witches and Wizards. The name 'barnowl' was chosen\n"
     "because we feel our owls should live closer to our ponies.\n"
     "\n"
-    "Copyright (c) 2006-2008 The BarnOwl Developers. All rights reserved.\n"
+    "Copyright (c) 2006-2009 The BarnOwl Developers. All rights reserved.\n"
     "Copyright (c) 2004 James Kretchmar. All rights reserved.\n"
     "Copyright 2002 Massachusetts Institute of Technology\n"
     "\n"
