@@ -1,3 +1,5 @@
+1.0.6
+
 1.0.5
  * Implement initial support for real timers. -nelhage
  * Fix some compile warnings. -nelhage
