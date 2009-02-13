@@ -44,7 +44,17 @@ elif test -d /usr/local/include/kerberosIV; then
 else
         AC_MSG_RESULT(no)
 fi
+PROTECT_CFLAGS=${PROTECT_CFLAGS-"-fstack-protector"}
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$CFLAGS $PROTECT_CFLAGS"
+AC_MSG_CHECKING(whether protection cflags work)
+AC_COMPILE_IFELSE(int i;,
+    [AC_MSG_RESULT(yes)],
+    [AC_MSG_RESULT(no)
+    CFLAGS=$SAVE_CFLAGS])
 
+
+AC_CHECK_LIB(ssp, __stack_chk_guard)
 AC_CHECK_LIB(ncursesw, initscr,, AC_MSG_ERROR(No libncursesw found.))
 AC_CHECK_LIB(com_err, com_err)
 AC_CHECK_LIB(nsl, gethostbyname)
