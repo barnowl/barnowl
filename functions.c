@@ -3287,15 +3287,19 @@ void owl_function_delstartup(char *buff)
  */
 void owl_function_source(char *filename)
 {
+  char *path;
   FILE *file;
   char buff[LINE];
   int fail_silent = 0;
 
   if (!filename) {
     fail_silent = 1;
-    filename=owl_global_get_startupfile(&g);
+    path = owl_strdup(owl_global_get_startupfile(&g));
+  } else {
+    path = owl_util_makepath(filename);
   }
-  file=fopen(filename, "r");
+  file=fopen(path, "r");
+  owl_free(path);
   if (!file) {
     if (!fail_silent) {
       owl_function_error("Error opening file: %s", filename);
