@@ -3,6 +3,8 @@ Section: net
 Priority: optional
 Maintainer: Sam Hartman <hartmans@debian.org>
 Build-Depends: cdbs (>= 0.4.23-1.1), debhelper (>= 4.2.0), autoconf, libglib2.0-dev, libzephyr-dev, libncurses5-dev, libncursesw5-dev, libkrb5-dev, libperl-dev, pkg-config, zip
+vcs-git: git://git.debian.org/git/collab-maint/barnowl.git
+vcs-browser: http://git.debian.org/?p=collab-maint/barnowl.git
 Standards-Version: 3.7.2
 
 Package: barnowl
