@@ -73,6 +73,9 @@ sub new {
     $self->conn->add_handler(endofnames=> sub { shift; $self->on_endofnames(@_) });
     $self->conn->add_handler(endofwhois=> sub { shift; $self->on_endofwhois(@_) });
 
+    # * nosuchchannel
+    # * 
+
     return $self;
 }
 

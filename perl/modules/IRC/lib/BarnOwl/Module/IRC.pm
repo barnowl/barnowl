@@ -92,6 +92,9 @@ sub register_handlers {
     }
 }
 
+use constant OPTIONAL_CHANNEL => 1;
+use constant REQUIRE_CHANNEL => 2;
+
 sub register_commands {
     BarnOwl::new_command('irc-connect' => \&cmd_connect,
                        {
@@ -105,18 +108,18 @@ sub register_commands {
                            "-p <password>       Specify the password to use\n" .
                            "-n <nick>           Use a non-default nick"
                        });
-    BarnOwl::new_command('irc-disconnect' => \&cmd_disconnect);
-    BarnOwl::new_command('irc-msg'        => \&cmd_msg);
-    BarnOwl::new_command('irc-join'       => \&cmd_join);
-    BarnOwl::new_command('irc-part'       => \&cmd_part);
-    BarnOwl::new_command('irc-nick'       => \&cmd_nick);
-    BarnOwl::new_command('irc-names'      => \&cmd_names);
-    BarnOwl::new_command('irc-whois'      => \&cmd_whois);
-    BarnOwl::new_command('irc-motd'       => \&cmd_motd);
+    BarnOwl::new_command('irc-disconnect' => mk_irc_command(\&cmd_disconnect));
+    BarnOwl::new_command('irc-msg'        => mk_irc_command(\&cmd_msg, OPTIONAL_CHANNEL));
+    BarnOwl::new_command('irc-join'       => mk_irc_command(\&cmd_join));
+    BarnOwl::new_command('irc-part'       => mk_irc_command(\&cmd_part, REQUIRE_CHANNEL));
+    BarnOwl::new_command('irc-nick'       => mk_irc_command(\&cmd_nick));
+    BarnOwl::new_command('irc-names'      => mk_irc_command(\&cmd_names, REQUIRE_CHANNEL));
+    BarnOwl::new_command('irc-whois'      => mk_irc_command(\&cmd_whois));
+    BarnOwl::new_command('irc-motd'       => mk_irc_command(\&cmd_motd));
     BarnOwl::new_command('irc-list'       => \&cmd_list);
-    BarnOwl::new_command('irc-who'        => \&cmd_who);
-    BarnOwl::new_command('irc-stats'      => \&cmd_stats);
-    BarnOwl::new_command('irc-topic'      => \&cmd_topic);
+    BarnOwl::new_command('irc-who'        => mk_irc_command(\&cmd_who));
+    BarnOwl::new_command('irc-stats'      => mk_irc_command(\&cmd_stats));
+    BarnOwl::new_command('irc-topic'      => mk_irc_command(\&cmd_topic, REQUIRE_CHANNEL));
 }
 
 $BarnOwl::Hooks::startup->add('BarnOwl::Module::IRC::startup');
@@ -194,9 +197,9 @@ sub cmd_disconnect {
 }
 
 sub cmd_msg {
-    my $cmd = shift;
-    my $conn = get_connection(\@_);
-    my $to = shift or die("Usage: $cmd NICK\n");
+    my $cmd  = shift;
+    my $conn = shift;
+    my $to = shift || shift or die("Usage: $cmd NICK\n");
     # handle multiple recipients?
     if(@_) {
         process_msg($conn, $to, join(" ", @_));
@@ -235,7 +238,7 @@ sub process_msg {
 
 sub cmd_join {
     my $cmd = shift;
-    my $conn = get_connection(\@_);
+    my $conn = shift;
     my $chan = shift or die("Usage: $cmd channel\n");
     $channels{$chan} ||= [];
     push @{$channels{$chan}}, $conn;
@@ -244,37 +247,37 @@ sub cmd_join {
 
 sub cmd_part {
     my $cmd = shift;
-    my $conn = get_connection(\@_);
-    my $chan = get_channel(\@_) || die("Usage: $cmd <channel>\n");
+    my $conn = shift;
+    my $chan = shift;
     $channels{$chan} = [grep {$_ ne $conn} @{$channels{$chan} || []}];
     $conn->conn->part($chan);
 }
 
 sub cmd_nick {
     my $cmd = shift;
-    my $conn = get_connection(\@_);
+    my $conn = shift;
     my $nick = shift or die("Usage: $cmd <new nick>\n");
     $conn->conn->nick($nick);
 }
 
 sub cmd_names {
     my $cmd = shift;
-    my $conn = get_connection(\@_);
-    my $chan = get_channel(\@_) || die("Usage: $cmd <channel>\n");
+    my $conn = shift;
+    my $chan = shift;
     $conn->names_tmp([]);
     $conn->conn->names($chan);
 }
 
 sub cmd_whois {
     my $cmd = shift;
-    my $conn = get_connection(\@_);
+    my $conn = shift;
     my $who = shift || die("Usage: $cmd <user>\n");
     $conn->conn->whois($who);
 }
 
 sub cmd_motd {
     my $cmd = shift;
-    my $conn = get_connection(\@_);
+    my $conn = shift;
     $conn->conn->motd;
 }
 
@@ -289,59 +292,83 @@ sub cmd_list {
 
 sub cmd_who {
     my $cmd = shift;
-    my $conn = get_connection(\@_);
+    my $conn = shift;
     my $who = shift || die("Usage: $cmd <user>\n");
+    BarnOwl::error("WHO $cmd $conn $who");
     $conn->conn->who($who);
 }
 
 sub cmd_stats {
     my $cmd = shift;
-    my $conn = get_connection(\@_);
+    my $conn = shift;
     my $type = shift || die("Usage: $cmd <chiklmouy> [server] \n");
     $conn->conn->stats($type, @_);
 }
 
 sub cmd_topic {
     my $cmd = shift;
-    my $conn = get_connection(\@_);
-    $conn->conn->topic(@_);
+    my $conn = shift;
+    my $chan = shift;
+    $conn->conn->topic($chan, @_ ? join(" ", @_) : undef);
 }
 
 ################################################################################
 ########################### Utilities/Helpers ##################################
 ################################################################################
 
-sub get_connection {
-    my $args = shift;
-    if(scalar @$args >= 2 && $args->[0] eq '-a') {
-        shift @$args;
-        return get_connection_by_alias(shift @$args);
-    }
-    my $channel = $args->[-1];
-    if (defined($channel) && $channel =~ /^#/
-        and $channels{$channel} and @{$channels{$channel}} == 1) {
-        return $channels{$channel}[0];
-    }
-    my $m = BarnOwl::getcurmsg();
-    if($m && $m->type eq 'IRC') {
-        return get_connection_by_alias($m->network);
-    }
-    if(scalar keys %ircnets == 1) {
-        return [values(%ircnets)]->[0];
-    }
-    die("You must specify a network with -a\n");
-}
+sub mk_irc_command {
+    my $sub = shift;
+    my $use_channel = shift || 0;
+    return sub {
+        my $cmd = shift;
+        my $conn;
+        my $alias;
+        my $channel;
+        my $getopt = Getopt::Long::Parser->new;
+        my $m = BarnOwl::getcurmsg();
 
-sub get_channel {
-    my $args = shift;
-    if(scalar @$args) {
-        return shift @$args;
-    }
-    my $m = BarnOwl::getcurmsg();
-    if($m && $m->type eq 'IRC') {
-        return $m->channel if !$m->is_private;
-    }
-    return undef;
+        local @ARGV = @_;
+        $getopt->configure(qw(pass_through permute no_getopt_compat prefix_pattern=-|--));
+        $getopt->getoptions("alias=s" => \$alias);
+
+        if(defined($alias)) {
+            $conn = get_connection_by_alias($alias);
+        }
+        if(!$conn && $use_channel) {
+            $channel = $ARGV[-1];
+            if(defined($channel) && $channel =~ /^#/) {
+                if($channels{$channel} && @{$channels{$channel}} == 1) {
+                    pop @ARGV;
+                    $conn = $channels{$channel}[0];
+                }  
+            } else {
+                if($m && $m->type eq 'IRC' && !$m->is_private) {
+                    $channel = $m->channel;
+                } else {
+                    undef $channel;
+                }
+            }
+        }
+        if(!$channel && $use_channel == REQUIRE_CHANNEL) {
+            die("Usage: $cmd <channel>\n");
+        }
+        if(!$conn) {
+            if($m && $m->type eq 'IRC') {
+                $conn = get_connection_by_alias($m->network);
+            }
+        }
+        if(!$conn && scalar keys %ircnets == 1) {
+            $conn = [values(%ircnets)]->[0];
+        }
+        if(!$conn) {
+            die("You must specify an IRC network using -a.\n");
+        }
+        if($use_channel) {
+            $sub->($cmd, $conn, $channel, @ARGV);
+        } else {
+            $sub->($cmd, $conn, @ARGV);
+        }
+    };
 }
 
 sub get_connection_by_alias {
