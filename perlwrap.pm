@@ -1086,6 +1086,11 @@ BarnOwl::create_style("oneline", "BarnOwl::Style::OneLine");
 
 ################################################################################
 
+sub maybe {
+    my $thing = shift;
+    return defined($thing) ? $thing : "";
+}
+
 sub format_login {
   my $self = shift;
   my $m = shift;
@@ -1135,8 +1140,8 @@ sub format_chat
   else {
     $line = sprintf(BASE_FORMAT,
                     $dirsym,
-                    $m->context,
-                    $m->subcontext,
+                    maybe($m->context),
+                    maybe($m->subcontext),
                     ($dir eq 'out'
                      ? $m->pretty_recipient
                      : $m->pretty_sender));
