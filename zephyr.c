@@ -12,49 +12,29 @@ static const char fileIdent[] = "$Id$";
 Code_t ZResetAuthentication();
 #endif
 
-int owl_zephyr_initialize()
-{
-#ifdef HAVE_LIBZEPHYR
-  int ret;
-  ZNotice_t notice;
-
-  /* Stat the zhm manually, with a shorter timeout */
-  if ((ret = ZOpenPort(NULL)) != ZERR_NONE)
-    return(ret);
-
-  if ((ret = owl_zhm_stat(&notice)) != ZERR_NONE)
-    return(ret);
-
-  ZClosePort();
-
-  if ((ret = ZInitialize()) != ZERR_NONE) {
-    com_err("owl",ret,"while initializing");
-    return(1);
-  }
-  if ((ret = ZOpenPort(NULL)) != ZERR_NONE) {
-    com_err("owl",ret,"while opening port");
-    return(1);
-  }
-#endif
-  return(0);
-}
-
-#ifdef HAVE_LIBZEPHYR
 #define HM_SVC_FALLBACK		htons((unsigned short) 2104)
 
-/*
- * Code modified from libzephyr's ZhmStat.c
- *
- * Modified to only wait one second to time out if there is no
- * hostmanager present, rather than a rather excessive 10 seconds.
- */
-Code_t owl_zhm_stat(ZNotice_t *notice) {
+#ifdef HAVE_LIBZEPHYR
+void owl_zephyr_initialize()
+{
+  int ret;
   struct servent *sp;
   struct sockaddr_in sin;
   ZNotice_t req;
   Code_t code;
-  struct timeval tv;
-  fd_set readers;
+  owl_dispatch *dispatch;
+
+  /*
+   * Code modified from libzephyr's ZhmStat.c
+   *
+   * Modified to add the fd to our select loop, rather than hanging
+   * until we get an ack.
+   */
+
+  if ((ret = ZOpenPort(NULL)) != ZERR_NONE) {
+    owl_function_error("Error opening Zephyr port: %s", error_message(ret));
+    return;
+  }
 
   (void) memset((char *)&sin, 0, sizeof(struct sockaddr_in));
 
@@ -75,28 +55,83 @@ Code_t owl_zhm_stat(ZNotice_t *notice) {
   req.z_recipient = "";
   req.z_default_format = "";
   req.z_message_len = 0;
-	
-  if ((code = ZSetDestAddr(&sin)) != ZERR_NONE)
-    return(code);
 
-  if ((code = ZSendNotice(&req, ZNOAUTH)) != ZERR_NONE)
-    return(code);
+  if ((code = ZSetDestAddr(&sin)) != ZERR_NONE) {
+    owl_function_error("Initializing Zephyr: %s", error_message(code));
+    return;
+  }
 
-  /* Wait up to 1 second for a response. */
-  FD_ZERO(&readers);
-  FD_SET(ZGetFD(), &readers);
-  tv.tv_sec = 1;
-  tv.tv_usec = 0;
-  code = select(ZGetFD() + 1, &readers, NULL, NULL, &tv);
-  if (code < 0 && errno != EINTR)
-    return(errno);
-  if (code == 0 || (code < 0 && errno == EINTR) || ZPending() == 0)
-    return(ZERR_HMDEAD);
+  if ((code = ZSendNotice(&req, ZNOAUTH)) != ZERR_NONE) {
+    owl_function_error("Initializing Zephyr: %s", error_message(code));
+    return;
+  }
 
-  return(ZReceiveNotice(notice, (struct sockaddr_in *) 0));
+  dispatch = owl_malloc(sizeof(*dispatch));
+  dispatch->fd = ZGetFD();
+  dispatch->cfunc = owl_zephyr_finish_initialization;
+  dispatch->destroy = (void(*)(owl_dispatch*))owl_free;
+
+  owl_select_add_dispatch(dispatch);
 }
 
+void owl_zephyr_finish_initialization(owl_dispatch *d) {
+  Code_t code;
+
+  owl_select_remove_dispatch(d->fd);
+
+  ZClosePort();
+
+  if ((code = ZInitialize()) != ZERR_NONE) {
+    owl_function_error("Initializing Zephyr: %s", error_message(code));
+    return;
+  }
+
+  if ((code = ZOpenPort(NULL)) != ZERR_NONE) {
+    owl_function_error("Initializing Zephyr: %s", error_message(code));
+    return;
+  }
+
+  d = owl_malloc(sizeof(owl_dispatch));
+  d->fd = ZGetFD();
+  d->cfunc = &owl_zephyr_process_events;
+  d->destroy = NULL;
+  owl_select_add_dispatch(d);
+  owl_global_set_havezephyr(&g);
+
+  if(g.load_initial_subs) {
+    owl_zephyr_load_initial_subs();
+  }
+}
+
+void owl_zephyr_load_initial_subs() {
+  int ret, ret2;
+
+  owl_function_debugmsg("startup: loading initial zephyr subs");
+
+  /* load default subscriptions */
+  ret = owl_zephyr_loaddefaultsubs();
+
+  /* load subscriptions from subs file */
+  ret2 = owl_zephyr_loadsubs(NULL, 0);
+
+  if (ret || ret2) {
+    owl_function_error("Error loading zephyr subscriptions");
+  } else if (ret2!=-1) {
+    owl_global_add_userclue(&g, OWL_USERCLUE_CLASSES);
+  }
+
+  /* load login subscriptions */
+  if (owl_global_is_loginsubs(&g)) {
+    owl_function_debugmsg("startup: loading login subs");
+    owl_function_loadloginsubs(NULL);
+  }
+}
+#else
+void owl_zephyr_initialize()
+{
+}
 #endif
+
 
 int owl_zephyr_shutdown()
 {

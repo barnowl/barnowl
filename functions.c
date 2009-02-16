@@ -920,7 +920,6 @@ void owl_function_loadloginsubs(char *file)
 
   if (!owl_context_is_interactive(owl_global_get_context(&g))) return;
   if (ret==0) {
-    owl_function_makemsg("Subscribed to login messages from file.");
   } else if (ret==-1) {
     owl_function_error("Could not open file for login subscriptions.");
   } else {

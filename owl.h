@@ -593,6 +593,7 @@ typedef struct _owl_global {
   owl_list dispatchlist;
   GList *timerlist;
   owl_timer *aim_nop_timer;
+  int load_initial_subs;
 } owl_global;
 
 /* globals */
