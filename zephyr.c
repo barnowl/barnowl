@@ -636,16 +636,15 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
   notice.z_port=0;
   notice.z_class=class;
   notice.z_class_inst=instance;
+  notice.z_sender=NULL;
   if (!strcmp(recipient, "*") || !strcmp(recipient, "@")) {
     notice.z_recipient="";
+    if (*owl_global_get_zsender(&g))
+        notice.z_sender=owl_global_get_zsender(&g);
   } else {
     notice.z_recipient=recipient;
   }
   notice.z_default_format="Class $class, Instance $instance:\nTo: @bold($recipient) at $time $date\nFrom: @bold{$1 <$sender>}\n\n$2";
-  if (*owl_global_get_zsender(&g))
-      notice.z_sender=owl_global_get_zsender(&g);
-  else
-      notice.z_sender=NULL;
   if (opcode) notice.z_opcode=opcode;
 
   notice.z_message_len=strlen(zsig)+1+strlen(message);
