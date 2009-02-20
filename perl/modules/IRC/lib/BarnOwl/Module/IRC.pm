@@ -120,6 +120,7 @@ sub register_commands {
     BarnOwl::new_command('irc-who'        => mk_irc_command(\&cmd_who));
     BarnOwl::new_command('irc-stats'      => mk_irc_command(\&cmd_stats));
     BarnOwl::new_command('irc-topic'      => mk_irc_command(\&cmd_topic, REQUIRE_CHANNEL));
+    BarnOwl::new_command('irc-quote'      => mk_irc_command(\&cmd_quote));
 }
 
 $BarnOwl::Hooks::startup->add('BarnOwl::Module::IRC::startup');
@@ -310,6 +311,12 @@ sub cmd_topic {
     my $conn = shift;
     my $chan = shift;
     $conn->conn->topic($chan, @_ ? join(" ", @_) : undef);
+}
+
+sub cmd_quote {
+    my $cmd = shift;
+    my $conn = shift;
+    $conn->conn->sl(join(" ", @_));
 }
 
 ################################################################################
