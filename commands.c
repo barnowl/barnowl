@@ -59,7 +59,6 @@ owl_cmd commands_to_init[]
 	      "",
 	      "Exit owl and run any shutdown activities."),
   OWLCMD_ALIAS("exit", "quit"),
-  OWLCMD_ALIAS("q",    "quit"),
 
   OWLCMD_ARGS("term", owl_command_term, OWL_CTX_ANY,
 	      "control the terminal",
