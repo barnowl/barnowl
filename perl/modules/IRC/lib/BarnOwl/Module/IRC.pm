@@ -192,7 +192,7 @@ sub cmd_connect {
 
 sub cmd_disconnect {
     my $cmd = shift;
-    my $conn = get_connection(\@_);
+    my $conn = shift;
     $conn->conn->disconnect;
     delete $ircnets{$conn->alias};
 }
