@@ -110,6 +110,7 @@ sub register_commands {
                        });
     BarnOwl::new_command('irc-disconnect' => mk_irc_command(\&cmd_disconnect));
     BarnOwl::new_command('irc-msg'        => mk_irc_command(\&cmd_msg, OPTIONAL_CHANNEL));
+    BarnOwl::new_command('irc-mode'       => mk_irc_command(\&cmd_mode, OPTIONAL_CHANNEL));
     BarnOwl::new_command('irc-join'       => mk_irc_command(\&cmd_join));
     BarnOwl::new_command('irc-part'       => mk_irc_command(\&cmd_part, REQUIRE_CHANNEL));
     BarnOwl::new_command('irc-nick'       => mk_irc_command(\&cmd_nick));
@@ -237,6 +238,14 @@ sub process_msg {
     BarnOwl::queue_message($msg);
 }
 
+sub cmd_mode {
+    my $cmd = shift;
+    my $conn = shift;
+    my $target = shift;
+    $target ||= shift;
+    $conn->conn->mode($target, @_);
+}
+
 sub cmd_join {
     my $cmd = shift;
     my $conn = shift;
@@ -342,10 +351,10 @@ sub mk_irc_command {
             $conn = get_connection_by_alias($alias);
         }
         if(!$conn && $use_channel) {
-            $channel = $ARGV[-1];
+            $channel = $ARGV[0];
             if(defined($channel) && $channel =~ /^#/) {
                 if($channels{$channel} && @{$channels{$channel}} == 1) {
-                    pop @ARGV;
+                    shift @ARGV;
                     $conn = $channels{$channel}[0];
                 }  
             } else {
