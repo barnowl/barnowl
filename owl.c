@@ -716,6 +716,8 @@ void stderr_redirect_handler(owl_dispatch *d)
   int navail, bread;
   char buf[4096];
   int rfd = d->fd;
+  char *err;
+
   if (rfd<0) return;
   if (-1 == ioctl(rfd, FIONREAD, (void*)&navail)) {
     return;
@@ -729,7 +731,10 @@ void stderr_redirect_handler(owl_dispatch *d)
   if (buf[navail-1] != '\0') {
     buf[navail] = '\0';
   }
-  owl_function_error("[stderr]\n%s", buf);
+
+  err = owl_sprintf("[stderr]\n%s", buf);
+
+  owl_function_log_err(err);
 }
 
 #endif /* OWL_STDERR_REDIR */

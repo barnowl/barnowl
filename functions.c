@@ -3351,19 +3351,12 @@ void owl_function_toggleoneline()
 void owl_function_error(char *fmt, ...)
 {
   va_list ap;
-  char *buff, *buff2;
+  char *buff;
   char *nl;
-  char *date;
-  time_t now;
-
-  now=time(NULL);
-  date=owl_strdup(ctime(&now));
-  date[strlen(date)-1]='\0';
 
   va_start(ap, fmt);
 
   buff = g_strdup_vprintf(fmt, ap);
-  buff2 = owl_sprintf("%s %s", date, buff);
   owl_function_debugmsg("ERROR: %s", buff);
   nl = strchr(buff, '\n');
   if(nl && *(nl + 1)) {
@@ -3372,11 +3365,27 @@ void owl_function_error(char *fmt, ...)
   } else {
     owl_function_makemsg("[Error] %s", buff);
   }
-  owl_errqueue_append_err(owl_global_get_errqueue(&g), buff2);
+  owl_function_log_err(buff);
   va_end(ap);
-  owl_free(date);
   owl_free(buff);
-  owl_free(buff2);
+}
+
+void owl_function_log_err(char *string)
+{
+  char *date;
+  time_t now;
+  char *buff;
+
+  now=time(NULL);
+  date=owl_strdup(ctime(&now));
+  date[strlen(date)-1]='\0';
+
+  buff = owl_sprintf("%s %s", date, string);
+
+  owl_errqueue_append_err(owl_global_get_errqueue(&g), buff);
+
+  owl_free(buff);
+  owl_free(date);
 }
 
 void owl_function_showerrs()
