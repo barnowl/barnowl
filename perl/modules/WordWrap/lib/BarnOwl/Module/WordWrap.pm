@@ -8,7 +8,7 @@ BarnOwl::Module::WordWrap
 =head1 DESCRIPTION
 
 An extension of the default owl style that wordwraps displayed
-messages using Text:;Autoformat
+messages using L<Text::Autoformat>
 
 =cut
 
