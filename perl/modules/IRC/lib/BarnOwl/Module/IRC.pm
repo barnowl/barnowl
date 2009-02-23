@@ -68,6 +68,15 @@ sub shutdown {
     }
 }
 
+sub quickstart {
+    return <<'END_QUICKSTART';
+@b[IRC:]
+Use ':irc-connect @b[server]' to connect to an IRC server, and
+':irc-join @b[#channel]' to join a channel. ':irc-msg @b[#channel]
+@b[message]' sends a message to a channel.
+END_QUICKSTART
+}
+
 #sub mainloop_hook {
 #    return unless defined $irc;
 #    eval {
@@ -96,36 +105,205 @@ use constant OPTIONAL_CHANNEL => 1;
 use constant REQUIRE_CHANNEL => 2;
 
 sub register_commands {
-    BarnOwl::new_command('irc-connect' => \&cmd_connect,
-                       {
-                           summary      => 'Connect to an IRC server',
-                           usage        => 'irc-connect [-a ALIAS ] [-s] [-p PASSWORD] [-n NICK] SERVER [port]',
-                           description  =>
+    BarnOwl::new_command(
+        'irc-connect' => \&cmd_connect,
+        {
+            summary => 'Connect to an IRC server',
+            usage =>
+'irc-connect [-a ALIAS ] [-s] [-p PASSWORD] [-n NICK] SERVER [port]',
+            description =>
 
-                           "Connect to an IRC server. Supported options are\n\n" .
-                           "-a <alias>          Define an alias for this server\n" .
-                           "-s                  Use SSL\n" .
-                           "-p <password>       Specify the password to use\n" .
-                           "-n <nick>           Use a non-default nick"
-                       });
-    BarnOwl::new_command('irc-disconnect' => mk_irc_command(\&cmd_disconnect));
-    BarnOwl::new_command('irc-msg'        => mk_irc_command(\&cmd_msg, OPTIONAL_CHANNEL));
-    BarnOwl::new_command('irc-mode'       => mk_irc_command(\&cmd_mode, OPTIONAL_CHANNEL));
-    BarnOwl::new_command('irc-join'       => mk_irc_command(\&cmd_join));
-    BarnOwl::new_command('irc-part'       => mk_irc_command(\&cmd_part, REQUIRE_CHANNEL));
-    BarnOwl::new_command('irc-nick'       => mk_irc_command(\&cmd_nick));
-    BarnOwl::new_command('irc-names'      => mk_irc_command(\&cmd_names, REQUIRE_CHANNEL));
-    BarnOwl::new_command('irc-whois'      => mk_irc_command(\&cmd_whois));
-    BarnOwl::new_command('irc-motd'       => mk_irc_command(\&cmd_motd));
-    BarnOwl::new_command('irc-list'       => \&cmd_list);
-    BarnOwl::new_command('irc-who'        => mk_irc_command(\&cmd_who));
-    BarnOwl::new_command('irc-stats'      => mk_irc_command(\&cmd_stats));
-    BarnOwl::new_command('irc-topic'      => mk_irc_command(\&cmd_topic, REQUIRE_CHANNEL));
-    BarnOwl::new_command('irc-quote'      => mk_irc_command(\&cmd_quote));
+              <<END_DESCR
+Connect to an IRC server. Supported options are
+
+ -a <alias>          Define an alias for this server
+ -s                  Use SSL
+ -p <password>       Specify the password to use
+ -n <nick>           Use a non-default nick
+
+The -a option specifies an alias to use for this connection. This
+alias can be passed to the '-a' argument of any other IRC command to
+control which connection it operates on.
+
+For servers with hostnames of the form "irc.FOO.{com,org,...}", the
+alias will default to "FOO"; For other servers the full hostname is
+used.
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command(
+        'irc-disconnect' => mk_irc_command( \&cmd_disconnect ),
+        {
+            summary => 'Disconnect from an IRC server',
+            usage   => 'irc-disconnect [-a ALIAS]',
+
+            description => <<END_DESCR
+Disconnect from an IRC server. You can specify a specific server with
+"-a SERVER-ALIAS" if necessary.
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command(
+        'irc-msg' => mk_irc_command( \&cmd_msg, OPTIONAL_CHANNEL ),
+        {
+            summary => 'Send an IRC message',
+            usage   => 'irc-msg [-a ALIAS] DESTINATION MESSAGE',
+
+            description => <<END_DESCR
+Send an IRC message
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command(
+        'irc-mode' => mk_irc_command( \&cmd_mode, OPTIONAL_CHANNEL ),
+        {
+            summary => 'Change an IRC channel or user mode',
+            usage   => 'irc-mode [-a ALIAS] TARGET [+-]MODE OPTIONS',
+
+            description => <<END_DESCR
+
+Change the mode of an IRC user or channel.
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command(
+        'irc-join' => mk_irc_command( \&cmd_join ),
+        {
+            summary => 'Join an IRC channel',
+            usage   => 'irc-join [-a ALIAS] #channel',
+
+            description => <<END_DESCR
+
+Join an IRC channel.
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command(
+        'irc-part' => mk_irc_command( \&cmd_part, REQUIRE_CHANNEL ),
+        {
+            summary => 'Leave an IRC channel',
+            usage   => 'irc-part [-a ALIAS] #channel',
+
+            description => <<END_DESCR
+
+Part from an IRC channel.
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command(
+        'irc-nick' => mk_irc_command( \&cmd_nick ),
+        {
+            summary => 'Change your IRC nick on an existing connection.',
+            usage   => 'irc-nick [-a ALIAS] NEW-NICK',
+
+            description => <<END_DESCR
+
+Set your IRC nickname on an existing connect. To change it prior to
+connecting, adjust the `irc:nick' variable.
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command(
+        'irc-names' => mk_irc_command( \&cmd_names, REQUIRE_CHANNEL ),
+        {
+            summary => 'View the list of users in a channel',
+            usage   => 'irc-names [-a ALIAS] #channel',
+
+            description => <<END_DESCR
+
+`irc-names' displays the list of users in a given channel in a pop-up
+window.
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command(
+        'irc-whois' => mk_irc_command( \&cmd_whois ),
+        {
+            summary => 'Displays information about a given IRC user',
+            usage   => 'irc-whois [-a ALIAS] NICK',
+
+            description => <<END_DESCR
+
+Pops up information about a given IRC user.
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command(
+        'irc-motd' => mk_irc_command( \&cmd_motd ),
+        {
+            summary => 'Displays an IRC server\'s MOTD (Message of the Day)',
+            usage   => 'irc-motd [-a ALIAS]',
+
+            description => <<END_DESCR
+
+Displays an IRC server's message of the day.
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command(
+        'irc-list' => \&cmd_list,
+        {
+            summary => 'Show all the active IRC connections.',
+            usage   => 'irc-list',
+
+            description => <<END_DESCR
+
+Show all the currently active IRC connections with their aliases and
+server names.
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command( 'irc-who'   => mk_irc_command( \&cmd_who ) );
+    BarnOwl::new_command( 'irc-stats' => mk_irc_command( \&cmd_stats ) );
+
+    BarnOwl::new_command(
+        'irc-topic' => mk_irc_command( \&cmd_topic, REQUIRE_CHANNEL ),
+        {
+            summary => 'View or change the topic of an IRC channel',
+            usage   => 'irc-topic [-a ALIAS] #channel [TOPIC]',
+
+            description => <<END_DESCR
+
+Without extra arguments, fetches and displays a given channel's topic.
+
+With extra arguments, changes the target channel's topic string. This
+may require +o on some channels.
+END_DESCR
+        }
+    );
+
+    BarnOwl::new_command(
+        'irc-quote' => mk_irc_command( \&cmd_quote ),
+        {
+            summary => 'Send a raw command to the IRC servers.',
+            usage   => 'irc-quote [-a ALIAS] TEXT',
+
+            description => <<END_DESCR
+
+Send a raw command line to an IRC server.
+
+This can be used to perform some operation not yet supported by
+BarnOwl, or to define new IRC commands.
+END_DESCR
+        }
+    );
 }
+
 
 $BarnOwl::Hooks::startup->add('BarnOwl::Module::IRC::startup');
 $BarnOwl::Hooks::shutdown->add('BarnOwl::Module::IRC::shutdown');
+$BarnOwl::Hooks::getQuickstart->add('BarnOwl::Module::IRC::quickstart');
 
 ################################################################################
 ######################## Owl command handlers ##################################
