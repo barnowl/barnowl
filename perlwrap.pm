@@ -1057,7 +1057,7 @@ sub indent_body
 
     my $body = $m->body;
     if ($m->{should_wordwrap}) {
-      $body = BarnOwl::wordwrap($body, BarnOwl::getnumcols()-8);
+      $body = BarnOwl::wordwrap($body, BarnOwl::getnumcols()-9);
     }
     # replace newline followed by anything with
     # newline plus four spaces and that thing.
