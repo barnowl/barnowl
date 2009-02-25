@@ -1,3 +1,12 @@
+barnowl (1.0.5-2) unstable; urgency=low
+
+  * Use new mechanism for running -fstack-protector that works back to etch; pulled from upstream
+  * Do not link against libkrb4 or libkrb5; we use none of their symbols
+  * Support openssl DES for zcrypt so that we continue to have zcrypt after libdes425 goes away
+  * Standards version 3.8.0 (no changes needed)
+
+ -- Sam Hartman <hartmans@debian.org>  Tue, 24 Feb 2009 23:56:33 -0500
+
 barnowl (1.0.5-1) unstable; urgency=high
 
   * New upstream release
