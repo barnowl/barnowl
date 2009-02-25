@@ -41,6 +41,10 @@ elif test -d /usr/local/include/kerberosIV; then
         CFLAGS=${CFLAGS}\ -I/usr/local/include/kerberosIV
         CPPFLAGS=${CPPFLAGS}\ -I/usr/local/include/kerberosIV
         AC_MSG_RESULT(yes)
+elif test -d /usr/include/openssl; then
+        CFLAGS=${CFLAGS}\ -I/usr/include/openssl
+        CPPFLAGS=${CPPFLAGS}\ -I/usr/include/openssl
+        AC_MSG_RESULT(OpenSSL DES found instead)
 else
         AC_MSG_RESULT(no)
 fi
@@ -60,7 +64,7 @@ AC_CHECK_LIB(com_err, com_err)
 AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
 dnl AC_CHECK_LIB(des425, req_act_vno)
-AC_CHECK_LIB(des425, des_cbc_encrypt)
+AC_CHECK_LIB(des425, des_cbc_encrypt,,AC_CHECK_LIB(crypto,DES_cbc_encrypt))
 AC_CHECK_LIB(resolv, res_search)
 dnl AC_CHECK_LIB(zephyr, ZGetSender,, AC_MSG_ERROR(No zephyr library found.))
 AC_CHECK_LIB(zephyr, ZGetSender)
@@ -72,6 +76,7 @@ AC_ARG_ENABLE([athstatic], AS_HELP_STRING([--enable-athstatic],
                                           [ATHSTATIC=])
 
 AC_CHECK_FUNCS(use_default_colors resizeterm des_string_to_key des_key_sched des_ecb_encrypt)
+AC_CHECK_FUNCS(				   DES_string_to_key  DES_ecb_encrypt DES_key_sched)
 
 AC_MSG_CHECKING(for des_ecb_encrypt prototype)
 AC_TRY_COMPILE([#include <des.h>
