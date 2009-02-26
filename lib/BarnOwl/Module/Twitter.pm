@@ -127,12 +127,14 @@ unless(defined($last_id)) {
     eval {
         $last_id = $twitter->friends_timeline({count => 1})->[0]{id};
     };
+    $last_id = 0 unless defined($last_id);
 }
 
 unless(defined($last_direct)) {
     eval {
         $last_direct = $twitter->direct_messages()->[0]{id};
     };
+    $last_direct = 0 unless defined($last_direct);
 }
 
 sub poll_messages {
