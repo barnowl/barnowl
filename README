@@ -1,11 +1,12 @@
-The Twitter modules automatically mirrors selected zephyrs to your
-personal class to your twitter feed.
+The Twitter module implements Twitter support for BarnOwl. It also
+supports automatic mirroring of some subset of Zephyrs you send to
+Twitter.
 
 To configure it, first
 
 * Add your twitter credentials to ~/.owl/twitter as a JSON hash, e.g.
 {"user":"nelhage", "password":"sekrit" }
-* Load the module
+* Load the module (cp Twitter.par into ~/.owl/modules and :reload-module Twitter)
 * Set the twitter:class, twitter:instance, and twitter:opcode
   variables to the destination you want messages to be mirrored
   from. By default, they are -c $YOUR_USERNAME -i status -O twitter
@@ -13,8 +14,7 @@ To configure it, first
   messages to that class/instance to be mirrored. A value of '*'
   works as a "match-anything" wildcard for any of the fields.
 
-As of Thanksgiving weekend 2008, Twitter.par will also receive
-twitters and inject them into barnowl as messages of type
-'twitter'. Currently, it polls every 45 seconds, and there's no way to
-disable polling once loaded. There's also no direct message
-support. Bug me if fixing any of these is important to you.
+Twitter.par will also receive twitters and inject them into barnowl as
+messages of type 'twitter'. It polls for normal messages once a
+minute, and direct messages every other minute. To disable polling,
+you can unset the 'twitter:poll' variable in BarnOwl.
