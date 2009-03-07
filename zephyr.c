@@ -280,7 +280,7 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   }
   fclose(file);
 
-  ret=owl_zephyr_loadsubs_helper(subs, count);
+  owl_zephyr_loadsubs_helper(subs, count);
   owl_free(subs);
   return(ret);
 #else
