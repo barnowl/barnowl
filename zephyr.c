@@ -8,6 +8,12 @@
 
 static const char fileIdent[] = "$Id$";
 
+static GList *deferred_subs = NULL;
+typedef struct _owl_sub_list {                            /* noproto */
+  ZSubscription_t *subs;
+  int nsubs;
+} owl_sub_list;
+
 #ifdef HAVE_LIBZEPHYR
 Code_t ZResetAuthentication();
 #endif
@@ -101,6 +107,13 @@ void owl_zephyr_finish_initialization(owl_dispatch *d) {
   if(g.load_initial_subs) {
     owl_zephyr_load_initial_subs();
   }
+  while(deferred_subs != NULL) {
+    owl_sub_list *subs = deferred_subs->data;
+    owl_function_debugmsg("Loading %d deferred subs.", subs->nsubs);
+    owl_zephyr_loadsubs_helper(subs->subs, subs->nsubs);
+    deferred_subs = g_list_delete_link(deferred_subs, deferred_subs);
+    owl_free(subs);
+  }
 }
 
 void owl_zephyr_load_initial_subs() {
@@ -177,21 +190,29 @@ char *owl_zephyr_get_sender()
 #ifdef HAVE_LIBZEPHYR
 int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
 {
-  int i, ret = 0;
-  /* sub without defaults */
-  if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
-    owl_function_error("Error subscribing to zephyr notifications.");
-    ret=-2;
-  }
+  int ret;
+  if (owl_global_is_havezephyr(&g)) {
+    int i;
+    /* sub without defaults */
+    if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
+      owl_function_error("Error subscribing to zephyr notifications.");
+      ret=-2;
+    }
 
-  /* free stuff */
-  for (i=0; i<count; i++) {
-    owl_free(subs[i].zsub_class);
-    owl_free(subs[i].zsub_classinst);
-    owl_free(subs[i].zsub_recipient);
-  }
+    /* free stuff */
+    for (i=0; i<count; i++) {
+      owl_free(subs[i].zsub_class);
+      owl_free(subs[i].zsub_classinst);
+      owl_free(subs[i].zsub_recipient);
+    }
 
-  owl_free(subs);
+    owl_free(subs);
+  } else {
+    owl_sub_list *s = owl_malloc(sizeof(owl_sub_list));
+    s->subs = subs;
+    s->nsubs = count;
+    deferred_subs = g_list_append(deferred_subs, s);
+  }
 
   return ret;
 }
@@ -344,7 +365,6 @@ int owl_zephyr_loadloginsubs(char *filename)
   }
 
   ret = owl_zephyr_loadsubs_helper(subs, count);
-
   return(ret);
 #else
   return(0);
