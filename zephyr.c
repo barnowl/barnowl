@@ -191,6 +191,8 @@ int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
     owl_free(subs[i].zsub_recipient);
   }
 
+  owl_free(subs);
+
   return ret;
 }
 #endif
@@ -241,21 +243,8 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
     }
     
     if (count >= subSize) {
-      ZSubscription_t* newsubs;
-      newsubs = owl_realloc(subs, sizeof(ZSubscription_t) * subSize * 2);
-      if (NULL == newsubs) {
-	/* If realloc fails, load what we've got, clear, and continue */
-	ret = owl_zephyr_loadsubs_helper(subs, count);
-	if (ret != 0) {
-	  fclose(file);
-	  return(ret);
-	}
-	count=0;
-      }
-      else {
-	subs = newsubs;
-	subSize *= 2;
-      }
+      subSize *= 2;
+      subs = owl_realloc(subs, sizeof(ZSubscription_t) * subSize);
     }
     
     /* add it to the list of subs */
@@ -281,7 +270,6 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   fclose(file);
 
   owl_zephyr_loadsubs_helper(subs, count);
-  owl_free(subs);
   return(ret);
 #else
   return(0);
@@ -307,10 +295,13 @@ int owl_zephyr_loadloginsubs(char *filename)
 {
 #ifdef HAVE_LIBZEPHYR
   FILE *file;
-  ZSubscription_t subs[3001];
+  ZSubscription_t *subs;
+  int numSubs = 100;
   char subsfile[1024], buffer[1024];
-  int count, ret, i;
+  int count, ret;
   struct stat statbuff;
+
+  subs = owl_malloc(numSubs * sizeof(ZSubscription_t));
 
   if (filename==NULL) {
     sprintf(subsfile, "%s/%s", owl_global_get_homedir(&g), ".anyone");
@@ -324,22 +315,24 @@ int owl_zephyr_loadloginsubs(char *filename)
   ret=0;
 
   ZResetAuthentication();
-  /* need to redo this to do chunks, not just bag out after 3000 */
   count=0;
   file=fopen(subsfile, "r");
   if (file) {
     while ( fgets(buffer, 1024, file)!=NULL ) {
       if (buffer[0]=='#' || buffer[0]=='\n' || buffer[0]=='\n') continue;
       
-      if (count >= 3000) break; /* also tell the user */
+      if (count == numSubs) {
+        numSubs *= 2;
+        subs = owl_realloc(subs, numSubs * sizeof(ZSubscription_t));
+      }
 
       buffer[strlen(buffer)-1]='\0';
-      subs[count].zsub_class="login";
-      subs[count].zsub_recipient="*";
+      subs[count].zsub_class=owl_strdup("login");
+      subs[count].zsub_recipient=owl_strdup("*");
       if (strchr(buffer, '@')) {
-	subs[count].zsub_classinst=owl_strdup(buffer);
+        subs[count].zsub_classinst=owl_strdup(buffer);
       } else {
-	subs[count].zsub_classinst=owl_sprintf("%s@%s", buffer, ZGetRealm());
+        subs[count].zsub_classinst=owl_sprintf("%s@%s", buffer, ZGetRealm());
       }
 
       count++;
@@ -350,16 +343,7 @@ int owl_zephyr_loadloginsubs(char *filename)
     ret=-1;
   }
 
-  /* sub with defaults */
-  if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
-    owl_function_error("Error subscribing to zephyr notifications.");
-    ret=-2;
-  }
-
-  /* free stuff */
-  for (i=0; i<count; i++) {
-    owl_free(subs[i].zsub_classinst);
-  }
+  ret = owl_zephyr_loadsubs_helper(subs, count);
 
   return(ret);
 #else
