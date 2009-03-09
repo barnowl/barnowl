@@ -1047,7 +1047,11 @@ sub format_sender {
     my $m = shift;
     my $sender = $m->long_sender;
     $sender =~ s/\n.*$//s;
-    return "  (" . $sender . '@color[default]' . ")";
+    if (BarnOwl::getvar('colorztext') eq 'on') {
+      return "  (" . $sender . '@color[default]' . ")";
+    } else {
+      return "  ($sender)";
+    }
 }
 
 sub indent_body
