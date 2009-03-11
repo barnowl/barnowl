@@ -146,7 +146,7 @@ END_DESCR
     );
 
     BarnOwl::new_command(
-        'irc-msg' => mk_irc_command( \&cmd_msg, OPTIONAL_CHANNEL ),
+        'irc-msg' => mk_irc_command( \&cmd_msg ),
         {
             summary => 'Send an IRC message',
             usage   => 'irc-msg [-a ALIAS] DESTINATION MESSAGE',
@@ -379,7 +379,7 @@ sub cmd_disconnect {
 sub cmd_msg {
     my $cmd  = shift;
     my $conn = shift;
-    my $to = shift || shift or die("Usage: $cmd NICK\n");
+    my $to = shift or die("Usage: $cmd [NICK|CHANNEL]\n");
     # handle multiple recipients?
     if(@_) {
         process_msg($conn, $to, join(" ", @_));
