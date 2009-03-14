@@ -9,7 +9,7 @@ Standards-Version: 3.7.2
 
 Package: barnowl
 Architecture: any
-Depends: ${shlibs:Depends}, ${perl:Depends}, libnet-dns-perl, libauthen-sasl-perl, libdigest-sha1-perl, libgssapi-perl, libio-socket-ssl-perl, libpar-perl
+Depends: ${shlibs:Depends}, ${perl:Depends}, libnet-dns-perl, libauthen-sasl-perl, libdigest-sha1-perl, libgssapi-perl, libio-socket-ssl-perl, libpar-perl, libtext-autoformat-perl
 Suggests: zephyr-clients
 Description: A curses-based tty Jabber and Zephyr client
  A curses-based instant-messaging client supporting the Jabber, IRC, AIM 
