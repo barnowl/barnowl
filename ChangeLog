@@ -1,4 +1,17 @@
-1.0.6
+1.1
+ * Support building with -fstack-protector. -hartmans
+ * Don't save partial passwords in editwin history. -nelhage
+ * Improve IRC documentation. -nelhage
+ * Don't use the 'zsender' variable for personals. -geofft
+ * Implement irc-quote and irc-mode. -nelhage
+ * Leave a one-column margin when wordwrapping. -nelhage
+ * Remove some autotools-generated files. -andersk
+ * Include IRC in the default build. -nelhage
+ * Add a wordwrapping variant of the default style. -nelhage
+ * Don't send stderr to admin messages. -nelhage
+ * Remove a build-dependency on krb4. -hartmans
+ * Allow the creation of type zephyr messages from perl. -geofft
+ * Initialize Zephyr asynchronously at startup. -nelhage
 
 1.0.5
  * Implement initial support for real timers. -nelhage
