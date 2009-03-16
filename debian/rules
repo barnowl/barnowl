@@ -15,5 +15,5 @@ clean::
 	rm -f configure
 	rm -f perl/modules/Jabber/Makefile.old
 	rm -f perl/modules/Jabber/Jabber.par
-	rm -f perl/modules/IRC/Makefile.old
+	rm -f perl/modules/IRC/Makefile.old perl/modules/WordWrap/Makefile.old
 	rm -f perl/modules/IRC/IRC.par
