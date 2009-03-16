@@ -9,7 +9,7 @@ Standards-Version: 3.8.0
 
 Package: barnowl
 Architecture: any
-Depends: ${shlibs:Depends}, ${perl:Depends}, libnet-dns-perl, libauthen-sasl-perl, libdigest-sha1-perl, libgssapi-perl, libio-socket-ssl-perl, libpar-perl, libtext-autoformat-perl
+Depends: ${misc:Depends}, ${shlibs:Depends}, ${perl:Depends}, libnet-dns-perl, libauthen-sasl-perl, libdigest-sha1-perl, libgssapi-perl, libio-socket-ssl-perl, libpar-perl, libtext-autoformat-perl
 Provides: barnowl-irc
 Conflicts: barnowl-irc
 Replaces: barnowl-irc
