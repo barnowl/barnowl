@@ -126,7 +126,7 @@ void owl_function_show_license()
 
   text=""
     "barnowl version " OWL_VERSION_STRING "\n"
-    "Copyright (c) 2006-2008 The BarnOwl Developers. All rights reserved.\n"
+    "Copyright (c) 2006-2009 The BarnOwl Developers. All rights reserved.\n"
     "Copyright (c) 2004 James Kretchmar. All rights reserved.\n"
     "\n"
     "Redistribution and use in source and binary forms, with or without\n"
@@ -920,7 +920,6 @@ void owl_function_loadloginsubs(char *file)
 
   if (!owl_context_is_interactive(owl_global_get_context(&g))) return;
   if (ret==0) {
-    owl_function_makemsg("Subscribed to login messages from file.");
   } else if (ret==-1) {
     owl_function_error("Could not open file for login subscriptions.");
   } else {
@@ -1397,7 +1396,7 @@ void owl_function_about()
     "between Witches and Wizards. The name 'barnowl' was chosen\n"
     "because we feel our owls should live closer to our ponies.\n"
     "\n"
-    "Copyright (c) 2006-2008 The BarnOwl Developers. All rights reserved.\n"
+    "Copyright (c) 2006-2009 The BarnOwl Developers. All rights reserved.\n"
     "Copyright (c) 2004 James Kretchmar. All rights reserved.\n"
     "Copyright 2002 Massachusetts Institute of Technology\n"
     "\n"
@@ -3288,15 +3287,19 @@ void owl_function_delstartup(char *buff)
  */
 void owl_function_source(char *filename)
 {
+  char *path;
   FILE *file;
   char buff[LINE];
   int fail_silent = 0;
 
   if (!filename) {
     fail_silent = 1;
-    filename=owl_global_get_startupfile(&g);
+    path = owl_strdup(owl_global_get_startupfile(&g));
+  } else {
+    path = owl_util_makepath(filename);
   }
-  file=fopen(filename, "r");
+  file=fopen(path, "r");
+  owl_free(path);
   if (!file) {
     if (!fail_silent) {
       owl_function_error("Error opening file: %s", filename);
@@ -3348,19 +3351,12 @@ void owl_function_toggleoneline()
 void owl_function_error(char *fmt, ...)
 {
   va_list ap;
-  char *buff, *buff2;
+  char *buff;
   char *nl;
-  char *date;
-  time_t now;
-
-  now=time(NULL);
-  date=owl_strdup(ctime(&now));
-  date[strlen(date)-1]='\0';
 
   va_start(ap, fmt);
 
   buff = g_strdup_vprintf(fmt, ap);
-  buff2 = owl_sprintf("%s %s", date, buff);
   owl_function_debugmsg("ERROR: %s", buff);
   nl = strchr(buff, '\n');
   if(nl && *(nl + 1)) {
@@ -3369,11 +3365,27 @@ void owl_function_error(char *fmt, ...)
   } else {
     owl_function_makemsg("[Error] %s", buff);
   }
-  owl_errqueue_append_err(owl_global_get_errqueue(&g), buff2);
+  owl_function_log_err(buff);
   va_end(ap);
-  owl_free(date);
   owl_free(buff);
-  owl_free(buff2);
+}
+
+void owl_function_log_err(char *string)
+{
+  char *date;
+  time_t now;
+  char *buff;
+
+  now=time(NULL);
+  date=owl_strdup(ctime(&now));
+  date[strlen(date)-1]='\0';
+
+  buff = owl_sprintf("%s %s", date, string);
+
+  owl_errqueue_append_err(owl_global_get_errqueue(&g), buff);
+
+  owl_free(buff);
+  owl_free(date);
 }
 
 void owl_function_showerrs()

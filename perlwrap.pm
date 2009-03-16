@@ -1047,7 +1047,11 @@ sub format_sender {
     my $m = shift;
     my $sender = $m->long_sender;
     $sender =~ s/\n.*$//s;
-    return "  (" . $sender . '@color[default]' . ")";
+    if (BarnOwl::getvar('colorztext') eq 'on') {
+      return "  (" . $sender . '@color[default]' . ")";
+    } else {
+      return "  ($sender)";
+    }
 }
 
 sub indent_body
@@ -1057,7 +1061,7 @@ sub indent_body
 
     my $body = $m->body;
     if ($m->{should_wordwrap}) {
-      $body = BarnOwl::wordwrap($body, BarnOwl::getnumcols()-8);
+      $body = BarnOwl::wordwrap($body, BarnOwl::getnumcols()-9);
     }
     # replace newline followed by anything with
     # newline plus four spaces and that thing.
@@ -1085,6 +1089,11 @@ sub description {"Formats for one-line-per-message"}
 BarnOwl::create_style("oneline", "BarnOwl::Style::OneLine");
 
 ################################################################################
+
+sub maybe {
+    my $thing = shift;
+    return defined($thing) ? $thing : "";
+}
 
 sub format_login {
   my $self = shift;
@@ -1135,8 +1144,8 @@ sub format_chat
   else {
     $line = sprintf(BASE_FORMAT,
                     $dirsym,
-                    $m->context,
-                    $m->subcontext,
+                    maybe($m->context),
+                    maybe($m->subcontext),
                     ($dir eq 'out'
                      ? $m->pretty_recipient
                      : $m->pretty_sender));

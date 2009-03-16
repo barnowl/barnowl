@@ -11,9 +11,6 @@ if test "$GCC" = yes; then
      CFLAGS="$CFLAGS -Wall -g";
 fi
 
-m4_include(/usr/share/aclocal/pkg.m4)
-dnl m4_include(pkg.m4)
-
 dnl Check for Athena
 AC_MSG_CHECKING(for /usr/athena/include)
 if test -d /usr/athena/include; then

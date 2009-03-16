@@ -1,4 +1,4 @@
-/*  Copyright (c) 2006-2008 The BarnOwl Developers. All rights reserved.
+/*  Copyright (c) 2006-2009 The BarnOwl Developers. All rights reserved.
  *  Copyright (c) 2004 James Kretchmar. All rights reserved.
  *
  *  This program is free software. You can redistribute it and/or
@@ -42,7 +42,7 @@ int main(int argc, char **argv, char **env)
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
   owl_editwin *tw;
   owl_popwin *pw;
-  int ret, initialsubs, debug, argcsave, followlast;
+  int debug, argcsave, followlast;
   int newmsgs, nexttimediff;
   struct sigaction sigact;
   char *configfile, *tty, *perlout, *perlerr, **argvsave;
@@ -64,7 +64,7 @@ int main(int argc, char **argv, char **env)
   confdir = NULL;
   tty=NULL;
   debug=0;
-  initialsubs=1;
+  g.load_initial_subs = 1;
 
   setlocale(LC_ALL, "");
   
@@ -74,7 +74,7 @@ int main(int argc, char **argv, char **env)
   }
   while (argc>0) {
     if (!strcmp(argv[0], "-n")) {
-      initialsubs=0;
+      g.load_initial_subs = 0;
       argv++;
       argc--;
     } else if (!strcmp(argv[0], "-c")) {
@@ -190,20 +190,8 @@ int main(int argc, char **argv, char **env)
     d->destroy = NULL;
     owl_select_add_dispatch(d);
   }
-  
-#ifdef HAVE_LIBZEPHYR
-  /* zephyr init */
-  ret=owl_zephyr_initialize();
-  if (!ret) {
-    owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
-    d->fd = ZGetFD();
-    d->cfunc = &owl_zephyr_process_events;
-    d->destroy = NULL;
-    owl_select_add_dispatch(d);
-    owl_global_set_havezephyr(&g);
-  }
 
-#endif
+  owl_zephyr_initialize();
 
 #if OWL_STDERR_REDIR
   /* Do this only after we've started curses up... */
@@ -338,30 +326,6 @@ int main(int argc, char **argv, char **env)
   owl_function_source(NULL);
 
   wrefresh(sepwin);
-
-  /* load zephyr subs */
-  if (initialsubs) {
-    int ret2;
-    owl_function_debugmsg("startup: loading initial zephyr subs");
-
-    /* load default subscriptions */
-    ret=owl_zephyr_loaddefaultsubs();
-    
-    /* load subscriptions from subs file */
-    ret2=owl_zephyr_loadsubs(NULL, 0);
-
-    if (ret || ret2) {
-      owl_function_adminmsg("", "Error loading zephyr subscriptions");
-    } else if (ret2!=-1) {
-      owl_global_add_userclue(&g, OWL_USERCLUE_CLASSES);
-    }
-
-    /* load login subscriptions */
-    if (owl_global_is_loginsubs(&g)) {
-      owl_function_debugmsg("startup: loading login subs");
-      owl_function_loadloginsubs(NULL);
-    }
-  }
 
   /* First buddy check to sync the list without notifications */
   owl_function_debugmsg("startup: doing initial zephyr buddy check");
@@ -752,6 +716,8 @@ void stderr_redirect_handler(owl_dispatch *d)
   int navail, bread;
   char buf[4096];
   int rfd = d->fd;
+  char *err;
+
   if (rfd<0) return;
   if (-1 == ioctl(rfd, FIONREAD, (void*)&navail)) {
     return;
@@ -765,7 +731,10 @@ void stderr_redirect_handler(owl_dispatch *d)
   if (buf[navail-1] != '\0') {
     buf[navail] = '\0';
   }
-  owl_function_error("[stderr]\n%s", buf);
+
+  err = owl_sprintf("[stderr]\n%s", buf);
+
+  owl_function_log_err(err);
 }
 
 #endif /* OWL_STDERR_REDIR */

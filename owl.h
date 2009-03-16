@@ -1,4 +1,4 @@
-/*  Copyright (c) 2006-2008 The BarnOwl Developers. All rights reserved.
+/*  Copyright (c) 2006-2009 The BarnOwl Developers. All rights reserved.
  *  Copyright (c) 2004 James Kretchmar. All rights reserved.
  *
  *  This program is free software. You can redistribute it and/or
@@ -51,7 +51,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define _STRINGIFY(x) #x
 
 #ifndef OWL_VERSION_STRING
-#define OWL_VERSION_STRING "1.0.5"
+#define OWL_VERSION_STRING "1.1"
 #endif
 
 /* Feature that is being tested to redirect stderr through a pipe. 
@@ -593,6 +593,7 @@ typedef struct _owl_global {
   owl_list dispatchlist;
   GList *timerlist;
   owl_timer *aim_nop_timer;
+  int load_initial_subs;
 } owl_global;
 
 /* globals */

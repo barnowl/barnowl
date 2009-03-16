@@ -2649,9 +2649,11 @@ void owl_command_edit_cancel(owl_editwin *e)
 
   owl_function_makemsg("Command cancelled.");
 
-  hist=owl_editwin_get_history(e);
-  owl_history_store(hist, owl_editwin_get_text(e));
-  owl_history_reset(hist);
+  if(e->echochar == 0) {
+    hist=owl_editwin_get_history(e);
+    owl_history_store(hist, owl_editwin_get_text(e));
+    owl_history_reset(hist);
+  }
 
   owl_editwin_fullclear(e);
   owl_global_set_needrefresh(&g);
