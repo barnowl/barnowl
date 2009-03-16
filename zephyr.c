@@ -190,7 +190,7 @@ char *owl_zephyr_get_sender()
 #ifdef HAVE_LIBZEPHYR
 int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
 {
-  int ret;
+  int ret = 0;
   if (owl_global_is_havezephyr(&g)) {
     int i;
     /* sub without defaults */
