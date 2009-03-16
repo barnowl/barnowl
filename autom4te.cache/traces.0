@@ -1,0 +1,191 @@
+m4trace:/usr/share/aclocal/pkg.m4:26: -1- AC_DEFUN([PKG_PROG_PKG_CONFIG], [m4_pattern_forbid([^_?PKG_[A-Z_]+$])
+m4_pattern_allow([^PKG_CONFIG(_PATH)?$])
+AC_ARG_VAR([PKG_CONFIG], [path to pkg-config utility])dnl
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	AC_PATH_TOOL([PKG_CONFIG], [pkg-config])
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=m4_default([$1], [0.9.0])
+	AC_MSG_CHECKING([pkg-config is at least version $_pkg_min_version])
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		AC_MSG_RESULT([yes])
+	else
+		AC_MSG_RESULT([no])
+		PKG_CONFIG=""
+	fi
+		
+fi[]dnl
+])
+m4trace:/usr/share/aclocal/pkg.m4:56: -1- AC_DEFUN([PKG_CHECK_EXISTS], [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+if test -n "$PKG_CONFIG" && \
+    AC_RUN_LOG([$PKG_CONFIG --exists --print-errors "$1"]); then
+  m4_ifval([$2], [$2], [:])
+m4_ifvaln([$3], [else
+  $3])dnl
+fi])
+m4trace:/usr/share/aclocal/pkg.m4:84: -1- AC_DEFUN([_PKG_SHORT_ERRORS_SUPPORTED], [AC_REQUIRE([PKG_PROG_PKG_CONFIG])
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi[]dnl
+])
+m4trace:/usr/share/aclocal/pkg.m4:104: -1- AC_DEFUN([PKG_CHECK_MODULES], [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+AC_ARG_VAR([$1][_CFLAGS], [C compiler flags for $1, overriding pkg-config])dnl
+AC_ARG_VAR([$1][_LIBS], [linker flags for $1, overriding pkg-config])dnl
+
+pkg_failed=no
+AC_MSG_CHECKING([for $1])
+
+_PKG_CONFIG([$1][_CFLAGS], [cflags], [$2])
+_PKG_CONFIG([$1][_LIBS], [libs], [$2])
+
+m4_define([_PKG_TEXT], [Alternatively, you may set the environment variables $1[]_CFLAGS
+and $1[]_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.])
+
+if test $pkg_failed = yes; then
+        _PKG_SHORT_ERRORS_SUPPORTED
+        if test $_pkg_short_errors_supported = yes; then
+	        $1[]_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "$2"`
+        else 
+	        $1[]_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "$2"`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$$1[]_PKG_ERRORS" >&AS_MESSAGE_LOG_FD
+
+	ifelse([$4], , [AC_MSG_ERROR(dnl
+[Package requirements ($2) were not met:
+
+$$1_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+_PKG_TEXT
+])],
+		[AC_MSG_RESULT([no])
+                $4])
+elif test $pkg_failed = untried; then
+	ifelse([$4], , [AC_MSG_FAILURE(dnl
+[The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+_PKG_TEXT
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.])],
+		[$4])
+else
+	$1[]_CFLAGS=$pkg_cv_[]$1[]_CFLAGS
+	$1[]_LIBS=$pkg_cv_[]$1[]_LIBS
+        AC_MSG_RESULT([yes])
+	ifelse([$3], , :, [$3])
+fi[]dnl
+])
+m4trace:configure.ac:3: -1- m4_pattern_forbid([^_?A[CHUM]_])
+m4trace:configure.ac:3: -1- m4_pattern_forbid([_AC_])
+m4trace:configure.ac:3: -1- m4_pattern_forbid([^LIBOBJS$], [do not use LIBOBJS directly, use AC_LIBOBJ (see section `AC_LIBOBJ vs LIBOBJS'])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^AS_FLAGS$])
+m4trace:configure.ac:3: -1- m4_pattern_forbid([^_?m4_])
+m4trace:configure.ac:3: -1- m4_pattern_forbid([^dnl$])
+m4trace:configure.ac:3: -1- m4_pattern_forbid([^_?AS_])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^SHELL$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^PATH_SEPARATOR$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^PACKAGE_NAME$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^PACKAGE_TARNAME$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^PACKAGE_VERSION$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^PACKAGE_STRING$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^PACKAGE_BUGREPORT$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^exec_prefix$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^prefix$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^program_transform_name$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^bindir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^sbindir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^libexecdir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^datarootdir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^datadir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^sysconfdir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^sharedstatedir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^localstatedir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^includedir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^oldincludedir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^docdir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^infodir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^htmldir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^dvidir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^pdfdir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^psdir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^libdir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^localedir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^mandir$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^PACKAGE_NAME$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^PACKAGE_TARNAME$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^PACKAGE_VERSION$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^PACKAGE_STRING$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^PACKAGE_BUGREPORT$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^DEFS$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^ECHO_C$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^ECHO_N$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^ECHO_T$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^LIBS$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^build_alias$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^host_alias$])
+m4trace:configure.ac:3: -1- m4_pattern_allow([^target_alias$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^CFLAGS$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^LDFLAGS$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^LIBS$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^ac_ct_CC$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^EXEEXT$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^OBJEXT$])
+m4trace:configure.ac:58: -1- m4_pattern_allow([^HAVE_LIBSSP$])
+m4trace:configure.ac:59: -1- m4_pattern_allow([^HAVE_LIBNCURSESW$])
+m4trace:configure.ac:60: -1- m4_pattern_allow([^HAVE_LIBCOM_ERR$])
+m4trace:configure.ac:61: -1- m4_pattern_allow([^HAVE_LIBNSL$])
+m4trace:configure.ac:62: -1- m4_pattern_allow([^HAVE_LIBSOCKET$])
+m4trace:configure.ac:64: -2- m4_pattern_allow([^HAVE_LIBCRYPTO$])
+m4trace:configure.ac:64: -1- m4_pattern_allow([^HAVE_LIBDES425$])
+m4trace:configure.ac:65: -1- m4_pattern_allow([^HAVE_LIBRESOLV$])
+m4trace:configure.ac:67: -1- m4_pattern_allow([^HAVE_LIBZEPHYR$])
+m4trace:configure.ac:68: -2- m4_pattern_allow([^HAVE_LIBZEPHYR_ZINITLOCATIONINFO$])
+m4trace:configure.ac:79: -1- _m4_warn([obsolete], [The macro `AC_TRY_COMPILE' is obsolete.
+You should run autoupdate.], [../../lib/autoconf/general.m4:2367: AC_TRY_COMPILE is expanded from...
+configure.ac:79: the top level])
+m4trace:configure.ac:86: -1- m4_pattern_allow([^HAVE_DES_ECB_ENCRYPT_PROTO$])
+m4trace:configure.ac:90: -1- m4_pattern_allow([^CPP$])
+m4trace:configure.ac:90: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:90: -1- m4_pattern_allow([^CPP$])
+m4trace:configure.ac:90: -1- m4_pattern_allow([^GREP$])
+m4trace:configure.ac:90: -1- m4_pattern_allow([^GREP$])
+m4trace:configure.ac:90: -1- m4_pattern_allow([^EGREP$])
+m4trace:configure.ac:90: -1- m4_pattern_allow([^EGREP$])
+m4trace:configure.ac:90: -1- m4_pattern_allow([^STDC_HEADERS$])
+m4trace:configure.ac:91: -1- m4_pattern_allow([^HAVE_SYS_WAIT_H$])
+m4trace:configure.ac:120: -1- PKG_CHECK_MODULES([GLIB], [glib-2.0])
+m4trace:configure.ac:120: -1- PKG_PROG_PKG_CONFIG
+m4trace:configure.ac:120: -1- m4_pattern_forbid([^_?PKG_[A-Z_]+$])
+m4trace:configure.ac:120: -1- m4_pattern_allow([^PKG_CONFIG(_PATH)?$])
+m4trace:configure.ac:120: -1- m4_pattern_allow([^PKG_CONFIG$])
+m4trace:configure.ac:120: -1- m4_pattern_allow([^PKG_CONFIG$])
+m4trace:configure.ac:120: -1- m4_pattern_allow([^GLIB_CFLAGS$])
+m4trace:configure.ac:120: -1- m4_pattern_allow([^GLIB_LIBS$])
+m4trace:configure.ac:120: -1- PKG_CHECK_EXISTS([glib-2.0], [pkg_cv_[]GLIB_CFLAGS=`$PKG_CONFIG --[]cflags "glib-2.0" 2>/dev/null`], [pkg_failed=yes])
+m4trace:configure.ac:120: -1- PKG_CHECK_EXISTS([glib-2.0], [pkg_cv_[]GLIB_LIBS=`$PKG_CONFIG --[]libs "glib-2.0" 2>/dev/null`], [pkg_failed=yes])
+m4trace:configure.ac:120: -1- _PKG_SHORT_ERRORS_SUPPORTED
+m4trace:configure.ac:130: -1- m4_pattern_allow([^XSUBPPDIR$])
+m4trace:configure.ac:131: -1- m4_pattern_allow([^XSUBPPFLAGS$])
+m4trace:configure.ac:132: -1- m4_pattern_allow([^ATHSTATIC$])
+m4trace:configure.ac:134: -1- m4_pattern_allow([^INSTALL_PROGRAM$])
+m4trace:configure.ac:134: -1- m4_pattern_allow([^INSTALL_SCRIPT$])
+m4trace:configure.ac:134: -1- m4_pattern_allow([^INSTALL_DATA$])
+m4trace:configure.ac:136: -1- m4_pattern_allow([^subdirs$])
+m4trace:configure.ac:138: -1- _m4_warn([obsolete], [AC_OUTPUT should be used without arguments.
+You should run autoupdate.], [])
+m4trace:configure.ac:138: -1- m4_pattern_allow([^LIB@&t@OBJS$])
+m4trace:configure.ac:138: -1- m4_pattern_allow([^LTLIBOBJS$])
