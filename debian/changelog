@@ -2,8 +2,11 @@ barnowl (1.1-1) unstable; urgency=low
 
   * fold IRC support into main package
   * New upstream release
+  * Pull in post-release change 1810558433d183e to avoid a bogus error
+    message from zephyr subscriptions 
+  * Fix lintian warnings
 
- -- Sam Hartman <hartmans@debian.org>  Mon, 16 Mar 2009 09:10:23 -0400
+ -- Sam Hartman <hartmans@debian.org>  Mon, 16 Mar 2009 11:05:29 -0400
 
 barnowl (1.0.5-2) unstable; urgency=low
 
