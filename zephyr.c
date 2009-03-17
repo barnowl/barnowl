@@ -114,6 +114,12 @@ void owl_zephyr_finish_initialization(owl_dispatch *d) {
     deferred_subs = g_list_delete_link(deferred_subs, deferred_subs);
     owl_free(subs);
   }
+
+  /* zlog in if we need to */
+  if (owl_global_is_startuplogin(&g)) {
+    owl_function_debugmsg("startup: doing zlog in");
+    owl_zephyr_zlog_in();
+  }
 }
 
 void owl_zephyr_load_initial_subs() {

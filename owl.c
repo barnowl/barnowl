@@ -340,12 +340,6 @@ int main(int argc, char **argv, char **env)
     owl_global_set_default_style(&g, "default");
   }
 
-  /* zlog in if we need to */
-  if (owl_global_is_startuplogin(&g)) {
-    owl_function_debugmsg("startup: doing zlog in");
-    owl_zephyr_zlog_in();
-  }
-
   owl_function_debugmsg("startup: set style for the view: %s", owl_global_get_default_style(&g));
   s = owl_global_get_style_by_name(&g, owl_global_get_default_style(&g));
   if(s)
