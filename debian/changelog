@@ -1,3 +1,9 @@
+barnowl (1.1-3) UNRELEASED; urgency=low
+
+  * Correctly send zephyr login at startup, pull 619d8649e7 from upstream
+
+ -- Sam Hartman <hartmans@debian.org>  Wed, 18 Mar 2009 11:40:26 -0400
+
 barnowl (1.1-2) unstable; urgency=low
 
   * Add barnowl-irc dependencies, Thanks Evan and Anders, Closes: #520031 
