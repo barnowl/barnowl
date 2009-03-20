@@ -147,7 +147,8 @@ sub twitter_error {
     unless(defined($ratelimit)) {
         # Twitter's just sucking, sleep for 5 minutes
         $last_direct_poll = $last_poll = time + 60*5;
-        die("Twitter seems to be having problems.\n");
+        # die("Twitter seems to be having problems.\n");
+        return;
     }
     if($ratelimit->{remaining_hits} <= 0) {
         $last_direct_poll = $last_poll = $ratelimit->{reset_time_in_seconds};
