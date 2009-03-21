@@ -9,12 +9,13 @@
 static const char fileIdent[] = "$Id$";
 
 static GList *deferred_subs = NULL;
+
+#ifdef HAVE_LIBZEPHYR
 typedef struct _owl_sub_list {                            /* noproto */
   ZSubscription_t *subs;
   int nsubs;
 } owl_sub_list;
 
-#ifdef HAVE_LIBZEPHYR
 Code_t ZResetAuthentication();
 #endif
 
