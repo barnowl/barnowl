@@ -2,6 +2,8 @@
 *.o
 *.par
 *~
+.#*
+\#*#
 META.yml
 Makefile
 TAGS
