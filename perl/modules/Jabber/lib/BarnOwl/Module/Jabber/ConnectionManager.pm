@@ -50,6 +50,10 @@ sub scheduleReconnect {
     return 0 unless exists $self->{$jidStr};
     BarnOwl::admin_message(Jabber => "Disconnected from jabber account $jidStr");
 
+    unless (BarnOwl::getvar('jabber:reconnect') eq 'on') {
+        return $self->removeConnection($jidStr);
+    }
+
     BarnOwl::remove_dispatch($self->{$jidStr}->{Client}->{fileno}) if $self->{$jidStr}->{Client}->{fileno};
     $self->{$jidStr}->{Client}->Disconnect()
       if $self->{$jidStr}->{Client};

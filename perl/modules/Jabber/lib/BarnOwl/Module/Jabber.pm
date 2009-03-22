@@ -89,6 +89,10 @@ sub onStart {
 				  { default => 15,
 				    summary => 'After minutes idle, auto extended away.'
 				});
+	BarnOwl::new_variable_bool("jabber:reconnect",
+				  { default => 1,
+				    summary => 'Auto-reconnect when disconnected from servers.'
+				});
         # Force these. Reload can screw them up.
         # Taken from Net::Jabber::Protocol.
         $Net::XMPP::Protocol::NEWOBJECT{'iq'}       = "Net::Jabber::IQ";
