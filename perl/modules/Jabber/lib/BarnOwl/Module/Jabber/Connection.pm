@@ -141,12 +141,24 @@ Non-blocking connection processing. For use in a select loop.
 
 sub OwlProcess {
     my $self = shift;
+    my $jid = shift || $self->{SESSION}->{FULLJID};
     my $status = $self->Process(0);
     if ( !defined($status) ) {
-        my $jid = $self->{SESSION}->{FULLJID};
-        BarnOwl::error("Jabber account $jid disconnected!");
-        BarnOwl::Module::Jabber::do_logout($jid);
+        $BarnOwl::Module::Jabber::conn->scheduleReconnect($jid);
     }
+}
+
+=head2 Disconnect
+
+Work around a bug in Net::Jabber::Client where Process' return status
+is not cleared on disconnect.
+
+=cut
+
+sub Disconnect {
+    my $self = shift;
+    delete $self->{PROCESSERROR};
+    return $self->SUPER::Disconnect(@_);
 }
 
 =head1 SEE ALSO

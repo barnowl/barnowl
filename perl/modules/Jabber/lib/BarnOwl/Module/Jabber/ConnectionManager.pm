@@ -44,6 +44,58 @@ sub removeConnection {
     return 1;
 }
 
+sub scheduleReconnect {
+    my $self = shift;
+    my $jidStr = shift;
+    return 0 unless exists $self->{$jidStr};
+    BarnOwl::admin_message(Jabber => "Disconnected from jabber account $jidStr");
+
+    BarnOwl::remove_dispatch($self->{$jidStr}->{Client}->{fileno}) if $self->{$jidStr}->{Client}->{fileno};
+    $self->{$jidStr}->{Client}->Disconnect()
+      if $self->{$jidStr}->{Client};
+
+    $self->{$jidStr}->{Status} = "reconnecting";
+    $self->{$jidStr}->{ReconnectBackoff} = 5;
+    $self->{$jidStr}->{ReconnectAt} = time + $self->{$jidStr}->{ReconnectBackoff};
+    return 1;
+}
+
+sub setAuth {
+    my $self = shift;
+    my $jidStr = shift;
+    $self->{$jidStr}->{Auth} = shift;
+}
+
+sub tryReconnect {
+    my $self = shift;
+    my $jidStr = shift;
+    my $force = shift;
+
+    return 0 unless exists $self->{$jidStr};
+    return 0 unless $self->{$jidStr}{Status} eq "reconnecting";
+    return 0 unless $force or (time > $self->{$jidStr}{ReconnectAt});
+
+    $self->{$jidStr}->{ReconnectBackoff} *= 2;
+    $self->{$jidStr}->{ReconnectBackoff} = 60*5
+        if $self->{$jidStr}->{ReconnectBackoff} > 60*5;
+    $self->{$jidStr}->{ReconnectAt} = time + $self->{$jidStr}->{ReconnectBackoff};
+
+    my $status = $self->{$jidStr}->{Client}->Connect;
+    return 0 unless $status;
+
+    my @result = $self->{$jidStr}->{Client}->AuthSend( %{ $self->{$jidStr}->{Auth} } );
+    if ( !@result || $result[0] ne 'ok' ) {
+        $self->removeConnection($jidStr);
+        BarnOwl::error( "Error in jabber reconnect: " . join( " ", @result ) );
+        return 0;
+    }
+
+    BarnOwl::admin_message(Jabber => "Reconnected to jabber as $jidStr");
+    $self->{$jidStr}{Status} = "available";
+
+    return 1;
+}
+
 sub renameConnection {
     my $self = shift;
     my $oldJidStr = shift;
@@ -87,6 +139,12 @@ sub baseJIDExists {
     return 0;
 }
 
+sub jidActive {
+    my $self = shift;
+    my $jidStr = shift;
+    return(exists $self->{$jidStr} and $self->{$jidStr}{Status} eq "available");
+}
+
 sub sidExists {
     my $self = shift;
     my $sid = shift || "";
@@ -109,7 +167,7 @@ sub getConnectionFromJID {
     my $self = shift;
     my $jid = shift;
     $jid = $jid->GetJID('full') if UNIVERSAL::isa($jid, 'Net::XMPP::JID');
-    return $self->{$jid}->{Client} if exists $self->{$jid};
+    return $self->{$jid}->{Client} if $self->jidActive($jid);
 }
 
 sub getRosterFromSid {
@@ -126,7 +184,7 @@ sub getRosterFromJID {
     my $self = shift;
     my $jid = shift;
     $jid = $jid->GetJID('full') if UNIVERSAL::isa($jid, 'Net::XMPP::JID');
-    return $self->{$jid}->{Roster} if exists $self->{$jid};
+    return $self->{$jid}->{Roster} if $self->jidExists($jid);
 }
 
 

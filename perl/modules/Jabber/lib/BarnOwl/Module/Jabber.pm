@@ -131,17 +131,17 @@ sub do_keep_alive_and_auto_away {
     $vars{idletime} = $idletime;
 
     foreach my $jid ( $conn->getJIDs() ) {
-        my $client = $conn->getConnectionFromJID($jid);
 
+        next unless $conn->jidActive($jid) or $conn->tryReconnect($jid);
+
+        my $client = $conn->getConnectionFromJID($jid);
         unless($client) {
             $conn->removeConnection($jid);
             BarnOwl::error("Connection for $jid undefined -- error in reload?");
         }
         my $status = $client->Process(0); # keep-alive
         if ( !defined($status) ) {
-            BarnOwl::error("Jabber account $jid disconnected!");
-            do_logout($jid);
-            next;
+            $conn->scheduleReconnect($jid);
         }
         if ($::shutdown) {
             do_logout($jid);
@@ -382,9 +382,11 @@ sub cmd_login {
         return;
     }
 
-    if ( $conn->jidExists($jidStr) ) {
+    if ( $conn->jidActive($jidStr) ) {
         BarnOwl::error("Already logged in as $jidStr.");
         return;
+    } elsif ($conn->jidExists($jidStr)) {
+        return $conn->tryReconnect($jidStr, 1);
     }
 
     my ( $server, $port ) = getServerFromJID($jid);
@@ -452,6 +454,12 @@ sub do_login {
                 $conn->removeConnection($jidStr);
                 BarnOwl::error( "Error in connect: " . join( " ", @result ) );
             } else {
+                $conn->setAuth(
+                    $jidStr,
+                    {   %{ $vars{jlogin_authhash} },
+                        password => $vars{jlogin_password}
+                    }
+                );
                 my $roster = $conn->getRosterFromJID($jidStr);
                 $roster->fetch();
                 $client->PresenceSend( priority => 1 );
@@ -462,7 +470,7 @@ sub do_login {
                 # ConnectionManager's removeConnection() method.
                 $client->{fileno} = $client->getSocket()->fileno();
                 #queue_admin_msg("Connected to jabber as $fullJid ($client->{fileno})");
-                BarnOwl::add_dispatch($client->{fileno}, sub { $client->OwlProcess() });
+                BarnOwl::add_dispatch($client->{fileno}, sub { $client->OwlProcess($fullJid) });
 
                 # populate completion from roster.
                 for my $buddy ( $roster->jids('all') ) {
