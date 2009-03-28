@@ -1,40 +1,25 @@
-/*  Copyright (c) 2004 James Kretchmar. All rights reserved.
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are
- *  met:
- *  
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *  
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in
- *      the documentation and/or other materials provided with the
- *      distribution.
- *  
- *    * Redistributions in any form must be accompanied by information on
- *      how to obtain complete source code for the Owl software and any
- *      accompanying software that uses the Owl software. The source code
- *      must either be included in the distribution or be available for no
- *      more than the cost of distribution plus a nominal fee, and must be
- *      freely redistributable under reasonable conditions. For an
- *      executable file, complete source code means the source code for
- *      all modules it contains. It does not include source code for
- *      modules or files that typically accompany the major components of
- *      the operating system on which the executable file runs.
- *  
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
  * 
- *  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- *  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR
- *  NON-INFRINGEMENT, ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
- *  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- *  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
  */
 
 #include <stdio.h>
@@ -59,6 +44,8 @@
 int stderr_replace(void);
 #endif
 
+#define STDIN 0
+
 static const char fileIdent[] = "$Id$";
 
 owl_global g;
@@ -68,8 +55,8 @@ int main(int argc, char **argv, char **env)
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
   owl_editwin *tw;
   owl_popwin *pw;
-  int j, ret, initialsubs, debug, argcsave, followlast;
-  int newmsgs, zpendcount, nexttimediff;
+  int ret, initialsubs, debug, argcsave, followlast;
+  int newmsgs, nexttimediff;
   struct sigaction sigact;
   char *configfile, *tty, *perlout, *perlerr, **argvsave, buff[LINE], startupmsg[LINE];
   owl_filter *f;
@@ -78,9 +65,6 @@ int main(int argc, char **argv, char **env)
   struct tm *today;
   char *dir;
   struct termios tio;
-#ifdef HAVE_LIBZEPHYR
-  ZNotice_t notice;
-#endif
 #if OWL_STDERR_REDIR
   int newstderr;
 #endif
@@ -199,17 +183,44 @@ int main(int argc, char **argv, char **env)
   if (debug) owl_global_set_debug_on(&g);
   owl_function_debugmsg("startup: first available debugging message");
   owl_global_set_startupargs(&g, argcsave, argvsave);
+  owl_global_set_haveaim(&g);
+
+  /* prepare stdin dispatch */
+  {
+    owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
+    owl_function_debugmsg("startup: creating input selector");
+    d->fd = STDIN;
+    d->cfunc = &owl_process_input;
+    d->destroy = NULL;
+    owl_select_add_dispatch(d);
+  }
+
 #ifdef HAVE_LIBZEPHYR
   owl_global_set_havezephyr(&g);
+  if (!ret) {
+    owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
+    owl_function_debugmsg("startup: creating zephyr selector");
+    d->fd = ZGetFD();
+    d->cfunc = &owl_zephyr_process_events;
+    d->destroy = NULL;
+    owl_select_add_dispatch(d);
+    owl_global_set_havezephyr(&g);
+  }
 #endif
-  owl_global_set_haveaim(&g);
 
 #if OWL_STDERR_REDIR
   /* Do this only after we've started curses up... */
-  owl_function_debugmsg("startup: doing stderr redirection");
-  newstderr = stderr_replace();
-  owl_muxevents_add(owl_global_get_muxevents(&g), newstderr, OWL_MUX_READ,
-		    stderr_redirect_handler, NULL);
+  {
+    owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
+    owl_function_debugmsg("startup: doing stderr redirection");
+    d->fd = stderr_replace();
+    d->cfunc = stderr_redirect_handler;
+    d->destroy = NULL;
+    owl_function_debugmsg("testing: 1");
+    owl_select_add_dispatch(d);
+    owl_function_debugmsg("testing: 2");
+  }
+
 #endif   
 
   /* create the owl directory, in case it does not exist */
@@ -462,51 +473,11 @@ int main(int argc, char **argv, char **env)
 
     /* Grab incoming messages. */
     newmsgs=0;
-    zpendcount=0;
-    while(owl_zephyr_zpending() || owl_global_messagequeue_pending(&g)) {
-#ifdef HAVE_LIBZEPHYR
-      struct sockaddr_in from;
-#endif
+    while(owl_global_messagequeue_pending(&g)) {
       owl_message *m=NULL;
       owl_filter *f;
 
-      /* grab the new message, stick it in 'm' */
-      if (owl_zephyr_zpending()) {
-#ifdef HAVE_LIBZEPHYR
-	/* grab a zephyr notice, but if we've done 20 without stopping,
-	   take a break to process keystrokes etc. */
-	if (zpendcount>20) break;
-	ZReceiveNotice(&notice, &from);
-	zpendcount++;
-	
-	/* is this an ack from a zephyr we sent? */
-	if (owl_zephyr_notice_is_ack(&notice)) {
-	  owl_zephyr_handle_ack(&notice);
-	  continue;
-	}
-	
-	/* if it's a ping and we're not viewing pings then skip it */
-	if (!owl_global_is_rxping(&g) && !strcasecmp(notice.z_opcode, "ping")) {
-	  continue;
-	}
-
-	/* create the new message */
-	m=owl_malloc(sizeof(owl_message));
-	owl_message_create_from_znotice(m, &notice);
-#endif
-      } else if (owl_global_messagequeue_pending(&g)) {
-	/* pick up the non-zephyr message in the message queue */
-	m=owl_global_messageuque_popmsg(&g);
-      } else {
-	/* Not supposed to happen, but we seem to get here on resizes */
-	owl_function_debugmsg("Bottomed out looking for zephyr");
-      }
-
-      /* If we didn't pick up a message for some reason, don't go on */
-      if (m==NULL) {
-	owl_function_debugmsg("m is null in main loop");
-	continue;
-      }
+      m=owl_global_messageuque_popmsg(&g);
       
       /* if this message it on the puntlist, nuke it and continue */
       if (owl_global_message_is_puntable(&g, m)) {
@@ -598,9 +569,6 @@ int main(int argc, char **argv, char **env)
       }
     }
 
-    /* dispatch any muxevents */
-    owl_muxevents_dispatch(owl_global_get_muxevents(&g), 0);
-
     /* follow the last message if we're supposed to */
     if (newmsgs && followlast) {
       owl_function_lastmsg_noredisplay();
@@ -650,41 +618,8 @@ int main(int argc, char **argv, char **env)
       owl_global_set_noneedrefresh(&g);
     }
 
-    /* Handle all keypresses.  If no key has been pressed, sleep for a
-     * little bit, but otherwise do not.  This lets input be grabbed
-     * as quickly as possbile */
-    j=wgetch(typwin);
-    if (j==ERR) {
-      usleep(10);
-    } else {
-      /* find and activate the current keymap.
-       * TODO: this should really get fixed by activating
-       * keymaps as we switch between windows... 
-       */
-      if (pw && owl_popwin_is_active(pw) && owl_global_get_viewwin(&g)) {
-	owl_context_set_popless(owl_global_get_context(&g), 
-				owl_global_get_viewwin(&g));
-	owl_function_activate_keymap("popless");
-      } else if (owl_global_is_typwin_active(&g) 
-		 && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_ONELINE) {
-	/*
-	  owl_context_set_editline(owl_global_get_context(&g), tw);
-	  owl_function_activate_keymap("editline");
-	*/
-      } else if (owl_global_is_typwin_active(&g) 
-		 && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_MULTILINE) {
-	owl_context_set_editmulti(owl_global_get_context(&g), tw);
-	owl_function_activate_keymap("editmulti");
-      } else {
-	owl_context_set_recv(owl_global_get_context(&g));
-	owl_function_activate_keymap("recv");
-      }
-      /* now actually handle the keypress */
-      ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
-      if (ret!=0 && ret!=1) {
-	owl_function_makemsg("Unable to handle keypress");
-      }
-    }
+    /* select on FDs we know about. */
+    owl_select();
 
     /* Log any error signals */
     {
@@ -697,6 +632,51 @@ int main(int argc, char **argv, char **env)
       }
     }
 
+  }
+}
+
+void owl_process_input(owl_dispatch *d)
+{
+  int ret, j;
+  owl_popwin *pw;
+  owl_editwin *tw;
+  WINDOW *typwin;
+
+  typwin = owl_global_get_curs_typwin(&g);
+  while (1) {
+    j=wgetch(typwin);
+    if (j==ERR) return;
+
+    pw=owl_global_get_popwin(&g);
+    tw=owl_global_get_typwin(&g);
+    
+    /* find and activate the current keymap.
+     * TODO: this should really get fixed by activating
+     * keymaps as we switch between windows... 
+     */
+    if (pw && owl_popwin_is_active(pw) && owl_global_get_viewwin(&g)) {
+      owl_context_set_popless(owl_global_get_context(&g), 
+			      owl_global_get_viewwin(&g));
+      owl_function_activate_keymap("popless");
+    } else if (owl_global_is_typwin_active(&g) 
+	       && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_ONELINE) {
+      /*
+	owl_context_set_editline(owl_global_get_context(&g), tw);
+	owl_function_activate_keymap("editline");
+      */
+    } else if (owl_global_is_typwin_active(&g) 
+	       && owl_editwin_get_style(tw)==OWL_EDITWIN_STYLE_MULTILINE) {
+      owl_context_set_editmulti(owl_global_get_context(&g), tw);
+      owl_function_activate_keymap("editmulti");
+    } else {
+      owl_context_set_recv(owl_global_get_context(&g));
+      owl_function_activate_keymap("recv");
+    }
+    /* now actually handle the keypress */
+    ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
+    if (ret!=0 && ret!=1) {
+      owl_function_makemsg("Unable to handle keypress");
+    }
   }
 }
 
@@ -742,9 +722,9 @@ int stderr_replace(void)
     owl_function_debugmsg("stderr_replace: pipe FAILED\n");
     return -1;
   }
-    owl_function_debugmsg("stderr_replace: pipe: %d,%d\n", pipefds[0], pipefds[1]);
+    owl_function_debugmsg("stderr_replace: pipe: %d,%d", pipefds[0], pipefds[1]);
   if (-1 == dup2(pipefds[1], 2 /*stderr*/)) {
-    owl_function_debugmsg("stderr_replace: dup2 FAILED (%s)\n", strerror(errno));
+    owl_function_debugmsg("stderr_replace: dup2 FAILED (%s)", strerror(errno));
     perror("dup2");
     return -1;
   }

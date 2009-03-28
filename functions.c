@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -124,42 +148,27 @@ void owl_function_show_license()
 
   text=""
     "Owl version " OWL_VERSION_STRING "\n"
-    "Copyright (c) 2004 James Kretchmar. All rights reserved.\n"
     "\n"
-    "Redistribution and use in source and binary forms, with or without\n"
-    "modification, are permitted provided that the following conditions are\n"
-    "met:\n"
+    "Copyright (c) 2002,2003,2004,2009 James M. Kretchmar\n"
     "\n"
-    "   * Redistributions of source code must retain the above copyright\n"
-    "     notice, this list of conditions and the following disclaimer.\n"
+    "Owl is free software: you can redistribute it and/or modify\n"
+    "it under the terms of the GNU General Public License as published by\n"
+    "the Free Software Foundation, either version 3 of the License, or\n"
+    "(at your option) any later version.\n"
     "\n"
-    "   * Redistributions in binary form must reproduce the above copyright\n"
-    "     notice, this list of conditions and the following disclaimer in\n"
-    "     the documentation and/or other materials provided with the\n"
-    "     distribution.\n"
+    "Owl is distributed in the hope that it will be useful,\n"
+    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+    "GNU General Public License for more details.\n"
     "\n"
-    "   * Redistributions in any form must be accompanied by information on\n"
-    "     how to obtain complete source code for the Owl software and any\n"
-    "     accompanying software that uses the Owl software. The source code\n"
-    "     must either be included in the distribution or be available for no\n"
-    "     more than the cost of distribution plus a nominal fee, and must be\n"
-    "     freely redistributable under reasonable conditions. For an\n"
-    "     executable file, complete source code means the source code for\n"
-    "     all modules it contains. It does not include source code for\n"
-    "     modules or files that typically accompany the major components of\n"
-    "     the operating system on which the executable file runs.\n"
+    "You should have received a copy of the GNU General Public License\n"
+    "along with Owl.  If not, see <http://www.gnu.org/licenses/>.\n"
     "\n"
-    "THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR\n"
-    "IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\n"
-    "WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR\n"
-    "NON-INFRINGEMENT, ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE\n"
-    "LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR\n"
-    "CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF\n"
-    "SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR\n"
-    "BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,\n"
-    "WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE\n"
-    "OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN\n"
-    "IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n";
+    "---------------------------------------------------------------\n"
+    "\n"
+    "As of Owl version 2.1.12 there are patches contributed by\n"
+    "developers of the the branched BarnOwl project, Copyright (c)\n"
+    "2006-2008 The BarnOwl Developers. All rights reserved.\n";
   owl_function_popless_text(text);
 }
 
@@ -398,18 +407,14 @@ void owl_function_zwrite(char *line, char *msg)
     mymsg=owl_zwrite_get_message(&z);
     m=owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
 
-    if (m) {
-      /* log it */
-      owl_log_message(m);
-      
-      /* add it or nuke it */
-      if (owl_global_is_displayoutgoing(&g)) {
-	owl_function_add_message(m);
-      } else {
-	owl_message_free(m);
-      }
+    /* log it */
+    owl_log_message(m);
+
+    /* add it or nuke it */
+    if (owl_global_is_displayoutgoing(&g)) {
+      owl_function_add_message(m);
     } else {
-      owl_function_error("Could not create outgoing zephyr message");
+      owl_message_free(m);
     }
   }
 
@@ -438,12 +443,21 @@ void owl_function_zcrypt(char *line, char *msg)
 
   mymsg=owl_zwrite_get_message(&z);
 #ifdef OWL_ENABLE_ZCRYPT
-  cryptmsg=owl_malloc(strlen(mymsg)*4);
+  /* Allocate enough space for the crypted message. For each byte of
+   * the message, the encoded cyphertext will have two bytes. Block
+   * size is 8 bytes of input, or 16 bytes of output, so make sure we
+   * have at least one block worth of space allocated. If the message
+   * is empty, no blocks are sent, but we still allocate one
+   * block. The additional 16 bytes also provide space for the null
+   * terminator, as we will never use all of it for cyphertext.
+   */
+  cryptmsg=owl_malloc((strlen(mymsg)*2)+16);
   ret=owl_zcrypt_encrypt(cryptmsg, mymsg, owl_zwrite_get_class(&z), owl_zwrite_get_instance(&z));
   if (ret) {
     owl_function_error("Error in zcrypt, possibly no key found.  Message not sent.");
     owl_function_beep();
     owl_free(cryptmsg);
+    owl_zwrite_free(&z);
     return;
   }
 #else
@@ -462,18 +476,15 @@ void owl_function_zcrypt(char *line, char *msg)
     /* create the outgoing message */
     mymsg=owl_zwrite_get_message(&z);
     m=owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
-    if (m) {
-      /* log it */
-      owl_log_message(m);
-      
-      /* add it or nuke it */
-      if (owl_global_is_displayoutgoing(&g)) {
-	owl_function_add_message(m);
-      } else {
-	owl_message_free(m);
-      }
+    
+    /* log it */
+    owl_log_message(m);
+    
+    /* add it or nuke it */
+    if (owl_global_is_displayoutgoing(&g)) {
+      owl_function_add_message(m);
     } else {
-      owl_function_error("Could not create outgoing zephyr message");
+      owl_message_free(m);
     }
   }
 
@@ -504,18 +515,14 @@ void owl_function_aimwrite(char *to)
   /* create the outgoing message */
   m=owl_function_make_outgoing_aim(msg, to);
 
-  if (m) {
-    /* log it */
-    owl_log_message(m);
-    
-    /* display it or nuke it */
-    if (owl_global_is_displayoutgoing(&g)) {
-      owl_function_add_message(m);
-    } else {
-      owl_message_free(m);
-    }
+  /* log it */
+  owl_log_message(m);
+
+  /* display it or nuke it */
+  if (owl_global_is_displayoutgoing(&g)) {
+    owl_function_add_message(m);
   } else {
-    owl_function_error("Could not create outgoing AIM message");
+    owl_message_free(m);
   }
 
   owl_free(format_msg);
@@ -886,12 +893,14 @@ void owl_function_unsuball()
 void owl_function_loadsubs(char *file)
 {
   int ret, ret2;
-  char *foo;
+  char *foo, *path;
 
   if (file==NULL) {
     ret=owl_zephyr_loadsubs(NULL, 0);
   } else {
-    ret=owl_zephyr_loadsubs(file, 1);
+    path = owl_util_makepath(file);
+    ret=owl_zephyr_loadsubs(path, 1);
+    free(path);
   }
 
   /* for backwards compatibility for now */
@@ -1021,104 +1030,6 @@ void owl_function_quit()
   exit(0);
 }
 
-void owl_function_openurl()
-{
-  /* visit the first url in the current message */
-  owl_message *m;
-  owl_view *v;
-  char *ptr1, *ptr2, *text, url[LINE], tmpbuff[LINE];
-  int webbrowser;
-
-  webbrowser = owl_global_get_webbrowser(&g);
-
-  if (webbrowser < 0 || webbrowser == OWL_WEBBROWSER_NONE) {
-    owl_function_error("No browser selected");
-    return;
-  }
-
-  v=owl_global_get_current_view(&g);
-  
-  m=owl_view_get_element(v, owl_global_get_curmsg(&g));
-
-  if (!m || owl_view_get_size(v)==0) {
-    owl_function_error("No current message selected");
-    return;
-  }
-
-  text=owl_message_get_text(m);
-
-  /* First look for a good URL */  
-  if ((ptr1=strstr(text, "http://"))!=NULL) {
-    ptr2=strpbrk(ptr1, " \n\t");
-    if (ptr2) {
-      strncpy(url, ptr1, ptr2-ptr1+1);
-      url[ptr2-ptr1+1]='\0';
-    } else {
-      strcpy(url, ptr1);
-    }
-
-    /* if we had <http strip a trailing > */
-    if (ptr1>text && ptr1[-1]=='<') {
-      if (url[strlen(url)-1]=='>') {
-	url[strlen(url)-1]='\0';
-      }
-    }
-  } else if ((ptr1=strstr(text, "https://"))!=NULL) {
-    /* Look for an https URL */  
-    ptr2=strpbrk(ptr1, " \n\t");
-    if (ptr2) {
-      strncpy(url, ptr1, ptr2-ptr1+1);
-      url[ptr2-ptr1+1]='\0';
-    } else {
-      strcpy(url, ptr1);
-    }
-    
-    /* if we had <http strip a trailing > */
-    if (ptr1>text && ptr1[-1]=='<') {
-      if (url[strlen(url)-1]=='>') {
-	url[strlen(url)-1]='\0';
-      }
-    }
-  } else if ((ptr1=strstr(text, "www."))!=NULL) {
-    /* if we can't find a real url look for www.something */
-    ptr2=strpbrk(ptr1, " \n\t");
-    if (ptr2) {
-      strncpy(url, ptr1, ptr2-ptr1+1);
-      url[ptr2-ptr1+1]='\0';
-    } else {
-      strcpy(url, ptr1);
-    }
-  } else {
-    owl_function_beep();
-    owl_function_error("Could not find URL to open.");
-    return;
-  }
-
-  /* Make sure there aren't any quotes or \'s in the url */
-  for (ptr1 = url; *ptr1; ptr1++) {
-    if (*ptr1 == '"' || *ptr1 == '\\') {
-      owl_function_beep();
-      owl_function_error("URL contains invalid characters.");
-      return;
-    }
-  }
-  
-  /* NOTE: There are potentially serious security issues here... */
-
-  /* open the page */
-  owl_function_makemsg("Opening %s", url);
-  if (webbrowser == OWL_WEBBROWSER_NETSCAPE) {
-    snprintf(tmpbuff, LINE, "netscape -remote \"openURL(%s)\" > /dev/null 2> /dev/null", url);
-    system(tmpbuff); 
-  } else if (webbrowser == OWL_WEBBROWSER_GALEON) {
-    snprintf(tmpbuff, LINE, "galeon \"%s\" > /dev/null 2> /dev/null &", url);
-    system(tmpbuff); 
-  } else if (webbrowser == OWL_WEBBROWSER_OPERA) {
-    snprintf(tmpbuff, LINE, "opera \"%s\" > /dev/null 2> /dev/null &", url);
-    system(tmpbuff); 
-  }
-}
-
 void owl_function_calculate_topmsg(int direction)
 {
   int recwinlines, topmsg, curmsg;
@@ -1238,7 +1149,7 @@ int owl_function_calculate_topmsg_paged(int direction, owl_view *v, int curmsg, 
 
 int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines)
 {
-  int savey, j, i, foo, y;
+  int savey, i, foo, y;
 
   if (curmsg<0) return(topmsg);
     
@@ -1247,17 +1158,23 @@ int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg,
     topmsg=owl_function_calculate_topmsg_center(direction, v, curmsg, 0, recwinlines);
   }
 
-  /* Find number of lines from top to bottom of curmsg (store in savey) */
-  savey=0;
-  for (i=topmsg; i<=curmsg; i++) {
-    savey+=owl_message_get_numlines(owl_view_get_element(v, i));
+  /* If curmsg is so far past topmsg that there are more messages than
+     lines, skip the line counting that follows because we're
+     certainly off screen.  */
+  savey=curmsg-topmsg;
+  if (savey <= recwinlines) {
+    /* Find number of lines from top to bottom of curmsg (store in savey) */
+    savey = 0;
+    for (i=topmsg; i<=curmsg; i++) {
+      savey+=owl_message_get_numlines(owl_view_get_element(v, i));
+    }
   }
 
   /* If we're off the bottom of the screen, set the topmsg to curmsg
    * and scroll upwards */
   if (savey > recwinlines) {
     topmsg=curmsg;
-    savey=owl_message_get_numlines(owl_view_get_element(v, i));
+    savey=owl_message_get_numlines(owl_view_get_element(v, curmsg));
     direction=OWL_DIRECTION_UPWARDS;
   }
   
@@ -1265,20 +1182,20 @@ int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg,
   if (direction == OWL_DIRECTION_UPWARDS || direction == OWL_DIRECTION_NONE) {
     if (savey < (recwinlines / 4)) {
       y=0;
-      for (j=curmsg; j>=0; j--) {
-	foo=owl_message_get_numlines(owl_view_get_element(v, j));
+      for (i=curmsg; i>=0; i--) {
+	foo=owl_message_get_numlines(owl_view_get_element(v, i));
 	/* will we run the curmsg off the screen? */
 	if ((foo+y) >= recwinlines) {
-	  j++;
-	  if (j>curmsg) j=curmsg;
+	  i++;
+	  if (i>curmsg) i=curmsg;
 	  break;
 	}
 	/* have saved 1/2 the screen space? */
 	y+=foo;
 	if (y > (recwinlines / 2)) break;
       }
-      if (j<0) j=0;
-      return(j);
+      if (i<0) i=0;
+      return(i);
     }
   }
 
@@ -1287,14 +1204,14 @@ int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg,
     if (savey > ((recwinlines * 3)/4)) {
       y=0;
       /* count lines from the top until we can save 1/2 the screen size */
-      for (j=topmsg; j<curmsg; j++) {
-	y+=owl_message_get_numlines(owl_view_get_element(v, j));
+      for (i=topmsg; i<curmsg; i++) {
+	y+=owl_message_get_numlines(owl_view_get_element(v, i));
 	if (y > (recwinlines / 2)) break;
       }
-      if (j==curmsg) {
-	j--;
+      if (i==curmsg) {
+	i--;
       }
-      return(j+1);
+      return(i+1);
     }
   }
 
@@ -1474,28 +1391,7 @@ void owl_function_popless_file(char *filename)
 
 void owl_function_about()
 {
-  char buff[5000];
-
-  sprintf(buff, "This is owl version %s\n", OWL_VERSION_STRING);
-  strcat(buff, "\nOwl was written by James Kretchmar at the Massachusetts\n");
-  strcat(buff, "Institute of Technology.  The first version, 0.5, was\n");
-  strcat(buff, "released in March 2002.\n");
-  strcat(buff, "\n");
-  strcat(buff, "The name 'owl' was chosen in reference to the owls in the\n");
-  strcat(buff, "Harry Potter novels, who are tasked with carrying messages\n");
-  strcat(buff, "between Witches and Wizards.\n");
-  strcat(buff, "\n");
-  strcat(buff, "Copyright 2002 Massachusetts Institute of Technology\n");
-  strcat(buff, "\n");
-  strcat(buff, "Permission to use, copy, modify, and distribute this\n");
-  strcat(buff, "software and its documentation for any purpose and without\n");
-  strcat(buff, "fee is hereby granted, provided that the above copyright\n");
-  strcat(buff, "notice and this permission notice appear in all copies\n");
-  strcat(buff, "and in supporting documentation.  No representation is\n");
-  strcat(buff, "made about the suitability of this software for any\n");
-  strcat(buff, "purpose.  It is provided \"as is\" without express\n");
-  strcat(buff, "or implied warranty.\n");
-  owl_function_popless_text(buff);
+  owl_function_show_license();
 }
 
 void owl_function_info()
@@ -2593,8 +2489,10 @@ char *owl_function_classinstfilt(char *class, char *instance)
   }
   /* downcase it */
   downstr(filtname);
-  /* turn spaces into dots */
+  /* turn spaces, single quotes, and double quotes into dots */
   owl_text_tr(filtname, ' ', '.');
+  owl_text_tr(filtname, '\'', '.');
+  owl_text_tr(filtname, '"', '.');
   
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2605,9 +2503,13 @@ char *owl_function_classinstfilt(char *class, char *instance)
   argbuff=owl_malloc(len+20);
   tmpclass=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   owl_text_tr(tmpclass, ' ', '.');
+  owl_text_tr(tmpclass, '\'', '.');
+  owl_text_tr(tmpclass, '"', '.');
   if (instance) {
     tmpinstance=owl_text_quote(instance, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(tmpinstance, ' ', '.');
+    owl_text_tr(tmpinstance, '\'', '.');
+    owl_text_tr(tmpinstance, '"', '.');
   }
   sprintf(argbuff, "( class ^%s$ )", tmpclass);
   if (tmpinstance) {
@@ -2682,6 +2584,7 @@ char *owl_function_aimuserfilt(char *user)
 {
   owl_filter *f;
   char *argbuff, *filtname;
+  char *escuser;
 
   /* name for the filter */
   filtname=owl_malloc(strlen(user)+40);
@@ -2695,10 +2598,12 @@ char *owl_function_aimuserfilt(char *user)
   /* create the new-internal filter */
   f=owl_malloc(sizeof(owl_filter));
 
+  escuser = owl_text_quote(user, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+
   argbuff=owl_malloc(1000);
   sprintf(argbuff,
-	  "( type ^aim$ and ( ( sender ^%s$ and recipient ^%s$ ) or ( sender ^%s$ and recipient ^%s$ ) ) )",
-	  user, owl_global_get_aim_screenname(&g), owl_global_get_aim_screenname(&g), user);
+          "( type ^aim$ and ( ( sender ^%s$ and recipient ^%s$ ) or ( sender ^%s$ and recipient ^%s$ ) ) )",
+          escuser, owl_global_get_aim_screenname(&g), owl_global_get_aim_screenname(&g), escuser);
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
@@ -2707,6 +2612,7 @@ char *owl_function_aimuserfilt(char *user)
 
   /* free stuff */
   owl_free(argbuff);
+  owl_free(escuser);
 
   return(filtname);
 }
@@ -2988,6 +2894,8 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   } else {
     quoted=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
+    owl_text_tr(quoted, '\'', '.');
+    owl_text_tr(quoted, '"', '.');
     sprintf(buff, "%s ^%s$", buff, quoted);
     owl_free(quoted);
   }
@@ -2996,12 +2904,16 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   } else {
     quoted=owl_text_quote(inst, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
+    owl_text_tr(quoted, '\'', '.');
+    owl_text_tr(quoted, '"', '.');
     sprintf(buff, "%s and instance ^%s$", buff, quoted);
     owl_free(quoted);
   }
   if (strcmp(recip, "*")) {
     quoted=owl_text_quote(recip, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
+    owl_text_tr(quoted, '\'', '.');
+    owl_text_tr(quoted, '"', '.');
     sprintf(buff, "%s and recipient ^%s$", buff, quoted);
     owl_free(quoted);
   }
@@ -3269,6 +3181,7 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
 		    location[x].time);
 	    owl_fmtext_append_normal(&fm, line);
 	    owl_free(tmp);
+	    owl_free(line);
 	  }
 	  if (numlocs>=200) {
 	    owl_fmtext_append_normal(&fm, "  Too many locations found for this user, truncating.\n");
@@ -3427,21 +3340,27 @@ void owl_function_delstartup(char *buff)
  */
 void owl_function_source(char *filename)
 {
+  char *path;
   FILE *file;
   char buff[LINE];
+  int fail_silent = 0;
 
   if (!filename) {
-    filename=owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
-    file=fopen(filename, "r");
-    owl_free(filename);
+    fail_silent = 1;
+    path = owl_sprintf("%s/%s", owl_global_get_homedir(&g), OWL_STARTUP_FILE);
   } else {
-    file=fopen(filename, "r");
+    path = owl_util_makepath(filename);
   }
+  file=fopen(path, "r");
+  owl_free(path);
   if (!file) {
-    /* just fail silently if it doesn't exist */
+    if (!fail_silent) {
+      owl_function_error("Error opening file: %s", filename);
+    }
     return;
   }
   while (fgets(buff, LINE, file)!=NULL) {
+    if (buff[0] == '#') continue;
     buff[strlen(buff)-1]='\0';
     owl_function_command(buff);
   }

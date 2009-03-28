@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include "owl.h"
 #include <stdlib.h>
 #include <string.h>
@@ -20,21 +44,25 @@ void *owl_messagelist_get_element(owl_messagelist *ml, int n)
   return(owl_list_get_element(&(ml->list), n));
 }
 
-owl_message *owl_messagelist_get_by_id(owl_messagelist *ml, int id)
+owl_message *owl_messagelist_get_by_id(owl_messagelist *ml, int target_id)
 {
   /* return the message with id == 'id'.  If it doesn't exist return NULL. */
-  /* we could make this much more efficient at some point */
-  int i, j;
+  int first, last, mid, msg_id;
   owl_message *m;
 
-  j=owl_list_get_size(&(ml->list));
-  for (i=0; i<j; i++) {
-    m=owl_list_get_element(&(ml->list), i);
-    if (owl_message_get_id(m)==id) return(m);
-
-    /* the message id's have to be sequential.  If we've passed the
-       one we're looking for just bail */
-    if (owl_message_get_id(m) > id) return(NULL);
+  first = 0;
+  last = owl_list_get_size(&(ml->list)) - 1;
+  while (first <= last) {
+    mid = (first + last) / 2;
+    m = owl_list_get_element(&(ml->list), mid);
+    msg_id = owl_message_get_id(m);
+    if (msg_id == target_id) {
+      return(m);
+    } else if (msg_id < target_id) {
+      first = mid + 1;
+    } else {
+      last = mid - 1;
+    }
   }
   return(NULL);
 }

@@ -8,9 +8,8 @@ AC_PROG_CC
 
 dnl If we're using GCC, enable all warnings
 if test "$GCC" = yes; then
-     CFLAGS="$CFLAGS -Wall -g";
+     CFLAGS="$CFLAGS -Wall -g -D_FORTIFY_SOURCE=2";
 fi
-
 
 dnl Check for Athena
 AC_MSG_CHECKING(for /usr/athena/include)
@@ -39,6 +38,17 @@ else
         AC_MSG_RESULT(no)
 fi
 
+dnl check for stack-protector
+PROTECT_CFLAGS=${PROTECT_CFLAGS-"-fstack-protector"}
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$CFLAGS $PROTECT_CFLAGS"
+AC_MSG_CHECKING(whether protection cflags work)
+AC_COMPILE_IFELSE(int i;,
+    [AC_MSG_RESULT(yes)],
+    [AC_MSG_RESULT(no)
+    CFLAGS=$SAVE_CFLAGS])
+
+AC_CHECK_LIB(ssp, __stack_chk_guard,,)
 AC_CHECK_LIB(ncurses, initscr,,
    AC_CHECK_LIB(curses, initscr,, AC_MSG_ERROR(No curses library found.)))
 AC_CHECK_LIB(com_err, com_err)
@@ -47,7 +57,7 @@ AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(k5crypto, krb5_derive_key)
 dnl AC_CHECK_LIB(des425, req_act_vno)
 AC_CHECK_LIB(des425, des_cbc_encrypt)
-AC_CHECK_LIB(des, des_quad_cksum)
+dnl AC_CHECK_LIB(des, des_quad_cksum)
 AC_CHECK_LIB(resolv, res_search)
 AC_CHECK_LIB(krb5, krb5_get_credentials)
 AC_CHECK_LIB(krb4, krb_sendauth,,
@@ -56,7 +66,7 @@ dnl AC_CHECK_LIB(zephyr, ZGetSender,, AC_MSG_ERROR(No zephyr library found.))
 AC_CHECK_LIB(zephyr, ZGetSender)
 AC_CHECK_LIB(zephyr, ZInitLocationInfo, AC_DEFINE([HAVE_LIBZEPHYR_ZINITLOCATIONINFO], [], [Have ZInitLocationInfo]),)
 
-AC_CHECK_FUNCS(use_default_colors des_string_to_key des_key_sched des_ecb_encrypt)
+AC_CHECK_FUNCS(use_default_colors resizeterm des_string_to_key des_key_sched des_ecb_encrypt)
 
 AC_MSG_CHECKING(for des_ecb_encrypt prototype)
 AC_TRY_COMPILE([#include <des.h>

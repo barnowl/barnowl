@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -49,7 +73,6 @@ void owl_global_init(owl_global *g) {
   owl_keyhandler_init(&g->kh);
   owl_keys_setup_keymaps(&g->kh);
 
-  owl_list_create(&(g->muxevents));
   owl_list_create(&(g->filterlist));
   owl_list_create(&(g->puntlist));
   owl_list_create(&(g->messagequeue));
@@ -109,6 +132,8 @@ void owl_global_init(owl_global *g) {
 
   owl_zbuddylist_create(&(g->zbuddies));
   owl_timer_create_countdown(&(g->zephyr_buddycheck_timer), 60*3);
+
+  owl_list_create(&(g->dispatchlist));
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -391,13 +416,19 @@ void owl_global_resize(owl_global *g, int x, int y) {
     g->cols=y;
   }
 
+#ifdef HAVE_RESIZETERM
   resizeterm(size.ws_row, size.ws_col);
+#endif
 
   /* re-initialize the windows */
   _owl_global_setup_windows(g);
 
   /* in case any styles rely on the current width */
   owl_messagelist_invalidate_formats(owl_global_get_msglist(g));
+
+  /* recalculate the topmsg to make sure the current message is on
+   * screen */
+  owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
 
   /* refresh stuff */
   g->needrefresh=1;
@@ -519,12 +550,6 @@ owl_history *owl_global_get_msg_history(owl_global *g) {
 
 owl_history *owl_global_get_cmd_history(owl_global *g) {
   return(&(g->cmdhist));
-}
-
-/* muxevents */
-
-owl_muxevents *owl_global_get_muxevents(owl_global *g) {
-  return(&(g->muxevents));
 }
 
 /* filterlist */
@@ -887,4 +912,9 @@ owl_zbuddylist *owl_global_get_zephyr_buddylist(owl_global *g)
 struct termios *owl_global_get_startup_tio(owl_global *g)
 {
   return(&(g->startup_tio));
+}
+
+owl_list *owl_global_get_dispatchlist(owl_global *g)
+{
+  return &(g->dispatchlist);
 }

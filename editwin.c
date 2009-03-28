@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include "owl.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -710,7 +734,11 @@ void owl_editwin_delete_nextword(owl_editwin *e)
   /* then nuke the next word */
   while (1) {
     z=_owl_editwin_get_index_from_xy(e);
-    if (e->buff[z+1]==' ' || e->buff[z+1]=='\n' || e->buff[z+1]=='\0') break;
+    /* z == e->bufflen check added to prevent a hang I (nelhage) have
+       seen repeatedly while using owl. I'm not sure precisely what
+       conditions lead to it. */
+    if (z == e->bufflen
+        || e->buff[z+1]==' ' || e->buff[z+1]=='\n' || e->buff[z+1]=='\0') break;
     owl_editwin_delete_char(e);
   }
   owl_editwin_delete_char(e);

@@ -1,40 +1,25 @@
-/*  Copyright (c) 2004 James Kretchmar. All rights reserved.
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are
- *  met:
- *  
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *  
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in
- *      the documentation and/or other materials provided with the
- *      distribution.
- *  
- *    * Redistributions in any form must be accompanied by information on
- *      how to obtain complete source code for the Owl software and any
- *      accompanying software that uses the Owl software. The source code
- *      must either be included in the distribution or be available for no
- *      more than the cost of distribution plus a nominal fee, and must be
- *      freely redistributable under reasonable conditions. For an
- *      executable file, complete source code means the source code for
- *      all modules it contains. It does not include source code for
- *      modules or files that typically accompany the major components of
- *      the operating system on which the executable file runs.
- *  
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
  * 
- *  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- *  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR
- *  NON-INFRINGEMENT, ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
- *  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- *  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
  */
 
 #ifndef INC_OWL_H
@@ -59,8 +44,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.1.11
-#define OWL_VERSION_STRING "2.1.11"
+#define OWL_VERSION         2.1.12
+#define OWL_VERSION_STRING "2.1.12-pre-6"
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */
@@ -191,7 +176,7 @@ static const char owl_h_fileIdent[] = "$Id$";
 #define OWL_WEBZEPHYR_CLASS     "webzephyr"
 #define OWL_WEBZEPHYR_OPCODE    "webzephyr"
 
-#define OWL_REGEX_QUOTECHARS    "+*.?[]^\\"
+#define OWL_REGEX_QUOTECHARS    "+*.?[]^\\${}()"
 #define OWL_REGEX_QUOTEWITH     "\\"
 
 #if defined(HAVE_DES_STRING_TO_KEY) && defined(HAVE_DES_KEY_SCHED) && defined(HAVE_DES_ECB_ENCRYPT)
@@ -370,12 +355,20 @@ typedef struct _owl_popwin {
   void (*handler) (int ch);
 } owl_popwin;
 
+typedef struct _owl_dispatch {
+  int fd;                                 /* FD to watch for dispatch. */
+  int needs_gc;
+  void (*cfunc)(struct _owl_dispatch*);   /* C function to dispatch to. */
+  void (*destroy)(struct _owl_dispatch*); /* Destructor */
+  void *data;
+} owl_dispatch;
+
 typedef struct _owl_popexec {
   int refcount;
   owl_viewwin *vwin;
   int winactive;
   int pid;			/* or 0 if it has terminated */
-  int rfd;  
+  owl_dispatch dispatch;
 } owl_popexec;
 
 typedef struct _owl_messagelist {
@@ -432,16 +425,6 @@ typedef struct _owl_editwin {
   int dotsend;
   int echochar;
 } owl_editwin;
-
-typedef struct _owl_mux {
-  int handle;			/* for referencing this */
-  int active;			/* has this been deleted? */
-  int fd;		       
-  int eventmask;		/* bitmask of OWL_MUX_* */
-  void (*handler_fn)(int handle, int fd, int eventmask, void *data);
-  void *data;			/* data reference to pass to callback */
-} owl_mux;
-typedef owl_list owl_muxevents;
 
 typedef struct _owl_keybinding {
   int  *j;			/* keypress stack (0-terminated) */  
@@ -502,7 +485,6 @@ typedef struct _owl_global {
   owl_keyhandler kh;
   owl_list filterlist;
   owl_list puntlist;
-  owl_muxevents muxevents;	/* fds to dispatch on */
   owl_vardict vars;
   owl_cmddict cmds;
   owl_context ctx;
@@ -562,6 +544,7 @@ typedef struct _owl_global {
   owl_zbuddylist zbuddies;
   owl_timer zephyr_buddycheck_timer;
   struct termios startup_tio;
+  owl_list dispatchlist;
 } owl_global;
 
 /* globals */

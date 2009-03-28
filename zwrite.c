@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include <string.h>
 #include <pwd.h>
 #include <sys/types.h>
@@ -190,7 +214,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 void owl_zwrite_send_ping(owl_zwrite *z)
 {
   int i, j;
-  char to[LINE];
+  char *to;
 
   if (z->noping) return;
   
@@ -204,11 +228,12 @@ void owl_zwrite_send_ping(owl_zwrite *z)
   j=owl_list_get_size(&(z->recips));
   for (i=0; i<j; i++) {
     if (strcmp(z->realm, "")) {
-      sprintf(to, "%s@%s", (char *) owl_list_get_element(&(z->recips), i), z->realm);
+      to = owl_sprintf("%s@%s", (char *) owl_list_get_element(&(z->recips), i), z->realm);
     } else {
-      strcpy(to, owl_list_get_element(&(z->recips), i));
+      to = owl_strdup(owl_list_get_element(&(z->recips), i));
     }
     send_ping(to);
+    owl_free(to);
   }
 
 }
@@ -216,21 +241,26 @@ void owl_zwrite_send_ping(owl_zwrite *z)
 void owl_zwrite_set_message(owl_zwrite *z, char *msg)
 {
   int i, j;
-  char toline[LINE];
-
+  char *toline = NULL;
+  char *tmp = NULL;
+  
   if (z->message) owl_free(z->message);
 
   j=owl_list_get_size(&(z->recips));
   if (j>0 && z->cc) {
-    strcpy(toline, "CC: ");
+    toline = owl_strdup( "CC: ");
     for (i=0; i<j; i++) {
+      tmp = toline;
       if (strcmp(z->realm, "")) {
-	sprintf(toline, "%s%s@%s ", toline, (char *) owl_list_get_element(&(z->recips), i), z->realm);
+	toline = owl_sprintf( "%s%s@%s ", toline, (char *) owl_list_get_element(&(z->recips), i), z->realm);
       } else {
-	sprintf(toline, "%s%s ", toline, (char *) owl_list_get_element(&(z->recips), i));
+	toline = owl_sprintf( "%s%s ", toline, (char *) owl_list_get_element(&(z->recips), i));
       }
+      owl_free(tmp);
+      tmp=NULL;
     }
     z->message=owl_sprintf("%s\n%s", toline, msg);
+    owl_free(toline);
   } else {
     z->message=owl_strdup(msg);
   }
@@ -251,7 +281,7 @@ int owl_zwrite_is_message_set(owl_zwrite *z)
 int owl_zwrite_send_message(owl_zwrite *z)
 {
   int i, j;
-  char to[LINE];
+  char *to = NULL;
 
   if (z->message==NULL) return(-1);
 
@@ -259,16 +289,19 @@ int owl_zwrite_send_message(owl_zwrite *z)
   if (j>0) {
     for (i=0; i<j; i++) {
       if (strcmp(z->realm, "")) {
-	sprintf(to, "%s@%s", (char *) owl_list_get_element(&(z->recips), i), z->realm);
+	to = owl_sprintf("%s@%s", (char *) owl_list_get_element(&(z->recips), i), z->realm);
       } else {
-	strcpy(to, owl_list_get_element(&(z->recips), i));
+to = owl_strdup( owl_list_get_element(&(z->recips), i));
       }
       send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
+      owl_free(to);
+      to = NULL;
     }
   } else {
-    sprintf(to, "@%s", z->realm);
+    to = owl_sprintf( "@%s", z->realm);
     send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
   }
+  owl_free(to);
   return(0);
 }
 

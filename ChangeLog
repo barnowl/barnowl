@@ -1,11 +1,42 @@
 $Id$
 
-2.1.12pre
-        Don't crash when sending/logging outgoing 
-	   AIM message and not logged in [BZ 90]
-	Don't crash when senging to someone not on AIM buddy list [BZ 94]
-	   (patch from Alex Vandiver)
-	
+2.1.12-pre-6
+	Don't crash on mobile device AIM messages [BZ 20]
+	Don't crash when sending to someone not on AIM buddy list [BZ 94]
+	Fix overflow vulerability in zwrite.c and zcrypt.c
+	Add stack protector and -D_FORTIFY_SOURCE=2 where possible
+      	Fix hang [barnowl 4c46dfdebc294ca24fef59924f01688b8ee07dee]
+	Fix segfault on missing subs [barnowl 99dabeed7de6d19acb50f1e73aa0bfe5f9469c02]
+	Fix zcrypt bufffer size bug [barnowl 559076cd86edc3a8317819814dd5877b8bc7c3cb]
+	Fix double free [barnowl e97c4a306ae2c9d2147d83da29fee59918198e70]
+	Memory leak fix [barnowl c0a90c2c7ab97b9465c9873757faf312faa0021e]
+	Memory leak fix [barnowl 95caa16b2e9ba10770d87d0955198c14c2d0e16a]
+	Memory leak fix [barnowl 1716fed8c2650e46892cf6571555eac937266c6e]
+	Add getstyle command [barnowl 216c73421653e3ef0e957aa9a9804e208a77c80e]
+	Binary search for msgid [barnowl 0c8ab5eadbb6ecc97a120c91b9a824b33538c764]
+	File-handle leak [barnowl e78397d6ac5da0de31a4e269c0ba7f3d691857a3]
+	Fix delay in jump from top to bottom [barnowl 801b7ac63b962640debbcfd422cb9a60da5fea31]
+	Load subs in chunks [barnowl 93e883d60051b80bf6d35391f9d76fd7dfd198e3]
+	Load subs in chunks [barnowl f6050ee9b0a171a5031f84409eb181062afacd18]
+	Better zsig logging [barnowl d857b667a5a9b108b1a2a26b4a5513bef2b53f80]
+	free() -> owlfree() [barnowl d524c838ac7c115628424b8ac171c3489622ea3a]
+	Escape AIM users in smartfilters [barnowl af9b92e3e7ccb7de276a94b5c7e5861b24e71eff]
+	Better regex escape chars [barnowl 80e54a7631f091be8c9762adb9746bad38104738]
+	Deal with quotes in smart filters [barnowl 4099cf83702763fa8d1efc4f1582a605431bdb77]
+	Deal with 0 length zephyr fields [barnowl 128171aaf7cefa91a4bb1eada93a19d8fd0c355c]
+	Deal with 0 length zephyr fields [barnowl 50e29e35c64d64e223d378d350a7bc4f038d78f5]
+	Deal with 0 length zephyr fields [barnowl 804ab8af8b6d00bcd7e2402df892db8fbd61a3ec]
+	Leave curmsg on screen after resize [barnowl c0f9e3009bc03e80a44de64cd5f2b4033290236e]
+	Rip out brower stuff [barnowl 8e5935d11c699a7ce5a3e6e9a47799564c696d6a]
+	Rip out browser stuff [barnowl 4f15e8e9ceada0d4b2cc969ebf43b0a1fb3709ea]
+	No passwords in command history [barnowl 6e400cc71aa59e041dce677aadf50dc1f25228e2]
+	Format NOC mssages [barnowl a1bb1980e4bca23b8329cc0e7c0bd5027055ea0a]
+	Expand ~ in loadsubs [barnowl 27d8d835dc6d58c08fae10e75aae306c49215143]
+	Expand ~ in source [barnowl 10d67d57cb29221f63a43a30643c697fc7b38911]
+	Only use resizeterm() if it's available
+	Debian backports
+	Change license to GPLv3
+
 2.1.11
 	Don't crash doing zlocate with bad tickets. [BZ 12]
 	Metion the path for the owlconf in intro.txt [BZ 54]

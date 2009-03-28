@@ -44,6 +44,7 @@ sub body        { return shift->{"body"}; }
 sub sender      { return shift->{"sender"}; }
 sub recipient   { return shift->{"recipient"}; }
 sub login       { return shift->{"login"}; }
+sub is_private  { return shift->{"private"}; }
 
 sub is_login    { return shift->login eq "login"; }
 sub is_logout   { return shift->login eq "logout"; }
@@ -62,7 +63,6 @@ sub is_generic  { return (shift->{"type"} eq "generic"); }
 sub is_ping     { return 0; }
 sub is_mail     { return 0; }
 sub is_personal { return undef; }
-sub is_private  { return undef; }
 sub class       { return undef; }
 sub instance    { return undef; }
 sub realm       { return undef; }
@@ -189,11 +189,6 @@ sub zwriteline  { return shift->{"zwriteline"}; }
 sub zsig        { return shift->{"zsig"}; }
 
 sub is_ping     { return (lc(shift->opcode) eq "ping"); }
-
-sub is_private {
-    my ($m) = @_;
-    return (lc($m->recipient) eq lc(owl::zephyr_getsender()));
-}
 
 sub is_personal { 
     my ($m) = @_;

@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,6 +97,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)  /*noproto*/
   hv_store(h, "time", strlen("time"), newSVpv(owl_message_get_timestr(m),0),0);
   hv_store(h, "id", strlen("id"), newSViv(owl_message_get_id(m)),0);
   hv_store(h, "deleted", strlen("deleted"), newSViv(owl_message_is_delete(m)),0);
+  hv_store(h, "private", strlen("private"), newSViv(owl_message_is_private(m)),0);
 
   if (owl_message_is_type_zephyr(m))       blessas = "owl::Message::Zephyr";
   else if (owl_message_is_type_aim(m))     blessas = "owl::Message::AIM";
@@ -324,7 +349,7 @@ char *owl_perlconfig_getmsg(owl_message *m, int mode, char *subname)
   } else {
     char *ptr = NULL;
     if (owl_perlconfig_is_function("owl::receive_msg")) {
-      owl_perlconfig_call_with_message(subname?subname
+      ptr = owl_perlconfig_call_with_message(subname?subname
 				       :"owl::_receive_msg_legacy_wrap", m);
     }
     if (ptr) owl_free(ptr);

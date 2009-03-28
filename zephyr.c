@@ -66,6 +66,26 @@ char *owl_zephyr_get_sender()
 #endif
 }
 
+#ifdef HAVE_LIBZEPHYR
+int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
+{
+  int i, ret = 0;
+  /* sub without defaults */
+  if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
+    owl_function_error("Error subscribing to zephyr notifications.");
+    ret=-2;
+  }
+
+  /* free stuff */
+  for (i=0; i<count; i++) {
+    owl_free(subs[i].zsub_class);
+    owl_free(subs[i].zsub_classinst);
+    owl_free(subs[i].zsub_recipient);
+  }
+  return ret;
+}
+#endif
+
 /* Load zephyr subscriptions form 'filename'.  If 'filename' is NULL,
  * the default file $HOME/.zephyr.subs will be used.
  *
@@ -81,7 +101,7 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   char *tmp, *start;
   char buffer[1024], subsfile[1024];
   ZSubscription_t subs[3001];
-  int count, ret, i;
+  int count, ret;
   struct stat statbuff;
 
   if (filename==NULL) {
@@ -97,7 +117,6 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   }
 
   ZResetAuthentication();
-  /* need to redo this to do chunks, not just bail after 3000 */
   count=0;
   file=fopen(subsfile, "r");
   if (!file) return(-1);
@@ -110,7 +129,14 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
       start=buffer;
     }
     
-    if (count >= 3000) break; /* also tell the user */
+    if (count >= 3000) {
+      ret = owl_zephyr_loadsubs_helper(subs, count);
+      if (ret != 0) {
+	fclose(file);
+	return(ret);
+      }
+      count=0;
+    }
     
     /* add it to the list of subs */
     if ((tmp=(char *) strtok(start, ",\n\r"))==NULL) continue;
@@ -129,19 +155,7 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   }
   fclose(file);
 
-  /* sub without defaults */
-  ret=0;
-  if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
-    owl_function_error("Error subscribing to zephyr notifications.");
-    ret=-2;
-  }
-
-  /* free stuff */
-  for (i=0; i<count; i++) {
-    owl_free(subs[i].zsub_class);
-    owl_free(subs[i].zsub_classinst);
-    owl_free(subs[i].zsub_recipient);
-  }
+  ret=owl_zephyr_loadsubs_helper(subs, count);
 
   return(ret);
 #else
@@ -291,6 +305,10 @@ char *owl_zephyr_get_field(ZNotice_t *n, int j)
   int i, count, save;
   char *out;
 
+  /* If there's no message here, just run along now */
+  if (n->z_message_len == 0)
+    return(owl_strdup(""));
+
   count=save=0;
   for (i=0; i<n->z_message_len; i++) {
     if (n->z_message[i]=='\0') {
@@ -326,6 +344,9 @@ int owl_zephyr_get_num_fields(ZNotice_t *n)
 {
   int i, fields;
 
+  if(n->z_message_len == 0)
+    return 0;
+
   fields=1;
   for (i=0; i<n->z_message_len; i++) {
     if (n->z_message[i]=='\0') fields++;
@@ -354,6 +375,21 @@ char *owl_zephyr_get_message(ZNotice_t *n)
   /* deal with MIT Athena OLC messages */
   if (!strcasecmp(n->z_sender, "olc.matisse@ATHENA.MIT.EDU")) {
     return(owl_zephyr_get_field(n, 1));
+  }
+  /* deal with MIT NOC messages */
+  else if (!strcasecmp(n->z_sender, "rcmd.achilles@ATHENA.MIT.EDU")) {
+    /* $opcode service on $instance $3.\n$4 */
+    char *msg, *opcode, *instance, *field3, *field4;
+
+    opcode = n->z_opcode;
+    instance = n->z_class_inst;
+    field3 = owl_zephyr_get_field(n, 3);
+    field4 = owl_zephyr_get_field(n, 4);
+
+    msg = owl_sprintf("%s service on %s %s\n%s", opcode, instance, field3, field4);
+    if (msg) {
+      return msg;
+    }
   }
 
   return(owl_zephyr_get_field(n, 2));
@@ -628,13 +664,14 @@ void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip)
       if (!strcasecmp(buff, line)) {
 	owl_function_error("Subscription already present in %s", subsfile);
 	owl_free(line);
+	fclose(file);
 	return;
       }
     }
+    fclose(file);
   }
 
   /* if we get here then we didn't find it */
-  fclose(file);
   file=fopen(subsfile, "a");
   if (!file) {
     owl_function_error("Error opening file %s for writing", subsfile);
@@ -968,3 +1005,42 @@ int owl_zephyr_get_anyone_list(owl_list *in, char *filename)
   return(-1);
 #endif
 }
+
+
+#ifdef HAVE_LIBZEPHYR
+void owl_zephyr_process_events(owl_dispatch *d) {
+  int zpendcount=0;
+  ZNotice_t notice;
+  struct sockaddr_in from;
+  owl_message *m=NULL;
+
+  while(owl_zephyr_zpending() && zpendcount < 20) {
+    if (owl_zephyr_zpending()) {
+      ZReceiveNotice(&notice, &from);
+      zpendcount++;
+
+      /* is this an ack from a zephyr we sent? */
+      if (owl_zephyr_notice_is_ack(&notice)) {
+        owl_zephyr_handle_ack(&notice);
+        continue;
+      }
+
+      /* if it's a ping and we're not viewing pings then skip it */
+      if (!owl_global_is_rxping(&g) && !strcasecmp(notice.z_opcode, "ping")) {
+        continue;
+      }
+
+      /* create the new message */
+      m=owl_malloc(sizeof(owl_message));
+      owl_message_create_from_znotice(m, &notice);
+
+      owl_global_messagequeue_addmsg(&g, m);
+    }
+  }
+}
+
+#else
+void owl_zephyr_process_events(owl_dispatch *d) {
+  
+}
+#endif

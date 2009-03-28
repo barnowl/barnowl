@@ -15,7 +15,9 @@ extern int owl_zwrite_create_and_send_from_line(char *, char *);
 extern char *owl_function_ztext_stylestrip(char *);
 extern void g;
 extern int owl_global_get_cols(void*);
-
+extern char *owl_zephyr_get_realm();
+extern char *owl_zephyr_get_sender();
+ 
 MODULE = owl		PACKAGE = owl		
 
 char *

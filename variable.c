@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -340,12 +364,6 @@ static owl_variable variables_to_init[] = {
 	       "                 the screen will be paged up or down and\n"
 	       "                 the cursor will be near the center.\n",
 	       "normal,top,neartop,center,paged,pagedcenter" ),
-
-  OWLVAR_ENUM( "webbrowser" /* %OwlVarStub */, OWL_WEBBROWSER_NETSCAPE,
-	       "web browser to use to launch URLs",
-	       "When the 'w' key is pressed, this browser is used\n"
-	       "to display the requested URL.\n",
-	       "none,netscape,galeon,opera" ),
 
 
   OWLVAR_BOOL( "_followlast" /* %OwlVarStub */, 0,
@@ -951,23 +969,6 @@ int owl_variable_regtest(void) {
   FAIL_UNLESS("set int 5", -1==owl_variable_set_fromstring(&vd,"typewinsize","xxx",0,0));
   FAIL_UNLESS("set int 6", -1==owl_variable_set_fromstring(&vd,"typewinsize","",0,0));
   FAIL_UNLESS("get int 7", 9==owl_variable_get_int(&vd,"typewinsize"));
-
-  FAIL_UNLESS("get enum", OWL_WEBBROWSER_NETSCAPE==owl_variable_get_int(&vd,"webbrowser"));
-  FAIL_UNLESS("get enum as string 1", 0==owl_variable_get_tostring(&vd,"webbrowser", buf, 1024));
-  FAIL_UNLESS("get enum as string 2", 0==strcmp(buf,"netscape"));
-  FAIL_UNLESS("set enum 1", 0==owl_variable_set_int(&vd,"webbrowser",OWL_WEBBROWSER_GALEON));
-  FAIL_UNLESS("get enum 2", OWL_WEBBROWSER_GALEON==owl_variable_get_int(&vd,"webbrowser"));
-  FAIL_UNLESS("set enum 1b", -1==owl_variable_set_int(&vd,"webbrowser",-3));
-  FAIL_UNLESS("set enum 1b", -1==owl_variable_set_int(&vd,"webbrowser",209));
-  FAIL_UNLESS("get enum 2b", OWL_WEBBROWSER_GALEON==owl_variable_get_int(&vd,"webbrowser"));
-  FAIL_UNLESS("set enum 3", 0==owl_variable_set_fromstring(&vd,"webbrowser","none",0,0));
-  FAIL_UNLESS("get enum 4", OWL_WEBBROWSER_NONE==owl_variable_get_int(&vd,"webbrowser"));
-  FAIL_UNLESS("set enum 5", 0==owl_variable_set_fromstring(&vd,"webbrowser","netscape",0,0));
-  FAIL_UNLESS("get enum 6", OWL_WEBBROWSER_NETSCAPE==owl_variable_get_int(&vd,"webbrowser"));
-  FAIL_UNLESS("set enum 7", -1==owl_variable_set_fromstring(&vd,"webbrowser","xxx",0,0));
-  FAIL_UNLESS("set enum 8", -1==owl_variable_set_fromstring(&vd,"webbrowser","",0,0));
-  FAIL_UNLESS("set enum 9", -1==owl_variable_set_fromstring(&vd,"webbrowser","netscapey",0,0));
-  FAIL_UNLESS("get enum 10", OWL_WEBBROWSER_NETSCAPE==owl_variable_get_int(&vd,"webbrowser"));
 
 
 

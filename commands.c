@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -442,13 +466,6 @@ owl_cmd commands_to_init[]
   OWLCMD_VOID("pop-message", owl_command_pop_message, OWL_CTX_RECWIN,
 	      "pops up a message in a window", "", ""),
 
-  OWLCMD_VOID("openurl", owl_command_openurl, OWL_CTX_INTERACTIVE,
-	      "opens up a URL from the current message",
-	      "", 
-	      "Uses the 'webbrowser' variable to determine\n"
-	      "which browser to use.  Currently, 'netscape'\n"
-	      "and 'galeon' are supported.\n"),
-
   OWLCMD_ARGS("zaway", owl_command_zaway, OWL_CTX_INTERACTIVE,
 	      "Set, enable or disable zephyr away message",
 	      "zaway [ on | off | toggle ]\n"
@@ -702,6 +719,10 @@ owl_cmd commands_to_init[]
   OWLCMD_ARGS("getvar", owl_command_getvar, OWL_CTX_INTERACTIVE,
 	      "returns the value of a variable",
 	      "getvar <varname>", ""),
+
+  OWLCMD_ARGS("getstyle", owl_command_getstyle, OWL_CTX_INTERACTIVE,
+	      "returns the name of the style for the current view",
+	      "", ""),
 
   OWLCMD_ARGS("search", owl_command_search, OWL_CTX_INTERACTIVE,
 	      "search messages for a particular string",
@@ -1555,15 +1576,15 @@ char *owl_command_aperl(int argc, char **argv, char *buff)
 
 char *owl_command_multi(int argc, char **argv, char *buff)
 {
-  char *lastrv = NULL, *newbuff;
+  char *lastrv = NULL, *dupbuff, *newbuff;
   char **commands;
   int  ncommands, i;
   if (argc < 2) {
     owl_function_makemsg("Invalid arguments to 'multi' command.");    
     return NULL;
   }
-  newbuff = owl_strdup(buff);
-  newbuff = skiptokens(newbuff, 1);
+  dupbuff = owl_strdup(buff);
+  newbuff = skiptokens(dupbuff, 1);
   if (!strcmp(argv[0], "(")) {
     for (i=strlen(newbuff)-1; i>=0; i--) {
       if (newbuff[i] == ')') {
@@ -1583,6 +1604,7 @@ char *owl_command_multi(int argc, char **argv, char *buff)
     }
     lastrv = owl_function_command(commands[i]);
   }
+  owl_free(dupbuff);
   atokenize_free(commands, ncommands);
   return lastrv;
 }
@@ -1975,6 +1997,7 @@ char *owl_command_view(int argc, char **argv, char *buff)
       char *foo;
       foo=owl_function_create_negative_filter(owl_view_get_filtname(owl_global_get_current_view(&g)));
       owl_function_change_currentview_filter(foo);
+      owl_free(foo);
       return(NULL);
     }
   }
@@ -2154,11 +2177,6 @@ char *owl_command_viewuser(int argc, char **argv, char *buff)
 void owl_command_pop_message(void)
 {
   owl_function_curmsg_to_popwin();
-}
-
-void owl_command_openurl(void)
-{
-  owl_function_openurl();
 }
 
 char *owl_command_delete(int argc, char **argv, char *buff)
@@ -2398,6 +2416,18 @@ char *owl_command_aimlogout(int argc, char **argv, char *buff)
   return(NULL);
 }
 
+char *owl_command_getstyle(int argc, char **argv, char *buff)
+{
+  char *stylename;
+  if (argc != 1) {
+    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
+    return NULL;
+  }
+  stylename = owl_view_get_style_name(owl_global_get_current_view(&g));
+  if (stylename) stylename = owl_strdup(stylename);
+  return stylename;
+}
+
 /*********************************************************************/
 /************************** EDIT SPECIFIC ****************************/
 /*********************************************************************/
@@ -2408,9 +2438,11 @@ void owl_command_edit_cancel(owl_editwin *e)
 
   owl_function_makemsg("Command cancelled.");
 
-  hist=owl_editwin_get_history(e);
-  owl_history_store(hist, owl_editwin_get_text(e));
-  owl_history_reset(hist);
+  if(e->echochar == 0) {
+    hist=owl_editwin_get_history(e);
+    owl_history_store(hist, owl_editwin_get_text(e));
+    owl_history_reset(hist);
+  }
 
   owl_editwin_fullclear(e);
   owl_global_set_needrefresh(&g);

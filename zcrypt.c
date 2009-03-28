@@ -1,4 +1,31 @@
-/* This file is stolen and slightly modified code */
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
+/* The functions here with "owl" in their name were written for the
+ * Owl project.  Other code is from Philip Lisiecki's
+ * (lisiecki@mit.edu) zcrypt program.
+ */
 
 /* zcrypt.c -- Read in a data stream from stdin & dump a decrypted/encrypted *
  *   datastream.  Reads the string to make the key from from the first       *
@@ -422,22 +449,24 @@ char *BuildArgString(char **argv, int start, int end) {
 /* Find the class/instance in the .crypt-table */
 char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance) {
   char *keyfile = NULL;
-  char varname[MAX_SEARCH][128];
+  char *varname[MAX_SEARCH];
   int length[MAX_SEARCH], i;
   char buffer[MAX_BUFF];
-  char filename[MAX_BUFF];
+  char *filename;
   char result[MAX_SEARCH][MAX_BUFF];
   int numsearch = 0;
   FILE *fsearch;
 
+  memset(varname, 0, sizeof(varname));
+
   /* Determine names to look for in .crypt-table */
   if (instance) {
-    sprintf(varname[numsearch++], "crypt-%s-%s:", (class?class:"message"), instance);
+    varname[numsearch++] = owl_sprintf("crypt-%s-%s:", (class?class:"message"), instance);
   }
   if (class) {
-    sprintf(varname[numsearch++], "crypt-%s:", class);
+    varname[numsearch++] = owl_sprintf("crypt-%s:", class);
   }
-  sprintf(varname[numsearch++], "crypt-default:");
+  varname[numsearch++] = owl_strdup("crypt-default:");
 
   /* Setup the result array, and determine string lengths */
   for (i = 0; i < numsearch; i++) {
@@ -446,7 +475,7 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance) {
   }
 
   /* Open~/.crypt-table */
-  sprintf(filename, "%s/.crypt-table", getenv("HOME"));
+  filename = owl_sprintf("%s/.crypt-table", getenv("HOME"));
   fsearch = fopen(filename, "r");
   if (fsearch) {
     /* Scan file for a match */
@@ -493,6 +522,12 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance) {
   } else {
     /* printf("Could not open key table file: %s\n", filename); */
   }
+
+  for(i = 0; i < MAX_SEARCH; i++) {
+    owl_free(varname[i]);
+  }
+
+  owl_free(filename);
 
   return(keyfile);
 }

@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include "owl.h"
 #include <stdlib.h>
 #include <string.h>
@@ -12,11 +36,6 @@ static const char fileIdent[] = "$Id$";
  */
 void owl_log_message(owl_message *m) {
   owl_function_debugmsg("owl_log_message: entering");
-
-  if (m == NULL) {
-    owl_function_debugmsg("owl_log_message: passed null message");
-    return;
-  }
 
   /* should we be logging this message? */
   if (!owl_log_shouldlog_message(m)) {
@@ -280,7 +299,7 @@ void owl_log_incoming(owl_message *m)
 {
   FILE *file, *allfile;
   char filename[MAXPATHLEN], allfilename[MAXPATHLEN], *logpath;
-  char *frombuff=NULL, *from=NULL, *buff=NULL, *ptr;
+  char *frombuff=NULL, *from=NULL, *zsig=NULL;
   int len, ch, i, personal;
 
   /* figure out if it's a "personal" message or not */
@@ -376,11 +395,8 @@ void owl_log_incoming(owl_message *m)
     if (strcmp(owl_message_get_opcode(m), "")) fprintf(file, " Opcode: %s", owl_message_get_opcode(m));
     fprintf(file, "\n");
     fprintf(file, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
-    ptr=owl_zephyr_get_zsig(owl_message_get_notice(m), &i);
-    buff=owl_malloc(i+10);
-    memcpy(buff, ptr, i);
-    buff[i]='\0';
-    fprintf(file, "From: %s <%s>\n\n", buff, tmp);
+    zsig=owl_message_get_zsig(m);
+    fprintf(file, "From: %s <%s>\n\n", zsig, tmp);
     fprintf(file, "%s\n\n", owl_message_get_body(m));
     owl_free(tmp);
   } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
@@ -410,7 +426,7 @@ void owl_log_incoming(owl_message *m)
       if (strcmp(owl_message_get_opcode(m), "")) fprintf(allfile, " Opcode: %s", owl_message_get_opcode(m));
       fprintf(allfile, "\n");
       fprintf(allfile, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
-      fprintf(allfile, "From: %s <%s>\n\n", buff, tmp);
+      fprintf(allfile, "From: %s <%s>\n\n", zsig, tmp);
       fprintf(allfile, "%s\n\n", owl_message_get_body(m));
       owl_free(tmp);
     } else if (owl_message_is_type_aim(m) && !owl_message_is_loginout(m)) {
@@ -430,8 +446,5 @@ void owl_log_incoming(owl_message *m)
     fclose(allfile);
   }
 
-  if (owl_message_is_type_zephyr(m)) {
-    owl_free(buff);
-  }
   owl_free(frombuff);
 }

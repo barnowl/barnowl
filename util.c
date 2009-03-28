@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include "owl.h"
 #include <stdlib.h>
 #include <string.h>
@@ -345,6 +369,8 @@ char **owl_parseline(char *line, int *argc)
     curarg[strlen(curarg)]=line[i];
   }
 
+  owl_free(curarg);
+
   /* check for unbalanced quotes */
   if (quote!='\0') {
     owl_parsefree(argv, *argc);
@@ -647,9 +673,9 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
     if (!backupfile) {
       owl_function_error("Error opening file %s for writing", backupfilename);
       owl_free(backupfilename);
+      fclose(file);
       return;
     }
-    owl_free(backupfilename);
   }
 
   /* we'll read the entire file into memory, minus the line we don't want and
@@ -688,12 +714,14 @@ void owl_util_file_deleteline(char *filename, char *line, int backup)
   if (!file) {
     owl_function_error("WARNING: Error opening %s for writing.  Use %s to restore.", filename, backupfilename);
     owl_function_beep();
-    owl_free(line);
-    return;
+  } else {
+    fputs(text, file);
+    fclose(file);
   }
 
-  fputs(text, file);
-  fclose(file);
+  if (backup)
+    owl_free(backupfilename);
+  owl_free(text);
 }
 
 /* add the string 'str' to the list 'list' of strings, only if it

@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include <stdlib.h>
 #include "owl.h"
 
@@ -96,17 +120,31 @@ int owl_view_get_size(owl_view *v)
  * to the passed msgid. */
 int owl_view_get_nearest_to_msgid(owl_view *v, int targetid)
 {
-  int i, bestdist=-1, bestpos=0, curid, curdist;
+  int first, last, mid = 0, max, bestdist, curid = 0;
 
-  for (i=0; i<owl_view_get_size(v); i++) {
-    curid = owl_message_get_id(owl_view_get_element(v, i));
-    curdist = abs(targetid-curid);
-    if (bestdist<0 || curdist<bestdist) {
-      bestdist = curdist;
-      bestpos = i;
+  first = 0;
+  last = max = owl_view_get_size(v) - 1;
+  while (first <= last) {
+    mid = (first + last) / 2;
+    curid = owl_message_get_id(owl_view_get_element(v, mid));
+    if (curid == targetid) {
+      return(mid);
+    } else if (curid < targetid) {
+      first = mid + 1;
+    } else {
+      last = mid - 1;
     }
   }
-  return (bestpos);
+  bestdist = abs(targetid-curid);
+  if (curid < targetid && mid+1 < max) {
+    curid = owl_message_get_id(owl_view_get_element(v, mid+1));
+    mid = (bestdist < abs(targetid-curid)) ? mid : mid+1;
+  }
+  else if (curid > targetid && mid-1 >= 0) {
+    curid = owl_message_get_id(owl_view_get_element(v, mid-1));
+    mid = (bestdist < abs(targetid-curid)) ? mid : mid-1;
+  }
+  return mid;
 }
 
 int owl_view_get_nearest_to_saved(owl_view *v)

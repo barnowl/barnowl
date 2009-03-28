@@ -59,5 +59,8 @@
 
 #undef HAVE_DES_ECB_ENCRYPT_PROTO
 
-
 #undef TERMINFO
+
+/* Define to 1 if you have the `resizeterm' function. */
+#undef HAVE_RESIZETERM
+

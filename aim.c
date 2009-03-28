@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include <stdio.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -238,7 +262,7 @@ void owl_aim_logged_out()
 void owl_aim_login_error(char *message)
 {
   if (message) {
-    owl_function_error(message);
+    owl_function_error("%s", message);
   } else {
     owl_function_error("Authentication error on login");
   }
@@ -947,13 +971,13 @@ static int getaimdata(aim_session_t *sess, unsigned char **bufret, int *buflenre
     return -1;
   
   if (modname) {
-    if (!(filename = malloc(strlen(priv->aimbinarypath)+1+strlen(modname)+4+1))) {
+    if (!(filename = owl_malloc(strlen(priv->aimbinarypath)+1+strlen(modname)+4+1))) {
       /* perror("memrequest: malloc"); */
       return -1;
     }
     sprintf(filename, "%s/%s.ocm", priv->aimbinarypath, modname);
   } else {
-    if (!(filename = malloc(strlen(priv->aimbinarypath)+1+strlen(defaultmod)+1))) {
+    if (!(filename = owl_malloc(strlen(priv->aimbinarypath)+1+strlen(defaultmod)+1))) {
       /* perror("memrequest: malloc"); */
       return -1;
     }
@@ -963,7 +987,7 @@ static int getaimdata(aim_session_t *sess, unsigned char **bufret, int *buflenre
   if (stat(filename, &st) == -1) {
     if (!modname) {
       /* perror("memrequest: stat"); */
-      free(filename);
+      owl_free(filename);
       return -1;
     }
     invalid = 1;
@@ -985,14 +1009,14 @@ static int getaimdata(aim_session_t *sess, unsigned char **bufret, int *buflenre
   if (invalid) {
     int i;
     
-    free(filename); /* not needed */
+    owl_free(filename); /* not needed */
     owl_function_error("getaimdata memrequest: recieved invalid request for 0x%08lx bytes at 0x%08lx (file %s)\n", len, offset, modname);
     i = 8;
     if (modname) {
       i+=strlen(modname);
     }
     
-    if (!(buf = malloc(i))) {
+    if (!(buf = owl_malloc(i))) {
       return -1;
     }
     
@@ -1016,31 +1040,31 @@ static int getaimdata(aim_session_t *sess, unsigned char **bufret, int *buflenre
     *bufret = buf;
     *buflenret = i;
   } else {
-    if (!(buf = malloc(len))) {
-      free(filename);
+    if (!(buf = owl_malloc(len))) {
+      owl_free(filename);
       return -1;
     }
     /* printf("memrequest: loading %ld bytes from 0x%08lx in \"%s\"...\n", len, offset, filename); */
     if (!(f = fopen(filename, "r"))) {
       /* perror("memrequest: fopen"); */
-      free(filename);
-      free(buf);
+      owl_free(filename);
+      owl_free(buf);
       return -1;
     }
     
-    free(filename);
+    owl_free(filename);
     
     if (fseek(f, offset, SEEK_SET) == -1) {
       /* perror("memrequest: fseek"); */
       fclose(f);
-      free(buf);
+      owl_free(buf);
       return -1;
     }
     
     if (fread(buf, len, 1, f) != 1) {
       /* perror("memrequest: fread"); */
       fclose(f);
-      free(buf);
+      owl_free(buf);
       return -1;
     }
     
@@ -1075,7 +1099,7 @@ static int faimtest_memrequest(aim_session_t *sess, aim_frame_t *fr, ...)
   
   if (priv->aimbinarypath && (getaimdata(sess, &buf, &buflen, offset, len, modname) == 0)) {
     aim_sendmemblock(sess, fr->conn, offset, buflen, buf, AIM_SENDMEMBLOCK_FLAG_ISREQUEST);
-    free(buf);
+    owl_free(buf);
   } else {
     owl_function_debugmsg("faimtest_memrequest: unable to use AIM binary (\"%s/%s\"), sending defaults...\n", priv->aimbinarypath, modname);
     aim_sendmemblock(sess, fr->conn, offset, len, NULL, AIM_SENDMEMBLOCK_FLAG_ISREQUEST);
@@ -1341,12 +1365,12 @@ static int faimtest_handlecmd(aim_session_t *sess, aim_conn_t *conn, aim_userinf
       char *newbuf;
       int z;
       
-      newbuf = malloc(i+1);
+      newbuf = owl_malloc(i+1);
       for (z = 0; z < i; z++)
 	newbuf[z] = (z % 10)+0x30;
       newbuf[i] = '\0';
       /* aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_ACK | AIM_IMFLAGS_AWAY, newbuf); */
-      free(newbuf);
+      owl_free(newbuf);
     }
   } else if (strstr(tmpstr, "seticqstatus")) {
     aim_setextstatus(sess, AIM_ICQ_STATE_DND);
@@ -1451,7 +1475,15 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
      * containing Smart Quotes.
      *
      */
-    strncpy(realmsg, args->msg, sizeof(realmsg));
+    if (!args->msg) {
+      if (args->mpmsg.parts->data) {
+	strncpy(realmsg,args->mpmsg.parts->data, sizeof(realmsg));
+      } else {
+	strncpy(realmsg,"",1);
+      }
+    } else {
+      strncpy(realmsg, args->msg, sizeof(realmsg));
+    }
   }
 
   owl_function_debugmsg("faimtest_parse_incoming_im_chan1: message from: %s", userinfo->sn?userinfo->sn:"");
@@ -1696,7 +1728,7 @@ int faimtest_parse_genericerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("snac threw error (reason 0x%04x: %s)\n", reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
-  if (reason<msgerrreasonslen) owl_function_error(msgerrreasons[reason]);
+  if (reason<msgerrreasonslen) owl_function_error("%s", msgerrreasons[reason]);
   
   return 1;
 }
@@ -1713,7 +1745,7 @@ static int faimtest_parse_msgerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("message to %s bounced (reason 0x%04x: %s)\n", destsn, reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
-  if (reason<msgerrreasonslen) owl_function_error(msgerrreasons[reason]);
+  if (reason<msgerrreasonslen) owl_function_error("%s", msgerrreasons[reason]);
 
   if (reason==4) {
     owl_function_adminmsg("", "Could not send AIM message, user not logged on");
@@ -1734,7 +1766,7 @@ static int faimtest_parse_locerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   /* printf("user information for %s unavailable (reason 0x%04x: %s)\n", destsn, reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
-  if (reason<msgerrreasonslen) owl_function_error(msgerrreasons[reason]);
+  if (reason<msgerrreasonslen) owl_function_error("%s", msgerrreasons[reason]);
   
   return 1;
 }
@@ -2309,6 +2341,12 @@ void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
   return;	
 }
 
+void owl_process_aim()
+{
+  if (owl_global_is_doaimevents(&g)) {
+    owl_aim_process_events();
+  }
+}
 
 /**********************************************************************************/
 

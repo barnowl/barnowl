@@ -1,3 +1,27 @@
+/* Copyright (c) 2002,2003,2004,2009 James M. Kretchmar
+ *
+ * This file is part of Owl.
+ *
+ * Owl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Owl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Owl.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ---------------------------------------------------------------
+ * 
+ * As of Owl version 2.1.12 there are patches contributed by
+ * developers of the the branched BarnOwl project, Copyright (c)
+ * 2006-2008 The BarnOwl Developers. All rights reserved.
+ */
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -19,7 +43,7 @@ void owl_message_init(owl_message *m)
   owl_message_set_direction_none(m);
   m->delete=0;
   m->hostname=owl_strdup("");
-  m->zwriteline=strdup("");
+  m->zwriteline=NULL;
   m->invalid_format=1;
 
   owl_list_create(&(m->attributes));
@@ -436,11 +460,14 @@ void owl_message_unmark_delete(owl_message *m)
 
 char *owl_message_get_zwriteline(owl_message *m)
 {
+  if(!m->zwriteline)
+    return "";
   return(m->zwriteline);
 }
 
 void owl_message_set_zwriteline(owl_message *m, char *line)
 {
+  if(m->zwriteline) owl_free(m->zwriteline);
   m->zwriteline=strdup(line);
 }
 
@@ -723,6 +750,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 {
   struct hostent *hent;
   char *ptr, *tmp, *tmp2;
+  int len;
 
   owl_message_init(m);
   
@@ -751,7 +779,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
   } else {
     owl_message_set_opcode(m, "");
   }
-  owl_message_set_zsig(m, n->z_message);
+  owl_message_set_zsig(m, owl_zephyr_get_zsig(n, &len));
 
   if ((ptr=strchr(n->z_recipient, '@'))!=NULL) {
     owl_message_set_realm(m, ptr+1);
