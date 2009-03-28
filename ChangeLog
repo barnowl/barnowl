@@ -1,6 +1,6 @@
 $Id$
 
-2.1.12-pre-6
+2.1.12
 	Don't crash on mobile device AIM messages [BZ 20]
 	Don't crash when sending to someone not on AIM buddy list [BZ 94]
 	Fix overflow vulerability in zwrite.c and zcrypt.c
