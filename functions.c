@@ -1249,7 +1249,8 @@ void owl_function_debugmsg(char *fmt, ...)
 {
   FILE *file;
   time_t now;
-  char buff1[LINE], buff2[LINE];
+  char buff1[LINE];
+  char *buff2;
   va_list ap;
   va_start(ap, fmt);
 
@@ -1262,13 +1263,14 @@ void owl_function_debugmsg(char *fmt, ...)
   strcpy(buff1, ctime(&now));
   buff1[strlen(buff1)-1]='\0';
 
-  owl_global_get_runtime_string(&g, buff2);
+  buff2=owl_global_get_runtime_string(&g);
   
   fprintf(file, "[%i -  %s - %s]: ", (int) getpid(), buff1, buff2);
   vfprintf(file, fmt, ap);
   fprintf(file, "\n");
   fclose(file);
-
+  owl_free(buff2);
+  
   va_end(ap);
 }
 

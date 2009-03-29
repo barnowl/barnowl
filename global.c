@@ -467,13 +467,13 @@ time_t owl_global_get_runtime(owl_global *g) {
   return(time(NULL)-g->starttime);
 }
 
-void owl_global_get_runtime_string(owl_global *g, char *buff) {
+char *owl_global_get_runtime_string(owl_global *g) {
   time_t diff;
 
   diff=time(NULL)-owl_global_get_starttime(g);
 
   /* print something nicer later */   
-  sprintf(buff, "%i seconds", (int) diff);
+  return(owl_sprintf("%i seconds", (int) diff));
 }
 
 char *owl_global_get_hostname(owl_global *g) {
