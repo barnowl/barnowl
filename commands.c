@@ -155,8 +155,10 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("aimwrite", owl_command_aimwrite, OWL_CTX_INTERACTIVE,
 	      "send an AIM message",
-	      "aimzwrite <user>",
-	      "Send an aim message to a user.\n"),
+	      "aimwrite <user> [-m <message...>]",
+	      "Send an aim message to a user.\n\n" 
+              "The following options are available:\n\n"
+              "-m    Specifies a message to send without prompting.\n"),
 
   OWLCMD_ARGS("loopwrite", owl_command_loopwrite, OWL_CTX_INTERACTIVE,
 	      "send a loopback message",
@@ -1857,8 +1859,9 @@ char *owl_command_zwrite(int argc, char **argv, char *buff)
 
 char *owl_command_aimwrite(int argc, char **argv, char *buff)
 {
-  char *newbuff;
-  int i, j;
+  char *newbuff, *recip, **myargv;
+  int i, j, myargc;
+  owl_message *m;
   
   if (!owl_global_is_aimloggedin(&g)) {
     owl_function_makemsg("You are not logged in to AIM.");
@@ -1868,6 +1871,56 @@ char *owl_command_aimwrite(int argc, char **argv, char *buff)
   if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the aimwrite command.");
     return(NULL);
+  }
+
+  myargv=argv;
+  if (argc<0) {
+    owl_function_error("Unbalanced quotes in aimwrite");
+    return(NULL);
+  }
+  myargc=argc;
+  if (myargc && *(myargv[0])!='-') {
+    myargc--;
+    myargv++;
+  }
+  while (myargc) {
+    if (!strcmp(myargv[0], "-m")) {
+      if (myargc<2) {
+	break;
+      }
+
+      /* Once we have -m, gobble up everything else on the line */
+      myargv++;
+      myargc--;
+      newbuff=owl_malloc(1);
+      newbuff=owl_strdup("");
+      while (myargc) {
+	newbuff=realloc(newbuff, strlen(newbuff)+strlen(myargv[0])+5);
+	strcat(newbuff, myargv[0]);
+	strcat(newbuff, " ");
+	myargc--;
+	myargv++;
+      }
+      newbuff[strlen(newbuff)-1]='\0'; /* remove last space */
+
+      recip=owl_malloc(strlen(argv[0])+5);
+      sprintf(recip, "%s ", argv[1]);
+      owl_aim_send_im(recip, newbuff);
+      m=owl_function_make_outgoing_aim(newbuff, recip);
+      if (m) { 
+          owl_global_messagequeue_addmsg(&g, m);
+      } else {
+          owl_function_error("Could not create outgoing AIM message");
+      }
+
+      owl_free(recip);
+      owl_free(newbuff);
+      return(NULL);
+    } else {
+      /* we don't care */
+      myargv++;
+      myargc--;
+    }
   }
 
   /* squish arguments together to make one screenname w/o spaces for now */
