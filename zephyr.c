@@ -25,6 +25,7 @@ int owl_zephyr_initialize()
     com_err("owl",ret,"while opening port");
     return(1);
   }
+  owl_zephyr_process_events(NULL);
 #endif
   return(0);
 }
@@ -34,6 +35,7 @@ int owl_zephyr_shutdown()
 {
 #ifdef HAVE_LIBZEPHYR
   unsuball();
+  owl_zephyr_process_events(NULL);
   ZClosePort();
 #endif
   return(0);
@@ -82,6 +84,7 @@ int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
     owl_free(subs[i].zsub_classinst);
     owl_free(subs[i].zsub_recipient);
   }
+  owl_zephyr_process_events(NULL);
   return ret;
 }
 #endif
@@ -172,6 +175,7 @@ int owl_zephyr_loaddefaultsubs()
     owl_function_error("Error subscribing to default zephyr notifications.");
     return(-1);
   }
+  owl_zephyr_process_events(NULL);
   return(0);
 #else
   return(0);
@@ -236,6 +240,8 @@ int owl_zephyr_loadloginsubs(char *filename)
     owl_free(subs[i].zsub_classinst);
   }
 
+  owl_zephyr_process_events(NULL);
+
   return(ret);
 #else
   return(0);
@@ -269,6 +275,7 @@ int owl_zephyr_sub(char *class, char *inst, char *recip)
     owl_function_error("Error subbing to <%s,%s,%s>", class, inst, recip);
     return(-2);
   }
+  owl_zephyr_process_events(NULL);
   return(0);
 #else
   return(0);
@@ -290,6 +297,7 @@ int owl_zephyr_unsub(char *class, char *inst, char *recip)
     owl_function_error("Error unsubbing from <%s,%s,%s>", class, inst, recip);
     return(-2);
   }
+  owl_zephyr_process_events(NULL);
   return(0);
 #else
   return(0);
@@ -459,6 +467,7 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
   /* free then check the return */
   owl_free(notice.z_message);
   ZFreeNotice(&notice);
+  owl_zephyr_process_events(NULL);
   if (ret!=ZERR_NONE) {
     owl_function_error("Error sending zephyr");
     return(ret);
@@ -472,7 +481,10 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
 #ifdef HAVE_LIBZEPHYR
 Code_t send_zephyr_helper(ZNotice_t *notice, char *buf, int len, int wait)
 {
-  return(ZSendPacket(buf, len, 0));
+  int ret;
+  ret=ZSendPacket(buf, len, 0);
+  owl_zephyr_process_events(NULL);
+  return(ret);
 }
 #endif
 
@@ -480,6 +492,7 @@ void send_ping(char *to)
 {
 #ifdef HAVE_LIBZEPHYR
   send_zephyr("PING", "", "MESSAGE", "PERSONAL", to, "");
+  owl_zephyr_process_events(NULL);
 #endif
 }
 
@@ -621,6 +634,7 @@ char *owl_zephyr_zlocate(char *user, int auth)
   
   ZResetAuthentication();
   ret=ZLocateUser(user,&numlocs,auth?ZAUTH:ZNOAUTH);
+  owl_zephyr_process_events(NULL);
   if (ret != ZERR_NONE) {
     return(owl_sprintf("Error locating user %s\n", user));
   }
@@ -646,6 +660,7 @@ char *owl_zephyr_zlocate(char *user, int auth)
     out=tmp;
     owl_free(myuser);
   }
+  owl_zephyr_process_events(NULL);
   return(out);
 #else
   return(owl_strdup("Zephyr not available"));
@@ -749,6 +764,7 @@ void owl_zephyr_zlog_in(void)
   }
    
   ret=ZSetLocation(eset);
+  owl_zephyr_process_events(NULL);
   if (ret != ZERR_NONE) {
     /* owl_function_makemsg("Error setting location: %s", error_message(ret)); */
   }
@@ -762,6 +778,7 @@ void owl_zephyr_zlog_out(void)
 
   ZResetAuthentication();
   ret=ZUnsetLocation();
+  owl_zephyr_process_events(NULL);
   if (ret != ZERR_NONE) {
     /* owl_function_makemsg("Error unsetting location: %s", error_message(ret)); */
   }
@@ -848,6 +865,7 @@ char *owl_zephyr_getsubs()
     } else {
       int tmpbufflen;
       char *tmpbuff;
+      owl_zephyr_process_events(NULL);
       tmpbuff = owl_sprintf("<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, out);
       tmpbufflen = strlen(tmpbuff) + 1;
       if (tmpbufflen > buffsize) {
@@ -869,6 +887,7 @@ char *owl_zephyr_getsubs()
   }
 
   ZFlushSubscriptions();
+  owl_zephyr_process_events(NULL);
   return(out);
 #else
   return(owl_strdup("Zephyr not available"));
@@ -888,6 +907,7 @@ void owl_zephyr_set_locationinfo(char *host, char *val)
 {
 #ifdef HAVE_LIBZEPHYR
   ZInitLocationInfo(host, val);
+  owl_zephyr_process_events(NULL);
 #endif
 }
   
