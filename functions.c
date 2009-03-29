@@ -1398,7 +1398,7 @@ void owl_function_info()
 {
   owl_message *m;
   owl_fmtext fm, attrfm;
-  char buff[10000];
+  char *buff;
   owl_view *v;
 #ifdef HAVE_LIBZEPHYR
   ZNotice_t *n;
@@ -1415,8 +1415,9 @@ void owl_function_info()
 
   owl_fmtext_append_bold(&fm, "General Information:\n");
   owl_fmtext_append_normal(&fm, "  Msg Id    : ");
-  sprintf(buff, "%i", owl_message_get_id(m));
+  buff=owl_sprintf("%i", owl_message_get_id(m));
   owl_fmtext_append_normal(&fm, buff);
+  owl_free(buff);
   owl_fmtext_append_normal(&fm, "\n");
 
   owl_fmtext_append_normal(&fm, "  Type      : ");
@@ -1499,26 +1500,31 @@ void owl_function_info()
 
       if (!owl_message_is_pseudo(m)) {
 	owl_fmtext_append_normal(&fm, "\n");
-	sprintf(buff, "  Port      : %i\n", ntohs(n->z_port));
+	buff=owl_sprintf("  Port      : %i\n", ntohs(n->z_port));
 	owl_fmtext_append_normal(&fm, buff);
+	owl_free(buff);
 
 	owl_fmtext_append_normal(&fm,    "  Auth      : ");
 	owl_fmtext_append_normal(&fm, owl_zephyr_get_authstr(n));
 	owl_fmtext_append_normal(&fm, "\n");
 	
-	/* fix this */
-	sprintf(buff, "  Checkd Ath: %i\n", n->z_checked_auth);
-	sprintf(buff, "%s  Multi notc: %s\n", buff, n->z_multinotice);
-	sprintf(buff, "%s  Num other : %i\n", buff, n->z_num_other_fields);
-	sprintf(buff, "%s  Msg Len   : %i\n", buff, n->z_message_len);
+	buff=owl_sprintf("  Checkd Ath: %i\n  Multi notc: %s\n  Num other : %i\n  Msg Len   : %i\n",
+			 n->z_checked_auth,
+			 n->z_multinotice,
+			 n->z_num_other_fields,
+			 n->z_message_len);
 	owl_fmtext_append_normal(&fm, buff);
+	owl_free(buff);
 	
-	sprintf(buff, "  Fields    : %i\n", owl_zephyr_get_num_fields(n));
+	buff=owl_sprintf("  Fields    : %i\n", owl_zephyr_get_num_fields(n));
 	owl_fmtext_append_normal(&fm, buff);
+	owl_free(buff);
 	
 	fields=owl_zephyr_get_num_fields(n);
 	for (i=0; i<fields; i++) {
-	  sprintf(buff, "  Field %i   : ", i+1);
+	  buff=owl_sprintf("  Field %i   : ", i+1);
+	  owl_fmtext_append_normal(&fm, buff);
+	  owl_free(buff);
 	  
 	  ptr=owl_zephyr_get_field(n, i+1);
 	  len=strlen(ptr);
@@ -1537,9 +1543,8 @@ void owl_function_info()
 	    if (tmpbuff[j]=='\r') tmpbuff[j]='!';
 	  }
 	  
-	  strcat(buff, tmpbuff);
-	  strcat(buff, "\n");
-	  owl_fmtext_append_normal(&fm, buff);
+	  owl_fmtext_append_normal(&fm, tmpbuff);
+	  owl_fmtext_append_normal(&fm, "\n");
 	}
 	owl_fmtext_append_normal(&fm, "  Default Fm:");
 	owl_fmtext_append_normal(&fm, n->z_default_format);
