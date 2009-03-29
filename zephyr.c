@@ -526,6 +526,7 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
   } else {
     owl_function_error("Internal error on ack (%s)", retnotice->z_message);
   }
+  owl_zephyr_process_events(NULL);
 }
 #else
 void owl_zephyr_handle_ack(void *retnotice)
