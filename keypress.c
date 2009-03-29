@@ -18,8 +18,8 @@
  * ---------------------------------------------------------------
  * 
  * As of Owl version 2.1.12 there are patches contributed by
- * developers of the the branched BarnOwl project, Copyright (c)
- * 2006-2008 The BarnOwl Developers. All rights reserved.
+ * developers of the branched BarnOwl project, Copyright (c)
+ * 2006-2009 The BarnOwl Developers. All rights reserved.
  */
 
 #include <ctype.h>
