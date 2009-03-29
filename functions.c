@@ -1824,7 +1824,8 @@ void owl_function_delete_automsgs()
 
 void owl_function_status()
 {
-  char buff[5000];
+  char cwdbuff[MAXPATHLEN+1];
+  char *buff;
   time_t start;
   int up, days, hours, minutes;
   owl_fmtext fm;
@@ -1844,12 +1845,16 @@ void owl_function_status()
   owl_fmtext_append_normal(&fm, "\n");
 
   owl_fmtext_append_normal(&fm, "  Current Directory: ");
-  (void) getcwd(buff, MAXPATHLEN);
-  owl_fmtext_append_normal(&fm, buff);
+  if(getcwd(cwdbuff, MAXPATHLEN) == NULL) {
+    owl_fmtext_append_normal(&fm, "<Error in getcwd>");
+  } else {
+    owl_fmtext_append_normal(&fm, cwdbuff);
+  }
   owl_fmtext_append_normal(&fm, "\n");
 
-  sprintf(buff, "  Startup Time: %s", ctime(&start));
+  buff=owl_sprintf("  Startup Time: %s", ctime(&start));
   owl_fmtext_append_normal(&fm, buff);
+  owl_free(buff);
 
   up=owl_global_get_runtime(&g);
   days=up/86400;
@@ -1858,8 +1863,10 @@ void owl_function_status()
   up-=hours*3600;
   minutes=up/60;
   up-=minutes*60;
-  sprintf(buff, "  Run Time: %i days %2.2i:%2.2i:%2.2i\n", days, hours, minutes, up);
+
+  buff=owl_sprintf("  Run Time: %i days %2.2i:%2.2i:%2.2i\n", days, hours, minutes, up);
   owl_fmtext_append_normal(&fm, buff);
+  owl_free(buff);
 
   owl_fmtext_append_normal(&fm, "\nProtocol Options:\n");
   owl_fmtext_append_normal(&fm, "  Zephyr included    : ");
@@ -1883,11 +1890,6 @@ void owl_function_status()
 
   owl_fmtext_append_normal(&fm, "\nMemory Usage:\n");
   owl_fmtext_append_normal(&fm, "  Not currently available.\n");
-  /*
-  sprintf(buff, "%sMemory Malloced: %i\n", buff, owl_global_get_malloced(&g));
-  sprintf(buff, "%sMemory Freed: %i\n", buff, owl_global_get_freed(&g));
-  sprintf(buff, "%sMemory In Use: %i\n", buff, owl_global_get_meminuse(&g));
-  */
 
   owl_fmtext_append_normal(&fm, "\nAIM Status:\n");
   owl_fmtext_append_normal(&fm, "  Logged in: ");
@@ -1912,20 +1914,23 @@ void owl_function_status()
 void owl_function_show_term()
 {
   owl_fmtext fm;
-  char buff[LINE];
+  char *buff;
 
   owl_fmtext_init_null(&fm);
-  sprintf(buff, "Terminal Lines: %i\nTerminal Columns: %i\n",
-	  owl_global_get_lines(&g),
-	  owl_global_get_cols(&g));
+  buff=owl_sprintf("Terminal Lines: %i\nTerminal Columns: %i\n",
+		   owl_global_get_lines(&g),
+		   owl_global_get_cols(&g));
   owl_fmtext_append_normal(&fm, buff);
+  owl_free(buff);
 
   if (owl_global_get_hascolors(&g)) {
     owl_fmtext_append_normal(&fm, "Color: Yes\n");
-    sprintf(buff, "Number of color pairs: %i\n", owl_global_get_colorpairs(&g));
+    buff=owl_sprintf("Number of color pairs: %i\n", owl_global_get_colorpairs(&g));
     owl_fmtext_append_normal(&fm, buff);
-    sprintf(buff, "Can change colors: %s\n", can_change_color() ? "yes" : "no");
+    owl_free(buff);
+    buff=owl_sprintf("Can change colors: %s\n", can_change_color() ? "yes" : "no");
     owl_fmtext_append_normal(&fm, buff);
+    owl_free(buff);
   } else {
     owl_fmtext_append_normal(&fm, "Color: No\n");
   }
@@ -1941,7 +1946,7 @@ void owl_function_show_term()
  */
 void owl_function_reply(int type, int enter)
 {
-  char *buff=NULL, *oldbuff;
+  char *buff=NULL, *tmpbuff;
   owl_message *m;
   owl_filter *f;
   
@@ -2025,15 +2030,17 @@ void owl_function_reply(int type, int enter)
       if (!strcasecmp(owl_message_get_opcode(m), "CRYPT")) {
 	buff=owl_strdup("zcrypt");
       } else {
-	buff = owl_strdup("zwrite");
+	buff=owl_strdup("zwrite");
       }
       if (strcasecmp(class, "message")) {
-	buff = owl_sprintf("%s -c %s%s%s", oldbuff=buff, owl_getquoting(class), class, owl_getquoting(class));
-	owl_free(oldbuff);
+	tmpbuff=owl_sprintf("%s -c %s%s%s", buff, owl_getquoting(class), class, owl_getquoting(class));
+	owl_free(buff);
+	buff=tmpbuff;
       }
       if (strcasecmp(inst, "personal")) {
-	buff = owl_sprintf("%s -i %s%s%s", oldbuff=buff, owl_getquoting(inst), inst, owl_getquoting(inst));
-	owl_free(oldbuff);
+	tmpbuff=owl_sprintf("%s -i %s%s%s", buff, owl_getquoting(inst), inst, owl_getquoting(inst));
+	owl_free(buff);
+	buff=tmpbuff;
       }
       if (*to != '\0') {
 	char *tmp, *oldtmp, *tmp2;
@@ -2041,16 +2048,18 @@ void owl_function_reply(int type, int enter)
 	if (cc) {
 	  tmp = owl_util_uniq(oldtmp=tmp, cc, "-");
 	  owl_free(oldtmp);
-	  buff = owl_sprintf("%s -C %s", oldbuff=buff, tmp);
-	  owl_free(oldbuff);
+	  tmpbuff=owl_sprintf("%s -C %s", buff, tmp);
+	  owl_free(buff);
+	  buff=tmpbuff;
 	} else {
 	  if (owl_global_is_smartstrip(&g)) {
 	    tmp2=tmp;
 	    tmp=owl_zephyr_smartstripped_user(tmp2);
 	    owl_free(tmp2);
 	  }
-	  buff = owl_sprintf("%s %s", oldbuff=buff, tmp);
-	  owl_free(oldbuff);
+	  tmpbuff=owl_sprintf("%s %s", buff, tmp);
+	  owl_free(buff);
+	  buff=tmpbuff;
 	}
 	owl_free(tmp);
       }
