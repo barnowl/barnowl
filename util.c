@@ -764,6 +764,29 @@ int owl_util_min(int a, int b)
   return(b);
 }
 
+/* Return the base class or instance from a zephyr class, by removing
+   leading `un' or trailing `.d'.
+   The caller is responsible for freeing the allocated string.
+*/
+char * owl_util_baseclass(char * class)
+{
+  char *start, *end;
+
+  start = class;
+  while(!strncmp(start, "un", 2)) {
+    start += 2;
+  }
+
+  start = owl_strdup(start);
+  end = start + strlen(start) - 1;
+  while(end > start && *end == 'd' && *(end-1) == '.') {
+    end -= 2;
+  }
+  *(end + 1) = 0;
+
+  return start;
+}
+
 /**************************************************************************/
 /************************* REGRESSION TESTS *******************************/
 /**************************************************************************/

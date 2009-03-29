@@ -2487,27 +2487,35 @@ void owl_function_show_zpunts()
  * instance is NULL then catch all messgaes in the class.  Returns the
  * name of the filter, which the caller must free.
  */
-char *owl_function_classinstfilt(char *class, char *instance) 
+char *owl_function_classinstfilt(char *c, char *i) 
 {
   owl_list *fl;
   owl_filter *f;
   char *argbuff, *filtname;
   char *tmpclass, *tmpinstance = NULL;
-  int len;
+  char *class, *instance = NULL;
+
+  class = owl_util_baseclass(c);
+  if(i) {
+    instance = owl_util_baseclass(i);
+  }
 
   fl=owl_global_get_filterlist(&g);
 
   /* name for the filter */
-  len=strlen(class)+30;
-  if (instance) len+=strlen(instance);
-  filtname=owl_malloc(len);
   if (!instance) {
-    sprintf(filtname, "class-%s", class);
+    filtname = owl_sprintf("class-%s", class);
   } else {
-    sprintf(filtname, "class-%s-instance-%s", class, instance);
+    filtname = owl_sprintf("class-%s-instance-%s", class, instance);
   }
   /* downcase it */
-  downstr(filtname);
+  {
+    char *temp = g_utf8_strdown(filtname, -1);
+    if (temp) {
+      owl_free(filtname);
+      filtname = temp;
+    }
+  }
   /* turn spaces, single quotes, and double quotes into dots */
   owl_text_tr(filtname, ' ', '.');
   owl_text_tr(filtname, '\'', '.');
@@ -2519,7 +2527,6 @@ char *owl_function_classinstfilt(char *class, char *instance)
   }
 
   /* create the new filter */
-  argbuff=owl_malloc(len+20);
   tmpclass=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   owl_text_tr(tmpclass, ' ', '.');
   owl_text_tr(tmpclass, '\'', '.');
@@ -2530,9 +2537,12 @@ char *owl_function_classinstfilt(char *class, char *instance)
     owl_text_tr(tmpinstance, '\'', '.');
     owl_text_tr(tmpinstance, '"', '.');
   }
-  sprintf(argbuff, "( class ^%s$ )", tmpclass);
+
+  argbuff = owl_sprintf("class ^(un)*%s(\\.d)*$", tmpclass);
   if (tmpinstance) {
-    sprintf(argbuff, "%s and ( instance ^%s$ )", argbuff, tmpinstance);
+    char *tmp = argbuff;
+    argbuff = owl_sprintf("%s and ( instance ^(un)*%s(\\.d)*$ )", tmp, tmpinstance);
+    owl_free(tmp);
   }
   owl_free(tmpclass);
   if (tmpinstance) owl_free(tmpinstance);
@@ -2544,6 +2554,10 @@ char *owl_function_classinstfilt(char *class, char *instance)
   owl_global_add_filter(&g, f);
 
   owl_free(argbuff);
+  owl_free(class);
+  if (instance) {
+    owl_free(instance);
+  }
   return(filtname);
 }
 
