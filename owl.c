@@ -619,6 +619,11 @@ int main(int argc, char **argv, char **env)
       owl_global_set_noneedrefresh(&g);
     }
 
+    /* Some calls into libzephyr call Z_WaitForNotice(), which has its
+     * own select loop and may leave zephyrs on the queue. Check for
+     * them now, and process any we find. */
+    owl_zephyr_process_events(NULL);
+
     /* select on FDs we know about. */
     owl_select();
 
