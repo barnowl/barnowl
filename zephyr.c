@@ -716,13 +716,8 @@ void owl_zephyr_delsub(char *filename, char *class, char *inst, char *recip)
 /* caller must free the return */
 char *owl_zephyr_makesubline(char *class, char *inst, char *recip)
 {
-  char *out;
-
-  out=owl_malloc(strlen(class)+strlen(inst)+strlen(recip)+30);
-  sprintf(out, "%s,%s,%s\n", class, inst, !strcmp(recip, "") ? "*" : recip);
-  return(out);
+  return(owl_sprintf("%s,%s,%s\n", class, inst, !strcmp(recip, "") ? "*" : recip));
 }
-
 
 void owl_zephyr_zlog_in(void)
 {
@@ -752,11 +747,7 @@ void owl_zephyr_zlog_in(void)
    
   ret=ZSetLocation(eset);
   if (ret != ZERR_NONE) {
-    /*
-      char buff[LINE];
-      sprintf(buff, "Error setting location: %s", error_message(ret));
-      owl_function_makemsg(buff);
-    */
+    /* owl_function_makemsg("Error setting location: %s", error_message(ret)); */
   }
 #endif
 }
@@ -769,11 +760,7 @@ void owl_zephyr_zlog_out(void)
   ZResetAuthentication();
   ret=ZUnsetLocation();
   if (ret != ZERR_NONE) {
-    /*
-      char buff[LINE];
-      sprintf(buff, "Error unsetting location: %s", error_message(ret));
-      owl_function_makemsg(buff);
-    */
+    /* owl_function_makemsg("Error unsetting location: %s", error_message(ret)); */
   }
 #endif
 }
@@ -834,34 +821,50 @@ char *owl_zephyr_getsubs()
 {
 #ifdef HAVE_LIBZEPHYR
   int ret, num, i, one;
+  int buffsize;
   ZSubscription_t sub;
-  char *out, *tmpbuff;
+  char *out;
   one=1;
 
   ret=ZRetrieveSubscriptions(0, &num);
   if (ret==ZERR_TOOMANYSUBS) {
     return(owl_strdup("Zephyr: too many subscriptions\n"));
-  } else if (ret) {
+  } else if (ret || (num <= 0)) {
     return(owl_strdup("Zephyr: error retriving subscriptions\n"));
   }
 
-  out=owl_malloc(num*500);
-  tmpbuff=owl_malloc(num*500);
+  buffsize = (num + 1) * 50;
+  out=owl_malloc(buffsize);
   strcpy(out, "");
   for (i=0; i<num; i++) {
     if ((ret = ZGetSubscriptions(&sub, &one)) != ZERR_NONE) {
       owl_free(out);
-      owl_free(tmpbuff);
       ZFlushSubscriptions();
       out=owl_strdup("Error while getting subscriptions\n");
       return(out);
     } else {
-      sprintf(tmpbuff, "<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, out);
+      int tmpbufflen;
+      char *tmpbuff;
+      tmpbuff = owl_sprintf("<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, out);
+      tmpbufflen = strlen(tmpbuff) + 1;
+      if (tmpbufflen > buffsize) {
+        char *out2;
+        buffsize = tmpbufflen * 2;
+        out2 = owl_realloc(out, buffsize);
+        if (out2 == NULL) {
+          owl_free(out);
+          owl_free(tmpbuff);
+          ZFlushSubscriptions();
+          out=owl_strdup("Realloc error while getting subscriptions\n");
+          return(out);    
+        }
+        out = out2;
+      }
       strcpy(out, tmpbuff);
+      owl_free(tmpbuff);
     }
   }
 
-  owl_free(tmpbuff);
   ZFlushSubscriptions();
   return(out);
 #else
