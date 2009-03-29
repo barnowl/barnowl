@@ -486,7 +486,7 @@ void send_ping(char *to)
 #ifdef HAVE_LIBZEPHYR
 void owl_zephyr_handle_ack(ZNotice_t *retnotice)
 {
-  char *tmp;
+  char *tmp, *buff;
   
   /* if it's an HMACK ignore it */
   if (retnotice->z_kind == HMACK) return;
@@ -508,18 +508,20 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
     }
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
     if (strcasecmp(retnotice->z_class, "message")) {
-      char buff[1024];
       owl_function_error("No one subscribed to class class %s", retnotice->z_class);
-      sprintf(buff, "Could not send message to class %s: no one subscribed.\n", retnotice->z_class);
+      buff=owl_sprintf("Could not send message to class %s: no one subscribed.\n",
+		       retnotice->z_class);
       owl_function_adminmsg("", buff);
+      owl_free(buff);
     } else {
-      char buff[1024];
       tmp = short_zuser(retnotice->z_recipient);
       owl_function_error("%s: Not logged in or subscribing to messages.", tmp);
-      sprintf(buff, "Could not send message to %s: not logged in or subscribing to messages.\n", tmp);
+      buff=owl_sprintf("Could not send message to %s: not logged in or subscribing to messages.\n",
+		       tmp);
       owl_function_adminmsg("", buff);
       owl_log_outgoing_zephyr_error(tmp, buff);
       owl_free(tmp);
+      owl_free(buff);
     }
   } else {
     owl_function_error("Internal error on ack (%s)", retnotice->z_message);
@@ -608,38 +610,42 @@ void owl_zephyr_hackaway_cr(ZNotice_t *n)
 }
 #endif
 
-void owl_zephyr_zlocate(char *user, char *out, int auth)
+char *owl_zephyr_zlocate(char *user, int auth)
 {
 #ifdef HAVE_LIBZEPHYR
   int ret, numlocs;
   int one = 1;
   ZLocations_t locations;
-  char *myuser;
+  char *myuser, *out, *tmp;
   
-  strcpy(out, "");
   ZResetAuthentication();
   ret=ZLocateUser(user,&numlocs,auth?ZAUTH:ZNOAUTH);
   if (ret != ZERR_NONE) {
-    sprintf(out, "Error locating user %s\n", user);
-    return;
+    return(owl_sprintf("Error locating user %s\n", user));
   }
 
   if (numlocs==0) {
     myuser=short_zuser(user);
-    sprintf(out, "%s: Hidden or not logged-in\n", myuser);
+    out=owl_sprintf("%s: Hidden or not logged in\n", myuser);
     owl_free(myuser);
-    return;
+    return(out);
   }
-    
+
+  out=strdup("");
   for (;numlocs;numlocs--) {
     ZGetLocations(&locations,&one);
     myuser=short_zuser(user);
-    sprintf(out, "%s%s: %s\t%s\t%s\n", out, myuser,
-	    locations.host ? locations.host : "?",
-	    locations.tty ? locations.tty : "?",
-	    locations.time ? locations.time : "?");
+    tmp=owl_sprintf("%s%s: %s\t%s\t%s\n",
+		    out,
+		    myuser,
+		    locations.host ? locations.host : "?",
+		    locations.tty ? locations.tty : "?",
+		    locations.time ? locations.time : "?");
+    owl_free(out);
+    out=tmp;
     owl_free(myuser);
   }
+  return(out);
 #endif
 }
 
