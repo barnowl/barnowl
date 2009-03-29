@@ -2337,7 +2337,6 @@ void owl_function_show_zpunts()
     tmp = owl_filter_print(f);
     owl_fmtext_append_normal(&fm, tmp);
     owl_free(tmp);
-    owl_fmtext_append_normal(&fm, buff);
   }
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);
