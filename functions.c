@@ -1710,34 +1710,31 @@ void owl_function_getsubs()
   owl_free(buff);
 }
 
-#define PABUFLEN 5000
 void owl_function_printallvars()
 {
-  char buff[PABUFLEN], *pos, *name;
+  char *name;
+  char var[LINE];
   owl_list varnames;
-  int i, numvarnames, rem;
+  int i, numvarnames;
+  GString *str   = g_string_new("");
 
-  pos = buff;
-  pos += sprintf(pos, "%-20s = %s\n", "VARIABLE", "VALUE");
-  pos += sprintf(pos, "%-20s   %s\n",  "--------", "-----");
+  g_string_append_printf(str, "%-20s = %s\n", "VARIABLE", "VALUE");
+  g_string_append_printf(str, "%-20s   %s\n",  "--------", "-----");
   owl_variable_dict_get_names(owl_global_get_vardict(&g), &varnames);
-  rem = (buff+PABUFLEN)-pos-1;
   numvarnames = owl_list_get_size(&varnames);
   for (i=0; i<numvarnames; i++) {
     name = owl_list_get_element(&varnames, i);
     if (name && name[0]!='_') {
-      rem = (buff+PABUFLEN)-pos-1;    
-      pos += snprintf(pos, rem, "\n%-20s = ", name);
-      rem = (buff+PABUFLEN)-pos-1;    
-      owl_variable_get_tostring(owl_global_get_vardict(&g), name, pos, rem);
-      pos = buff+strlen(buff);
+      g_string_append_printf(str, "\n%-20s = ", name);
+      owl_variable_get_tostring(owl_global_get_vardict(&g), name, var, LINE);
+      g_string_append(str, var);
     }
   }
-  rem = (buff+PABUFLEN)-pos-1;    
-  snprintf(pos, rem, "\n");
+  g_string_append(str, "\n");
   owl_variable_dict_namelist_free(&varnames);
-  
-  owl_function_popless_text(buff);
+
+  owl_function_popless_text(str->str);
+  g_string_free(str, TRUE);
 }
 
 void owl_function_show_variables()
@@ -2444,15 +2441,18 @@ void owl_function_show_filters()
 void owl_function_show_filter(char *name)
 {
   owl_filter *f;
-  char buff[5000];
+  char *buff, *tmp;
 
   f=owl_global_get_filter(&g, name);
   if (!f) {
     owl_function_error("There is no filter named %s", name);
     return;
   }
-  owl_filter_print(f, buff);
+  tmp = owl_filter_print(f);
+  buff = owl_sprintf("%s: %s", owl_filter_get_name(f), tmp);
   owl_function_popless_text(buff);
+  owl_free(buff);
+  owl_free(tmp);
 }
 
 void owl_function_show_zpunts()
@@ -2460,6 +2460,7 @@ void owl_function_show_zpunts()
   owl_filter *f;
   owl_list *fl;
   char buff[5000];
+  char *tmp;
   owl_fmtext fm;
   int i, j;
 
@@ -2471,8 +2472,12 @@ void owl_function_show_zpunts()
 
   for (i=0; i<j; i++) {
     f=owl_list_get_element(fl, i);
-    owl_filter_print(f, buff);
+    snprintf(buff, sizeof(buff), "[% 2d] ", i+1);
     owl_fmtext_append_normal(&fm, buff);
+    tmp = owl_filter_print(f);
+    owl_fmtext_append_normal(&fm, tmp);
+    owl_free(tmp);
+    owl_fmtext_append_normal(&fm, "\n");
   }
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);
@@ -2893,50 +2898,60 @@ void owl_function_show_colors()
  */
 void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
 {
-  owl_filter *f;
-  owl_list *fl;
-  char *buff;
+  char *puntexpr, *classexpr, *instexpr, *recipexpr;
   char *quoted;
-  int ret, i, j;
 
-  fl=owl_global_get_puntlist(&g);
-
-  /* first, create the filter */
-  f=malloc(sizeof(owl_filter));
-  buff=malloc(strlen(class)+strlen(inst)+strlen(recip)+100);
-  strcpy(buff, "class");
   if (!strcmp(class, "*")) {
-    strcat(buff, " .*");
+    classexpr = owl_sprintf("class .*");
   } else {
     quoted=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff, "%s ^%s$", buff, quoted);
+    classexpr = owl_sprintf("class ^(un)*%s(\\.d)*$", quoted);
     owl_free(quoted);
   }
   if (!strcmp(inst, "*")) {
-    strcat(buff, " and instance .*");
+    instexpr = owl_sprintf(" and instance .*");
   } else {
     quoted=owl_text_quote(inst, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff, "%s and instance ^%s$", buff, quoted);
+    instexpr = owl_sprintf(" and instance ^(un)*%s(\\.d)*$", quoted);
     owl_free(quoted);
   }
-  if (strcmp(recip, "*")) {
+  if (!strcmp(recip, "*")) {
+    recipexpr = owl_sprintf("");
+  } else {
     quoted=owl_text_quote(recip, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
     owl_text_tr(quoted, '"', '.');
-    sprintf(buff, "%s and recipient ^%s$", buff, quoted);
+    recipexpr = owl_sprintf(" and recipient ^%s$", quoted);
     owl_free(quoted);
   }
-  
-  owl_function_debugmsg("About to filter %s", buff);
-  ret=owl_filter_init_fromstring(f, "punt-filter", buff);
-  owl_free(buff);
+
+  puntexpr = owl_sprintf("%s %s %s", classexpr, instexpr, recipexpr);
+  owl_function_punt(puntexpr, direction);
+  owl_free(puntexpr);
+  owl_free(classexpr);
+  owl_free(instexpr);
+  owl_free(recipexpr);
+}
+
+void owl_function_punt(char *filter, int direction)
+{
+  owl_filter *f;
+  owl_list *fl;
+  int ret, i, j;
+  fl=owl_global_get_puntlist(&g);
+
+  /* first, create the filter */
+  f=malloc(sizeof(owl_filter));
+
+  owl_function_debugmsg("About to filter %s", filter);
+  ret=owl_filter_init_fromstring(f, "punt-filter", filter);
   if (ret) {
     owl_function_error("Error creating filter for zpunt");
     owl_filter_free(f);
@@ -2947,6 +2962,7 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   j=owl_list_get_size(fl);
   for (i=0; i<j; i++) {
     if (owl_filter_equiv(f, owl_list_get_element(fl, i))) {
+      owl_function_debugmsg("found an equivalent punt filter");
       /* if we're punting, then just silently bow out on this duplicate */
       if (direction==0) {
 	owl_filter_free(f);
@@ -2957,11 +2973,13 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
       if (direction==1) {
 	owl_filter_free(owl_list_get_element(fl, i));
 	owl_list_remove_element(fl, i);
+        owl_filter_free(f);
 	return;
       }
     }
   }
 
+  owl_function_debugmsg("punting");
   /* If we're punting, add the filter to the global punt list */
   if (direction==0) {
     owl_list_append_element(fl, f);

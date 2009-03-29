@@ -475,41 +475,48 @@ int _owl_filter_message_match_recurse(owl_filter *f, owl_message *m, owl_list *f
 
 }
 
-void owl_filter_print(owl_filter *f, char *out)
+char *owl_filter_print(owl_filter *f)
 {
   int i, j;
   owl_filterelement *fe;
-  char *tmp;
-
-  strcpy(out, owl_filter_get_name(f));
-  strcat(out, ": ");
+  GString *out = g_string_new("");
 
   if (f->color!=OWL_COLOR_DEFAULT) {
-    strcat(out, "-c ");
-    strcat(out, owl_util_color_to_string(f->color));
-    strcat(out, " ");
+    g_string_append(out, "-c ");
+    if (f->color < 8) {
+      g_string_append(out, owl_util_color_to_string(f->color));
+    } else {
+      g_string_append_printf(out, "%i",f->color);
+    }
+    g_string_append(out, " ");
   }
 
   j=owl_list_get_size(&(f->fes));
   for (i=0; i<j; i++) {
     fe=owl_list_get_element(&(f->fes), i);
-    tmp=owl_filterelement_to_string(fe);
-    strcat(out, tmp);
-    owl_free(tmp);
+    g_string_append(out, owl_filterelement_to_string(fe));
   }
-  strcat(out, "\n");
+
+  return g_string_free(out, 0);
 }
 
 /* Return 1 if the filters 'a' and 'b' are equivalent, 0 otherwise */
 int owl_filter_equiv(owl_filter *a, owl_filter *b)
 {
-  char buff[LINE], buff2[LINE];
+  char *buffa, *buffb;
+  int ret;
 
-  owl_filter_print(a, buff);
-  owl_filter_print(b, buff2);
+  buffa = owl_filter_print(a);
+  buffb = owl_filter_print(b);
 
-  if (!strcmp(buff, buff2)) return(1);
-  return(0);
+  ret = !strcmp(buffa, buffb);
+  ret = ret && !strcmp(owl_filter_get_name(a),
+                       owl_filter_get_name(b));
+
+  owl_free(buffa);
+  owl_free(buffb);
+
+  return ret;
 }
 
 /* Private
