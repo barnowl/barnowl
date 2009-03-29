@@ -1,8 +1,8 @@
 $Id$
 
-2.2.0-pre-1
+2.2.0
 	Workaround to libzephyr on unnoticed zephyrs
-	Additional cleanup of bad sprintf usage
+	Cleanup of lots of bad sprintf usage
 
 2.1.12
 	Don't crash on mobile device AIM messages [BZ 20]
