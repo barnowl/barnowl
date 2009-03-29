@@ -2622,8 +2622,7 @@ char *owl_function_aimuserfilt(char *user)
   char *escuser;
 
   /* name for the filter */
-  filtname=owl_malloc(strlen(user)+40);
-  sprintf(filtname, "aimuser-%s", user);
+  filtname=owl_sprintf("aimuser-%s", user);
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
