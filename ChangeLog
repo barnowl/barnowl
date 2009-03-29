@@ -1,6 +1,6 @@
 $Id$
 
-2.1.12
+2.2.0-pre-1
 	Don't crash on mobile device AIM messages [BZ 20]
 	Don't crash when sending to someone not on AIM buddy list [BZ 94]
 	Fix overflow vulerability in zwrite.c and zcrypt.c
@@ -36,6 +36,7 @@ $Id$
 	Only use resizeterm() if it's available
 	Debian backports
 	Change license to GPLv3
+	general sprintf cleanup
 
 2.1.11
 	Don't crash doing zlocate with bad tickets. [BZ 12]

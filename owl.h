@@ -33,6 +33,7 @@
 #include <time.h>
 #include <signal.h>
 #include <termios.h>
+#include <glib.h>
 #include <libfaim/aim.h>
 #include "config.h"
 #ifdef HAVE_LIBZEPHYR
@@ -44,8 +45,8 @@
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define OWL_VERSION         2.1.12
-#define OWL_VERSION_STRING "2.1.12"
+#define OWL_VERSION         2.2.0
+#define OWL_VERSION_STRING "2.2.0-pre1"
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */
