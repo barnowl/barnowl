@@ -1018,10 +1018,7 @@ void owl_command_about()
 
 void owl_command_version()
 {
-  char buff[1024];
-
-  sprintf(buff, "Owl version %s", OWL_VERSION_STRING);
-  owl_function_makemsg(buff);
+  owl_function_makemsg("Owl version %s", OWL_VERSION_STRING);
 }
 
 char *owl_command_aim(int argc, char **argv, char *buff)
