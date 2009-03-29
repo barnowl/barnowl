@@ -149,10 +149,12 @@ int main(int argc, char **argv, char **env)
 
   /* screen init */
   if (!getenv("TERMINFO")) {
-    owl_function_debugmsg("startup: found TERMINFO unset in environment");
+    putenv(owl_sprintf("TERMINFO=%s", TERMINFO));
+    owl_function_debugmsg("startup: setting TERMINFO to %s", TERMINFO);
   } else {
-    owl_function_debugmsg("startup: found TERMINFO is %s from environment", getenv("TERMINFO"));
+    owl_function_debugmsg("startup: leaving TERMINFO as %s from envrionment", getenv("TERMINFO"));
   }
+
   initscr();
   start_color();
 #ifdef HAVE_USE_DEFAULT_COLORS
