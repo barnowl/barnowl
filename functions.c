@@ -2538,15 +2538,14 @@ char *owl_function_classinstfilt(char *class, char *instance)
 char *owl_function_zuserfilt(char *user)
 {
   owl_filter *f;
-  char *argbuff, *longuser, *shortuser, *filtname;
+  char *argbuff, *longuser, *esclonguser, *shortuser, *filtname;
 
   /* stick the local realm on if it's not there */
   longuser=long_zuser(user);
   shortuser=short_zuser(user);
 
   /* name for the filter */
-  filtname=owl_malloc(strlen(shortuser)+20);
-  sprintf(filtname, "user-%s", shortuser);
+  filtname=owl_sprintf("user-%s", shortuser);
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2556,10 +2555,12 @@ char *owl_function_zuserfilt(char *user)
   /* create the new-internal filter */
   f=owl_malloc(sizeof(owl_filter));
 
-  argbuff=owl_malloc(strlen(longuser)+1000);
-  sprintf(argbuff, "( type ^zephyr$ and ( class ^message$ and instance ^personal$ and ");
-  sprintf(argbuff, "%s ( ( direction ^in$ and sender ^%s$ ) or ( direction ^out$ and recipient ^%s$ ) ) )", argbuff, longuser, longuser);
-  sprintf(argbuff, "%s or ( ( class ^login$ ) and ( sender ^%s$ ) ) )", argbuff, longuser);
+  esclonguser = owl_text_quote(longuser, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+
+  argbuff=owl_sprintf("( type ^zephyr$ and filter personal and "
+      "( ( direction ^in$ and sender ^%1$s$ ) or ( direction ^out$ and "
+      "recipient ^%1$s$ ) ) ) or ( ( class ^login$ ) and ( sender ^%1$s$ ) )",
+      esclonguser);
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
@@ -2569,6 +2570,7 @@ char *owl_function_zuserfilt(char *user)
   /* free stuff */
   owl_free(argbuff);
   owl_free(longuser);
+  owl_free(esclonguser);
   owl_free(shortuser);
 
   return(filtname);
