@@ -429,6 +429,7 @@ int main(int argc, char **argv, char **env)
   nexttimediff=10;
   nexttime=time(NULL);
 
+  owl_zephyr_process_events(NULL);
   owl_function_debugmsg("startup: entering main loop");
   /* main loop */
   while (1) {
@@ -446,7 +447,7 @@ int main(int argc, char **argv, char **env)
     
     /* Do AIM stuff */
     if (owl_global_is_doaimevents(&g)) {
-      owl_aim_process_events();
+      /* owl_aim_process_events(); */
 
       if (owl_global_is_aimloggedin(&g)) {
 	if (owl_timer_is_expired(owl_global_get_aim_buddyinfo_timer(&g))) {
