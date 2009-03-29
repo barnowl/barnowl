@@ -58,16 +58,13 @@ int main(int argc, char **argv, char **env)
   int ret, initialsubs, debug, argcsave, followlast;
   int newmsgs, nexttimediff;
   struct sigaction sigact;
-  char *configfile, *tty, *perlout, *perlerr, **argvsave, buff[LINE], startupmsg[LINE];
+  char *configfile, *tty, *perlout, *perlerr, **argvsave;
   owl_filter *f;
   owl_style *s;
   time_t nexttime, now;
   struct tm *today;
   char *dir;
   struct termios tio;
-#if OWL_STDERR_REDIR
-  int newstderr;
-#endif
 
   argcsave=argc;
   argvsave=argv;
@@ -152,11 +149,9 @@ int main(int argc, char **argv, char **env)
 
   /* screen init */
   if (!getenv("TERMINFO")) {
-    sprintf(buff, "TERMINFO=%s", TERMINFO);
-    putenv(buff);
-    owl_function_debugmsg("startup: setting TERMINFO to %s", TERMINFO);
+    owl_function_debugmsg("startup: found TERMINFO unset in environment");
   } else {
-    owl_function_debugmsg("startup: leaving TERMINFO as %s from envrionment", getenv("TERMINFO"));
+    owl_function_debugmsg("startup: found TERMINFO is %s from environment", getenv("TERMINFO"));
   }
   initscr();
   start_color();
@@ -357,17 +352,17 @@ int main(int argc, char **argv, char **env)
 
   /* welcome message */
   owl_function_debugmsg("startup: creating splash message");
-  strcpy(startupmsg, "-----------------------------------------------------------------------\n");
-  sprintf(buff,      "Welcome to Owl version %s.  Press 'h' for on-line help. \n", OWL_VERSION_STRING);
-  strcat(startupmsg, buff);
-  strcat(startupmsg, "                                                                       \n");
-  strcat(startupmsg, "If you would like to receive release announcements about Owl you can   \n");
-  strcat(startupmsg, "join the owl-users mailing list at http://www.ktools.org/              \n");
-  strcat(startupmsg, "                                                                 ^ ^   \n");
-  strcat(startupmsg, "                                                                 OvO   \n");
-  strcat(startupmsg, "Please report any bugs or suggestions to bug-owl@ktools.org     (   )  \n");
-  strcat(startupmsg, "-----------------------------------------------------------------m-m---\n");
-  owl_function_adminmsg("", startupmsg);
+  owl_function_adminmsg("",
+			"-----------------------------------------------------------------------\n"
+			"Welcome to Owl version " OWL_VERSION_STRING ".  Press 'h' for on-line help. \n"
+                        "                                                                       \n"
+                        "If you would like to receive release announcements about Owl you can   \n"
+                        "join the owl-users mailing list at http://www.ktools.org/              \n"
+                        "                                                                 ^ ^   \n"
+			"                                                                 OvO   \n"
+			"Please report any bugs or suggestions to bug-owl@ktools.org     (   )  \n"
+			"-----------------------------------------------------------------m-m---\n"
+			);
   sepbar(NULL);
 
   wrefresh(sepwin);
