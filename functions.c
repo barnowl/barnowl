@@ -2634,10 +2634,10 @@ char *owl_function_aimuserfilt(char *user)
 
   escuser = owl_text_quote(user, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
 
-  argbuff=owl_malloc(1000);
-  sprintf(argbuff,
-          "( type ^aim$ and ( ( sender ^%s$ and recipient ^%s$ ) or ( sender ^%s$ and recipient ^%s$ ) ) )",
-          escuser, owl_global_get_aim_screenname(&g), owl_global_get_aim_screenname(&g), escuser);
+  argbuff = owl_sprintf(
+      "( type ^aim$ and ( ( sender ^%1$s$ and recipient ^%2$s$ ) or "
+      "( sender ^%2$s$ and recipient ^%1$s$ ) ) )",
+      escuser, owl_global_get_aim_screenname(&g));
 
   owl_filter_init_fromstring(f, filtname, argbuff);
 
