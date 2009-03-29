@@ -3219,13 +3219,12 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
 	ret=ZGetLocations(location, &numlocs);
 	if (ret==0) {
 	  for (x=0; x<numlocs; x++) {
-	    line=malloc(strlen(location[x].host)+strlen(location[x].time)+strlen(location[x].tty)+100);
 	    tmp=short_zuser(user);
-	    sprintf(line, "  %-10.10s %-24.24s %-12.12s  %20.20s\n",
-		    tmp,
-		    location[x].host,
-		    location[x].tty,
-		    location[x].time);
+	    line=owl_sprintf("  %-10.10s %-24.24s %-12.12s  %20.20s\n",
+			     tmp,
+			     location[x].host,
+			     location[x].tty,
+			     location[x].time);
 	    owl_fmtext_append_normal(&fm, line);
 	    owl_free(tmp);
 	    owl_free(line);
