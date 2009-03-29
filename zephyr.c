@@ -646,6 +646,8 @@ char *owl_zephyr_zlocate(char *user, int auth)
     owl_free(myuser);
   }
   return(out);
+#else
+  return(owl_strdup("Zephyr not available"));
 #endif
 }
 

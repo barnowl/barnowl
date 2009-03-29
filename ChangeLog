@@ -1,6 +1,10 @@
 $Id$
 
 2.2.0-pre-1
+	Workaround to libzephyr on unnoticed zephyrs
+	Additional cleanup of bad sprintf usage
+
+2.1.12
 	Don't crash on mobile device AIM messages [BZ 20]
 	Don't crash when sending to someone not on AIM buddy list [BZ 94]
 	Fix overflow vulerability in zwrite.c and zcrypt.c
