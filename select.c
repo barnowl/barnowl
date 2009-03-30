@@ -74,6 +74,7 @@ void owl_select_add_dispatch(owl_dispatch *d)
   dl = owl_global_get_dispatchlist(&g);
 
   if (elt != -1) {  /* If we have a dispatch for this FD */
+    owl_function_debugmsg("select: duplicate dispatch found");
     owl_dispatch *d_old;
     d_old = (owl_dispatch*)owl_list_get_element(dl, elt);
     /* Ignore if we're adding the same dispatch again.  Otherwise
@@ -209,7 +210,11 @@ void owl_select()
   struct timeval timeout;
 
   /* owl_select_process_timers(&timeout); */
-  timeout.tv_sec = 60;
+
+  /* settings to 5 seconds for the moment, we can raise this when the
+   * odd select behavior with zephyr is understood
+   */
+  timeout.tv_sec = 5;
   timeout.tv_usec = 0;
 
   max_fd = owl_select_dispatch_prepare_fd_sets(&r, &e);

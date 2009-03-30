@@ -25,7 +25,6 @@ int owl_zephyr_initialize()
     com_err("owl",ret,"while opening port");
     return(1);
   }
-  owl_zephyr_process_events(NULL);
 #endif
   return(0);
 }
@@ -35,7 +34,6 @@ int owl_zephyr_shutdown()
 {
 #ifdef HAVE_LIBZEPHYR
   unsuball();
-  owl_zephyr_process_events(NULL);
   ZClosePort();
 #endif
   return(0);
@@ -84,7 +82,6 @@ int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
     owl_free(subs[i].zsub_classinst);
     owl_free(subs[i].zsub_recipient);
   }
-  owl_zephyr_process_events(NULL);
   return ret;
 }
 #endif
@@ -115,6 +112,7 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
 
   ret=stat(subsfile, &statbuff);
   if (ret) {
+    owl_function_debugmsg("loadsubs: could not stat file %s", subsfile)
     if (error_on_nofile==1) return(-1);
     return(0);
   }
@@ -122,7 +120,10 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   ZResetAuthentication();
   count=0;
   file=fopen(subsfile, "r");
-  if (!file) return(-1);
+  if (!file) {
+    owl_function_debugmsg("loadsubs: could not open file %s", subsfile)
+    return(-1);
+  }
   while ( fgets(buffer, 1024, file)!=NULL ) {
     if (buffer[0]=='#' || buffer[0]=='\n' || buffer[0]=='\n') continue;
     
@@ -175,7 +176,6 @@ int owl_zephyr_loaddefaultsubs()
     owl_function_error("Error subscribing to default zephyr notifications.");
     return(-1);
   }
-  owl_zephyr_process_events(NULL);
   return(0);
 #else
   return(0);
@@ -240,8 +240,6 @@ int owl_zephyr_loadloginsubs(char *filename)
     owl_free(subs[i].zsub_classinst);
   }
 
-  owl_zephyr_process_events(NULL);
-
   return(ret);
 #else
   return(0);
@@ -275,7 +273,6 @@ int owl_zephyr_sub(char *class, char *inst, char *recip)
     owl_function_error("Error subbing to <%s,%s,%s>", class, inst, recip);
     return(-2);
   }
-  owl_zephyr_process_events(NULL);
   return(0);
 #else
   return(0);
@@ -297,7 +294,6 @@ int owl_zephyr_unsub(char *class, char *inst, char *recip)
     owl_function_error("Error unsubbing from <%s,%s,%s>", class, inst, recip);
     return(-2);
   }
-  owl_zephyr_process_events(NULL);
   return(0);
 #else
   return(0);
@@ -467,7 +463,6 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
   /* free then check the return */
   owl_free(notice.z_message);
   ZFreeNotice(&notice);
-  owl_zephyr_process_events(NULL);
   if (ret!=ZERR_NONE) {
     owl_function_error("Error sending zephyr");
     return(ret);
@@ -483,7 +478,6 @@ Code_t send_zephyr_helper(ZNotice_t *notice, char *buf, int len, int wait)
 {
   int ret;
   ret=ZSendPacket(buf, len, 0);
-  owl_zephyr_process_events(NULL);
   return(ret);
 }
 #endif
@@ -492,14 +486,13 @@ void send_ping(char *to)
 {
 #ifdef HAVE_LIBZEPHYR
   send_zephyr("PING", "", "MESSAGE", "PERSONAL", to, "");
-  owl_zephyr_process_events(NULL);
 #endif
 }
 
 #ifdef HAVE_LIBZEPHYR
 void owl_zephyr_handle_ack(ZNotice_t *retnotice)
 {
-  char *tmp, *buff;
+  char *tmp;
   
   /* if it's an HMACK ignore it */
   if (retnotice->z_kind == HMACK) return;
@@ -520,26 +513,38 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
       owl_function_makemsg("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
     }
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
-    if (strcasecmp(retnotice->z_class, "message")) {
-      owl_function_error("No one subscribed to class class %s", retnotice->z_class);
-      buff=owl_sprintf("Could not send message to class %s: no one subscribed.\n",
-		       retnotice->z_class);
+    #define BUFFLEN 1024
+    if (retnotice->z_recipient == NULL
+        || *retnotice->z_recipient == 0
+        || *retnotice->z_recipient == '@') {
+      char buff[BUFFLEN];
+      owl_function_error("No one subscribed to class %s", retnotice->z_class);
+      snprintf(buff, BUFFLEN, "Could not send message to class %s: no one subscribed.\n", retnotice->z_class);
       owl_function_adminmsg("", buff);
-      owl_free(buff);
     } else {
+      char buff[BUFFLEN];
       tmp = short_zuser(retnotice->z_recipient);
-      owl_function_error("%s: Not logged in or subscribing to messages.", tmp);
-      buff=owl_sprintf("Could not send message to %s: not logged in or subscribing to messages.\n",
-		       tmp);
+      owl_function_error("%s: Not logged in or subscribing.", tmp);
+      if(strcmp(retnotice->z_class, "message")) {
+        snprintf(buff, BUFFLEN,
+                 "Could not send message to %s: "
+                 "not logged in or subscribing to class %s, instance %s.\n", 
+                 tmp,
+                 retnotice->z_class,
+                 retnotice->z_class_inst);
+      } else {
+        snprintf(buff, BUFFLEN,
+                 "Could not send message to %s: "
+                 "not logged in or subscribing to messages.\n",
+                 tmp);
+      }
       owl_function_adminmsg("", buff);
       owl_log_outgoing_zephyr_error(tmp, buff);
       owl_free(tmp);
-      owl_free(buff);
     }
   } else {
     owl_function_error("Internal error on ack (%s)", retnotice->z_message);
   }
-  owl_zephyr_process_events(NULL);
 }
 #else
 void owl_zephyr_handle_ack(void *retnotice)
@@ -634,7 +639,6 @@ char *owl_zephyr_zlocate(char *user, int auth)
   
   ZResetAuthentication();
   ret=ZLocateUser(user,&numlocs,auth?ZAUTH:ZNOAUTH);
-  owl_zephyr_process_events(NULL);
   if (ret != ZERR_NONE) {
     return(owl_sprintf("Error locating user %s\n", user));
   }
@@ -660,7 +664,6 @@ char *owl_zephyr_zlocate(char *user, int auth)
     out=tmp;
     owl_free(myuser);
   }
-  owl_zephyr_process_events(NULL);
   return(out);
 #else
   return(owl_strdup("Zephyr not available"));
@@ -865,7 +868,6 @@ char *owl_zephyr_getsubs()
     } else {
       int tmpbufflen;
       char *tmpbuff;
-      owl_zephyr_process_events(NULL);
       tmpbuff = owl_sprintf("<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, out);
       tmpbufflen = strlen(tmpbuff) + 1;
       if (tmpbufflen > buffsize) {
@@ -887,7 +889,6 @@ char *owl_zephyr_getsubs()
   }
 
   ZFlushSubscriptions();
-  owl_zephyr_process_events(NULL);
   return(out);
 #else
   return(owl_strdup("Zephyr not available"));
@@ -907,7 +908,6 @@ void owl_zephyr_set_locationinfo(char *host, char *val)
 {
 #ifdef HAVE_LIBZEPHYR
   ZInitLocationInfo(host, val);
-  owl_zephyr_process_events(NULL);
 #endif
 }
   

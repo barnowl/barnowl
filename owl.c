@@ -426,7 +426,7 @@ int main(int argc, char **argv, char **env)
   nexttimediff=10;
   nexttime=time(NULL);
 
-  owl_zephyr_process_events(NULL);
+  /* owl_zephyr_process_events(NULL); */
   owl_function_debugmsg("startup: entering main loop");
   /* main loop */
   while (1) {
@@ -621,9 +621,9 @@ int main(int argc, char **argv, char **env)
     /* Some calls into libzephyr call Z_WaitForNotice(), which has its
      * own select loop and may leave zephyrs on the queue. Check for
      * them now, and process any we find. */
-    owl_zephyr_process_events(NULL);
+    /* owl_zephyr_process_events(NULL); */
     owl_select();
-    owl_zephyr_process_events(NULL);
+    /* owl_zephyr_process_events(NULL); */
     
     /* Log any error signals */
     {
