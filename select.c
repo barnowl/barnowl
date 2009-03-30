@@ -74,8 +74,8 @@ void owl_select_add_dispatch(owl_dispatch *d)
   dl = owl_global_get_dispatchlist(&g);
 
   if (elt != -1) {  /* If we have a dispatch for this FD */
-    owl_function_debugmsg("select: duplicate dispatch found");
     owl_dispatch *d_old;
+    owl_function_debugmsg("select: duplicate dispatch found");
     d_old = (owl_dispatch*)owl_list_get_element(dl, elt);
     /* Ignore if we're adding the same dispatch again.  Otherwise
        replace the old dispatch. */
