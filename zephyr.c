@@ -112,7 +112,7 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
 
   ret=stat(subsfile, &statbuff);
   if (ret) {
-    owl_function_debugmsg("loadsubs: could not stat file %s", subsfile)
+    owl_function_debugmsg("loadsubs: could not stat file %s", subsfile);
     if (error_on_nofile==1) return(-1);
     return(0);
   }
@@ -121,7 +121,7 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   count=0;
   file=fopen(subsfile, "r");
   if (!file) {
-    owl_function_debugmsg("loadsubs: could not open file %s", subsfile)
+    owl_function_debugmsg("loadsubs: could not open file %s", subsfile);
     return(-1);
   }
   while ( fgets(buffer, 1024, file)!=NULL ) {
