@@ -2,6 +2,8 @@ $Id$
 
 2.2.0
 	Workaround to libzephyr on unnoticed zephyrs
+	With smartnarrow and zpunt, include .d suffix and ^un prefix as
+   	   part of the allowed regex for the relevant class or instance
 	Cleanup of lots of bad sprintf usage
 
 2.1.12
