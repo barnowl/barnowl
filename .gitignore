@@ -3,10 +3,11 @@
 *.par
 *~
 .#*
-\#*#
 META.yml
 Makefile
+Makefile.old
 TAGS
+\#*#
 aclocal.m4
 autom4te.cache
 barnowl
