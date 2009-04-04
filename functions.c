@@ -2825,6 +2825,9 @@ void owl_function_zpunt(char *class, char *inst, char *recip, int direction)
   if (!strcmp(recip, "*")) {
     recipexpr = owl_sprintf("");
   } else {
+    if(!strcmp(recip, "%me%")) {
+      recip = owl_zephyr_get_sender();
+    }
     quoted=owl_text_quote(recip, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_text_tr(quoted, ' ', '.');
     owl_text_tr(quoted, '\'', '.');
