@@ -1,6 +1,6 @@
 $Id$
 
-2.2.1-pre-1
+2.2.1
 	Fix some strcpy's that could be vulnerable
 	Remove an unused function
 
