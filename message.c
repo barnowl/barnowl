@@ -589,26 +589,28 @@ int owl_message_is_ping(owl_message *m)
 
 int owl_message_is_burningears(owl_message *m)
 {
-  /* we should add a global to cache the short zsender */
-  char sender[LINE], *ptr;
+  char *name;
+  int ret;
 
   /* if the message is from us or to us, it doesn't count */
   if (owl_message_is_from_me(m) || owl_message_is_private(m)) return(0);
 
   if (owl_message_is_type_zephyr(m)) {
-    strcpy(sender, owl_zephyr_get_sender());
-    ptr=strchr(sender, '@');
-    if (ptr) *ptr='\0';
+    name=short_zuser(owl_zephyr_get_sender());
   } else if (owl_message_is_type_aim(m)) {
-    strcpy(sender, owl_global_get_aim_screenname(&g));
+    name=owl_strdup(owl_global_get_aim_screenname(&g));
   } else {
     return(0);
   }
 
-  if (stristr(owl_message_get_body(m), sender)) {
-    return(1);
+  if (stristr(owl_message_get_body(m), name)) {
+    ret=1;
+  } else {
+    ret=0;
   }
-  return(0);
+
+  owl_free(name);
+  return(ret);
 }
 
 /* caller must free return value. */

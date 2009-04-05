@@ -289,7 +289,7 @@ owl_message *owl_function_make_outgoing_loopback(char *body)
 void owl_function_zwrite_setup(char *line)
 {
   owl_editwin *e;
-  char buff[1024];
+  char *buff;
   owl_zwrite z;
   int ret;
 
@@ -319,21 +319,19 @@ void owl_function_zwrite_setup(char *line)
 
   owl_editwin_clear(e);
   owl_editwin_set_dotsend(e);
-  strcpy(buff, "----> ");
-  strcat(buff, line);
-  strcat(buff, "\n");
+  buff=owl_sprintf("----> %s\n", line);
   owl_editwin_set_locktext(e, buff);
 
-  /* make it active */
   owl_global_set_typwin_active(&g);
 
   owl_global_set_buffercommand(&g, line);
+  owl_free(buff);
 }
 
 void owl_function_aimwrite_setup(char *line)
 {
   owl_editwin *e;
-  char buff[1024];
+  char *buff;
 
   /* check the arguments */
 
@@ -349,15 +347,13 @@ void owl_function_aimwrite_setup(char *line)
 
   owl_editwin_clear(e);
   owl_editwin_set_dotsend(e);
-  strcpy(buff, "----> ");
-  strcat(buff, line);
-  strcat(buff, "\n");
+  buff=owl_sprintf("----> %s\n", line);
   owl_editwin_set_locktext(e, buff);
 
-  /* make it active */
   owl_global_set_typwin_active(&g);
 
   owl_global_set_buffercommand(&g, line);
+  owl_free(buff);
 }
 
 void owl_function_loopwrite_setup()

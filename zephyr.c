@@ -99,7 +99,7 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
 #ifdef HAVE_LIBZEPHYR
   FILE *file;
   char *tmp, *start;
-  char buffer[1024], subsfile[1024];
+  char buffer[1024], subsfile[MAXPATHLEN];
   ZSubscription_t subs[3001];
   int count, ret;
   struct stat statbuff;
@@ -187,7 +187,7 @@ int owl_zephyr_loadloginsubs(char *filename)
 #ifdef HAVE_LIBZEPHYR
   FILE *file;
   ZSubscription_t subs[3001];
-  char subsfile[1024], buffer[1024];
+  char subsfile[MAXPATHLEN], buffer[1024];
   int count, ret, i;
   struct stat statbuff;
 
@@ -673,7 +673,7 @@ char *owl_zephyr_zlocate(char *user, int auth)
 void owl_zephyr_addsub(char *filename, char *class, char *inst, char *recip)
 {
 #ifdef HAVE_LIBZEPHYR
-  char *line, subsfile[LINE], buff[LINE];
+  char *line, subsfile[MAXPATHLEN], buff[LINE];
   FILE *file;
 
   line=owl_zephyr_makesubline(class, inst, recip);

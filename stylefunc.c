@@ -33,7 +33,7 @@ static const char fileIdent[] = "$Id$";
 void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
 {
 #ifdef HAVE_LIBZEPHYR
-  char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
+  char *body, *indent, *ptr, *zsigbuff, *frombuff;
   ZNotice_t *n;
 #endif
 
@@ -55,11 +55,7 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
     owl_text_indent(indent, body, OWL_MSGTAB);
     
     /* edit the from addr for printing */
-    strcpy(frombuff, owl_message_get_sender(m));
-    ptr=strchr(frombuff, '@');
-    if (ptr && !strncmp(ptr+1, owl_zephyr_get_realm(), strlen(owl_zephyr_get_realm()))) {
-      *ptr='\0';
-    }
+    frombuff=short_zuser(owl_message_get_sender(m));
     
     /* set the message for printing */
     owl_fmtext_append_normal(fm, OWL_TABSTR);
@@ -130,6 +126,7 @@ void owl_stylefunc_basic(owl_fmtext *fm, owl_message *m)
     
     owl_free(body);
     owl_free(indent);
+    owl_free(frombuff);
 #endif
   } else if (owl_message_is_type_zephyr(m) && owl_message_is_direction_out(m)) {
     char *indent, *text, *zsigbuff, *foo;
@@ -242,7 +239,7 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
 {
   char *shorttimestr;
 #ifdef HAVE_LIBZEPHYR
-  char *body, *indent, *ptr, *zsigbuff, frombuff[LINE];
+  char *body, *indent, *ptr, *zsigbuff, *frombuff;
   ZNotice_t *n;
 #endif
 
@@ -266,11 +263,7 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     owl_text_indent(indent, body, OWL_MSGTAB);
     
     /* edit the from addr for printing */
-    strcpy(frombuff, owl_message_get_sender(m));
-    ptr=strchr(frombuff, '@');
-    if (ptr && !strncmp(ptr+1, owl_zephyr_get_realm(), strlen(owl_zephyr_get_realm()))) {
-      *ptr='\0';
-    }
+    frombuff=short_zuser(owl_message_get_sender(m));
     
     /* set the message for printing */
     owl_fmtext_append_normal(fm, OWL_TABSTR);
@@ -347,6 +340,7 @@ void owl_stylefunc_default(owl_fmtext *fm, owl_message *m)
     
     owl_free(body);
     owl_free(indent);
+    owl_free(frombuff);
 #endif
   } else if (owl_message_is_type_zephyr(m) && owl_message_is_direction_out(m)) {
     char *indent, *text, *zsigbuff, *foo;
@@ -603,7 +597,7 @@ void owl_stylefunc_oneline(owl_fmtext *fm, owl_message *m)
 void owl_stylefunc_vt(owl_fmtext *fm, owl_message *m)
 {
 #ifdef HAVE_LIBZEPHYR
-  char *body, *indent, *ptr, frombuff[LINE];
+  char *body, *indent, *ptr, *frombuff;
   owl_fmtext fm_first, fm_other, fm_tmp;
   ZNotice_t *n;
 #endif
@@ -639,11 +633,7 @@ void owl_stylefunc_vt(owl_fmtext *fm, owl_message *m)
     owl_fmtext_free(&fm_tmp);
     
     /* edit the from addr for printing */
-    strcpy(frombuff, owl_message_get_sender(m));
-    ptr=strchr(frombuff, '@');
-    if (ptr && !strncmp(ptr+1, owl_zephyr_get_realm(), strlen(owl_zephyr_get_realm()))) {
-      *ptr='\0';
-    }
+    frombuff=short_zuser(owl_message_get_sender(m));
     sender=owl_sprintf("%-9.9s", frombuff);
 
     hostname=owl_sprintf("%-9.9s", owl_message_get_hostname(m));
@@ -706,6 +696,7 @@ void owl_stylefunc_vt(owl_fmtext *fm, owl_message *m)
     }
 
     owl_free(sender);
+    owl_free(frombuff);
     owl_free(hostname);
     owl_free(timestr);
     owl_free(classinst1);

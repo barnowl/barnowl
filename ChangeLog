@@ -1,5 +1,9 @@
 $Id$
 
+2.2.1
+	Fix some strcpy's that could be vulnerable
+	Remove an unused function
+
 2.2.0
 	Workaround to libzephyr on unnoticed zephyrs
 	With smartnarrow and zpunt, include .d suffix and ^un prefix as

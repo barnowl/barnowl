@@ -178,7 +178,7 @@ char *owl_perlconfig_readconfig(char *file)
 {
   int ret, fd;
   PerlInterpreter *p;
-  char filename[1024];
+  char filename[MAXPATHLEN];
   char *embedding[5];
   char *err;
   struct stat statbuff;

@@ -350,7 +350,7 @@ char *owl_text_substitute(char *in, char *from, char *to)
   outlen = strlen(in)+1;
   tolen  = strlen(to);
   fromlen  = strlen(from);
-  out = malloc(outlen);
+  out = owl_malloc(outlen);
 
   while (in[inpos]) {
     if (!strncmp(in+inpos, from, fromlen)) {

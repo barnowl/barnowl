@@ -351,19 +351,6 @@ char *owl_zwrite_get_zsig(owl_zwrite *z)
   return("");
 }
 
-void owl_zwrite_get_recipstr(owl_zwrite *z, char *buff)
-{
-  int i, j;
-
-  strcpy(buff, "");
-  j=owl_list_get_size(&(z->recips));
-  for (i=0; i<j; i++) {
-    strcat(buff, owl_list_get_element(&(z->recips), i));
-    strcat(buff, " ");
-  }
-  buff[strlen(buff)-1]='\0';
-}
-
 int owl_zwrite_get_numrecips(owl_zwrite *z)
 {
   return(owl_list_get_size(&(z->recips)));
