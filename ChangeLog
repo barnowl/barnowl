@@ -3,6 +3,7 @@ $Id$
 2.2.1
 	Fix some strcpy's that could be vulnerable
 	Remove an unused function
+	Fix stderr redirector, now creating admin messages
 
 2.2.0
 	Workaround to libzephyr on unnoticed zephyrs
