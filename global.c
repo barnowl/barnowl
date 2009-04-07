@@ -400,6 +400,8 @@ void owl_global_resize(owl_global *g, int x, int y) {
     endwin();
   }
 
+  refresh();
+
   /* get the new size */
   ioctl(STDIN_FILENO, TIOCGWINSZ, &size);
   if (x==0) {
@@ -414,10 +416,7 @@ void owl_global_resize(owl_global *g, int x, int y) {
     g->cols=y;
   }
 
-#ifdef HAVE_RESIZETERM
   resizeterm(size.ws_row, size.ws_col);
-#endif
-  refresh();
 
   /* re-initialize the windows */
   _owl_global_setup_windows(g);
@@ -425,17 +424,14 @@ void owl_global_resize(owl_global *g, int x, int y) {
   /* in case any styles rely on the current width */
   owl_messagelist_invalidate_formats(owl_global_get_msglist(g));
 
-  /* recalculate the topmsg to make sure the current message is on
-   * screen */
-  owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
-
   /* refresh stuff */
   g->needrefresh=1;
   owl_mainwin_redisplay(&(g->mw));
   sepbar(NULL);
-  owl_editwin_redisplay(&(g->tw), 0);
-  owl_function_full_redisplay(&g);
 
+  if (owl_global_is_typwin_active(g)) {
+    owl_editwin_redisplay(&(g->tw), 0);
+  }	
   /* TODO: this should handle other forms of popwins */
   if (owl_popwin_is_active(owl_global_get_popwin(g)) 
       && owl_global_get_viewwin(g)) {
