@@ -21,7 +21,7 @@ use BarnOwl::Hooks;
 use BarnOwl::Message::Twitter;
 use HTML::Entities;
 
-my $twitter;
+our $twitter;
 my $user     = BarnOwl::zephyr_getsender();
 my ($class)  = ($user =~ /(^[^@]+)/);
 my $instance = "status";
@@ -144,15 +144,19 @@ sub poll_messages {
 
 sub twitter_error {
     my $ratelimit = $twitter->rate_limit_status;
-    unless(defined($ratelimit)) {
+    unless(defined($ratelimit) && ref($ratelimit) eq 'HASH') {
         # Twitter's just sucking, sleep for 5 minutes
         $last_direct_poll = $last_poll = time + 60*5;
         # die("Twitter seems to be having problems.\n");
         return;
     }
-    if($ratelimit->{remaining_hits} <= 0) {
+    if(exists($ratelimit->{remaining_hits})
+       && $ratelimit->{remaining_hits} <= 0) {
         $last_direct_poll = $last_poll = $ratelimit->{reset_time_in_seconds};
         die("Twitter: ratelimited until " . $ratelimit->{reset_time} . "\n");
+    } elsif(exists($ratelimit->{error})) {
+        die("Twitter: ". $ratelimit->{error} . "\n");
+        $last_direct_poll = $last_poll = time + 60*20;
     }
 }
 
@@ -162,7 +166,7 @@ sub poll_twitter {
     return unless BarnOwl::getvar('twitter:poll') eq 'on';
 
     my $timeline = $twitter->friends_timeline( { since_id => $last_id } );
-    unless(defined($timeline) && ref($timeline)) {
+    unless(defined($timeline) && ref($timeline) eq 'ARRAY') {
         twitter_error();
         return;
     };
@@ -194,7 +198,7 @@ sub poll_direct {
     return unless BarnOwl::getvar('twitter:poll') eq 'on';
 
     my $direct = $twitter->direct_messages( { since_id => $last_direct } );
-    unless(defined($direct) && ref($direct)) {
+    unless(defined($direct) && ref($direct) eq 'ARRAY') {
         twitter_error();
         return;
     };
