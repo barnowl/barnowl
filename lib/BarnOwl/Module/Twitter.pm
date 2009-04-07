@@ -194,7 +194,7 @@ sub poll_direct {
     return unless BarnOwl::getvar('twitter:poll') eq 'on';
 
     my $direct = $twitter->direct_messages( { since_id => $last_direct } );
-    unless(defined($direct)) {
+    unless(defined($direct) && ref($direct)) {
         twitter_error();
         return;
     };
