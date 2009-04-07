@@ -162,7 +162,7 @@ sub poll_twitter {
     return unless BarnOwl::getvar('twitter:poll') eq 'on';
 
     my $timeline = $twitter->friends_timeline( { since_id => $last_id } );
-    unless(defined($timeline)) {
+    unless(defined($timeline) && ref($timeline)) {
         twitter_error();
         return;
     };
