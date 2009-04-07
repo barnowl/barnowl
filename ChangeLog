@@ -1,5 +1,10 @@
 $Id$
 
+2.2.2
+	2.1.12 included a patch that breaks opaque resizing for some
+	   versions of ncurses on solaris.  Reverting that part of the
+	   change to fix.
+
 2.2.1
 	Fix some strcpy's that could be vulnerable
 	Remove an unused function
