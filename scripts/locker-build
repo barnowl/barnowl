@@ -1,0 +1,89 @@
+#!/bin/bash
+
+die() {
+      echo "$1" 2>&1;
+      if [ ! -z "$TMPDIR" ]
+      then
+          echo "The failed build can be found in $TMPDIR"
+      fi
+      exit -1
+}
+
+DRYRUN=
+if [ "$1" = "-n" ]; then
+    DRYRUN=1
+    shift;
+fi
+
+NAME="$1"
+NAME="${NAME:?Usage: barnowl-locker-build NAME}"
+TGZ="$2"
+
+ATHENA_SYS="${ATHENA_SYS:-$(machtype -S)}"
+
+if [ "$(uname)" = "SunOS" ]; then
+    MAKE=gmake
+    TAR=gtar
+else
+    MAKE=make
+    TAR=tar
+fi
+
+attach barnowl
+aklog
+
+mkdir -p /tmp/barnowl.$UID || die "Unable to mkdir"
+TMPDIR=$(mktemp -d /tmp/barnowl.$UID/buildXXXXXX) || die "Unable to mktemp"
+cd "$TMPDIR"                         || die "Unable to cd to $TMPDIR"
+
+$TAR xzvf "$BARNOWL_TGZ" || die "Unable to untar"
+cd *;
+
+# git archive --remote="$REPOURL" --format=tar $BRANCH | $TAR xf - || die "Unable to create archive"
+# svn co file:///mit/barnowl/src/svn/$REPOPATH/owl/ barnowl || die "Unable to checkout"
+# cd barnowl                           || die "Unable to cd"
+
+ARGS=
+
+# if ! grep -i debian /etc/athena/version >/dev/null 2>&1 ; then
+#     ARGS=--enable-athstatic
+# fi
+
+# autoreconf         || die "autoreconf failed"
+# autoconf        || die "autoconf failed"
+
+BARNOWL="/afs/sipb.mit.edu/project/barnowl/arch/$ATHENA_SYS"
+export PKG_CONFIG_PATH="$BARNOWL/lib/pkgconfig"
+
+CFLAGS="-I$BARNOWL/include" \
+LDFLAGS="-L$BARNOWL/lib -Wl,-R$BARNOWL/lib" \
+./configure --exec-prefix="/mit/barnowl/arch/$ATHENA_SYS" \
+            --prefix="/mit/barnowl/builds/$NAME" --mandir=/mit/barnowl/man \
+            PROTECT_CFLAGS=-fno-stack-protector \
+            $ARGS \
+            || die "configure failed"
+
+$MAKE clean  || die "make clean failed"
+
+CPUS=$(athinfo localhost cpuspeed | grep -c MHz)
+if [ "$CPUS" = 0 ]; then
+   CPUS=1
+fi
+
+$MAKE -j$CPUS EXE=$NAME all || die "make failed"
+
+if [ -n "$DRYRUN" ]; then
+    echo "Build completed; Dropping to a shell..."
+    exec $SHELL;
+else
+    if [ -n "$TGZ" ]; then
+        mkdir tgz
+        $MAKE EXE=$NAME DESTDIR=tgz install || die "Install failed"
+        cd tgz && $TAR czvf "$TGZ" . || die "Make tarball failed"
+    else
+        $MAKE EXE=$NAME install || die "Install failed"
+    fi
+fi
+
+cd /tmp
+rm -rf "$TMPDIR"
