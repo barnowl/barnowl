@@ -207,11 +207,16 @@ int main(int argc, char *argv[])
   if (!error && fname == NULL && (class != NULL || instance != NULL))
     fname = GetZephyrVarKeyFile(argv[0], class, instance);
   
-  if (error || fname == NULL)
+  if (error)
   {
     fprintf(stderr, "Usage: %s [-Z|-D|-E|-R|-S] [-F Keyfile] [-c class] [-i instance]\n", argv[0]);
     fprintf(stderr, "       [-advqtluon] [-s signature] [-f arg] [-m message]\n");
     fprintf(stderr, "  One or more of class, instance, and keyfile must be specified.\n");
+    exit(1);
+  }
+  else if(!fname)
+  {
+    exit(1);
   }
   else
   {
@@ -256,6 +261,7 @@ int main(int argc, char *argv[])
 	{
 	  fprintf(stderr, "Error writing to key file.\n");
 	  fclose(fkey);
+          exit(1);
 	}
 	else
 	{
@@ -268,8 +274,10 @@ int main(int argc, char *argv[])
     {
       /* Encrypt/decrypt */
       FILE *fkey = fopen(fname, "r");
-      if (!fkey)
+      if (!fkey) {
 	fprintf(stderr, "Could not open key file: %s\n", fname);
+        exit(1);
+      }
       else
       {
 	char keystring[MAX_KEY];
