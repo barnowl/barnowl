@@ -49,8 +49,8 @@ typedef struct
 char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance);
 char *BuildArgString(char **argv, int start, int end);
 int do_encrypt(char *keystring, int zephyr, char *class, char *instance,
-	  ZWRITEOPTIONS *zoptions, char* keyfile);
-void do_decrypt(char *keystring);
+          ZWRITEOPTIONS *zoptions, char* keyfile);
+int do_decrypt(char *keystring);
 
 #define M_NONE            0
 #define M_ZEPHYR_ENCRYPT  1
@@ -93,88 +93,88 @@ int main(int argc, char *argv[])
       case 'Z':
         /* Zephyr encrypt */
         mode = M_ZEPHYR_ENCRYPT;
-	break;
+        break;
       case 'D':
         /* Decrypt */
-	mode = M_DECRYPT;
-	break;
+        mode = M_DECRYPT;
+        break;
       case 'E':
-	/* Encrypt */
-	mode = M_ENCRYPT;
-	break;
+        /* Encrypt */
+        mode = M_ENCRYPT;
+        break;
       case 'R':
-	/* Randomize the keyfile */
-	mode = M_RANDOMIZE;
-	break;
+        /* Randomize the keyfile */
+        mode = M_RANDOMIZE;
+        break;
       case 'S':
-	/* Set a new key value from stdin */
-	mode = M_SETKEY;
-	break;
+        /* Set a new key value from stdin */
+        mode = M_SETKEY;
+        break;
       case 'F':
-	/* Specify the keyfile explicitly */
-	if (fname != NULL) error = TRUE;
-	fname = optarg;
-	break;
+        /* Specify the keyfile explicitly */
+        if (fname != NULL) error = TRUE;
+        fname = optarg;
+        break;
       case 'c':
-	/* Zwrite/zcrypt: class name */
-	if (class != NULL) error = TRUE;
-	class = optarg;
-	break;
+        /* Zwrite/zcrypt: class name */
+        if (class != NULL) error = TRUE;
+        class = optarg;
+        break;
       case 'i':
-	/* Zwrite/zcrypt: instance name */
-	if (instance != NULL) error = TRUE;
-	instance = optarg;
-	break;
+        /* Zwrite/zcrypt: instance name */
+        if (instance != NULL) error = TRUE;
+        instance = optarg;
+        break;
       case 'a':
-	/* Zwrite: authenticate (default) */
-	zoptions.flags &= ~ZWRITE_OPT_NOAUTH;
-	break;
+        /* Zwrite: authenticate (default) */
+        zoptions.flags &= ~ZWRITE_OPT_NOAUTH;
+        break;
       case 'd':
-	/* Zwrite: do not authenticate */
-	zoptions.flags |= ZWRITE_OPT_NOAUTH;
-	break;
+        /* Zwrite: do not authenticate */
+        zoptions.flags |= ZWRITE_OPT_NOAUTH;
+        break;
       case 'v':
-	/* Zwrite: verbose */
-	zoptions.flags |= ZWRITE_OPT_VERBOSE;
-	break;
+        /* Zwrite: verbose */
+        zoptions.flags |= ZWRITE_OPT_VERBOSE;
+        break;
       case 'q':
-	/* Zwrite: quiet */
-	zoptions.flags |= ZWRITE_OPT_QUIET;
-	break;
+        /* Zwrite: quiet */
+        zoptions.flags |= ZWRITE_OPT_QUIET;
+        break;
       case 't':
-	/* Zwrite: no expand tabs (ignored) */
-	break;
+        /* Zwrite: no expand tabs (ignored) */
+        break;
       case 'l':
-	/* Zwrite: ignore '.' on a line by itself (ignored) */
-	zoptions.flags |= ZCRYPT_OPT_IGNOREDOT;
-	break;
+        /* Zwrite: ignore '.' on a line by itself (ignored) */
+        zoptions.flags |= ZCRYPT_OPT_IGNOREDOT;
+        break;
       case 'u':
-	/* Zwrite: urgent message */
-	instance = "URGENT";
-	break;
+        /* Zwrite: urgent message */
+        instance = "URGENT";
+        break;
       case 'o':
-	/* Zwrite: ignore zephyr variables zwrite-class, zwrite-inst, */
-	/*         zwrite-opcode */
-	zoptions.flags |= ZWRITE_OPT_IGNOREVARS;
-	break;
+        /* Zwrite: ignore zephyr variables zwrite-class, zwrite-inst, */
+        /*         zwrite-opcode */
+        zoptions.flags |= ZWRITE_OPT_IGNOREVARS;
+        break;
       case 'n':
-	/* Zwrite: prevent PING message (always used) */
-	break;
+        /* Zwrite: prevent PING message (always used) */
+        break;
       case 's':
-	/* Zwrite: signature */
-	zoptions.flags |= ZWRITE_OPT_SIGNATURE;
-	zoptions.signature = optarg;
-	break;
+        /* Zwrite: signature */
+        zoptions.flags |= ZWRITE_OPT_SIGNATURE;
+        zoptions.signature = optarg;
+        break;
       case 'f':
-	/* Zwrite: file system specification (ignored) */
-	break;
+        /* Zwrite: file system specification (ignored) */
+        break;
       case 'm':
-	/* Message on rest of line*/
-	messageflag = TRUE;
-	break;
+        /* Message on rest of line*/
+        messageflag = TRUE;
+        break;
       case '?':
-	error = TRUE;
-	break;
+        error = TRUE;
+        break;
     }
     if (error || messageflag)
       break;
@@ -226,13 +226,13 @@ int main(int argc, char *argv[])
 /*
       FILE *fkey = fopen(fname, "w");
       if (!fkey)
-	printf("Could not open key file for writing: %s\n", fname);
+        printf("Could not open key file for writing: %s\n", fname);
       else
       {
-	char string[100];
-	fputs(fkey, string);
-	fclose(fkey);
-	}
+        char string[100];
+        fputs(fkey, string);
+        fclose(fkey);
+        }
  */
       fprintf(stderr, "Feature not yet implemented.\n");
     }
@@ -244,8 +244,8 @@ int main(int argc, char *argv[])
 
       if (isatty(0))
       {
-	printf("Enter new key: ");
-	/* Really should read without echo!!! */
+        printf("Enter new key: ");
+        /* Really should read without echo!!! */
       }
       if(!fgets(newkey, MAX_KEY - 1, stdin)) {
         fprintf(stderr, "Error reading key.\n");
@@ -254,20 +254,20 @@ int main(int argc, char *argv[])
 
       fkey = fopen(fname, "w");
       if (!fkey)
-	fprintf(stderr, "Could not open key file for writing: %s\n", fname);
+        fprintf(stderr, "Could not open key file for writing: %s\n", fname);
       else
       {
-	if (fputs(newkey, fkey) != strlen(newkey) || putc('\n', fkey) != '\n')
-	{
-	  fprintf(stderr, "Error writing to key file.\n");
-	  fclose(fkey);
+        if (fputs(newkey, fkey) != strlen(newkey) || putc('\n', fkey) != '\n')
+        {
+          fprintf(stderr, "Error writing to key file.\n");
+          fclose(fkey);
           exit(1);
-	}
-	else
-	{
-	  fclose(fkey);
-	  fprintf(stderr, "Key update complete.\n");
-	}
+        }
+        else
+        {
+          fclose(fkey);
+          fprintf(stderr, "Key update complete.\n");
+        }
       }
     }
     else
@@ -275,23 +275,23 @@ int main(int argc, char *argv[])
       /* Encrypt/decrypt */
       FILE *fkey = fopen(fname, "r");
       if (!fkey) {
-	fprintf(stderr, "Could not open key file: %s\n", fname);
+        fprintf(stderr, "Could not open key file: %s\n", fname);
         exit(1);
       }
       else
       {
-	char keystring[MAX_KEY];
-	if(!fgets(keystring, MAX_KEY-1, fkey)) {
+        char keystring[MAX_KEY];
+        if(!fgets(keystring, MAX_KEY-1, fkey)) {
           fclose(fkey);
           fprintf(stderr, "Error reading key file.\n");
           return 1;
         }
-	if (mode == M_ZEPHYR_ENCRYPT || mode == M_ENCRYPT)
-	  do_encrypt(keystring, (mode == M_ZEPHYR_ENCRYPT), class, instance,
-		     &zoptions, fname);
-	else
-	  do_decrypt(keystring);
-	fclose(fkey);
+        if (mode == M_ZEPHYR_ENCRYPT || mode == M_ENCRYPT)
+          do_encrypt(keystring, (mode == M_ZEPHYR_ENCRYPT), class, instance,
+                     &zoptions, fname);
+        else
+          do_decrypt(keystring);
+        fclose(fkey);
       }
     }
   }
@@ -328,10 +328,10 @@ char *BuildArgString(char **argv, int start, int end)
       char *temp = argv[i];
       /* Add a space, if not the first argument */
       if (i != start)
-	*ptr++ = ' ';
+        *ptr++ = ' ';
       /* Copy argv[i], leaving ptr pointing to the '\0' copied from temp */
       while ((*ptr = *temp++))
-	ptr++;
+        ptr++;
     }
   }
 
@@ -378,16 +378,16 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance)
     {
       if (!fgets(buffer, MAX_BUFF - 3, fsearch)) break;
       for (i = 0; i < numsearch; i++)
-	if (strncasecmp(varname[i], buffer, length[i]) == 0)
-	{
-	  int j;
-	  for (j = length[i]; buffer[j] == ' '; j++)
-	    ;
-	  strcpy(result[i], &buffer[j]);
-	  if (*result[i])
-	    if (result[i][strlen(result[i])-1] == '\n')
-	      result[i][strlen(result[i])-1] = '\0';
-	}
+        if (strncasecmp(varname[i], buffer, length[i]) == 0)
+        {
+          int j;
+          for (j = length[i]; buffer[j] == ' '; j++)
+            ;
+          strcpy(result[i], &buffer[j]);
+          if (*result[i])
+            if (result[i][strlen(result[i])-1] == '\n')
+              result[i][strlen(result[i])-1] = '\0';
+        }
     }
 
     /* Pick the "best" match found */
@@ -395,8 +395,8 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance)
     for (i = 0; i < numsearch; i++)
       if (*result[i])
       {
-	keyfile = result[i];
-	break;
+        keyfile = result[i];
+        break;
       }
 
     if (keyfile == NULL)
@@ -409,9 +409,9 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance)
       char *temp = keyfile;
       keyfile = (char *)malloc(strlen(temp) + 1);
       if (keyfile)
-	strcpy(keyfile, temp);
+        strcpy(keyfile, temp);
       else
-	fprintf(stderr, "Memory allocation error.\n");
+        fprintf(stderr, "Memory allocation error.\n");
     }
     
     fclose(fsearch);
@@ -487,7 +487,7 @@ FILE *GetZephyrPipe(char *class, char *instance, ZWRITEOPTIONS *zoptions)
     if (fildes[0] != STDIN_FILENO)
     {
       if (dup2(fildes[0], STDIN_FILENO) != STDIN_FILENO)
-	exit(0);
+        exit(0);
       close(fildes[0]);
     }
     close(fildes[0]);
@@ -535,7 +535,7 @@ void block_to_ascii(unsigned char *output, FILE *outfile)
 /* Encrypt stdin, with prompt if isatty, and send to stdout, or to zwrite
    if zephyr is set. */
 int do_encrypt(char *keystring, int zephyr, char *class, char *instance,
-	  ZWRITEOPTIONS *zoptions, char* keyfile)
+          ZWRITEOPTIONS *zoptions, char* keyfile)
 {
   des_key_schedule schedule;
   unsigned char input[8], output[8];
@@ -565,32 +565,32 @@ int do_encrypt(char *keystring, int zephyr, char *class, char *instance,
     {
       /* tty input, so show the "Type your message now..." message */
       if (zoptions->flags & ZCRYPT_OPT_IGNOREDOT)
-	printf("Type your message now.  End with the end-of-file character.\n");
+        printf("Type your message now.  End with the end-of-file character.\n");
       else
-	printf("Type your message now.  End with control-D or a dot on a line by itself.\n");
+        printf("Type your message now.  End with control-D or a dot on a line by itself.\n");
       use_buffer = TRUE;
       if ((inptr = inbuff = (char *)malloc(MAX_RESULT)) == NULL)
       {
-	fprintf(stderr, "Memory allocation error\n");
-	return FALSE;
+        fprintf(stderr, "Memory allocation error\n");
+        return FALSE;
       }
       while (inptr - inbuff < MAX_RESULT - MAX_LINE - 20)
       {
-	if (!fgets(inptr, MAX_LINE, stdin))
+        if (!fgets(inptr, MAX_LINE, stdin))
           return FALSE;
-	if (inptr[0])
-	{
-	  if (inptr[0] == '.' && inptr[1] == '\n' && 
-	      !(zoptions->flags & ZCRYPT_OPT_IGNOREDOT))
-	  {
-	    inptr[0] = '\0';
-	    break;
-	  }
-	  else
-	    inptr += strlen(inptr);
-	}
-	else
-	  break;
+        if (inptr[0])
+        {
+          if (inptr[0] == '.' && inptr[1] == '\n' && 
+              !(zoptions->flags & ZCRYPT_OPT_IGNOREDOT))
+          {
+            inptr[0] = '\0';
+            break;
+          }
+          else
+            inptr += strlen(inptr);
+        }
+        else
+          break;
       }
       num_blocks = (inptr - inbuff + 7) / 8;
       last_block_size = ((inptr - inbuff + 7) % 8) + 1;
@@ -603,7 +603,7 @@ int do_encrypt(char *keystring, int zephyr, char *class, char *instance,
     {
       fprintf(stderr, "Could not run zwrite\n");
       if (freein && inbuff)
-	free(inbuff);
+        free(inbuff);
       return FALSE;
     }
   }
@@ -618,19 +618,19 @@ int do_encrypt(char *keystring, int zephyr, char *class, char *instance,
       /* Get 8 bytes from buffer */
       if (num_blocks > 1)
       {
-	size = 8;
-	memcpy(input, inptr, size);
-	inptr += 8;
-	num_blocks--;
+        size = 8;
+        memcpy(input, inptr, size);
+        inptr += 8;
+        num_blocks--;
       }
       else if (num_blocks == 1)
       {
-	size = last_block_size;
-	memcpy(input, inptr, size);
-	num_blocks--;
+        size = last_block_size;
+        memcpy(input, inptr, size);
+        num_blocks--;
       }
       else
-	size = 0;
+        size = 0;
     }
     else
       /* Get 8 bytes from stdin */
