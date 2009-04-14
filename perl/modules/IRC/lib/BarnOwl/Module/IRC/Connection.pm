@@ -109,7 +109,6 @@ sub on_msg {
     my ($recipient) = $evt->to;
     my $body = strip_irc_formatting([$evt->args]->[0]);
     my $nick = $self->nick;
-    BarnOwl::beep() if $body =~ /\b\Q$nick\E\b/;
     $body = '* '.$evt->nick.' '.$body if $evt->type eq 'caction';
     my $msg = $self->new_message($evt,
         direction   => 'in',
