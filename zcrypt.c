@@ -23,6 +23,7 @@
 #endif
 
 #define MAX_KEY 128
+#define MAX_LINE 128
 
 #ifndef TRUE
 #define TRUE -1
@@ -47,9 +48,12 @@ typedef struct
 } ZWRITEOPTIONS;
 
 char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance);
+int ParseCryptSpec(char *spec, char **keyfile);
 char *BuildArgString(char **argv, int start, int end);
-int do_encrypt(char *keystring, int zephyr, char *class, char *instance,
-          ZWRITEOPTIONS *zoptions, char* keyfile);
+char *read_keystring(char *keyfile);
+int do_encrypt(int zephyr, char *class, char *instance,
+               ZWRITEOPTIONS *zoptions, char* keyfile, int cipher);
+int do_encrypt_des(char *keyfile, char *in, int len, FILE *out);
 int do_decrypt(char *keystring);
 
 #define M_NONE            0
@@ -58,6 +62,10 @@ int do_decrypt(char *keystring);
 #define M_ENCRYPT         3
 #define M_RANDOMIZE       4
 #define M_SETKEY          5
+
+#define CIPHER_ERR        -1
+#define CIPHER_DES        0
+#define CIPHER_AES        1
 
 static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule schedule) {
 #ifdef HAVE_KERBEROS_IV
@@ -72,7 +80,9 @@ static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule sche
 
 int main(int argc, char *argv[])
 {
-  char *fname = NULL;
+  char *cryptspec = NULL;
+  char *keyfile;
+  int cipher;
   int error = FALSE;
   int zephyr = FALSE;
   char *class = NULL, *instance = NULL;
@@ -112,8 +122,8 @@ int main(int argc, char *argv[])
         break;
       case 'F':
         /* Specify the keyfile explicitly */
-        if (fname != NULL) error = TRUE;
-        fname = optarg;
+        if (cryptspec != NULL) error = TRUE;
+        cryptspec = optarg;
         break;
       case 'c':
         /* Zwrite/zcrypt: class name */
@@ -204,9 +214,21 @@ int main(int argc, char *argv[])
   if (mode == M_ZEPHYR_ENCRYPT && !zephyr)
     error = TRUE;
 
-  if (!error && fname == NULL && (class != NULL || instance != NULL))
-    fname = GetZephyrVarKeyFile(argv[0], class, instance);
-  
+  if (!error && cryptspec == NULL && (class != NULL || instance != NULL)) {
+    cryptspec = GetZephyrVarKeyFile(argv[0], class, instance);
+    if(!cryptspec) {
+      fprintf(stderr, "Unable to find keyfile for ");
+      if(class != NULL) {
+        fprintf(stderr, "-c %s ", class);
+      }
+      if(instance != NULL) {
+        fprintf(stderr, "-i %s ", instance);
+      }
+      fprintf(stderr, "\n");
+      exit(-1);
+    }
+  }
+
   if (error)
   {
     fprintf(stderr, "Usage: %s [-Z|-D|-E|-R|-S] [-F Keyfile] [-c class] [-i instance]\n", argv[0]);
@@ -214,92 +236,82 @@ int main(int argc, char *argv[])
     fprintf(stderr, "  One or more of class, instance, and keyfile must be specified.\n");
     exit(1);
   }
-  else if(!fname)
-  {
+
+  cipher = ParseCryptSpec(cryptspec, &keyfile);
+  if(cipher < 0) {
+    fprintf(stderr, "Invalid cipher specification: %s\n", cryptspec);
     exit(1);
   }
-  else
+
+
+  if (mode == M_RANDOMIZE)
   {
-    if (mode == M_RANDOMIZE)
-    {
-      /* Choose a new, random key */
-/*
+    /* Choose a new, random key */
+    /*
       FILE *fkey = fopen(fname, "w");
       if (!fkey)
-        printf("Could not open key file for writing: %s\n", fname);
+      printf("Could not open key file for writing: %s\n", fname);
       else
       {
-        char string[100];
-        fputs(fkey, string);
-        fclose(fkey);
-        }
- */
-      fprintf(stderr, "Feature not yet implemented.\n");
-    }
-    else if (mode == M_SETKEY)
+      char string[100];
+      fputs(fkey, string);
+      fclose(fkey);
+      }
+    */
+    fprintf(stderr, "Feature not yet implemented.\n");
+  }
+  else if (mode == M_SETKEY)
+  {
+    /* Set a new, user-entered key */
+    char newkey[MAX_KEY];
+    FILE *fkey;
+
+    if (isatty(0))
     {
-      /* Set a new, user-entered key */
-      char newkey[MAX_KEY];
-      FILE *fkey;
-
-      if (isatty(0))
-      {
-        printf("Enter new key: ");
-        /* Really should read without echo!!! */
-      }
-      if(!fgets(newkey, MAX_KEY - 1, stdin)) {
-        fprintf(stderr, "Error reading key.\n");
-        return 1;
-      }
-
-      fkey = fopen(fname, "w");
-      if (!fkey)
-        fprintf(stderr, "Could not open key file for writing: %s\n", fname);
-      else
-      {
-        if (fputs(newkey, fkey) != strlen(newkey) || putc('\n', fkey) != '\n')
-        {
-          fprintf(stderr, "Error writing to key file.\n");
-          fclose(fkey);
-          exit(1);
-        }
-        else
-        {
-          fclose(fkey);
-          fprintf(stderr, "Key update complete.\n");
-        }
-      }
+      printf("Enter new key: ");
+      /* Really should read without echo!!! */
     }
+    if(!fgets(newkey, MAX_KEY - 1, stdin)) {
+      fprintf(stderr, "Error reading key.\n");
+      return 1;
+    }
+
+    fkey = fopen(keyfile, "w");
+    if (!fkey)
+      fprintf(stderr, "Could not open key file for writing: %s\n", keyfile);
     else
     {
-      /* Encrypt/decrypt */
-      FILE *fkey = fopen(fname, "r");
-      if (!fkey) {
-        fprintf(stderr, "Could not open key file: %s\n", fname);
+      if (fputs(newkey, fkey) != strlen(newkey) || putc('\n', fkey) != '\n')
+      {
+        fprintf(stderr, "Error writing to key file.\n");
+        fclose(fkey);
         exit(1);
       }
       else
       {
-        char keystring[MAX_KEY];
-        if(!fgets(keystring, MAX_KEY-1, fkey)) {
-          fclose(fkey);
-          fprintf(stderr, "Error reading key file.\n");
-          return 1;
-        }
-        if (mode == M_ZEPHYR_ENCRYPT || mode == M_ENCRYPT)
-          do_encrypt(keystring, (mode == M_ZEPHYR_ENCRYPT), class, instance,
-                     &zoptions, fname);
-        else
-          do_decrypt(keystring);
         fclose(fkey);
+        fprintf(stderr, "Key update complete.\n");
       }
     }
+  }
+  else
+  {
+    if (mode == M_ZEPHYR_ENCRYPT || mode == M_ENCRYPT)
+      do_encrypt((mode == M_ZEPHYR_ENCRYPT), class, instance,
+                 &zoptions, keyfile, cipher);
+    else
+      do_decrypt(keyfile);
   }
 
   /* Always print the **END** message if -D is specified. */
   if (mode == M_DECRYPT)
     printf("**END**\n");
   return 0;
+}
+
+int ParseCryptSpec(char *spec, char **keyfile) {
+  *keyfile = spec;
+  return CIPHER_DES;
 }
 
 /* Build a space-separated string from argv from elements between start  *
@@ -399,11 +411,7 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance)
         break;
       }
 
-    if (keyfile == NULL)
-    {
-      fprintf(stderr, "Could not find key table entry.\n");
-    }
-    else
+    if (keyfile != NULL)
     {
       /* Prepare result to be returned */
       char *temp = keyfile;
@@ -413,7 +421,6 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance)
       else
         fprintf(stderr, "Memory allocation error.\n");
     }
-    
     fclose(fsearch);
   }
   else
@@ -530,115 +537,160 @@ void block_to_ascii(unsigned char *output, FILE *outfile)
   }
 }
 
-#define MAX_LINE 128
+char *GetInputBuffer(ZWRITEOPTIONS *zoptions, int *length) {
+  char *buf;
+  char *inptr;
 
-/* Encrypt stdin, with prompt if isatty, and send to stdout, or to zwrite
-   if zephyr is set. */
-int do_encrypt(char *keystring, int zephyr, char *class, char *instance,
-          ZWRITEOPTIONS *zoptions, char* keyfile)
-{
-  des_key_schedule schedule;
-  unsigned char input[8], output[8];
-  int size;
-  FILE *outfile = stdout;
-  int error = FALSE;
-  char *inbuff = NULL, *inptr;
-  int freein = FALSE;
-  int use_buffer = FALSE;
-  int num_blocks = 0, last_block_size = 0;
-
-  owl_zcrypt_string_to_schedule(keystring, schedule);
-
-  if (zephyr)
+  if (zoptions->flags & ZCRYPT_OPT_MESSAGE)
   {
-    if (zoptions->flags & ZCRYPT_OPT_MESSAGE)
-    {
-      /* Use the -m message */
-      int length;
-      inbuff = zoptions->message;      
-      length = strlen(inbuff);
-      num_blocks = (length + 7) / 8;
-      last_block_size = ((length + 7) % 8) + 1;
-      use_buffer = TRUE;
-    }
-    else if (isatty(0))
-    {
+    /* Use the -m message */
+    buf = strdup(zoptions->message);
+    *length = strlen(buf);
+  }
+  else
+  {
+    if (isatty(0)) {
       /* tty input, so show the "Type your message now..." message */
       if (zoptions->flags & ZCRYPT_OPT_IGNOREDOT)
         printf("Type your message now.  End with the end-of-file character.\n");
       else
         printf("Type your message now.  End with control-D or a dot on a line by itself.\n");
-      use_buffer = TRUE;
-      if ((inptr = inbuff = (char *)malloc(MAX_RESULT)) == NULL)
-      {
-        fprintf(stderr, "Memory allocation error\n");
-        return FALSE;
-      }
-      while (inptr - inbuff < MAX_RESULT - MAX_LINE - 20)
-      {
-        if (!fgets(inptr, MAX_LINE, stdin))
-          return FALSE;
-        if (inptr[0])
-        {
-          if (inptr[0] == '.' && inptr[1] == '\n' && 
-              !(zoptions->flags & ZCRYPT_OPT_IGNOREDOT))
-          {
-            inptr[0] = '\0';
-            break;
-          }
-          else
-            inptr += strlen(inptr);
-        }
-        else
-          break;
-      }
-      num_blocks = (inptr - inbuff + 7) / 8;
-      last_block_size = ((inptr - inbuff + 7) % 8) + 1;
-      freein = TRUE;
+    } else {
+      zoptions->flags |= ZCRYPT_OPT_IGNOREDOT;
     }
 
-    /* if (zephyr) */
+    if ((inptr = buf = (char *)malloc(MAX_RESULT)) == NULL)
+    {
+      fprintf(stderr, "Memory allocation error\n");
+      return NULL;
+    }
+    while (inptr - buf < MAX_RESULT - MAX_LINE - 20)
+    {
+      if (!fgets(inptr, MAX_LINE, stdin)) break;
+      if (inptr[0])
+      {
+        if (inptr[0] == '.' && inptr[1] == '\n' &&
+            !(zoptions->flags & ZCRYPT_OPT_IGNOREDOT))
+        {
+          inptr[0] = '\0';
+          break;
+        }
+        else
+          inptr += strlen(inptr);
+      }
+      else
+        break;
+    }
+    *length = inptr - buf;
+  }
+  return buf;
+}
+
+char *read_keystring(char *keyfile) {
+  char *keystring;
+  FILE *fkey = fopen(keyfile, "r");
+  if(!fkey) {
+    fprintf(stderr, "Unable to open keyfile %s\n", keyfile);
+    return NULL;
+  }
+  keystring = malloc(MAX_KEY);
+  if(!fgets(keystring, MAX_KEY-1, fkey)) {
+    fprintf(stderr, "Unable to read from keyfile: %s\n", keyfile);
+    free(keystring);
+    keystring = NULL;
+  }
+  fclose(fkey);
+  return keystring;
+}
+
+/* Encrypt stdin, with prompt if isatty, and send to stdout, or to zwrite
+   if zephyr is set. */
+int do_encrypt(int zephyr, char *class, char *instance,
+               ZWRITEOPTIONS *zoptions, char* keyfile, int cipher)
+{
+  FILE *outfile = stdout;
+  char *inbuff = NULL;
+  int buflen;
+  int out = TRUE;
+
+  inbuff = GetInputBuffer(zoptions, &buflen);
+
+  if(!inbuff) {
+    fprintf(stderr, "Error reading zcrypt input!\n");
+    return FALSE;
+  }
+
+  if (zephyr) {
     outfile = GetZephyrPipe(class, instance, zoptions);
     if (!outfile)
     {
       fprintf(stderr, "Could not run zwrite\n");
-      if (freein && inbuff)
+      if (inbuff)
         free(inbuff);
       return FALSE;
     }
   }
 
-  inptr = inbuff;
+  switch(cipher) {
+  case CIPHER_DES:
+    out = do_encrypt_des(keyfile, inbuff, buflen, outfile);
+    break;
+  case CIPHER_AES:
+    out = FALSE;
+    break;
+  }
+
+  if (zephyr)
+    CloseZephyrPipe(outfile);
+
+  free(inbuff);
+  return out;
+}
+
+int do_encrypt_des(char *keyfile, char *in, int length, FILE *outfile)
+{
+  des_key_schedule schedule;
+  unsigned char input[8], output[8];
+  char *inptr;
+  int num_blocks, last_block_size;
+  char *keystring;
+  int size;
+
+  keystring = read_keystring(keyfile);
+  if(!keystring) {
+    return FALSE;
+  }
+
+  owl_zcrypt_string_to_schedule(keystring, schedule);
+  free(keystring);
+
+  inptr = in;
+  num_blocks = (length + 7) / 8;
+  last_block_size = ((length + 7) % 8) + 1;
 
   /* Encrypt the input (inbuff or stdin) and send it to outfile */
   while (TRUE)
   {
-    if (use_buffer)
+    /* Get 8 bytes from buffer */
+    if (num_blocks > 1)
     {
-      /* Get 8 bytes from buffer */
-      if (num_blocks > 1)
-      {
-        size = 8;
-        memcpy(input, inptr, size);
-        inptr += 8;
-        num_blocks--;
-      }
-      else if (num_blocks == 1)
-      {
-        size = last_block_size;
-        memcpy(input, inptr, size);
-        num_blocks--;
-      }
-      else
-        size = 0;
+      size = 8;
+      memcpy(input, inptr, size);
+      inptr += 8;
+      num_blocks--;
+    }
+    else if (num_blocks == 1)
+    {
+      size = last_block_size;
+      memcpy(input, inptr, size);
+      num_blocks--;
     }
     else
-      /* Get 8 bytes from stdin */
-      size = fread(input, 1, 8, stdin);
+      size = 0;
 
     /* Check for EOF and pad the string to 8 chars, if needed */
     if (size == 0)
-      break;                      /* END OF INPUT: BREAK FROM while LOOP! */
+      break;
     if (size < 8)
       memset(input + size, 0, 8 - size);
 
@@ -650,17 +702,9 @@ int do_encrypt(char *keystring, int zephyr, char *class, char *instance,
       break;
   }
 
-  /* Close out the output */
-  if (!error)
-    putc('\n', outfile);
-  if (zephyr)
-    CloseZephyrPipe(outfile);
+  putc('\n', outfile);
 
-  /* Free the input buffer, if necessary */
-  if (freein && inbuff)
-    free(inbuff);
-
-  return !error;
+  return TRUE;
 }
 
 /* Read a half-byte from stdin, skipping invalid characters.  Returns -1
@@ -714,7 +758,7 @@ int read_ascii_block(unsigned char *input)
 }
 
 /* Decrypt stdin */
-void do_decrypt(char *keystring)
+int do_decrypt(char *keystring)
 {
   des_key_schedule schedule;
   unsigned char input[8], output[8];
@@ -731,4 +775,5 @@ void do_decrypt(char *keystring)
 
   if (!output[0] || output[strlen((const char*)output) - 1] != '\n')
       printf("\n");
+  return TRUE;
 }
