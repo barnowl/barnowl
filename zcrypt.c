@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
     zoptions.message = BuildArgString(argv, optind, argc);
     if (!zoptions.message)
     {
-      printf("Memory allocation error.\n");
+      fprintf(stderr, "Memory allocation error.\n");
       error = TRUE;
     }
   }
@@ -209,9 +209,9 @@ int main(int argc, char *argv[])
   
   if (error || fname == NULL)
   {
-    printf("Usage: %s [-Z|-D|-E|-R|-S] [-F Keyfile] [-c class] [-i instance]\n", argv[0]);
-    printf("       [-advqtluon] [-s signature] [-f arg] [-m message]\n");
-    printf("  One or more of class, instance, and keyfile must be specified.\n");
+    fprintf(stderr, "Usage: %s [-Z|-D|-E|-R|-S] [-F Keyfile] [-c class] [-i instance]\n", argv[0]);
+    fprintf(stderr, "       [-advqtluon] [-s signature] [-f arg] [-m message]\n");
+    fprintf(stderr, "  One or more of class, instance, and keyfile must be specified.\n");
   }
   else
   {
@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
 	fclose(fkey);
 	}
  */
-      printf("Feature not yet implemented.\n");
+      fprintf(stderr, "Feature not yet implemented.\n");
     }
     else if (mode == M_SETKEY)
     {
@@ -249,18 +249,18 @@ int main(int argc, char *argv[])
 
       fkey = fopen(fname, "w");
       if (!fkey)
-	printf("Could not open key file for writing: %s\n", fname);
+	fprintf(stderr, "Could not open key file for writing: %s\n", fname);
       else
       {
 	if (fputs(newkey, fkey) != strlen(newkey) || putc('\n', fkey) != '\n')
 	{
-	  printf("Error writing to key file.\n");
+	  fprintf(stderr, "Error writing to key file.\n");
 	  fclose(fkey);
 	}
 	else
 	{
 	  fclose(fkey);
-	  printf("Key update complete.\n");
+	  fprintf(stderr, "Key update complete.\n");
 	}
       }
     }
@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
       /* Encrypt/decrypt */
       FILE *fkey = fopen(fname, "r");
       if (!fkey)
-	printf("Could not open key file: %s\n", fname);
+	fprintf(stderr, "Could not open key file: %s\n", fname);
       else
       {
 	char keystring[MAX_KEY];
@@ -393,7 +393,7 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance)
 
     if (keyfile == NULL)
     {
-      printf("Could not find key table entry.\n");
+      fprintf(stderr, "Could not find key table entry.\n");
     }
     else
     {
@@ -403,13 +403,13 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance)
       if (keyfile)
 	strcpy(keyfile, temp);
       else
-	printf("Memory allocation error.\n");
+	fprintf(stderr, "Memory allocation error.\n");
     }
     
     fclose(fsearch);
   }
   else
-    printf("Could not open key table file: %s\n", filename);
+    fprintf(stderr, "Could not open key table file: %s\n", filename);
 
   for(i = 0; i < MAX_SEARCH; i++) {
     if(varname[i] != NULL) {
@@ -484,7 +484,7 @@ FILE *GetZephyrPipe(char *class, char *instance, ZWRITEOPTIONS *zoptions)
     }
     close(fildes[0]);
     execvp(argv[0], argv);
-    printf("Exec error: could not run zwrite\n");
+    fprintf(stderr, "Exec error: could not run zwrite\n");
     exit(0);
   }
   else
@@ -563,7 +563,7 @@ int do_encrypt(char *keystring, int zephyr, char *class, char *instance,
       use_buffer = TRUE;
       if ((inptr = inbuff = (char *)malloc(MAX_RESULT)) == NULL)
       {
-	printf("Memory allocation error\n");
+	fprintf(stderr, "Memory allocation error\n");
 	return FALSE;
       }
       while (inptr - inbuff < MAX_RESULT - MAX_LINE - 20)
@@ -593,7 +593,7 @@ int do_encrypt(char *keystring, int zephyr, char *class, char *instance,
     outfile = GetZephyrPipe(class, instance, zoptions);
     if (!outfile)
     {
-      printf("Could not run zwrite\n");
+      fprintf(stderr, "Could not run zwrite\n");
       if (freein && inbuff)
 	free(inbuff);
       return FALSE;
