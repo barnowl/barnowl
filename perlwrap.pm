@@ -632,6 +632,7 @@ sub replycmd {
     if($sender && $self->opcode eq WEBZEPHYR_OPCODE) {
         $class = WEBZEPHYR_CLASS;
         $instance = $self->pretty_sender;
+        $instance =~ s/-webzephyr$//;
         $to = WEBZEPHYR_PRINCIPAL;
     } elsif($self->class eq WEBZEPHYR_CLASS
             && $self->is_loginout) {
