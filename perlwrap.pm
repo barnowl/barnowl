@@ -631,7 +631,7 @@ sub replycmd {
 
     if($sender && $self->opcode eq WEBZEPHYR_OPCODE) {
         $class = WEBZEPHYR_CLASS;
-        $instance = $self->sender;
+        $instance = $self->pretty_sender;
         $to = WEBZEPHYR_PRINCIPAL;
     } elsif($self->class eq WEBZEPHYR_CLASS
             && $self->is_loginout) {
@@ -662,10 +662,10 @@ sub replycmd {
     }
 
     if (lc $class ne 'message') {
-        $cmd .= " -c " . BarnOwl::quote($self->class);
+        $cmd .= " -c " . BarnOwl::quote($class);
     }
     if (lc $instance ne 'personal') {
-        $cmd .= " -i " . BarnOwl::quote($self->instance);
+        $cmd .= " -i " . BarnOwl::quote($instance);
     }
     if ($to ne '') {
         $to = strip_realm($to);
