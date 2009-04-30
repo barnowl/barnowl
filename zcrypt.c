@@ -73,9 +73,21 @@ int do_decrypt_des(char *keyfile);
 #define M_RANDOMIZE       4
 #define M_SETKEY          5
 
-#define CIPHER_ERR        -1
-#define CIPHER_DES        0
-#define CIPHER_AES        1
+enum cipher_algo {
+  CIPHER_DES,
+  CIPHER_AES,
+  NCIPHER
+};
+
+typedef struct {
+  int (*encrypt)(char *keyfile, char *in, int len, FILE *out);
+  int (*decrypt)(char *keyfile);
+} cipher_pair;
+
+cipher_pair ciphers[NCIPHER] = {
+  [CIPHER_DES] { do_encrypt_des, do_decrypt_des},
+  [CIPHER_AES] { do_encrypt_aes, do_decrypt_aes},
+};
 
 static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule *schedule) {
 #ifdef HAVE_KERBEROS_IV
@@ -674,14 +686,7 @@ int do_encrypt(int zephyr, char *class, char *instance,
     }
   }
 
-  switch(cipher) {
-  case CIPHER_DES:
-    out = do_encrypt_des(keyfile, inbuff, buflen, outfile);
-    break;
-  case CIPHER_AES:
-    out = do_encrypt_aes(keyfile, inbuff, buflen, outfile);
-    break;
-  }
+  out = ciphers[cipher].encrypt(keyfile, inbuff, buflen, outfile);
 
   if (zephyr)
     CloseZephyrPipe(outfile);
@@ -828,14 +833,7 @@ int read_ascii_block(unsigned char *input)
 /* Decrypt stdin */
 int do_decrypt(char *keyfile, int cipher)
 {
-  switch(cipher) {
-  case CIPHER_DES:
-    return do_decrypt_des(keyfile);
-  case CIPHER_AES:
-    return do_decrypt_aes(keyfile);
-  default:
-    return FALSE;
-  }
+  return ciphers[cipher].decrypt(keyfile);
 }
 
 int do_decrypt_aes(char *keyfile) {
