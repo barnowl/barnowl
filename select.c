@@ -325,6 +325,7 @@ void owl_select()
   /* END AIM HACK */
 
   if ( select(max_fd+1, &r, &aim_wfds, &e, &timeout) ) {
+    owl_global_unset_interrupted(&g);
     /* Merge fd_sets and clear AIM FDs. */
     for(i = 0; i <= max_fd; i++) {
       /* Merge all interesting FDs into one set, since we have a

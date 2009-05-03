@@ -115,6 +115,7 @@ void owl_global_init(owl_global *g) {
   owl_message_init_fmtext_cache();
   owl_list_create(&(g->dispatchlist));
   g->timerlist = NULL;
+  g->interrupted = FALSE;
 }
 
 void _owl_global_setup_windows(owl_global *g) {
@@ -932,4 +933,30 @@ owl_list *owl_global_get_dispatchlist(owl_global *g)
 GList **owl_global_get_timerlist(owl_global *g)
 {
   return &(g->timerlist);
+}
+
+/*
+ * Note: This must be called with SIGINT masked in order to avoid
+ * races. This will unset the interrupt flag and unblock SIGINT before
+ * returning.
+ */
+int owl_global_is_interrupted(owl_global *g) {
+  int interrupted;
+  sigset_t intr;
+  sigemptyset(&intr);
+  sigaddset(&intr, SIGINT);
+
+  interrupted = g->interrupted;
+  g->interrupted = 0;
+
+  sigprocmask(SIG_UNBLOCK, &intr, NULL);
+  return interrupted;
+}
+
+void owl_global_set_interrupted(owl_global *g) {
+  g->interrupted = 1;
+}
+
+void owl_global_unset_interrupted(owl_global *g) {
+  g->interrupted = 0;
 }

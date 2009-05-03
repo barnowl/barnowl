@@ -136,6 +136,9 @@ int main(int argc, char **argv, char **env)
   sigaction(SIGTERM, &sigact, NULL);
   sigaction(SIGHUP, &sigact, NULL);
 
+  sigact.sa_sigaction=sigint_handler;
+  sigaction(SIGINT, &sigact, NULL);
+
   /* save initial terminal settings */
   tcgetattr(0, owl_global_get_startup_tio(&g));
 
@@ -155,7 +158,7 @@ int main(int argc, char **argv, char **env)
 #ifdef HAVE_USE_DEFAULT_COLORS
   use_default_colors();
 #endif
-  raw();
+  cbreak();
   noecho();
 
   /* define simple color pairs */
@@ -672,6 +675,11 @@ void sig_handler(int sig, siginfo_t *si, void *data)
   } else if (sig==SIGTERM || sig==SIGHUP) {
     owl_function_quit();
   }
+}
+
+void sigint_handler(int sig, siginfo_t *si, void *data)
+{
+  owl_global_set_interrupted(&g);
 }
 
 void usage()
