@@ -1,3 +1,17 @@
+1.1.1
+ * Fix bogus errors 'subscribing to login messages'. -nelhage
+ * Correctly send Zephyr login notices at startup. -nelhage
+ * Fix compilation with Zephyr support. -alexmv
+ * Fix an issue with incoming Zephyrs being delayed. -asedeno
+ * Fix display of zpunt lines. -asedeno
+ * Handle invalid regular expressions better (fix a segfault). -nelhage
+ * Correctly handle zpunts with recipient %me%. -nelhage
+ * Always send outgoing Zephyrs in utf-8. -nelhage
+ * Fix documentation for 'zsig' and 'zisgproc'. -nelhage
+ * Fix personal replies on webzephyr. -geofft
+ * Fix two memory leaks formatting messages. -nelhage, andersk
+ * Fix Makefile on platforms with Solaris tar. -nelhage
+
 1.1
  * Support building with -fstack-protector. -hartmans
  * Don't save partial passwords in editwin history. -nelhage
