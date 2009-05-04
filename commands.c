@@ -278,7 +278,7 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("punt", owl_command_punt, OWL_CTX_ANY,
 	      "suppress an arbitrary filter",
-	      "punt <filter-name>",
+	      "punt <filter-text>",
 	      "punt <filter-text (multiple words)>\n"
 	      "The punt command will supress message to the specified\n"
 	      "filter\n\n"
@@ -286,7 +286,7 @@ owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("unpunt", owl_command_unpunt, OWL_CTX_ANY,
 	      "remove an entry from the punt list",
-	      "zpunt <filter-name>\n"
+	      "zpunt <filter-text>\n"
 	      "zpunt <filter-text>\n"
 	      "zpunt <number>\n",
 	      "The unpunt command will remove an entry from the puntlist.\n"
