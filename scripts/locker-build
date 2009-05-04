@@ -13,8 +13,14 @@
 # TODO: Scrape $VERSION from the tarball
 
 die() {
-      echo "$@" 2>&1;
-      exit 1;
+    echo "$@" 2>&1;
+    if [ -n "$TMPDIR" ]; then
+        if [ -n "$DRYRUN" ]; then
+            echo "Dropping to a shell to investigate...";
+            $SHELL
+        fi
+    fi
+    exit 1;
 }
 
 usage () {
@@ -69,7 +75,7 @@ TMPDIR=$(mktemp -d /tmp/barnowl-build-XXXXXX) || die "Unable to mktemp"
 
 exittrap() { rm -rf "$TMPDIR"; }
 
-$TAR -C "$TMPDIR" -xzvf "$SRC_TGZ" || die "Unable to untar"
+$TAR -C "$TMPDIR" -xzf "$SRC_TGZ" || die "Unable to untar"
 
 (
     cd "$TMPDIR"/* || die "Unable to cd to $TMPDIR"
@@ -105,6 +111,10 @@ $TAR -C "$TMPDIR" -xzvf "$SRC_TGZ" || die "Unable to untar"
         fi
     fi
 )
+
+if [ "$?" -ne 0 ]; then
+    exit "$?"
+fi
 
 if [ -n "$OUT_TGZ" ]; then
     $TAR -C "$TMPDIR/"*/tgz -czvf "$OUT_TGZ" . || die "Make tarball failed"
