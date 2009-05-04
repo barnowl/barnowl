@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #########################################################
 # Build script to build BarnOwl for the locker.
