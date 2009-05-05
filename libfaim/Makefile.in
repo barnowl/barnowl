@@ -8,7 +8,7 @@ OBJS=admin.o adverts.o auth.o bos.o buddylist.o bstream.o \
      popups.o rxhandlers.o rxqueue.o search.o service.o \
      snac.o ssi.o stats.o tlv.o translate.o txqueue.o \
      util.o odir.o bart.o
-CFLAGS=@CFLAGS@ -I. -DAIM_BUILDDATE=\"x\" -DAIM_BUILDTIME=\"x\"
+CFLAGS=@CFLAGS@ -I. -DAIM_BUILDDATE=\"x\" -DAIM_BUILDTIME=\"x\" -Wno-pointer-sign
 
 libfaim: $(OBJS)
 	$(AR) -r libfaim.a $(OBJS)
