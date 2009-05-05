@@ -2989,9 +2989,6 @@ void owl_function_search_helper(int mode, int direction)
   owl_view *v;
   int viewsize, i, curmsg, start;
   owl_message *m;
-  sigset_t intr;
-  sigemptyset(&intr);
-  sigaddset(&intr, SIGINT);
 
   v=owl_global_get_current_view(&g);
   viewsize=owl_view_get_size(v);
@@ -3034,13 +3031,15 @@ void owl_function_search_helper(int mode, int direction)
     } else {
       i--;
     }
-    sigprocmask(SIG_BLOCK, &intr, NULL);
+    owl_function_mask_sigint(NULL);
     if(owl_global_is_interrupted(&g)) {
       owl_global_unset_interrupted(&g);
+      owl_function_unmask_sigint(NULL);
       owl_function_makemsg("Search interrupted!");
       owl_mainwin_redisplay(owl_global_get_mainwin(&g));
       return;
     }
+    owl_function_unmask_sigint(NULL);
   }
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_function_error("No matches found");
@@ -3515,4 +3514,20 @@ void owl_function_aimsearch_results(char *email, owl_list *namelist)
 int owl_function_get_color_count()
 {
      return COLORS;
+}
+
+void owl_function_mask_sigint(sigset_t *oldmask) {
+  sigset_t intr;
+
+  sigemptyset(&intr);
+  sigaddset(&intr, SIGINT);
+  sigprocmask(SIG_BLOCK, &intr, oldmask);
+}
+
+void owl_function_unmask_sigint(sigset_t *oldmask) {
+  sigset_t intr;
+
+  sigemptyset(&intr);
+  sigaddset(&intr, SIGINT);
+  sigprocmask(SIG_UNBLOCK, &intr, oldmask);
 }

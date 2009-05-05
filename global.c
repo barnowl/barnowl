@@ -935,22 +935,8 @@ GList **owl_global_get_timerlist(owl_global *g)
   return &(g->timerlist);
 }
 
-/*
- * Note: This must be called with SIGINT masked in order to avoid
- * races. This will unset the interrupt flag and unblock SIGINT before
- * returning.
- */
 int owl_global_is_interrupted(owl_global *g) {
-  int interrupted;
-  sigset_t intr;
-  sigemptyset(&intr);
-  sigaddset(&intr, SIGINT);
-
-  interrupted = g->interrupted;
-  g->interrupted = 0;
-
-  sigprocmask(SIG_UNBLOCK, &intr, NULL);
-  return interrupted;
+  return g->interrupted;
 }
 
 void owl_global_set_interrupted(owl_global *g) {

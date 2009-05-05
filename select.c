@@ -289,6 +289,10 @@ int owl_select_aim_hack(fd_set *rfds, fd_set *wfds)
 void owl_select_handle_intr()
 {
   owl_input in;
+
+  owl_global_unset_interrupted(&g);
+  owl_function_unmask_sigint(NULL);
+
   in.ch = in.uch = owl_global_get_startup_tio(&g)->c_cc[VINTR];
   owl_process_input_char(in);
 }
@@ -300,16 +304,13 @@ void owl_select()
   fd_set e;
   fd_set aim_rfds, aim_wfds;
   struct timespec timeout;
-  sigset_t mask, intr;
-
-  sigemptyset(&intr);
-  sigaddset(&intr, SIGINT);
+  sigset_t mask;
 
   owl_select_process_timers(&timeout);
 
-  sigprocmask(SIG_BLOCK, &intr, &mask);
+  owl_function_mask_sigint(&mask);
   if(owl_global_is_interrupted(&g)) {
-     owl_select_handle_intr();
+    owl_select_handle_intr();
     return;
   }
 
@@ -351,7 +352,7 @@ void owl_select()
     return;
   }
 
-  sigprocmask(SIG_UNBLOCK, &intr, NULL);
+  owl_function_unmask_sigint(NULL);
 
   if(ret > 0) {
     /* Merge fd_sets and clear AIM FDs. */
