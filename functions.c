@@ -2989,6 +2989,9 @@ void owl_function_search_helper(int mode, int direction)
   owl_view *v;
   int viewsize, i, curmsg, start;
   owl_message *m;
+  sigset_t intr;
+  sigemptyset(&intr);
+  sigaddset(&intr, SIGINT);
 
   v=owl_global_get_current_view(&g);
   viewsize=owl_view_get_size(v);
@@ -3030,6 +3033,13 @@ void owl_function_search_helper(int mode, int direction)
       i++;
     } else {
       i--;
+    }
+    sigprocmask(SIG_BLOCK, &intr, NULL);
+    if(owl_global_is_interrupted(&g)) {
+      owl_global_unset_interrupted(&g);
+      owl_function_makemsg("Search interrupted!");
+      owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+      return;
     }
   }
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
