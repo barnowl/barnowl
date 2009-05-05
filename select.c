@@ -40,7 +40,7 @@ void owl_select_remove_timer(owl_timer *t)
   }
 }
 
-void owl_select_process_timers(struct timeval *timeout)
+void owl_select_process_timers(struct timespec *timeout)
 {
   time_t now = time(NULL);
   GList **timers = owl_global_get_timerlist(&g);
@@ -78,7 +78,7 @@ void owl_select_process_timers(struct timeval *timeout)
     timeout->tv_sec = 60;
   }
 
-  timeout->tv_usec = 0;
+  timeout->tv_nsec = 0;
 }
 
 /* Returns the index of the dispatch for the file descriptor. */
@@ -286,15 +286,32 @@ int owl_select_aim_hack(fd_set *rfds, fd_set *wfds)
   return max_fd;
 }
 
+void owl_select_handle_intr()
+{
+  owl_input in;
+  in.ch = in.uch = owl_global_get_startup_tio(&g)->c_cc[VINTR];
+  owl_process_input_char(in);
+}
+
 void owl_select()
 {
-  int i, max_fd, aim_max_fd, aim_done;
+  int i, max_fd, aim_max_fd, aim_done, ret;
   fd_set r;
   fd_set e;
   fd_set aim_rfds, aim_wfds;
-  struct timeval timeout;
+  struct timespec timeout;
+  sigset_t mask, intr;
+
+  sigemptyset(&intr);
+  sigaddset(&intr, SIGINT);
 
   owl_select_process_timers(&timeout);
+
+  sigprocmask(SIG_BLOCK, &intr, &mask);
+  if(owl_global_is_interrupted(&g)) {
+     owl_select_handle_intr();
+    return;
+  }
 
   max_fd = owl_select_dispatch_prepare_fd_sets(&r, &e);
 
@@ -324,8 +341,19 @@ void owl_select()
   }
   /* END AIM HACK */
 
-  if ( select(max_fd+1, &r, &aim_wfds, &e, &timeout) ) {
-    owl_global_unset_interrupted(&g);
+
+  ret = pselect(max_fd+1, &r, &aim_wfds, &e, &timeout, &mask);
+
+  if(ret < 0 && errno == EINTR) {
+    if(owl_global_is_interrupted(&g)) {
+      owl_select_handle_intr();
+    }
+    return;
+  }
+
+  sigprocmask(SIG_UNBLOCK, &intr, NULL);
+
+  if(ret > 0) {
     /* Merge fd_sets and clear AIM FDs. */
     for(i = 0; i <= max_fd; i++) {
       /* Merge all interesting FDs into one set, since we have a
