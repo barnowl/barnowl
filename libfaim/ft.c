@@ -252,24 +252,24 @@ static int listenestablish(fu16_t portnum)
 faim_export int aim_handlerendconnect(aim_session_t *sess, aim_conn_t *cur)
 {
 	int acceptfd = 0;
-	struct sockaddr addr;
+	union { struct sockaddr sa; struct sockaddr_in sin; } addr;
 	socklen_t addrlen = sizeof(addr);
 	int ret = 0;
 	aim_conn_t *newconn;
 	char ip[20];
 	int port;
 
-	if ((acceptfd = accept(cur->fd, &addr, &addrlen)) == -1)
+	if ((acceptfd = accept(cur->fd, &addr.sa, &addrlen)) == -1)
 		return 0; /* not an error */
 
-	if ((addr.sa_family != AF_INET) && (addr.sa_family != AF_INET6)) { /* just in case IPv6 really is happening */
+	if (addr.sa.sa_family != AF_INET) { /* This code needs way more help to get IPv6 right. */
 		close(acceptfd);
 		aim_conn_close(cur);
 		return -1;
 	}
 
-	strncpy(ip, inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr), sizeof(ip));
-	port = ntohs(((struct sockaddr_in *)&addr)->sin_port);
+	strncpy(ip, inet_ntoa(addr.sin.sin_addr), sizeof(ip));
+	port = ntohs(addr.sin.sin_port);
 
 	if (!(newconn = aim_cloneconn(sess, cur))) {
 		close(acceptfd);
