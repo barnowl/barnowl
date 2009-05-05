@@ -93,7 +93,7 @@ AC_CHECK_HEADERS(strings.h sys/ioctl.h sys/filio.h unistd.h com_err.h)
 
 dnl Add CFLAGS for embeded perl
 FOO=`perl -MExtUtils::Embed -e ccopts`
-echo Adding perl CFLAGS ${FOO}
+AC_MSG_NOTICE([Adding perl CFLAGS ${FOO}])
 CFLAGS=${CFLAGS}\ ${FOO}
 
 dnl Find the location of perl XSUBPP
@@ -113,15 +113,15 @@ fi
 
 dnl Add LDFLAGS for embedded perl
 FOO=`perl -MExtUtils::Embed -e ldopts`
-echo Adding perl LDFLAGS ${FOO}
+AC_MSG_NOTICE([Adding perl LDFLAGS ${FOO}])
 LDFLAGS=${LDFLAGS}\ ${FOO}
 
 dnl Add CFLAGS and LDFLAGS for glib-2.0
 PKG_CHECK_MODULES(GLIB,glib-2.0)
 
-echo Adding glib-2.0 CFLAGS ${GLIB_CFLAGS}
+AC_MSG_NOTICE([Adding glib-2.0 CFLAGS ${GLIB_CFLAGS}])
 CFLAGS="${GLIB_CFLAGS} ${CFLAGS}"
-echo Adding glib-2.0 LDFLAGS ${GLIB_LIBS}
+AC_MSG_NOTICE([Adding glib-2.0 LDFLAGS ${GLIB_LIBS}])
 LDFLAGS="${GLIB_LIBS} ${LDFLAGS}"
 
 
