@@ -78,11 +78,11 @@ distclean: clean libfaimdistclean
 modules: $(MODULE_DIRS)
 modules_clean:
 	for i in $(MODULE_DIRS); do \
-		(cd $$i && (test ! -f Makefile || make clean)) \
+		(cd $$i && (test ! -f Makefile || $(MAKE) clean)) \
 	done
 
 $(MODULE_DIRS): %: %/Makefile
-	( cd $@ && make $(notdir $@).par )
+	( cd $@ && $(MAKE) $(notdir $@).par )
 
 $(MODULE_DIRS:=/Makefile): %/Makefile: %/Makefile.PL
 	( cd $(dir $@) && perl -I../../lib Makefile.PL )
@@ -119,13 +119,13 @@ $(BASE_OBJS) varstubs.h: owl.h config.h owl_prototypes.h
 libfaim: libfaim/libfaim.a
 
 libfaim/libfaim.a:
-	(cd libfaim; $(MAKE))
+	(cd libfaim && $(MAKE))
 
 libfaimclean:
-	(cd libfaim; $(MAKE) clean)
+	(cd libfaim && $(MAKE) clean)
 
 libfaimdistclean:
-	(cd libfaim; $(MAKE) distclean)
+	(cd libfaim && $(MAKE) distclean)
 
 install: all installdirs
 	${INSTALL_PROGRAM} $(EXE) ${DESTDIR}${bindir}/$(EXE)
