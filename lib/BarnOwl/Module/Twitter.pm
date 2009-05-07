@@ -96,6 +96,25 @@ if(!defined($twitter->verify_credentials())) {
     fail("Invalid twitter credentials");
 }
 
+our $last_poll        = 0;
+our $last_direct_poll = 0;
+our $last_id          = undef;
+our $last_direct      = undef;
+
+unless(defined($last_id)) {
+    eval {
+        $last_id = $twitter->friends_timeline({count => 1})->[0]{id};
+    };
+    $last_id = 0 unless defined($last_id);
+}
+
+unless(defined($last_direct)) {
+    eval {
+        $last_direct = $twitter->direct_messages()->[0]{id};
+    };
+    $last_direct = 0 unless defined($last_direct);
+}
+
 eval {
     $twitter->{ua}->timeout(1);
 };
@@ -116,25 +135,6 @@ sub handle_message {
        && $m->auth eq 'YES') {
         twitter($m->body);
     }
-}
-
-our $last_poll        = 0;
-our $last_direct_poll = 0;
-our $last_id          = undef;
-our $last_direct      = undef;
-
-unless(defined($last_id)) {
-    eval {
-        $last_id = $twitter->friends_timeline({count => 1})->[0]{id};
-    };
-    $last_id = 0 unless defined($last_id);
-}
-
-unless(defined($last_direct)) {
-    eval {
-        $last_direct = $twitter->direct_messages()->[0]{id};
-    };
-    $last_direct = 0 unless defined($last_direct);
 }
 
 sub poll_messages {
