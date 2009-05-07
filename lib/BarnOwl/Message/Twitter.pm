@@ -20,8 +20,10 @@ sub replycmd {
     my $self = shift;
     if($self->is_private) {
         return $self->replysendercmd;
+    } elsif(exists($self->{status_id})) {
+        return 'twitter-atreply ' . $self->sender . " " . $self->{status_id};
     } else {
-        return 'twitter-atreply '.$self->sender;
+        return 'twitter-atreply ' . $self->sender;
     }
 }
 

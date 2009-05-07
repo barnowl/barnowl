@@ -182,7 +182,8 @@ sub poll_twitter {
                 direction => 'in',
                 source    => decode_entities($tweet->{source}),
                 location  => decode_entities($tweet->{user}{location}||""),
-                body      => decode_entities($tweet->{text})
+                body      => decode_entities($tweet->{text}),
+                status_id => $tweet->{id}
                );
             BarnOwl::queue_message($msg);
         }
@@ -226,10 +227,15 @@ sub poll_direct {
 
 sub twitter {
     my $msg = shift;
+    my $reply_to = shift;
+
     if($msg =~ m{\Ad\s+([^\s])+(.*)}sm) {
         twitter_direct($1, $2);
     } elsif(defined $twitter) {
-        $twitter->update($msg);
+        $twitter->update({
+            status => $msg,
+            defined($reply_to) ? (in_reply_to_status_id => $reply_to) : ()
+           });
     }
 }
 
@@ -257,8 +263,13 @@ sub twitter_direct {
 
 sub twitter_atreply {
     my $to  = shift;
+    my $id  = shift;
     my $msg = shift;
-    twitter("@".$to." ".$msg);
+    if(defined($id)) {
+        twitter("@".$to." ".$msg, $id);
+    } else {
+        twitter("@".$to." ".$msg);
+    }
 }
 
 BarnOwl::new_command(twitter => \&cmd_twitter, {
@@ -302,8 +313,9 @@ sub cmd_twitter_direct {
 
 sub cmd_twitter_atreply {
     my $cmd  = shift;
-    my $user = shift;
-    BarnOwl::start_edit_win("Reply to \@" . $user, sub { twitter_atreply($user, shift) });
+    my $user = shift || die("Usage: $cmd USER [In-Reply-To ID]\n");
+    my $id   = shift;
+    BarnOwl::start_edit_win("Reply to \@" . $user, sub { twitter_atreply($user, $id, shift) });
 }
 
 eval {
