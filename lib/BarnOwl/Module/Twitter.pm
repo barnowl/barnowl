@@ -34,6 +34,11 @@ sub fail {
     die("Twitter Error: $msg\n");
 }
 
+if($Net::Twitter::VERSION < 2.06) {
+    fail("This version of BarnOwl Twitter requires Net::Twitter at least 2.06\n" .
+         "Only $Net::Twitter::VERSION is currently installed.\n");
+}
+
 my $desc = <<'END_DESC';
 BarnOwl::Module::Twitter will watch for authentic zephyrs to
 -c $twitter:class -i $twitter:instance -O $twitter:opcode
