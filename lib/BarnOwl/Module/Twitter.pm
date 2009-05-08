@@ -26,6 +26,7 @@ my $user     = BarnOwl::zephyr_getsender();
 my ($class)  = ($user =~ /(^[^@]+)/);
 my $instance = "status";
 my $opcode   = "twitter";
+my $use_reply_to = 0;
 
 sub fail {
     my $msg = shift;
@@ -34,9 +35,8 @@ sub fail {
     die("Twitter Error: $msg\n");
 }
 
-if($Net::Twitter::VERSION < 2.06) {
-    fail("This version of BarnOwl Twitter requires Net::Twitter at least 2.06\n" .
-         "Only $Net::Twitter::VERSION is currently installed.\n");
+if($Net::Twitter::VERSION >= 2.06) {
+    $use_reply_to = 1;
 }
 
 my $desc = <<'END_DESC';
@@ -237,10 +237,14 @@ sub twitter {
     if($msg =~ m{\Ad\s+([^\s])+(.*)}sm) {
         twitter_direct($1, $2);
     } elsif(defined $twitter) {
-        $twitter->update({
-            status => $msg,
-            defined($reply_to) ? (in_reply_to_status_id => $reply_to) : ()
-           });
+        if($use_reply_to && defined($reply_to)) {
+            $twitter->update({
+                status => $msg,
+                in_reply_to_status_id => $reply_to
+               });
+        } else {
+            $twitter->update($msg);
+        }
     }
 }
 
