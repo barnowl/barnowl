@@ -33,16 +33,16 @@ int owl_keybinding_init(owl_keybinding *kb, char *keyseq, char *command, void (*
     atokenize_free(ktokens, nktokens);
     return(-1);
   }
-  kb->j = owl_malloc((nktokens+1)*sizeof(int));
+  kb->keys = owl_malloc(nktokens*sizeof(int));
   for (i=0; i<nktokens; i++) {
-    kb->j[i] = owl_keypress_fromstring(ktokens[i]);
-    if (kb->j[i] == ERR) { 
+    kb->keys[i] = owl_keypress_fromstring(ktokens[i]);
+    if (kb->keys[i] == ERR) { 
       atokenize_free(ktokens, nktokens);
-      owl_free(kb->j);
+      owl_free(kb->keys);
       return(-1);
     }
   }
-  kb->j[i] = 0;
+  kb->len = nktokens;
 
   atokenize_free(ktokens, nktokens);
 
@@ -56,7 +56,7 @@ int owl_keybinding_init(owl_keybinding *kb, char *keyseq, char *command, void (*
 /* Releases data associated with a keybinding */
 void owl_keybinding_free(owl_keybinding *kb)
 {
-  if (kb->j) owl_free(kb->j);
+  if (kb->keys) owl_free(kb->keys);
   if (kb->desc) owl_free(kb->desc);
   if (kb->command) owl_free(kb->command);
 }
@@ -79,15 +79,15 @@ void owl_keybinding_execute(owl_keybinding *kb, int j)
 }
 
 /* returns 0 on success */
-int owl_keybinding_stack_tostring(int *j, char *buff, int bufflen)
+int owl_keybinding_stack_tostring(int *j, int len, char *buff, int bufflen)
 {
   char *pos = buff;
   int   rem = bufflen;
   int   i, n;
 
-  for (i=0; j[i]; i++) {
+  for (i=0; i < len; i++) {
     owl_keypress_tostring(j[i], 0, pos, rem-1);
-    if (j[i+1]) strcat(pos, " ");
+    if (i < len - 1) strcat(pos, " ");
     n = strlen(pos);
     pos += n;
     rem -= n;
@@ -98,7 +98,7 @@ int owl_keybinding_stack_tostring(int *j, char *buff, int bufflen)
 /* returns 0 on success */
 int owl_keybinding_tostring(owl_keybinding *kb, char *buff, int bufflen)
 {
-  return owl_keybinding_stack_tostring(kb->j, buff, bufflen);
+  return owl_keybinding_stack_tostring(kb->keys, kb->len, buff, bufflen);
 }
 
 char *owl_keybinding_get_desc(owl_keybinding *kb)
@@ -107,33 +107,36 @@ char *owl_keybinding_get_desc(owl_keybinding *kb)
 }
 
 /* returns 0 on no match, 1 on subset match, and 2 on complete match */
-int owl_keybinding_match(owl_keybinding *kb, int *kpstack)
+int owl_keybinding_match(owl_keybinding *kb, owl_keyhandler *kh)
 {
-  int *kbstack = kb->j;
-  
-  while (*kbstack && *kpstack) {
-    if (*kbstack != *kpstack) {
+  int i;
+  for(i = 0; i <= kh->kpstackpos && i < kb->len; i++) {
+    if(kb->keys[i] != kh->kpstack[i])
       return 0;
-    }
-    kbstack++; kpstack++;
   }
-  if (!*kpstack && !*kbstack) {
+
+  /* If we've made it to this point, then they match as far as they are. */
+  if(kb->len == kh->kpstackpos + 1) {
+    /* Equal length */
     return 2;
-  } else if (!*kpstack) {
+  } else if(kb->len > kh->kpstackpos + 1) {
     return 1;
-  } else {
-    return 0;
   }
+
+  return 0;
 }
 
 /* returns 1 if keypress sequence is the same */
 int owl_keybinding_equal(owl_keybinding *kb1, owl_keybinding *kb2)
 {
-  int *j1 = kb1->j;
-  int *j2 = kb2->j;
-  while (*j1 && *j2) {
-    if (*(j1++) != *(j2++))  return(0);
+  int i;
+
+  if(kb1->len != kb2->len) return 0;
+
+  for(i = 0; i < kb1->len; i++) {
+    if(kb1->keys[i] != kb2->keys[i])
+      return 0;
   }
-  if (*j1 != *j2) return(0);
-  return(1);
+
+  return 1;
 }

@@ -443,7 +443,8 @@ typedef struct _owl_editwin {
 } owl_editwin;
 
 typedef struct _owl_keybinding {
-  int  *j;			/* keypress stack (0-terminated) */  
+  int  *keys;			/* keypress stack */
+  int   len;                    /* length of stack */
   int   type;			/* command or function? */
   char *desc;			/* description (or "*user*") */
   char *command;		/* command, if of type command */

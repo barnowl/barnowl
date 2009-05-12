@@ -212,16 +212,6 @@ int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
     return(-1);
   }
 
-  /* temporarily disallow C-`/C-SPACE until we fix associated bugs */
-  if (j.ch == ERR || j.ch == 0) {
-	return(-1);
-  }
-
-  /*
-    owl_function_debugmsg("processkey: got key %d, active keymap %s, stack at %d",
-    j, kh->active->name, kh->kpstackpos);
-  */
-
   /* deal with ESC prefixing */
   if (!kh->in_esc && j.ch == 27) {
     kh->in_esc = 1;
@@ -252,7 +242,7 @@ int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
   for (km=kh->active; km; km=km->submap) {
     for (i=owl_list_get_size(&km->bindings)-1; i>=0; i--) {
       kb = (owl_keybinding*)owl_list_get_element(&km->bindings, i);
-      match = owl_keybinding_match(kb, kh->kpstack);
+      match = owl_keybinding_match(kb, kh);
       if (match == 1) {		/* subset match */
 
 	/* owl_function_debugmsg("processkey: found subset match in %s", km->name); */
@@ -289,7 +279,7 @@ int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
 void owl_keyhandler_invalidkey(owl_keyhandler *kh)
 {
     char kbbuff[500];
-    owl_keybinding_stack_tostring(kh->kpstack, kbbuff, 500);
+    owl_keybinding_stack_tostring(kh->kpstack, kh->kpstackpos+1, kbbuff, 500);
     owl_function_makemsg("'%s' is not a valid key in this context.", kbbuff);
     owl_keyhandler_reset(kh);
 }
