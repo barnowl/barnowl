@@ -342,7 +342,7 @@ owl_cmd commands_to_init[]
 
   OWLCMD_VOID("recv:swapmark", owl_function_swap_cur_marked,
 	      OWL_CTX_INTERACTIVE,
-	      "swap curmsg and mark", "", ""),
+	      "swap the positions of the pointer and the mark", "", ""),
 
   OWLCMD_INT ("recv:scroll", owl_function_page_curmsg, OWL_CTX_INTERACTIVE,
 	      "scrolls current message up or down", 
