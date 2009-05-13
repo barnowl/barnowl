@@ -3562,16 +3562,20 @@ void owl_function_swap_cur_marked()
   owl_message *m;
   owl_view *v;
 
+  marked_id=owl_global_get_markedmsgid(&g);
+  if (marked_id == -1) {
+    owl_function_error("Mark not set.");
+    return;
+  }
+
   v=owl_global_get_current_view(&g);
   /* bail if there's no current message */
   if (owl_view_get_size(v) < 1) {
     return;
   }
+
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
-  marked_id=owl_global_get_markedmsgid(&g);
-
   _owl_function_mark_message(m);
-
   owl_global_set_curmsg(&g, owl_view_get_nearest_to_msgid(v, marked_id));
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_global_set_direction_downwards(&g);

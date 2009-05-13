@@ -34,6 +34,7 @@ void owl_global_init(owl_global *g) {
   owl_context_set_startup(&g->ctx);
   g->curmsg=0;
   g->topmsg=0;
+  g->markedmsgid=-1;
   g->needrefresh=1;
   g->startupargs=NULL;
 
