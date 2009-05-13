@@ -3554,6 +3554,7 @@ void owl_function_mark_message()
   /* mark the message */
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
   _owl_function_mark_message(m);
+  owl_function_makemsg("Mark set");
 }
 
 void owl_function_swap_cur_marked()
