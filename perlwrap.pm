@@ -390,6 +390,9 @@ sub replysendercmd   { return shift->{replysendercmd}};
 sub pretty_sender    { return shift->sender; }
 sub pretty_recipient { return shift->recipient; }
 
+# Override if you want a context (instance, network, etc.) on personals
+sub personal_context { return ""; }
+
 sub delete {
     my ($m) = @_;
     &BarnOwl::command("delete --id ".$m->id);
@@ -583,7 +586,6 @@ sub is_ping     { return (lc(shift->opcode) eq "ping"); }
 sub is_personal {
     my ($m) = @_;
     return ((lc($m->class) eq "message")
-	    && (lc($m->instance) eq "personal")
 	    && $m->is_private);
 }
 
@@ -600,6 +602,15 @@ sub pretty_sender {
 sub pretty_recipient {
     my ($m) = @_;
     return strip_realm($m->recipient);
+}
+
+sub personal_context {
+    my ($m) = @_;
+    if (lc($m->instance) eq "personal") {
+        return "";
+    } else {
+        return "-i " . $m->instance;
+    }
 }
 
 # These are arguably zephyr-specific
@@ -1022,10 +1033,13 @@ sub chat_header {
     my $m = shift;
     my $header;
     if ( $m->is_personal ) {
+        my $personal_context = $m->personal_context;
+        $personal_context = ' [' . $personal_context . ']' if $personal_context;
+
         if ( $m->direction eq "out" ) {
-            $header = ucfirst $m->type . " sent to " . $m->pretty_recipient;
+            $header = ucfirst $m->type . $personal_context . " sent to " . $m->pretty_recipient;
         } else {
-            $header = ucfirst $m->type . " from " . $m->pretty_sender;
+            $header = ucfirst $m->type . $personal_context . " from " . $m->pretty_sender;
         }
     } else {
         $header = $m->context;
