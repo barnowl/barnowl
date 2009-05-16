@@ -535,6 +535,7 @@ typedef struct _owl_global {
   owl_errqueue errqueue;
   int lines, cols;
   int curmsg, topmsg;
+  int markedmsgid;              /* for finding the marked message when it has moved. */
   int curmsg_vert_offset;
   owl_view current_view;
   owl_messagelist msglist;

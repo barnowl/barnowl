@@ -34,6 +34,7 @@ void owl_global_init(owl_global *g) {
   owl_context_set_startup(&g->ctx);
   g->curmsg=0;
   g->topmsg=0;
+  g->markedmsgid=-1;
   g->needrefresh=1;
   g->startupargs=NULL;
 
@@ -196,6 +197,24 @@ int owl_global_get_topmsg(owl_global *g) {
 
 void owl_global_set_topmsg(owl_global *g, int i) {
   g->topmsg=i;
+}
+
+/* markedmsgid */
+
+int owl_global_get_markedmsgid(owl_global *g) {
+  return(g->markedmsgid);
+}
+
+void owl_global_set_markedmsgid(owl_global *g, int i) {
+  g->markedmsgid=i;
+  /* i; index of message in the current view.
+  owl_message *m;
+  owl_view *v;
+
+  v = owl_global_get_current_view(&g);
+  m = owl_view_get_element(v, i);
+  g->markedmsgid = m ? owl_message_get_id(m) : 0;
+  */
 }
 
 /* windows */

@@ -336,6 +336,14 @@ owl_cmd commands_to_init[]
   OWLCMD_VOID("recv:pageup", owl_function_mainwin_pageup, OWL_CTX_INTERACTIVE,
 	      "scrolls up by a page", "", ""),
 
+  OWLCMD_VOID("recv:mark", owl_function_mark_message,
+	      OWL_CTX_INTERACTIVE,
+	      "mark the current message", "", ""),
+
+  OWLCMD_VOID("recv:swapmark", owl_function_swap_cur_marked,
+	      OWL_CTX_INTERACTIVE,
+	      "swap the positions of the pointer and the mark", "", ""),
+
   OWLCMD_INT ("recv:scroll", owl_function_page_curmsg, OWL_CTX_INTERACTIVE,
 	      "scrolls current message up or down", 
 	      "recv:scroll <numlines>", 

@@ -262,6 +262,8 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("NPAGE",  "recv:pagedown",  "");
   BIND_CMD("M-v",    "recv:pageup",    "");
   BIND_CMD("PPAGE",  "recv:pageup",    "");
+  BIND_CMD("C-@",    "recv:mark",      "");
+  BIND_CMD("C-x C-x",    "recv:swapmark",  "");
 
   BIND_CMD("SPACE",     "recv:scroll  10", "scroll message down a page");
   BIND_CMD("CR",        "recv:scroll   1", "scroll message down a line");
