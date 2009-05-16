@@ -708,13 +708,23 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
   } else if (!strcmp(retnotice->z_message, ZSRVACK_SENT)) {
     if (!strcasecmp(retnotice->z_opcode, "ping")) {
       return;
-    } else if (!strcasecmp(retnotice->z_class, "message") &&
-	       !strcasecmp(retnotice->z_class_inst, "personal")) {
-      tmp=short_zuser(retnotice->z_recipient);
-      owl_function_makemsg("Message sent to %s.", tmp);
-      free(tmp);
     } else {
-      owl_function_makemsg("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
+      if (strcasecmp(retnotice->z_recipient, ""))
+      { // personal
+        tmp=short_zuser(retnotice->z_recipient);
+        if(!strcasecmp(retnotice->z_class, "message") &&
+           !strcasecmp(retnotice->z_class_inst, "personal")) {
+          owl_function_makemsg("Message sent to %s.", tmp);
+        } else if(!strcasecmp(retnotice->z_class, "message")) { // instanced, but not classed, personal
+          owl_function_makemsg("Message sent to %s on -i %s\n", tmp, retnotice->z_class_inst);
+        } else { // classed personal
+          owl_function_makemsg("Message sent to %s on -c %s -i %s\n", tmp, retnotice->z_class, retnotice->z_class_inst);
+        }
+        free(tmp);
+      } else {
+        // class / instance message
+          owl_function_makemsg("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
+      }
     }
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
     #define BUFFLEN 1024
