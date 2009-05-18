@@ -669,7 +669,7 @@ char * owl_get_datadir()
 {
   char * datadir = getenv("BARNOWL_DATA_DIR");
   if(datadir != NULL)
-    return strchr(datadir, '=') + 1;
+    return datadir;
   return DATADIR;
 }
 
