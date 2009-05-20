@@ -93,9 +93,23 @@ if($@) {
     fail("Unable to parse ~/.owl/twitter: $@");
 }
 
-$twitter  = Net::Twitter->new(username   => $cfg->{user} || $user,
-                              password   => $cfg->{password},
-                              source => 'barnowl');
+my $twitter_args = { username   => $cfg->{user} || $user,
+                     password   => $cfg->{password},
+                     source     => 'barnowl', 
+                   };
+if (defined $cfg->{service}) {
+    my $service = $cfg->{service};
+    $twitter_args->{apiurl} = $service;
+    my $apihost = $service;
+    $apihost =~ s/^\s*http:\/\///;
+    $apihost =~ s/\/.*$//;
+    $apihost .= ':80' unless $apihost =~ /:\d+$/;
+    $twitter_args->{apihost} = $cfg->{apihost} || $apihost;
+    my $apirealm = "Laconica API";
+    $twitter_args->{apirealm} = $cfg->{apirealm} || $apirealm;
+}
+
+$twitter  = Net::Twitter->new(%$twitter_args);
 
 if(!defined($twitter->verify_credentials())) {
     fail("Invalid twitter credentials");
@@ -188,7 +202,8 @@ sub poll_twitter {
                 source    => decode_entities($tweet->{source}),
                 location  => decode_entities($tweet->{user}{location}||""),
                 body      => decode_entities($tweet->{text}),
-                status_id => $tweet->{id}
+                status_id => $tweet->{id},
+                service   => $cfg->{service},
                );
             BarnOwl::queue_message($msg);
         }
@@ -220,7 +235,8 @@ sub poll_direct {
                 direction => 'in',
                 location  => decode_entities($tweet->{sender}{location}||""),
                 body      => decode_entities($tweet->{text}),
-                isprivate => 'true'
+                isprivate => 'true',
+                service   => $cfg->{service},
                );
             BarnOwl::queue_message($msg);
         }
@@ -263,7 +279,8 @@ sub twitter_direct {
                 recipient => $who, 
                 direction => 'out',
                 body      => $msg,
-                isprivate => 'true'
+                isprivate => 'true',
+                service   => $cfg->{service},
                );
             BarnOwl::queue_message($tweet);
         }

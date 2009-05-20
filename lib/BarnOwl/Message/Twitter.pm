@@ -14,7 +14,13 @@ use base qw(BarnOwl::Message);
 
 sub context {'twitter'}
 sub subcontext {undef}
-sub long_sender {"http://twitter.com/" . shift->sender}
+sub service { return (shift->{"service"} || "http://twitter.com"); }
+sub long_sender {
+    my $self = shift;
+    $self->service =~ m#^\s*(.*?://.*?)/.*$#;
+    my $service = $1 || $self->service;
+    return $service . '/' . $self->sender
+}
 
 sub replycmd {
     my $self = shift;
