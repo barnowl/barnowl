@@ -18,3 +18,9 @@ Twitter.par will also receive twitters and inject them into barnowl as
 messages of type 'twitter'. It polls for normal messages once a
 minute, and direct messages every other minute. To disable polling,
 you can unset the 'twitter:poll' variable in BarnOwl.
+
+Twitter.par now supports other Twitter-compatible microblogging
+services, like identi.ca. To enable this, set the 'service' parameter
+in your config hash to the API URL of your service. You will likely
+also need to set 'apihost' and 'apirealm'. See Net::Twitter or your
+blogging service's documentation for more information.
