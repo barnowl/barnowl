@@ -46,7 +46,7 @@ OBJS = $(BASE_OBJS) $(GEN_O)
 AUTOGEN=$(GEN_C) $(GEN_H)
 #AUTOGEN=$(GEN_C)
 
-HEADERS=$(GEN_H) owl.h config.h test.h
+HEADERS=$(GEN_H) owl.h owl_perl.h config.h test.h
 
 all: $(EXE) $(MODULE_DIRS)
 
