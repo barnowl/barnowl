@@ -650,7 +650,14 @@ sub replycmd {
         $class = WEBZEPHYR_CLASS;
         $instance = $self->instance;
         $to = WEBZEPHYR_PRINCIPAL;
-    } elsif($self->is_loginout || $sender) {
+    } elsif($self->is_loginout) {
+        $class = 'MESSAGE';
+        $instance = 'PERSONAL';
+        $to = $self->sender;
+    } elsif($sender && !$self->is_private) {
+        # Possible future feature: (Optionally?) include the class and/or
+        # instance of the message being replied to in the instance of the 
+        # outgoing personal reply
         $class = 'MESSAGE';
         $instance = 'PERSONAL';
         $to = $self->sender;
