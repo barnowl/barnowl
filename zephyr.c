@@ -124,19 +124,22 @@ void owl_zephyr_finish_initialization(owl_dispatch *d) {
 }
 
 void owl_zephyr_load_initial_subs() {
-  int ret, ret2;
+  int ret_sd, ret_bd, ret_u;
 
   owl_function_debugmsg("startup: loading initial zephyr subs");
 
   /* load default subscriptions */
-  ret = owl_zephyr_loaddefaultsubs();
+  ret_sd = owl_zephyr_loaddefaultsubs();
+
+  /* load Barnowl default subscriptions */
+  ret_bd = owl_zephyr_loadbarnowldefaultsubs();
 
   /* load subscriptions from subs file */
-  ret2 = owl_zephyr_loadsubs(NULL, 0);
+  ret_u = owl_zephyr_loadsubs(NULL, 0);
 
-  if (ret || ret2) {
+  if (ret_sd || ret_bd || ret_u) {
     owl_function_error("Error loading zephyr subscriptions");
-  } else if (ret2!=-1) {
+  } else if (ret_u!=-1) {
     owl_global_add_userclue(&g, OWL_USERCLUE_CLASSES);
   }
 
@@ -225,7 +228,7 @@ int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
 }
 #endif
 
-/* Load zephyr subscriptions form 'filename'.  If 'filename' is NULL,
+/* Load zephyr subscriptions from 'filename'.  If 'filename' is NULL,
  * the default file $HOME/.zephyr.subs will be used.
  *
  * Returns 0 on success.  If the file does not exist, return -1 if
@@ -297,7 +300,36 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
   }
   fclose(file);
 
-  owl_zephyr_loadsubs_helper(subs, count);
+  ret = owl_zephyr_loadsubs_helper(subs, count);
+  return(ret);
+#else
+  return(0);
+#endif
+}
+
+/* Load default Barnowl subscriptions
+ *
+ * Returns 0 on success.
+ * Return -2 if there is a failure from zephyr to load the subscriptions.
+ */
+int owl_zephyr_loadbarnowldefaultsubs()
+{
+#ifdef HAVE_LIBZEPHYR
+  ZSubscription_t *subs;
+  int subSize = 10; /* Max Barnowl default subs we allow */
+  int count, ret;
+
+  subs = owl_malloc(sizeof(ZSubscription_t) * subSize);
+  ret = 0;
+  ZResetAuthentication();
+  count=0;
+
+  subs[count].zsub_class=owl_strdup("message");
+  subs[count].zsub_classinst=owl_strdup("*");
+  subs[count].zsub_recipient=owl_strdup("%me%");
+  count++;
+
+  ret = owl_zephyr_loadsubs_helper(subs, count);
   return(ret);
 #else
   return(0);
