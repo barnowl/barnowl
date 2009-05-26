@@ -718,10 +718,10 @@ Code_t send_zephyr_helper(ZNotice_t *notice, char *buf, int len, int wait)
 }
 #endif
 
-void send_ping(char *to)
+void send_ping(char *to, char *zclass, char *zinstance)
 {
 #ifdef HAVE_LIBZEPHYR
-  send_zephyr("PING", "", "MESSAGE", "PERSONAL", to, "");
+  send_zephyr("PING", "", zclass, zinstance, to, "");
 #endif
 }
 
@@ -771,12 +771,23 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
       char buff[BUFFLEN];
       tmp = short_zuser(retnotice->z_recipient);
       owl_function_error("%s: Not logged in or subscribing.", tmp);
-      if(strcmp(retnotice->z_class, "message")) {
+      /*
+       * These error messages are often over 80 chars, but users who want to
+       * see the whole thing can scroll to the side, and for those with wide
+       * terminals or who don't care, not splitting saves a line in the UI
+       */
+      if(strcasecmp(retnotice->z_class, "message")) {
         snprintf(buff, BUFFLEN,
                  "Could not send message to %s: "
-                 "not logged in or subscribing to class %s, instance %s.\n", 
+                 "not logged in or subscribing to class %s, instance %s.\n",
                  tmp,
                  retnotice->z_class,
+                 retnotice->z_class_inst);
+      } else if(strcasecmp(retnotice->z_class_inst, "personal")) {
+        snprintf(buff, BUFFLEN,
+                 "Could not send message to %s: "
+                 "not logged in or subscribing to instance %s.\n",
+                 tmp,
                  retnotice->z_class_inst);
       } else {
         snprintf(buff, BUFFLEN,

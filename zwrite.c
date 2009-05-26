@@ -198,8 +198,7 @@ void owl_zwrite_send_ping(owl_zwrite *z)
 
   if (z->noping) return;
   
-  if (strcasecmp(z->class, "message") ||
-      strcasecmp(z->inst, "personal")) {
+  if (strcasecmp(z->class, "message")) {
     return;
   }
 
@@ -212,7 +211,7 @@ void owl_zwrite_send_ping(owl_zwrite *z)
     } else {
       to = owl_strdup(owl_list_get_element(&(z->recips), i));
     }
-    send_ping(to);
+    send_ping(to, z->class, z->inst);
     owl_free(to);
   }
 
