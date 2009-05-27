@@ -13,7 +13,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 
   badargs=0;
   
-  /* start with null entires */
+  /* start with null entries */
   z->realm=NULL;
   z->class=NULL;
   z->inst=NULL;
@@ -81,7 +81,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	badargs=1;
 	break;
       }
-      /* we must already have users or a class or an instance*/
+      /* we must already have users or a class or an instance */
       if (owl_list_get_size(&(z->recips))<1 && (!z->class) && (!z->inst)) {
 	badargs=1;
 	break;
