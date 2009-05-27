@@ -742,19 +742,19 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
       return;
     } else {
       if (strcasecmp(retnotice->z_recipient, ""))
-      { // personal
+      { /* personal */
         tmp=short_zuser(retnotice->z_recipient);
         if(!strcasecmp(retnotice->z_class, "message") &&
            !strcasecmp(retnotice->z_class_inst, "personal")) {
           owl_function_makemsg("Message sent to %s.", tmp);
-        } else if(!strcasecmp(retnotice->z_class, "message")) { // instanced, but not classed, personal
+        } else if(!strcasecmp(retnotice->z_class, "message")) { /* instanced, but not classed, personal */
           owl_function_makemsg("Message sent to %s on -i %s\n", tmp, retnotice->z_class_inst);
-        } else { // classed personal
+        } else { /* classed personal */
           owl_function_makemsg("Message sent to %s on -c %s -i %s\n", tmp, retnotice->z_class, retnotice->z_class_inst);
         }
         free(tmp);
       } else {
-        // class / instance message
+        /* class / instance message */
           owl_function_makemsg("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
       }
     }
