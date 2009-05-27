@@ -223,7 +223,7 @@ void owl_function_adminmsg(char *header, char *body)
 }
 
 /* Create an outgoing zephyr message and return a pointer to it.  Does
- * not put it on the global queue, use owl_function_add_message() for
+ * not put it on the global queue, use owl_global_messagequeue_addmsg() for
  * that.
  */
 owl_message *owl_function_make_outgoing_zephyr(char *body, char *zwriteline, char *zsig)
@@ -245,7 +245,7 @@ owl_message *owl_function_make_outgoing_zephyr(char *body, char *zwriteline, cha
 /* Create an outgoing AIM message, returns a pointer to the created
  * message or NULL if we're not logged into AIM (and thus unable to
  * create the message).  Does not put it on the global queue.  Use
- * owl_function_add_message() for that .
+ * owl_global_messagequeue_addmsg() for that .
  */
 owl_message *owl_function_make_outgoing_aim(char *body, char *to)
 {
@@ -266,7 +266,7 @@ owl_message *owl_function_make_outgoing_aim(char *body, char *to)
 
 /* Create an outgoing loopback message and return a pointer to it.
  * Does not append it to the global queue, use
- * owl_function_add_message() for that.
+ * owl_global_messagequeue_addmsg() for that.
  */
 owl_message *owl_function_make_outgoing_loopback(char *body)
 {
