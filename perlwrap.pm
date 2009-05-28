@@ -604,13 +604,27 @@ sub pretty_recipient {
     return strip_realm($m->recipient);
 }
 
+# Portion of the reply command that preserves the context
+sub context_reply_cmd {
+    my $m = shift;
+    my $class = "";
+    if (lc($m->class) ne "message") {
+        $class = "-c " . BarnOwl::quote($m->class);
+    }
+    my $instance = "";
+    if (lc($m->instance) ne "personal") {
+        $instance = "-i " . BarnOwl::quote($m->instance);
+    }
+    if (($class eq "") or  ($instance eq "")) {
+        return $class . $instance;
+    } else {
+        return $class . " " . $instance;
+    }
+}
+
 sub personal_context {
     my ($m) = @_;
-    if (lc($m->instance) eq "personal") {
-        return "";
-    } else {
-        return "-i " . $m->instance;
-    }
+    return $m->context_reply_cmd();
 }
 
 # These are arguably zephyr-specific
@@ -680,12 +694,8 @@ sub replycmd {
         $cmd = 'zwrite';
     }
 
-    if (lc $class ne 'message') {
-        $cmd .= " -c " . BarnOwl::quote($class);
-    }
-    if (lc $instance ne 'personal') {
-        $cmd .= " -i " . BarnOwl::quote($instance);
-    }
+    my $context_part = $self->context_reply_cmd();
+    $cmd .= " " . $context_part unless ($context_part eq '');
     if ($to ne '') {
         $to = strip_realm($to);
         if (defined $cc) {
