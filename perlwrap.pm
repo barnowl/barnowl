@@ -392,6 +392,9 @@ sub pretty_recipient { return shift->recipient; }
 
 # Override if you want a context (instance, network, etc.) on personals
 sub personal_context { return ""; }
+# extra short version, for use where space is especially tight
+# (eg, the oneline style)
+sub short_personal_context { return ""; }
 
 sub delete {
     my ($m) = @_;
@@ -625,6 +628,21 @@ sub context_reply_cmd {
 sub personal_context {
     my ($m) = @_;
     return $m->context_reply_cmd();
+}
+
+sub short_personal_context {
+    my ($m) = @_;
+    if(lc($m->class) eq 'message')
+    {
+        if(lc($m->instance) eq 'personal')
+        {
+            return '';
+        } else {
+            return $m->instance;
+        }
+    } else {
+        return $m->class;
+    }
 }
 
 # These are arguably zephyr-specific
@@ -1167,10 +1185,12 @@ sub format_chat
 
   my $line;
   if ($m->is_personal) {
+
+    # Figure out what to show in the subcontext column
     $line= sprintf(BASE_FORMAT,
                    $dirsym,
                    $m->type,
-                   '',
+                   maybe($m->short_personal_context),
                    ($dir eq 'out'
                     ? $m->pretty_recipient
                     : $m->pretty_sender));
