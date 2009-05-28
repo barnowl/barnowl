@@ -70,6 +70,7 @@ sub reason {shift->{reason}}
 sub context {shift->{network};}
 sub subcontext {shift->{recipient};}
 sub personal_context {"on " . shift->{network};}
+sub short_personal_context { shift->{network};}
 
 sub long_sender {shift->{from} || ""};
 
