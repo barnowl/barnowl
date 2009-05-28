@@ -1019,7 +1019,9 @@ sub format_login {
 sub format_ping {
     my $self = shift;
     my $m = shift;
-    return "\@b(PING) from \@b(" . $m->pretty_sender . ")";
+    my $personal_context = $m->personal_context;
+    $personal_context = ' [' . $personal_context . ']' if $personal_context;
+    return "\@b(PING)" . $personal_context . " from \@b(" . $m->pretty_sender . ")";
 }
 
 sub format_admin {
