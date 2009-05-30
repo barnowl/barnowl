@@ -1,0 +1,15 @@
+#!/bin/sh
+# This is a wrapper script to point BARNOWL_DATA_DIR at the source dir
+# if we're running from a build tree. barnowl.bin is the actual built
+# binary.
+
+SRCDIR=`dirname "${0}"`
+EXE="$SRCDIR/barnowl.bin"
+
+if ! test -x "$EXE"; then
+    echo "Cannot find barnowl.bin" >&2
+    exit 1
+fi
+
+export BARNOWL_DATA_DIR="$SRCDIR/perl/"
+exec "$EXE" "$@"

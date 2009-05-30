@@ -32,7 +32,7 @@ BASE_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
 OWL_SRC = owl.c
 TESTER_SRC = tester.c
 
-EXE = barnowl
+EXE = barnowl.bin
 PERL_MODULES = Jabber IRC WordWrap
 MODULE_DIRS = $(PERL_MODULES:%=perl/modules/%)
 
