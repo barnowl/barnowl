@@ -8,6 +8,7 @@ datarootdir = @datarootdir@
 datadir = @datadir@/barnowl
 bindir = @bindir@
 mandir = @mandir@
+transform = @program_transform_name@
 
 CC=@CC@
 LIBS=@LIBS@ -L./libfaim -lfaim
@@ -128,7 +129,7 @@ libfaimdistclean:
 	(cd libfaim && $(MAKE) distclean)
 
 install: all installdirs $(PERL_MODULES:%=module_install_%)
-	${INSTALL_PROGRAM} $(EXE) ${DESTDIR}${bindir}/$(EXE)
+	${INSTALL_PROGRAM} $(EXE) ${DESTDIR}${bindir}/`echo barnowl|sed '$(transform)'`
 	${INSTALL_DATA} doc/barnowl.1 ${DESTDIR}${mandir}/man1/barnowl.1
 	(cd perl/lib && tar --exclude .svn -cf - . ) | (cd ${DESTDIR}${datadir}/lib && tar -xf - )
 

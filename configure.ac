@@ -124,8 +124,10 @@ CFLAGS="${GLIB_CFLAGS} ${CFLAGS}"
 AC_MSG_NOTICE([Adding glib-2.0 LDFLAGS ${GLIB_LIBS}])
 LDFLAGS="${GLIB_LIBS} ${LDFLAGS}"
 
-
 dnl Checks for typedefs, structures, and compiler characteristics.
+
+dnl Support --program-{prefix,suffix,transform}
+AC_ARG_PROGRAM
 
 AC_SUBST(XSUBPPDIR)
 AC_SUBST(XSUBPPFLAGS)
