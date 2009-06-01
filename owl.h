@@ -47,12 +47,7 @@ typedef void SV;
 
 static const char owl_h_fileIdent[] = "$Id$";
 
-#define BARNOWL_STRINGIFY(x) _STRINGIFY(x)
-#define _STRINGIFY(x) #x
-
-#ifndef OWL_VERSION_STRING
-#define OWL_VERSION_STRING "1.1.2"
-#endif
+#define OWL_VERSION_STRING PACKAGE_VERSION
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */

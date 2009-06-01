@@ -1,15 +1,11 @@
 dnl $Id$
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(owl.c)
+AC_INIT([BarnOwl],[1.1.2],[bug-barnowl@mit.edu])
+AM_INIT_AUTOMAKE([-Wall foreign])
 
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER([config.h])
 
 AC_PROG_CC
-
-dnl If we're using GCC, enable all warnings
-if test "$GCC" = yes; then
-     CFLAGS="$CFLAGS -Wall -g";
-fi
 
 dnl Check for Athena
 AC_MSG_CHECKING(for /usr/athena/include)
@@ -124,17 +120,21 @@ CFLAGS="${GLIB_CFLAGS} ${CFLAGS}"
 AC_MSG_NOTICE([Adding glib-2.0 LDFLAGS ${GLIB_LIBS}])
 LDFLAGS="${GLIB_LIBS} ${LDFLAGS}"
 
-dnl Checks for typedefs, structures, and compiler characteristics.
+if test "x${prefix}" = "xNONE"; then
+   prefix="${ac_default_prefix}"
+fi
 
-dnl Support --program-{prefix,suffix,transform}
-AC_ARG_PROGRAM
+AC_DEFINE_UNQUOTED([DATADIR],["${prefix}/share/${PACKAGE}"],
+                   [Package data directory])
+
+dnl Checks for typedefs, structures, and compiler characteristics.
 
 AC_SUBST(XSUBPPDIR)
 AC_SUBST(XSUBPPFLAGS)
 AC_SUBST(ATHSTATIC)
 
 AC_PROG_INSTALL
+AC_PROG_RANLIB
 
-AC_CONFIG_SUBDIRS(libfaim)
-
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile libfaim/Makefile])
+AC_OUTPUT([perl/modules/Makefile])

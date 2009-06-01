@@ -3,8 +3,11 @@
 *.par
 *~
 .#*
+.deps
 META.yml
 Makefile
+/Makefile.in
+/libfaim/Makefile.in
 Makefile.old
 TAGS
 \#*#
@@ -19,11 +22,15 @@ config.log
 config.status
 configure
 core
+depcomp
+install-sh
 jabber.log
+missing
 owl_prototypes.h
 owl_prototypes.h.new
 perlglue.c
 perlwrap.c
 pm_to_blib
+stamp-h1
 tester
 varstubs.c
