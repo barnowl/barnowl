@@ -228,7 +228,6 @@ int main(int argc, char **argv, char **env)
   perlerr=owl_perlconfig_initperl(configfile, &argc, &argv, &env);
   if (perlerr) {
     endwin();
-    owl_function_error("Internal perl error: %s\n", perlerr);
     fprintf(stderr, "Internal perl error: %s\n", perlerr);
     fflush(stderr);
     printf("Internal perl error: %s\n", perlerr);
