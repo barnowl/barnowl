@@ -28,6 +28,8 @@ BEGIN {
 use lib(get_data_dir() . "/lib");
 use lib(get_config_dir() . "/lib");
 
+push @AnyEvent::REGISTRY, [BarnOwl => BarnOwl::AnyEvent::];
+
 use BarnOwl::Hook;
 use BarnOwl::Hooks;
 use BarnOwl::Message;
