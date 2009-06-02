@@ -9,8 +9,6 @@
 
 static const char fileIdent[] = "$Id$";
 
-extern char *owl_perlwrap_codebuff;
-
 extern XS(boot_BarnOwl);
 extern XS(boot_DynaLoader);
 /* extern XS(boot_DBI); */
@@ -303,6 +301,8 @@ char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** P
   PerlInterpreter *p;
   char *err;
   char *args[4] = {"", "-e", "0;", NULL};
+  AV *inc;
+  char *path;
 
   /* create and initialize interpreter */
   PERL_SYS_INIT3(Pargc, Pargv, Penv);
@@ -347,7 +347,14 @@ char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** P
     sv_setpv(cfg, file);
   }
 
-  eval_pv(owl_perlwrap_codebuff, FALSE);
+  /* Add the system lib path to @INC */
+  inc = get_av("INC", 0);
+  path = owl_sprintf("%s/lib", owl_get_datadir());
+  av_unshift(inc, 1);
+  av_store(inc, 0, newSVpv(path, 0));
+  owl_free(path);
+
+  eval_pv("use BarnOwl;", FALSE);
 
   if (SvTRUE(ERRSV)) {
     err=owl_strdup(SvPV_nolen(ERRSV));

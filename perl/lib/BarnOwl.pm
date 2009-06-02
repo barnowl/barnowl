@@ -3,6 +3,21 @@ use warnings;
 
 package BarnOwl;
 
+BEGIN {
+# bootstrap in C bindings and glue
+    *owl:: = \*BarnOwl::;
+    bootstrap BarnOwl 1.2;
+};
+
+use lib(get_data_dir() . "/lib");
+use lib(get_config_dir() . "/lib");
+
+use BarnOwl::Hook;
+use BarnOwl::Hooks;
+use BarnOwl::Message;
+use BarnOwl::Style;
+use BarnOwl::Timer;
+
 =head1 NAME
 
 BarnOwl
@@ -135,16 +150,6 @@ which accepts a C<BarnOwl::Message> object and returns a string that
 is the result of formatting the message for display.
 
 =cut
-
-
-BEGIN {
-# bootstrap in C bindings and glue
-    *owl:: = \*BarnOwl::;
-    bootstrap BarnOwl 1.2;
-};
-
-use lib(get_data_dir() . "/lib");
-use lib(get_config_dir() . "/lib");
 
 # perlconfig.c will set this to the value of the -c command-line
 # switch, if present.

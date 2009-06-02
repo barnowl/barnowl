@@ -3,6 +3,11 @@ use warnings;
 
 package BarnOwl::Style;
 
+use BarnOwl::Style::Basic;
+use BarnOwl::Style::Default;
+use BarnOwl::Style::Legacy;
+use BarnOwl::Style::OneLine;
+
 # This takes a zephyr to be displayed and modifies it to be displayed
 # entirely in bold.
 sub boldify

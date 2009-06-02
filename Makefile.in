@@ -38,7 +38,7 @@ MODULE_DIRS = $(PERL_MODULES:%=perl/modules/%)
 
 BASE_OBJS = $(BASE_SRCS:.c=.o)
 
-GEN_C = varstubs.c perlglue.c perlwrap.c
+GEN_C = varstubs.c perlglue.c
 GEN_H = owl_prototypes.h 
 GEN_O = $(GEN_C:.c=.o)
 
@@ -95,9 +95,6 @@ perlglue.c: perlglue.xs Makefile
 
 varstubs.c: variable.c stubgen.pl
 	perl stubgen.pl > varstubs.c
-
-perlwrap.c: perlwrap.pm encapsulate.pl
-	perl encapsulate.pl perlwrap.pm owl_perlwrap_codebuff > perlwrap.c
 
 # Only move owl_prototypes.h into place if the new one is different
 owl_prototypes.h: codelist.pl varstubs.c $(BASE_SRCS)

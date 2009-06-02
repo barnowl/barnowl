@@ -16,15 +16,15 @@ SV *owl_perlconfig_curmessage2hashref(void);
 	 * NOTE
 	 *************************************************************
 	 * These functions, when they are intended to be user-visible,
-	 * are documented in perlwrap.pm. If you add functions to this
-	 * file, add the appropriate documentation there!
+	 * are documented in perl/lib/BarnOwl.pm. If you add functions
+	 * to this file, add the appropriate documentation there!
 	 *
 	 * If the function is simple enough, we simply define its
 	 * entire functionality here in XS. If, however, it needs
 	 * complex argument processing or something, we define a
 	 * simple version here that takes arguments in as flat a
 	 * manner as possible, to simplify the XS code, put it in
-	 * BarnOwl::Intenal::, and write a perl wrapper in perlwrap.pm
+	 * BarnOwl::Intenal::, and write a perl wrapper in BarnOwl.pm
 	 * that munges the arguments as appropriate and calls the
 	 * internal version.
 	 */

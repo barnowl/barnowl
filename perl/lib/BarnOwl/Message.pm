@@ -3,6 +3,12 @@ use warnings;
 
 package BarnOwl::Message;
 
+use BarnOwl::Message::Admin;
+use BarnOwl::Message::AIM;
+use BarnOwl::Message::Generic;
+use BarnOwl::Message::Loopback;
+use BarnOwl::Message::Zephyr;
+
 sub new {
     my $class = shift;
     my %args = (@_);
