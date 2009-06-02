@@ -80,14 +80,15 @@ sub pretty_recipient {
 
 # Portion of the reply command that preserves the context
 sub context_reply_cmd {
-    my $m = shift;
+    my $mclass = shift;
+    my $minstance = shift;
     my $class = "";
-    if (lc($m->class) ne "message") {
-        $class = "-c " . BarnOwl::quote($m->class);
+    if (lc($mclass) ne "message") {
+        $class = "-c " . BarnOwl::quote($mclass);
     }
     my $instance = "";
-    if (lc($m->instance) ne "personal") {
-        $instance = "-i " . BarnOwl::quote($m->instance);
+    if (lc($minstance) ne "personal") {
+        $instance = "-i " . BarnOwl::quote($minstance);
     }
     if (($class eq "") or  ($instance eq "")) {
         return $class . $instance;
@@ -98,7 +99,7 @@ sub context_reply_cmd {
 
 sub personal_context {
     my ($m) = @_;
-    return $m->context_reply_cmd();
+    return context_reply_cmd($m->class, $m->instance);
 }
 
 sub short_personal_context {
@@ -183,7 +184,7 @@ sub replycmd {
         $cmd = 'zwrite';
     }
 
-    my $context_part = $self->context_reply_cmd();
+    my $context_part = context_reply_cmd($class, $instance);
     $cmd .= " " . $context_part unless ($context_part eq '');
     if ($to ne '') {
         $to = strip_realm($to);
