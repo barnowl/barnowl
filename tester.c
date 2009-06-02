@@ -6,11 +6,11 @@ static const char fileIdent[] = "$Id$";
 
 owl_global g;
 
-#define OWL_DICT_NTESTS  20
-#define OWL_UTIL_NTESTS  9
-#define OWL_OBARRAY_NTESTS  5
-#define OWL_VARIABLE_NTESTS  52
-#define OWL_FILTER_NTESTS  23
+#define OWL_UTIL_NTESTS  6
+#define OWL_DICT_NTESTS  19
+#define OWL_OBARRAY_NTESTS  6
+#define OWL_VARIABLE_NTESTS  36
+#define OWL_FILTER_NTESTS  24
 
 int main(int argc, char **argv, char **env)
 {
