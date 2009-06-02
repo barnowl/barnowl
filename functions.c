@@ -1004,7 +1004,8 @@ void owl_function_quit()
   char *ret;
   
   /* zlog out if we need to */
-  if (owl_global_is_shutdownlogout(&g)) {
+  if (owl_global_is_havezephyr(&g) &&
+      owl_global_is_shutdownlogout(&g)) {
     owl_zephyr_zlog_out();
   }
 
