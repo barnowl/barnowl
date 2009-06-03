@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 package BarnOwl::Style::Basic;
-our @ISA=qw(BarnOwl::Style::Default);
+use lib qw(BarnOwl::Style::Default);
 
 sub description {"Compatability alias for the default style";}
 

@@ -3,7 +3,7 @@ use warnings;
 
 package BarnOwl::Style::OneLine;
 # Inherit format_message to dispatch
-our @ISA = qw(BarnOwl::Style::Default);
+use base qw(BarnOwl::Style::Default);
 
 use constant BASE_FORMAT => '%s %-13.13s %-11.11s %-12.12s ';
 
