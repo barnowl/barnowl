@@ -134,19 +134,11 @@ int owl_editwin_limit_maxcols(int v, int maxv)
  */
 void owl_editwin_set_locktext(owl_editwin *e, char *text)
 {
-  
-  int x, y;
-
-  x=e->buffx;
-  y=e->buffy;
   e->buffx=0;
   e->buffy=0;
   owl_editwin_overwrite_string(e, text);
   owl_editwin_overwrite_char(e, '\0');
   e->lock=strlen(text);
-  /* if (text[e->lock-1]=='\n') e->lock--; */
-  /*  e->buffx=x; */
-  /*  e->buffy=y; */
   _owl_editwin_set_xy_by_index(e, e->lock);
   owl_editwin_redisplay(e, 0);
 }
@@ -354,14 +346,10 @@ void _owl_editwin_insert_bytes(owl_editwin *e, int n) /*noproto*/
  */
 int _owl_editwin_linewrap_word(owl_editwin *e)
 {
-  int x, y;
   int i;
   char *ptr1, *start;
   gunichar c;
 
-  /* saving values */
-  x = e->buffx;
-  y = e->buffy;
   start = e->buff + e->lock;
 
   ptr1 = e->buff + _owl_editwin_get_index_from_xy(e);
