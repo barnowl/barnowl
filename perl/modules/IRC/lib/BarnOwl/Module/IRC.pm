@@ -59,7 +59,7 @@ sub startup {
     
     register_commands();
     register_handlers();
-    BarnOwl::filter('irc type ^IRC$');
+    BarnOwl::filter('irc type ^IRC$ or ( type ^admin$ and adminheader ^IRC$ )');
 }
 
 sub shutdown {
