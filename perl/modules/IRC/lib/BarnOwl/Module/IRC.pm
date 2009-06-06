@@ -374,6 +374,7 @@ sub cmd_disconnect {
     my $conn = shift;
     $conn->conn->disconnect;
     delete $ircnets{$conn->alias};
+    return;
 }
 
 sub cmd_msg {
@@ -386,6 +387,7 @@ sub cmd_msg {
     } else {
         BarnOwl::start_edit_win("/msg -a " . $conn->alias . " $to", sub {process_msg($conn, $to, @_)});
     }
+    return;
 }
 
 sub process_msg {
@@ -414,6 +416,7 @@ sub process_msg {
         replysendercmd => "irc-msg -a " . $conn->alias . " $to"
        );
     BarnOwl::queue_message($msg);
+    return;
 }
 
 sub cmd_mode {
@@ -422,6 +425,7 @@ sub cmd_mode {
     my $target = shift;
     $target ||= shift;
     $conn->conn->mode($target, @_);
+    return;
 }
 
 sub cmd_join {
@@ -431,6 +435,7 @@ sub cmd_join {
     $channels{$chan} ||= [];
     push @{$channels{$chan}}, $conn;
     $conn->conn->join($chan, @_);
+    return;
 }
 
 sub cmd_part {
@@ -439,6 +444,7 @@ sub cmd_part {
     my $chan = shift;
     $channels{$chan} = [grep {$_ ne $conn} @{$channels{$chan} || []}];
     $conn->conn->part($chan);
+    return;
 }
 
 sub cmd_nick {
@@ -446,6 +452,7 @@ sub cmd_nick {
     my $conn = shift;
     my $nick = shift or die("Usage: $cmd <new nick>\n");
     $conn->conn->nick($nick);
+    return;
 }
 
 sub cmd_names {
@@ -454,6 +461,7 @@ sub cmd_names {
     my $chan = shift;
     $conn->names_tmp([]);
     $conn->conn->names($chan);
+    return;
 }
 
 sub cmd_whois {
@@ -461,12 +469,14 @@ sub cmd_whois {
     my $conn = shift;
     my $who = shift || die("Usage: $cmd <user>\n");
     $conn->conn->whois($who);
+    return;
 }
 
 sub cmd_motd {
     my $cmd = shift;
     my $conn = shift;
     $conn->conn->motd;
+    return;
 }
 
 sub cmd_list {
@@ -476,6 +486,7 @@ sub cmd_list {
         $message .= '  ' . $alias . ' => ' . $conn->nick . '@' . $conn->server . "\n";
     }
     BarnOwl::popless_ztext($message);
+    return;
 }
 
 sub cmd_who {
@@ -484,6 +495,7 @@ sub cmd_who {
     my $who = shift || die("Usage: $cmd <user>\n");
     BarnOwl::error("WHO $cmd $conn $who");
     $conn->conn->who($who);
+    return;
 }
 
 sub cmd_stats {
@@ -491,6 +503,7 @@ sub cmd_stats {
     my $conn = shift;
     my $type = shift || die("Usage: $cmd <chiklmouy> [server] \n");
     $conn->conn->stats($type, @_);
+    return;
 }
 
 sub cmd_topic {
@@ -498,12 +511,14 @@ sub cmd_topic {
     my $conn = shift;
     my $chan = shift;
     $conn->conn->topic($chan, @_ ? join(" ", @_) : undef);
+    return;
 }
 
 sub cmd_quote {
     my $cmd = shift;
     my $conn = shift;
     $conn->conn->sl(join(" ", @_));
+    return;
 }
 
 ################################################################################
