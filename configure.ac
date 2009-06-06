@@ -63,11 +63,6 @@ dnl AC_CHECK_LIB(zephyr, ZGetSender,, AC_MSG_ERROR(No zephyr library found.))
 AC_CHECK_LIB(zephyr, ZGetSender)
 AC_CHECK_LIB(zephyr, ZInitLocationInfo, AC_DEFINE([HAVE_LIBZEPHYR_ZINITLOCATIONINFO], [], [Have ZInitLocationInfo]),)
 
-AC_ARG_ENABLE([athstatic], AS_HELP_STRING([--enable-athstatic],
-                                          [Statically link libraries in /usr/athena/lib]),
-                                          [ATHSTATIC=./athstatic],
-                                          [ATHSTATIC=])
-
 AC_CHECK_FUNCS(use_default_colors resizeterm des_string_to_key des_key_sched des_ecb_encrypt)
 AC_CHECK_FUNCS(				   DES_string_to_key  DES_ecb_encrypt DES_key_sched)
 
@@ -131,7 +126,6 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 
 AC_SUBST(XSUBPPDIR)
 AC_SUBST(XSUBPPFLAGS)
-AC_SUBST(ATHSTATIC)
 
 AC_PROG_INSTALL
 AC_PROG_RANLIB
