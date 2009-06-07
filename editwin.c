@@ -262,104 +262,72 @@ void owl_editwin_recenter(owl_editwin *e)
   e->topindex = -1;
 }
 static void owl_editwin_reframe(owl_editwin *e) { /* noproto */
-   e->topindex = 0; /*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/
+  e->topindex = 0; /*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/
 }
 
 /* regenerate the text on the curses window */
 /* if update == 1 then do a doupdate(), otherwise do not */
 void owl_editwin_redisplay(owl_editwin *e, int update)
 {
-  int x = 0, y = 0;
-  char *ptop, *ptr2, *pbot, *buff;
-  char *target;
-  int i;
+  int x = -1, y = -1;  char *p;
+  int width, line, index, lineindex, cw;
+  gunichar c;
 
   werase(e->curswin);
-  wmove(e->curswin, 0, 0);
 
-  if (e->topindex < 0 || e->index < e->topindex)
-    owl_editwin_reframe(e);
-
-  ptop = e->buff + e->topindex;
-  target = e->buff + e->index;
-
-  /* find the ending point and store it in pbot */
-  ptr2 = ptop;
-  pbot = ptop;
-  for (i = 0; i < e->winlines; i++) {
-    pbot = strchr(ptr2, '\n');
-    if (!pbot) {
-      /* we've hit the last line */
-      /* print everything to the end */
-      pbot = e->buff + e->bufflen - 1;
-      pbot--;
-      break;
-    }
-    ptr2 = pbot + 1;
-  }
-  pbot += 2;
-
-  buff = owl_malloc(pbot - ptop + 50);
-  strncpy(buff, ptop, pbot - ptop);
-  buff[pbot - ptop] = '\0';
-  if (e->echochar == '\0') {
-    waddstr(e->curswin, buff);
-  } else {
-    /* translate to echochar, *except* for the locktext */
-    int len;
-    int dolocklen = e->lock - (ptop - e->buff);
-    char *locktext;
-    char tmp = e->buff[dolocklen];
-
-    e->buff[dolocklen] = '\0';
-    locktext = owl_strdup(e->buff);
-    e->buff[dolocklen] = tmp;
-
-    waddstr(e->curswin, locktext);
+  do {
+    if (e->topindex == -1 || e->index < e->topindex)
+      owl_editwin_reframe(e);
     
-    len = strlen(buff);
-    for (i = 0; i < len-dolocklen; i++) {
-      waddch(e->curswin, e->echochar);
+    line = 0;
+    index = e->topindex;
+    while(line < e->winlines) {
+      width = 0;
+      lineindex = index;
+      /* okay, we want to find no nore that e->wincols cells or a \n */
+      /* then waddnstr it */
+      /* and as a side effect, noting where the cursor should end up */
+      while(1) {
+	c = g_utf8_get_char(e->buff + index);
+	if (index == e->index)
+	  y = line, x = width;
+	if (c == 9) /* TAB */
+	  cw = 8 - width % 8;
+	else
+	  cw = mk_wcwidth(c);
+	if (width + cw > e->wincols)
+	  break;
+	width += cw;
+	p = g_utf8_find_next_char(e->buff + index, e->buff + e->bufflen);
+	if (p == NULL) /* we ran off the end */
+	  break;
+	index = p - e->buff;
+	if (c == '\n')
+	  break;
+      }
+      if (index - lineindex)
+	mvwaddnstr(e->curswin, line, 0,
+		   e->buff + lineindex,
+		   index - lineindex);
+      if (p == NULL)
+	break;
+      line++;
     }
-  }
-  { /* locates the point */
-    char *ptr1, *ptr2;
-    gunichar c;
-
-    ptr1 = ptop;
-    /* target sanitizing */
-    if ((target[0] & 0x80) && (~target[0] & 0x40)) {
-      /* middle of a utf-8 character, back up to previous character. */
-      target = g_utf8_find_prev_char(e->buff, target);
+    if (x == -1) {
+      if (p == NULL && c != '\n')
+	y = line, x = width;
+      else if (p == NULL)
+	y = line + 1, x = 0;
+      else
+	e->topindex = -1; /* force a reframe */
     }
-    c = g_utf8_get_char(target);
-    while (g_unichar_ismark(c) && target > e->buff) {
-      /* Adjust the target off of combining characters and the like. */
-      target = g_utf8_find_prev_char(e->buff, target);
-      c = g_utf8_get_char(target);
-    }
-    /* If we start with a mark, something is wrong.*/
-    if (g_unichar_ismark(c)) return;
-    
-    /* Now our target should be acceptable. */
-    ptr2 = strchr(ptr1, '\n');
-    while (ptr2 != NULL && ptr2 < target) {
-      ++y;
-      ptr1 = ptr2 + 1;
-      ptr2 = strchr(ptr1, '\n');
-    }
-    ptr2 = ptr1;
-    while (ptr2 != NULL && ptr2 < target) {
-      c = g_utf8_get_char(ptr2);
-      x += mk_wcwidth(c);
-      ptr2 = g_utf8_next_char(ptr2);
-    }
-  }
-  wmove(e->curswin, y, x);
+  } while(x == -1);
+  
+  if (x != -1)
+    wmove(e->curswin, y, x);
   wnoutrefresh(e->curswin);
   if (update == 1)
     doupdate();
-  owl_free(buff);
 }
 
 /* Remove n bytes at cursor. */
@@ -673,12 +641,12 @@ void owl_editwin_adjust_for_locktext(owl_editwin *e)
 int owl_editwin_point_move(owl_editwin *e, int delta) /*noproto*/
 {
   char *p, *boundary;
-  int change, d = 0;
+  int change, index, d = 0;
 
   change = MAX(delta, - delta);
   p = e->buff + e->index;
 
-  boundary = e->buff + (delta > 0 ? e->bufflen : e->lock);
+  boundary = e->buff + (delta > 0 ? (e->bufflen + 1) : e->lock);
 
   while (d < change && p != NULL) {
     if (delta > 0) {
@@ -690,9 +658,14 @@ int owl_editwin_point_move(owl_editwin *e, int delta) /*noproto*/
       while (p && g_unichar_ismark(g_utf8_get_char(p)))
 	p = g_utf8_find_prev_char(boundary, p);
     }
-    if (p != NULL) {
-      e->index = p - e->buff;
-      d++;
+    if (p != NULL) { 
+      index = p - e->buff;
+      if (index != e->index) { /* XXX rethink the loop termination condition
+				  above */
+	e->index = index;
+	d++;
+      } else
+	break;
     }
   }
 
@@ -1080,7 +1053,7 @@ void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
 
 void _owl_editwin_process_char(owl_editwin *e, gunichar j)
 {
-  if (!(g_unichar_iscntrl(j) && (j != 10) && (j != 13))) {
+  if (!(g_unichar_iscntrl(j) && (j != 10) && (j != 13)) || j==9 ) {
     owl_editwin_insert_char(e, j);
   }
 }
