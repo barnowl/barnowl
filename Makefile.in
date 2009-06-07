@@ -99,7 +99,7 @@ varstubs.c: variable.c stubgen.pl
 # Only move owl_prototypes.h into place if the new one is different
 owl_prototypes.h: codelist.pl varstubs.c $(BASE_SRCS)
 	perl codelist.pl > owl_prototypes.h.new
-	@cmp -s owl_prototypes.h.new $@ || { \
+	@diff -U0 $@ owl_prototypes.h.new || { \
 	 test -f $@ && echo 'Interfaces changed!'; \
 	 echo mv -f owl_prototypes.h.new $@; \
 	      mv -f owl_prototypes.h.new $@; }
