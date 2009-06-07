@@ -290,6 +290,49 @@ static inline char *oe_prev_point(owl_editwin *e, char *p)
   return p;
 }
 
+static int oe_find_display_line(owl_editwin *e, int *x, int index)
+{
+  int width = 0, cw;
+  gunichar c = -1;
+  char *p;
+
+  while(1) {
+    /* are we at the point? */
+    if (x != NULL && index == e->index)
+      *x = width;
+
+    /* get the current character */
+    c = g_utf8_get_char(e->buff + index);
+
+    /* figure out how wide it is */
+    if (c == 9) /* TAB */
+      cw = TABSIZE - width % TABSIZE;
+    else
+      cw = mk_wcwidth(c);
+    if (cw < 0) /* control characters */
+	cw = 0;
+
+    if (width + cw > e->wincols)
+      break;
+    width += cw;
+
+    if (c == '\n') {
+      ++index; /* skip the newline */
+      break;
+    }
+
+    /* find the next character */
+    p = oe_next_point(e, e->buff + index);
+    if (p == NULL) { /* we ran off the end */
+      if (x != NULL && e->index > index)
+	*x = width + 1;
+      break;
+    }
+    index = p - e->buff;
+  }
+  return index;
+}
+
 static void oe_reframe(owl_editwin *e) {
   e->topindex = 0; /*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/
 }
@@ -298,9 +341,8 @@ static void oe_reframe(owl_editwin *e) {
 /* if update == 1 then do a doupdate(), otherwise do not */
 void owl_editwin_redisplay(owl_editwin *e, int update)
 {
-  int x = -1, y = -1;  char *p;
-  int width, line, index, lineindex, cw;
-  gunichar c;
+  int x = -1, y = -1, t;
+  int line, index, lineindex;
 
   werase(e->curswin);
 
@@ -311,49 +353,22 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
     line = 0;
     index = e->topindex;
     while(line < e->winlines) {
-      width = 0;
       lineindex = index;
-      /* okay, we want to find no nore that e->wincols cells or a \n */
-      /* then waddnstr it */
-      /* and as a side effect, noting where the cursor should end up */
-      while(1) {
-	c = g_utf8_get_char(e->buff + index);
-	if (index == e->index)
-	  y = line, x = width;
-	if (c == 9) /* TAB */
-	  cw = 8 - width % 8;
-	else
-	  cw = mk_wcwidth(c);
-	if (width + cw > e->wincols)
-	  break;
-	width += cw;
-	p = oe_next_point(e, e->buff + index);
-	if (p == NULL) /* we ran off the end */
-	  break;
-	index = p - e->buff;
-	if (c == '\n')
-	  break;
-      }
+      t = -1;
+      index = oe_find_display_line(e, &t, lineindex);
+      if (x == -1 && t != -1)
+	x = t, y = line;
       if (index - lineindex)
 	mvwaddnstr(e->curswin, line, 0,
 		   e->buff + lineindex,
 		   index - lineindex);
-      if (p == NULL)
-	break;
       line++;
     }
-    if (x == -1) {
-      if (p == NULL && c != '\n')
-	y = line, x = width;
-      else if (p == NULL)
-	y = line + 1, x = 0;
-      else
+    if (x == -1)
 	e->topindex = -1; /* force a reframe */
-    }
   } while(x == -1);
 
-  if (x != -1)
-    wmove(e->curswin, y, x);
+  wmove(e->curswin, y, x);
   wnoutrefresh(e->curswin);
   if (update == 1)
     doupdate();
@@ -667,7 +682,7 @@ void owl_editwin_adjust_for_locktext(owl_editwin *e)
 int owl_editwin_point_move(owl_editwin *e, int delta)
 {
   char *p;
-  int change, index, d = 0;
+  int change, d = 0;
 
   change = MAX(delta, - delta);
   p = e->buff + e->index;
