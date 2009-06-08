@@ -343,12 +343,49 @@ static int oe_find_display_line(owl_editwin *e, int *x, int index)
       break;
     }
     index = p - e->buff;
+
+    /* note the position of the dot */
+    if (x != NULL && index == e->index)
+      *x = width;
   }
   return index;
 }
 
 static void oe_reframe(owl_editwin *e) {
-  e->topindex = 0; /*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/
+  oe_excursion x;
+  int goal = e->winlines / 2;
+  int index;
+  int count = 0;
+  int point;
+  int n, i;
+  int last;
+
+  oe_save_excursion(e, &x);
+  /* step back line-by-line through the buffer until we have >= goal lines of
+     display text */
+  e->lock = 0; /* we can (must) tread on the locktext */
+
+  point = e->index;
+  last = -1;
+  while (count < goal) {
+    index = e->index;
+    owl_editwin_move_to_beginning_of_line(e);
+    if (last == e->index)
+      break;
+    last = e->index;
+    for (n = 0, i = e->index; i < index; n++)
+      i = oe_find_display_line(e, NULL, i);
+    count += n == 0 ? 1 : n;
+    if (count < goal)
+      owl_editwin_point_move(e, -1);
+  }
+  /* if we overshot, backtrack */
+  for (n = 0; n < (count - goal); n++)
+    e->index = oe_find_display_line(e, NULL, e->index);
+
+  e->topindex = e->index;
+
+  oe_restore_excursion(e, &x);
 }
 
 /* regenerate the text on the curses window */
@@ -358,9 +395,9 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
   int x = -1, y = -1, t;
   int line, index, lineindex;
 
-  werase(e->curswin);
-
   do {
+    werase(e->curswin);
+
     if (e->topindex == -1 || e->index < e->topindex)
       oe_reframe(e);
 
