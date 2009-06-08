@@ -790,22 +790,14 @@ int owl_editwin_move_to_end_of_line(owl_editwin *e)
 
 int owl_editwin_line_move(owl_editwin *e, int delta)
 {
-  int goal_column, change, ll, count = 0, distance = 0;
-
-  if (e->goal_column == -1) {
-    if (owl_editwin_at_beginning_of_line(e))
-      goal_column = 0;
-    else {
-      goal_column = -owl_editwin_move_if_not_in(e, -1, "\n");
-      if (!owl_editwin_at_beginning_of_buffer(e))
-	goal_column -= owl_editwin_point_move(e, 1);
-    }
-  } else
-    goal_column = e->goal_column;
+  int goal_column, change, ll, distance;
+  int count = 0;
 
   change = MAX(delta, -delta);
 
-  distance += owl_editwin_move_to_beginning_of_line(e);
+  goal_column = e->goal_column;
+  distance = owl_editwin_move_to_beginning_of_line(e);
+  goal_column = goal_column == -1 ? -distance : goal_column;
 
   while(count < change) {
     if (delta > 0) {
