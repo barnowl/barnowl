@@ -311,10 +311,11 @@ static int oe_find_display_line(owl_editwin *e, int *x, int index)
   gunichar c = -1;
   char *p;
 
-    /* are we at the point already? */
+  while(1) {
+    /* note the position of the dot */
     if (x != NULL && index == e->index)
       *x = width;
-  while(1) {
+
     /* get the current character */
     c = g_utf8_get_char(e->buff + index);
 
@@ -326,12 +327,16 @@ static int oe_find_display_line(owl_editwin *e, int *x, int index)
     if (cw < 0) /* control characters */
 	cw = 0;
 
-    if (width + cw > e->wincols)
+    if (width + cw > e->wincols) {
+      if (x != NULL && *x == width)
+	*x = -1;
       break;
+    }
     width += cw;
 
     if (c == '\n') {
-      ++index; /* skip the newline */
+      if (width < e->wincols)
+	++index; /* skip the newline */
       break;
     }
 
@@ -344,9 +349,6 @@ static int oe_find_display_line(owl_editwin *e, int *x, int index)
     }
     index = p - e->buff;
 
-    /* note the position of the dot */
-    if (x != NULL && index == e->index)
-      *x = width;
   }
   return index;
 }
@@ -393,7 +395,7 @@ static void oe_reframe(owl_editwin *e) {
 void owl_editwin_redisplay(owl_editwin *e, int update)
 {
   int x = -1, y = -1, t;
-  int line, index, lineindex;
+  int line, index, lineindex, times = 0;
 
   do {
     werase(e->curswin);
@@ -417,7 +419,8 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
     }
     if (x == -1)
 	e->topindex = -1; /* force a reframe */
-  } while(x == -1);
+    times++;
+  } while(x == -1 && times < 3);
 
   wmove(e->curswin, y, x);
   wnoutrefresh(e->curswin);
@@ -818,6 +821,7 @@ int owl_editwin_move_to_beginning_of_line(owl_editwin *e)
     if (distance && !owl_editwin_at_beginning_of_buffer(e))
       distance += owl_editwin_point_move(e, 1);
   }
+  e->goal_column = 0; /* subtleties */
 
   return distance;
 }
@@ -973,7 +977,10 @@ void owl_editwin_delete_to_endofline(owl_editwin *e)
   owl_editwin_move_to_line_end(e);
   end = e->index;
   oe_restore_excursion(e, &x);
-  _owl_editwin_remove_bytes(e, end - e->index);
+  if (end - e->index)
+    _owl_editwin_remove_bytes(e, end - e->index);
+  else if (end < e->bufflen)
+    _owl_editwin_remove_bytes(e, 1);
 }
 
 void owl_editwin_move_to_line_start(owl_editwin *e)
