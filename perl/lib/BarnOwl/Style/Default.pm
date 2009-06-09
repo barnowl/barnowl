@@ -2,6 +2,8 @@ use strict;
 use warnings;
 
 package BarnOwl::Style::Default;
+use POSIX qw(strftime);
+
 ################################################################################
 # Branching point for various formatting functions in this style.
 ################################################################################
@@ -39,8 +41,7 @@ BarnOwl::create_style("default", "BarnOwl::Style::Default");
 sub format_time {
     my $self = shift;
     my $m = shift;
-    my ($time) = $m->time =~ /(\d\d:\d\d)/;
-    return $time;
+    return strftime('%H:%M', localtime($m->unix_time));
 }
 
 sub format_login {
