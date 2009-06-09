@@ -86,6 +86,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
     MSG2H(h, header); 
   }
   (void)hv_store(h, "time", strlen("time"), newSVpv(owl_message_get_timestr(m),0),0);
+  (void)hv_store(h, "unix_time", strlen("unix_time"), newSViv(m->time), 0);
   (void)hv_store(h, "id", strlen("id"), newSViv(owl_message_get_id(m)),0);
   (void)hv_store(h, "deleted", strlen("deleted"), newSViv(owl_message_is_delete(m)),0);
   (void)hv_store(h, "private", strlen("private"), newSViv(owl_message_is_private(m)),0);

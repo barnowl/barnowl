@@ -21,6 +21,7 @@ sub new {
 sub type        { return shift->{"type"}; }
 sub direction   { return shift->{"direction"}; }
 sub time        { return shift->{"time"}; }
+sub unix_time   { return shift->{"unix_time"}; }
 sub id          { return shift->{"id"}; }
 sub body        { return shift->{"body"}; }
 sub sender      { return shift->{"sender"}; }
