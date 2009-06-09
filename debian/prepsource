@@ -1,0 +1,20 @@
+#!/bin/sh 
+set -e
+if [ $# -lt 2 ]; then
+echo Usage: $0 tarfile merge_tag upstream_tag
+exit 2
+fi
+tarfile=$1
+merge_tag=$2
+upstream_tag=$3
+dir=$( basename $(tar tzf $tarfile |head -1 ) )
+tar xzf $tarfile
+git add $dir
+tree=$( git write-tree --prefix=${dir}/ )
+commit=$( echo "Merge in $merge_tag to upstream by unpacking $tarfile."  | \
+    git commit-tree $tree -p upstream -p $( git rev-list -n1  $merge_tag )  )
+
+git branch -f upstream $commit
+git tag $upstream_tag $commit
+git rm -q -r -f $dir
+
