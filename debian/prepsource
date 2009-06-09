@@ -9,7 +9,7 @@ merge_tag=$2
 upstream_tag=$3
 dir=$( basename $(tar tzf $tarfile |head -1 ) )
 tar xzf $tarfile
-git add $dir
+git add -f $dir
 tree=$( git write-tree --prefix=${dir}/ )
 commit=$( echo "Merge in $merge_tag to upstream by unpacking $tarfile."  | \
     git commit-tree $tree -p upstream -p $( git rev-list -n1  $merge_tag )  )
