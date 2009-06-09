@@ -1,0 +1,42 @@
+#!/bin/sh -e
+
+die() {
+    echo "$@" >&2
+    exit 1
+}
+
+VERS=$(perl -lne 'print $1 if m{^#define\s+OWL_VERSION_STRING\s+"([^"]+)"\s*$}' owl.h) \
+    || die "Unable to parse barnowl version"
+TAG=barnowl-$VERS
+TGZ="$TAG-src"
+
+if git cat-file -t "$TAG" > /dev/null 2>&1; then
+    die "Error: Object $TAG already exists."
+fi
+
+exittrap() { :; }
+for sig in 1 2 13 15; do trap "exit $(($sig + 128))" $sig; done
+trap 'exittrap' EXIT
+
+git tag -s -m "BarnOwl $VERS" "$TAG"
+
+TMPDIR=$(mktemp -d /tmp/barnowl.XXXXXX)
+
+exittrap() { rm -rf "$TMPDIR"; }
+
+git archive --format=tar --prefix="$TGZ/" "$TAG" | tar -x -C "$TMPDIR"
+
+CODIR=$(pwd)
+cd "$TMPDIR/$TGZ"
+autoreconf
+cd "$TMPDIR"
+tar czvf "$TGZ.tgz" "$TGZ"
+cd "$CODIR"
+
+mv "$TMPDIR/$TGZ.tgz" .
+rm -rf "$TMPDIR"
+
+exittrap() { :; }
+
+echo "Created release tarball for BarnOwl $VERS in $(pwd)"
+echo "Remember to bump OWL_VERSION_STRING for future development."

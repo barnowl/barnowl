@@ -9,12 +9,13 @@
 static const char fileIdent[] = "$Id$";
 
 static GList *deferred_subs = NULL;
+
+#ifdef HAVE_LIBZEPHYR
 typedef struct _owl_sub_list {                            /* noproto */
   ZSubscription_t *subs;
   int nsubs;
 } owl_sub_list;
 
-#ifdef HAVE_LIBZEPHYR
 Code_t ZResetAuthentication();
 #endif
 
@@ -114,6 +115,12 @@ void owl_zephyr_finish_initialization(owl_dispatch *d) {
     deferred_subs = g_list_delete_link(deferred_subs, deferred_subs);
     owl_free(subs);
   }
+
+  /* zlog in if we need to */
+  if (owl_global_is_startuplogin(&g)) {
+    owl_function_debugmsg("startup: doing zlog in");
+    owl_zephyr_zlog_in();
+  }
 }
 
 void owl_zephyr_load_initial_subs() {
@@ -190,7 +197,7 @@ char *owl_zephyr_get_sender()
 #ifdef HAVE_LIBZEPHYR
 int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
 {
-  int ret;
+  int ret = 0;
   if (owl_global_is_havezephyr(&g)) {
     int i;
     /* sub without defaults */

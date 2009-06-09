@@ -94,7 +94,9 @@ static owl_filterelement * owl_filter_parse_primitive_expression(int argc, char 
     } else if(!strcasecmp(*argv, "perl")) {
       owl_filterelement_create_perl(fe, *(argv+1));
     } else {
-      owl_filterelement_create_re(fe, *argv, *(argv+1));
+      if(owl_filterelement_create_re(fe, *argv, *(argv+1))) {
+        goto err;
+      }
     }
     i += 2;
   }

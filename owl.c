@@ -340,12 +340,6 @@ int main(int argc, char **argv, char **env)
     owl_global_set_default_style(&g, "default");
   }
 
-  /* zlog in if we need to */
-  if (owl_global_is_startuplogin(&g)) {
-    owl_function_debugmsg("startup: doing zlog in");
-    owl_zephyr_zlog_in();
-  }
-
   owl_function_debugmsg("startup: set style for the view: %s", owl_global_get_default_style(&g));
   s = owl_global_get_style_by_name(&g, owl_global_get_default_style(&g));
   if(s)
@@ -454,6 +448,11 @@ int main(int argc, char **argv, char **env)
       doupdate();
       owl_global_set_noneedrefresh(&g);
     }
+
+    /* Some calls into libzephyr call Z_WaitForNotice(), which has its
+     * own select loop and may leave zephyrs on the queue. Check for
+     * them now, and process any we find. */
+    owl_zephyr_process_events(NULL);
 
     /* select on FDs we know about. */
     owl_select();
