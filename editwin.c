@@ -1133,35 +1133,6 @@ char *owl_editwin_get_text(owl_editwin *e)
   return(e->buff+e->lock);
 }
 
-int owl_editwin_get_numchars_on_line(owl_editwin *e, int line)
-{
-  int i;
-  char *ptr1, *ptr2;
-
-  if (e->bufflen==0) return(0);
-
-  /* first go to the yth line */
-  ptr1=e->buff;
-  for (i=0; i<line; i++) {
-    ptr2=strchr(ptr1, '\n');
-    if (!ptr2) {
-      /* we're already on the last line */
-      return(0);
-    }
-    ptr1=ptr2+1;
-  }
-
-  /* now count characters */
-  i = 0;
-  ptr2 = ptr1;
-  while (ptr2 - e->buff < e->bufflen
-	 && *ptr2 != '\n') {
-    ++i;
-    ptr2 = g_utf8_next_char(ptr2);
-  }
-  return i;
-}
-
 int owl_editwin_get_numlines(owl_editwin *e)
 {
   return(owl_text_num_lines(e->buff));
