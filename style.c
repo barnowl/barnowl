@@ -50,7 +50,7 @@ void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, owl_message *m)
   /* Call the perl object */
   OWL_PERL_CALL_METHOD(s->perlobj,
                        "format_message",
-                       XPUSHs(owl_perlconfig_message2hashref(m));,
+                       XPUSHs(sv_2mortal(owl_perlconfig_message2hashref(m)));,
                        "Error in format_message: %s",
                        0,
                        sv = SvREFCNT_inc(POPs);
@@ -76,7 +76,7 @@ void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, owl_message *m)
 
   owl_free(indent);
   if(sv)
-    SvREFCNT_dec(body);
+    SvREFCNT_dec(sv);
 }
 
 int owl_style_validate(owl_style *s) {

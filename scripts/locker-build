@@ -1,0 +1,114 @@
+#!/bin/sh
+
+#########################################################
+# Build script to build BarnOwl for the locker.
+
+# Usage: locker-build [-n] [-o OUTPUT-TGZ] VERSION SOURCE-TARBALL
+# -n is a dry-run, and drops to a shell in the build directory
+# -o does the install into a temporary directory and tars it into the
+#    specified tarball instead.
+# SOURCE-TARBALL is a source tarball, created by do-release
+# VERSION should be of the form 'barnowl-VERSION'
+#
+# TODO: Scrape $VERSION from the tarball
+
+die() {
+      echo "$@" 2>&1;
+      exit 1;
+}
+
+usage () {
+    echo "Usage: $0 [-n] [-o OUTPUT-TGZ] VERSION SOURCE-TARBALL"
+    exit 2;
+}
+
+exittrap() { :; }
+for sig in 1 2 13 15; do trap "exit $(($sig + 128))" $sig; done
+trap 'exittrap' EXIT
+
+SRC_TGZ=
+OUT_TGZ=
+DRYRUN=
+
+set -- `getopt no: "$@"`
+[ $? -eq 0 ] || usage
+
+for opt
+do
+    case "$opt" in
+        -n)
+            DRYRUN=1; shift ;;
+        -o)
+            OUT_TGZ="$2"; shift 2;;
+        --)
+            shift; break ;;
+    esac
+done
+
+NAME="$1"
+SRC_TGZ="$2"
+
+test -z "$NAME" && usage
+test -z "$SRC_TGZ"  && usage
+
+
+ATHENA_SYS="${ATHENA_SYS:-$(machtype -S)}"
+
+if [ "$(uname)" = "SunOS" ]; then
+    MAKE=gmake
+    TAR=gtar
+else
+    MAKE=make
+    TAR=tar
+fi
+
+attach barnowl
+aklog
+
+TMPDIR=$(mktemp -d /tmp/barnowl-build-XXXXXX) || die "Unable to mktemp"
+
+exittrap() { rm -rf "$TMPDIR"; }
+
+$TAR -C "$TMPDIR" -xzvf "$SRC_TGZ" || die "Unable to untar"
+
+(
+    cd "$TMPDIR"/* || die "Unable to cd to $TMPDIR"
+
+    BARNOWL="/afs/sipb.mit.edu/project/barnowl/arch/$ATHENA_SYS"
+    export PKG_CONFIG_PATH="$BARNOWL/lib/pkgconfig"
+
+    CFLAGS="-I$BARNOWL/include" \
+        LDFLAGS="-L$BARNOWL/lib -Wl,-R$BARNOWL/lib" \
+        ./configure --exec-prefix="/mit/barnowl/arch/$ATHENA_SYS" \
+        --prefix="/mit/barnowl/builds/$NAME" --mandir=/mit/barnowl/man \
+        PROTECT_CFLAGS=-fno-stack-protector \
+        || die "configure failed"
+
+    $MAKE clean  || die "make clean failed"
+
+    CPUS=$(athinfo localhost cpuspeed | grep -c MHz)
+    if [ "$CPUS" = 0 ]; then
+        CPUS=1
+    fi
+
+    $MAKE -j$CPUS EXE=$NAME all || die "make failed"
+
+    if [ -n "$DRYRUN" ]; then
+        echo "Build completed; Dropping to a shell..."
+        $SHELL
+    else
+        if [ -n "$OUT_TGZ" ]; then
+            mkdir tgz
+            $MAKE EXE=$NAME DESTDIR=tgz install || die "Install failed"
+        else
+            $MAKE EXE=$NAME install || die "Install failed"
+        fi
+    fi
+)
+
+if [ -n "$OUT_TGZ" ]; then
+    $TAR -C "$TMPDIR/"*/tgz -czvf "$OUT_TGZ" . || die "Make tarball failed"
+fi
+
+rm -rf "$TMPDIR"
+exittrap() { :; }

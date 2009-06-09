@@ -194,7 +194,10 @@ static owl_variable variables_to_init[] = {
   OWLVAR_PATH( "zsigproc" /* %OwlVarStub:zsigproc */, NULL,
 	       "name of a program to run that will generate zsigs",
 	       "This program should produce a zsig on stdout when run.\n"
-	       "Note that it is important that this program not block.\n" ),
+	       "Note that it is important that this program not block.\n\n"
+               "See the documentation for 'zsig' for more information about\n"
+               "how the outgoing zsig is chosen."
+               ),
 
   OWLVAR_PATH( "newmsgproc" /* %OwlVarStub:newmsgproc */, NULL,
 	       "name of a program to run when new messages are present",
@@ -210,10 +213,11 @@ static owl_variable variables_to_init[] = {
          "cause your zephyrs to be sent unauthenticated."),
 
   OWLVAR_STRING( "zsig" /* %OwlVarStub */, "",
-	         "zephyr signature", 
-		 "If 'zsigproc' is not set, this string will be used\n"
-		 "as a zsig.  If this is also unset, the 'zwrite-signature'\n"
-		 "zephyr variable will be used instead.\n"),
+	         "zephyr signature",
+		 "The zsig to get on outgoing messages. If this variable is\n"
+		 "unset, 'zsigproc' will be run to generate a zsig. If that is\n"
+		 "also unset, the 'zwrite-signature' zephyr variable will be\n"
+		 "used instead.\n"),
 
   OWLVAR_STRING( "appendtosepbar" /* %OwlVarStub */, "",
 	         "string to append to the end of the sepbar",

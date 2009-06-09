@@ -174,7 +174,7 @@ END_DESCR
         'irc-join' => mk_irc_command( \&cmd_join ),
         {
             summary => 'Join an IRC channel',
-            usage   => 'irc-join [-a ALIAS] #channel',
+            usage   => 'irc-join [-a ALIAS] #channel [KEY]',
 
             description => <<END_DESCR
 
@@ -430,7 +430,7 @@ sub cmd_join {
     my $chan = shift or die("Usage: $cmd channel\n");
     $channels{$chan} ||= [];
     push @{$channels{$chan}}, $conn;
-    $conn->conn->join($chan);
+    $conn->conn->join($chan, @_);
 }
 
 sub cmd_part {

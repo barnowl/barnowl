@@ -212,13 +212,18 @@ void owl_filterelement_create_false(owl_filterelement *fe)
   fe->print_elt = owl_filterelement_print_false;
 }
 
-void owl_filterelement_create_re(owl_filterelement *fe, char *field, char *re)
+int owl_filterelement_create_re(owl_filterelement *fe, char *field, char *re)
 {
   owl_filterelement_create(fe);
   fe->field=owl_strdup(field);
-  owl_regex_create(&(fe->re), re);
+  if(owl_regex_create(&(fe->re), re)) {
+    free(fe->field);
+    fe->field = NULL;
+    return (-1);
+  }
   fe->match_message = owl_filterelement_match_re;
   fe->print_elt = owl_filterelement_print_re;
+  return 0;
 }
 
 void owl_filterelement_create_filter(owl_filterelement *fe, char *name)

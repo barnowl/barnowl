@@ -155,15 +155,13 @@ m4trace:configure.ac:65: -1- m4_pattern_allow([^HAVE_LIBRESOLV$])
 m4trace:configure.ac:67: -1- m4_pattern_allow([^HAVE_LIBZEPHYR$])
 m4trace:configure.ac:68: -2- m4_pattern_allow([^HAVE_LIBZEPHYR_ZINITLOCATIONINFO$])
 m4trace:configure.ac:79: -1- _m4_warn([obsolete], [The macro `AC_TRY_COMPILE' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:2367: AC_TRY_COMPILE is expanded from...
+You should run autoupdate.], [../../lib/autoconf/general.m4:2470: AC_TRY_COMPILE is expanded from...
 configure.ac:79: the top level])
 m4trace:configure.ac:86: -1- m4_pattern_allow([^HAVE_DES_ECB_ENCRYPT_PROTO$])
 m4trace:configure.ac:90: -1- m4_pattern_allow([^CPP$])
 m4trace:configure.ac:90: -1- m4_pattern_allow([^CPPFLAGS$])
 m4trace:configure.ac:90: -1- m4_pattern_allow([^CPP$])
 m4trace:configure.ac:90: -1- m4_pattern_allow([^GREP$])
-m4trace:configure.ac:90: -1- m4_pattern_allow([^GREP$])
-m4trace:configure.ac:90: -1- m4_pattern_allow([^EGREP$])
 m4trace:configure.ac:90: -1- m4_pattern_allow([^EGREP$])
 m4trace:configure.ac:90: -1- m4_pattern_allow([^STDC_HEADERS$])
 m4trace:configure.ac:91: -1- m4_pattern_allow([^HAVE_SYS_WAIT_H$])

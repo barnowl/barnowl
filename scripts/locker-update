@@ -1,0 +1,30 @@
+#!/bin/bash
+NEWVERSION="$1"
+
+# Run this as 'locker-update NEW-VERSION' to upgrade the barnowl.real
+# symlink in all arch/ directories to point to the new version.
+
+if [ -z "$NEWVERSION" ]; then
+    echo "Usage: $0 new-version" 1>&2
+    exit -1;
+fi
+
+cd /mit/barnowl/arch/
+
+for i in *; do
+    if [ -L "$i" ]; then
+        echo "Skipping $i as a symbolic link..."
+    else
+        if [ "$i" = "common" ]; then
+            echo "Skipping 'common'..."
+        else
+            if ! [ -e "$i/bin/$NEWVERSION" ]; then
+                echo "New version $NEWVERSION not built for arch $i...";
+            else
+                # Sanity -- make sure the 'barnowl' symlink is correct.
+                ln -sf "../../common/bin/barnowl" "$i/bin/barnowl"
+                ln -sf "$NEWVERSION" "$i/bin/barnowl.real"
+            fi
+        fi
+    fi
+done;

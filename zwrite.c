@@ -41,7 +41,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	badargs=1;
 	break;
       }
-      z->class=owl_get_iso_8859_1_if_possible(myargv[1]);
+      z->class=owl_validate_utf8(myargv[1]);
       myargv+=2;
       myargc-=2;
     } else if (!strcmp(myargv[0], "-i")) {
@@ -49,7 +49,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	badargs=1;
 	break;
       }
-      z->inst=owl_get_iso_8859_1_if_possible(myargv[1]);
+      z->inst=owl_validate_utf8(myargv[1]);
       myargv+=2;
       myargc-=2;
     } else if (!strcmp(myargv[0], "-r")) {
@@ -57,7 +57,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	badargs=1;
 	break;
       }
-      z->realm=owl_get_iso_8859_1_if_possible(myargv[1]);
+      z->realm=owl_validate_utf8(myargv[1]);
       myargv+=2;
       myargc-=2;
     } else if (!strcmp(myargv[0], "-s")) {
@@ -65,7 +65,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	badargs=1;
 	break;
       }
-      z->zsig=owl_get_iso_8859_1_if_possible(myargv[1]);
+      z->zsig=owl_validate_utf8(myargv[1]);
       myargv+=2;
       myargc-=2;
     } else if (!strcmp(myargv[0], "-O")) {
@@ -73,7 +73,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 	badargs=1;
 	break;
       }
-      z->opcode=owl_get_iso_8859_1_if_possible(myargv[1]);
+      z->opcode=owl_validate_utf8(myargv[1]);
       myargv+=2;
       myargc-=2;
     } else if (!strcmp(myargv[0], "-m")) {
@@ -90,7 +90,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       /* Once we have -m, gobble up everything else on the line */
       myargv++;
       myargc--;
-      z->message=owl_get_iso_8859_1_if_possible("");
+      z->message = owl_strdup("");
       while (myargc) {
 	z->message=owl_realloc(z->message, strlen(z->message)+strlen(myargv[0])+5);
 	strcat(z->message, myargv[0]);
@@ -110,7 +110,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       myargc--;
     } else {
       /* anything unattached is a recipient */
-      owl_list_append_element(&(z->recips), owl_get_iso_8859_1_if_possible(myargv[0]));
+      owl_list_append_element(&(z->recips), owl_validate_utf8(myargv[0]));
       myargv++;
       myargc--;
     }
@@ -151,7 +151,7 @@ void owl_zwrite_populate_zsig(owl_zwrite *z)
     zsigzvar = owl_zephyr_get_variable("zwrite-signature");
 
     if (zsigowlvar && *zsigowlvar) {
-      z->zsig=owl_get_iso_8859_1_if_possible(zsigowlvar);
+      z->zsig=owl_validate_utf8(zsigowlvar);
     } else if (zsigproc && *zsigproc) {
       FILE *file;
       char buff[LINE], *openline;
@@ -166,7 +166,7 @@ void owl_zwrite_populate_zsig(owl_zwrite *z)
       owl_free(openline);
       if (!file) {
 	if (zsigzvar && *zsigzvar) {
-	  z->zsig=owl_get_iso_8859_1_if_possible(zsigzvar);
+	  z->zsig=owl_validate_utf8(zsigzvar);
 	}
       } else {
 	z->zsig=owl_malloc(LINE*5);
@@ -180,9 +180,9 @@ void owl_zwrite_populate_zsig(owl_zwrite *z)
 	}
       }
     } else if (zsigzvar) {
-      z->zsig=owl_get_iso_8859_1_if_possible(zsigzvar);
+      z->zsig=owl_validate_utf8(zsigzvar);
     } else if (((pw=getpwuid(getuid()))!=NULL) && (pw->pw_gecos)) {
-      z->zsig=owl_get_iso_8859_1_if_possible(pw->pw_gecos);
+      z->zsig=owl_validate_utf8(pw->pw_gecos);
       ptr=strchr(z->zsig, ',');
       if (ptr) {
 	ptr[0]='\0';
@@ -239,11 +239,11 @@ void owl_zwrite_set_message(owl_zwrite *z, char *msg)
       owl_free(tmp);
       tmp = NULL;
     }
-    tmp = owl_get_iso_8859_1_if_possible(msg);
+    tmp = owl_validate_utf8(msg);
     z->message=owl_sprintf("%s\n%s", toline, tmp);
     owl_free(toline);
   } else {
-    z->message=owl_get_iso_8859_1_if_possible(msg);
+    z->message=owl_validate_utf8(msg);
   }
   if (tmp) owl_free(tmp);
 }
@@ -320,7 +320,7 @@ char *owl_zwrite_get_opcode(owl_zwrite *z)
 void owl_zwrite_set_opcode(owl_zwrite *z, char *opcode)
 {
   if (z->opcode) owl_free(z->opcode);
-  z->opcode=owl_get_iso_8859_1_if_possible(opcode);
+  z->opcode=owl_validate_utf8(opcode);
 }
 
 char *owl_zwrite_get_realm(owl_zwrite *z)
