@@ -313,7 +313,7 @@ static int oe_find_display_line(owl_editwin *e, int *x, int index)
 
   while(1) {
     /* note the position of the dot */
-    if (x != NULL && index == e->index)
+    if (x != NULL && index == e->index && width < e->wincols)
       *x = width;
 
     /* get the current character */
