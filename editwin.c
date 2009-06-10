@@ -219,15 +219,12 @@ void owl_editwin_fullclear(owl_editwin *e)
 void owl_editwin_clear(owl_editwin *e)
 {
 
-  int lock;
+  int lock = e->lock;
   int dotsend=e->dotsend;
   char *locktext=NULL;
   char echochar=e->echochar;
 
-  lock=0;
-  if (e->lock > 0) {
-    lock=1;
-
+  if (lock > 0) {
     locktext=owl_malloc(e->lock+20);
     strncpy(locktext, e->buff, e->lock);
     locktext[e->lock]='\0';
@@ -247,7 +244,8 @@ void owl_editwin_clear(owl_editwin *e)
   }
 
   if (locktext) owl_free(locktext);
-  owl_editwin_adjust_for_locktext(e);
+
+  e->index = lock;
 }
 
 /* malloc more space for the buffer */
@@ -710,15 +708,6 @@ void owl_editwin_overwrite_string(owl_editwin *e, char *string)
 gunichar _owl_editwin_get_char_at_point(owl_editwin *e)
 {
   return g_utf8_get_char(e->buff + e->index);
-}
-
-void owl_editwin_adjust_for_locktext(owl_editwin *e)
-{
-  /* if we happen to have the cursor over locked text
-   * move it to be out of the locktext region */
-  if (e->index < e->lock) {
-    e->index = e->lock;
-  }
 }
 
 int owl_editwin_point_move(owl_editwin *e, int delta)
