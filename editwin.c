@@ -124,11 +124,6 @@ WINDOW *owl_editwin_get_curswin(owl_editwin *e)
   return(e->curswin);
 }
 
-void owl_editwin_set_history(owl_editwin *e, owl_history *h)
-{
-  e->hist=h;
-}
-
 owl_history *owl_editwin_get_history(owl_editwin *e)
 {
   return(e->hist);
@@ -212,7 +207,8 @@ void owl_editwin_new_style(owl_editwin *e, int newstyle, owl_history *h)
 {
   char *ptr;
 
-  owl_editwin_set_history(e, h);
+  e->hist = h;
+
   if (e->style==newstyle) return;
 
   if (newstyle==OWL_EDITWIN_STYLE_MULTILINE) {
@@ -1152,21 +1148,6 @@ char *owl_editwin_get_text(owl_editwin *e)
   return(e->buff+e->lock);
 }
 
-int owl_editwin_get_numlines(owl_editwin *e)
-{
-  return(owl_text_num_lines(e->buff));
-}
-
 int owl_editwin_get_echochar(owl_editwin *e) {
   return e->echochar;
-}
-
-void owl_editwin_set_goal_column(owl_editwin *e, int column)
-{
-  e->goal_column = column;
-}
-
-int owl_editwin_get_goal_column(owl_editwin *e)
-{
-  return e->goal_column;
 }
