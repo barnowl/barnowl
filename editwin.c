@@ -43,6 +43,11 @@ owl_editwin *owl_editwin_allocate(void) {
   return owl_malloc(sizeof(owl_editwin));
 }
 
+static void oe_set_index(owl_editwin *e, int index) {
+  e->index = index;
+  e->goal_column = -1;
+}
+
 /* initialize the editwin e.
  * 'win' is an already initialzed curses window that will be used by editwin
  */
@@ -53,7 +58,7 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->bufflen=0;
   e->hist=hist;
   e->allocated=INCR;
-  e->index = 0;
+  oe_set_index(e, 0);
   e->goal_column = -1;
   e->topindex=0;
   e->winlines=winlines;
@@ -169,11 +174,11 @@ int owl_editwin_limit_maxcols(int v, int maxv)
  */
 void owl_editwin_set_locktext(owl_editwin *e, char *text)
 {
-  e->index = 0;
+  oe_set_index(e, 0);
   owl_editwin_overwrite_string(e, text);
   owl_editwin_overwrite_char(e, '\0');
   e->lock=strlen(text);
-  e->index = e->lock;
+  oe_set_index(e, e->lock);
   owl_editwin_redisplay(e, 0);
 }
 
@@ -200,7 +205,7 @@ void owl_editwin_new_style(owl_editwin *e, int newstyle, owl_history *h)
       if (ptr) {
 	e->bufflen=ptr - e->buff;
 	e->buff[e->bufflen]='\0';
-	e->index = 0;
+	oe_set_index(e, 0);
       }
     }
   }
@@ -245,7 +250,7 @@ void owl_editwin_clear(owl_editwin *e)
 
   if (locktext) owl_free(locktext);
 
-  e->index = lock;
+  oe_set_index(e, lock);
 }
 
 /* malloc more space for the buffer */
@@ -273,7 +278,7 @@ static void oe_save_excursion(owl_editwin *e, oe_excursion *x)
 
 static void oe_restore_excursion(owl_editwin *e, oe_excursion *x)
 {
-  e->index = x->index;
+  oe_set_index(e, x->index);
   e->goal_column = x->goal_column;
   e->lock = x->lock;
 }
@@ -379,11 +384,11 @@ static void oe_reframe(owl_editwin *e) {
     if (count < goal)
       owl_editwin_point_move(e, -1);
   }
-  /* if we overshot, backtrack */
-  for (n = 0; n < (count - goal); n++)
-    e->index = oe_find_display_line(e, NULL, e->index);
 
   e->topindex = e->index;
+  /* if we overshot, backtrack */
+  for (n = 0; n < (count - goal); n++)
+    e->topindex = oe_find_display_line(e, NULL, e->topindex);
 
   oe_restore_excursion(e, &x);
 }
@@ -479,7 +484,7 @@ int _owl_editwin_linewrap_word(owl_editwin *e)
     if (owl_util_can_break_after(c)) {
       if (c != ' ') {
         i = ptr1 - e->buff;
-	e->index = i;
+	oe_set_index(e, i);
         _owl_editwin_insert_bytes(e, 1);
         /* _owl_editwin_insert_bytes may move e->buff. */
         ptr1 = e->buff + i;
@@ -543,7 +548,7 @@ void owl_editwin_insert_char(owl_editwin *e, gunichar c)
   }
 
   /* advance the cursor */
-  e->index += len;
+  oe_set_index(e, e->index + len);
 }
 
 /* overwrite the character at the current point with 'c' */
@@ -595,7 +600,7 @@ void owl_editwin_overwrite_char(owl_editwin *e, gunichar c)
   }
 
   /* advance the cursor */
-  e->index += newlen;
+  oe_set_index(e, e->index + newlen);
 }
 
 /* delete the character at the current point, following chars
@@ -633,7 +638,7 @@ void owl_editwin_transpose_chars(owl_editwin *e)
 
   if (e->index == e->bufflen) {
     /* point is after last character */
-    e->index--;
+    oe_set_index(e, e->index - 1);
   }
 
   if (e->index - 1 < e->lock) {
@@ -659,7 +664,7 @@ void owl_editwin_transpose_chars(owl_editwin *e)
   strncat(tmp, p3, p1 - p3);
   strncpy(p3, tmp, p2 - p3);
   owl_free(tmp);
-  e->index = p3 - e->buff;
+  oe_set_index(e, p3 - e->buff);
 }
 
 /* insert 'string' at the current point, later text is shifted
@@ -724,13 +729,10 @@ int owl_editwin_point_move(owl_editwin *e, int delta)
     else
       p = oe_prev_point(e, p);
     if (p != NULL) {
-      e->index = p - e->buff;
+      oe_set_index(e, p - e->buff);
       d++;
     }
   }
-
-  if (delta)
-    e->goal_column = -1;
 
   return delta > 0 ? d : -d;
 }
@@ -979,12 +981,12 @@ void owl_editwin_move_to_line_start(owl_editwin *e)
 
 void owl_editwin_move_to_end(owl_editwin *e)
 {
-  e->index = e->bufflen;
+  oe_set_index(e, e->bufflen);
 }
 
 void owl_editwin_move_to_top(owl_editwin *e)
 {
-  e->index = e->lock;
+  oe_set_index(e, e->lock);
 }
 
 void owl_editwin_fill_paragraph(owl_editwin *e)
@@ -1002,7 +1004,7 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
   for (i=save; i>=e->lock; i--) {
     if ( (i<=e->lock) ||
 	 ((e->buff[i]=='\n') && (e->buff[i-1]=='\n'))) {
-      e->index = i + 1;
+      oe_set_index(i + 1);
       break;
     }
   }
@@ -1028,7 +1030,7 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
       _owl_editwin_linewrap_word(e);
       /* we may have added a character. */
       if (i < save) save += e->bufflen - len;
-      e->index = i;
+      oe_set_index(i);
     }
 
     /* did we hit the end of a line too soon? */
