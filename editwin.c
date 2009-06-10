@@ -32,18 +32,34 @@ typedef struct { /*noproto*/
   int lock;
 } oe_excursion;
 
-static int owl_editwin_is_char_in(owl_editwin *e, char *set);
 static void oe_reframe(owl_editwin *e);
+static void oe_save_excursion(owl_editwin *e, oe_excursion *x);
+static void oe_restore_excursion(owl_editwin *e, oe_excursion *x);
+static int oe_find_display_line(owl_editwin *e, int *x, int index);
+static int owl_editwin_limit_maxcols(int v, int maxv);
+static int owl_editwin_check_dotsend(owl_editwin *e);
+static void _owl_editwin_process_char(owl_editwin *e, gunichar j);
+static int owl_editwin_is_char_in(owl_editwin *e, char *set);
+static int owl_editwin_is_char_in(owl_editwin *e, char *set);
+static int owl_editwin_linewrap_word(owl_editwin *e);
+static gunichar owl_editwin_get_char_at_point(owl_editwin *e);
+
+static void _owl_editwin_addspace(owl_editwin *e);
+static void owl_editwin_overwrite_char(owl_editwin *e, gunichar c);
+static void owl_editwin_insert_char(owl_editwin *e, gunichar c);
+static void owl_editwin_overwrite_string(owl_editwin *e, char *string);
 
 #define INCR 5000
 
 #define WHITESPACE " \n\t"
 
-owl_editwin *owl_editwin_allocate(void) {
+owl_editwin *owl_editwin_allocate(void)
+{
   return owl_malloc(sizeof(owl_editwin));
 }
 
-static void oe_set_index(owl_editwin *e, int index) {
+static inline void oe_set_index(owl_editwin *e, int index)
+{
   e->index = index;
   e->goal_column = -1;
 }
@@ -123,25 +139,30 @@ void owl_editwin_set_dotsend(owl_editwin *e)
   e->dotsend=1;
 }
 
-void owl_editwin_set_command(owl_editwin *e, char *command) {
+void owl_editwin_set_command(owl_editwin *e, char *command)
+{
   if(e->command) owl_free(e->command);
   e->command = owl_strdup(command);
 }
 
-char *owl_editwin_get_command(owl_editwin *e) {
+char *owl_editwin_get_command(owl_editwin *e)
+{
   if(e->command) return e->command;
   return "";
 }
 
-void owl_editwin_set_callback(owl_editwin *e, void (*cb)(owl_editwin*)) {
+void owl_editwin_set_callback(owl_editwin *e, void (*cb)(owl_editwin*))
+{
   e->callback = cb;
 }
 
-void (*owl_editwin_get_callback(owl_editwin *e))(owl_editwin*) {
+void (*owl_editwin_get_callback(owl_editwin *e))(owl_editwin*)
+{
   return e->callback;
 }
 
-void owl_editwin_set_cbdata(owl_editwin *e, void *data) {
+void owl_editwin_set_cbdata(owl_editwin *e, void *data)
+{
   e->cbdata = data;
 }
 
@@ -160,7 +181,7 @@ void owl_editwin_do_callback(owl_editwin *e) {
   }
 }
 
-int owl_editwin_limit_maxcols(int v, int maxv)
+static int owl_editwin_limit_maxcols(int v, int maxv)
 {
   if (maxv > 5 && v > maxv) {
     return(maxv);
@@ -254,7 +275,7 @@ void owl_editwin_clear(owl_editwin *e)
 }
 
 /* malloc more space for the buffer */
-void _owl_editwin_addspace(owl_editwin *e)
+static void _owl_editwin_addspace(owl_editwin *e)
 {
   e->buff=owl_realloc(e->buff, e->allocated+INCR);
   if (!e->buff) {
@@ -468,7 +489,7 @@ void _owl_editwin_insert_bytes(owl_editwin *e, int n) /*noproto*/
  * returns 0 on success
  * returns -1 if we could not wrap.
  */
-int _owl_editwin_linewrap_word(owl_editwin *e)
+static int owl_editwin_linewrap_word(owl_editwin *e)
 {
   int i;
   char *ptr1, *start;
@@ -503,7 +524,7 @@ int _owl_editwin_linewrap_word(owl_editwin *e)
 /* insert a character at the current point (shift later
  * characters over)
  */
-void owl_editwin_insert_char(owl_editwin *e, gunichar c)
+static void owl_editwin_insert_char(owl_editwin *e, gunichar c)
 {
   int i, ret, len;
   char tmp[6];
@@ -552,7 +573,7 @@ void owl_editwin_insert_char(owl_editwin *e, gunichar c)
 }
 
 /* overwrite the character at the current point with 'c' */
-void owl_editwin_overwrite_char(owl_editwin *e, gunichar c)
+static void owl_editwin_overwrite_char(owl_editwin *e, gunichar c)
 {
   int oldlen, newlen, i;
   char tmp[6], *t;
@@ -691,7 +712,7 @@ void owl_editwin_insert_string(owl_editwin *e, char *string)
  * already there
  */
 
-void owl_editwin_overwrite_string(owl_editwin *e, char *string)
+static void owl_editwin_overwrite_string(owl_editwin *e, char *string)
 {
   char *p;
   gunichar c;
@@ -710,7 +731,7 @@ void owl_editwin_overwrite_string(owl_editwin *e, char *string)
 }
 
 /* We assume index is not set to point to a mid-char */
-gunichar _owl_editwin_get_char_at_point(owl_editwin *e)
+static gunichar owl_editwin_get_char_at_point(owl_editwin *e)
 {
   return g_utf8_get_char(e->buff + e->index);
 }
@@ -761,7 +782,7 @@ int owl_editwin_at_beginning_of_line(owl_editwin *e) /*noproto*/
 
   oe_save_excursion(e, &x);
   owl_editwin_point_move(e, -1);
-  ret = (_owl_editwin_get_char_at_point(e) == '\n');
+  ret = (owl_editwin_get_char_at_point(e) == '\n');
   oe_restore_excursion(e, &x);
 
   return ret;
@@ -772,7 +793,7 @@ static int owl_editwin_is_char_in(owl_editwin *e, char *set)
   char *p;
   /* It would be awfully nice if we could do UTF-8 comparisons */
   for (p = set; *p != 0; p++)
-    if (_owl_editwin_get_char_at_point(e) == *p)
+    if (owl_editwin_get_char_at_point(e) == *p)
       return 1;
   return 0;
 }
@@ -1071,7 +1092,7 @@ int owl_editwin_is_at_end(owl_editwin *e)
   return (only_whitespace(e->buff + e->index));
 }
 
-int owl_editwin_check_dotsend(owl_editwin *e)
+static int owl_editwin_check_dotsend(owl_editwin *e)
 {
   char *p, *p_n, *p_p;
   gunichar c;
@@ -1109,7 +1130,7 @@ void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
   owl_editwin_redisplay(e, 0);
 }
 
-void _owl_editwin_process_char(owl_editwin *e, gunichar j)
+static void _owl_editwin_process_char(owl_editwin *e, gunichar j)
 {
   if (!(g_unichar_iscntrl(j) && (j != 10) && (j != 13)) || j==9 ) {
     owl_editwin_insert_char(e, j);
