@@ -978,9 +978,6 @@ void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
 
 void owl_editwin_process_char(owl_editwin *e, owl_input j)
 {
-#if 0
-  int i, ret, len;
-#endif
   char tmp[7];
 
   if (j.ch == ERR)
@@ -1001,17 +998,6 @@ void owl_editwin_process_char(owl_editwin *e, owl_input j)
 
       g_unichar_to_utf8(j.uch, tmp);
       owl_editwin_replace(e, 0, tmp);
-
-#if 0 /* XXX */
-      /* If we're going to insert at the last column do word wrapping, unless it's a \n */
-      if ((e->buffx + 1 == e->wrapcol) && (j.uch != '\n')) {
-	ret = _owl_editwin_linewrap_word(e);
-	if (ret == -1) {
-	  /* we couldn't wrap, insert a hard newline instead */
-	  owl_editwin_replace(e, 0, "\n");
-	}
-      }
-#endif
     }
   }
 }
