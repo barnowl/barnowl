@@ -6,6 +6,16 @@
 
 static const char fileIdent[] = "$Id$";
 
+#define VALID_EXCURSION	(0x9a2b4729)
+
+typedef struct oe_excursion_struct { /*noproto*/
+  int valid;
+  int index;
+  int goal_column;
+  int lock;
+  struct oe_excursion_struct *next;
+} oe_excursion;
+
 struct _owl_editwin { /*noproto*/
   char *buff;
   owl_history *hist;
@@ -14,34 +24,34 @@ struct _owl_editwin { /*noproto*/
   int index;
   int goal_column;
   int topindex;
+  int cursorx;
   int winlines, wincols, fillcol, wrapcol;
   WINDOW *curswin;
   int style;
   int lock;
   int dotsend;
   int echochar;
+  oe_excursion *excursions;
 
   char *command;
   void (*callback)(struct _owl_editwin*);
   void *cbdata;
 };
 
-typedef struct { /*noproto*/
-  int index;
-  int goal_column;
-  int lock;
-} oe_excursion;
 
 static void oe_reframe(owl_editwin *e);
 static void oe_save_excursion(owl_editwin *e, oe_excursion *x);
+static void oe_release_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_restore_excursion(owl_editwin *e, oe_excursion *x);
+static int oe_count_glyphs(char *s);
+static int oe_char_width(gunichar c, int column);
 static int oe_find_display_line(owl_editwin *e, int *x, int index);
+static void oe_insert_char(owl_editwin *e, gunichar c);
 static int owl_editwin_limit_maxcols(int v, int maxv);
 static int owl_editwin_check_dotsend(owl_editwin *e);
 static int owl_editwin_is_char_in(owl_editwin *e, char *set);
 static gunichar owl_editwin_get_char_at_point(owl_editwin *e);
-static void owl_editwin_replace(owl_editwin *e, int count, char *s);
-static int oe_count_glyphs(char *s);
+static int owl_editwin_replace(owl_editwin *e, int count, char *s);
 
 #define INCR 4096
 
@@ -66,8 +76,11 @@ static int oe_count_glyphs(char *s)
 
 static inline void oe_set_index(owl_editwin *e, int index)
 {
+  if (index != e->index) {
+    e->goal_column = -1;
+    e->cursorx = -1;
+  }
   e->index = index;
-  e->goal_column = -1;
 }
 
 /* initialize the editwin e.
@@ -82,12 +95,10 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->allocated=INCR;
   oe_set_index(e, 0);
   e->goal_column = -1;
-  e->topindex=0;
-  e->winlines=winlines;
-  e->wincols=wincols;
-  e->fillcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxfillcols(&g));
-  e->wrapcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxwrapcols(&g));
-  e->curswin=win;
+  e->cursorx = -1;
+  e->topindex = 0;
+  e->excursions = NULL;
+  owl_editwin_set_curswin(e, win, winlines, wincols);
   e->style=style;
   if ((style!=OWL_EDITWIN_STYLE_MULTILINE) &&
       (style!=OWL_EDITWIN_STYLE_ONELINE)) {
@@ -184,6 +195,7 @@ void owl_editwin_do_callback(owl_editwin *e) {
 
 static int owl_editwin_limit_maxcols(int v, int maxv)
 {
+  /* maxv > 5 ? MAX(v, vax) : v */
   if (maxv > 5 && v > maxv) {
     return(maxv);
   } else {
@@ -281,13 +293,40 @@ static void oe_save_excursion(owl_editwin *e, oe_excursion *x)
   x->index = e->index;
   x->goal_column = e->goal_column;
   x->lock = e->lock;
+
+  x->valid = VALID_EXCURSION;
+  x->next = e->excursions;
+  e->excursions = x;
+}
+
+static void oe_release_excursion(owl_editwin *e, oe_excursion *x)
+{
+  oe_excursion *p;
+
+  x->valid = 0;
+  if (e->excursions == NULL)
+    /* XXX huh. */ ;
+  else if (e->excursions == x)
+    e->excursions = x->next;
+  else {
+    for (p = e->excursions; p->next != NULL; p = p->next)
+      if (p->next == x) {
+	p->next = p->next->next;
+	break;
+      }
+    /* and if we ran off the end? XXX */
+  }
 }
 
 static void oe_restore_excursion(owl_editwin *e, oe_excursion *x)
 {
-  oe_set_index(e, x->index);
-  e->goal_column = x->goal_column;
-  e->lock = x->lock;
+  if (x->valid == VALID_EXCURSION) {
+    oe_set_index(e, x->index);
+    e->goal_column = x->goal_column;
+    e->lock = x->lock;
+
+    oe_release_excursion(e, x);
+  }
 }
 
 static inline char *oe_next_point(owl_editwin *e, char *p)
@@ -315,10 +354,25 @@ static inline char *oe_prev_point(owl_editwin *e, char *p)
   return p;
 }
 
+static int oe_char_width(gunichar c, int column)
+{
+  int cw;
+
+  if (c == 9) /* TAB */
+    return TABSIZE - column % TABSIZE;
+
+  cw = mk_wcwidth(c);
+
+  if (cw < 0) /* control characters */
+    cw = 0;
+
+  return cw;
+}
+
 static int oe_find_display_line(owl_editwin *e, int *x, int index)
 {
   int width = 0, cw;
-  gunichar c = -1;
+  gunichar c;
   char *p;
 
   while(1) {
@@ -330,12 +384,7 @@ static int oe_find_display_line(owl_editwin *e, int *x, int index)
     c = g_utf8_get_char(e->buff + index);
 
     /* figure out how wide it is */
-    if (c == 9) /* TAB */
-      cw = TABSIZE - width % TABSIZE;
-    else
-      cw = mk_wcwidth(c);
-    if (cw < 0) /* control characters */
-	cw = 0;
+    cw = oe_char_width(c, width);
 
     if (width + cw > e->wincols) {
       if (x != NULL && *x == width)
@@ -433,19 +482,23 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
   } while(x == -1 && times < 3);
 
   wmove(e->curswin, y, x);
+  e->cursorx = x;
+
   wnoutrefresh(e->curswin);
   if (update == 1)
     doupdate();
 }
 
-static void owl_editwin_replace(owl_editwin *e, int replace, char *s)
-{ /* replace count characters at the point with s */
-  int start, end, i, free, need, size;
+/* replace count characters at the point with s, returning the change in size */
+static int owl_editwin_replace(owl_editwin *e, int replace, char *s)
+{
+  int start, end, i, free, need, size, change;
   char *p;
+  oe_excursion *x;
 
   if (!g_utf8_validate(s, -1, NULL)) {
     owl_function_debugmsg("owl_editwin_insert_string: received non-utf-8 string.");
-    return;
+    return 0;
   }
 
   start = e->index;
@@ -464,7 +517,7 @@ static void owl_editwin_replace(owl_editwin *e, int replace, char *s)
     p = realloc(e->buff, size);
     if (p == NULL) {
       /* XXX signal impending doom somehow and don't do anything */
-      return;
+      return 0;
     }
     e->buff = p;
     e->allocated = size;
@@ -472,8 +525,20 @@ static void owl_editwin_replace(owl_editwin *e, int replace, char *s)
 
   memmove(e->buff + start + strlen(s), e->buff + end, e->bufflen + 1 - end);
   memcpy(e->buff + start, s, strlen(s));
-  e->bufflen += start - end + strlen(s);
+  change = start - end + strlen(s);
+  e->bufflen += change;
   e->index += strlen(s);
+
+  /* fix up any saved points after the replaced area */
+  for (x = e->excursions; x != NULL; x = x->next)
+    if (x->index > start) {
+      if (x->index < end)
+	x->index = end;
+      else
+	x->index += change;
+    }
+
+  return change;
 }
 
 #if 0 /*XXX*/
@@ -976,29 +1041,32 @@ void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
   owl_editwin_redisplay(e, 0);
 }
 
-void owl_editwin_process_char(owl_editwin *e, owl_input j)
+static void oe_insert_char(owl_editwin *e, gunichar c)
 {
   char tmp[7];
 
+  if (c == '\r') /* translate CRs to NLs */
+    c = '\n';
+
+  if (!g_unichar_iscntrl(c) || c == '\n' || c== '\n' ) {
+    memset(tmp, 0, 7);
+
+    if (c == '\n' && e->style == OWL_EDITWIN_STYLE_ONELINE) {
+      return;
+    }
+
+    g_unichar_to_utf8(c, tmp);
+    owl_editwin_replace(e, 0, tmp);
+  }
+}
+
+void owl_editwin_process_char(owl_editwin *e, owl_input j)
+{
   if (j.ch == ERR)
     return;
   /* Ignore ncurses control characters. */
   if (j.ch < 0x100) {
-    if (!(g_unichar_iscntrl(j.uch) && (j.uch != 10) && (j.uch != 13)) || j.uch==9 ) {
-      memset(tmp, 0, 7);
-
-      /* \r is \n */
-      if (j.uch == '\r') {
-	j.uch = '\n';
-      }
-
-      if (j.uch == '\n' && e->style == OWL_EDITWIN_STYLE_ONELINE) {
-	return;
-      }
-
-      g_unichar_to_utf8(j.uch, tmp);
-      owl_editwin_replace(e, 0, tmp);
-    }
+    oe_insert_char(e, j.uch);
   }
 }
 
