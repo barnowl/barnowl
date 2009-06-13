@@ -11,6 +11,7 @@ static const char fileIdent[] = "$Id$";
 typedef struct oe_excursion_struct { /*noproto*/
   int valid;
   int index;
+  int mark;
   int goal_column;
   int lock;
   struct oe_excursion_struct *next;
@@ -22,6 +23,7 @@ struct _owl_editwin { /*noproto*/
   int bufflen;
   int allocated;
   int index;
+  int mark;
   int goal_column;
   int topindex;
   int cursorx;
@@ -45,6 +47,7 @@ static void oe_release_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_restore_excursion(owl_editwin *e, oe_excursion *x);
 static int oe_count_glyphs(char *s);
 static int oe_char_width(gunichar c, int column);
+static int oe_region_width(owl_editwin *e, int start, int end, int width);
 static int oe_find_display_line(owl_editwin *e, int *x, int index);
 static void oe_insert_char(owl_editwin *e, gunichar c);
 static int owl_editwin_limit_maxcols(int v, int maxv);
@@ -97,6 +100,7 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->hist=hist;
   e->allocated=INCR;
   oe_set_index(e, 0);
+  e->mark = 0;
   e->goal_column = -1;
   e->cursorx = -1;
   e->topindex = 0;
@@ -1045,19 +1049,71 @@ void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
   owl_editwin_redisplay(e, 0);
 }
 
+static int oe_region_width(owl_editwin *e, int start, int end, int width)
+{
+  char *p;
+  for(p = e->buff + start;
+      p < e->buff + end;
+      p = g_utf8_find_next_char(p, NULL))
+    width += oe_char_width(g_utf8_get_char(p), width);
+
+  return width;
+}
+
 static void oe_insert_char(owl_editwin *e, gunichar c)
 {
+  oe_excursion x;
   char tmp[7];
+  int replaced = -1;
 
   if (c == '\r') /* translate CRs to NLs */
     c = '\n';
 
-  if (!g_unichar_iscntrl(c) || c == '\n' || c== '\n' ) {
+  if (!g_unichar_iscntrl(c) || c == '\n' || c== '\t' ) {
     memset(tmp, 0, 7);
 
     if (c == '\n' && e->style == OWL_EDITWIN_STYLE_ONELINE) {
       return;
     }
+
+    if (e->cursorx != -1 && e->cursorx + oe_char_width(c, e->cursorx) > e->wrapcol) {
+      /* XXX this is actually wrong:
+       * + If the line has been been wrapped, we can be past the wrap column but
+       *   e->cursorx be much smaller.
+       * + If the user went back and inserted a bunch of stuff in the middle of
+       *   the line, there may be more than one word past the wrap column.
+       */
+      oe_save_excursion(e, &x);
+
+      if (c == ' ' || c == '\t') {
+	owl_editwin_point_move(e, -1);
+	replaced = -owl_editwin_move_if_in(e, -1, " \t");
+	if (!replaced) {
+	  c = '\n';
+	  replaced = -1;
+	}
+      } else {
+	while(!owl_editwin_at_beginning_of_line(e)) {
+	  owl_editwin_point_move(e, -1);
+	  if (owl_util_can_break_after(owl_editwin_get_char_at_point(e))) {
+	    replaced = -owl_editwin_move_if_in(e, -1, " \t");
+	    break;
+	  }
+	}
+	if (owl_editwin_at_beginning_of_line(e))
+	  replaced = -1;
+      }
+      if (replaced && !owl_editwin_at_beginning_of_line(e))
+	owl_editwin_point_move(e, 1);
+      if (replaced >= 0) {
+	owl_editwin_replace(e, replaced, "\n");
+      }
+      
+      oe_restore_excursion(e, &x);
+    }
+
+    if (replaced >= 0 && (c == ' ' || c == '\t'))
+      return; /* our work here is done */
 
     g_unichar_to_utf8(c, tmp);
     owl_editwin_replace(e, 0, tmp);
