@@ -1078,3 +1078,11 @@ char *owl_editwin_get_text(owl_editwin *e)
 int owl_editwin_get_echochar(owl_editwin *e) {
   return e->echochar;
 }
+
+
+/*
+ * Local Variables:
+ * mode:C
+ * c-basic-offset:2
+ * End:
+ */
