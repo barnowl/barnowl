@@ -13,6 +13,8 @@ Post outgoing zephyrs from -c $USER -i status -O TWITTER to Twitter
 
 package BarnOwl::Module::Twitter;
 
+our $VERSION = 0.1;
+
 use Net::Twitter;
 use JSON;
 
