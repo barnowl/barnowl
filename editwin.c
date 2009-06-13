@@ -59,7 +59,10 @@ static int owl_editwin_replace(owl_editwin *e, int count, char *s);
 
 owl_editwin *owl_editwin_allocate(void)
 {
-  return owl_malloc(sizeof(owl_editwin));
+  owl_editwin *e;
+  e = owl_malloc(sizeof(owl_editwin));
+  memset(e, 0, sizeof(*e));
+  return e;
 }
 
 static int oe_count_glyphs(char *s)
@@ -853,6 +856,7 @@ int owl_editwin_backward_word(owl_editwin *e)
     further += owl_editwin_point_move(e, -1);
     if (owl_editwin_is_char_in(e, WHITESPACE)) { /* we were at the beginning */
       distance += owl_editwin_backward_word(e); /* previous case */
+      oe_release_excursion(e, &x);
       return distance + further;
     } else {
       oe_restore_excursion(e, &x);
