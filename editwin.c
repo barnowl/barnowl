@@ -1214,7 +1214,6 @@ static void oe_insert_char(owl_editwin *e, gunichar c)
       if (replaced >= 0) {
 	owl_editwin_replace(e, replaced, "\n");
       }
-      
       oe_restore_excursion(e, &x);
     }
 
@@ -1244,7 +1243,6 @@ char *owl_editwin_get_text(owl_editwin *e)
 int owl_editwin_get_echochar(owl_editwin *e) {
   return e->echochar;
 }
-
 
 /*
  * Local Variables:
