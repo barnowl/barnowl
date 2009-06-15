@@ -55,10 +55,10 @@ static int owl_editwin_limit_maxcols(int v, int maxv);
 static int owl_editwin_check_dotsend(owl_editwin *e);
 static int owl_editwin_is_char_in(owl_editwin *e, char *set);
 static gunichar owl_editwin_get_char_at_point(owl_editwin *e);
-static int owl_editwin_replace(owl_editwin *e, int count, char *s);
 static char *oe_copy_buf(owl_editwin *e, char *buf, int len);
 static int oe_copy_region(owl_editwin *e);
 static int oe_display_column(owl_editwin *e);
+static char *oe_chunk(owl_editwin *e, int start, int end);
 
 #define INCR 4096
 
@@ -564,7 +564,7 @@ static inline void oe_fixup(int *target, int start, int end, int change) {
 }
 
 /* replace count characters at the point with s, returning the change in size */
-static int owl_editwin_replace(owl_editwin *e, int replace, char *s)
+int owl_editwin_replace(owl_editwin *e, int replace, char *s)
 {
   int start, end, i, free, need, size, change;
   char *p;
@@ -1259,9 +1259,32 @@ char *owl_editwin_get_text(owl_editwin *e)
   return(e->buff+e->lock);
 }
 
-int owl_editwin_get_echochar(owl_editwin *e) {
+int owl_editwin_get_echochar(owl_editwin *e)
+{
   return e->echochar;
 }
+
+static char *oe_chunk(owl_editwin *e, int start, int end)
+{
+  char *p;
+  
+  p = owl_malloc(end - start + 1);
+  memcpy(p, e->buff + start, end - start);
+  p[end - start] = 0;
+
+  return p;
+}
+
+char *owl_editwin_text_before_point(owl_editwin *e)
+{
+  return oe_chunk(e, e->index < e->lock ? 0 : e->lock, e->index);
+}
+
+char *owl_editwin_text_after_point(owl_editwin *e)
+{
+  return oe_chunk(e, e->index, e->bufflen);
+}
+
 
 /*
  * Local Variables:

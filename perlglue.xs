@@ -428,3 +428,46 @@ remove_timer(timer)
 		t = (owl_timer*)timer;
 		owl_function_debugmsg("Freeing timer %p", t);
 				owl_select_remove_timer(t);
+
+char *
+text_before_point()
+	PREINIT:
+		char *p;
+	CODE:
+		p = owl_editwin_text_before_point(owl_global_get_typwin(&g));
+		RETVAL = p;
+	OUTPUT:
+		RETVAL
+	CLEANUP:
+		if (p)
+			owl_free(p);
+
+char *
+text_after_point()
+	PREINIT:
+		char *p;
+	CODE:
+		p = owl_editwin_text_after_point(owl_global_get_typwin(&g));
+		RETVAL = p;
+	OUTPUT:
+		RETVAL
+	CLEANUP:
+		if (p)
+			owl_free(p);
+
+int
+replace(count, string)
+	int count;
+	char *string;
+	CODE:
+		RETVAL = owl_editwin_replace(owl_global_get_typwin(&g), count, string);
+	OUTPUT:
+		RETVAL
+
+int
+point_move(delta)
+	int delta;
+	CODE:
+		RETVAL = owl_editwin_point_move(owl_global_get_typwin(&g), delta);
+	OUTPUT:
+		RETVAL
