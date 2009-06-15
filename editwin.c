@@ -485,6 +485,20 @@ static void oe_reframe(owl_editwin *e) {
   oe_restore_excursion(e, &x);
 }
 
+static void oe_addnec(owl_editwin *e, int count)
+{
+  int i;
+
+  for (i = 0; i < count; i++)
+    waddch(e->curswin, e->echochar);
+}
+
+static void oe_mvaddnec(owl_editwin *e, int y, int x, int count)
+{
+  wmove(e->curswin, y, x);
+  oe_addnec(e, count);
+}
+
 /* regenerate the text on the curses window */
 /* if update == 1 then do a doupdate(), otherwise do not */
 void owl_editwin_redisplay(owl_editwin *e, int update)
@@ -506,10 +520,25 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
       index = oe_find_display_line(e, &t, lineindex);
       if (x == -1 && t != -1)
 	x = t, y = line;
-      if (index - lineindex)
-	mvwaddnstr(e->curswin, line, 0,
-		   e->buff + lineindex,
-		   index - lineindex);
+      if (index - lineindex) {
+	if (!e->echochar)
+	  mvwaddnstr(e->curswin, line, 0,
+		     e->buff + lineindex,
+		     index - lineindex);
+	else {
+	  if(lineindex < e->lock) {
+	    mvwaddnstr(e->curswin, line, 0,
+		       e->buff + lineindex,
+		       MIN(index - lineindex,
+			   e->lock - lineindex));
+	    if (e->lock < index)
+	      oe_addnec(e,
+			oe_region_width(e, e->lock, index,
+					oe_region_width(e, lineindex, e->lock, 0)));
+	  } else
+	    oe_mvaddnec(e, line, 0, oe_region_width(e, line, index, 0));
+	}
+      }
       line++;
     }
     if (x == -1)
@@ -575,13 +604,12 @@ static int owl_editwin_replace(owl_editwin *e, int replace, char *s)
   e->index += strlen(s);
 
   /* fix up the mark */
-  if (e->mark != -1)
-    oe_fixup(&e->mark, start, end, change);
+  oe_fixup(&e->mark, start, end, change);
+  oe_fixup(&e->topindex, start, end, change);
   /* fix up any saved points after the replaced area */
   for (x = e->excursions; x != NULL; x = x->next) {
     oe_fixup(&x->index, start, end, change);
-    if (x->mark != -1)
-      oe_fixup(&x->mark, start, end, change);
+    oe_fixup(&x->mark, start, end, change);
   }
 
   return change;
@@ -1144,15 +1172,17 @@ void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
   owl_editwin_redisplay(e, 0);
 }
 
-static int oe_region_width(owl_editwin *e, int start, int end, int width)
+static int oe_region_width(owl_editwin *e, int start, int end, int offset)
 {
   char *p;
+  int width = offset;
+  
   for(p = e->buff + start;
       p < e->buff + end;
       p = g_utf8_find_next_char(p, NULL))
     width += oe_char_width(g_utf8_get_char(p), width);
 
-  return width;
+  return width - offset;
 }
 
 static void oe_insert_char(owl_editwin *e, gunichar c)
