@@ -178,7 +178,9 @@ sub replycmd {
     }
 
     my $cmd;
-    if(lc $self->opcode eq 'crypt') {
+    if(lc $self->opcode eq 'crypt' and ( not $sender or $self->is_private)) {
+        # Responses to zcrypted messages should be zcrypted, so long as we
+        # aren't switching to personals
         $cmd = 'zcrypt';
     } else {
         $cmd = 'zwrite';
