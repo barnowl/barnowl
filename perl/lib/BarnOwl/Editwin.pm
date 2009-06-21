@@ -20,4 +20,20 @@ our @EXPORT_OK = qw(text_before_point text_after_point replace
                     point_move replace_region get_region
                     save_excursion current_column point mark);
 
+sub text_before_point {
+    save_excursion {
+        BarnOwl::command('edit:set-mark');
+        BarnOwl::command('edit:move-to-buffer-start');
+        get_region();
+    }
+}
+
+sub text_after_point {
+    save_excursion {
+        BarnOwl::command('edit:set-mark');
+        BarnOwl::command('edit:move-to-buffer-end');
+        get_region();
+    }
+}
+
 1;

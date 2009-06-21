@@ -431,32 +431,6 @@ remove_timer(timer)
 
 MODULE = BarnOwl		PACKAGE = BarnOwl::Editwin
 
-char *
-text_before_point()
-	PREINIT:
-		char *p;
-	CODE:
-		p = owl_editwin_text_before_point(owl_global_get_typwin(&g));
-		RETVAL = p;
-	OUTPUT:
-		RETVAL
-	CLEANUP:
-		if (p)
-			owl_free(p);
-
-char *
-text_after_point()
-	PREINIT:
-		char *p;
-	CODE:
-		p = owl_editwin_text_after_point(owl_global_get_typwin(&g));
-		RETVAL = p;
-	OUTPUT:
-		RETVAL
-	CLEANUP:
-		if (p)
-			owl_free(p);
-
 int
 replace(count, string)
 	int count;

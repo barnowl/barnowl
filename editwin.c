@@ -1351,16 +1351,6 @@ static char *oe_chunk(owl_editwin *e, int start, int end)
   return p;
 }
 
-char *owl_editwin_text_before_point(owl_editwin *e)
-{
-  return oe_chunk(e, e->index < e->lock ? 0 : e->lock, e->index);
-}
-
-char *owl_editwin_text_after_point(owl_editwin *e)
-{
-  return oe_chunk(e, e->index, e->bufflen);
-}
-
 /*
  * The only guarantee made about these values is that comparisons
  * between them, as well as comparison between multiple calls to these
