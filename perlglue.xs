@@ -429,6 +429,8 @@ remove_timer(timer)
 		owl_function_debugmsg("Freeing timer %p", t);
 				owl_select_remove_timer(t);
 
+MODULE = BarnOwl		PACKAGE = BarnOwl::Editwin
+
 char *
 text_before_point()
 	PREINIT:
