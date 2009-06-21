@@ -473,3 +473,38 @@ point_move(delta)
 		RETVAL = owl_editwin_point_move(owl_global_get_typwin(&g), delta);
 	OUTPUT:
 		RETVAL
+
+int
+replace_region(string)
+	char *string;
+	CODE:
+		RETVAL = owl_editwin_replace_region(owl_global_get_typwin(&g), string);
+	OUTPUT:
+		RETVAL
+
+SV *
+save_excursion(sub)
+	SV *sub;
+	PROTOTYPE: &
+	PREINIT:
+		int count;
+		owl_editwin_excursion *x;
+	CODE:
+	{
+		x = owl_editwin_begin_excursion(owl_global_get_typwin(&g));
+		count = call_sv(sub, G_SCALAR|G_EVAL|G_NOARGS);
+		owl_editwin_end_excursion(owl_global_get_typwin(&g), x);
+
+		if(SvTRUE(ERRSV)) {
+			croak(NULL);
+		}
+
+		SPAGAIN;
+		if(count == 1)
+			RETVAL = SvREFCNT_inc(POPs);
+		else
+			XSRETURN_UNDEF;
+
+	}
+	OUTPUT:
+		RETVAL

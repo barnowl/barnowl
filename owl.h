@@ -424,6 +424,7 @@ typedef struct _owl_history {
 } owl_history;
 
 typedef struct _owl_editwin owl_editwin;
+typedef struct _owl_editwin_excursion owl_editwin_excursion;
 
 typedef struct _owl_keybinding {
   int  *keys;			/* keypress stack */

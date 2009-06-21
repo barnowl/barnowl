@@ -8,13 +8,13 @@ static const char fileIdent[] = "$Id$";
 
 #define VALID_EXCURSION	(0x9a2b4729)
 
-typedef struct oe_excursion_struct { /*noproto*/
+typedef struct _owl_editwin_excursion { /*noproto*/
   int valid;
   int index;
   int mark;
   int goal_column;
   int lock;
-  struct oe_excursion_struct *next;
+  struct _owl_editwin_excursion *next;
 } oe_excursion;
 
 struct _owl_editwin { /*noproto*/
@@ -366,6 +366,20 @@ static void oe_restore_mark_only(owl_editwin *e, oe_excursion *x)
   }
 }
 
+/* External interface to oe_save_excursion */
+owl_editwin_excursion *owl_editwin_begin_excursion(owl_editwin *e)
+{
+  owl_editwin_excursion *x = owl_malloc(sizeof *x);
+  oe_save_excursion(e, x);
+  return x;
+}
+
+void owl_editwin_end_excursion(owl_editwin *e, owl_editwin_excursion *x)
+{
+  oe_restore_excursion(e, x);
+  owl_free(x);
+}
+
 static inline char *oe_next_point(owl_editwin *e, char *p)
 {
   char *boundary = e->buff + e->bufflen + 1;
@@ -562,6 +576,23 @@ static inline void oe_fixup(int *target, int start, int end, int change) {
     else
       *target += change;
   }
+}
+
+int owl_editwin_replace_region(owl_editwin *e, char *s)
+{
+  oe_excursion x;
+  oe_save_excursion(e, &x);
+  int ret;
+
+  if(e->index > e->mark) {
+    owl_editwin_exchange_point_and_mark(e);
+  }
+
+  ret = owl_editwin_replace_internal(e, e->mark - e->index, s);
+
+  oe_restore_excursion(e, &x);
+
+  return ret;
 }
 
 /* replace 'replace' characters at the point with s, returning the change in size */
