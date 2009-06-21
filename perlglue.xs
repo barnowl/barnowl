@@ -482,6 +482,18 @@ replace_region(string)
 	OUTPUT:
 		RETVAL
 
+char *
+get_region()
+	PREINIT:
+		char *region;
+	CODE:
+		region = owl_editwin_get_region(owl_global_get_typwin(&g));
+		RETVAL = region;
+	OUTPUT:
+		RETVAL
+	CLEANUP:
+		owl_free(region);
+
 SV *
 save_excursion(sub)
 	SV *sub;
@@ -506,5 +518,26 @@ save_excursion(sub)
 			XSRETURN_UNDEF;
 
 	}
+	OUTPUT:
+		RETVAL
+
+int
+current_column()
+	CODE:
+		RETVAL = owl_editwin_current_column(owl_global_get_typwin(&g));
+	OUTPUT:
+		RETVAL
+
+int
+point()
+	CODE:
+		RETVAL = owl_editwin_get_point(owl_global_get_typwin(&g));
+	OUTPUT:
+		RETVAL
+
+int
+mark()
+	CODE:
+		RETVAL = owl_editwin_get_mark(owl_global_get_typwin(&g));
 	OUTPUT:
 		RETVAL

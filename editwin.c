@@ -58,7 +58,6 @@ static gunichar owl_editwin_get_char_at_point(owl_editwin *e);
 static int owl_editwin_replace_internal(owl_editwin *e, int replace, char *s);
 static char *oe_copy_buf(owl_editwin *e, char *buf, int len);
 static int oe_copy_region(owl_editwin *e);
-static int oe_display_column(owl_editwin *e);
 static char *oe_chunk(owl_editwin *e, int start, int end);
 
 #define INCR 4096
@@ -1112,7 +1111,7 @@ void owl_editwin_forward_paragraph(owl_editwin *e)
   }
 }
 
-static int oe_display_column(owl_editwin *e)
+int owl_editwin_current_column(owl_editwin *e)
 {
   oe_excursion x;
   int lineindex;
@@ -1183,7 +1182,7 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
   /* Now go through inserting newlines as needed */
   while(e->index < e->mark) {
     /* if we've travelled too far, linewrap */
-    if (oe_display_column(e) >= e->fillcol)
+    if (owl_editwin_current_column(e) >= e->fillcol)
       _owl_editwin_linewrap_word(e);
     owl_editwin_point_move(e, 1);
   }
@@ -1322,6 +1321,20 @@ char *owl_editwin_get_text(owl_editwin *e)
   return(e->buff+e->lock);
 }
 
+char *owl_editwin_get_region(owl_editwin *e)
+{
+  int start, end;
+  start = e->index;
+  end   = e->mark;
+  if(start > end) {
+    int tmp = end;
+    end = start;
+    start = tmp;
+  }
+
+  return oe_chunk(e, start, end);
+}
+
 int owl_editwin_get_echochar(owl_editwin *e)
 {
   return e->echochar;
@@ -1346,6 +1359,22 @@ char *owl_editwin_text_before_point(owl_editwin *e)
 char *owl_editwin_text_after_point(owl_editwin *e)
 {
   return oe_chunk(e, e->index, e->bufflen);
+}
+
+/*
+ * The only guarantee made about these values is that comparisons
+ * between them, as well as comparison between multiple calls to these
+ * functions without modifying the editwin in-between, are meaningful.
+ */
+
+int owl_editwin_get_point(owl_editwin *e)
+{
+  return e->index;
+}
+
+int owl_editwin_get_mark(owl_editwin *e)
+{
+  return e->mark;
 }
 
 

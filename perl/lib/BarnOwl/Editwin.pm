@@ -17,6 +17,7 @@ package BarnOwl::Editwin;
 use base qw(Exporter);
 
 our @EXPORT_OK = qw(text_before_point text_after_point replace
-                    point_move replace_region save_excursion);
+                    point_move replace_region get_region
+                    save_excursion current_column point mark);
 
 1;
