@@ -3107,7 +3107,14 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
       owl_list_create(&anyone);
       ret=owl_zephyr_get_anyone_list(&anyone, filename);
       if (ret) {
-        owl_fmtext_append_normal(&fm, "  Error opening file for zephyr buddies.\n");
+        if (errno == ENOENT) {
+          owl_fmtext_append_normal(&fm, " You have not added any zephyr buddies.  Use the\n");
+          owl_fmtext_append_normal(&fm, " command ':addbuddy zephyr ");
+          owl_fmtext_append_bold(  &fm, "<username>");
+          owl_fmtext_append_normal(&fm, "'.\n");
+        } else {
+          owl_fmtext_append_normal(&fm, " Could not read zephyr buddies from the .anyone file.\n");
+        }
       } else {
         j=owl_list_get_size(&anyone);
         for (i=0; i<j; i++) {
