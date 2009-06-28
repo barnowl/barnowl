@@ -7,6 +7,7 @@ if ($#ARGV eq -1) {
 }
 
 foreach $file (@ARGV) {
+    next if $file eq 'perlglue.c';
     open(FILE, $file);
 
     print "/* -------------------------------- $file -------------------------------- */\n";
