@@ -63,9 +63,26 @@ AC_CHECK_LIB(socket, socket)
 dnl AC_CHECK_LIB(des425, req_act_vno)
 AC_CHECK_LIB(des425, des_cbc_encrypt,,AC_CHECK_LIB(crypto,DES_cbc_encrypt))
 AC_CHECK_LIB(resolv, res_search)
-dnl AC_CHECK_LIB(zephyr, ZGetSender,, AC_MSG_ERROR(No zephyr library found.))
-AC_CHECK_LIB(zephyr, ZGetSender)
-AC_CHECK_LIB(zephyr, ZInitLocationInfo, AC_DEFINE([HAVE_LIBZEPHYR_ZINITLOCATIONINFO], [], [Have ZInitLocationInfo]),)
+
+AC_ARG_WITH([zephyr],
+  [AS_HELP_STRING([--with-libzephyr],
+    [Disable Zephyr support])],
+  [],
+  [with_zephyr=check])
+
+AS_IF([test "x$with_zephyr" != xno],
+  [AC_CHECK_LIB([zephyr], [ZGetSender],
+   [AC_DEFINE([HAVE_LIBZEPHYR], [1],
+                [Define if you have libzephyr])
+    AC_CHECK_LIB([zephyr], [ZInitLocationInfo],
+      AC_DEFINE([HAVE_LIBZEPHYR_ZINITLOCATIONINFO], [1],
+                [Have ZInitLocationInfo]),)
+   ],
+   [if test "x$with_zephyr" != xcheck; then
+      AC_MSG_FAILURE(
+        [--with-libzephyr was given, but libzephyr does not seem to be available.])
+    fi
+   ])])
 
 AC_ARG_ENABLE([athstatic], AS_HELP_STRING([--enable-athstatic],
                                           [Statically link libraries in /usr/athena/lib]),
