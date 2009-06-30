@@ -3600,6 +3600,7 @@ void owl_function_swap_cur_marked()
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
   _owl_function_mark_message(m);
   owl_global_set_curmsg(&g, owl_view_get_nearest_to_msgid(v, marked_id));
+  owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_global_set_direction_downwards(&g);
 }
