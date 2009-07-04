@@ -316,5 +316,56 @@ sub quote {
     return '"' . $str . '"';
 }
 
+=head2 Modify filters by appending text
+
+=cut
+
+BarnOwl::new_command("filterappend",
+    sub { filter_append_helper('appending', '', @_); },
+    {
+        summary => "append '<text>' to filter",
+        usage => "filterappend <filter> <text>",
+    });
+
+BarnOwl::new_command("filterand",
+    sub { filter_append_helper('and-ing', 'and', @_); },
+    {
+        summary => "append 'and <text>' to filter",
+        usage => "filterand <filter> <text>",
+    });
+
+BarnOwl::new_command("filteror",
+    sub { filter_append_helper('or-ing', 'or', @_); },
+    {
+        summary => "append 'or <text>' to filter",
+        usage => "filteror <filter> <text>",
+    });
+
+=head3 filter_append_helper ACTION SEP FUNC FILTER APPEND_TEXT
+
+Helper to append to filters.
+
+=cut
+
+sub filter_append_helper
+{
+    my $action = shift;
+    my $sep = shift;
+    my $func = shift;
+    my $filter = shift;
+    my @append = @_;
+    my $oldfilter = BarnOwl::getfilter($filter);
+    chomp $oldfilter;
+    my $newfilter = join(' ', $oldfilter, $sep, @_);
+    my $msgtext = "To filter '$filter' $action\n'".join(' ', @append)."' to get\n'$newfilter'";
+    if (BarnOwl::getvar('showfilterchange') eq 'on') {
+        BarnOwl::admin_message("Filter", $msgtext);
+    }
+    BarnOwl::filter($filter, $newfilter);
+    return;
+}
+BarnOwl::new_variable_bool("showfilterchange",
+                           { default => 1,
+                             summary => 'Show modifications to filters by filterappend and friends.'});
 
 1;
