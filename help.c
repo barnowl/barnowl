@@ -57,7 +57,7 @@ void owl_help()
      "    C-r           Reply but allow editing of reply line\n"
      "\n"
      "    M-n           View zephyrs in selected conversation\n"
-     "    M-N           View zephyrs in selected converstaion of instance\n"
+     "    M-N           View zephyrs in selected conversation of instance\n"
      "    M-p           View only personal zephyrs\n"
      "    V             Change to back to home view ('all' by default)\n"
      "    v             Start a view command\n"

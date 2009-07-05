@@ -2569,7 +2569,7 @@ void owl_function_delete_curview_msgs(int flag)
  * a filter or null.  The caller must free this name.
  *
  * if the curmsg is a personal zephyr return a filter name
- *    to the zephyr converstaion with that user.
+ *    to the zephyr conversation with that user.
  * If the curmsg is a zephyr class message, instance foo, recip *,
  *    return a filter name to the class, inst.
  * If the curmsg is a zephyr class message and type==0 then 
