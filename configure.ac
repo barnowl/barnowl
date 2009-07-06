@@ -72,7 +72,8 @@ AC_ARG_WITH([zephyr],
 
 AS_IF([test "x$with_zephyr" != xno],
   [AC_CHECK_LIB([zephyr], [ZGetSender],
-   [AC_DEFINE([HAVE_LIBZEPHYR], [1],
+   [LIBS="$LIBS -lzephyr"
+    AC_DEFINE([HAVE_LIBZEPHYR], [1],
                 [Define if you have libzephyr])
     AC_CHECK_LIB([zephyr], [ZInitLocationInfo],
       AC_DEFINE([HAVE_LIBZEPHYR_ZINITLOCATIONINFO], [1],
