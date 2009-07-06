@@ -1,3 +1,33 @@
+1.2
+ * Fix some typos in source and messages. -adehnert
+ * Support an explicit --with{out,}-zephyr configure option. -nelhage
+ * Display a nicer error in :blist if .anyone doesn't exist. -geofft
+ * Don't zcrypt shift-R replies to zcrypted messages -adehnert
+ * Export a time_t for messages to perl as 'unix_time' -nelhage
+ * Get rid of cryptic numeric messages after IRC commands. -ezyang
+ * IRC: Include IRC admin messages in the 'irc' filter. -geofft
+ * Fix M-LEFT and M-RIGHT bindings. -nelhage
+ * Fix replycmd to use right class/instance -adehnert
+ * Allow SIGINT to interrupt getting the Zephyr buddy list -nelhage
+ * Break perlwrap.pm into multiple files. -nelhage
+ * Handle errors in perlwrap.pm better. -nelhage
+ * Don't attempt to send a Zephyr logout if we never initialized Zephyr. -nelhage
+ * Display personals better in OneLine mode. -adehnert
+ * Display context for pings -adehnert
+ * Support --program-{prefix,suffix,transform}. -nelhage
+ * Send instanced pings and give useful error messages -adehnert
+ * Add <message,*,%me%> to default Barnowl subs. -adehnert
+ * Maintain instance when using shift-R on personals -adehnert
+ * Improve handling of outgoing instanced personals -adehnert
+ * Don't require personals to be -i personal. -geofft
+ * Display context for personals, so as to make <message,*,%me> usable. -geofft
+ * Implement mark and swap in the message list. -asedeno
+ * Fix handling of C-SPACE. -nelhage
+ * Fix some warnings. -nelhage
+ * Handle SIGINT, and make ^C interrupt searches. -nelhage
+ * Fix the usage line for punt/unpunt -nelhage
+ * Small bugfixes to release scripts. -nelhage
+
 1.1.1
  * Fix bogus errors 'subscribing to login messages'. -nelhage
  * Correctly send Zephyr login notices at startup. -nelhage
