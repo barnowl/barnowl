@@ -45,17 +45,28 @@ elif test -d /usr/include/openssl; then
 else
         AC_MSG_RESULT(no)
 fi
-PROTECT_CFLAGS=${PROTECT_CFLAGS-"-fstack-protector"}
-SAVE_CFLAGS=$CFLAGS
-CFLAGS="$CFLAGS $PROTECT_CFLAGS"
-AC_MSG_CHECKING(whether protection cflags work)
-AC_COMPILE_IFELSE(int i;,
-    [AC_MSG_RESULT(yes)],
-    [AC_MSG_RESULT(no)
-    CFLAGS=$SAVE_CFLAGS])
 
+AC_ARG_WITH([stack-protector],
+  [AS_HELP_STRING([--with-stack-protector],
+    [Enable gcc -fstack-protector])],
+  [],
+  [with_stack_protector=check])
 
-AC_CHECK_LIB(ssp, __stack_chk_guard)
+AS_IF([test "x$with_stack_protector" != xno],
+  [
+    SAVE_CFLAGS=$CFLAGS
+    CFLAGS="$CFLAGS -fstack-protector"
+    AC_MSG_CHECKING(whether protection cflags work)
+    AC_COMPILE_IFELSE(int i;,
+        [AC_MSG_RESULT(yes)],
+        [AC_MSG_RESULT(no)
+        CFLAGS=$SAVE_CFLAGS
+        if test "x$with_stack_protector" != xcheck; then
+          AC_MSG_FAILURE([--with-stack-protector selected, but gcc does support it.])
+        fi])
+    AC_CHECK_LIB(ssp, __stack_chk_guard)
+  ])
+
 AC_CHECK_LIB(ncursesw, initscr,, AC_MSG_ERROR(No libncursesw found.))
 AC_CHECK_LIB(com_err, com_err)
 AC_CHECK_LIB(nsl, gethostbyname)
