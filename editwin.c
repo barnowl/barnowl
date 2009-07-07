@@ -55,6 +55,7 @@ static int owl_editwin_limit_maxcols(int v, int maxv);
 static int owl_editwin_check_dotsend(owl_editwin *e);
 static int owl_editwin_is_char_in(owl_editwin *e, char *set);
 static gunichar owl_editwin_get_char_at_point(owl_editwin *e);
+static int owl_editwin_replace_internal(owl_editwin *e, int replace, char *s);
 static char *oe_copy_buf(owl_editwin *e, char *buf, int len);
 static int oe_copy_region(owl_editwin *e);
 static int oe_display_column(owl_editwin *e);
@@ -563,12 +564,11 @@ static inline void oe_fixup(int *target, int start, int end, int change) {
   }
 }
 
-/* replace count characters at the point with s, returning the change in size */
+/* replace 'replace' characters at the point with s, returning the change in size */
 int owl_editwin_replace(owl_editwin *e, int replace, char *s)
 {
-  int start, end, i, free, need, size, change;
+  int start, end, i;
   char *p;
-  oe_excursion *x;
 
   if (!g_utf8_validate(s, -1, NULL)) {
     owl_function_debugmsg("owl_editwin_insert_string: received non-utf-8 string.");
@@ -582,6 +582,18 @@ int owl_editwin_replace(owl_editwin *e, int replace, char *s)
     end = p - e->buff;
   else
     end = e->bufflen;
+
+  return owl_editwin_replace_internal(e, end - start, s);
+}
+
+static int owl_editwin_replace_internal(owl_editwin *e, int replace, char *s)
+{
+  int start, end, free, need, size, change;
+  oe_excursion *x;
+  char *p;
+
+  start = e->index;
+  end   = start + replace;
 
   free = e->allocated - e->bufflen + end - start;
 
