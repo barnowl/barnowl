@@ -109,6 +109,9 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-[ B",   "editmulti:move-down-line", "");
   BIND_CMD("C-n",     "editmulti:move-down-line", "");
 
+  BIND_CMD("M-}",     "editmulti:forward-paragraph", "");
+  BIND_CMD("M-{",     "editmulti:backward-paragraph", "");
+
   /* This would be nice, but interferes with C-c to cancel */
   /*BIND_CMD("C-c C-c", "editmulti:done", "sends the zephyr");*/
 

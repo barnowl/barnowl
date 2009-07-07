@@ -1049,6 +1049,26 @@ void owl_editwin_move_to_top(owl_editwin *e)
   oe_set_index(e, e->lock);
 }
 
+void owl_editwin_backward_paragraph(owl_editwin *e)
+{
+  owl_editwin_point_move(e, -1);
+  for (; e->index >= e->lock; owl_editwin_point_move(e, -1)) {
+    if (e->index <= e->lock ||
+        ((e->buff[e->index] == '\n') && (e->buff[e->index - 1]=='\n')))
+      break;
+  }
+}
+
+void owl_editwin_forward_paragraph(owl_editwin *e)
+{
+  owl_editwin_point_move(e, 1);
+  /* scan forward to the start of the next paragraph */
+  for(; e->index < e->bufflen; owl_editwin_point_move(e, 1)) {
+    if (e->buff[e->index -1] == '\n' && e->buff[e->index] == '\n')
+      break;
+  }
+}
+
 static int oe_display_column(owl_editwin *e)
 {
   oe_excursion x;

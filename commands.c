@@ -938,6 +938,18 @@ owl_cmd commands_to_init[]
 		  "runs 'editmulti:done'.\n"\
 		  "Otherwise runs 'edit:delete-next-char'\n"),
 
+  OWLCMD_VOID_CTX("editmulti:forward-paragraph", owl_editwin_forward_paragraph,
+                  OWL_CTX_EDITMULTI,
+                  "Move forward to end of paragraph.",
+                  "",
+                  "Move the point to the end of the current paragraph"),
+
+  OWLCMD_VOID_CTX("editmulti:backward-paragraph", owl_editwin_backward_paragraph,
+                  OWL_CTX_EDITMULTI,
+                  "Move backward to the start of paragraph.",
+                  "",
+                  "Move the point to the start of the current paragraph"),
+
   /****************************************************************/
   /********************** POPLESS-SPECIFIC ************************/
   /****************************************************************/
