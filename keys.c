@@ -86,6 +86,10 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("C-@",         "edit:set-mark", "");
   BIND_CMD("C-x C-x",     "edit:exchange-point-and-mark", "");
 
+  BIND_CMD("M-w",         "edit:copy-region-as-kill", "");
+  BIND_CMD("C-w",         "edit:kill-region", "");
+  BIND_CMD("C-y",         "edit:yank", "");
+
   BIND_CMD("C-l",         "( edit:recenter ; redisplay )", "");
 
 

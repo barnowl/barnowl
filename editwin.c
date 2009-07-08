@@ -24,6 +24,7 @@ struct _owl_editwin { /*noproto*/
   int allocated;
   int index;
   int mark;
+  char *killbuf;
   int goal_column;
   int topindex;
   int cursorx;
@@ -40,11 +41,11 @@ struct _owl_editwin { /*noproto*/
   void *cbdata;
 };
 
-
 static void oe_reframe(owl_editwin *e);
 static void oe_save_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_release_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_restore_excursion(owl_editwin *e, oe_excursion *x);
+static void oe_restore_mark_only(owl_editwin *e, oe_excursion *x);
 static int oe_count_glyphs(char *s);
 static int oe_char_width(gunichar c, int column);
 static int oe_region_width(owl_editwin *e, int start, int end, int width);
@@ -55,6 +56,8 @@ static int owl_editwin_check_dotsend(owl_editwin *e);
 static int owl_editwin_is_char_in(owl_editwin *e, char *set);
 static gunichar owl_editwin_get_char_at_point(owl_editwin *e);
 static int owl_editwin_replace(owl_editwin *e, int count, char *s);
+static char *oe_copy_buf(owl_editwin *e, char *buf, int len);
+static int oe_copy_region(owl_editwin *e);
 
 #define INCR 4096
 
@@ -112,6 +115,9 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->allocated=INCR;
   oe_set_index(e, 0);
   oe_set_mark(e, -1);
+  if (e->killbuf != NULL)
+    free(e->killbuf);
+  e->killbuf = NULL;
   e->goal_column = -1;
   e->cursorx = -1;
   e->topindex = 0;
@@ -349,6 +355,15 @@ static void oe_restore_excursion(owl_editwin *e, oe_excursion *x)
   }
 }
 
+static void oe_restore_mark_only(owl_editwin *e, oe_excursion *x)
+{
+  if (x->valid == VALID_EXCURSION) {
+    e->mark = x->mark;
+
+    oe_release_excursion(e, x);
+  }
+}
+
 static inline char *oe_next_point(owl_editwin *e, char *p)
 {
   char *boundary = e->buff + e->bufflen + 1;
@@ -543,7 +558,7 @@ static int owl_editwin_replace(owl_editwin *e, int replace, char *s)
   need = strlen(s) - free;
   if (need > 0) {
     size = e->allocated + need + INCR - (need % INCR);
-    p = realloc(e->buff, size);
+    p = owl_realloc(e->buff, size);
     if (p == NULL) {
       /* XXX signal impending doom somehow and don't do anything */
       return 0;
@@ -914,21 +929,23 @@ void owl_editwin_move_to_previousword(owl_editwin *e)
 void owl_editwin_delete_nextword(owl_editwin *e)
 {
   oe_excursion x;
-  int distance;
 
   oe_save_excursion(e, &x);
-  distance = owl_editwin_forward_word(e);
-  oe_restore_excursion(e, &x);
-  owl_editwin_replace(e, distance, "");
+  oe_set_mark(e, e->index);
+  owl_editwin_forward_word(e);
+  owl_editwin_kill_region(e);
+  oe_restore_mark_only(e, &x);
 }
 
 void owl_editwin_delete_previousword(owl_editwin *e)
 {
-  /* go backwards to the last non-space character, then delete chars */
-  int distance;
+  oe_excursion x;
 
-  distance = owl_editwin_backward_word(e);
-  owl_editwin_replace(e, -distance, "");
+  oe_save_excursion(e, &x);
+  oe_set_mark(e, e->index);
+  owl_editwin_backward_word(e);
+  owl_editwin_kill_region(e);
+  oe_restore_mark_only(e, &x);
 }
 
 void owl_editwin_move_to_line_end(owl_editwin *e)
@@ -942,9 +959,65 @@ void owl_editwin_delete_to_endofline(owl_editwin *e)
   int distance;
 
   oe_save_excursion(e, &x);
+  owl_editwin_set_mark(e);
   distance = owl_editwin_move_to_end_of_line(e);
+  if (distance)
+    owl_editwin_kill_region(e);
+  else
+    owl_editwin_replace(e, 1, "");
   oe_restore_excursion(e, &x);
-  owl_editwin_replace(e, distance ? distance : 1, "");
+}
+
+void owl_editwin_yank(owl_editwin *e)
+{
+  if (e->killbuf != NULL)
+    owl_editwin_replace(e, 0, e->killbuf);
+}
+
+static char *oe_copy_buf(owl_editwin *e, char *buf, int len)
+{
+  char *p;
+
+  p = owl_malloc(len + 1);
+
+  if (p != NULL) {
+    owl_free(e->killbuf);
+    e->killbuf = p;
+    memcpy(e->killbuf, buf, len);
+    e->killbuf[len] = 0;
+  }
+
+  return p;
+}
+
+static int oe_copy_region(owl_editwin *e)
+{
+  char *p;
+  int start, end;
+
+  if (e->mark == -1)
+    return 0;
+
+  start = MIN(e->index, e->mark);
+  end = MAX(e->index, e->mark);
+
+  p = oe_copy_buf(e, e->buff + start, end - start);
+  if (p != NULL)
+    return end - start;
+  return 0;
+}
+
+void owl_editwin_copy_region_as_kill(owl_editwin *e)
+{
+  oe_copy_region(e);
+}
+
+void owl_editwin_kill_region(owl_editwin *e)
+{
+  if (e->index > e->mark)
+    owl_editwin_exchange_point_and_mark(e);
+
+  owl_editwin_replace(e, oe_copy_region(e), "");
 }
 
 void owl_editwin_move_to_line_start(owl_editwin *e)

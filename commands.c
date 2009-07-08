@@ -890,6 +890,21 @@ owl_cmd commands_to_init[]
 		  "exchanges the point and the mark",
 		  "", ""),
 
+  OWLCMD_VOID_CTX("edit:copy-region-as-kill", owl_editwin_copy_region_as_kill,
+		  OWL_CTX_EDIT,
+		  "copy the text between the point and the mark",
+		  "", ""),
+
+  OWLCMD_VOID_CTX("edit:kill-region", owl_editwin_kill_region,
+		  OWL_CTX_EDIT,
+		  "kill text between the point and the mark",
+		  "", ""),
+
+  OWLCMD_VOID_CTX("edit:yank", owl_editwin_yank,
+		  OWL_CTX_EDIT,
+		  "insert the current text from the kill buffer",
+		  "", ""),
+
   OWLCMD_VOID_CTX("editline:done", owl_command_editline_done, 
 		  OWL_CTX_EDITLINE,
 		  "completes the command (eg, executes command being composed)",
