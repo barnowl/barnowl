@@ -1162,7 +1162,7 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
         owl_editwin_replace(e, 1, " ");
       }
 
-      if (sentence)
+      if (sentence && g_unichar_isspace(owl_editwin_get_char_at_point(e)))
         owl_editwin_point_move(e, 1);
 
       while(g_unichar_isspace(owl_editwin_get_char_at_point(e))
