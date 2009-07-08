@@ -83,6 +83,9 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
 
   BIND_CMD("M-q",         "edit:fill-paragraph", "");
 
+  BIND_CMD("C-@",         "edit:set-mark", "");
+  BIND_CMD("C-x C-x",     "edit:exchange-point-and-mark", "");
+
   BIND_CMD("C-l",         "( edit:recenter ; redisplay )", "");
 
 

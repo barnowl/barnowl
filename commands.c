@@ -880,6 +880,16 @@ owl_cmd commands_to_init[]
 		  "replaces the text with the previous history",
 		  "", ""),
 
+  OWLCMD_VOID_CTX("edit:set-mark", owl_editwin_set_mark,
+		  OWL_CTX_EDIT,
+		  "sets the mark",
+		  "", ""),
+
+  OWLCMD_VOID_CTX("edit:exchange-point-and-mark", owl_editwin_exchange_point_and_mark,
+		  OWL_CTX_EDIT,
+		  "exchanges the point and the mark",
+		  "", ""),
+
   OWLCMD_VOID_CTX("editline:done", owl_command_editline_done, 
 		  OWL_CTX_EDITLINE,
 		  "completes the command (eg, executes command being composed)",

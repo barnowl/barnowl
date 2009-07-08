@@ -89,6 +89,17 @@ static inline void oe_set_index(owl_editwin *e, int index)
   e->index = index;
 }
 
+static inline void oe_set_mark(owl_editwin *e, int mark)
+{
+  e->mark = mark;
+}
+
+void owl_editwin_set_mark(owl_editwin *e)
+{
+  oe_set_mark(e, e->index);
+  /* owl_function_makemsg("Mark set."); */
+}
+
 /* initialize the editwin e.
  * 'win' is an already initialzed curses window that will be used by editwin
  */
@@ -100,7 +111,7 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->hist=hist;
   e->allocated=INCR;
   oe_set_index(e, 0);
-  e->mark = 0;
+  oe_set_mark(e, -1);
   e->goal_column = -1;
   e->cursorx = -1;
   e->topindex = 0;
@@ -298,6 +309,7 @@ void owl_editwin_recenter(owl_editwin *e)
 static void oe_save_excursion(owl_editwin *e, oe_excursion *x)
 {
   x->index = e->index;
+  x->mark = e->mark;
   x->goal_column = e->goal_column;
   x->lock = e->lock;
 
@@ -330,6 +342,7 @@ static void oe_restore_excursion(owl_editwin *e, oe_excursion *x)
   if (x->valid == VALID_EXCURSION) {
     oe_set_index(e, x->index);
     e->goal_column = x->goal_column;
+    e->mark = x->mark;
     e->lock = x->lock;
 
     oe_release_excursion(e, x);
@@ -496,6 +509,15 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
     doupdate();
 }
 
+static inline void oe_fixup(int *target, int start, int end, int change) {
+  if (*target > start) {
+    if (*target < end)
+      *target = end;
+    else
+      *target += change;
+  }
+}
+
 /* replace count characters at the point with s, returning the change in size */
 static int owl_editwin_replace(owl_editwin *e, int replace, char *s)
 {
@@ -536,14 +558,15 @@ static int owl_editwin_replace(owl_editwin *e, int replace, char *s)
   e->bufflen += change;
   e->index += strlen(s);
 
+  /* fix up the mark */
+  if (e->mark != -1)
+    oe_fixup(&e->mark, start, end, change);
   /* fix up any saved points after the replaced area */
-  for (x = e->excursions; x != NULL; x = x->next)
-    if (x->index > start) {
-      if (x->index < end)
-	x->index = end;
-      else
-	x->index += change;
-    }
+  for (x = e->excursions; x != NULL; x = x->next) {
+    oe_fixup(&x->index, start, end, change);
+    if (x->mark != -1)
+      oe_fixup(&x->mark, start, end, change);
+  }
 
   return change;
 }
@@ -643,6 +666,16 @@ void owl_editwin_insert_string(owl_editwin *e, char *s)
 static gunichar owl_editwin_get_char_at_point(owl_editwin *e)
 {
   return g_utf8_get_char(e->buff + e->index);
+}
+
+void owl_editwin_exchange_point_and_mark(owl_editwin *e) {
+  int tmp;
+
+  if (e->mark != -1) {
+    tmp = e->mark;
+    owl_editwin_set_mark(e);
+    oe_set_index(e, tmp);
+  }
 }
 
 int owl_editwin_point_move(owl_editwin *e, int delta)
