@@ -58,6 +58,7 @@ static gunichar owl_editwin_get_char_at_point(owl_editwin *e);
 static int owl_editwin_replace(owl_editwin *e, int count, char *s);
 static char *oe_copy_buf(owl_editwin *e, char *buf, int len);
 static int oe_copy_region(owl_editwin *e);
+static int oe_display_column(owl_editwin *e);
 
 #define INCR 4096
 
@@ -586,43 +587,28 @@ static int owl_editwin_replace(owl_editwin *e, int replace, char *s)
   return change;
 }
 
-#if 0 /*XXX*/
 /* linewrap the word just before the cursor.
  * returns 0 on success
  * returns -1 if we could not wrap.
  */
-static int _owl_editwin_linewrap_word(owl_editwin *e)
+static void _owl_editwin_linewrap_word(owl_editwin *e)
 {
-  int i;
-  char *ptr1, *start;
+  oe_excursion x;
   gunichar c;
 
-  start = e->buff + e->lock;
+  oe_save_excursion(e, &x);
 
-  ptr1 = e->buff + e->index;
-  ptr1 = g_utf8_find_prev_char(start, ptr1);
-
-  while (ptr1) {
-    c = g_utf8_get_char(ptr1);
-    if (owl_util_can_break_after(c)) {
-      if (c != ' ') {
-        i = ptr1 - e->buff;
-	oe_set_index(e, i);
-        _owl_editwin_insert_bytes(e, 1);
-        /* _owl_editwin_insert_bytes may move e->buff. */
-        ptr1 = e->buff + i;
-      }
-      *ptr1 = '\n';
-      return 0;
+  while (owl_editwin_point_move(e, -1)) {
+    c = owl_editwin_get_char_at_point(e);
+    if (owl_util_can_break_after(c) || c == '\n') {
+      if (c != '\n')
+        owl_editwin_replace(e, c != ' ' ? 0 : 1, "\n");
+      break;
     }
-    else if (c == '\n') {
-      return 0;
-    }
-    ptr1 = g_utf8_find_prev_char(start, ptr1);
   }
-  return -1;
+
+  oe_restore_excursion(e, &x);
 }
-#endif
 
 /* delete the character at the current point, following chars
  * shift left.
@@ -1035,80 +1021,83 @@ void owl_editwin_move_to_top(owl_editwin *e)
   oe_set_index(e, e->lock);
 }
 
+static int oe_display_column(owl_editwin *e)
+{
+  oe_excursion x;
+  int lineindex;
+
+  oe_save_excursion(e, &x);
+  owl_editwin_move_to_beginning_of_line(e);
+  lineindex = e->index;
+  oe_restore_excursion(e, &x);
+  return oe_region_width(e, lineindex, e->index, 0);
+}
+
 void owl_editwin_fill_paragraph(owl_editwin *e)
 {
-#if 0 /* XXX */
   oe_excursion x;
-  int i, save;
+  gunichar ch;
+  int sentence;
 
-  /* save our starting point */
   oe_save_excursion(e, &x);
 
-  save = e->index;
+  /* Mark the end of the paragraph */
+  owl_editwin_forward_paragraph(e);
+  /* Skip the trailing newline */
+  owl_editwin_point_move(e, -1);
+  owl_editwin_set_mark(e);
 
-  /* scan back to the beginning of this paragraph */
-  for (i=save; i>=e->lock; i--) {
-    if ( (i<=e->lock) ||
-	 ((e->buff[i]=='\n') && (e->buff[i-1]=='\n'))) {
-      oe_set_index(i + 1);
-      break;
-    }
-  }
+  owl_editwin_backward_paragraph(e);
 
-  /* main loop */
-  while (1) {
-    i = _owl_editwin_get_index_from_xy(e);
+  /* Don't mess with the leading newline */
+  if (owl_editwin_get_char_at_point(e) == '\n')
+    owl_editwin_point_move(e, 1);
 
-    /* bail if we hit the end of the buffer */
-    if (i >= e->bufflen || e->buff[i] == '\0') break;
-
-    /* bail if we hit the end of the paragraph */
-    if (e->buff[i] == '\n' && e->buff[i+1] == '\n') break;
-
+  /*
+   * First pass: Scan forward replacing all series of spaces with ' '
+   * (or nothing after CJK ideograms)
+   */
+  sentence = 0;
+  for(;e->index < e->mark; owl_editwin_point_move(e, 1)) {
     /* bail if we hit a trailing dot on the buffer */
-    if (e->buff[i] == '\n' && e->buff[i+1] == '.'
-        && ((i+2) >= e->bufflen || e->buff[i+2] == '\0'))
+    if (strcmp(e->buff + e->index, "\n.") == 0) {
+      owl_editwin_set_mark(e);
       break;
-
-    /* if we've travelled too far, linewrap */
-    if ((e->buffx) >= e->fillcol) {
-      int len = e->bufflen;
-      _owl_editwin_linewrap_word(e);
-      /* we may have added a character. */
-      if (i < save) save += e->bufflen - len;
-      oe_set_index(i);
     }
 
-    /* did we hit the end of a line too soon? */
-    /* asedeno: Here we replace a newline with a space. We may want to
-       consider removing the space if the characters to either side
-       are CJK ideograms.*/
-    i = _owl_editwin_get_index_from_xy(e);
-    if (e->buff[i] == '\n' && e->buffx < e->fillcol - 1) {
-      /* ********* we need to make sure we don't pull in a word that's too long ***********/
-      e->buff[i]=' ';
-    }
+    ch = owl_editwin_get_char_at_point(e);
 
-    /* fix spacing */
-    i = _owl_editwin_get_index_from_xy(e);
-    if (e->buff[i] == ' ' && e->buff[i+1] == ' ') {
-      if (e->buff[i-1] == '.' || e->buff[i-1] == '!' || e->buff[i-1] == '?') {
-	owl_editwin_key_right(e);
-      } else {
-	owl_editwin_delete_char(e);
-	/* if we did this ahead of the save point, adjust it. Changing
-           by one is fine here because we're only removing an ASCII
-           space. */
-	if (i < save) save--;
+    if (owl_util_can_break_after(ch) || ch == '\n') {
+      if (g_unichar_isspace(ch)) {
+        owl_editwin_replace(e, 1, " ");
       }
-    } else {
-      owl_editwin_key_right(e);
+
+      if (sentence)
+        owl_editwin_point_move(e, 1);
+
+      while(g_unichar_isspace(owl_editwin_get_char_at_point(e))
+            && e->index < e->mark) {
+        owl_editwin_delete_char(e);
+      }
     }
+
+    if(ch == '.' || ch == '!' || ch == '?')
+      sentence = 1;
+    else
+      sentence = 0;
   }
 
-  /* put cursor back at starting point */
+  owl_editwin_backward_paragraph(e);
+
+  /* Now go through inserting newlines as needed */
+  while(e->index < e->mark) {
+    /* if we've travelled too far, linewrap */
+    if (oe_display_column(e) >= e->fillcol)
+      _owl_editwin_linewrap_word(e);
+    owl_editwin_point_move(e, 1);
+  }
+
   oe_restore_excursion(e, &x);
-#endif
 }
 
 /* returns true if only whitespace remains */
