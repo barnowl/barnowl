@@ -46,7 +46,8 @@ void owl_global_init(owl_global *g) {
 
   g->rightshift=0;
 
-  owl_editwin_init(&(g->tw), NULL, owl_global_get_typwin_lines(g), g->cols, OWL_EDITWIN_STYLE_ONELINE, NULL);
+  g->tw = owl_editwin_allocate();
+  owl_editwin_init(g->tw, NULL, owl_global_get_typwin_lines(g), g->cols, OWL_EDITWIN_STYLE_ONELINE, NULL);
 
   owl_keyhandler_init(&g->kh);
   owl_keys_setup_keymaps(&g->kh);
@@ -146,7 +147,7 @@ void _owl_global_setup_windows(owl_global *g) {
   g->msgwin=newwin(1, cols, g->recwinlines+1, 0);
   g->typwin=newwin(typwin_lines, cols, g->recwinlines+2, 0);
 
-  owl_editwin_set_curswin(&(g->tw), g->typwin, typwin_lines, g->cols);
+  owl_editwin_set_curswin(g->tw, g->typwin, typwin_lines, g->cols);
 
   idlok(g->typwin, FALSE);
   idlok(g->recwin, FALSE);
@@ -260,7 +261,7 @@ WINDOW *owl_global_get_curs_typwin(owl_global *g) {
 /* typwin */
 
 owl_editwin *owl_global_get_typwin(owl_global *g) {
-  return(&(g->tw));
+  return(g->tw);
 }
 
 /* buffercommand */
@@ -477,7 +478,7 @@ void owl_global_resize(owl_global *g, int x, int y) {
   g->needrefresh=1;
   owl_mainwin_redisplay(&(g->mw));
   sepbar(NULL);
-  owl_editwin_redisplay(&(g->tw), 0);
+  owl_editwin_redisplay(g->tw, 0);
   owl_function_full_redisplay(&g);
 
   /* TODO: this should handle other forms of popwins */

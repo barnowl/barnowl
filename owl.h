@@ -423,24 +423,7 @@ typedef struct _owl_history {
   int repeats;
 } owl_history;
 
-typedef struct _owl_editwin {
-  char *buff;
-  owl_history *hist;
-  int bufflen;
-  int allocated;
-  int buffx, buffy;
-  int topline;
-  int winlines, wincols, fillcol, wrapcol;
-  WINDOW *curswin;
-  int style;
-  int lock;
-  int dotsend;
-  int echochar;
-
-  char *command;
-  void (*callback)(struct _owl_editwin*);
-  void *cbdata;
-} owl_editwin;
+typedef struct _owl_editwin owl_editwin;
 
 typedef struct _owl_keybinding {
   int  *keys;			/* keypress stack */
@@ -555,7 +538,7 @@ typedef struct _owl_global {
   int haveconfig;
   int config_format;
   void *buffercbdata;
-  owl_editwin tw;
+  owl_editwin *tw;
   owl_viewwin vw;
   void *perl;
   int debug;

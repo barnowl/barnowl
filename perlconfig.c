@@ -481,7 +481,7 @@ void owl_perlconfig_dispatch_free(owl_dispatch *d)
 
 void owl_perlconfig_edit_callback(owl_editwin *e)
 {
-  SV *cb = (SV*)(e->cbdata);
+  SV *cb = (SV*)owl_editwin_get_cbdata(e);
   SV *text;
   dSP;
 
@@ -508,7 +508,7 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
   LEAVE;
 
   SvREFCNT_dec(cb);
-  e->cbdata = NULL;
+  owl_editwin_set_cbdata(e, NULL);
 }
 
 void owl_perlconfig_mainloop()

@@ -6,7 +6,38 @@
 
 static const char fileIdent[] = "$Id$";
 
+struct _owl_editwin { /*noproto*/
+  char *buff;
+  owl_history *hist;
+  int bufflen;
+  int allocated;
+  int index;
+  int goal_column;
+  int topindex;
+  int winlines, wincols, fillcol, wrapcol;
+  WINDOW *curswin;
+  int style;
+  int lock;
+  int dotsend;
+  int echochar;
+
+  char *command;
+  void (*callback)(struct _owl_editwin*);
+  void *cbdata;
+};
+
+typedef struct { /*noproto*/
+  int index;
+  int goal_column;
+} _owl_editwin_excursion;
+
 #define INCR 5000
+
+#define WHITESPACE " \n\t"
+
+owl_editwin *owl_editwin_allocate(void) {
+  return owl_malloc(sizeof(owl_editwin));
+}
 
 /* initialize the editwin e.
  * 'win' is an already initialzed curses window that will be used by editwin
@@ -18,9 +49,9 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->bufflen=0;
   e->hist=hist;
   e->allocated=INCR;
-  e->buffx=0;
-  e->buffy=0;
-  e->topline=0;
+  e->index = 0;
+  e->goal_column = -1;
+  e->topindex=0;
   e->winlines=winlines;
   e->wincols=wincols;
   e->fillcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxfillcols(&g));
@@ -105,7 +136,7 @@ void owl_editwin_set_cbdata(owl_editwin *e, void *data) {
   e->cbdata = data;
 }
 
-void* owl_editwin_get_cbdata(owl_editwin *e) {
+void *owl_editwin_get_cbdata(owl_editwin *e) {
   return e->cbdata;
 }
 
@@ -134,12 +165,11 @@ int owl_editwin_limit_maxcols(int v, int maxv)
  */
 void owl_editwin_set_locktext(owl_editwin *e, char *text)
 {
-  e->buffx=0;
-  e->buffy=0;
+  e->index = 0;
   owl_editwin_overwrite_string(e, text);
   owl_editwin_overwrite_char(e, '\0');
   e->lock=strlen(text);
-  _owl_editwin_set_xy_by_index(e, e->lock);
+  e->index = e->lock;
   owl_editwin_redisplay(e, 0);
 }
 
@@ -166,8 +196,7 @@ void owl_editwin_new_style(owl_editwin *e, int newstyle, owl_history *h)
       if (ptr) {
 	e->bufflen=ptr - e->buff;
 	e->buff[e->bufflen]='\0';
-	e->buffx=0;
-	e->buffy=0;
+	e->index = 0;
       }
     }
   }
@@ -222,7 +251,7 @@ void _owl_editwin_addspace(owl_editwin *e)
 {
   e->buff=owl_realloc(e->buff, e->allocated+INCR);
   if (!e->buff) {
-    /* error */
+    /* error *//*XXXXXXXXXXXXXXXX*/
     return;
   }
   e->allocated+=INCR;
@@ -230,59 +259,55 @@ void _owl_editwin_addspace(owl_editwin *e)
 
 void owl_editwin_recenter(owl_editwin *e)
 {
-  e->topline=e->buffy-(e->winlines/2);
-  if (e->topline<0) e->topline=0;
-  if (e->topline>owl_editwin_get_numlines(e)) e->topline=owl_editwin_get_numlines(e);
+  e->topindex = -1;
+}
+static void owl_editwin_reframe(owl_editwin *e) { /* noproto */
+   e->topindex = 0; /*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/
 }
 
 /* regenerate the text on the curses window */
 /* if update == 1 then do a doupdate(), otherwise do not */
 void owl_editwin_redisplay(owl_editwin *e, int update)
 {
-  
-  char *ptr1, *ptr2, *ptr3, *buff;
+  int x = 0, y = 0;
+  char *ptop, *ptr2, *pbot, *buff;
+  char *target;
   int i;
 
   werase(e->curswin);
   wmove(e->curswin, 0, 0);
 
-  /* start at topline */
-  ptr1 = e->buff;
-  for (i = 0; i < e->topline; i++) {
-    ptr2 = strchr(ptr1, '\n');
-    if (!ptr2) {
-      /* we're already on the last line */
-      break;
-    }
-    ptr1 = ptr2 + 1;
-  }
-  /* ptr1 now stores the starting point */
+  if (e->topindex < 0 || e->index < e->topindex)
+    owl_editwin_reframe(e);
 
-  /* find the ending point and store it in ptr3 */
-  ptr2 = ptr1;
-  ptr3 = ptr1;
+  ptop = e->buff + e->topindex;
+  target = e->buff + e->index;
+
+  /* find the ending point and store it in pbot */
+  ptr2 = ptop;
+  pbot = ptop;
   for (i = 0; i < e->winlines; i++) {
-    ptr3 = strchr(ptr2, '\n');
-    if (!ptr3) {
+    pbot = strchr(ptr2, '\n');
+    if (!pbot) {
       /* we've hit the last line */
       /* print everything to the end */
-      ptr3 = e->buff + e->bufflen - 1;
-      ptr3--;
+      pbot = e->buff + e->bufflen - 1;
+      pbot--;
       break;
     }
-    ptr2 = ptr3 + 1;
+    ptr2 = pbot + 1;
   }
-  ptr3 += 2;
+  pbot += 2;
 
-  buff = owl_malloc(ptr3 - ptr1 + 50);
-  strncpy(buff, ptr1, ptr3 - ptr1);
-  buff[ptr3 - ptr1] = '\0';
+  buff = owl_malloc(pbot - ptop + 50);
+  strncpy(buff, ptop, pbot - ptop);
+  buff[pbot - ptop] = '\0';
   if (e->echochar == '\0') {
     waddstr(e->curswin, buff);
   } else {
     /* translate to echochar, *except* for the locktext */
     int len;
-    int dolocklen = e->lock - (ptr1 - e->buff);
+    int dolocklen = e->lock - (ptop - e->buff);
     char *locktext;
     char tmp = e->buff[dolocklen];
 
@@ -297,18 +322,50 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
       waddch(e->curswin, e->echochar);
     }
   }
-  wmove(e->curswin, e->buffy-e->topline, e->buffx + _owl_editwin_cursor_adjustment(e));
-  wnoutrefresh(e->curswin);
-  if (update == 1) {
-    doupdate();
+  { /* locates the point */
+    char *ptr1, *ptr2;
+    gunichar c;
+
+    ptr1 = ptop;
+    /* target sanitizing */
+    if ((target[0] & 0x80) && (~target[0] & 0x40)) {
+      /* middle of a utf-8 character, back up to previous character. */
+      target = g_utf8_find_prev_char(e->buff, target);
+    }
+    c = g_utf8_get_char(target);
+    while (g_unichar_ismark(c) && target > e->buff) {
+      /* Adjust the target off of combining characters and the like. */
+      target = g_utf8_find_prev_char(e->buff, target);
+      c = g_utf8_get_char(target);
+    }
+    /* If we start with a mark, something is wrong.*/
+    if (g_unichar_ismark(c)) return;
+    
+    /* Now our target should be acceptable. */
+    ptr2 = strchr(ptr1, '\n');
+    while (ptr2 != NULL && ptr2 < target) {
+      ++y;
+      ptr1 = ptr2 + 1;
+      ptr2 = strchr(ptr1, '\n');
+    }
+    ptr2 = ptr1;
+    while (ptr2 != NULL && ptr2 < target) {
+      c = g_utf8_get_char(ptr2);
+      x += mk_wcwidth(c);
+      ptr2 = g_utf8_next_char(ptr2);
+    }
   }
+  wmove(e->curswin, y, x);
+  wnoutrefresh(e->curswin);
+  if (update == 1)
+    doupdate();
   owl_free(buff);
 }
 
 /* Remove n bytes at cursor. */
 void _owl_editwin_remove_bytes(owl_editwin *e, int n) /*noproto*/
 {
-  int i = _owl_editwin_get_index_from_xy(e) + n;
+  int i = e->index + n;
   for (; i < e->bufflen; i++) {
     e->buff[i-n] = e->buff[i];
   }
@@ -320,16 +377,14 @@ void _owl_editwin_remove_bytes(owl_editwin *e, int n) /*noproto*/
 /* Insert n bytes at cursor.*/
 void _owl_editwin_insert_bytes(owl_editwin *e, int n) /*noproto*/
 {
-  int i, z;
+  int i;
 
   if ((e->bufflen + n) > (e->allocated - 5)) {
     _owl_editwin_addspace(e);
   }
 
-  z = _owl_editwin_get_index_from_xy(e);
-
-  if(z != e->bufflen) {
-    for (i = e->bufflen + n - 1; i > z; i--) {
+  if(e->index != e->bufflen) {
+    for (i = e->bufflen + n - 1; i > e->index; i--) {
       e->buff[i] = e->buff[i - n];
     }
   }
@@ -352,7 +407,7 @@ int _owl_editwin_linewrap_word(owl_editwin *e)
 
   start = e->buff + e->lock;
 
-  ptr1 = e->buff + _owl_editwin_get_index_from_xy(e);
+  ptr1 = e->buff + e->index;
   ptr1 = g_utf8_find_prev_char(start, ptr1);
 
   while (ptr1) {
@@ -360,7 +415,7 @@ int _owl_editwin_linewrap_word(owl_editwin *e)
     if (owl_util_can_break_after(c)) {
       if (c != ' ') {
         i = ptr1 - e->buff;
-        _owl_editwin_set_xy_by_index(e, i);
+	e->index = i;
         _owl_editwin_insert_bytes(e, 1);
         /* _owl_editwin_insert_bytes may move e->buff. */
         ptr1 = e->buff + i;
@@ -381,7 +436,7 @@ int _owl_editwin_linewrap_word(owl_editwin *e)
  */
 void owl_editwin_insert_char(owl_editwin *e, gunichar c)
 {
-  int z, i, ret, len;
+  int i, ret, len;
   char tmp[6];
   memset(tmp, '\0', 6);
 
@@ -404,10 +459,8 @@ void owl_editwin_insert_char(owl_editwin *e, gunichar c)
     _owl_editwin_addspace(e);
   }
 
-  /* get the insertion point */
-  z = _owl_editwin_get_index_from_xy(e);
-
   /* If we're going to insert at the last column do word wrapping, unless it's a \n */
+#if 0 /* XXX */
   if ((e->buffx + 1 == e->wrapcol) && (c != '\n')) {
     ret = _owl_editwin_linewrap_word(e);
     if (ret == -1) {
@@ -415,25 +468,25 @@ void owl_editwin_insert_char(owl_editwin *e, gunichar c)
       owl_editwin_insert_char(e, '\n');
     }
   }
+#endif
 
   /* shift all the other characters right */
   _owl_editwin_insert_bytes(e, len);
 
   /* insert the new character */
   for(i = 0; i < len; i++) {
-    e->buff[z + i] = tmp[i];
+    e->buff[e->index + i] = tmp[i];
   }
 
   /* advance the cursor */
-  z += len;
-  _owl_editwin_set_xy_by_index(e, z);
+  e->index += len;
 }
 
 /* overwrite the character at the current point with 'c' */
 void owl_editwin_overwrite_char(owl_editwin *e, gunichar c)
 {
-  int z, oldlen, newlen, i;
-  char tmp[6];
+  int oldlen, newlen, i;
+  char tmp[6], *t;
   memset(tmp, '\0', 6);
 
   /* \r is \n */
@@ -450,14 +503,11 @@ void owl_editwin_overwrite_char(owl_editwin *e, gunichar c)
   g_unichar_to_utf8(c, tmp);
   newlen = strlen(tmp);
 
-  z = _owl_editwin_get_index_from_xy(e);
-  {
-    char *t = g_utf8_find_next_char(e->buff + z, NULL);
-    oldlen = (t ? (t - (e->buff + z)) : 0);
-  }
+  t = g_utf8_find_next_char(e->buff + e->index, NULL);
+  oldlen = (t ? (t - (e->buff + e->index)) : 0);
 
   /* only if we are at the end of the buffer do we create new space here */
-  if (z == e->bufflen) {
+  if (e->index == e->bufflen) {
     if ((e->bufflen+newlen) > (e->allocated-5)) {
       _owl_editwin_addspace(e);
     }
@@ -471,18 +521,17 @@ void owl_editwin_overwrite_char(owl_editwin *e, gunichar c)
   }
   /* Overwrite the old char*/
   for (i = 0; i < newlen; i++) {
-    e->buff[z+i] = tmp[i];
+    e->buff[e->index + i] = tmp[i];
   }
        
   /* housekeeping */
-  if (z == e->bufflen) {
+  if (e->index == e->bufflen) {
     e->bufflen += newlen;
     e->buff[e->bufflen] = '\0';
   }
   
   /* advance the cursor */
-  z += newlen;
-  _owl_editwin_set_xy_by_index(e, z);
+  e->index += newlen;
 }
 
 /* delete the character at the current point, following chars
@@ -490,18 +539,14 @@ void owl_editwin_overwrite_char(owl_editwin *e, gunichar c)
  */ 
 void owl_editwin_delete_char(owl_editwin *e)
 {
-  int z;
   char *p1, *p2;
   gunichar c;
 
   if (e->bufflen == 0) return;
   
-  /* get the deletion point */
-  z = _owl_editwin_get_index_from_xy(e);
+  if (e->index == e->bufflen) return;
 
-  if (z == e->bufflen) return;
-
-  p1 = e->buff + z;
+  p1 = e->buff + e->index;
   p2 = g_utf8_next_char(p1);
   c = g_utf8_get_char(p2);
   while (g_unichar_ismark(c)) {
@@ -518,26 +563,22 @@ void owl_editwin_delete_char(owl_editwin *e)
  */
 void owl_editwin_transpose_chars(owl_editwin *e)
 {
-  int z;
   char *p1, *p2, *p3, *tmp;
 
   if (e->bufflen == 0) return;
   
-  /* get the cursor point */
-  z = _owl_editwin_get_index_from_xy(e);
-
-  if (z == e->bufflen) {
+  if (e->index == e->bufflen) {
     /* point is after last character */
-    z--;
+    e->index--;
   }  
 
-  if (z - 1 < e->lock) {
+  if (e->index - 1 < e->lock) {
     /* point is at beginning of buffer, do nothing */
     return;
   }
 
   /* Transpose two utf-8 unicode glyphs. */
-  p1 = e->buff + z;
+  p1 = e->buff + e->index;
 
   p2 = g_utf8_find_next_char(p1, NULL);
   while (p2 != NULL && g_unichar_ismark(g_utf8_get_char(p2))) {
@@ -557,7 +598,7 @@ void owl_editwin_transpose_chars(owl_editwin *e)
   strncat(tmp, p3, p1 - p3);
   strncpy(p3, tmp, p2 - p3);
   owl_free(tmp);
-  _owl_editwin_set_xy_by_index(e, p3 - e->buff);
+  e->index = p3 - e->buff;
 }
 
 /* insert 'string' at the current point, later text is shifted
@@ -602,124 +643,188 @@ void owl_editwin_overwrite_string(owl_editwin *e, char *string)
   }
 }
 
-/* get the index into e->buff for the current cursor
- * position.
- */
-int _owl_editwin_get_index_from_xy(owl_editwin *e)
+/* We assume index is not set to point to a mid-char */
+gunichar _owl_editwin_get_char_at_point(owl_editwin *e)
 {
-  int i;
-  char *ptr1, *ptr2;
-  gunichar c;
-
-  if (e->bufflen == 0) return(0);
-  
-  /* first go to the yth line */
-  ptr1 = e->buff;
-  for (i = 0; i < e->buffy; i++) {
-    ptr2= strchr(ptr1, '\n');
-    if (!ptr2) {
-      /* we're already on the last line */
-      break;
-    }
-    ptr1 = ptr2 + 1;
-  }
-
-  /* now go to the xth cell */
-  ptr2 = ptr1;
-  i = 0;
-  while (ptr2 != NULL && i < e->buffx && (ptr2 - e->buff) < e->bufflen) {
-    c = g_utf8_get_char(ptr2);
-    i += (c == '\n' ? 1 : mk_wcwidth(c));
-    ptr2 = g_utf8_next_char(ptr2);
-  }
-  while(ptr2 != NULL && g_unichar_ismark(g_utf8_get_char(ptr2))) {
-    ptr2 = g_utf8_next_char(ptr2);
-  }
-  if (ptr2 == NULL) return e->bufflen;
-  return(ptr2 - e->buff);
+  return g_utf8_get_char(e->buff + e->index);
 }
 
-/* We assume x,y are not set to point to a mid-char */
-gunichar _owl_editwin_get_char_at_xy(owl_editwin *e)
+void owl_editwin_save_excursion(owl_editwin *e, _owl_editwin_excursion *x) /*noproto*/
 {
-  return g_utf8_get_char(e->buff + _owl_editwin_get_index_from_xy(e));
+  x->index = e->index;
+  x->goal_column = e->goal_column;
 }
 
-
-void _owl_editwin_set_xy_by_index(owl_editwin *e, int index)
+void owl_editwin_restore_excursion(owl_editwin *e, _owl_editwin_excursion *x) /*noproto*/
 {
-  char *ptr1, *ptr2, *target;
-  gunichar c;
-
-  e->buffx = 0;
-  e->buffy = 0;
-
-  ptr1 = e->buff;
-  target = ptr1 + index;
-  /* target sanitizing */
-  if ((target[0] & 0x80) && (~target[0] & 0x40)) {
-    /* middle of a utf-8 character, back up to previous character. */
-    target = g_utf8_find_prev_char(e->buff, target);
-  }
-  c = g_utf8_get_char(target);
-  while (g_unichar_ismark(c) && target > e->buff) {
-    /* Adjust the target off of combining characters and the like. */
-    target = g_utf8_find_prev_char(e->buff, target);
-    c = g_utf8_get_char(target);
-  }
-  /* If we start with a mark, something is wrong.*/
-  if (g_unichar_ismark(c)) return;
-
-  /* Now our target should be acceptable. */
-  ptr2 = strchr(ptr1, '\n');
-  while (ptr2 != NULL && ptr2 < target) {
-    e->buffy++;
-    ptr1 = ptr2 + 1;
-    ptr2 = strchr(ptr1, '\n');
-  }
-  ptr2 = ptr1;
-  while (ptr2 != NULL && ptr2 < target) {
-    c = g_utf8_get_char(ptr2);
-    e->buffx += mk_wcwidth(c);
-    ptr2 = g_utf8_next_char(ptr2);
-  }
-}
-
-int _owl_editwin_cursor_adjustment(owl_editwin *e)
-{
-  char *ptr1, *ptr2;
-  gunichar c;
-  int x, i;
-
-  /* Find line */
-  ptr1 = e->buff;
-  ptr2 = strchr(ptr1, '\n');
-  for (i = 0; ptr2 != NULL && i < e->buffy; i++) {
-    ptr1 = ptr2 + 1;
-    ptr2 = strchr(ptr1, '\n');
-  }
-  ptr2 = ptr1;
-
-  /* Find char */
-  x = 0;
-  while (ptr2 != NULL && x < e->buffx) {
-    if (*ptr2 == '\n') return 0;
-    c = g_utf8_get_char(ptr2);
-    x += mk_wcwidth(c);
-    ptr2 = g_utf8_next_char(ptr2);
-  }
-  
-  /* calculate x offset */
-  return x - e->buffx;
+  e->index = x->index;
+  e->goal_column = x->goal_column;
 }
 
 void owl_editwin_adjust_for_locktext(owl_editwin *e)
 {
   /* if we happen to have the cursor over locked text
    * move it to be out of the locktext region */
-  if (_owl_editwin_get_index_from_xy(e) < e->lock) {
-    _owl_editwin_set_xy_by_index(e, e->lock);
+  if (e->index < e->lock) {
+    e->index = e->lock;
   }
+}
+
+int owl_editwin_point_move(owl_editwin *e, int delta) /*noproto*/
+{
+  char *p, *boundary;
+  int change, d = 0;
+
+  change = MAX(delta, - delta);
+  p = e->buff + e->index;
+
+  boundary = e->buff + (delta > 0 ? e->bufflen : e->lock);
+
+  while (d < change && p != NULL) {
+    if (delta > 0) {
+      p = g_utf8_find_next_char(p, boundary);
+      while (p && g_unichar_ismark(g_utf8_get_char(p)))
+	p = g_utf8_find_next_char(p, boundary);
+    } else {
+      p = g_utf8_find_prev_char(boundary, p);
+      while (p && g_unichar_ismark(g_utf8_get_char(p)))
+	p = g_utf8_find_prev_char(boundary, p);
+    }
+    if (p != NULL) {
+      e->index = p - e->buff;
+      d++;
+    }
+  }
+
+  if (delta)
+    e->goal_column = -1;
+
+  return delta > 0 ? d : -d;
+}
+
+int owl_editwin_at_beginning_of_buffer(owl_editwin *e) {
+  if (e->index == e->lock)
+    return 1;
+
+  return 0;
+}
+
+int owl_at_end_of_buffer(owl_editwin *e) {
+  if (e->index == e->bufflen)
+    return 1;
+
+  return 0;
+}
+
+int owl_editwin_at_beginning_of_line(owl_editwin *e) /*noproto*/
+{
+  _owl_editwin_excursion x;
+  int ret;
+
+  if (owl_editwin_at_beginning_of_buffer(e))
+    return 1;
+
+  owl_editwin_save_excursion(e, &x);
+  owl_editwin_point_move(e, -1);
+  ret = (_owl_editwin_get_char_at_point(e) == '\n');
+  owl_editwin_restore_excursion(e, &x);
+
+  return ret;
+}
+
+int _owl_editwin_is_char_in(owl_editwin *e, char *set) /*noproto*/
+{
+  char *p;
+  /* It would be awfully nice if we could do UTF-8 comparisons */
+  for (p = set; *p != 0; p++)
+    if (_owl_editwin_get_char_at_point(e) == *p)
+      return 1;
+  return 0;
+}
+
+int owl_editwin_move_if_in(owl_editwin *e, int delta, char *set) /*noproto*/
+{
+  int change, distance = 0;
+  while (_owl_editwin_is_char_in(e, set)) {
+    change = owl_editwin_point_move(e, delta);
+    distance += change;
+    if (change == 0)
+      break;
+  }
+  return distance;
+}
+
+int owl_editwin_move_if_not_in(owl_editwin *e, int delta, char *set) /*noproto*/
+{
+  int change, distance = 0;
+  while (!_owl_editwin_is_char_in(e, set)) {
+    change = owl_editwin_point_move(e, delta);
+    distance += change;
+    if (change == 0)
+      break;
+  }
+  return distance;
+}
+
+int owl_editwin_move_to_beginning_of_line(owl_editwin *e) /* noproto */
+{
+  int distance = 0;
+
+  if (!owl_editwin_at_beginning_of_line(e)) {
+    /* move off the \n if were at the end of a line */
+    distance += owl_editwin_point_move(e, -1);
+    distance += owl_editwin_move_if_not_in(e, -1, "\n");
+    if (distance && !owl_editwin_at_beginning_of_buffer(e))
+      distance += owl_editwin_point_move(e, 1);
+  }
+
+  return distance;
+}
+  
+int owl_editwin_move_to_end_of_line(owl_editwin *e) /* noproto */
+{
+  return owl_editwin_move_if_not_in(e, 1, "\n");
+}
+
+int owl_editwin_line_move(owl_editwin *e, int delta) /*noproto*/
+{
+  int goal_column, change, ll, count = 0, distance = 0;
+
+  if (e->goal_column == -1) {
+    if (owl_editwin_at_beginning_of_line(e))
+      goal_column = 0;
+    else {
+      goal_column = -owl_editwin_move_if_not_in(e, -1, "\n");
+      if (!owl_editwin_at_beginning_of_buffer(e))
+	goal_column -= owl_editwin_point_move(e, 1);
+    }
+  } else
+    goal_column = e->goal_column;
+
+  change = MAX(delta, -delta);
+
+  distance += owl_editwin_move_to_beginning_of_line(e);
+
+  while(count < change) {
+    if (delta > 0) {
+      distance += owl_editwin_move_if_not_in(e, 1, "\n");
+      distance += owl_editwin_point_move(e, 1);
+    } else {
+      /* I really want to assert delta < 0 here */
+      distance += owl_editwin_point_move(e, -1); /* to the newline on
+						    the previous line */
+      distance += owl_editwin_move_to_beginning_of_line(e);
+    }
+    count++;
+  }
+
+  distance += (ll = owl_editwin_move_to_end_of_line(e));
+  if (ll > goal_column)
+    distance += owl_editwin_point_move(e, goal_column - ll);
+
+  e->goal_column = goal_column;
+
+  return distance;
 }
 
 void owl_editwin_backspace(owl_editwin *e)
@@ -727,209 +832,87 @@ void owl_editwin_backspace(owl_editwin *e)
   /* delete the char before the current one
    * and shift later chars left
    */
-  if (_owl_editwin_get_index_from_xy(e) > e->lock) {
-    owl_editwin_key_left(e);
+  if(owl_editwin_point_move(e, -1))
     owl_editwin_delete_char(e);
-  }
-  owl_editwin_adjust_for_locktext(e);
 }
 
 void owl_editwin_key_up(owl_editwin *e)
 {
-  if (e->buffy > 0) e->buffy--;
-  if (e->buffx >= owl_editwin_get_numcells_on_line(e, e->buffy)) {
-    e->buffx=owl_editwin_get_numcells_on_line(e, e->buffy);
-  }
-
-  /* do we need to scroll? */
-  if (e->buffy-e->topline < 0) {
-    e->topline-=e->winlines/2;
-  }
-
-  owl_editwin_adjust_for_locktext(e);
+  owl_editwin_line_move(e, -1);
 }
 
 void owl_editwin_key_down(owl_editwin *e)
 {
-  /* move down if we can */
-  if (e->buffy+1 < owl_editwin_get_numlines(e)) e->buffy++;
-
-  /* if we're past the last character move back */
-  if (e->buffx >= owl_editwin_get_numcells_on_line(e, e->buffy)) {
-    e->buffx=owl_editwin_get_numcells_on_line(e, e->buffy);
-  }
-
-  /* do we need to scroll? */
-  if (e->buffy-e->topline > e->winlines) {
-    e->topline+=e->winlines/2;
-  }
-
-  /* adjust for locktext */
-  owl_editwin_adjust_for_locktext(e);
+  owl_editwin_line_move(e, 1);
 }
 
 void owl_editwin_key_left(owl_editwin *e)
 {
-  int i;
-  char * p;
-  i = _owl_editwin_get_index_from_xy(e);
-  p = e->buff + i;
-  p = g_utf8_find_prev_char(e->buff, p);
-  while (p && g_unichar_ismark(g_utf8_get_char(p))) {
-    p = g_utf8_find_prev_char(e->buff, p);
-  }
-  if (p == NULL) p = e->buff;
-  _owl_editwin_set_xy_by_index(e, p - e->buff);
-
-  if (e->buffy - e->topline < 0) {
-    e->topline -= e->winlines / 2;
-  }
-
-  /* make sure to avoid locktext */
-  owl_editwin_adjust_for_locktext(e);
+  owl_editwin_point_move(e, -1);
 }
 
 void owl_editwin_key_right(owl_editwin *e)
 {
-  int i;
-  char * p;
-  i = _owl_editwin_get_index_from_xy(e);
-  p = e->buff + i;
-  p = g_utf8_find_next_char(p, NULL);
-  while (p && g_unichar_ismark(g_utf8_get_char(p))) {
-    p = g_utf8_find_next_char(p, NULL);
-  }
-  if (p == NULL) {
-    _owl_editwin_set_xy_by_index(e, e->bufflen);
-  }
-  else {
-    _owl_editwin_set_xy_by_index(e, p - e->buff);
-  }
-
-  /* do we need to scroll down? */
-  if (e->buffy - e->topline >= e->winlines) {
-    e->topline += e->winlines / 2;
-  }
+  owl_editwin_point_move(e, 1);
 }
 
 void owl_editwin_move_to_nextword(owl_editwin *e)
 {
-  int i, x;
-  gunichar c = '\0';
-
   /* if we're starting on a space, find the first non-space */
-  i=_owl_editwin_get_index_from_xy(e);
-  if (e->buff[i]==' ') {
-    for (x=i; x<e->bufflen; x++) {
-      if (e->buff[x]!=' ' && e->buff[x]!='\n') {
-	_owl_editwin_set_xy_by_index(e, x);
-	break;
-      }
-    }
-  }
+  owl_editwin_move_if_in(e, 1, WHITESPACE);
 
-  /* find the next space, newline or end of line and go
-     there, if already at the end of the line, continue on to the next */
-  i=owl_editwin_get_numcells_on_line(e, e->buffy);
-  c = _owl_editwin_get_char_at_xy(e);
-  if (e->buffx < i) {
-    /* move right till end of line */
-    while (e->buffx < i) {
-      owl_editwin_key_right(e);
-      c = _owl_editwin_get_char_at_xy(e);
-      if (c == ' ') return;
-      if (e->buffx == i) return;
-    }
-  } else if (e->buffx == i) {
-    /* try to move down */
-    if (e->style==OWL_EDITWIN_STYLE_MULTILINE) {
-      if (e->buffy+1 < owl_editwin_get_numlines(e)) {
-	e->buffx=0;
-	e->buffy++;
-	owl_editwin_move_to_nextword(e);
-      }
-    }
-  }
+  /* now find the end of this word */
+  owl_editwin_move_if_not_in(e, 1, WHITESPACE);
 }
 
 /* go backwards to the last non-space character
  */
 void owl_editwin_move_to_previousword(owl_editwin *e)
 {
-  int i;
-  gunichar c;
-  char *ptr1, *ptr2;
+  _owl_editwin_excursion x;
+  int beginning;
+  /* if in middle of word, beginning of word */
 
-  /* are we already at the beginning of the word? */
-  c = _owl_editwin_get_char_at_xy(e);
-  i = _owl_editwin_get_index_from_xy(e);
-  ptr1 = e->buff + i;
-  if (*ptr1 != ' ' && *ptr1 != '\n' && *ptr1 != '\0' ) {
-    ptr1 = g_utf8_find_prev_char(e->buff, ptr1);
-    c = g_utf8_get_char(ptr1);
-    if (c == ' ' || c == '\n') {
-      owl_editwin_key_left(e);      
+  /* if at beginning of a word, find beginning of previous word */
+
+  if (_owl_editwin_is_char_in(e, WHITESPACE)) {
+    /* if in whitespace past end of word, find a word , the find the beginning*/
+    owl_editwin_move_if_in(e, -1, WHITESPACE); /* leaves us on the last
+						    character of the word */
+    owl_editwin_save_excursion(e, &x);
+    /* are we at the beginning of a word? */
+    owl_editwin_point_move(e, -1);
+    beginning = _owl_editwin_is_char_in(e, WHITESPACE);
+    owl_editwin_restore_excursion(e, &x);
+    if (beginning)
+      return;
+   } else {
+    /* in the middle of the word; */
+    owl_editwin_save_excursion(e, &x);
+    owl_editwin_point_move(e, -1);
+    if (_owl_editwin_is_char_in(e, WHITESPACE)) { /* we were at the beginning */
+      owl_editwin_move_to_previousword(e); /* previous case */
+      return;
+    } else {
+      owl_editwin_restore_excursion(e, &x);
     }
   }
-
-  /* are we starting on a space character? */
-  i = _owl_editwin_get_index_from_xy(e);
-  while (i > e->lock && (e->buff[i] == ' ' || e->buff[i] == '\n' || e->buff[i] == '\0')) {
-    /* find the first non-space */
-    owl_editwin_key_left(e);      
-    i = _owl_editwin_get_index_from_xy(e);
-  }
-
-  /* find the last non-space */
-  ptr1 = e->buff + _owl_editwin_get_index_from_xy(e);
-  while (ptr1 >= e->buff + e->lock) {
-    ptr2 = g_utf8_find_prev_char(e->buff, ptr1);
-    if (!ptr2) break;
-    
-    c = g_utf8_get_char(ptr2);
-    if (c == ' ' || c == '\n'){
-      break;
-    }
-    owl_editwin_key_left(e);
-    ptr1 = e->buff + _owl_editwin_get_index_from_xy(e);
-  }
+  owl_editwin_move_if_not_in(e, -1, WHITESPACE);
+  /* will go past */
+  if (e->index > e->lock)
+    owl_editwin_point_move(e, 1);
 }
-
 
 void owl_editwin_delete_nextword(owl_editwin *e)
 {
-  char *ptr1, *start;
-  gunichar c;
+  _owl_editwin_excursion x;
+  int end;
 
-  if (e->bufflen==0) return;
-
-  start = ptr1 = e->buff + _owl_editwin_get_index_from_xy(e);
-  /* if we start out on a space character then jump past all the
-     spaces up first */
-  while (*ptr1 == ' ' || *ptr1 == '\n') {
-    ++ptr1;
-  }
-
-  /* then jump past the next word */
-  
-  while (ptr1 && ptr1 - e->buff < e->bufflen) {
-    c = g_utf8_get_char(ptr1);
-    if (c == ' ' || c == '\n' || c == '\0') break;
-    ptr1 = g_utf8_find_next_char(ptr1, NULL);
-  }
-
-  if (ptr1) { /* We broke on a space, */
-    ptr1 = g_utf8_find_next_char(ptr1, NULL);
-    if (ptr1) { /* and there's a character after it, */
-      /* nuke everything back to our starting point. */
-      _owl_editwin_remove_bytes(e, ptr1 - start);
-      return;
-    }
-  }
-  
-  /* If we get here, we ran out of string, drop what's left. */
-  *start = '\0';
-  e->bufflen = start - e->buff;
+  owl_editwin_save_excursion(e, &x);
+  owl_editwin_move_to_nextword(e);
+  end = e->index;
+  owl_editwin_restore_excursion(e, &x);
+  _owl_editwin_remove_bytes(e, end - e->index);
 }
 
 void owl_editwin_delete_previousword(owl_editwin *e)
@@ -937,84 +920,60 @@ void owl_editwin_delete_previousword(owl_editwin *e)
   /* go backwards to the last non-space character, then delete chars */
   int startpos, endpos;
 
-  startpos = _owl_editwin_get_index_from_xy(e);
+  startpos = e->index;
   owl_editwin_move_to_previousword(e);
-  endpos = _owl_editwin_get_index_from_xy(e);
+  endpos = e->index;
   _owl_editwin_remove_bytes(e, startpos-endpos);
-}
-
-void owl_editwin_delete_to_endofline(owl_editwin *e)
-{
-  int i;
-
-  if (owl_editwin_get_numchars_on_line(e, e->buffy) > e->buffx) {
-    /* normal line */
-    i=_owl_editwin_get_index_from_xy(e);
-    while(i < e->bufflen) {
-      if (e->buff[i]!='\n') {
-	owl_editwin_delete_char(e);
-      } else if ((e->buff[i]=='\n') && (i==e->bufflen-1)) {
-	owl_editwin_delete_char(e);
-      } else {
-	return;
-      }
-    }
-  } else if (e->buffy+1 < owl_editwin_get_numlines(e)) {
-    /* line with cursor at the end but not on very last line */
-    owl_editwin_key_right(e);
-    owl_editwin_backspace(e);
-  }
 }
 
 void owl_editwin_move_to_line_end(owl_editwin *e)
 {
-  e->buffx=owl_editwin_get_numcells_on_line(e, e->buffy);
+  owl_editwin_move_to_end_of_line(e);
+}
+
+void owl_editwin_delete_to_endofline(owl_editwin *e)
+{
+  _owl_editwin_excursion x;
+  int end;
+
+  owl_editwin_save_excursion(e, &x);
+  owl_editwin_move_to_line_end(e);
+  end = e->index;
+  owl_editwin_restore_excursion(e, &x);
+  _owl_editwin_remove_bytes(e, end - e->index);
 }
 
 void owl_editwin_move_to_line_start(owl_editwin *e)
 {
-  e->buffx=0;
-  owl_editwin_adjust_for_locktext(e);
+  owl_editwin_move_to_beginning_of_line(e);
 }
 
 void owl_editwin_move_to_end(owl_editwin *e)
 {
-  /* go to last char */
-  e->buffy=owl_editwin_get_numlines(e)-1;
-  e->buffx=owl_editwin_get_numcells_on_line(e, e->buffy);
-  owl_editwin_key_right(e);
-
-  /* do we need to scroll? */
-  /*
-  if (e->buffy-e->topline > e->winlines) {
-    e->topline+=e->winlines/2;
-  }
-  */
-  owl_editwin_recenter(e);
+  e->index = e->bufflen;
 }
 
 void owl_editwin_move_to_top(owl_editwin *e)
 {
-  _owl_editwin_set_xy_by_index(e, 0);
-
-  /* do we need to scroll? */
-  e->topline=0;
-
-  owl_editwin_adjust_for_locktext(e);
+  e->index = e->lock;
 }
 
 void owl_editwin_fill_paragraph(owl_editwin *e)
 {
+#if 0 /* XXX */
+  _owl_editwin_excursion x;
   int i, save;
 
   /* save our starting point */
-  save=_owl_editwin_get_index_from_xy(e);
+  owl_editwin_save_excursion(e, &x);
+
+  save = e->index;
 
   /* scan back to the beginning of this paragraph */
   for (i=save; i>=e->lock; i--) {
     if ( (i<=e->lock) ||
 	 ((e->buff[i]=='\n') && (e->buff[i-1]=='\n'))) {
-      _owl_editwin_set_xy_by_index(e, i+1);
+      e->index = i + 1;
       break;
     }
   }
@@ -1040,7 +999,7 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
       _owl_editwin_linewrap_word(e);
       /* we may have added a character. */
       if (i < save) save += e->bufflen - len;
-      _owl_editwin_set_xy_by_index(e, i);
+      e->index = i;
     }
 
     /* did we hit the end of a line too soon? */
@@ -1071,19 +1030,14 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
   }
 
   /* put cursor back at starting point */
-  _owl_editwin_set_xy_by_index(e, save);
-
-  /* do we need to scroll? */
-  if (e->buffy-e->topline < 0) {
-    e->topline-=e->winlines/2;
-  }
+  owl_editwin_restore_excursion(e, &x);
+#endif
 }
 
 /* returns true if only whitespace remains */
 int owl_editwin_is_at_end(owl_editwin *e)
 {
-  int cur=_owl_editwin_get_index_from_xy(e);
-  return (only_whitespace(e->buff+cur));
+  return (only_whitespace(e->buff + e->index));
 }
 
 int owl_editwin_check_dotsend(owl_editwin *e)
@@ -1116,10 +1070,7 @@ int owl_editwin_check_dotsend(owl_editwin *e)
 
 void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
 {
-  /* check if we need to scroll down */
-  if (e->buffy-e->topline >= e->winlines) {
-    e->topline+=e->winlines/2;
-  }
+  /* XXX force a redisplay? */
   if ((j.ch==13 || j.ch==10) && owl_editwin_check_dotsend(e)) {
     owl_command_editmulti_done(e);
     return;
@@ -1178,39 +1129,11 @@ int owl_editwin_get_numchars_on_line(owl_editwin *e, int line)
   return i;
 }
 
-int owl_editwin_get_numcells_on_line(owl_editwin *e, int line)
-{
-  int i;
-  char *ptr1, *ptr2;
-  gunichar c;
-
-  if (e->bufflen==0) return(0);
-  
-  /* first go to the yth line */
-  ptr1=e->buff;
-  for (i=0; i<line; i++) {
-    ptr2=strchr(ptr1, '\n');
-    if (!ptr2) {
-      /* we're already on the last line */
-      return(0);
-    }
-    ptr1=ptr2+1;
-  }
-
-  /* now count cells */
-  i = 0;
-  ptr2 = ptr1;
-  while (ptr2 - e->buff < e->bufflen
-	 && *ptr2 != '\n') {
-    c = g_utf8_get_char(ptr2);
-    i += mk_wcwidth(c);
-    ptr2 = g_utf8_next_char(ptr2);
-  }
-  return i;
-}
-
 int owl_editwin_get_numlines(owl_editwin *e)
 {
   return(owl_text_num_lines(e->buff));
 }
 
+int owl_editwin_get_echochar(owl_editwin *e) {
+  return e->echochar;
+}
