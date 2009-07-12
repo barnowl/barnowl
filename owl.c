@@ -144,7 +144,7 @@ int main(int argc, char **argv, char **env)
 
   /* turn ISTRIP off */
   tcgetattr(0, &tio);
-  tio.c_iflag &= ~ISTRIP;
+  tio.c_iflag &= ~(ISTRIP|IEXTEN);
   tio.c_cc[VQUIT] = 0;
   tcsetattr(0, TCSAFLUSH, &tio);
 
