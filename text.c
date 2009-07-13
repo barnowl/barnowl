@@ -126,6 +126,45 @@ char *owl_text_htmlstrip(char *in)
   return(out2);
 }
 
+#define OWL_TAB_WIDTH 8
+
+/* Caller must free return */
+char *owl_text_expand_tabs(char *in)
+{
+  int ntabs = 0;
+  char *p = in;
+  char *ret, *out;
+  int col;
+
+  while(*p) {
+    if (*(p++) == '\t') ntabs++;
+  }
+
+  ret = owl_malloc(strlen(in) + 1 + OWL_TAB_WIDTH * ntabs);
+
+  p = in;
+  out = ret;
+
+  col = 0;
+  while(*p) {
+    switch(*p) {
+    case '\t':
+      do {*(out++) = ' '; col++; } while (col % OWL_TAB_WIDTH);
+      break;
+    case '\n':
+      col = -1;
+    default:
+      col++;
+      *(out++) = *p;
+    }
+    p++;
+  }
+
+  *out = 0;
+
+  return ret;
+}
+
 /* caller must free the return */
 char *owl_text_wordwrap(char *in, int col)
 {
