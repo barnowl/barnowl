@@ -272,7 +272,7 @@ sub on_endofwhois {
         BarnOwl::Style::boldify("/whois for " . [$evt->args]->[1] . ":\n") .
         $self->whois_tmp
     );
-    $self->whois_tmp([]);
+    $self->whois_tmp('');
 }
 
 sub on_mode {
