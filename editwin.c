@@ -1198,30 +1198,21 @@ int owl_editwin_is_at_end(owl_editwin *e)
 
 static int owl_editwin_check_dotsend(owl_editwin *e)
 {
-  char *p, *p_n, *p_p;
-  gunichar c;
+  int zdot;
+  oe_excursion x;
 
   if (!e->dotsend) return(0);
+  if (e->index != e->bufflen) return (0);
 
-  p = g_utf8_find_prev_char(e->buff, e->buff + e->bufflen);
-  p_n = g_utf8_find_next_char(p, NULL);
-  p_p = g_utf8_find_prev_char(e->buff, p);
-  c = g_utf8_get_char(p);
-  while (p != NULL) {
-    if (*p == '.'
-	&& p_p != NULL && (*p_p == '\n' || *p_p == '\r')
-	&& p_n != NULL && (*p_n == '\n' || *p_n == '\r')) {
-      e->bufflen = p - e->buff;
-      e->buff[e->bufflen] = '\0';
-      return(1);
-    }
-    if (c != '\0' && !g_unichar_isspace(c)) return(0);
-    p_n = p;
-    p = p_p;
-    c = g_utf8_get_char(p);
-    p_p = g_utf8_find_prev_char(e->buff, p);
-  }
-  return(0);
+  oe_save_excursion(e, &x);
+
+  owl_editwin_point_move(e, -3);
+
+  zdot = (strcmp(e->buff + e->index, "\n.\n") == 0);
+
+  oe_restore_excursion(e, &x);
+
+  return zdot;
 }
 
 void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
