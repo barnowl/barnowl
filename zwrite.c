@@ -8,8 +8,9 @@ static const char fileIdent[] = "$Id$";
 
 int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 {
-  int argc, badargs, myargc;
+  int argc, badargs, myargc, i, len;
   char **argv, **myargv;
+  char *msg = NULL;
 
   badargs=0;
   
@@ -90,15 +91,19 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       /* Once we have -m, gobble up everything else on the line */
       myargv++;
       myargc--;
-      z->message = owl_strdup("");
-      while (myargc) {
-	z->message=owl_realloc(z->message, strlen(z->message)+strlen(myargv[0])+5);
-	strcat(z->message, myargv[0]);
-	strcat(z->message, " ");
-	myargc--;
-	myargv++;
+      len = 0;
+      for (i=0;i<myargc;i++) {
+        len += strlen(myargv[i-1]) + 1;
       }
-      z->message[strlen(z->message)-1]='\0'; /* remove last space */
+      msg = owl_malloc(len);
+      msg[0] = '\0';
+      while (myargc) {
+        strcat(msg, myargv[0]);
+        strcat(msg, " ");
+        myargc--;
+        myargv++;
+      }
+      msg[strlen(msg)-1] = '\0';
       break;
     } else if (!strcmp(myargv[0], "-C")) {
       z->cc=1;
@@ -135,7 +140,12 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
   if (z->realm==NULL) z->realm=owl_strdup("");
   if (z->opcode==NULL) z->opcode=owl_strdup("");
   /* z->message is allowed to stay NULL */
-  
+
+  if(msg) {
+    owl_zwrite_set_message(z, msg);
+    owl_free(msg);
+  }
+
   return(0);
 }
 
@@ -221,7 +231,7 @@ void owl_zwrite_set_message(owl_zwrite *z, char *msg)
 {
   int i, j;
   char *toline = NULL;
-  char *tmp = NULL;
+  char *tmp = NULL, *tmp2;
 
   if (z->message) owl_free(z->message);
 
@@ -239,12 +249,16 @@ void owl_zwrite_set_message(owl_zwrite *z, char *msg)
       tmp = NULL;
     }
     tmp = owl_validate_utf8(msg);
-    z->message=owl_sprintf("%s\n%s", toline, tmp);
+    tmp2 = owl_text_expand_tabs(tmp);
+    z->message=owl_sprintf("%s\n%s", toline, tmp2);
     owl_free(toline);
+    owl_free(tmp);
+    owl_free(tmp2);
   } else {
-    z->message=owl_validate_utf8(msg);
+    tmp=owl_validate_utf8(msg);
+    z->message=owl_text_expand_tabs(tmp);
+    owl_free(tmp);
   }
-  if (tmp) owl_free(tmp);
 }
 
 char *owl_zwrite_get_message(owl_zwrite *z)
