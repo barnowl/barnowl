@@ -4,6 +4,7 @@ use warnings;
 package BarnOwl::Hooks;
 
 use Carp;
+use List::Util qw(first);
 
 =head1 BarnOwl::Hooks
 
@@ -205,7 +206,17 @@ sub _new_command {
             }
             BarnOwl::command($command . " " . join(" ", @_))
           };
+        if(defined(*{"${package}::EXPORT_OK"}{ARRAY})
+          && !contains(*{"${package}::EXPORT_OK"}{ARRAY}, $symbol)) {
+            push @{*{"${package}::EXPORT_OK"}{ARRAY}}, $symbol;
+        }
     }
+}
+
+sub contains {
+    my $list = shift;
+    my $what = shift;
+    return defined(first {$_ eq $what} @$list);
 }
 
 1;

@@ -3,6 +3,21 @@ use warnings;
 
 package BarnOwl;
 
+use base qw(Exporter);
+our @EXPORT_OK = qw(command getcurmsg getnumcols getidletime
+                    zephyr_getsender zephyr_getrealm zephyr_zwrite
+                    zephyr_stylestrip zephyr_smartstrip_user zephyr_getsubs
+                    queue_message admin_message
+                    start_question start_password start_edit_win
+                    get_data_dir get_config_dir popless_text popless_ztext
+                    error
+                    create_style getnumcolors wordwrap
+                    add_dispath remove_dispatch
+                    new_command
+                    new_variable_int new_variable_bool new_variable_string
+                    quote);
+our %EXPORT_TAGS = (all => \@EXPORT_OK);
+
 BEGIN {
 # bootstrap in C bindings and glue
     *owl:: = \*BarnOwl::;

@@ -19,6 +19,7 @@ use base qw(Exporter);
 our @EXPORT_OK = qw(text_before_point text_after_point replace
                     point_move replace_region get_region
                     save_excursion current_column point mark);
+our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 sub text_before_point {
     save_excursion {
