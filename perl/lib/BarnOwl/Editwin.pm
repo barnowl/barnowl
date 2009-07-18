@@ -23,16 +23,16 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 sub text_before_point {
     save_excursion {
-        BarnOwl::command('edit:set-mark');
-        BarnOwl::command('edit:move-to-buffer-start');
+        set_mark();
+        move_to_buffer_start();
         get_region();
     }
 }
 
 sub text_after_point {
     save_excursion {
-        BarnOwl::command('edit:set-mark');
-        BarnOwl::command('edit:move-to-buffer-end');
+        set_mark();
+        move_to_buffer_end();
         get_region();
     }
 }
