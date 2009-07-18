@@ -355,6 +355,6 @@ if($@) {
     $BarnOwl::Hooks::mainLoop->add(\&poll_messages);
 }
 
-BarnOwl::filter('twitter type ^twitter$');
+BarnOwl::filter(qw{twitter type ^twitter$});
 
 1;
