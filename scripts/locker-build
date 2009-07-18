@@ -74,7 +74,7 @@ $TAR -C "$TMPDIR" -xzf "$SRC_TGZ" || die "Unable to untar"
 
 (
     cd "$TMPDIR"/* || die "Unable to cd to $TMPDIR"
-    VERS=$(perl -ne 'print $1 if m{^#define\s*OWL_VERSION_STRING\s*"([^"]+)"}' owl.h)
+    VERS=$(perl -ne 'print $1 if m{^AC_INIT\(\[[^\]]+\],\s*\[([^\]]+)\]}' configure.ac)
     test -z "$VERS" && die "Unable to detect barnowl version."
 
     echo "Building BarnOwl version $VERS"

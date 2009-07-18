@@ -5,7 +5,7 @@ die() {
     exit 1
 }
 
-VERS=$(perl -lne 'print $1 if m{^#define\s+OWL_VERSION_STRING\s+"([^"]+)"\s*$}' owl.h) \
+VERS=$(perl -ne 'print $1 if m{^AC_INIT\(\[[^\]]+\],\s*\[([^\]]+)\]}' configure.ac) \
     || die "Unable to parse barnowl version"
 TAG=barnowl-$VERS
 TGZ="$TAG-src"
@@ -28,7 +28,7 @@ git archive --format=tar --prefix="$TGZ/" "$TAG" | tar -x -C "$TMPDIR"
 
 CODIR=$(pwd)
 cd "$TMPDIR/$TGZ"
-autoreconf
+autoreconf -fvi
 cd "$TMPDIR"
 tar czvf "$TGZ.tgz" "$TGZ"
 cd "$CODIR"

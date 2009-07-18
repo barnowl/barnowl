@@ -1,0 +1,39 @@
+top_srcdir=@top_srcdir@
+srcdir=@srcdir@
+prefix=@prefix@
+datadir=@datadir@/barnowl
+datarootdir=@datarootdir@
+
+INSTALL=@INSTALL@
+INSTALL_PROGRAM=@INSTALL_PROGRAM@
+INSTALL_DATA=@INSTALL_DATA@
+install_sh = @install_sh@
+mkinstalldirs = $(install_sh) -d
+
+PERL_MODULES = Jabber IRC WordWrap
+MODULE_DIRS = $(PERL_MODULES)
+
+all: modules
+clean: modules_clean
+
+modules: $(MODULE_DIRS)
+modules_clean: $(MODULE_DIRS:%=clean_%)
+
+$(MODULE_DIRS): %: %/Makefile
+	( cd $@ && $(MAKE) $(notdir $@).par )
+
+$(MODULE_DIRS:=/Makefile): %/Makefile: %/Makefile.PL
+	( cd $(dir $@) && perl -I../../lib Makefile.PL )
+
+$(MODULE_DIRS:%=clean_%): clean_%:
+	(cd $* && (test ! -f Makefile || $(MAKE) clean))
+
+install: installdirs $(PERL_MODULES:%=module_install_%)
+
+installdirs:
+	$(mkinstalldirs) ${DESTDIR}${datadir}/modules/
+
+$(PERL_MODULES:%=module_install_%): module_install_%:
+	${INSTALL_DATA} $*/$*.par ${DESTDIR}${datadir}/modules/$*.par
+
+.PHONY: clean modules $(PERL_MODULES:%=module_install_%)
