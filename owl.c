@@ -235,6 +235,8 @@ int main(int argc, char **argv, char **env)
     exit(1);
   }
 
+  owl_global_complete_setup(&g);
+
   /* setup the default filters */
   /* the personal filter will need to change again when AIM chat's are
    *  included.  Also, there should be an %aimme% */

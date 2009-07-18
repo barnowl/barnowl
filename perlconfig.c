@@ -428,6 +428,31 @@ void owl_perlconfig_newmsg(owl_message *m, char *subname)
   if (ptr) owl_free(ptr);
 }
 
+void owl_perlconfig_new_command(char *name)
+{
+  int i, count;
+  SV *rv;
+  dSP;
+
+  ENTER;
+  SAVETMPS;
+
+  PUSHMARK(SP);
+  XPUSHs(sv_2mortal(newSVpv(name, 0)));
+  PUTBACK;
+
+  call_pv("BarnOwl::Hooks::_new_command", G_SCALAR|G_VOID);
+
+  SPAGAIN;
+
+  if(SvTRUE(ERRSV)) {
+    owl_function_error("%s", SvPV_nolen(ERRSV));
+  }
+
+  FREETMPS;
+  LEAVE;
+}
+
 char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
 {
   int i, count;

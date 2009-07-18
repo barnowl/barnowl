@@ -168,35 +168,6 @@ sub _receive_msg_legacy_wrap {
     return &BarnOwl::Hooks::_receive_msg($m);
 }
 
-=head2 AUTOLOAD
-
-BarnOwl.pm has a C<AUTOLOAD> method that translates unused names in
-the BarnOwl:: namespace to a call to BarnOwl::command() with that
-command. Underscores are also translated to C<->s, so you can do
-e.g. C<BarnOwl::start_command()> and it will be translated into
-C<start-command>.
-
-So, if you're looking for functionality that you can't find in the
-perl interface, check C<:show commands> or C<commands.c> in the
-BarnOwl source tree -- there's a good chance it exists as a BarnOwl
-command.
-
-=head3 BUGS
-
-There are horrible quoting issues here. The AUTOLOAD simple joins your
-commands with spaces and passes them unmodified to C<::command>
-
-=cut
-
-# make BarnOwl::<command>("foo") be aliases to BarnOwl::command("<command> foo");
-sub AUTOLOAD {
-    our $AUTOLOAD;
-    my $called = $AUTOLOAD;
-    $called =~ s/.*:://;
-    $called =~ s/_/-/g;
-    return &BarnOwl::command("$called ".join(" ",@_));
-}
-
 =head2 new_command NAME FUNC [{ARGS}]
 
 Add a new owl command. When owl executes the command NAME, FUNC will

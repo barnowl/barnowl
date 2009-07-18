@@ -3,6 +3,8 @@ use warnings;
 
 package BarnOwl::Hooks;
 
+use Carp;
+
 =head1 BarnOwl::Hooks
 
 =head1 DESCRIPTION
@@ -179,5 +181,31 @@ sub _get_quickstart {
     return join("\n", $getQuickstart->run);
 }
 
+sub _new_command {
+    my $command = shift;
+    (my $symbol = $command) =~ s/-/_/g;
+    my $package = "BarnOwl";
+
+    if($symbol =~ m{^edit:(.+)$}) {
+        $symbol = $1;
+        $package = "BarnOwl::Editwin";
+    } else {
+        $symbol =~ s/:/_/;
+    }
+    {
+        no strict 'refs';
+        if(defined(*{"${package}::${symbol}"}{CODE})) {
+            return;
+        }
+        *{"${package}::${symbol}"} = sub {
+            if(@_ == 1 && $_[0] =~ m{\s}) {
+                carp "DEPRECATED: ${package}::${symbol}: Tokenizing argument on ' '.\n"
+                . "In future versions, the argument list will be passed to\n"
+                . "'$command' directly. Tokenize yourself, or use BarnOwl::command()\n"
+            }
+            BarnOwl::command($command . " " . join(" ", @_))
+          };
+    }
+}
 
 1;

@@ -26,12 +26,12 @@ int owl_cmddict_init(owl_cmddict *cd) {
 /* for bulk initialization at startup */
 int owl_cmddict_add_from_list(owl_cmddict *cd, owl_cmd *cmds) {
   owl_cmd *cur, *cmd;
-  for (cur = cmds; cur->name != NULL; cur++) {  
-    cmd = owl_malloc(sizeof(owl_cmd));
-    owl_cmd_create_from_template(cmd, cur);
-    owl_dict_insert_element(cd, cmd->name, (void*)cmd, NULL);
+  int ret = 0;
+  for (cur = cmds; cur->name != NULL; cur++) {
+    ret = owl_cmddict_add_cmd(cd, cur);
+    if (ret < 0) break;
   }
-  return 0;
+  return ret;
 }
 
 /* free the list with owl_cmddict_namelist_free */
@@ -62,7 +62,7 @@ int owl_cmddict_add_cmd(owl_cmddict *cd, owl_cmd * cmd) {
     owl_free(newcmd);
     return -1;
   }
-  owl_function_debugmsg("Add cmd %s", cmd->name);
+  owl_perlconfig_new_command(cmd->name);
   return owl_dict_insert_element(cd, newcmd->name, (void*)newcmd, (void(*)(void*))owl_cmd_free);
 }
 

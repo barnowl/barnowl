@@ -39,7 +39,6 @@ void owl_global_init(owl_global *g) {
   g->startupargs=NULL;
 
   owl_variable_dict_setup(&(g->vars));
-  owl_cmddict_setup(&(g->cmds));
 
   g->lines=LINES;
   g->cols=COLS;
@@ -118,6 +117,12 @@ void owl_global_init(owl_global *g) {
   owl_list_create(&(g->dispatchlist));
   g->timerlist = NULL;
   g->interrupted = FALSE;
+}
+
+/* Called once perl has been initialized */
+void owl_global_complete_setup(owl_global *g)
+{
+  owl_cmddict_setup(&(g->cmds));
 }
 
 void _owl_global_setup_windows(owl_global *g) {
