@@ -77,16 +77,6 @@ owl_cmd commands_to_init[]
 	      "start-command [initial-value]",
 	      "Initializes the command field to initial-value."),
 
-  OWLCMD_ARGS("start-question", owl_command_start_question, OWL_CTX_INTERACTIVE,
-	      "prompts the user to enter a response to some question",
-	      "start-command <question>",
-	      ""),
-
-  OWLCMD_ARGS("start-password", owl_command_start_password, OWL_CTX_INTERACTIVE,
-	      "prompts the user to enter a password",
-	      "start-password <question>",
-	      ""),
-
   OWLCMD_ARGS("alias", owl_command_alias, OWL_CTX_ANY,
 	      "creates a command alias",
 	      "alias <new_command> <old_command>",
@@ -1419,20 +1409,6 @@ char *owl_command_start_command(int argc, char **argv, char *buff)
 {
   buff = skiptokens(buff, 1);
   owl_function_start_command(buff);
-  return(NULL);
-}
-
-char *owl_command_start_question(int argc, char **argv, char *buff)
-{
-  buff = skiptokens(buff, 1);
-  owl_function_start_question(buff);
-  return(NULL);
-}
-
-char *owl_command_start_password(int argc, char **argv, char *buff)
-{
-  buff = skiptokens(buff, 1);
-  owl_function_start_password(buff);
   return(NULL);
 }
 
