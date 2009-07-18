@@ -915,36 +915,36 @@ owl_cmd commands_to_init[]
 		  "completes the response to a question",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("editmulti:move-up-line", owl_editwin_key_up, 
+  OWLCMD_VOID_CTX("edit:move-up-line", owl_editwin_key_up, 
 		  OWL_CTX_EDITMULTI,
 		  "moves the cursor up one line",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("editmulti:move-down-line", owl_editwin_key_down, 
+  OWLCMD_VOID_CTX("edit:move-down-line", owl_editwin_key_down, 
 		  OWL_CTX_EDITMULTI,
 		  "moves the cursor down one line",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("editmulti:done", owl_command_editmulti_done, 
+  OWLCMD_VOID_CTX("edit:done", owl_command_edit_done, 
 		  OWL_CTX_EDITMULTI,
 		  "completes the command (eg, sends message being composed)",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("editmulti:done-or-delete", owl_command_editmulti_done_or_delete, 
+  OWLCMD_VOID_CTX("edit:done-or-delete", owl_command_edit_done_or_delete, 
 		  OWL_CTX_EDITMULTI,
 		  "completes the command, but only if at end of message",
 		  "", 
 		  "If only whitespace is to the right of the cursor,\n"
-		  "runs 'editmulti:done'.\n"\
+		  "runs 'edit:done'.\n"\
 		  "Otherwise runs 'edit:delete-next-char'\n"),
 
-  OWLCMD_VOID_CTX("editmulti:forward-paragraph", owl_editwin_forward_paragraph,
+  OWLCMD_VOID_CTX("edit:forward-paragraph", owl_editwin_forward_paragraph,
                   OWL_CTX_EDITMULTI,
                   "Move forward to end of paragraph.",
                   "",
                   "Move the point to the end of the current paragraph"),
 
-  OWLCMD_VOID_CTX("editmulti:backward-paragraph", owl_editwin_backward_paragraph,
+  OWLCMD_VOID_CTX("edit:backward-paragraph", owl_editwin_backward_paragraph,
                   OWL_CTX_EDITMULTI,
                   "Move backward to the start of paragraph.",
                   "",
@@ -2790,7 +2790,7 @@ void owl_command_editresponse_done(owl_editwin *e)
 }
 
 
-void owl_command_editmulti_done(owl_editwin *e)
+void owl_command_edit_done(owl_editwin *e)
 {
   owl_history *hist=owl_editwin_get_history(e);
 
@@ -2805,10 +2805,10 @@ void owl_command_editmulti_done(owl_editwin *e)
   wnoutrefresh(owl_editwin_get_curswin(e));
 }
 
-void owl_command_editmulti_done_or_delete(owl_editwin *e)
+void owl_command_edit_done_or_delete(owl_editwin *e)
 {
   if (owl_editwin_is_at_end(e)) {
-    owl_command_editmulti_done(e);
+    owl_command_edit_done(e);
   } else {
     owl_editwin_delete_char(e);
   }

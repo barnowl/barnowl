@@ -102,25 +102,25 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
        owl_keys_editwin_default, NULL, owl_keys_editwin_postalways);
   owl_keymap_set_submap(km_ew_multi, km_editwin);
 
-  BIND_CMD("UP",      "editmulti:move-up-line", "");
-  BIND_CMD("M-[ A",   "editmulti:move-up-line", "");
-  BIND_CMD("C-p",     "editmulti:move-up-line", "");
-  BIND_CMD("DOWN",    "editmulti:move-down-line", "");
-  BIND_CMD("M-[ B",   "editmulti:move-down-line", "");
-  BIND_CMD("C-n",     "editmulti:move-down-line", "");
+  BIND_CMD("UP",      "edit:move-up-line", "");
+  BIND_CMD("M-[ A",   "edit:move-up-line", "");
+  BIND_CMD("C-p",     "edit:move-up-line", "");
+  BIND_CMD("DOWN",    "edit:move-down-line", "");
+  BIND_CMD("M-[ B",   "edit:move-down-line", "");
+  BIND_CMD("C-n",     "edit:move-down-line", "");
 
-  BIND_CMD("M-}",     "editmulti:forward-paragraph", "");
-  BIND_CMD("M-{",     "editmulti:backward-paragraph", "");
+  BIND_CMD("M-}",     "edit:forward-paragraph", "");
+  BIND_CMD("M-{",     "edit:backward-paragraph", "");
 
   /* This would be nice, but interferes with C-c to cancel */
-  /*BIND_CMD("C-c C-c", "editmulti:done", "sends the zephyr");*/
+  /*BIND_CMD("C-c C-c", "edit:done", "sends the zephyr");*/
 
   BIND_CMD("M-p",         "edit:history-prev", "");
   BIND_CMD("M-n",         "edit:history-next", "");
 
   /* note that changing "disable-ctrl-d" to "on" will change this to 
    * edit:delete-next-char */
-  BIND_CMD("C-d",     "editmulti:done-or-delete", "sends the zephyr if at the end of the message");
+  BIND_CMD("C-d",     "edit:done-or-delete", "sends the zephyr if at the end of the message");
 
 
   /****************************************************************/

@@ -1219,7 +1219,7 @@ void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
 {
   /* XXX force a redisplay? */
   if ((j.ch==13 || j.ch==10) && owl_editwin_check_dotsend(e)) {
-    owl_command_editmulti_done(e);
+    owl_command_edit_done(e);
     return;
   }
   owl_editwin_redisplay(e, 0);
