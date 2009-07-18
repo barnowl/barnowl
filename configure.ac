@@ -1,6 +1,6 @@
 dnl $Id$
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([BarnOwl],[1.3],[bug-barnowl@mit.edu])
+AC_INIT([BarnOwl],[1.3pre1],[bug-barnowl@mit.edu])
 AM_INIT_AUTOMAKE([-Wall foreign])
 
 AC_CONFIG_HEADER([config.h])
