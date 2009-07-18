@@ -1,12 +1,19 @@
 bin_PROGRAMS = barnowl.bin
+check_PROGRAMS = tester
 
 barnowl_bin_SOURCES = $(BASE_SRCS) \
-     owl.h owl_perl.h config.h test.h \
+     owl.h owl_perl.h config.h \
      owl.c \
      libzcrypt.a \
      $(GEN_C) $(GEN_H)
 
 barnowl_bin_LDADD = libfaim/libfaim.a libzcrypt.a
+
+tester_SOURCES = $(BASE_SRCS) \
+     owl.h owl_perl.h config.h test.h \
+     libzcrypt.a \
+     $(GEN_C) $(GEN_H) \
+     tester.c
 
 noinst_LIBRARIES = libzcrypt.a
 
