@@ -79,7 +79,7 @@ getidletime()
 	OUTPUT:
 		RETVAL
 
-char *
+const char *
 zephyr_getrealm()
 	CODE:
 		RETVAL = owl_zephyr_get_realm();

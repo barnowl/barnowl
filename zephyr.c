@@ -179,7 +179,7 @@ int owl_zephyr_zpending()
 #endif
 }
 
-char *owl_zephyr_get_realm()
+const char *owl_zephyr_get_realm()
 {
 #ifdef HAVE_LIBZEPHYR
   return(ZGetRealm());

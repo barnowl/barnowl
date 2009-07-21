@@ -56,7 +56,7 @@ void owl_message_init(owl_message *m)
 /* add the named attribute to the message.  If an attribute with the
  * name already exists, replace the old value with the new value
  */
-void owl_message_set_attribute(owl_message *m, char *attrname, char *attrvalue)
+void owl_message_set_attribute(owl_message *m, char *attrname, const char *attrvalue)
 {
   int i, j;
   owl_pair *p = NULL, *pair = NULL;
@@ -232,7 +232,7 @@ char *owl_message_get_recipient(owl_message *m)
   return(recip);
 }
 
-void owl_message_set_realm(owl_message *m, char *realm)
+void owl_message_set_realm(owl_message *m, const char *realm)
 {
   owl_message_set_attribute(m, "realm", realm);
 }

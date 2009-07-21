@@ -675,11 +675,11 @@ char * owl_get_datadir()
 
 /* Strips format characters from a valid utf-8 string. Returns the
    empty string if 'in' does not validate. */
-char * owl_strip_format_chars(char *in)
+char * owl_strip_format_chars(const char *in)
 {
   char *r;
   if (g_utf8_validate(in, -1, NULL)) {
-    char *s, *p;
+    const char *s, *p;
     r = owl_malloc(strlen(in)+1);
     r[0] = '\0';
     s = in;
@@ -713,7 +713,7 @@ char * owl_strip_format_chars(char *in)
  * out characters in Unicode Plane 16, as we use that plane internally
  * for formatting.
  */
-char * owl_validate_or_convert(char *in)
+char * owl_validate_or_convert(const char *in)
 {
   if (g_utf8_validate(in, -1, NULL)) {
     return owl_strip_format_chars(in);
@@ -728,7 +728,7 @@ char * owl_validate_or_convert(char *in)
  * Validate 'in' as UTF-8, and either return a copy of it, or an empty
  * string if it is invalid utf-8.
  */
-char * owl_validate_utf8(char *in)
+char * owl_validate_utf8(const char *in)
 {
   char *out;
   if (g_utf8_validate(in, -1, NULL)) {
