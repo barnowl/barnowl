@@ -430,8 +430,6 @@ void owl_perlconfig_newmsg(owl_message *m, char *subname)
 
 void owl_perlconfig_new_command(char *name)
 {
-  int i, count;
-  SV *rv;
   dSP;
 
   ENTER;
