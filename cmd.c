@@ -25,7 +25,7 @@ int owl_cmddict_init(owl_cmddict *cd) {
 
 /* for bulk initialization at startup */
 int owl_cmddict_add_from_list(owl_cmddict *cd, owl_cmd *cmds) {
-  owl_cmd *cur, *cmd;
+  owl_cmd *cur;
   int ret = 0;
   for (cur = cmds; cur->name != NULL; cur++) {
     ret = owl_cmddict_add_cmd(cd, cur);
