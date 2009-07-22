@@ -1,0 +1,4 @@
+perl/modules/Jabber/Makefile.old
+perl/modules/Jabber/Jabber.par
+perl/modules/IRC/Makefile.old perl/modules/WordWrap/Makefile.old
+perl/modules/IRC/IRC.par

@@ -1,3 +1,10 @@
+barnowl (1.1.1-3) unstable; urgency=low
+
+  *  Depend on zephyr3
+  * Abolish cdbs in favor of debhelper 7
+
+ -- Sam Hartman <hartmans@debian.org>  Wed, 22 Jul 2009 12:51:58 -0400
+
 barnowl (1.1.1-2) unstable; urgency=low
 
   * Actually upload
