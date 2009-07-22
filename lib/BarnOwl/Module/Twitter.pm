@@ -113,11 +113,16 @@ for my $cfg (@$raw_cfg) {
         $cfg->{service} = 'http://twitter.com';
     }
 
+    my $twitter_handle;
     eval {
-        my $twitter_handle = BarnOwl::Module::Twitter::Handle->new($cfg, %$twitter_args);
-        push @twitter_handles, $twitter_handle;
-        $default_handle = $twitter_handle if (!defined $twitter_handle && exists $cfg->{default_sender} && $cfg->{default_sender});
+         $twitter_handle = BarnOwl::Module::Twitter::Handle->new($cfg, %$twitter_args);
     };
+    if ($@) {
+        BarnOwl::error($@);
+        next;
+    }
+    push @twitter_handles, $twitter_handle;
+    $default_handle = $twitter_handle if (!defined $twitter_handle && exists $cfg->{default_sender} && $cfg->{default_sender});
 }
 
 sub match {
