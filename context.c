@@ -13,7 +13,7 @@ int owl_context_init(owl_context *ctx)
 
 
 /* returns whether test matches the current context */
-int owl_context_matches(owl_context *ctx, int test)
+int owl_context_matches(const owl_context *ctx, int test)
 {
   /*owl_function_debugmsg(", current: 0x%04x test: 0x%04x\n", ctx->mode, test);*/
   if ((((ctx->mode&OWL_CTX_MODE_BITS) & test)
@@ -27,27 +27,27 @@ int owl_context_matches(owl_context *ctx, int test)
   }
 }
 
-void *owl_context_get_data(owl_context *ctx)
+void *owl_context_get_data(const owl_context *ctx)
 {
   return ctx->data;
 }
 
-int owl_context_get_mode(owl_context *ctx)
+int owl_context_get_mode(const owl_context *ctx)
 {
   return ctx->mode & OWL_CTX_MODE_BITS;
 }
 
-int owl_context_get_active(owl_context *ctx)
+int owl_context_get_active(const owl_context *ctx)
 {
   return ctx->mode & OWL_CTX_ACTIVE_BITS;
 }
 
-int owl_context_is_startup(owl_context *ctx)
+int owl_context_is_startup(const owl_context *ctx)
 {
   return (ctx->mode & OWL_CTX_STARTUP)?1:0;
 }
 
-int owl_context_is_interactive(owl_context *ctx)
+int owl_context_is_interactive(const owl_context *ctx)
 {
   return(ctx->mode & OWL_CTX_INTERACTIVE)?1:0;
 }

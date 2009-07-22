@@ -64,7 +64,7 @@ int owl_cmddict_add_cmd(owl_cmddict *cd, owl_cmd * cmd) {
   return owl_dict_insert_element(cd, newcmd->name, newcmd, (void(*)(void*))owl_cmd_free);
 }
 
-char *_owl_cmddict_execute(const owl_cmddict *cd, owl_context *ctx, const char *const *argv, int argc, const char *buff) {
+char *_owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const char *const *argv, int argc, const char *buff) {
   char *retval = NULL;
   owl_cmd *cmd;
 
@@ -77,7 +77,7 @@ char *_owl_cmddict_execute(const owl_cmddict *cd, owl_context *ctx, const char *
   return retval;
 }
 
-char *owl_cmddict_execute(const owl_cmddict *cd, owl_context *ctx, const char *cmdbuff) {
+char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const char *cmdbuff) {
   char **argv;
   int argc;
   char *tmpbuff;
@@ -102,7 +102,7 @@ char *owl_cmddict_execute(const owl_cmddict *cd, owl_context *ctx, const char *c
   return retval;
 }
 
-char *owl_cmddict_execute_argv(const owl_cmddict *cd, owl_context *ctx, const char *const *argv, int argc) {
+char *owl_cmddict_execute_argv(const owl_cmddict *cd, const owl_context *ctx, const char *const *argv, int argc) {
   char *buff, *ptr;
   int len = 0, i;
   char *retval = NULL;
@@ -161,12 +161,12 @@ void owl_cmd_free(owl_cmd *cmd) {
   if (cmd->cmd_perl) owl_perlconfig_cmd_free(cmd);
 }
 
-int owl_cmd_is_context_valid(owl_cmd *cmd, owl_context *ctx) { 
+int owl_cmd_is_context_valid(owl_cmd *cmd, const owl_context *ctx) { 
   if (owl_context_matches(ctx, cmd->validctx)) return 1;
   else return 0;
 }
 
-char *owl_cmd_execute(owl_cmd *cmd, const owl_cmddict *cd, owl_context *ctx, int argc, const char *const *argv, const char *cmdbuff) {
+char *owl_cmd_execute(owl_cmd *cmd, const owl_cmddict *cd, const owl_context *ctx, int argc, const char *const *argv, const char *cmdbuff) {
   static int alias_recurse_depth = 0;
   int ival=0;
   const char *cmdbuffargs;
