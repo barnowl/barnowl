@@ -84,14 +84,14 @@ void owl_buddylist_offgoing(owl_buddylist *bl, const char *screenname)
 }
 
 /* return the number of logged in buddies */
-int owl_buddylist_get_size(owl_buddylist *bl)
+int owl_buddylist_get_size(const owl_buddylist *bl)
 {
   return(owl_list_get_size(&(bl->buddies)));
 }
 
 /* return the buddy with index N.  If out of range, return NULL
  */
-owl_buddy *owl_buddylist_get_buddy_n(owl_buddylist *bl, int index)
+owl_buddy *owl_buddylist_get_buddy_n(const owl_buddylist *bl, int index)
 {
   if (index<0) return(NULL);
   if (index>(owl_buddylist_get_size(bl)-1)) return(NULL);
@@ -102,7 +102,7 @@ owl_buddy *owl_buddylist_get_buddy_n(owl_buddylist *bl, int index)
 /* return the AIM buddy with screenname 'name'.  If
  * no such buddy is logged in, return NULL.
  */
-owl_buddy *owl_buddylist_get_aim_buddy(owl_buddylist *bl, const char *name)
+owl_buddy *owl_buddylist_get_aim_buddy(const owl_buddylist *bl, const char *name)
 {
   int i, j;
   owl_buddy *b;
@@ -118,7 +118,7 @@ owl_buddy *owl_buddylist_get_aim_buddy(owl_buddylist *bl, const char *name)
 /* return 1 if the buddy 'screenname' is logged in,
  * otherwise return 0
  */
-int owl_buddylist_is_aim_buddy_loggedin(owl_buddylist *bl, const char *screenname)
+int owl_buddylist_is_aim_buddy_loggedin(const owl_buddylist *bl, const char *screenname)
 {
   const owl_buddy *b;
 
