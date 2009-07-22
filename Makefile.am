@@ -37,6 +37,13 @@ GEN_H = owl_prototypes.h
 
 BUILT_SOURCES = $(GEN_C) $(GEN_H)
 
+# Only copy file into place if file.new is different
+%: %.new
+	@diff -U0 $@ $< || { \
+	 test -f $@ && echo '$@ changed!'; \
+	 echo cp -f $< $@; \
+	      cp -f $< $@; }
+
 proto: owl_prototypes.h
 
 perlglue.c: perlglue.xs
@@ -45,13 +52,8 @@ perlglue.c: perlglue.xs
 varstubs.c: stubgen.pl variable.c
 	perl $< $(filter-out $<,$+) > $@
 
-# Only move owl_prototypes.h into place if the new one is different
-owl_prototypes.h: codelist.pl varstubs.c $(BASE_SRCS) owl.c zcrypt.c
-	perl $< $(filter-out $<,$+) > owl_prototypes.h.new
-	@diff -U0 $@ owl_prototypes.h.new || { \
-	 test -f $@ && echo 'Interfaces changed!'; \
-	 echo mv -f owl_prototypes.h.new $@; \
-	      mv -f owl_prototypes.h.new $@; }
+owl_prototypes.h.new: codelist.pl varstubs.c $(BASE_SRCS) owl.c zcrypt.c
+	perl $< $(filter-out $<,$+) > $@
 
 # For emacs flymake-mode
 check-syntax: proto
