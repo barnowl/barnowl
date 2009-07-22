@@ -120,7 +120,7 @@ owl_buddy *owl_buddylist_get_aim_buddy(owl_buddylist *bl, const char *name)
  */
 int owl_buddylist_is_aim_buddy_loggedin(owl_buddylist *bl, const char *screenname)
 {
-  owl_buddy *b;
+  const owl_buddy *b;
 
   b=owl_buddylist_get_aim_buddy(bl, screenname);
   if (b==NULL) return(0);

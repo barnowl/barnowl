@@ -7,13 +7,13 @@ void owl_buddy_create(owl_buddy *b, int proto, const char *name)
   b->idlesince=0;
 }
 
-const char *owl_buddy_get_name(owl_buddy *b)
+const char *owl_buddy_get_name(const owl_buddy *b)
 {
   if (b->name) return(b->name);
   return("");
 }
 
-int owl_buddy_is_idle(owl_buddy *b)
+int owl_buddy_is_idle(const owl_buddy *b)
 {
   if (b->isidle) return(1);
   return(0);
@@ -29,12 +29,12 @@ void owl_buddy_set_unidle(owl_buddy *b)
   b->isidle=0;
 }
 
-int owl_buddy_get_proto(owl_buddy *b)
+int owl_buddy_get_proto(const owl_buddy *b)
 {
   return(b->proto);
 }
 
-int owl_buddy_is_proto_aim(owl_buddy *b)
+int owl_buddy_is_proto_aim(const owl_buddy *b)
 {
   if (b->proto==OWL_PROTOCOL_AIM) return(1);
   return(0);
@@ -52,7 +52,7 @@ void owl_buddy_set_idle_since(owl_buddy *b, int diff)
 
 /* return the number of minutes the buddy has been idle
  */
-int owl_buddy_get_idle_time(owl_buddy *b)
+int owl_buddy_get_idle_time(const owl_buddy *b)
 {
   time_t now;
 

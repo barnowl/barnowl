@@ -3077,7 +3077,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
   int interrupted = 0;
   owl_fmtext fm;
   owl_buddylist *bl;
-  owl_buddy *b;
+  const owl_buddy *b;
   char *timestr;
 #ifdef HAVE_LIBZEPHYR
   int x;
