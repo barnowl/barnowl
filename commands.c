@@ -2449,11 +2449,11 @@ void owl_command_punt_unpunt(int argc, char ** argv, char *buff, int unpunt)
       }
     }
     text = owl_sprintf("filter %s", argv[1]);
+    owl_function_punt(text, unpunt);
+    owl_free(text);
   } else {
-    text = skiptokens(buff, 1);
+    owl_function_punt(skiptokens(buff, 1), unpunt);
   }
-
-  owl_function_punt(text, unpunt);
 }
 
 
