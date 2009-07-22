@@ -13,10 +13,10 @@ void owl_pair_set_value(owl_pair *p, char *value) {
   p->value=value;
 }
 
-const char *owl_pair_get_key(owl_pair *p) {
+const char *owl_pair_get_key(const owl_pair *p) {
   return(p->key);
 }
 
-char *owl_pair_get_value(owl_pair *p) {
+char *owl_pair_get_value(const owl_pair *p) {
   return(p->value);
 }

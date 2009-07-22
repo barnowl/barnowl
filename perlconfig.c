@@ -28,7 +28,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
   const char *type;
   char *ptr, *utype, *blessas;
   int i, j;
-  owl_pair *pair;
+  const owl_pair *pair;
   owl_filter *wrap;
 
   if (!m) return &PL_sv_undef;
