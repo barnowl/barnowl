@@ -84,7 +84,7 @@ void owl_history_reset(owl_history *h)
   h->partial=0;
 }
 
-int owl_history_is_touched(owl_history *h)
+int owl_history_is_touched(const owl_history *h)
 {
   if (!h) return(0);
   if (h->touched) return(1);
