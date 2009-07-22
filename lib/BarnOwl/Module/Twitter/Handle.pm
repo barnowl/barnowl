@@ -61,14 +61,14 @@ sub new {
         eval {
             $self->{last_id} = $self->{twitter}->friends_timeline({count => 1})->[0]{id};
         };
-        $self->{last_id} = 0 unless defined($self->{last_id});
+        $self->{last_id} = 1 unless defined($self->{last_id});
     }
 
     unless(defined($self->{last_direct})) {
         eval {
             $self->{last_direct} = $self->{twitter}->direct_messages()->[0]{id};
         };
-        $self->{last_direct} = 0 unless defined($self->{last_direct});
+        $self->{last_direct} = 1 unless defined($self->{last_direct});
     }
 
     eval {
