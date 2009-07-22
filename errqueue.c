@@ -11,7 +11,7 @@ void owl_errqueue_append_err(owl_errqueue *eq, const char *msg)
 }
 
 /* fmtext should already be initialized */
-void owl_errqueue_to_fmtext(owl_errqueue *eq, owl_fmtext *fm)
+void owl_errqueue_to_fmtext(const owl_errqueue *eq, owl_fmtext *fm)
 {
   int i, j;
 
