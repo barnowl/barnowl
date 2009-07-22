@@ -13,33 +13,23 @@ Post outgoing zephyrs from -c $USER -i status -O TWITTER to Twitter
 
 package BarnOwl::Module::Twitter;
 
-our $VERSION = 0.1;
+our $VERSION = 0.2;
 
 use Net::Twitter;
 use JSON;
 
 use BarnOwl;
 use BarnOwl::Hooks;
-use BarnOwl::Message::Twitter;
-use HTML::Entities;
+use BarnOwl::Module::Twitter::Handle;
 
-our $twitter;
+our @twitter_handles;
+our $default_handle;
 my $user     = BarnOwl::zephyr_getsender();
 my ($class)  = ($user =~ /(^[^@]+)/);
 my $instance = "status";
 my $opcode   = "twitter";
 my $use_reply_to = 0;
-
-sub fail {
-    my $msg = shift;
-    undef $twitter;
-    BarnOwl::admin_message('Twitter Error', $msg);
-    die("Twitter Error: $msg\n");
-}
-
-if($Net::Twitter::VERSION >= 2.06) {
-    $use_reply_to = 1;
-}
+my $next_service_to_poll = 0;
 
 my $desc = <<'END_DESC';
 BarnOwl::Module::Twitter will watch for authentic zephyrs to
@@ -84,61 +74,49 @@ BarnOwl::new_variable_bool(
      }
  );
 
+sub fail {
+    my $msg = shift;
+    undef @twitter_handles;
+    BarnOwl::admin_message('Twitter Error', $msg);
+    die("Twitter Error: $msg\n");
+}
+
 my $conffile = BarnOwl::get_config_dir() . "/twitter";
 open(my $fh, "<", "$conffile") || fail("Unable to read $conffile");
-my $cfg = do {local $/; <$fh>};
+my $raw_cfg = do {local $/; <$fh>};
 close($fh);
 eval {
-    $cfg = from_json($cfg);
+    $raw_cfg = from_json($raw_cfg);
 };
 if($@) {
-    fail("Unable to parse ~/.owl/twitter: $@");
+    fail("Unable to parse $conffile: $@");
 }
 
-my $twitter_args = { username   => $cfg->{user} || $user,
-                     password   => $cfg->{password},
-                     source     => 'barnowl', 
-                   };
-if (defined $cfg->{service}) {
-    my $service = $cfg->{service};
-    $twitter_args->{apiurl} = $service;
-    my $apihost = $service;
-    $apihost =~ s/^\s*http:\/\///;
-    $apihost =~ s/\/.*$//;
-    $apihost .= ':80' unless $apihost =~ /:\d+$/;
-    $twitter_args->{apihost} = $cfg->{apihost} || $apihost;
-    my $apirealm = "Laconica API";
-    $twitter_args->{apirealm} = $cfg->{apirealm} || $apirealm;
+$raw_cfg = [$raw_cfg] unless UNIVERSAL::isa $raw_cfg, "ARRAY";
+
+for my $cfg (@$raw_cfg) {
+    my $twitter_args = { username   => $cfg->{user} || $user,
+                        password   => $cfg->{password},
+                        source     => 'barnowl', 
+                    };
+    if (defined $cfg->{service}) {
+        my $service = $cfg->{service};
+        $twitter_args->{apiurl} = $service;
+        my $apihost = $service;
+        $apihost =~ s/^\s*http:\/\///;
+        $apihost =~ s/\/.*$//;
+        $apihost .= ':80' unless $apihost =~ /:\d+$/;
+        $twitter_args->{apihost} = $cfg->{apihost} || $apihost;
+        my $apirealm = "Laconica API";
+        $twitter_args->{apirealm} = $cfg->{apirealm} || $apirealm;
+    } else {
+        $cfg->{service} = 'http://twitter.com';
+    }
+
+    my $twitter_handle = BarnOwl::Module::Twitter::Handle->new($cfg, %$twitter_args);
+    push @twitter_handles, $twitter_handle;
+    $default_handle = $twitter_handle if (!defined $twitter_handle && exists $cfg->{default_sender} && $cfg->{default_sender});
 }
-
-$twitter  = Net::Twitter->new(%$twitter_args);
-
-if(!defined($twitter->verify_credentials())) {
-    fail("Invalid twitter credentials");
-}
-
-our $last_poll        = 0;
-our $last_direct_poll = 0;
-our $last_id          = undef;
-our $last_direct      = undef;
-
-unless(defined($last_id)) {
-    eval {
-        $last_id = $twitter->friends_timeline({count => 1})->[0]{id};
-    };
-    $last_id = 0 unless defined($last_id);
-}
-
-unless(defined($last_direct)) {
-    eval {
-        $last_direct = $twitter->direct_messages()->[0]{id};
-    };
-    $last_direct = 0 unless defined($last_direct);
-}
-
-eval {
-    $twitter->{ua}->timeout(1);
-};
 
 sub match {
     my $val = shift;
@@ -154,196 +132,138 @@ sub handle_message {
        && match($m->instance, $instance)
        && match($m->opcode, $opcode)
        && $m->auth eq 'YES') {
-        twitter($m->body);
+        for my $handle (@twitter_handles) {
+            $handle->twitter($m->body);
+        }
     }
 }
 
 sub poll_messages {
-    poll_twitter();
-    poll_direct();
-}
-
-sub twitter_error {
-    my $ratelimit = $twitter->rate_limit_status;
-    unless(defined($ratelimit) && ref($ratelimit) eq 'HASH') {
-        # Twitter's just sucking, sleep for 5 minutes
-        $last_direct_poll = $last_poll = time + 60*5;
-        # die("Twitter seems to be having problems.\n");
-        return;
-    }
-    if(exists($ratelimit->{remaining_hits})
-       && $ratelimit->{remaining_hits} <= 0) {
-        $last_direct_poll = $last_poll = $ratelimit->{reset_time_in_seconds};
-        die("Twitter: ratelimited until " . $ratelimit->{reset_time} . "\n");
-    } elsif(exists($ratelimit->{error})) {
-        die("Twitter: ". $ratelimit->{error} . "\n");
-        $last_direct_poll = $last_poll = time + 60*20;
-    }
-}
-
-sub poll_twitter {
-    return unless ( time - $last_poll ) >= 60;
-    $last_poll = time;
-    return unless BarnOwl::getvar('twitter:poll') eq 'on';
-
-    my $timeline = $twitter->friends_timeline( { since_id => $last_id } );
-    unless(defined($timeline) && ref($timeline) eq 'ARRAY') {
-        twitter_error();
-        return;
-    };
-    if ( scalar @$timeline ) {
-        for my $tweet ( reverse @$timeline ) {
-            if ( $tweet->{id} <= $last_id ) {
-                next;
-            }
-            my $msg = BarnOwl::Message->new(
-                type      => 'Twitter',
-                sender    => $tweet->{user}{screen_name},
-                recipient => $cfg->{user} || $user,
-                direction => 'in',
-                source    => decode_entities($tweet->{source}),
-                location  => decode_entities($tweet->{user}{location}||""),
-                body      => decode_entities($tweet->{text}),
-                status_id => $tweet->{id},
-                service   => $cfg->{service},
-               );
-            BarnOwl::queue_message($msg);
-        }
-        $last_id = $timeline->[0]{id};
-    } else {
-        # BarnOwl::message("No new tweets...");
-    }
-}
-
-sub poll_direct {
-    return unless ( time - $last_direct_poll) >= 120;
-    $last_direct_poll = time;
-    return unless BarnOwl::getvar('twitter:poll') eq 'on';
-
-    my $direct = $twitter->direct_messages( { since_id => $last_direct } );
-    unless(defined($direct) && ref($direct) eq 'ARRAY') {
-        twitter_error();
-        return;
-    };
-    if ( scalar @$direct ) {
-        for my $tweet ( reverse @$direct ) {
-            if ( $tweet->{id} <= $last_direct ) {
-                next;
-            }
-            my $msg = BarnOwl::Message->new(
-                type      => 'Twitter',
-                sender    => $tweet->{sender}{screen_name},
-                recipient => $cfg->{user} || $user,
-                direction => 'in',
-                location  => decode_entities($tweet->{sender}{location}||""),
-                body      => decode_entities($tweet->{text}),
-                isprivate => 'true',
-                service   => $cfg->{service},
-               );
-            BarnOwl::queue_message($msg);
-        }
-        $last_direct = $direct->[0]{id};
-    } else {
-        # BarnOwl::message("No new tweets...");
-    }
+    my $handle = $twitter_handles[$next_service_to_poll];
+    $next_service_to_poll = ($next_service_to_poll + 1) % scalar(@twitter_handles);
+    
+    $handle->poll_twitter() if (!exists $handle->{cfg}->{poll_for_tweets} || $handle->{cfg}->{poll_for_tweets});
+    $handle->poll_direct() if (!exists $handle->{cfg}->{poll_for_dms} || $handle->{cfg}->{poll_for_dms});
 }
 
 sub twitter {
-    my $msg = shift;
-    my $reply_to = shift;
+    my $account = shift;
 
-    if($msg =~ m{\Ad\s+([^\s])+(.*)}sm) {
-        twitter_direct($1, $2);
-    } elsif(defined $twitter) {
-        if($use_reply_to && defined($reply_to)) {
-            $twitter->update({
-                status => $msg,
-                in_reply_to_status_id => $reply_to
-               });
-        } else {
-            $twitter->update($msg);
+    my $sent = 0;
+    if (defined $account) {
+        for my $handle (@twitter_handles) {
+            if (defined $handle->{cfg}->{account_nickname} && $account eq $handle->{cfg}->{account_nickname}) {
+                $handle->twitter(@_);
+                $sent = 1;
+                last;
+            }
+        }
+        BarnOwl::message("No Twitter account named " . $account) unless $sent == 1
+    } 
+    else {
+        # broadcast
+        for my $handle (@twitter_handles) {
+            $handle->twitter(@_) if (!exists $handle->{cfg}->{publish_tweets} || $handle->{cfg}->{publish_tweets});
         }
     }
 }
 
 sub twitter_direct {
-    my $who = shift;
-    my $msg = shift;
-    if(defined $twitter) {
-        $twitter->new_direct_message({
-            user => $who,
-            text => $msg
-           });
-        if(BarnOwl::getvar("displayoutgoing") eq 'on') {
-            my $tweet = BarnOwl::Message->new(
-                type      => 'Twitter',
-                sender    => $cfg->{user} || $user,
-                recipient => $who, 
-                direction => 'out',
-                body      => $msg,
-                isprivate => 'true',
-                service   => $cfg->{service},
-               );
-            BarnOwl::queue_message($tweet);
+    my $account = shift;
+
+    my $sent = 0;
+    if (defined $account) {
+        for my $handle (@twitter_handles) {
+            if (defined $handle->{cfg}->{account_nickname} && $account eq $handle->{cfg}->{account_nickname}) {
+                $handle->twitter_direct(@_);
+                $sent = 1;
+                last;
+            }
         }
+        BarnOwl::message("No Twitter account named " . $account) unless $sent == 1
+    }
+    elsif (defined $default_handle) {
+        $default_handle->twitter_direct(@_);
+    }
+    else {
+        $twitter_handles[0]->twitter_direct(@_);
     }
 }
 
 sub twitter_atreply {
-    my $to  = shift;
-    my $id  = shift;
-    my $msg = shift;
-    if(defined($id)) {
-        twitter("@".$to." ".$msg, $id);
-    } else {
-        twitter("@".$to." ".$msg);
+    my $account = shift;
+
+    my $sent = 0;
+    if (defined $account) {
+        for my $handle (@twitter_handles) {
+            if (defined $handle->{cfg}->{account_nickname} && $account eq $handle->{cfg}->{account_nickname}) {
+                $handle->twitter_atreply(@_);
+                $sent = 1;
+                last;
+            }
+        }
+        BarnOwl::message("No Twitter account named " . $account) unless $sent == 1
+    }
+    elsif (defined $default_handle) {
+        $default_handle->twitter_atreply(@_);
+    }
+    else {
+        $twitter_handles[0]->twitter_atreply(@_);
     }
 }
 
 BarnOwl::new_command(twitter => \&cmd_twitter, {
     summary     => 'Update Twitter from BarnOwl',
-    usage       => 'twitter [message]',
-    description => 'Update Twitter. If MESSAGE is provided, use it as your status.'
+    usage       => 'twitter [ACCOUNT] [MESSAGE]',
+    description => 'Update Twitter on ACCOUNT. If MESSAGE is provided, use it as your status.'
+    . "\nIf no ACCOUNT is provided, update all services which have publishing enabled."
     . "\nOtherwise, prompt for a status message to use."
    });
 
 BarnOwl::new_command('twitter-direct' => \&cmd_twitter_direct, {
     summary     => 'Send a Twitter direct message',
-    usage       => 'twitter-direct USER',
-    description => 'Send a Twitter Direct Message to USER'
+    usage       => 'twitter-direct USER [ACCOUNT]',
+    description => 'Send a Twitter Direct Message to USER on ACCOUNT (defaults to default_sender,'
+    . "\nor first service if no default is provided)"
    });
 
 BarnOwl::new_command( 'twitter-atreply' => sub { cmd_twitter_atreply(@_); },
     {
     summary     => 'Send a Twitter @ message',
-    usage       => 'twitter-atreply USER',
-    description => 'Send a Twitter @reply Message to USER'
+    usage       => 'twitter-atreply USER [ACCOUNT]',
+    description => 'Send a Twitter @reply Message to USER on ACCOUNT (defaults to default_sender,' 
+    . "or first service if no default is provided)"
     }
 );
 
 
 sub cmd_twitter {
     my $cmd = shift;
-    if(@_) {
-        my $status = join(" ", @_);
-        twitter($status);
-    } else {
-      BarnOwl::start_edit_win('What are you doing?', \&twitter);
+    my $account = shift;
+    if (defined $account) {
+        if(@_) {
+            my $status = join(" ", @_);
+            twitter($account, $status);
+            return;
+        }
     }
+    BarnOwl::start_edit_win('What are you doing?' . (defined $account ? " ($account)" : ""), sub{twitter($account, shift)});
 }
 
 sub cmd_twitter_direct {
     my $cmd = shift;
     my $user = shift;
     die("Usage: $cmd USER\n") unless $user;
-    BarnOwl::start_edit_win("$cmd $user", sub{twitter_direct($user, shift)});
+    my $account = shift;
+    BarnOwl::start_edit_win("$cmd $user" . (defined $account ? " $account" : ""), sub{twitter_direct($account, $user, shift)});
 }
 
 sub cmd_twitter_atreply {
     my $cmd  = shift;
     my $user = shift || die("Usage: $cmd USER [In-Reply-To ID]\n");
     my $id   = shift;
-    BarnOwl::start_edit_win("Reply to \@" . $user, sub { twitter_atreply($user, $id, shift) });
+    my $account = shift;
+    BarnOwl::start_edit_win("Reply to \@" . $user . (defined $account ? " on $account" : ""), sub { twitter_atreply($account, $user, $id, shift) });
 }
 
 eval {
