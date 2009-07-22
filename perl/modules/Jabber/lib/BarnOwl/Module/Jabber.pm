@@ -185,6 +185,11 @@ sub blist_listBuddy {
     return $blistStr . "\n";
 }
 
+# Sort, ignoring markup.
+sub blistSort {
+    return uc(BarnOwl::ztext_stylestrip($a)) cmp uc(BarnOwl::ztext_stylestrip($b));
+}
+
 sub getSingleBuddyList {
     my $jid = shift;
     $jid = resolveConnectedJID($jid);
@@ -194,21 +199,27 @@ sub getSingleBuddyList {
     if ($roster) {
         $blist .= "\n" . BarnOwl::Style::boldify("Jabber Roster for $jid\n");
 
+        my @gTexts = ();
         foreach my $group ( $roster->groups() ) {
-            $blist .= "  Group: $group\n";
             my @buddies = $roster->jids( 'group', $group );
+            my @bTexts = ();
             foreach my $buddy ( @buddies ) {
-                $blist .= blist_listBuddy( $roster, $buddy );
+                push(@bTexts, blist_listBuddy( $roster, $buddy ));
             }
+            push(@gTexts, "  Group: $group\n".join('',sort blistSort @bTexts));
         }
+        # Sort groups before adding ungrouped entries.
+        @gTexts = sort blistSort @gTexts;
 
         my @unsorted = $roster->jids('nogroup');
         if (@unsorted) {
-            $blist .= "  [unsorted]\n";
+            my @bTexts = ();
             foreach my $buddy (@unsorted) {
-                $blist .= blist_listBuddy( $roster, $buddy );
+                push(@bTexts, blist_listBuddy( $roster, $buddy ));
             }
+            push(@gTexts, "  [unsorted]\n".join('',sort blistSort @bTexts));
         }
+        $blist .= join('', @gTexts);
     }
     return $blist;
 }
