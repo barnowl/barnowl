@@ -1,7 +1,5 @@
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 int owl_popwin_init(owl_popwin *pw)
 {
   pw->active=0;

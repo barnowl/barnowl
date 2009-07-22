@@ -12,8 +12,6 @@
 #include <signal.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 char *owl_function_command(char *cmdbuff)
 {
   owl_function_debugmsg("executing command: %s", cmdbuff);

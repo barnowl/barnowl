@@ -1,8 +1,6 @@
 #define OWL_PERL
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 void owl_style_create_perl(owl_style *s, char *name, SV *obj)
 {
   s->name=owl_strdup(name);

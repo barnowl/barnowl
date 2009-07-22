@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 extern owl_cmd commands_to_init[];
 
 /**************************************************************************/

@@ -45,8 +45,6 @@ typedef void WINDOW;
 typedef void SV;
 #endif
 
-static const char owl_h_fileIdent[] = "$Id$";
-
 #define OWL_VERSION_STRING PACKAGE_VERSION
 
 /* Feature that is being tested to redirect stderr through a pipe. 

@@ -8,8 +8,6 @@
  *   the ~/.crypt-table will be checked for "crypt-classname" and then       *
  *   "crypt-default" for the keyfile name.                                   */
 
-static const char fileIdent[] = "$Id$";
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

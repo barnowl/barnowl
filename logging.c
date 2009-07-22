@@ -4,8 +4,6 @@
 #include <ctype.h>
 #include <sys/param.h>
 
-static const char fileIdent[] = "$Id$";
-
 /* This is now the one function that should be called to log a
  * message.  It will do all the work necessary by calling the other
  * functions in this file as necessary.

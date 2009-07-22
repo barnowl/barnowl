@@ -1,6 +1,4 @@
 /* -*- mode: c; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-static const char fileIdent[] = "$Id$";
-
 #ifdef HAVE_LIBZEPHYR
 #include <zephyr/zephyr.h>
 #endif

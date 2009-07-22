@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 void owl_view_create(owl_view *v, char *name, owl_filter *f, owl_style *s)
 {
   v->name=owl_strdup(name);

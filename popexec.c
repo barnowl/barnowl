@@ -7,8 +7,6 @@
 #endif
 #include <sys/wait.h>
 
-static const char fileIdent[] = "$Id$";
-
 /* starts up popexec in a new viewwin */
 owl_popexec *owl_popexec_new(char *command)
 {

@@ -7,8 +7,6 @@
 #define OWL_PERL
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 extern XS(boot_BarnOwl);
 extern XS(boot_DynaLoader);
 /* extern XS(boot_DBI); */

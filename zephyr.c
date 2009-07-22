@@ -6,8 +6,6 @@
 #include <string.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 static GList *deferred_subs = NULL;
 
 #ifdef HAVE_LIBZEPHYR

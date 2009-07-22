@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 {
   int argc, badargs, myargc, i, len;

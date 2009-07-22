@@ -33,8 +33,6 @@ int stderr_replace(void);
 
 #define STDIN 0
 
-static const char fileIdent[] = "$Id$";
-
 owl_global g;
 
 int main(int argc, char **argv, char **env)

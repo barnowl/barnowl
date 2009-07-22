@@ -1,7 +1,5 @@
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 static char * owl_filterelement_get_field(owl_message *m, char * field)
 {
   char *match;

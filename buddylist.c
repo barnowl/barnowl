@@ -1,7 +1,5 @@
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 void owl_buddylist_init(owl_buddylist *bl)
 {
   owl_list_create(&(bl->buddies));

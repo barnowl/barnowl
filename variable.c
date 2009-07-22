@@ -5,8 +5,6 @@
 #include <ctype.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 static int in_regtest = 0;
 
 #define OWLVAR_BOOL(name,default,summary,description) \

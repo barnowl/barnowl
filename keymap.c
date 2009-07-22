@@ -1,8 +1,6 @@
 #include <string.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 /* returns 0 on success */
 int owl_keymap_init(owl_keymap *km, char *name, char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
 {

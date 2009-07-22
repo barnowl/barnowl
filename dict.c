@@ -10,8 +10,6 @@
 #include <unistd.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 
 #define INITSIZE 30
 #define GROWAT 2

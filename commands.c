@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 /* fn is "char *foo(int argc, char **argv, char *buff)" */
 #define OWLCMD_ARGS(name, fn, ctx, summary, usage, description) \
         { name, summary, usage, description, ctx, \

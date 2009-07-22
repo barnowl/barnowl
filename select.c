@@ -1,7 +1,5 @@
 #include "owl.h"
 
-static const char fileIdent[] = "$Id: select.c 894 2008-01-17 07:13:44Z asedeno $";
-
 static int dispatch_active = 0;
 
 int _owl_select_timer_cmp(owl_timer *t1, owl_timer *t2) {

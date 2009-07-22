@@ -4,8 +4,6 @@
 #include <ctype.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 void owl_text_indent(char *out, char *in, int n)
 {
   char *ptr1, *ptr2, *last;

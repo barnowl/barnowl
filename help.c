@@ -1,8 +1,6 @@
 #include "owl.h"
 #include <string.h>
 
-static const char fileIdent[] = "$Id$";
-
 void owl_help()
 {
   owl_fmtext fm;

@@ -10,8 +10,6 @@
 #include <time.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 static owl_fmtext_cache fmtext_cache[OWL_FMTEXT_CACHE_SIZE];
 static owl_fmtext_cache * fmtext_cache_next = fmtext_cache;
 

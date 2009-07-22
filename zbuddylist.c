@@ -1,7 +1,5 @@
 #include "owl.h"
 
-static const char fileIdent[] = "$Id";
-
 void owl_zbuddylist_create(owl_zbuddylist *zb)
 {
   owl_list_create(&(zb->zusers));

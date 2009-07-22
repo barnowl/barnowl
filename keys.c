@@ -1,7 +1,5 @@
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 #define BIND_CMD(kpress, command, desc) \
          owl_keymap_create_binding(km, kpress, command, NULL, desc);
 

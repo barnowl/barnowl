@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char fileIdent[] = "$Id$";
-
 /* initialize an fmtext with no data */
 void owl_fmtext_init_null(owl_fmtext *f)
 {

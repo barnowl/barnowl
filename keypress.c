@@ -2,8 +2,6 @@
 #include <string.h>
 #include "owl.h"
 
-static const char fileIdent[] = "$Id$";
-
 static struct _owl_keypress_specialmap {
   int   kj;
   char *ks;

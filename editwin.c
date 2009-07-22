@@ -4,8 +4,6 @@
 #include <string.h>
 #include <ctype.h>
 
-static const char fileIdent[] = "$Id$";
-
 #define VALID_EXCURSION	(0x9a2b4729)
 
 typedef struct _owl_editwin_excursion { /*noproto*/

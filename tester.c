@@ -2,8 +2,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-static const char fileIdent[] = "$Id$";
-
 owl_global g;
 
 #define OWL_UTIL_NTESTS  9
