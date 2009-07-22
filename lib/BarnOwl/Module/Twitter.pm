@@ -22,8 +22,8 @@ use BarnOwl;
 use BarnOwl::Hooks;
 use BarnOwl::Module::Twitter::Handle;
 
-our @twitter_handles;
-our $default_handle;
+our @twitter_handles = ();
+our $default_handle = undef;
 my $user     = BarnOwl::zephyr_getsender();
 my ($class)  = ($user =~ /(^[^@]+)/);
 my $instance = "status";
@@ -113,9 +113,11 @@ for my $cfg (@$raw_cfg) {
         $cfg->{service} = 'http://twitter.com';
     }
 
-    my $twitter_handle = BarnOwl::Module::Twitter::Handle->new($cfg, %$twitter_args);
-    push @twitter_handles, $twitter_handle;
-    $default_handle = $twitter_handle if (!defined $twitter_handle && exists $cfg->{default_sender} && $cfg->{default_sender});
+    eval {
+        my $twitter_handle = BarnOwl::Module::Twitter::Handle->new($cfg, %$twitter_args);
+        push @twitter_handles, $twitter_handle;
+        $default_handle = $twitter_handle if (!defined $twitter_handle && exists $cfg->{default_sender} && $cfg->{default_sender});
+    };
 }
 
 sub match {
@@ -139,6 +141,8 @@ sub handle_message {
 }
 
 sub poll_messages {
+    return unless @twitter_handles;
+
     my $handle = $twitter_handles[$next_service_to_poll];
     $next_service_to_poll = ($next_service_to_poll + 1) % scalar(@twitter_handles);
     
