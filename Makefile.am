@@ -42,12 +42,12 @@ proto: owl_prototypes.h
 perlglue.c: perlglue.xs
 	perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes perlglue.xs > perlglue.c
 
-varstubs.c: variable.c stubgen.pl
-	perl stubgen.pl > varstubs.c
+varstubs.c: stubgen.pl variable.c
+	perl $< $(filter-out $<,$+) > $@
 
 # Only move owl_prototypes.h into place if the new one is different
-owl_prototypes.h: codelist.pl varstubs.c $(BASE_SRCS)
-	perl codelist.pl > owl_prototypes.h.new
+owl_prototypes.h: codelist.pl varstubs.c $(BASE_SRCS) owl.c zcrypt.c
+	perl $< $(filter-out $<,$+) > owl_prototypes.h.new
 	@diff -U0 $@ owl_prototypes.h.new || { \
 	 test -f $@ && echo 'Interfaces changed!'; \
 	 echo mv -f owl_prototypes.h.new $@; \
