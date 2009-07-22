@@ -141,19 +141,19 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
 }
 
 
-int owl_mainwin_is_curmsg_truncated(owl_mainwin *mw)
+int owl_mainwin_is_curmsg_truncated(const owl_mainwin *mw)
 {
   if (mw->curtruncated) return(1);
   return(0);
 }
 
-int owl_mainwin_is_last_msg_truncated(owl_mainwin *mw)
+int owl_mainwin_is_last_msg_truncated(const owl_mainwin *mw)
 {
   if (mw->lasttruncated) return(1);
   return(0);
 }
 
-int owl_mainwin_get_last_msg(owl_mainwin *mw)
+int owl_mainwin_get_last_msg(const owl_mainwin *mw)
 {
   /* return the number of the last message displayed. -1 if none */
   return(mw->lastdisplayed);
