@@ -140,7 +140,7 @@ sub handle_message {
        && match($m->opcode, $opcode)
        && $m->auth eq 'YES') {
         for my $handle (@twitter_handles) {
-            $handle->twitter($m->body);
+            $handle->twitter($m->body) if (!exists $handle->{cfg}->{publish_tweets} || $handle->{cfg}->{publish_tweets});
         }
     }
 }
