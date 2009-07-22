@@ -44,7 +44,7 @@ int owl_zbuddylist_deluser(owl_zbuddylist *zb, const char *name)
   return(-1);
 }
 
-int owl_zbuddylist_contains_user(owl_zbuddylist *zb, const char *name)
+int owl_zbuddylist_contains_user(const owl_zbuddylist *zb, const char *name)
 {
   int i, j;
   char *user;
