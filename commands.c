@@ -1615,15 +1615,14 @@ char *owl_command_aperl(int argc, char **argv, char *buff)
 
 char *owl_command_multi(int argc, char **argv, char *buff)
 {
-  char *lastrv = NULL, *dupbuff, *newbuff;
+  char *lastrv = NULL, *newbuff;
   char **commands;
   int  ncommands, i;
   if (argc < 2) {
     owl_function_makemsg("Invalid arguments to 'multi' command.");    
     return NULL;
   }
-  dupbuff = owl_strdup(buff);
-  newbuff = skiptokens(dupbuff, 1);
+  newbuff = owl_strdup(skiptokens(buff, 1));
   if (!strcmp(argv[0], "(")) {
     for (i=strlen(newbuff)-1; i>=0; i--) {
       if (newbuff[i] == ')') {
@@ -1643,7 +1642,7 @@ char *owl_command_multi(int argc, char **argv, char *buff)
     }
     lastrv = owl_function_command(commands[i]);
   }
-  owl_free(dupbuff);
+  owl_free(newbuff);
   atokenize_free(commands, ncommands);
   return lastrv;
 }
