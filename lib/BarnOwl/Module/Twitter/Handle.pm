@@ -18,12 +18,13 @@ use HTML::Entities;
 
 use BarnOwl;
 use BarnOwl::Message::Twitter;
+
 sub fail {
     my $self = shift;
     my $msg = shift;
     undef $self->{twitter};
-    BarnOwl::admin_message('Twitter Error', $msg);
-    die("Twitter Error: $msg\n");
+    my $nickname = $self->{cfg}->{account_nickname} || "";
+    die("[Twitter $nickname] Error: $msg\n");
 }
 
 my $use_reply_to = 0;
@@ -36,7 +37,7 @@ sub new {
     my $class = shift;
     my $cfg = shift;
 
-    my %obj = (
+    my $self = {
         'user' => undef,
         'cfg'  => $cfg,
         'twitter' => undef,
@@ -44,36 +45,37 @@ sub new {
         'last_direct_poll' => 0,
         'last_id' => undef,
         'last_direct' => undef,
-    );
+    };
+
+    bless($self, $class);
 
     my %twitter_args = @_;
 
-    $obj{twitter}  = Net::Twitter->new(%twitter_args);
+    $self->{twitter}  = Net::Twitter->new(%twitter_args);
 
-    if(!defined($obj{twitter}->verify_credentials())) {
-        fail("Invalid twitter credentials");
+    if(!defined($self->{twitter}->verify_credentials())) {
+        $self->fail("Invalid credentials");
     }
 
-    unless(defined($obj{last_id})) {
+    unless(defined($self->{last_id})) {
         eval {
-            $obj{last_id} = $obj{twitter}->friends_timeline({count => 1})->[0]{id};
+            $self->{last_id} = $self->{twitter}->friends_timeline({count => 1})->[0]{id};
         };
-        $obj{last_id} = 0 unless defined($obj{last_id});
+        $self->{last_id} = 0 unless defined($self->{last_id});
     }
 
-    unless(defined($obj{last_direct})) {
+    unless(defined($self->{last_direct})) {
         eval {
-            $obj{last_direct} = $obj{twitter}->direct_messages()->[0]{id};
+            $self->{last_direct} = $self->{twitter}->direct_messages()->[0]{id};
         };
-        $obj{last_direct} = 0 unless defined($obj{last_direct});
+        $self->{last_direct} = 0 unless defined($self->{last_direct});
     }
 
     eval {
-        $obj{twitter}->{ua}->timeout(1);
+        $self->{twitter}->{ua}->timeout(1);
     };
 
-    return bless {%obj}, $class;
-
+    return $self;
 }
 
 sub twitter_error {
