@@ -65,14 +65,14 @@ int owl_popwin_close(owl_popwin *pw)
   return(0);
 }
 
-int owl_popwin_is_active(owl_popwin *pw)
+int owl_popwin_is_active(const owl_popwin *pw)
 {
   if (pw->active==1) return(1);
   return(0);
 }
 
 /* this will refresh the border as well as the text area */
-int owl_popwin_refresh(owl_popwin *pw)
+int owl_popwin_refresh(const owl_popwin *pw)
 {
   touchwin(pw->borderwin);
   touchwin(pw->popwin);
@@ -83,22 +83,22 @@ int owl_popwin_refresh(owl_popwin *pw)
   return(0);
 }
 
-WINDOW *owl_popwin_get_curswin(owl_popwin *pw)
+WINDOW *owl_popwin_get_curswin(const owl_popwin *pw)
 {
   return(pw->popwin);
 }
 
-int owl_popwin_get_lines(owl_popwin *pw)
+int owl_popwin_get_lines(const owl_popwin *pw)
 {
   return(pw->lines-2);
 }
 
-int owl_popwin_get_cols(owl_popwin *pw)
+int owl_popwin_get_cols(const owl_popwin *pw)
 {
   return(pw->cols-2);
 }
 
-int owl_popwin_needs_first_refresh(owl_popwin *pw)
+int owl_popwin_needs_first_refresh(const owl_popwin *pw)
 {
   if (pw->needsfirstrefresh) return(1);
   return(0);
