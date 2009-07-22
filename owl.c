@@ -708,6 +708,7 @@ void stderr_redirect_handler(owl_dispatch *d)
   err = owl_sprintf("[stderr]\n%s", buf);
 
   owl_function_log_err(err);
+  owl_free(err);
 }
 
 #endif /* OWL_STDERR_REDIR */
