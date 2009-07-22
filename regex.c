@@ -45,7 +45,7 @@ int owl_regex_create_quoted(owl_regex *re, const char *string)
   return(0);
 }
 
-int owl_regex_compare(owl_regex *re, const char *string, int *start, int *end)
+int owl_regex_compare(const owl_regex *re, const char *string, int *start, int *end)
 {
   int out, ret;
   regmatch_t match;
@@ -67,18 +67,18 @@ int owl_regex_compare(owl_regex *re, const char *string, int *start, int *end)
   return(out);
 }
 
-int owl_regex_is_set(owl_regex *re)
+int owl_regex_is_set(const owl_regex *re)
 {
   if (re->string) return(1);
   return(0);
 }
 
-const char *owl_regex_get_string(owl_regex *re)
+const char *owl_regex_get_string(const owl_regex *re)
 {
   return(re->string);
 }
 
-void owl_regex_copy(owl_regex *a, owl_regex *b)
+void owl_regex_copy(const owl_regex *a, owl_regex *b)
 {
   owl_regex_create(b, a->string);
 }

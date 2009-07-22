@@ -674,7 +674,7 @@ const char *owl_message_get_header(const owl_message *m) {
 /* return 1 if the message contains "string", 0 otherwise.  This is
  * case insensitive because the functions it uses are
  */
-int owl_message_search(owl_message *m, owl_regex *re)
+int owl_message_search(owl_message *m, const owl_regex *re)
 {
 
   owl_message_format(m); /* is this necessary? */

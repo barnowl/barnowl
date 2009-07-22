@@ -554,7 +554,7 @@ void owl_fmtext_copy(owl_fmtext *dst, const owl_fmtext *src)
 /* return 1 if the string is found, 0 if not.  This is a case
  *  insensitive search.
  */
-int owl_fmtext_search(const owl_fmtext *f, owl_regex *re)
+int owl_fmtext_search(const owl_fmtext *f, const owl_regex *re)
 {
   if (owl_regex_compare(re, f->textbuff, NULL, NULL) == 0) return(1);
   return(0);

@@ -711,7 +711,7 @@ int owl_global_is_search_active(owl_global *g) {
   return(0);
 }
 
-void owl_global_set_search_re(owl_global *g, owl_regex *re) {
+void owl_global_set_search_re(owl_global *g, const owl_regex *re) {
   if (owl_regex_is_set(&g->search_re)) {
     owl_regex_free(&g->search_re);
     owl_regex_init(&g->search_re);
@@ -720,7 +720,7 @@ void owl_global_set_search_re(owl_global *g, owl_regex *re) {
     owl_regex_copy(re, &g->search_re);
 }
 
-owl_regex *owl_global_get_search_re(owl_global *g) {
+const owl_regex *owl_global_get_search_re(owl_global *g) {
   return &g->search_re;
 }
 
