@@ -1198,7 +1198,7 @@ int owl_editwin_is_at_end(owl_editwin *e)
 
 static int owl_editwin_check_dotsend(owl_editwin *e)
 {
-  int zdot;
+  int zdot = 0;
   oe_excursion x;
 
   if (!e->dotsend) return(0);
@@ -1208,7 +1208,11 @@ static int owl_editwin_check_dotsend(owl_editwin *e)
 
   owl_editwin_point_move(e, -3);
 
-  zdot = (strcmp(e->buff + e->index, "\n.\n") == 0);
+  if(strcmp(e->buff + e->index, "\n.\n") == 0) {
+    owl_editwin_point_move(e, 1);
+    owl_editwin_replace(e, 2, "");
+    zdot = 1;
+  }
 
   oe_restore_excursion(e, &x);
 
