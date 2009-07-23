@@ -60,23 +60,21 @@ sub new {
 
     $self->{twitter}  = Net::Twitter->new(%twitter_args);
 
-    if(!defined($self->{twitter}->verify_credentials())) {
+    my $timeline = $self->{twitter}->friends_timeline({count => 1});
+
+    if(!defined($timeline)) {
         $self->fail("Invalid credentials");
     }
 
-    unless(defined($self->{last_id})) {
-        eval {
-            $self->{last_id} = $self->{twitter}->friends_timeline({count => 1})->[0]{id};
-        };
-        $self->{last_id} = 1 unless defined($self->{last_id});
-    }
+    eval {
+        $self->{last_id} = $timeline->[0]{id};
+    };
+    $self->{last_id} = 1 unless defined($self->{last_id});
 
-    unless(defined($self->{last_direct})) {
-        eval {
-            $self->{last_direct} = $self->{twitter}->direct_messages()->[0]{id};
-        };
-        $self->{last_direct} = 1 unless defined($self->{last_direct});
-    }
+    eval {
+        $self->{last_direct} = $self->{twitter}->direct_messages()->[0]{id};
+    };
+    $self->{last_direct} = 1 unless defined($self->{last_direct});
 
     eval {
         $self->{twitter}->{ua}->timeout(1);
