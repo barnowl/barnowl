@@ -33,12 +33,19 @@ if($Net::Twitter::VERSION >= 2.06) {
 }
 
 sub new {
-
     my $class = shift;
     my $cfg = shift;
 
+    $cfg = {
+        account_nickname => '',
+        default_sender   => 0,
+        poll_for_tweets  => 1,
+        poll_for_dms     => 1,
+        publish_tweets   => 1,
+        %$cfg
+       };
+
     my $self = {
-        'user' => undef,
         'cfg'  => $cfg,
         'twitter' => undef,
         'last_poll' => 0,

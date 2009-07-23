@@ -17,6 +17,7 @@ our $VERSION = 0.2;
 
 use Net::Twitter;
 use JSON;
+use List::Util qw(first);
 
 use BarnOwl;
 use BarnOwl::Hooks;
@@ -122,7 +123,11 @@ for my $cfg (@$raw_cfg) {
         next;
     }
     push @twitter_handles, $twitter_handle;
-    $default_handle = $twitter_handle if (!defined $twitter_handle && exists $cfg->{default_sender} && $cfg->{default_sender});
+}
+
+$default_handle = first {$_->{cfg}->{default_sender}} @twitter_handles;
+if (!$default_handle && @twitter_handles) {
+    $default_handle = $twitter_handles[0];
 }
 
 sub match {
@@ -140,7 +145,7 @@ sub handle_message {
        && match($m->opcode, $opcode)
        && $m->auth eq 'YES') {
         for my $handle (@twitter_handles) {
-            $handle->twitter($m->body) if (!exists $handle->{cfg}->{publish_tweets} || $handle->{cfg}->{publish_tweets});
+            $handle->twitter($m->body) if $handle->{cfg}->{publish_tweets};
         }
     }
 }
@@ -151,8 +156,18 @@ sub poll_messages {
     my $handle = $twitter_handles[$next_service_to_poll];
     $next_service_to_poll = ($next_service_to_poll + 1) % scalar(@twitter_handles);
     
-    $handle->poll_twitter() if (!exists $handle->{cfg}->{poll_for_tweets} || $handle->{cfg}->{poll_for_tweets});
-    $handle->poll_direct() if (!exists $handle->{cfg}->{poll_for_dms} || $handle->{cfg}->{poll_for_dms});
+    $handle->poll_twitter() if $handle->{cfg}->{poll_for_tweets};
+    $handle->poll_direct() if $handle->{cfg}->{poll_for_dms};
+}
+
+sub find_account {
+    my $name = shift;
+    my $handle = first {$_->{cfg}->{account_nickname} eq $name} @twitter_handles;
+    if ($handle) {
+        return $handle;
+    } else {
+        die("No such Twitter account: $name\n");
+    }
 }
 
 sub twitter {
@@ -160,19 +175,13 @@ sub twitter {
 
     my $sent = 0;
     if (defined $account) {
-        for my $handle (@twitter_handles) {
-            if (defined $handle->{cfg}->{account_nickname} && $account eq $handle->{cfg}->{account_nickname}) {
-                $handle->twitter(@_);
-                $sent = 1;
-                last;
-            }
-        }
-        BarnOwl::message("No Twitter account named " . $account) unless $sent == 1
+        my $handle = find_account($account);
+        $handle->twitter(@_);
     } 
     else {
         # broadcast
         for my $handle (@twitter_handles) {
-            $handle->twitter(@_) if (!exists $handle->{cfg}->{publish_tweets} || $handle->{cfg}->{publish_tweets});
+            $handle->twitter(@_) if $handle->{cfg}->{publish_tweets};
         }
     }
 }
@@ -182,16 +191,9 @@ sub twitter_direct {
 
     my $sent = 0;
     if (defined $account) {
-        for my $handle (@twitter_handles) {
-            if (defined $handle->{cfg}->{account_nickname} && $account eq $handle->{cfg}->{account_nickname}) {
-                $handle->twitter_direct(@_);
-                $sent = 1;
-                last;
-            }
-        }
-        BarnOwl::message("No Twitter account named " . $account) unless $sent == 1
-    }
-    elsif (defined $default_handle) {
+        my $handle = find_account($account);
+        $handle->twitter_direct(@_);
+    } elsif (defined $default_handle) {
         $default_handle->twitter_direct(@_);
     }
     else {
@@ -204,14 +206,8 @@ sub twitter_atreply {
 
     my $sent = 0;
     if (defined $account) {
-        for my $handle (@twitter_handles) {
-            if (defined $handle->{cfg}->{account_nickname} && $account eq $handle->{cfg}->{account_nickname}) {
-                $handle->twitter_atreply(@_);
-                $sent = 1;
-                last;
-            }
-        }
-        BarnOwl::message("No Twitter account named " . $account) unless $sent == 1
+        my $handle = find_account($account);
+        $handle->twitter_atreply(@_);
     }
     elsif (defined $default_handle) {
         $default_handle->twitter_atreply(@_);
