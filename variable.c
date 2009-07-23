@@ -681,7 +681,7 @@ int owl_variable_set_string(owl_vardict *d, char *name, char *newval) {
   v = owl_dict_find_element(d, name);
   if (v == NULL || !v->set_fn) return(-1);
   if (v->type!=OWL_VARIABLE_STRING) return(-1);
-  return v->set_fn(v, (void*)newval);
+  return v->set_fn(v, newval);
 }
  
 int owl_variable_set_int(owl_vardict *d, char *name, int newval) {
