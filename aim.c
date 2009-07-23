@@ -428,7 +428,7 @@ int owl_aim_process_events()
   struct owlfaim_priv *priv;
 
   aimsess=owl_global_get_aimsess(&g);
-  priv = (struct owlfaim_priv *) &(aimsess->aux_data);
+  priv = (struct owlfaim_priv *)aimsess->aux_data;
 
   /* do a select without blocking */
   tv.tv_sec = 0;
