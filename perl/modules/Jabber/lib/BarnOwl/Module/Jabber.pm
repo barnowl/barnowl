@@ -331,7 +331,7 @@ sub register_owl_commands() {
 }
 
 sub register_keybindings {
-    BarnOwl::bindkey(qw(recv j command start-command jwrite));
+    BarnOwl::bindkey(qw(recv j command start-command), 'jwrite ');
 }
 
 sub register_filters {
