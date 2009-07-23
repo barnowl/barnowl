@@ -89,7 +89,7 @@ int owl_select_find_dispatch(int fd)
   dl = owl_global_get_dispatchlist(&g);
   len = owl_list_get_size(dl);
   for(i = 0; i < len; i++) {
-    d = (owl_dispatch*)owl_list_get_element(dl, i);
+    d = owl_list_get_element(dl, i);
     if (d->fd == fd) return i;
   }
   return -1;
@@ -101,7 +101,7 @@ void owl_select_remove_dispatch_at(int elt) /* noproto */
   owl_dispatch *d;
 
   dl = owl_global_get_dispatchlist(&g);
-  d = (owl_dispatch*)owl_list_get_element(dl, elt);
+  d = owl_list_get_element(dl, elt);
   owl_list_remove_element(dl, elt);
   if (d->destroy) {
     d->destroy(d);
@@ -121,7 +121,7 @@ void owl_select_add_dispatch(owl_dispatch *d)
   
   if (elt != -1) {  /* If we have a dispatch for this FD */
     owl_dispatch *d_old;
-    d_old = (owl_dispatch*)owl_list_get_element(dl, elt);
+    d_old = owl_list_get_element(dl, elt);
     /* Ignore if we're adding the same dispatch again.  Otherwise
        replace the old dispatch. */
     if (d_old != d) {
@@ -144,7 +144,7 @@ void owl_select_remove_dispatch(int fd)
   } else if(dispatch_active) {
     /* Defer the removal until dispatch is done walking the list */
     dl = owl_global_get_dispatchlist(&g);
-    d = (owl_dispatch*)owl_list_get_element(dl, elt);
+    d = owl_list_get_element(dl, elt);
     d->needs_gc = 1;
   } else {
     owl_select_remove_dispatch_at(elt);
@@ -162,7 +162,7 @@ int owl_select_add_perl_dispatch(int fd, SV *cb)
   owl_dispatch *d;
   elt = owl_select_find_dispatch(fd);
   if (elt != -1) {
-    d = (owl_dispatch*)owl_list_get_element(owl_global_get_dispatchlist(&g), elt);
+    d = owl_list_get_element(owl_global_get_dispatchlist(&g), elt);
     if (d->cfunc != owl_perlconfig_dispatch) {
       /* don't mess with non-perl dispatch functions from here. */
       return 1;
@@ -185,7 +185,7 @@ int owl_select_remove_perl_dispatch(int fd)
   
   elt = owl_select_find_dispatch(fd);
   if (elt != -1) {
-    d = (owl_dispatch*)owl_list_get_element(owl_global_get_dispatchlist(&g), elt);
+    d = owl_list_get_element(owl_global_get_dispatchlist(&g), elt);
     if (d->cfunc == owl_perlconfig_dispatch) {
       owl_select_remove_dispatch_at(elt);
       return 0;
@@ -206,7 +206,7 @@ int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
   max_fd = 0;
   len = owl_select_dispatch_count(g);
   for(i = 0; i < len; i++) {
-    d = (owl_dispatch*)owl_list_get_element(dl, i);
+    d = owl_list_get_element(dl, i);
     FD_SET(d->fd, r);
     FD_SET(d->fd, e);
     if (max_fd < d->fd) max_fd = d->fd;
@@ -244,7 +244,7 @@ void owl_select_dispatch(fd_set *fds, int max_fd)
   dispatch_active = 1;
 
   for(i = 0; i < len; i++) {
-    d = (owl_dispatch*)owl_list_get_element(dl, i);
+    d = owl_list_get_element(dl, i);
     /* While d shouldn't normally be null, the list may be altered by
      * functions we dispatch to. */
     if (d != NULL && !d->needs_gc && FD_ISSET(d->fd, fds)) {

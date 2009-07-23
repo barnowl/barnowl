@@ -345,7 +345,7 @@ void owl_aim_chat_join(char *name, int exchange)
   int ret;
   aim_conn_t *cur;
   /*
-  OscarData *od = (OscarData *)g->proto_data;
+  OscarData *od = g->proto_data;
   char *name, *exchange;
   */
 
@@ -428,7 +428,7 @@ int owl_aim_process_events()
   struct owlfaim_priv *priv;
 
   aimsess=owl_global_get_aimsess(&g);
-  priv = (struct owlfaim_priv *)aimsess->aux_data;
+  priv = aimsess->aux_data;
 
   /* do a select without blocking */
   tv.tv_sec = 0;
@@ -478,7 +478,7 @@ static void faimtest_debugcb(aim_session_t *sess, int level, const char *format,
 
 static int faimtest_parse_login(aim_session_t *sess, aim_frame_t *fr, ...)
 {
-  struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
+  struct owlfaim_priv *priv = sess->aux_data;
   struct client_info_s info = CLIENTINFO_AIM_KNOWNGOOD;
     
   char *key;
@@ -702,7 +702,7 @@ int logout(aim_session_t *sess)
 
 static int faimtest_parse_connerr(aim_session_t *sess, aim_frame_t *fr, ...)
 {
-  struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
+  struct owlfaim_priv *priv = sess->aux_data;
   va_list ap;
   fu16_t code;
   char *msg;
@@ -878,7 +878,7 @@ static int faimtest_locrights(aim_session_t *sess, aim_frame_t *fr, ...)
 
 static int faimtest_reportinterval(aim_session_t *sess, aim_frame_t *fr, ...)
 {
-  struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
+  struct owlfaim_priv *priv = sess->aux_data;
   va_list ap;
   fu16_t interval;
 
@@ -943,7 +943,7 @@ static int faimtest_parse_motd(aim_session_t *sess, aim_frame_t *fr, ...)
  */
 static int getaimdata(aim_session_t *sess, unsigned char **bufret, int *buflenret, unsigned long offset, unsigned long len, const char *modname)
 {
-  struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
+  struct owlfaim_priv *priv = sess->aux_data;
   FILE *f;
   static const char defaultmod[] = "aim.exe";
   char *filename = NULL;
@@ -1068,7 +1068,7 @@ static int getaimdata(aim_session_t *sess, unsigned char **bufret, int *buflenre
  */
 static int faimtest_memrequest(aim_session_t *sess, aim_frame_t *fr, ...)
 {
-  struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
+  struct owlfaim_priv *priv = sess->aux_data;
   va_list ap;
   fu32_t offset, len;
   char *modname;
@@ -1167,7 +1167,7 @@ static int faimtest_parse_userinfo(aim_session_t *sess, aim_frame_t *fr, ...)
  */
 static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, struct aim_incomingim_ch1_args *args)
 {
-  struct owlfaim_priv *priv = (struct owlfaim_priv *)sess->aux_data;
+  struct owlfaim_priv *priv = sess->aux_data;
   owl_message *m;
   char *stripmsg, *nz_screenname, *wrapmsg;
   char realmsg[8192+1] = {""};

@@ -107,7 +107,7 @@ void owl_popexec_inputhandler(owl_dispatch *d)
     return;
   }
 
-  if (0 != (rv_navail = ioctl(d->fd, FIONREAD, (void*)&navail))) {
+  if (0 != (rv_navail = ioctl(d->fd, FIONREAD, &navail))) {
     owl_function_debugmsg("ioctl error");
   }
 
@@ -159,7 +159,7 @@ void owl_popexec_free_dispatch(owl_dispatch *d)
 
 void owl_popexec_viewwin_onclose(owl_viewwin *vwin, void *data)
 {
-  owl_popexec *pe = (owl_popexec*)data;
+  owl_popexec *pe = data;
   int status, rv;
 
   pe->winactive = 0;

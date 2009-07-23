@@ -7,7 +7,7 @@
 int owl_list_create(owl_list *l)
 {
   l->size=0;
-  l->list=(void **)owl_malloc(INITSIZE*sizeof(void *));
+  l->list=owl_malloc(INITSIZE*sizeof(void *));
   l->avail=INITSIZE;
   if (l->list==NULL) return(-1);
   return(0);

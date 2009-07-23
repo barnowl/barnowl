@@ -138,14 +138,14 @@ char **atokenize(char *buffer, char *sep, int *i)
   while (!done) {
     if (first) {
       first=0;
-      foo=(char *)strtok(workbuff, sep);
+      foo=strtok(workbuff, sep);
     } else {
-      foo=(char *)strtok(NULL, sep);
+      foo=strtok(NULL, sep);
     }
     if (foo==NULL) {
       done=1;
     } else {
-      args=(char **)owl_realloc(args, sizeof(char *) * (count+1));
+      args=owl_realloc(args, sizeof(char *) * (count+1));
       args[count]=owl_malloc(strlen(foo)+1);
       strcpy(args[count], foo);
       count++;

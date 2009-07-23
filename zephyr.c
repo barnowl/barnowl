@@ -41,7 +41,7 @@ void owl_zephyr_initialize()
     return;
   }
 
-  (void) memset((char *)&sin, 0, sizeof(struct sockaddr_in));
+  (void) memset(&sin, 0, sizeof(struct sockaddr_in));
 
   sp = getservbyname(HM_SVCNAME, "udp");
 
@@ -50,7 +50,7 @@ void owl_zephyr_initialize()
 
   sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
-  (void) memset((char *)&req, 0, sizeof(req));
+  (void) memset(&req, 0, sizeof(req));
   req.z_kind = STAT;
   req.z_port = 0;
   req.z_class = HM_STAT_CLASS;
@@ -277,11 +277,11 @@ int owl_zephyr_loadsubs(char *filename, int error_on_nofile)
     }
     
     /* add it to the list of subs */
-    if ((tmp=(char *) strtok(start, ",\n\r"))==NULL) continue;
+    if ((tmp=strtok(start, ",\n\r"))==NULL) continue;
     subs[count].zsub_class=owl_strdup(tmp);
-    if ((tmp=(char *) strtok(NULL, ",\n\r"))==NULL) continue;
+    if ((tmp=strtok(NULL, ",\n\r"))==NULL) continue;
     subs[count].zsub_classinst=owl_strdup(tmp);
-    if ((tmp=(char *) strtok(NULL, " \t\n\r"))==NULL) continue;
+    if ((tmp=strtok(NULL, " \t\n\r"))==NULL) continue;
     subs[count].zsub_recipient=owl_strdup(tmp);
     
     /* if it started with '-' then add it to the global punt list, and

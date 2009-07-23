@@ -24,7 +24,7 @@ int owl_obarray_lookup(owl_obarray *oa, char * key, char ** val) /*noproto*/
   last = owl_list_get_size(&(oa->strings)) - 1;
   while(first <= last) {
     mid = first + (last - first)/2;
-    str = (char*)owl_list_get_element(&(oa->strings), mid);
+    str = owl_list_get_element(&(oa->strings), mid);
     cmp = strcmp(key, str);
     if(cmp == 0) {
       *val = str;

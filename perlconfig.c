@@ -306,7 +306,7 @@ char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** P
   /* create and initialize interpreter */
   PERL_SYS_INIT3(Pargc, Pargv, Penv);
   p=perl_alloc();
-  owl_global_set_perlinterp(&g, (void*)p);
+  owl_global_set_perlinterp(&g, p);
   perl_construct(p);
 
   owl_global_set_no_have_config(&g);
@@ -496,13 +496,13 @@ void owl_perlconfig_cmd_free(owl_cmd *cmd)
 
 void owl_perlconfig_dispatch_free(owl_dispatch *d)
 {
-  SvREFCNT_dec((SV*)d->data);
+  SvREFCNT_dec(d->data);
   owl_free(d);
 }
 
 void owl_perlconfig_edit_callback(owl_editwin *e)
 {
-  SV *cb = (SV*)owl_editwin_get_cbdata(e);
+  SV *cb = owl_editwin_get_cbdata(e);
   SV *text;
   dSP;
 

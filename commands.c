@@ -2438,7 +2438,7 @@ void owl_command_punt_unpunt(int argc, char ** argv, char *buff, int unpunt)
     if(unpunt && (i=atoi(argv[1])) !=0) {
       i--;      /* Accept 1-based indexing */
       if(i < owl_list_get_size(fl)) {
-        f = (owl_filter*)owl_list_get_element(fl, i);
+        f = owl_list_get_element(fl, i);
         owl_list_remove_element(fl, i);
         owl_filter_free(f);
         return;

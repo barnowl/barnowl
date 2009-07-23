@@ -43,7 +43,7 @@ int owl_keymap_create_binding(owl_keymap *km, char *keyseq, char *command, void 
    * otherwise just add this one. 
    */
   for (i = owl_list_get_size(&km->bindings)-1; i>=0; i--) {
-    curkb = (owl_keybinding*)owl_list_get_element(&km->bindings, i);
+    curkb = owl_list_get_element(&km->bindings, i);
     if (owl_keybinding_equal(curkb, kb)) {
       owl_list_remove_element(&km->bindings, i);
       owl_keybinding_free_all(curkb);
@@ -151,7 +151,7 @@ void owl_keyhandler_add_keymap(owl_keyhandler *kh, owl_keymap *km)
 owl_keymap *owl_keyhandler_create_and_add_keymap(owl_keyhandler *kh, char *name, char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
 {
   owl_keymap *km;
-  km = (owl_keymap*)owl_malloc(sizeof(owl_keymap));
+  km = owl_malloc(sizeof(owl_keymap));
   if (!km) return NULL;
   owl_keymap_init(km, name, desc, default_fn, prealways_fn, postalways_fn);
   owl_keyhandler_add_keymap(kh, km);
@@ -168,7 +168,7 @@ void owl_keyhandler_reset(owl_keyhandler *kh)
 
 owl_keymap *owl_keyhandler_get_keymap(owl_keyhandler *kh, char *mapname)
 {
-  return (owl_keymap*)owl_dict_find_element(&kh->keymaps, mapname);
+  return owl_dict_find_element(&kh->keymaps, mapname);
 }
 
 /* free the list with owl_cmddict_namelist_free */
@@ -190,7 +190,7 @@ owl_keymap *owl_keyhandler_activate(owl_keyhandler *kh, char *mapname)
 {
   owl_keymap *km;
   if (kh->active && !strcmp(mapname, kh->active->name)) return(kh->active);
-  km = (owl_keymap*)owl_dict_find_element(&kh->keymaps, mapname);
+  km = owl_dict_find_element(&kh->keymaps, mapname);
   if (!km) return(NULL);
   owl_keyhandler_reset(kh);
   kh->active = km;
@@ -239,7 +239,7 @@ int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
    * keyhandler and keymap apart.  */
   for (km=kh->active; km; km=km->submap) {
     for (i=owl_list_get_size(&km->bindings)-1; i>=0; i--) {
-      kb = (owl_keybinding*)owl_list_get_element(&km->bindings, i);
+      kb = owl_list_get_element(&km->bindings, i);
       match = owl_keybinding_match(kb, kh);
       if (match == 1) {		/* subset match */
 

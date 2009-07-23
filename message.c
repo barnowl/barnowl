@@ -807,7 +807,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 
   /* save the hostname */
   owl_function_debugmsg("About to do gethostbyaddr");
-  hent=gethostbyaddr((char *) &(n->z_uid.zuid_addr), sizeof(n->z_uid.zuid_addr), AF_INET);
+  hent=gethostbyaddr(&(n->z_uid.zuid_addr), sizeof(n->z_uid.zuid_addr), AF_INET);
   if (hent && hent->h_name) {
     owl_message_set_hostname(m, hent->h_name);
   } else {

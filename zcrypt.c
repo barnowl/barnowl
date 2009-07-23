@@ -248,7 +248,7 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance) {
     } else {
       /* Prepare result to be returned */
       char *temp = keyfile;
-      keyfile = (char *)owl_malloc(strlen(temp) + 1);
+      keyfile = owl_malloc(strlen(temp) + 1);
       if (keyfile) {
 	strcpy(keyfile, temp);
       } else {

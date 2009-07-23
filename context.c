@@ -69,7 +69,7 @@ void owl_context_set_interactive(owl_context *ctx)
 
 void owl_context_set_popless(owl_context *ctx, owl_viewwin *vw)
 {
-  ctx->data = (void*)vw;
+  ctx->data = vw;
   SET_ACTIVE(ctx, OWL_CTX_POPLESS);
 }
 
@@ -80,19 +80,19 @@ void owl_context_set_recv(owl_context *ctx)
 
 void owl_context_set_editmulti(owl_context *ctx, owl_editwin *ew)
 {
-  ctx->data = (void*)ew;
+  ctx->data = ew;
   SET_ACTIVE(ctx, OWL_CTX_EDITMULTI);
 }
 
 void owl_context_set_editline(owl_context *ctx, owl_editwin *ew)
 {
-  ctx->data = (void*)ew;
+  ctx->data = ew;
   SET_ACTIVE(ctx, OWL_CTX_EDITLINE);
 }
 
 void owl_context_set_editresponse(owl_context *ctx, owl_editwin *ew)
 {
-  ctx->data = (void*)ew;
+  ctx->data = ew;
   SET_ACTIVE(ctx, OWL_CTX_EDITRESPONSE);
 }
 

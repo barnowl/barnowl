@@ -17,7 +17,7 @@
 
 int owl_dict_create(owl_dict *d) {
   d->size=0;
-  d->els=(owl_dict_el *)owl_malloc(INITSIZE*sizeof(owl_dict_el));
+  d->els=owl_malloc(INITSIZE*sizeof(owl_dict_el));
   d->avail=INITSIZE;
   if (d->els==NULL) return(-1);
   return(0);
@@ -60,7 +60,7 @@ int owl_dict_get_keys(owl_dict *d, owl_list *l) {
   if (owl_list_create(l)) return(-1);
   for (i=0; i<d->size; i++) {
     if ((dupk = owl_strdup(d->els[i].k)) == NULL) return(-1);
-    owl_list_append_element(l, (void*)dupk);
+    owl_list_append_element(l, dupk);
   }
   return(0);
 }
@@ -94,7 +94,7 @@ int owl_dict_insert_element(owl_dict *d, char *k, void *v, void (*free_on_replac
     if ((dupk = owl_strdup(k)) == NULL) return(-1);
     if (pos!=d->size) {
       /* shift forward to leave us a slot */
-      memmove((void*)(d->els+pos+1), (void*)(d->els+pos), 
+      memmove(d->els+pos+1, d->els+pos, 
 	      sizeof(owl_dict_el)*(d->size-pos));
     }
     d->size++;
@@ -151,17 +151,17 @@ int owl_dict_regtest(void) {
 
   printf("# BEGIN testing owl_dict\n");
   FAIL_UNLESS("create", 0==owl_dict_create(&d));
-  FAIL_UNLESS("insert b", 0==owl_dict_insert_element(&d, "b", (void*)bv, owl_dict_noop_free));
-  FAIL_UNLESS("insert d", 0==owl_dict_insert_element(&d, "d", (void*)dv, owl_dict_noop_free));
-  FAIL_UNLESS("insert a", 0==owl_dict_insert_element(&d, "a", (void*)av, owl_dict_noop_free));
-  FAIL_UNLESS("insert c", 0==owl_dict_insert_element(&d, "c", (void*)cv, owl_dict_noop_free));
-  FAIL_UNLESS("reinsert d (no replace)", -2==owl_dict_insert_element(&d, "d", (void*)dv, 0));
-  FAIL_UNLESS("find a", (void*)av==owl_dict_find_element(&d, "a"));
-  FAIL_UNLESS("find b", (void*)bv==owl_dict_find_element(&d, "b"));
-  FAIL_UNLESS("find c", (void*)cv==owl_dict_find_element(&d, "c"));
-  FAIL_UNLESS("find d", (void*)dv==owl_dict_find_element(&d, "d"));
+  FAIL_UNLESS("insert b", 0==owl_dict_insert_element(&d, "b", bv, owl_dict_noop_free));
+  FAIL_UNLESS("insert d", 0==owl_dict_insert_element(&d, "d", dv, owl_dict_noop_free));
+  FAIL_UNLESS("insert a", 0==owl_dict_insert_element(&d, "a", av, owl_dict_noop_free));
+  FAIL_UNLESS("insert c", 0==owl_dict_insert_element(&d, "c", cv, owl_dict_noop_free));
+  FAIL_UNLESS("reinsert d (no replace)", -2==owl_dict_insert_element(&d, "d", dv, 0));
+  FAIL_UNLESS("find a", av==owl_dict_find_element(&d, "a"));
+  FAIL_UNLESS("find b", bv==owl_dict_find_element(&d, "b"));
+  FAIL_UNLESS("find c", cv==owl_dict_find_element(&d, "c"));
+  FAIL_UNLESS("find d", dv==owl_dict_find_element(&d, "d"));
   FAIL_UNLESS("find e (non-existent)", NULL==owl_dict_find_element(&d, "e"));
-  FAIL_UNLESS("remove d", (void*)dv==owl_dict_remove_element(&d, "d"));
+  FAIL_UNLESS("remove d", dv==owl_dict_remove_element(&d, "d"));
   FAIL_UNLESS("find d (post-removal)", NULL==owl_dict_find_element(&d, "d"));
 
   FAIL_UNLESS("get_size", 3==owl_dict_get_size(&d));

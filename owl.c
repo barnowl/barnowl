@@ -692,7 +692,7 @@ void stderr_redirect_handler(owl_dispatch *d)
   char *err;
 
   if (rfd<0) return;
-  if (-1 == ioctl(rfd, FIONREAD, (void*)&navail)) {
+  if (-1 == ioctl(rfd, FIONREAD, &navail)) {
     return;
   }
   /*owl_function_debugmsg("stderr_redirect: navail = %d\n", navail);*/

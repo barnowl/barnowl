@@ -38,7 +38,7 @@ void owl_cmddict_get_names(owl_cmddict *d, owl_list *l) {
 }
 
 owl_cmd *owl_cmddict_find(owl_cmddict *d, char *name) {
-  return (owl_cmd*)owl_dict_find_element(d, name);
+  return owl_dict_find_element(d, name);
 }
 
 void owl_cmddict_namelist_free(owl_list *l) {
@@ -50,7 +50,7 @@ int owl_cmddict_add_alias(owl_cmddict *cd, char *alias_from, char *alias_to) {
   owl_cmd *cmd;
   cmd = owl_malloc(sizeof(owl_cmd));
   owl_cmd_create_alias(cmd, alias_from, alias_to);
-  owl_dict_insert_element(cd, cmd->name, (void*)cmd, (void(*)(void*))owl_cmd_free);    
+  owl_dict_insert_element(cd, cmd->name, cmd, (void(*)(void*))owl_cmd_free);    
   return(0);
 }
 
@@ -61,7 +61,7 @@ int owl_cmddict_add_cmd(owl_cmddict *cd, owl_cmd * cmd) {
     return -1;
   }
   owl_perlconfig_new_command(cmd->name);
-  return owl_dict_insert_element(cd, newcmd->name, (void*)newcmd, (void(*)(void*))owl_cmd_free);
+  return owl_dict_insert_element(cd, newcmd->name, newcmd, (void(*)(void*))owl_cmd_free);
 }
 
 char *_owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char **argv, int argc, char *buff) {
@@ -69,7 +69,7 @@ char *_owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char **argv, int a
   owl_cmd *cmd;
 
   if (!strcmp(argv[0], "")) {
-  } else if (NULL != (cmd = (owl_cmd*)owl_dict_find_element(cd, argv[0]))) {
+  } else if (NULL != (cmd = owl_dict_find_element(cd, argv[0]))) {
     retval = owl_cmd_execute(cmd, cd, ctx, argc, argv, buff);
   } else {
     owl_function_makemsg("Unknown command '%s'.", buff);

@@ -784,7 +784,7 @@ void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(
 
   size = owl_list_get_size(l);
   for (i=0; i<size; i++) {
-    elem = (char*)owl_list_get_element(l,i);
+    elem = owl_list_get_element(l,i);
     if (elem && format_fn) {
       text = format_fn(elem);
       if (text) {

@@ -520,18 +520,18 @@ int owl_variable_dict_setup(owl_vardict *vd) {
       fprintf(stderr, "owl_variable_setup: invalid variable type\n");
       return(-2);
     }
-    owl_dict_insert_element(vd, cur->name, (void*)cur, NULL);
+    owl_dict_insert_element(vd, cur->name, cur, NULL);
   }
   return 0;
 }
 
 void owl_variable_dict_add_variable(owl_vardict * vardict,
                                     owl_variable * var) {
-  owl_dict_insert_element(vardict, var->name, (void*)var, (void(*)(void*))owl_variable_free);
+  owl_dict_insert_element(vardict, var->name, var, (void(*)(void*))owl_variable_free);
 }
 
 owl_variable * owl_variable_newvar(char *name, char *summary, char * description) {
-  owl_variable * var = (owl_variable*)owl_malloc(sizeof(owl_variable));
+  owl_variable * var = owl_malloc(sizeof(owl_variable));
   memset(var, 0, sizeof(owl_variable));
   var->name = owl_strdup(name);
   var->summary = owl_strdup(summary);
@@ -738,24 +738,24 @@ void *owl_variable_get(owl_vardict *d, char *name, int require_type) {
 
 /* returns a reference */
 char *owl_variable_get_string(owl_vardict *d, char *name) {
-  return (char*)owl_variable_get(d,name, OWL_VARIABLE_STRING);
+  return owl_variable_get(d,name, OWL_VARIABLE_STRING);
 }
 
 /* returns a reference */
 void *owl_variable_get_other(owl_vardict *d, char *name) {
-  return (char*)owl_variable_get(d,name, OWL_VARIABLE_OTHER);
+  return owl_variable_get(d,name, OWL_VARIABLE_OTHER);
 }
 
 int owl_variable_get_int(owl_vardict *d, char *name) {
   int *pi;
-  pi = (int*)owl_variable_get(d,name,OWL_VARIABLE_INT);
+  pi = owl_variable_get(d,name,OWL_VARIABLE_INT);
   if (!pi) return(-1);
   return(*pi);
 }
 
 int owl_variable_get_bool(owl_vardict *d, char *name) {
   int *pi;
-  pi = (int*)owl_variable_get(d,name,OWL_VARIABLE_BOOL);
+  pi = owl_variable_get(d,name,OWL_VARIABLE_BOOL);
   if (!pi) return(-1);
   return(*pi);
 }
