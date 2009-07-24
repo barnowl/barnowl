@@ -1253,7 +1253,6 @@ int owl_zephyr_get_anyone_list(owl_list *in, char *filename)
   FILE *f;
 
   if (filename==NULL) {
-    tmp=owl_global_get_homedir(&g);
     ourfile=owl_sprintf("%s/.anyone", owl_global_get_homedir(&g));
   } else {
     ourfile=owl_strdup(filename);
