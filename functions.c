@@ -2347,7 +2347,6 @@ void owl_function_show_zpunts()
  */
 char *owl_function_classinstfilt(char *c, char *i) 
 {
-  owl_list *fl;
   owl_filter *f;
   char *argbuff, *filtname;
   char *tmpclass, *tmpinstance = NULL;
@@ -2357,8 +2356,6 @@ char *owl_function_classinstfilt(char *c, char *i)
   if(i) {
     instance = owl_util_baseclass(i);
   }
-
-  fl=owl_global_get_filterlist(&g);
 
   /* name for the filter */
   if (!instance) {
