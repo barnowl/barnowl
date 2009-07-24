@@ -15,6 +15,8 @@ tester_SOURCES = $(BASE_SRCS) \
      $(GEN_C) $(GEN_H) \
      tester.c
 
+tester_LDADD = libfaim/libfaim.a libzcrypt.a
+
 noinst_LIBRARIES = libzcrypt.a
 
 libzcrypt_a_SOURCES = zcrypt.c
