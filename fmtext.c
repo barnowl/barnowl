@@ -284,19 +284,12 @@ void _owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search) /*noproto
   char *s, *p;
   char attr;
   short fg, bg, pair;
-  int search_results, search_len;
   
   if (w==NULL) {
     owl_function_debugmsg("Hit a null window in owl_fmtext_curs_waddstr.");
     return;
   }
 
-  search_results = (do_search
-		    ? owl_fmtext_search(f, owl_global_get_search_string(&g))
-		    : 0);
-  search_len = (search_results
-		? strlen(owl_global_get_search_string(&g))
-		: 0);
   s = f->textbuff;
   /* Set default attributes. */
   attr = f->default_attrs;
@@ -315,31 +308,30 @@ void _owl_fmtext_curs_waddstr(owl_fmtext *f, WINDOW *w, int do_search) /*noproto
    
       tmp = p[0];
       p[0] = '\0';
-      if (search_results) {
+      if (owl_global_is_search_active(&g)) {
 	/* Search is active, so highlight search results. */
-	char tmp2, *ss;
-	ss = stristr(s, owl_global_get_search_string(&g));
-	while (ss) {
+	char tmp2;
+	int start, end;
+	while (owl_regex_compare(owl_global_get_search_re(&g), s, &start, &end) == 0) {
 	  /* Found search string, highlight it. */
 
-	  tmp2 = ss[0];
-	  ss[0] = '\0';
+	  tmp2 = s[start];
+	  s[start] = '\0';
 	  waddstr(w, s);
-	  ss[0] = tmp2;
+	  s[start] = tmp2;
 
 	  _owl_fmtext_wattrset(w, attr ^ OWL_FMTEXT_ATTR_REVERSE);
 	  _owl_fmtext_wcolor_set(w, pair);
 	  
-	  tmp2 = ss[search_len];
-	  ss[search_len] = '\0';
-	  waddstr(w, ss);
-	  ss[search_len] = tmp2;
+	  tmp2 = s[end];
+	  s[end] = '\0';
+	  waddstr(w, s + start);
+	  s[end] = tmp2;
 
 	  _owl_fmtext_wattrset(w, attr);
 	  _owl_fmtext_wcolor_set(w, pair);
 
-	  s = ss + search_len;
-	  ss = stristr(s, owl_global_get_search_string(&g));
+	  s += end;
 	}
       }
       /* Deal with remaining part of string. */
@@ -562,9 +554,9 @@ void owl_fmtext_copy(owl_fmtext *dst, owl_fmtext *src)
 /* return 1 if the string is found, 0 if not.  This is a case
  *  insensitive search.
  */
-int owl_fmtext_search(owl_fmtext *f, char *string)
+int owl_fmtext_search(owl_fmtext *f, owl_regex *re)
 {
-  if (stristr(f->textbuff, string)) return(1);
+  if (owl_regex_compare(re, f->textbuff, NULL, NULL) == 0) return(1);
   return(0);
 }
 

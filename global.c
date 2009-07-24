@@ -64,7 +64,7 @@ void owl_global_init(owl_global *g) {
   g->colorpairs=COLOR_PAIRS;
   owl_fmtext_init_colorpair_mgr(&(g->cpmgr));
   g->debug=OWL_DEBUG;
-  g->searchstring=NULL;
+  owl_regex_init(&g->search_re);
   g->starttime=time(NULL); /* assumes we call init only a start time */
   g->lastinputtime=g->starttime;
   g->newmsgproc_pid=0;
@@ -707,18 +707,21 @@ int owl_global_should_followlast(owl_global *g) {
 }
 
 int owl_global_is_search_active(owl_global *g) {
-  if (g->searchstring != NULL) return(1);
+  if (owl_regex_is_set(&g->search_re)) return(1);
   return(0);
 }
 
-void owl_global_set_search_string(owl_global *g, char *string) {
-  if (g->searchstring != NULL) owl_free(g->searchstring);
-  g->searchstring = string ? owl_strdup(string) : NULL;
+void owl_global_set_search_re(owl_global *g, owl_regex *re) {
+  if (owl_regex_is_set(&g->search_re)) {
+    owl_regex_free(&g->search_re);
+    owl_regex_init(&g->search_re);
+  }
+  if (re != NULL)
+    owl_regex_copy(re, &g->search_re);
 }
 
-char *owl_global_get_search_string(owl_global *g) {
-  if (g->searchstring==NULL) return("");
-  return(g->searchstring);
+owl_regex *owl_global_get_search_re(owl_global *g) {
+  return &g->search_re;
 }
 
 void owl_global_set_newmsgproc_pid(owl_global *g, int i) {

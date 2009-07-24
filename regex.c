@@ -45,20 +45,25 @@ int owl_regex_create_quoted(owl_regex *re, char *string)
   return(0);
 }
 
-int owl_regex_compare(owl_regex *re, char *string)
+int owl_regex_compare(owl_regex *re, char *string, int *start, int *end)
 {
   int out, ret;
+  regmatch_t match;
 
   /* if the regex is not set we match */
   if (!owl_regex_is_set(re)) {
     return(0);
   }
   
-  ret=regexec(&(re->re), string, 0, NULL, 0);
+  ret=regexec(&(re->re), string, 1, &match, 0);
   out=ret;
   if (re->negate) {
     out=!out;
+    match.rm_so = 0;
+    match.rm_eo = strlen(string);
   }
+  if (start != NULL) *start = match.rm_so;
+  if (end != NULL) *end = match.rm_eo;
   return(out);
 }
 
@@ -75,9 +80,7 @@ char *owl_regex_get_string(owl_regex *re)
 
 void owl_regex_copy(owl_regex *a, owl_regex *b)
 {
-  b->negate=a->negate;
-  b->string=owl_strdup(a->string);
-  memcpy(&(b->re), &(a->re), sizeof(regex_t));
+  owl_regex_create(b, a->string);
 }
 
 void owl_regex_free(owl_regex *re)

@@ -672,12 +672,12 @@ char *owl_message_get_header(owl_message *m) {
 /* return 1 if the message contains "string", 0 otherwise.  This is
  * case insensitive because the functions it uses are
  */
-int owl_message_search(owl_message *m, char *string)
+int owl_message_search(owl_message *m, owl_regex *re)
 {
 
   owl_message_format(m); /* is this necessary? */
   
-  return (owl_fmtext_search(&(m->fmtext->fmtext), string));
+  return (owl_fmtext_search(&(m->fmtext->fmtext), re));
 }
 
 

@@ -2966,7 +2966,14 @@ void owl_function_search_start(char *string, int direction)
 {
   /* direction is OWL_DIRECTION_DOWNWARDS or OWL_DIRECTION_UPWARDS or
    * OWL_DIRECTION_NONE */
-  owl_global_set_search_string(&g, string);
+  owl_regex re;
+
+  if (string && owl_regex_create_quoted(&re, string) == 0) {
+    owl_global_set_search_re(&g, &re);
+    owl_regex_free(&re);
+  } else {
+    owl_global_set_search_re(&g, NULL);
+  }
 
   if (direction == OWL_DIRECTION_NONE)
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
@@ -3019,7 +3026,7 @@ void owl_function_search_helper(int mode, int direction)
 
   for (i=start; i<viewsize && i>=0;) {
     m=owl_view_get_element(v, i);
-    if (owl_message_search(m, owl_global_get_search_string(&g))) {
+    if (owl_message_search(m, owl_global_get_search_re(&g))) {
       owl_global_set_curmsg(&g, i);
       owl_function_calculate_topmsg(direction);
       owl_mainwin_redisplay(owl_global_get_mainwin(&g));

@@ -60,7 +60,7 @@ static int owl_filterelement_match_true(owl_filterelement *fe, owl_message *m)
 static int owl_filterelement_match_re(owl_filterelement *fe, owl_message *m)
 {
   char * val = owl_filterelement_get_field(m, fe->field);
-  return !owl_regex_compare(&(fe->re), val);
+  return !owl_regex_compare(&(fe->re), val, NULL, NULL);
 }
 
 static int owl_filterelement_match_filter(owl_filterelement *fe, owl_message *m)
