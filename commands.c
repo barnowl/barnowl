@@ -2521,8 +2521,7 @@ char *owl_command_setsearch(int argc, char **argv, char *buff)
   char *buffstart;
 
   buffstart=skiptokens(buff, 1);
-  owl_global_set_search_string(&g, *buffstart ? buffstart : NULL);
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  owl_function_search_start(*buffstart ? buffstart : NULL, OWL_DIRECTION_NONE);
   
   return(NULL);
 }

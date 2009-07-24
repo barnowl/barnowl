@@ -2964,9 +2964,14 @@ void owl_function_help_for_command(char *cmdname)
 
 void owl_function_search_start(char *string, int direction)
 {
-  /* direction is OWL_DIRECTION_DOWNWARDS or OWL_DIRECTION_UPWARDS */
+  /* direction is OWL_DIRECTION_DOWNWARDS or OWL_DIRECTION_UPWARDS or
+   * OWL_DIRECTION_NONE */
   owl_global_set_search_string(&g, string);
-  owl_function_search_helper(0, direction);
+
+  if (direction == OWL_DIRECTION_NONE)
+    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  else
+    owl_function_search_helper(0, direction);
 }
 
 void owl_function_search_continue(int direction)
