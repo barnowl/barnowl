@@ -224,24 +224,6 @@ void owl_text_wordunwrap(char *in)
   }
 }
 
-/* exactly like strstr but case insensitive */
-char *stristr(char *a, char *b)
-{
-  char *x, *y;
-  char *ret = NULL;
-  if ((x = g_utf8_casefold(a, -1)) != NULL) {
-    if ((y = g_utf8_casefold(b, -1)) != NULL) {
-      ret = strstr(x, y);
-      if (ret != NULL) {
-	ret = ret - x + a;
-      }
-      g_free(y);
-    }
-    g_free(x);
-  }
-  return(ret);
-}
-
 /* return 1 if a string is only whitespace, otherwise 0 */
 int only_whitespace(char *s)
 {
