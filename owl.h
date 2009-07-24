@@ -544,7 +544,6 @@ typedef struct _owl_global {
   int hascolors;
   int colorpairs;
   owl_colorpair_mgr cpmgr;
-  int searchactive;
   int newmsgproc_pid;
   int malloced, freed;
   char *searchstring;
