@@ -211,6 +211,10 @@ sub _new_command {
             push @{*{"${package}::EXPORT_OK"}{ARRAY}}, $symbol;
         }
     }
+
+    if(!contains(\@BarnOwl::all_commands, $command)) {
+        push @BarnOwl::all_commands, $command;
+    }
 }
 
 sub contains {

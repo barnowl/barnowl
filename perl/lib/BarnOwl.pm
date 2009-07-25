@@ -176,6 +176,8 @@ is the result of formatting the message for display.
 # switch, if present.
 our $configfile;
 
+our @all_commands;
+
 if(!$configfile && -f $ENV{HOME} . "/.barnowlconf") {
     $configfile = $ENV{HOME} . "/.barnowlconf";
 }
