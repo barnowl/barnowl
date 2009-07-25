@@ -120,7 +120,8 @@ static struct _owl_keypress_specialmap {
    { 27, 	        "ESCAPE" }, 
    { 127, 	        "DELETE" }, 
    { '\r', 	        "CR" }, 
-   { '\n', 	        "LF" }, 
+   { '\n', 	        "LF" },
+   { '\t', 	        "TAB" }, 
    { 0,                 NULL }
 };
 
