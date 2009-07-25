@@ -40,7 +40,8 @@ package BarnOwl::Completion::Context;
 
 use base qw(Class::Accessor::Fast);
 
-__PACKAGE__->mk_ro_accessors(qw(line point words word word_point));
+__PACKAGE__->mk_ro_accessors(qw(line point words word word_point
+                                word_start word_end));
 
 sub new {
     my $class = shift;
@@ -49,14 +50,17 @@ sub new {
 
     my $line  = $before_point . $after_point;
     my $point = length ($before_point);
-    my ($words, $word, $word_point) = tokenize($line, $point);
+    my ($words, $word, $word_point,
+        $word_start, $word_end) = tokenize($line, $point);
 
     my $self = {
         line  => $line,
         point => $point,
         words => $words,
         word  => $word,
-        word_point => $word_point
+        word_point => $word_point,
+        word_start => $word_start,
+        word_end   => $word_end
        };
     return bless($self, $class);
 }
@@ -88,9 +92,12 @@ sub tokenize {
 
     my @words = ();
     my $cword = 0;
+    my $cword_start;
+    my $cword_end;
     my $word_point;
 
     my $word = '';
+    my $wstart = 0;
     my $skipped = 0;
 
     pos($line) = 0;
@@ -113,19 +120,25 @@ sub tokenize {
             my $wend = pos($line) - length($1);
             push @words, $word;
             $cword++ unless $wend >= $point;
-            if ($wend >= $point && !defined($word_point)) {
+            if(($wend >= $point) && !defined($word_point)) {
                 $word_point = length($word) - ($wend - $point) + $skipped;
+                $cword_start = $wstart;
+                $cword_end   = $wend;
             }
             $word = '';
+            $wstart = pos($line);
             $skipped = 0;
         }
     }
 
     if(length($word)) { die("Internal error, leftover=$word"); }
 
-    $word_point = 0 unless defined($word_point);
+    unless(defined($word_point)) {
+        $word_point = 0;
+        $cword_start = $cword_end = 0;
+    }
 
-    return (\@words, $cword, $word_point);
+    return (\@words, $cword, $word_point, $cword_start, $cword_end);
 }
 
 1;
