@@ -33,6 +33,7 @@ use BarnOwl::Message;
 use BarnOwl::Style;
 use BarnOwl::Timer;
 use BarnOwl::Editwin;
+use BarnOwl::Completion;
 
 =head1 NAME
 
