@@ -484,14 +484,15 @@ save_excursion(sub)
 	CODE:
 	{
 		x = owl_editwin_begin_excursion(owl_global_get_typwin(&g));
+		PUSHMARK(SP);
 		count = call_sv(sub, G_SCALAR|G_EVAL|G_NOARGS);
+		SPAGAIN;
 		owl_editwin_end_excursion(owl_global_get_typwin(&g), x);
 
 		if(SvTRUE(ERRSV)) {
 			croak(NULL);
 		}
 
-		SPAGAIN;
 		if(count == 1)
 			RETVAL = SvREFCNT_inc(POPs);
 		else
