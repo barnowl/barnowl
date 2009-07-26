@@ -14,7 +14,8 @@ Hooks for tab-completion support in BarnOwl.
 package BarnOwl::Completion;
 
 use BarnOwl::Completion::Context;
-use BarnOwl::Editwin qw(text_before_point text_after_point);
+use BarnOwl::Editwin qw(save_excursion text_before_point text_after_point
+                        point_move replace_region);
 
 use List::Util qw(max first);
 
@@ -31,16 +32,34 @@ sub do_complete {
 
     my $word = $ctx->words->[$ctx->word];
 
-    if($prefix && $prefix ne $word) {
-        if(scalar @words == 1) {
-            $prefix .= ' ';
-        }
-        
-        BarnOwl::Editwin::insert_text(substr($prefix, length($word)));
+    if($prefix) {
+        insert_completion($ctx, $prefix, scalar @words == 1);
     }
 
     if(scalar @words > 1) {
         show_completions(@words);
+    } else {
+        BarnOwl::message('');
+    }
+}
+
+sub insert_completion {
+    my $ctx = shift;
+    my $completion = shift;
+    my $unique = shift;
+
+    save_excursion {
+        point_move($ctx->word_start - $ctx->point);
+        BarnOwl::Editwin::set_mark();
+        point_move($ctx->word_end - $ctx->word_start);
+        replace_region(BarnOwl::quote($completion));
+    };
+    if($unique && $ctx->word == (scalar @{$ctx->words} - 1)) {
+        save_excursion {
+            BarnOwl::Editwin::set_mark();
+            replace_region(' ');
+        };
+        point_move(1);
     }
 }
 
