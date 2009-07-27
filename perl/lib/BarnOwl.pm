@@ -10,7 +10,7 @@ our @EXPORT_OK = qw(command getcurmsg getnumcols getidletime
                     queue_message admin_message
                     start_question start_password start_edit_win
                     get_data_dir get_config_dir popless_text popless_ztext
-                    error
+                    error debug
                     create_style getnumcolors wordwrap
                     add_dispath remove_dispatch
                     new_command
@@ -142,6 +142,10 @@ Show a popup window containing the provided zephyr-formatted C<TEXT>
 Reports an error and log it in `show errors'. Note that in any
 callback or hook called in perl code from BarnOwl, a C<die> will be
 caught and passed to C<error>.
+
+=head2 debug STRING
+
+Logs a debugging message to BarnOwl's debug log
 
 =head2 getnumcolors
 
