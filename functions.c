@@ -1542,7 +1542,6 @@ void owl_function_info()
  */
 void owl_function_curmsg_to_popwin()
 {
-  owl_popwin *pw;
   owl_view *v;
   owl_message *m;
   owl_style *s;
@@ -1550,7 +1549,6 @@ void owl_function_curmsg_to_popwin()
 
   v=owl_global_get_current_view(&g);
   s=owl_global_get_style_by_name(&g, "default");
-  pw=owl_global_get_popwin(&g);
 
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
 
