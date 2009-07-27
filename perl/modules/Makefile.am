@@ -22,4 +22,4 @@ installdirs-local:
 $(MODULES_INSTALL): module_install_%: % installdirs-local
 	${INSTALL_DATA} $*/$*.par ${DESTDIR}${pkgdatadir}/modules/$*.par
 
-.PHONY: $(MODULES) $(MODULES_MAKEFILE) $(MODULES_CLEAN) $(MODULES_INSTALL)
+.PHONY: $(MODULES) $(MODULES_CLEAN) $(MODULES_INSTALL)
