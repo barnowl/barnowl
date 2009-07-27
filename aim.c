@@ -1389,14 +1389,12 @@ static int faimtest_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...)
   aim_userinfo_t *userinfo;
   char *nz_screenname;
   owl_buddy *b;
-  owl_buddylist *bl;
   va_list ap;
   va_start(ap, fr);
   userinfo = va_arg(ap, aim_userinfo_t *);
   va_end(ap);
 
   nz_screenname=owl_aim_normalize_screenname(userinfo->sn);
-  bl=owl_global_get_buddylist(&g);
   
   owl_buddylist_oncoming(owl_global_get_buddylist(&g), nz_screenname);
 
