@@ -332,6 +332,28 @@ remove_dispatch(fd)
 	CODE:
 	owl_select_remove_perl_dispatch(fd);
 
+
+AV*
+all_filters()
+	PREINIT:
+		AV *filters;
+		owl_list *fl;
+		owl_filter *f;
+		int i;
+	CODE:
+	{
+		fl = owl_global_get_filterlist(&g);
+		filters = newAV();
+		for(i=0;i<owl_list_get_size(fl);i++) {
+			f = owl_list_get_element(fl, i);
+			av_push(filters, newSVpv(owl_filter_get_name(f), 0));
+		}
+		RETVAL = filters;
+		sv_2mortal((SV*)RETVAL);
+	}
+	OUTPUT:
+		RETVAL
+
 MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 
 
