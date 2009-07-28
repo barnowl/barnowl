@@ -135,7 +135,8 @@ sub tokenize {
 
     unless(defined($word_point)) {
         $word_point = 0;
-        $cword_start = $cword_end = 0;
+        $cword_start = $cword_end = $point;
+        push @words, '' if $point > 0;
     }
 
     return (\@words, $cword, $word_point, $cword_start, $cword_end);

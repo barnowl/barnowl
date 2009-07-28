@@ -97,6 +97,10 @@ test_tokenize(q{Hello '' ""}, q{ World},
               ["Hello", '', '', 'World'],
               2, 0, 9, 11);
 
+test_tokenize(q{zwrite -c }, q{},
+              [qw(zwrite -c), ''],
+              2, 0, 10, 10);
+
 # It's not entirely clear what we should do here. Make a test for the
 # current behavior, so we'll notice if it changes.
 test_tokenize(q{Hello }, q{ World},
