@@ -29,15 +29,6 @@ sub complete_zwrite {
        );
 }
 
-sub complete_sub {
-    my $ctx = shift;
-    return complete_flags($ctx,
-        [],
-        {
-            "-r" => \&complete_realm,
-        });
-}
-
 sub on_message {
     my $m = shift;
     return unless $m->type eq 'zephyr';
@@ -48,10 +39,6 @@ sub on_message {
 
 BarnOwl::Completion::register_completer(zwrite    => \&complete_zwrite);
 BarnOwl::Completion::register_completer(zcrypt    => \&complete_zwrite);
-
-# TODO: Handle aliases transparently in the core completion code?
-BarnOwl::Completion::register_completer(sub       => \&complete_sub);
-BarnOwl::Completion::register_completer(subscribe => \&complete_sub);
 
 $BarnOwl::Hooks::newMessage->add("BarnOwl::Complete::Zephyr::on_message");
 
