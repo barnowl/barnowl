@@ -30,8 +30,6 @@ sub do_complete {
     return unless @words;
     my $prefix = common_prefix(@words);
 
-    my $word = $ctx->words->[$ctx->word];
-
     if($prefix) {
         insert_completion($ctx, $prefix, scalar @words == 1);
     }
