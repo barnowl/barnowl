@@ -117,4 +117,48 @@ is(BarnOwl::Completion::common_prefix(qw(abc abcd)), 'abc');
 
 is(BarnOwl::Completion::common_prefix(qw(abc abc)), 'abc');
 
+## Test complete_flags
+
+use BarnOwl::Completion::Util qw(complete_flags);
+
+# dummy complete_zwrite
+sub complete_zwrite {
+    my $ctx = shift;
+    return complete_flags($ctx,
+                          [qw(-n -C -m)],
+                          {
+                              "-c" => sub {qw(nelhage nethack sipb help)},
+                              "-i" => sub {qw()},
+                              "-r" => sub {qw(ATHENA.MIT.EDU ZONE.MIT.EDU ANDREW.CMU.EDU)},
+                              "-O" => sub {qw()},
+                          },
+                          sub {qw(nelhage asedeno geofft)});
+}
+
+sub test_complete {
+    my $before = shift;
+    my $after = shift;
+    my $words = shift;
+    
+    my $ctx = BarnOwl::Completion::Context->new($before, $after);
+
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my @got = complete_zwrite($ctx);
+    is_deeply([sort @got], [sort @$words]);
+}
+
+test_complete('zwrite -c ', '', [qw(nelhage nethack sipb help)]);
+
+test_complete('zwrite -c nelhage', '', [qw(nelhage nethack sipb help)]);
+
+test_complete('zwrite -c nelhage -i ', '', [qw()]);
+
+test_complete('zwrite -c nelhage ', '',
+              [qw(-n -C -m -c -i -r -O nelhage asedeno geofft)]);
+
+test_complete('zwrite -c nelhage ', '-',
+              [qw(-n -C -m -c -i -r -O nelhage asedeno geofft)]);
+
 1;
+
