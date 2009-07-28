@@ -45,21 +45,21 @@ sub do_complete {
 
 sub insert_completion {
     my $ctx = shift;
-    my $completion = shift;
+    my $completion = BarnOwl::quote(shift);
     my $unique = shift;
+
+    if($unique) {
+        $completion .= " ";
+    }
 
     save_excursion {
         point_move($ctx->word_start - $ctx->point);
         BarnOwl::Editwin::set_mark();
         point_move($ctx->word_end - $ctx->word_start);
-        replace_region(BarnOwl::quote($completion));
+        replace_region($completion);
     };
-    if($unique && $ctx->word == (scalar @{$ctx->words} - 1)) {
-        save_excursion {
-            BarnOwl::Editwin::set_mark();
-            replace_region(' ');
-        };
-        point_move(1);
+    if(!length($ctx->words->[$ctx->word])) {
+        point_move(length($completion));
     }
 }
 
