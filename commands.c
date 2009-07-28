@@ -7,36 +7,36 @@
 /* fn is "char *foo(int argc, char **argv, char *buff)" */
 #define OWLCMD_ARGS(name, fn, ctx, summary, usage, description) \
         { name, summary, usage, description, ctx, \
-          NULL, fn, NULL, NULL, NULL, NULL, NULL }
+          NULL, fn, NULL, NULL, NULL, NULL, NULL, NULL }
 
 /* fn is "void foo(void)" */
 #define OWLCMD_VOID(name, fn, ctx, summary, usage, description) \
         { name, summary, usage, description, ctx, \
-          NULL, NULL, fn, NULL, NULL, NULL, NULL }
+          NULL, NULL, fn, NULL, NULL, NULL, NULL, NULL }
 
 /* fn is "void foo(int)" */
 #define OWLCMD_INT(name, fn, ctx, summary, usage, description) \
         { name, summary, usage, description, ctx, \
-          NULL, NULL, NULL, fn, NULL, NULL, NULL }
+          NULL, NULL, NULL, fn, NULL, NULL, NULL, NULL }
 
 #define OWLCMD_ALIAS(name, actualname) \
         { name, OWL_CMD_ALIAS_SUMMARY_PREFIX actualname, "", "", OWL_CTX_ANY, \
-          actualname, NULL, NULL, NULL, NULL, NULL, NULL }
+          actualname, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
 /* fn is "char *foo(void *ctx, int argc, char **argv, char *buff)" */
 #define OWLCMD_ARGS_CTX(name, fn, ctx, summary, usage, description) \
         { name, summary, usage, description, ctx, \
-          NULL, NULL, NULL, NULL, ((char*(*)(void*,int,char**,char*))fn), NULL, NULL }
+          NULL, NULL, NULL, NULL, ((char*(*)(void*,int,char**,char*))fn), NULL, NULL, NULL }
 
 /* fn is "void foo(void)" */
 #define OWLCMD_VOID_CTX(name, fn, ctx, summary, usage, description) \
         { name, summary, usage, description, ctx, \
-          NULL, NULL, NULL, NULL, NULL, ((void(*)(void*))(fn)), NULL }
+          NULL, NULL, NULL, NULL, NULL, ((void(*)(void*))(fn)), NULL, NULL }
 
 /* fn is "void foo(int)" */
 #define OWLCMD_INT_CTX(name, fn, ctx, summary, usage, description) \
         { name, summary, usage, description, ctx, \
-          NULL, NULL, NULL, NULL, NULL, NULL, ((void(*)(void*,int))fn) }
+          NULL, NULL, NULL, NULL, NULL, NULL, ((void(*)(void*,int))fn), NULL }
 
 
 owl_cmd commands_to_init[]
@@ -990,7 +990,7 @@ owl_cmd commands_to_init[]
   OWLCMD_ALIAS("webzephyr", "zwrite daemon.webzephyr -c webzephyr -i"),
 
   /* This line MUST be last! */
-  { NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+  { NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
 };
 
