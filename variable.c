@@ -9,11 +9,11 @@ static int in_regtest = 0;
 
 #define OWLVAR_BOOL(name,default,summary,description) \
         { name, OWL_VARIABLE_BOOL, NULL, default, "on,off", summary,description, NULL, \
-        NULL, NULL, NULL, NULL, NULL }
+        NULL, NULL, NULL, NULL, NULL, NULL }
 
 #define OWLVAR_BOOL_FULL(name,default,summary,description,validate,set,get) \
         { name, OWL_VARIABLE_BOOL, NULL, default, "on,off", summary,description, NULL, \
-        validate, set, NULL, get, NULL }
+        validate, set, NULL, get, NULL, NULL }
 
 #define OWLVAR_INT(name,default,summary,description) \
         { name, OWL_VARIABLE_INT, NULL, default, "<int>", summary,description, NULL, \
