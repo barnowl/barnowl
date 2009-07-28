@@ -103,4 +103,18 @@ test_tokenize(q{Hello }, q{ World},
               [qw(Hello World)],
               1, -1, 7, 12);
 
+
+## Test common_prefix
+
+is(BarnOwl::Completion::common_prefix(qw(a b)), '');
+is(BarnOwl::Completion::common_prefix(qw(a aa)), 'a');
+
+is(BarnOwl::Completion::common_prefix(qw(aa)), 'aa');
+
+is(BarnOwl::Completion::common_prefix(qw(a ab abc)), 'a');
+
+is(BarnOwl::Completion::common_prefix(qw(abc abcd)), 'abc');
+
+is(BarnOwl::Completion::common_prefix(qw(abc abc)), 'abc');
+
 1;

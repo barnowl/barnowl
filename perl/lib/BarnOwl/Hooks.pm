@@ -100,6 +100,14 @@ sub _load_perl_commands {
                            "SEE ALSO: show styles, view -s, filter -s\n\n" .
                            "DEPRECATED in favor of BarnOwl::create_style(NAME, OBJECT)",
                           });
+    BarnOwl::new_command('edit:complete' => \&BarnOwl::Completion::do_complete,
+                       {
+                           summary     => "Complete the word at point",
+                           usage       => "complete",
+                           description =>
+                           "This is the function responsible for tab-completion."
+                       });
+    BarnOwl::bindkey(editline => TAB => command => 'edit:complete');
 }
 
 sub _load_owlconf {
