@@ -76,6 +76,7 @@ sub on_message {
     return unless $m->type eq 'IRC';
     $networks{$m->network} = 1;
     $dests{$m->recipient} = 1;
+    $dests{$m->sender} = 1;
     $servers{$m->server} = 1;
 }
 
