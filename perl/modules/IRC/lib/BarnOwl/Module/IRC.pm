@@ -17,6 +17,7 @@ use BarnOwl;
 use BarnOwl::Hooks;
 use BarnOwl::Message::IRC;
 use BarnOwl::Module::IRC::Connection qw(is_private);
+use BarnOwl::Module::IRC::Completion;
 
 use Net::IRC;
 use Getopt::Long;
