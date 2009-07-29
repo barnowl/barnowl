@@ -31,22 +31,21 @@ int owl_dict_get_size(owl_dict *d) {
  * this element would logically go, and stores the index in pos.
  * Returns 1 if found, else 0. */
 int _owl_dict_find_pos(owl_dict *d, char *k, int *pos) {
-  int lo, hi, mid, cmp;
-  lo = 0;
-  hi = d->size;
+  int lo = 0, hi = d->size;
   while (lo < hi) {
-    mid = (lo+hi)/2; // lo goes up and we can't hit hi, so no +1
-    cmp = strcmp(k, d->els[mid].k);
-    if (cmp == 0) {
-      lo = hi = mid;
-    } else if (cmp < 0) {
+    int mid = (lo + hi)/2; /* lo goes up and we can't hit hi, so no +1 */
+    int cmp = strcmp(k, d->els[mid].k);
+    if (cmp < 0) {
       hi = mid;
-    } else { // cmp > 0
+    } else if (cmp > 0) {
       lo = mid+1;
+    } else {
+      *pos = mid;
+      return 1;
     }
   }
   *pos = lo;
-  return !!(lo < d->size && !strcmp(k, d->els[lo].k));
+  return 0;
 }
 
 /* returns the value corresponding to key k */
