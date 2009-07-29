@@ -17,7 +17,7 @@ use BarnOwl::Completion::Context;
 use BarnOwl::Editwin qw(save_excursion text_before_point text_after_point
                         point_move replace_region);
 
-use List::Util qw(max first);
+use List::Util qw(min first);
 
 our %completers = ();
 
@@ -75,7 +75,7 @@ sub show_completions {
 
 sub common_prefix {
     my @words = @_;
-    my $len   = max(map {length($_)} @words);
+    my $len   = min(map {length($_)} @words);
     my $pfx = '';
     for my $i (1..$len) {
         $pfx = substr($words[0], 0, $i);

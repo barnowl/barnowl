@@ -121,6 +121,8 @@ is(BarnOwl::Completion::common_prefix(qw(abc abcd)), 'abc');
 
 is(BarnOwl::Completion::common_prefix(qw(abc abc)), 'abc');
 
+is(BarnOwl::Completion::common_prefix('a', ''), '');
+
 ## Test complete_flags
 
 use BarnOwl::Completion::Util qw(complete_flags);
