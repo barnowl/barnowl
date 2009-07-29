@@ -2,7 +2,7 @@
  * Maps from strings to pointers.
  * Stores as a sorted list of key/value pairs.
  * O(n) on inserts and deletes.
- * O(n) on searches, although it should switch to a binary search for O(log n)
+ * O(log n) on searches
  */
 
 #include <stdlib.h>
@@ -29,17 +29,24 @@ int owl_dict_get_size(owl_dict *d) {
 
 /* Finds the position of an element with key k, or of the element where
  * this element would logically go, and stores the index in pos.
- * TODO: optimize to do a binary search.
  * Returns 1 if found, else 0. */
 int _owl_dict_find_pos(owl_dict *d, char *k, int *pos) {
-  int i;
-  for (i=0; (i<d->size) && strcmp(k,d->els[i].k)>0; i++);
-  *pos = i;
-  if (i>=d->size || strcmp(k,d->els[i].k)) {
-    return(0);
-  } else {
-    return(1);
+  int lo, hi, mid, cmp;
+  lo = 0;
+  hi = d->size;
+  while (lo < hi) {
+    mid = (lo+hi)/2; // lo goes up and we can't hit hi, so no +1
+    cmp = strcmp(k, d->els[mid].k);
+    if (cmp == 0) {
+      lo = hi = mid;
+    } else if (cmp < 0) {
+      hi = mid;
+    } else { // cmp > 0
+      lo = mid+1;
+    }
   }
+  *pos = lo;
+  return !!(lo < d->size && !strcmp(k, d->els[lo].k));
 }
 
 /* returns the value corresponding to key k */
