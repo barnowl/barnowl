@@ -13,7 +13,7 @@
  * return its index, and the interned value in *val. Otherwise, return
  * the index it should be inserted at.
  */
-int owl_obarray_lookup(owl_obarray *oa, const char * key, const char ** val) /*noproto*/
+int owl_obarray_lookup(const owl_obarray *oa, const char * key, const char ** val) /*noproto*/
 {
   int first, last, mid;
   const char * str;
@@ -40,7 +40,7 @@ int owl_obarray_lookup(owl_obarray *oa, const char * key, const char ** val) /*n
 }
 
 /* Returns NULL if the string doesn't exist in the obarray */
-const char * owl_obarray_find(owl_obarray *oa, const char * string)
+const char * owl_obarray_find(const owl_obarray *oa, const char * string)
 {
   const char *v;
   owl_obarray_lookup(oa, string, &v);
