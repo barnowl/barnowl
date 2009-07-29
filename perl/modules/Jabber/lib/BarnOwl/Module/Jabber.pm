@@ -18,6 +18,7 @@ use BarnOwl::Hooks;
 use BarnOwl::Message::Jabber;
 use BarnOwl::Module::Jabber::Connection;
 use BarnOwl::Module::Jabber::ConnectionManager;
+use BarnOwl::Completion::Util qw(complete_flags);
 
 use Authen::SASL qw(Perl);
 use Net::Jabber;
@@ -61,6 +62,7 @@ no warnings 'redefine';
 our $conn;
 $conn ||= BarnOwl::Module::Jabber::ConnectionManager->new;
 our %vars;
+our %completion_jids;
 
 sub onStart {
     if ( *BarnOwl::queue_message{CODE} ) {
@@ -163,6 +165,8 @@ sub blist_listBuddy {
     my $name = $jq{name} || $buddy->GetUserID();
 
     $blistStr .= sprintf '%-15s %s', $name, $buddy->GetJID();
+    $completion_jids{$name} = 1;
+    $completion_jids{$buddy->GetJID()} = 1;
 
     if ($res) {
         my %rq = $roster->resourceQuery( $buddy, $res );
@@ -426,7 +430,8 @@ sub do_login {
                 $conn->removeConnection($jidStr);
                 BarnOwl::error( "Error in connect: " . join( " ", @result ) );
             } else {
-                $conn->getRosterFromJID($jidStr)->fetch();
+                my $roster = $conn->getRosterFromJID($jidStr);
+                $roster->fetch();
                 $client->PresenceSend( priority => 1 );
 		my $fullJid = $client->{SESSION}->{FULLJID} || $jidStr;
 		$conn->renameConnection($jidStr, $fullJid);
@@ -436,6 +441,14 @@ sub do_login {
                 $client->{fileno} = $client->getSocket()->fileno();
                 #queue_admin_msg("Connected to jabber as $fullJid ($client->{fileno})");
                 BarnOwl::add_dispatch($client->{fileno}, sub { $client->OwlProcess() });
+
+                # populate completion from roster.
+                for my $buddy ( $roster->jids('all') ) {
+                    my %jq  = $roster->query($buddy);
+                    my $name = $jq{name} || $buddy->GetUserID();
+                    $completion_jids{$name} = 1;
+                    $completion_jids{$buddy->GetJID()} = 1;
+                }
             }
         }
     }
@@ -646,6 +659,7 @@ sub jmuc_join {
                                                History  => {
                                                    MaxChars => 0
                                                   });
+    $completion_jids{$muc} = 1;
     return;
 }
 
@@ -700,6 +714,7 @@ sub jmuc_presence_single {
     my @jids = $m->Presence();
 
     my $presence = "JIDs present in " . $m->BaseJID;
+    $completion_jids{$m->BaseJID} = 1;
     if($m->Anonymous) {
         $presence .= " [anonymous MUC]";
     }
@@ -873,6 +888,9 @@ sub jroster_add {
 
     # Adding lots of users with the same name is a bad idea.
     $name = "" unless (1 == scalar(@ARGV));
+
+    $completion_jids{$baseJID} = 1;
+    $completion_jids{$name} = 1 if $name;
 
     foreach my $to (@ARGV) {
         my %jq  = $roster->query($to);
@@ -1056,9 +1074,10 @@ sub process_muc_presence {
 
 
 sub process_presence_available {
-    return unless (BarnOwl::getvar('jabber:show_logins') eq 'on');
     my ( $sid, $p ) = @_;
     my $from = $p->GetFrom('jid')->GetJID('base');
+    $completion_jids{$from} = 1;
+    return unless (BarnOwl::getvar('jabber:show_logins') eq 'on');
     my $to = $p->GetTo();
     my $type = $p->GetType();
     my %props = (
@@ -1208,10 +1227,19 @@ sub j2hash {
             $props{recipient} = $props{to}
               if ($connection->FindMUC(jid => $to));
         }
+
+        # Populate completion.
+        if ($dir eq 'in') {
+            $completion_jids{ $props{sender} }= 1;
+        }
+        else {
+            $completion_jids{ $props{recipient} } = 1;
+        }
     }
     elsif ( $jtype eq 'groupchat' ) {
         my $nick = $props{nick} = $from->GetResource();
         my $room = $props{room} = $from->GetJID('base');
+        $completion_jids{$room} = 1;
 
         $props{sender} = $nick || $room;
         $props{recipient} = $room;
@@ -1382,5 +1410,24 @@ sub guess_jwrite {
 
     return @matches;
 }
+
+################################################################################
+### Completion
+
+sub complete_user_or_muc { return keys %completion_jids; }
+sub complete_account { return $conn->getJIDs(); }
+
+sub complete_jwrite {
+    my $ctx = shift;
+    return complete_flags($ctx,
+                          [qw(-t -i -s)],
+                          {
+                              "-a" => \&complete_account,
+                          },
+                          \&complete_user_or_muc }
+        );
+}
+
+BarnOwl::Completion::register_completer(jwrite => sub { BarnOwl::Module::Jabber::complete_jwrite(@_));
 
 1;
