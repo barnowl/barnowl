@@ -1424,10 +1424,10 @@ sub complete_jwrite {
                           {
                               "-a" => \&complete_account,
                           },
-                          \&complete_user_or_muc }
+                          \&complete_user_or_muc
         );
 }
 
-BarnOwl::Completion::register_completer(jwrite => sub { BarnOwl::Module::Jabber::complete_jwrite(@_));
+BarnOwl::Completion::register_completer(jwrite => sub { BarnOwl::Module::Jabber::complete_jwrite(@_) });
 
 1;
