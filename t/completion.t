@@ -166,5 +166,8 @@ test_complete('zwrite -c nelhage ', '',
 test_complete('zwrite -c nelhage ', '-',
               [qw(-n -C -m -c -i -r -O nelhage asedeno geofft)]);
 
+test_complete('zwrite -c nelhage -- ', '',
+              [qw(nelhage asedeno geofft)]);
+
 1;
 

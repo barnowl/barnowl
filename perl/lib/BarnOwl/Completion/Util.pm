@@ -18,13 +18,18 @@ sub complete_flags {
     my $idx = 1;
     my $flag = undef;
 
+    my $word = 0;
+    my $optsdone = 0;
+
     while($idx < $ctx->word) {
         my $word = $ctx->words->[$idx];
-        BarnOwl::debug("[completing] idx=$idx word=$word ctx->word=@{[$ctx->word]}");
         if($flag) {
             undef $flag;
         } elsif($word =~ m{^--}) {
-            last if $word eq '--';
+            if($word eq '--') {
+                $optsdone = 1;
+                last;
+            }
             $flag = $word if(exists $args->{$word});
         } elsif ($word =~ m{^-}) {
             $word = "-" . substr($word, -1);
@@ -34,15 +39,13 @@ sub complete_flags {
     }
 
     if($flag) {
-        BarnOwl::debug("END: flag=$flag");
         my $c = $args->{$flag};
         if($c) {
             return $c->($ctx);
         }
         return;
     } else {
-        return (@$no_args,
-                keys %$args,
+        return ($optsdone ? () : (@$no_args, keys %$args),
                 $default ? ($default->($ctx)) : ());
     }
 }
