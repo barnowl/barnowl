@@ -13,7 +13,7 @@ Contains everything needed to send and receive messages from a Twitter-like serv
 
 package BarnOwl::Module::Twitter::Handle;
 
-use Net::Twitter;
+use Net::Twitter::Lite;
 use HTML::Entities;
 
 use BarnOwl;
@@ -25,11 +25,6 @@ sub fail {
     undef $self->{twitter};
     my $nickname = $self->{cfg}->{account_nickname} || "";
     die("[Twitter $nickname] Error: $msg\n");
-}
-
-my $use_reply_to = 0;
-if($Net::Twitter::VERSION >= 2.06) {
-    $use_reply_to = 1;
 }
 
 sub new {
@@ -58,7 +53,7 @@ sub new {
 
     my %twitter_args = @_;
 
-    $self->{twitter}  = Net::Twitter->new(%twitter_args);
+    $self->{twitter}  = Net::Twitter::Lite->new(%twitter_args);
 
     my $timeline = $self->{twitter}->friends_timeline({count => 1});
 
@@ -185,7 +180,7 @@ sub twitter {
     if($msg =~ m{\Ad\s+([^\s])+(.*)}sm) {
         $self->twitter_direct($1, $2);
     } elsif(defined $self->{twitter}) {
-        if($use_reply_to && defined($reply_to)) {
+        if(defined($reply_to)) {
             $self->{twitter}->update({
                 status => $msg,
                 in_reply_to_status_id => $reply_to
