@@ -18,7 +18,7 @@ sub complete_flags {
     my $idx = 1;
     my $flag = undef;
 
-    my $word = 0;
+    my $argct = 0;
     my $optsdone = 0;
 
     while($idx < $ctx->word) {
@@ -34,6 +34,8 @@ sub complete_flags {
         } elsif ($word =~ m{^-}) {
             $word = "-" . substr($word, -1);
             $flag = $word if(exists $args->{$word});
+        } else {
+            $argct++;
         }
         $idx++;
     }
@@ -46,6 +48,6 @@ sub complete_flags {
         return;
     } else {
         return ($optsdone ? () : (@$no_args, keys %$args),
-                $default ? ($default->($ctx)) : ());
+                $default ? ($default->($ctx, $argct)) : ());
     }
 }

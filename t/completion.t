@@ -145,12 +145,13 @@ sub test_complete {
     my $before = shift;
     my $after = shift;
     my $words = shift;
+    my $complete = shift || \&complete_zwrite;
     
     my $ctx = BarnOwl::Completion::Context->new($before, $after);
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    my @got = complete_zwrite($ctx);
+    my @got = $complete->($ctx);
     is_deeply([sort @got], [sort @$words]);
 }
 
@@ -168,6 +169,22 @@ test_complete('zwrite -c nelhage ', '-',
 
 test_complete('zwrite -c nelhage -- ', '',
               [qw(nelhage asedeno geofft)]);
+
+sub complete_word {
+    my $ctx = shift;
+    return complete_flags($ctx,
+                          [qw(-a -b -c)],
+                          {
+                              "-d" => sub {qw(some words for completing)},
+                          },
+                          sub {$_[1]});
+}
+
+test_complete('cmd -a -d foo -c hello ','',
+              [qw(-a -b -c -d 1)], \&complete_word);
+
+test_complete('cmd -a -d foo -c ','',
+              [qw(-a -b -c -d 0)], \&complete_word);
 
 1;
 
