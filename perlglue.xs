@@ -273,6 +273,14 @@ debug(text)
 	}
 
 void
+message(text)
+	char *text
+	CODE:
+	{
+		owl_function_makemsg("%s", text);
+	}
+
+void
 create_style(name, object)
      char *name
      SV  *object
