@@ -122,6 +122,9 @@ sub load_completers {
         next unless $name =~ m{[.]pm$};
         $name =~ s{[.]pm$}{};
         eval "use BarnOwl::Complete::$name";
+        if($@) {
+            BarnOwl::error("Loading completion module $name:\n$@\n");
+        }
     }
 }
 
