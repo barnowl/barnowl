@@ -20,6 +20,13 @@ my @all_colors = qw(default
 sub complete_command { return sort @BarnOwl::all_commands; }
 sub complete_color { return @all_colors; }
 
+sub complete_filter_args {
+    my $ctx = shift;
+    my $arg = shift;
+    return if $arg;
+    return @{BarnOwl::all_filters()};
+}
+
 sub complete_help {
     my $ctx = shift;
     return complete_flags($ctx,
@@ -38,8 +45,7 @@ sub complete_filter {
            "-c" => \&complete_color,
            "-b" => \&complete_color,
         },
-        undef # TODO: make this get list of filters for the first argument
-              # then maybe some magic like completing keywords instance and other shiny
+         \&complete_filter_args
         );
 }
 
