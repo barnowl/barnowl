@@ -37,6 +37,7 @@ sub new {
         poll_for_tweets  => 1,
         poll_for_dms     => 1,
         publish_tweets   => 1,
+        show_unsubscribed_replies => 1,
         %$cfg
        };
 
@@ -110,6 +111,20 @@ sub poll_twitter {
         $self->twitter_error();
         return;
     };
+
+    if ($self->{cfg}->{show_unsubscribed_replies}) {
+        my $mentions = $self->{twitter}->mentions( { since_id => $self->{last_id} } );
+        unless (defined($mentions) && ref($mentions) eq 'ARRAY') {
+            $self->twitter_error();
+            return;
+        };
+        #combine, sort by id, and uniq
+        push @$timeline, @$mentions;
+        @$timeline = sort { $b->{id} <=> $a->{id} } @$timeline;
+        my $prev = { id => 0 };
+        @$timeline = grep($_->{id} != $prev->{id} && (($prev) = $_), @$timeline);
+    }
+
     if ( scalar @$timeline ) {
         for my $tweet ( reverse @$timeline ) {
             if ( $tweet->{id} <= $self->{last_id} ) {
