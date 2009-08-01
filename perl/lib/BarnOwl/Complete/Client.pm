@@ -85,8 +85,32 @@ sub complete_filter {
         );
 }
 
+sub complete_getvar {
+    my $ctx = shift;
+    return unless ($ctx->word == 1);
+    return complete_variable();
+}
+
+sub complete_set {
+    my $ctx = shift;
+    return complete_flags($ctx,
+        [qw(-q)],
+        {
+        },
+         \&complete_set_args
+        );
+}
+sub complete_set_args {
+    my $ctx = shift;
+    my $arg = shift;
+    return if $arg;
+    return complete_variable();
+}
+
 BarnOwl::Completion::register_completer(help    => \&complete_help);
 BarnOwl::Completion::register_completer(filter  => \&complete_filter);
 BarnOwl::Completion::register_completer(show    => \&complete_show);
+BarnOwl::Completion::register_completer(getvar  => \&complete_getvar);
+BarnOwl::Completion::register_completer(set     => \&complete_set);
 
 1;
