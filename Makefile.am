@@ -17,6 +17,8 @@ tester_SOURCES = $(BASE_SRCS) \
 
 tester_LDADD = libfaim/libfaim.a libzcrypt.a
 
+TESTS=runtests.sh
+
 noinst_LIBRARIES = libzcrypt.a
 
 libzcrypt_a_SOURCES = zcrypt.c
