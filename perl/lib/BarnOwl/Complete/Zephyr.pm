@@ -29,6 +29,18 @@ sub complete_zwrite {
        );
 }
 
+sub complete_viewclass {
+    my $ctx = shift;
+    return unless $ctx->word == 1;
+    return complete_class();
+}
+
+sub complete_viewuser {
+    my $ctx = shift;
+    return unless $ctx->word == 1;
+    return complete_user();
+}
+
 sub on_message {
     my $m = shift;
     return unless $m->type eq 'zephyr';
@@ -39,6 +51,12 @@ sub on_message {
 
 BarnOwl::Completion::register_completer(zwrite    => \&complete_zwrite);
 BarnOwl::Completion::register_completer(zcrypt    => \&complete_zwrite);
+
+# Aliases should really be taken care of by the core completion code.
+BarnOwl::Completion::register_completer(viewclass => \&complete_viewclass);
+BarnOwl::Completion::register_completer(vc        => \&complete_viewclass);
+BarnOwl::Completion::register_completer(viewuser  => \&complete_viewuser);
+BarnOwl::Completion::register_completer(vu        => \&complete_viewuser);
 
 $BarnOwl::Hooks::newMessage->add("BarnOwl::Complete::Zephyr::on_message");
 
