@@ -53,12 +53,9 @@ sub complete_filter_args {
 
 sub complete_help {
     my $ctx = shift;
-    return complete_flags($ctx,
-        [qw()],
-        {
-        },
-        \&complete_command
-       );
+    if($ctx->word == 1) {
+        return complete_command();
+    }
 }
 
 sub complete_show {
