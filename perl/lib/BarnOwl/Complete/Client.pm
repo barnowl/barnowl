@@ -43,6 +43,7 @@ sub complete_command { return sort @BarnOwl::all_commands; }
 sub complete_color { return @all_colors; }
 sub complete_filter_name { return @{BarnOwl::all_filters()}; }
 sub complete_variable {}        # stub
+sub complete_style {}           # stub
 
 my %filter_cmds = (
     sender    => \&BarnOwl::Complete::Zephyr::complete_user,
@@ -205,13 +206,16 @@ sub complete_filter {
 sub complete_view {
     my $ctx = shift;
     if ($ctx->word == 1) {
-        return ("--home", "-d", complete_filter_name());
+        return ("--home", "-d", "-r", "-s", complete_filter_name());
     }
     if ($ctx->words->[1] eq "--home") {
         return;
     }
     if ($ctx->words->[1] eq "-d") {
         return complete_filter_expr($ctx, 2);
+    }
+    if ($ctx->words->[1] eq "-s") {
+        return complete_style();
     }
     return;
 }
