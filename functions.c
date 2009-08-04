@@ -3125,7 +3125,7 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
         j=owl_list_get_size(&anyone);
         for (i=0; i<j; i++) {
           user=owl_list_get_element(&anyone, i);
-          ret=ZLocateUser(user, &numlocs, ZAUTH);
+          ret=ZLocateUser(zstr(user), &numlocs, ZAUTH);
 
           owl_function_mask_sigint(NULL);
           if(owl_global_is_interrupted(&g)) {
@@ -3479,7 +3479,7 @@ void owl_function_zephyr_buddy_check(int notify)
   j=owl_list_get_size(&anyone);
   for (i=0; i<j; i++) {
     user=owl_list_get_element(&anyone, i);
-    ret=ZLocateUser(user, &numlocs, ZAUTH);
+    ret=ZLocateUser(zstr(user), &numlocs, ZAUTH);
     if (ret!=ZERR_NONE) {
       owl_function_error("Error getting location for %s", user);
       continue;

@@ -193,6 +193,14 @@ typedef void SV;
 
 #define LINE 2048
 
+#ifdef HAVE_LIBZEPHYR
+/* libzephyr doesn't use const, so we appease the type system with this cast. */
+static inline char *zstr(const char *str)
+{
+  return (char *)str;
+}
+#endif
+
 typedef struct _owl_variable {
   char *name;
   int   type;  /* OWL_VARIABLE_* */

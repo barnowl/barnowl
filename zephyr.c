@@ -53,12 +53,12 @@ void owl_zephyr_initialize()
   (void) memset(&req, 0, sizeof(req));
   req.z_kind = STAT;
   req.z_port = 0;
-  req.z_class = HM_STAT_CLASS;
-  req.z_class_inst = HM_STAT_CLIENT;
-  req.z_opcode = HM_GIMMESTATS;
-  req.z_sender = "";
-  req.z_recipient = "";
-  req.z_default_format = "";
+  req.z_class = zstr(HM_STAT_CLASS);
+  req.z_class_inst = zstr(HM_STAT_CLIENT);
+  req.z_opcode = zstr(HM_GIMMESTATS);
+  req.z_sender = zstr("");
+  req.z_recipient = zstr("");
+  req.z_default_format = zstr("");
   req.z_message_len = 0;
 
   if ((code = ZSetDestAddr(&sin)) != ZERR_NONE) {
@@ -426,9 +426,9 @@ int owl_zephyr_sub(char *class, char *inst, char *recip)
 #ifdef HAVE_LIBZEPHYR
   ZSubscription_t subs[5];
 
-  subs[0].zsub_class=class;
-  subs[0].zsub_classinst=inst;
-  subs[0].zsub_recipient=recip;
+  subs[0].zsub_class=zstr(class);
+  subs[0].zsub_classinst=zstr(inst);
+  subs[0].zsub_recipient=zstr(recip);
 
   ZResetAuthentication();
   if (ZSubscribeTo(subs,1,0) != ZERR_NONE) {
@@ -447,9 +447,9 @@ int owl_zephyr_unsub(char *class, char *inst, char *recip)
 #ifdef HAVE_LIBZEPHYR
   ZSubscription_t subs[5];
 
-  subs[0].zsub_class=class;
-  subs[0].zsub_classinst=inst;
-  subs[0].zsub_recipient=recip;
+  subs[0].zsub_class=zstr(class);
+  subs[0].zsub_classinst=zstr(inst);
+  subs[0].zsub_recipient=zstr(recip);
 
   ZResetAuthentication();
   if (ZUnsubscribeTo(subs,1,0) != ZERR_NONE) {
@@ -675,18 +675,18 @@ int send_zephyr(char *opcode, char *zsig, char *class, char *instance, char *rec
   
   notice.z_kind=ACKED;
   notice.z_port=0;
-  notice.z_class=class;
-  notice.z_class_inst=instance;
+  notice.z_class=zstr(class);
+  notice.z_class_inst=zstr(instance);
   notice.z_sender=NULL;
   if (!strcmp(recipient, "*") || !strcmp(recipient, "@")) {
-    notice.z_recipient="";
+    notice.z_recipient=zstr("");
     if (*owl_global_get_zsender(&g))
-        notice.z_sender=owl_global_get_zsender(&g);
+        notice.z_sender=zstr(owl_global_get_zsender(&g));
   } else {
-    notice.z_recipient=recipient;
+    notice.z_recipient=zstr(recipient);
   }
-  notice.z_default_format="Class $class, Instance $instance:\nTo: @bold($recipient) at $time $date\nFrom: @bold{$1 <$sender>}\n\n$2";
-  if (opcode) notice.z_opcode=opcode;
+  notice.z_default_format=zstr("Class $class, Instance $instance:\nTo: @bold($recipient) at $time $date\nFrom: @bold{$1 <$sender>}\n\n$2");
+  if (opcode) notice.z_opcode=zstr(opcode);
 
   notice.z_message_len=strlen(zsig)+1+strlen(message);
   notice.z_message=owl_malloc(notice.z_message_len+10);
@@ -894,7 +894,7 @@ void owl_zephyr_zlocate(char *user, char *out, int auth)
   
   strcpy(out, "");
   ZResetAuthentication();
-  ret=ZLocateUser(user,&numlocs,auth?ZAUTH:ZNOAUTH);
+  ret=ZLocateUser(zstr(user),&numlocs,auth?ZAUTH:ZNOAUTH);
   if (ret != ZERR_NONE) {
     sprintf(out, "Error locating user %s\n", user);
     return;
@@ -1003,7 +1003,7 @@ void owl_zephyr_zlog_in(void)
   ZResetAuthentication();
     
   eset=EXPOSE_REALMVIS;
-  exposure=ZGetVariable("exposure");
+  exposure=ZGetVariable(zstr("exposure"));
   if (exposure==NULL) {
     eset=EXPOSE_REALMVIS;
   } else if (!strcasecmp(exposure,EXPOSE_NONE)) {
@@ -1020,7 +1020,7 @@ void owl_zephyr_zlog_in(void)
     eset = EXPOSE_NETANN;
   }
    
-  ret=ZSetLocation(eset);
+  ret=ZSetLocation(zstr(eset));
   if (ret != ZERR_NONE) {
     /*
       char buff[LINE];
@@ -1158,7 +1158,7 @@ char *owl_zephyr_getsubs()
 char *owl_zephyr_get_variable(char *var)
 {
 #ifdef HAVE_LIBZEPHYR
-  return(ZGetVariable(var));
+  return(ZGetVariable(zstr(var)));
 #else
   return("");
 #endif
@@ -1167,7 +1167,7 @@ char *owl_zephyr_get_variable(char *var)
 void owl_zephyr_set_locationinfo(char *host, char *val)
 {
 #ifdef HAVE_LIBZEPHYR
-  ZInitLocationInfo(host, val);
+  ZInitLocationInfo(zstr(host), zstr(val));
 #endif
 }
   
