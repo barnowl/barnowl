@@ -486,7 +486,7 @@ int main(int argc, char **argv, char **env)
  * was ignored due to user settings or otherwise.
  */
 int owl_process_message(owl_message *m) {
-  owl_filter *f;
+  const owl_filter *f;
   /* if this message it on the puntlist, nuke it and continue */
   if (owl_global_message_is_puntable(&g, m)) {
     owl_message_free(m);

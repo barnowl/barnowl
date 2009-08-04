@@ -29,7 +29,7 @@ SV *owl_perlconfig_message2hashref(const owl_message *m)
   char *ptr, *utype, *blessas;
   int i, j;
   const owl_pair *pair;
-  owl_filter *wrap;
+  const owl_filter *wrap;
 
   if (!m) return &PL_sv_undef;
   wrap = owl_global_get_filter(&g, "wordwrap");

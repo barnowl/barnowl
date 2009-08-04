@@ -525,7 +525,7 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
 
 int owl_message_is_personal(const owl_message *m)
 {
-  owl_filter * f = owl_global_get_filter(&g, "personal");
+  const owl_filter * f = owl_global_get_filter(&g, "personal");
   if(!f) {
       owl_function_error("personal filter is not defined");
       return (0);

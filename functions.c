@@ -593,7 +593,7 @@ void owl_function_nextmsg_full(const char *filter, int skip_deleted, int last_if
 {
   int curmsg, i, viewsize, found;
   owl_view *v;
-  owl_filter *f = NULL;
+  const owl_filter *f = NULL;
   const owl_message *m;
 
   v=owl_global_get_current_view(&g);
@@ -646,7 +646,7 @@ void owl_function_prevmsg_full(const char *filter, int skip_deleted, int first_i
 {
   int curmsg, i, viewsize, found;
   owl_view *v;
-  owl_filter *f = NULL;
+  const owl_filter *f = NULL;
   const owl_message *m;
 
   v=owl_global_get_current_view(&g);
@@ -1751,7 +1751,7 @@ void owl_function_delete_automsgs()
   int i, j, count;
   owl_message *m;
   owl_view *v;
-  owl_filter *f;
+  const owl_filter *f;
 
   /* get the trash filter */
   f=owl_global_get_filter(&g, "trash");
@@ -1886,7 +1886,7 @@ void owl_function_reply(int type, int enter)
 {
   char *buff=NULL;
   const owl_message *m;
-  owl_filter *f;
+  const owl_filter *f;
   
   if (owl_view_get_size(owl_global_get_current_view(&g))==0) {
     owl_function_error("No message selected");
@@ -2246,7 +2246,7 @@ void owl_function_create_filter(int argc, const char *const *argv)
 char *owl_function_create_negative_filter(const char *filtername)
 {
   char *newname;
-  owl_filter *tmpfilt;
+  const owl_filter *tmpfilt;
   const char *argv[5];
 
   owl_function_debugmsg("owl_function_create_negative_filter");
@@ -2274,7 +2274,7 @@ char *owl_function_create_negative_filter(const char *filtername)
 void owl_function_show_filters()
 {
   const owl_list *l;
-  owl_filter *f;
+  const owl_filter *f;
   int i, j;
   owl_fmtext fm;
 
@@ -2301,7 +2301,7 @@ void owl_function_show_filters()
 
 void owl_function_show_filter(const char *name)
 {
-  owl_filter *f;
+  const owl_filter *f;
   char *buff, *tmp;
 
   f=owl_global_get_filter(&g, name);
@@ -2318,7 +2318,7 @@ void owl_function_show_filter(const char *name)
 
 void owl_function_show_zpunts()
 {
-  owl_filter *f;
+  const owl_filter *f;
   const owl_list *fl;
   char buff[5000];
   char *tmp;

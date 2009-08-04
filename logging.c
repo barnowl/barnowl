@@ -37,7 +37,7 @@ void owl_log_message(const owl_message *m) {
 
 /* Return 1 if we should log the given message, otherwise return 0 */
 int owl_log_shouldlog_message(const owl_message *m) {
-  owl_filter *f;
+  const owl_filter *f;
 
   /* If there's a logfilter and this message matches it, log */
   f=owl_global_get_filter(&g, owl_global_get_logfilter(&g));

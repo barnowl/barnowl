@@ -15,7 +15,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
   WINDOW *recwin;
   owl_view *v;
   const owl_list *filtlist;
-  owl_filter *f;
+  const owl_filter *f;
 
   recwin=owl_global_get_curs_recwin(&g);
   topmsg=owl_global_get_topmsg(&g);

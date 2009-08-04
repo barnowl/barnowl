@@ -2484,7 +2484,7 @@ char *owl_command_getvar(int argc, const char *const *argv, const char *buff)
 
 char *owl_command_getfilter(int argc, const char *const *argv, const char *buf)
 {
-  owl_filter *f;
+  const owl_filter *f;
   if (argc != 2) {
     owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
     return NULL;

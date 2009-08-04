@@ -65,7 +65,7 @@ static int owl_filterelement_match_re(const owl_filterelement *fe, const owl_mes
 
 static int owl_filterelement_match_filter(const owl_filterelement *fe, const owl_message *m)
 {
-  owl_filter *subfilter;
+  const owl_filter *subfilter;
   subfilter=owl_global_get_filter(&g, fe->field);
   if (!subfilter) {
     /* the filter does not exist, maybe because it was deleted.
@@ -285,7 +285,7 @@ int owl_filterelement_match(const owl_filterelement *fe, const owl_message *m)
 static int fe_visiting = 0;
 static int fe_visited  = 1;
 
-int owl_filterelement_is_toodeep(owl_filter *f, const owl_filterelement *fe)
+int owl_filterelement_is_toodeep(const owl_filter *f, const owl_filterelement *fe)
 {
   int rv;
   owl_dict filters;
@@ -302,7 +302,7 @@ int owl_filterelement_is_toodeep(owl_filter *f, const owl_filterelement *fe)
 int _owl_filterelement_is_toodeep(const owl_filterelement *fe, owl_dict *seen)
 {
   int rv = 0;
-  owl_filter *f;
+  const owl_filter *f;
 
   if(fe->match_message == owl_filterelement_match_filter) {
     int *nval = owl_dict_find_element(seen, fe->field);

@@ -150,7 +150,7 @@ err:
   return NULL;
 }
 
-const char *owl_filter_get_name(owl_filter *f)
+const char *owl_filter_get_name(const owl_filter *f)
 {
   return(f->name);
 }
@@ -160,7 +160,7 @@ void owl_filter_set_fgcolor(owl_filter *f, int color)
   f->fgcolor=color;
 }
 
-int owl_filter_get_fgcolor(owl_filter *f)
+int owl_filter_get_fgcolor(const owl_filter *f)
 {
   return(f->fgcolor);
 }
@@ -170,7 +170,7 @@ void owl_filter_set_bgcolor(owl_filter *f, int color)
   f->bgcolor=color;
 }
 
-int owl_filter_get_bgcolor(owl_filter *f)
+int owl_filter_get_bgcolor(const owl_filter *f)
 {
   return(f->bgcolor);
 }
@@ -180,7 +180,7 @@ void owl_filter_set_cachedmsgid(owl_filter *f, int cachedmsgid)
   f->cachedmsgid=cachedmsgid;
 }
 
-int owl_filter_get_cachedmsgid(owl_filter *f)
+int owl_filter_get_cachedmsgid(const owl_filter *f)
 {
   return(f->cachedmsgid);
 }
@@ -188,7 +188,7 @@ int owl_filter_get_cachedmsgid(owl_filter *f)
 /* return 1 if the message matches the given filter, otherwise
  * return 0.
  */
-int owl_filter_message_match(owl_filter *f, const owl_message *m)
+int owl_filter_message_match(const owl_filter *f, const owl_message *m)
 {
   int ret;
   if(!f->root) return 0;
@@ -197,7 +197,7 @@ int owl_filter_message_match(owl_filter *f, const owl_message *m)
 }
 
 
-char* owl_filter_print(owl_filter *f)
+char* owl_filter_print(const owl_filter *f)
 {
   GString *out = g_string_new("");
 
@@ -230,7 +230,7 @@ char* owl_filter_print(owl_filter *f)
 }
 
 /* Return 1 if the filters 'a' and 'b' are equivalent, 0 otherwise */
-int owl_filter_equiv(owl_filter *a, owl_filter *b)
+int owl_filter_equiv(const owl_filter *a, const owl_filter *b)
 {
   char *buffa, *buffb;
   int ret;
@@ -249,7 +249,7 @@ int owl_filter_equiv(owl_filter *a, owl_filter *b)
 }
 
 
-int owl_filter_is_toodeep(owl_filter *f)
+int owl_filter_is_toodeep(const owl_filter *f)
 {
   return owl_filterelement_is_toodeep(f, f->root);
 }
