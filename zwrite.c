@@ -202,7 +202,7 @@ void owl_zwrite_populate_zsig(owl_zwrite *z)
   }
 }
 
-void owl_zwrite_send_ping(owl_zwrite *z)
+void owl_zwrite_send_ping(const owl_zwrite *z)
 {
   int i, j;
   char *to;
@@ -262,19 +262,19 @@ void owl_zwrite_set_message(owl_zwrite *z, const char *msg)
   }
 }
 
-const char *owl_zwrite_get_message(owl_zwrite *z)
+const char *owl_zwrite_get_message(const owl_zwrite *z)
 {
   if (z->message) return(z->message);
   return("");
 }
 
-int owl_zwrite_is_message_set(owl_zwrite *z)
+int owl_zwrite_is_message_set(const owl_zwrite *z)
 {
   if (z->message) return(1);
   return(0);
 }
 
-int owl_zwrite_send_message(owl_zwrite *z)
+int owl_zwrite_send_message(const owl_zwrite *z)
 {
   int i, j;
   char *to = NULL;
@@ -316,17 +316,17 @@ int owl_zwrite_create_and_send_from_line(const char *cmd, const char *msg)
   return(0);
 }
 
-const char *owl_zwrite_get_class(owl_zwrite *z)
+const char *owl_zwrite_get_class(const owl_zwrite *z)
 {
   return(z->class);
 }
 
-const char *owl_zwrite_get_instance(owl_zwrite *z)
+const char *owl_zwrite_get_instance(const owl_zwrite *z)
 {
   return(z->inst);
 }
 
-const char *owl_zwrite_get_opcode(owl_zwrite *z)
+const char *owl_zwrite_get_opcode(const owl_zwrite *z)
 {
   return(z->opcode);
 }
@@ -337,18 +337,18 @@ void owl_zwrite_set_opcode(owl_zwrite *z, const char *opcode)
   z->opcode=owl_validate_utf8(opcode);
 }
 
-const char *owl_zwrite_get_realm(owl_zwrite *z)
+const char *owl_zwrite_get_realm(const owl_zwrite *z)
 {
   return(z->realm);
 }
 
-const char *owl_zwrite_get_zsig(owl_zwrite *z)
+const char *owl_zwrite_get_zsig(const owl_zwrite *z)
 {
   if (z->zsig) return(z->zsig);
   return("");
 }
 
-void owl_zwrite_get_recipstr(owl_zwrite *z, char *buff)
+void owl_zwrite_get_recipstr(const owl_zwrite *z, char *buff)
 {
   int i, j;
 
@@ -361,17 +361,17 @@ void owl_zwrite_get_recipstr(owl_zwrite *z, char *buff)
   buff[strlen(buff)-1]='\0';
 }
 
-int owl_zwrite_get_numrecips(owl_zwrite *z)
+int owl_zwrite_get_numrecips(const owl_zwrite *z)
 {
   return(owl_list_get_size(&(z->recips)));
 }
 
-const char *owl_zwrite_get_recip_n(owl_zwrite *z, int n)
+const char *owl_zwrite_get_recip_n(const owl_zwrite *z, int n)
 {
   return(owl_list_get_element(&(z->recips), n));
 }
 
-int owl_zwrite_is_personal(owl_zwrite *z)
+int owl_zwrite_is_personal(const owl_zwrite *z)
 {
   /* return true if at least one of the recipients is personal */
   int i, j;
