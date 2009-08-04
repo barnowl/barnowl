@@ -217,6 +217,34 @@ sub twitter_atreply {
     }
 }
 
+sub twitter_follow {
+    my $account = shift;
+
+    if (defined $account) {
+        my $handle = find_account($account);
+        $handle->twitter_follow(@_);
+    } elsif (defined $default_handle) {
+        $default_handle->twitter_follow(@_);
+    }
+    else {
+        $twitter_handles[0]->twitter_follow(@_);
+    }
+}
+
+sub twitter_unfollow {
+    my $account = shift;
+
+    if (defined $account) {
+        my $handle = find_account($account);
+        $handle->twitter_unfollow(@_);
+    } elsif (defined $default_handle) {
+        $default_handle->twitter_unfollow(@_);
+    }
+    else {
+        $twitter_handles[0]->twitter_unfollow(@_);
+    }
+}
+
 BarnOwl::new_command(twitter => \&cmd_twitter, {
     summary     => 'Update Twitter from BarnOwl',
     usage       => 'twitter [ACCOUNT] [MESSAGE]',
@@ -237,10 +265,27 @@ BarnOwl::new_command( 'twitter-atreply' => sub { cmd_twitter_atreply(@_); },
     summary     => 'Send a Twitter @ message',
     usage       => 'twitter-atreply USER [ACCOUNT]',
     description => 'Send a Twitter @reply Message to USER on ACCOUNT (defaults to default_sender,' 
-    . "or first service if no default is provided)"
+    . "\nor first service if no default is provided)"
     }
 );
 
+BarnOwl::new_command( 'twitter-follow' => sub { cmd_twitter_follow(@_); },
+    {
+    summary     => 'Follow a user on Twitter',
+    usage       => 'twitter-follow USER [ACCOUNT]',
+    description => 'Follow USER on Twitter ACCOUNT (defaults to default_sender, or first service'
+    . "\nif no default is provided)"
+    }
+);
+
+BarnOwl::new_command( 'twitter-unfollow' => sub { cmd_twitter_unfollow(@_); },
+    {
+    summary     => 'Stop following a user on Twitter',
+    usage       => 'twitter-unfollow USER [ACCOUNT]',
+    description => 'Stop following USER on Twitter ACCOUNT (defaults to default_sender, or first'
+    . "\nservice if no default is provided)"
+    }
+);
 
 sub cmd_twitter {
     my $cmd = shift;
@@ -269,6 +314,22 @@ sub cmd_twitter_atreply {
     my $id   = shift;
     my $account = shift;
     BarnOwl::start_edit_win("Reply to \@" . $user . (defined $account ? " on $account" : ""), sub { twitter_atreply($account, $user, $id, shift) });
+}
+
+sub cmd_twitter_follow {
+    my $cmd = shift;
+    my $user = shift;
+    die("Usage: $cmd USER\n") unless $user;
+    my $account = shift;
+    twitter_follow($account, $user);
+}
+
+sub cmd_twitter_unfollow {
+    my $cmd = shift;
+    my $user = shift;
+    die("Usage: $cmd USER\n") unless $user;
+    my $account = shift;
+    twitter_unfollow($account, $user);
 }
 
 eval {

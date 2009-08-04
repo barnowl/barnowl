@@ -251,4 +251,32 @@ sub twitter_atreply {
     }
 }
 
+sub twitter_follow {
+    my $self = shift;
+
+    my $who = shift;
+
+    my $user = $self->{twitter}->create_friend($who);
+    # returns a string on error
+    if (defined $user && !ref $user) {
+        BarnOwl::message($user);
+    } else {
+        BarnOwl::message("Following " . $who);
+    }
+}
+
+sub twitter_unfollow {
+    my $self = shift;
+
+    my $who = shift;
+
+    my $user = $self->{twitter}->destroy_friend($who);
+    # returns a string on error
+    if (defined $user && !ref $user) {
+        BarnOwl::message($user);
+    } else {
+        BarnOwl::message("No longer following " . $who);
+    }
+}
+
 1;
