@@ -377,14 +377,14 @@ static owl_variable variables_to_init[] = {
 int owl_variable_int_validate_gt0(owl_variable *v, void *newval)
 {
   if (newval == NULL) return(0);
-  else if (*(int*)newval < 1) return(0);
+  else if (*(const int*)newval < 1) return(0);
   else return (1);
 }
 
 int owl_variable_int_validate_positive(owl_variable *v, void *newval)
 {
   if (newval == NULL) return(0);
-  else if (*(int*)newval < 0) return(0);
+  else if (*(const int*)newval < 0) return(0);
   else return (1);
 }
 
@@ -400,8 +400,8 @@ int owl_variable_typewinsize_set(owl_variable *v, void *newval)
 /* debug (cache value in g->debug) */
 int owl_variable_debug_set(owl_variable *v, void *newval)
 {
-  if (newval && (*(int*)newval == 1 || *(int*)newval == 0)) {
-    g.debug = *(int*)newval;
+  if (newval && (*(const int*)newval == 1 || *(const int*)newval == 0)) {
+    g.debug = *(const int*)newval;
   }
   return owl_variable_bool_set_default(v, newval);
 }
@@ -410,9 +410,9 @@ int owl_variable_debug_set(owl_variable *v, void *newval)
 int owl_variable_aaway_set(owl_variable *v, void *newval)
 {
   if (newval) {
-    if (*(int*)newval == 1) {
+    if (*(const int*)newval == 1) {
       owl_aim_set_awaymsg(owl_global_get_aaway_msg(&g));
-    } else if (*(int*)newval == 0) {
+    } else if (*(const int*)newval == 0) {
       owl_aim_set_awaymsg("");
     }
   }
@@ -422,7 +422,7 @@ int owl_variable_aaway_set(owl_variable *v, void *newval)
 int owl_variable_pseudologins_set(owl_variable *v, void *newval)
 {
   if (newval) {
-    if (*(int*)newval == 1) {
+    if (*(const int*)newval == 1) {
       owl_function_zephyr_buddy_check(0);
     }
   }
@@ -437,9 +437,9 @@ int owl_variable_disable_ctrl_d_set(owl_variable *v, void *newval)
   if (in_regtest) return owl_variable_int_set_default(v, newval);
 
   if (newval && !owl_context_is_startup(owl_global_get_context(&g))) {
-    if (*(int*)newval == 2) {
+    if (*(const int*)newval == 2) {
       owl_function_command_norv("bindkey editmulti C-d command edit:delete-next-char");
-    } else if (*(int*)newval == 1) {
+    } else if (*(const int*)newval == 1) {
       owl_function_command_norv("bindkey editmulti C-d command editmulti:done-or-delete");
     } else {
       owl_function_command_norv("bindkey editmulti C-d command editmulti:done");
@@ -747,14 +747,14 @@ void *owl_variable_get_other(owl_vardict *d, char *name) {
 }
 
 int owl_variable_get_int(owl_vardict *d, char *name) {
-  int *pi;
+  const int *pi;
   pi = owl_variable_get(d,name,OWL_VARIABLE_INT);
   if (!pi) return(-1);
   return(*pi);
 }
 
 int owl_variable_get_bool(owl_vardict *d, char *name) {
-  int *pi;
+  const int *pi;
   pi = owl_variable_get(d,name,OWL_VARIABLE_BOOL);
   if (!pi) return(-1);
   return(*pi);
@@ -850,7 +850,7 @@ void owl_variable_free_default(owl_variable *v) {
 
 int owl_variable_bool_validate_default(owl_variable *v, void *newval) {
   if (newval == NULL) return(0);
-  else if (*(int*)newval==1 || *(int*)newval==0) return(1);
+  else if (*(const int*)newval==1 || *(const int*)newval==0) return(1);
   else return (0);
 }
 
@@ -858,7 +858,7 @@ int owl_variable_bool_set_default(owl_variable *v, void *newval) {
   if (v->validate_fn) {
     if (!v->validate_fn(v, newval)) return(-1);
   }
-  *(int*)v->val = *(int*)newval;
+  *(int*)v->val = *(const int*)newval;
   return(0);
 }
 
@@ -874,10 +874,10 @@ int owl_variable_bool_get_tostring_default(owl_variable *v, char* buf, int bufsi
   if (val == NULL) {
     snprintf(buf, bufsize, "<null>");
     return -1;
-  } else if (*(int*)val == 0) {
+  } else if (*(const int*)val == 0) {
     snprintf(buf, bufsize, "off");
     return 0;
-  } else if (*(int*)val == 1) {
+  } else if (*(const int*)val == 1) {
     snprintf(buf, bufsize, "on");
     return 0;
   } else {
@@ -897,7 +897,7 @@ int owl_variable_int_set_default(owl_variable *v, void *newval) {
   if (v->validate_fn) {
     if (!v->validate_fn(v, newval)) return(-1);
   }
-  *(int*)v->val = *(int*)newval;
+  *(int*)v->val = *(const int*)newval;
   return(0);
 }
 
@@ -914,7 +914,7 @@ int owl_variable_int_get_tostring_default(owl_variable *v, char* buf, int bufsiz
     snprintf(buf, bufsize, "<null>");
     return -1;
   } else {
-    snprintf(buf, bufsize, "%d", *(int*)val);
+    snprintf(buf, bufsize, "%d", *(const int*)val);
     return 0;
   } 
 }
@@ -928,7 +928,7 @@ int owl_variable_enum_validate(owl_variable *v, void *newval) {
   enums = atokenize(v->validsettings, ",", &nenums);
   if (enums == NULL) return(0);
   atokenize_free(enums, nenums);
-  val = *(int*)newval;
+  val = *(const int*)newval;
   if (val < 0 || val >= nenums) {
     return(0);
   }
@@ -960,7 +960,7 @@ int owl_variable_enum_get_tostring(owl_variable *v, char* buf, int bufsize, void
     return -1;
   }
   enums = atokenize(v->validsettings, ",", &nenums);
-  i = *(int*)val;
+  i = *(const int*)val;
   if (i<0 || i>=nenums) {
     snprintf(buf, bufsize, "<invalid:%d>",i);
     atokenize_free(enums, nenums);
