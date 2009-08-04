@@ -201,6 +201,13 @@ static inline char *zstr(const char *str)
 }
 #endif
 
+/* Convert char ** into char **.  This conversion is safe,
+ * and implicit in C++ (conv.qual 4) but for some reason not in C. */
+static inline char **strs(char **pstr)
+{
+  return (char **)pstr;
+}
+
 typedef struct _owl_variable {
   char *name;
   int   type;  /* OWL_VARIABLE_* */

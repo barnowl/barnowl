@@ -24,7 +24,8 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
   owl_list_create(&(z->recips));
 
   /* parse the command line for options */
-  argv=myargv=owl_parseline(line, &argc);
+  argv=owl_parseline(line, &argc);
+  myargv=strs(argv);
   if (argc<0) {
     owl_function_error("Unbalanced quotes in zwrite");
     return(-1);

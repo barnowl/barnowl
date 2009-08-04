@@ -57,7 +57,7 @@ int main(int argc, char **argv, char **env)
     g_error ("GLib version 2.12.0 or above is needed.");
 
   argcsave=argc;
-  argvsave=argv;
+  argvsave=strs(argv);
   configfile=NULL;
   confdir = NULL;
   tty=NULL;

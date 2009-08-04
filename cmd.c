@@ -94,7 +94,7 @@ char *owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char *cmdbuff) {
   
   if (argc < 1) return(NULL);
 
-  retval = _owl_cmddict_execute(cd, ctx, argv, argc, cmdbuff);
+  retval = _owl_cmddict_execute(cd, ctx, strs(argv), argc, cmdbuff);
 
   owl_parsefree(argv, argc);
   owl_free(tmpbuff);
