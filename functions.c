@@ -2900,7 +2900,7 @@ void owl_function_show_keymaps()
 {
   owl_list l;
   owl_fmtext fm;
-  owl_keymap *km;
+  const owl_keymap *km;
   owl_keyhandler *kh;
   int i, numkm;
   const char *kmname;
@@ -2929,7 +2929,7 @@ void owl_function_show_keymaps()
 
 char *owl_function_keymap_summary(const char *name)
 {
-  owl_keymap *km 
+  const owl_keymap *km 
     = owl_keyhandler_get_keymap(owl_global_get_keyhandler(&g), name);
   if (km) return owl_keymap_summary(km);
   else return(NULL);
@@ -2939,7 +2939,7 @@ char *owl_function_keymap_summary(const char *name)
 void owl_function_show_keymap(const char *name)
 {
   owl_fmtext fm;
-  owl_keymap *km;
+  const owl_keymap *km;
 
   owl_fmtext_init_null(&fm);
   km = owl_keyhandler_get_keymap(owl_global_get_keyhandler(&g), name);

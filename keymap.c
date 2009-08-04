@@ -23,7 +23,7 @@ void owl_keymap_free(owl_keymap *km)
   owl_list_free_all(&km->bindings, (void(*)(void*))owl_keybinding_free_all);
 }
 
-void owl_keymap_set_submap(owl_keymap *km, owl_keymap *submap)
+void owl_keymap_set_submap(owl_keymap *km, const owl_keymap *submap)
 {
   km->submap = submap;
 }
@@ -53,7 +53,7 @@ int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *co
 }
 
 /* returns a summary line describing this keymap.  the caller must free. */
-char *owl_keymap_summary(owl_keymap *km)
+char *owl_keymap_summary(const owl_keymap *km)
 {
   char *s;
   int slen;
@@ -65,7 +65,7 @@ char *owl_keymap_summary(owl_keymap *km)
 }
 
 /* Appends details about the keymap to fm */
-void owl_keymap_get_details(owl_keymap *km, owl_fmtext *fm)
+void owl_keymap_get_details(const owl_keymap *km, owl_fmtext *fm)
 {
   int i, nbindings; 
   const owl_keybinding *kb;
@@ -186,9 +186,9 @@ void owl_keyhandler_keymap_namelist_free(owl_list *l)
 
 /* sets the active keymap, which will also reset any key state.
  * returns the new keymap, or NULL on failure. */
-owl_keymap *owl_keyhandler_activate(owl_keyhandler *kh, const char *mapname)
+const owl_keymap *owl_keyhandler_activate(owl_keyhandler *kh, const char *mapname)
 {
-  owl_keymap *km;
+  const owl_keymap *km;
   if (kh->active && !strcmp(mapname, kh->active->name)) return(kh->active);
   km = owl_dict_find_element(&kh->keymaps, mapname);
   if (!km) return(NULL);
@@ -201,7 +201,7 @@ owl_keymap *owl_keyhandler_activate(owl_keyhandler *kh, const char *mapname)
  * 1 if not handled, -1 on error, and -2 if j==ERR. */
 int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
 {
-  owl_keymap     *km;
+  const owl_keymap     *km;
   const owl_keybinding *kb;
   int i, match;
 
