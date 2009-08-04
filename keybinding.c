@@ -11,7 +11,7 @@
  */
 
 /* sets up a new keybinding for a command */
-int owl_keybinding_init(owl_keybinding *kb, char *keyseq, char *command, void (*function_fn)(void), char *desc)
+int owl_keybinding_init(owl_keybinding *kb, const char *keyseq, const char *command, void (*function_fn)(void), const char *desc)
 {
   char **ktokens;
   int    nktokens, i;
@@ -99,7 +99,7 @@ int owl_keybinding_tostring(owl_keybinding *kb, char *buff, int bufflen)
   return owl_keybinding_stack_tostring(kb->keys, kb->len, buff, bufflen);
 }
 
-char *owl_keybinding_get_desc(owl_keybinding *kb)
+const char *owl_keybinding_get_desc(owl_keybinding *kb)
 {
   return kb->desc;
 }

@@ -43,14 +43,14 @@ int main(int argc, char **argv, char **env)
   int debug, argcsave, followlast;
   int newmsgs, nexttimediff;
   struct sigaction sigact;
-  char *configfile, *tty, **argvsave;
+  const char *configfile, *tty, *const *argvsave;
   char *perlout, *perlerr;
-  char *confdir;
+  const char *confdir;
   owl_filter *f;
   owl_style *s;
   time_t nexttime, now;
   struct tm *today;
-  char *dir;
+  const char *dir;
   struct termios tio;
   owl_message *m;
 

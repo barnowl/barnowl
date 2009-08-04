@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "owl.h"
 
-void owl_view_create(owl_view *v, char *name, owl_filter *f, owl_style *s)
+void owl_view_create(owl_view *v, const char *name, owl_filter *f, owl_style *s)
 {
   v->name=owl_strdup(name);
   v->filter=f;
@@ -10,7 +10,7 @@ void owl_view_create(owl_view *v, char *name, owl_filter *f, owl_style *s)
   owl_view_recalculate(v);
 }
 
-char *owl_view_get_name(owl_view *v)
+const char *owl_view_get_name(owl_view *v)
 {
   return(v->name);
 }
@@ -66,7 +66,7 @@ owl_style *owl_view_get_style(owl_view *v)
   return(v->style);
 }
 
-char *owl_view_get_style_name(owl_view *v) {
+const char *owl_view_get_style_name(owl_view *v) {
   return(owl_style_get_name(v->style));
 }
 
@@ -153,7 +153,7 @@ void owl_view_to_fmtext(owl_view *v, owl_fmtext *fm)
   owl_fmtext_append_normal(fm, "\n");
 }
 
-char *owl_view_get_filtname(owl_view *v)
+const char *owl_view_get_filtname(owl_view *v)
 {
   return(owl_filter_get_name(v->filter));
 }

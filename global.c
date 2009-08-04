@@ -268,11 +268,11 @@ owl_editwin *owl_global_get_typwin(owl_global *g) {
 
 /* buffercommand */
 
-void owl_global_set_buffercommand(owl_global *g, char *command) {
+void owl_global_set_buffercommand(owl_global *g, const char *command) {
   owl_editwin_set_command(owl_global_get_typwin(g), command);
 }
 
-char *owl_global_get_buffercommand(owl_global *g) {
+const char *owl_global_get_buffercommand(owl_global *g) {
   return owl_editwin_get_command(owl_global_get_typwin(g));
 }
 
@@ -350,12 +350,12 @@ void owl_global_set_resize_pending(owl_global *g) {
   g->resizepending=1;
 }
 
-char *owl_global_get_homedir(owl_global *g) {
+const char *owl_global_get_homedir(owl_global *g) {
   if (g->homedir) return(g->homedir);
   return("/");
 }
 
-char *owl_global_get_confdir(owl_global *g) {
+const char *owl_global_get_confdir(owl_global *g) {
   if (g->confdir) return(g->confdir);
   return("/");
 }
@@ -363,14 +363,14 @@ char *owl_global_get_confdir(owl_global *g) {
 /*
  * Setting this also sets startupfile to confdir/startup
  */
-void owl_global_set_confdir(owl_global *g, char *cd) {
+void owl_global_set_confdir(owl_global *g, const char *cd) {
   free(g->confdir);
   g->confdir = owl_strdup(cd);
   free(g->startupfile);
   g->startupfile = owl_sprintf("%s/startup", cd);
 }
 
-char *owl_global_get_startupfile(owl_global *g) {
+const char *owl_global_get_startupfile(owl_global *g) {
   if(g->startupfile) return(g->startupfile);
   return("/");
 }
@@ -533,7 +533,7 @@ void owl_global_get_runtime_string(owl_global *g, char *buff) {
   sprintf(buff, "%i seconds", (int) diff);
 }
 
-char *owl_global_get_hostname(owl_global *g) {
+const char *owl_global_get_hostname(owl_global *g) {
   if (g->thishost) return(g->thishost);
   return("");
 }
@@ -576,7 +576,7 @@ void owl_global_set_curmsg_vert_offset(owl_global *g, int i) {
 
 /* startup args */
 
-void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
+void owl_global_set_startupargs(owl_global *g, int argc, const char *const *argv) {
   int i, len;
 
   if (g->startupargs) owl_free(g->startupargs);
@@ -594,7 +594,7 @@ void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
   g->startupargs[strlen(g->startupargs)-1]='\0';
 }
 
-char *owl_global_get_startupargs(owl_global *g) {
+const char *owl_global_get_startupargs(owl_global *g) {
   if (g->startupargs) return(g->startupargs);
   return("");
 }
@@ -615,7 +615,7 @@ owl_list *owl_global_get_filterlist(owl_global *g) {
   return(&(g->filterlist));
 }
 
-owl_filter *owl_global_get_filter(owl_global *g, char *name) {
+owl_filter *owl_global_get_filter(owl_global *g, const char *name) {
   int i, j;
   owl_filter *f;
 
@@ -633,7 +633,7 @@ void owl_global_add_filter(owl_global *g, owl_filter *f) {
   owl_list_append_element(&(g->filterlist), f);
 }
 
-void owl_global_remove_filter(owl_global *g, char *name) {
+void owl_global_remove_filter(owl_global *g, const char *name) {
   int i, j;
   owl_filter *f;
 
@@ -740,7 +740,7 @@ int owl_global_is_aimloggedin(owl_global *g)
   return(0);
 }
 
-char *owl_global_get_aim_screenname(owl_global *g)
+const char *owl_global_get_aim_screenname(owl_global *g)
 {
   if (owl_global_is_aimloggedin(g)) {
     return (g->aim_screenname);
@@ -748,7 +748,7 @@ char *owl_global_get_aim_screenname(owl_global *g)
   return("");
 }
 
-char *owl_global_get_aim_screenname_for_filters(owl_global *g)
+const char *owl_global_get_aim_screenname_for_filters(owl_global *g)
 {
   if (owl_global_is_aimloggedin(g)) {
     return (g->aim_screenname_for_filters);
@@ -756,10 +756,10 @@ char *owl_global_get_aim_screenname_for_filters(owl_global *g)
   return("");
 }
 
-void owl_global_set_aimloggedin(owl_global *g, char *screenname)
+void owl_global_set_aimloggedin(owl_global *g, const char *screenname)
 {
   char *sn_escaped;
-  char *quote;
+  const char *quote;
   g->aim_loggedin=1;
   if (g->aim_screenname) owl_free(g->aim_screenname);
   if (g->aim_screenname_for_filters) owl_free(g->aim_screenname_for_filters);
@@ -842,7 +842,7 @@ owl_buddylist *owl_global_get_buddylist(owl_global *g)
 
 /* Return the style with name 'name'.  If it does not exist return
  * NULL */
-owl_style *owl_global_get_style_by_name(owl_global *g, char *name)
+owl_style *owl_global_get_style_by_name(owl_global *g, const char *name)
 {
   return owl_dict_find_element(&(g->styledict), name);
 }
@@ -941,7 +941,7 @@ struct termios *owl_global_get_startup_tio(owl_global *g)
   return(&(g->startup_tio));
 }
 
-char * owl_global_intern(owl_global *g, char * string)
+const char * owl_global_intern(owl_global *g, const char * string)
 {
   return owl_obarray_insert(&(g->obarray), string);
 }

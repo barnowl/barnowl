@@ -54,7 +54,7 @@ void owl_message_init(owl_message *m)
 /* add the named attribute to the message.  If an attribute with the
  * name already exists, replace the old value with the new value
  */
-void owl_message_set_attribute(owl_message *m, char *attrname, const char *attrvalue)
+void owl_message_set_attribute(owl_message *m, const char *attrname, const char *attrvalue)
 {
   int i, j;
   owl_pair *p = NULL, *pair = NULL;
@@ -81,7 +81,7 @@ void owl_message_set_attribute(owl_message *m, char *attrname, const char *attrv
 /* return the value associated with the named attribute, or NULL if
  * the attribute does not exist
  */
-char *owl_message_get_attribute_value(owl_message *m, char *attrname)
+const char *owl_message_get_attribute_value(owl_message *m, const char *attrname)
 {
   int i, j;
   owl_pair *p;
@@ -158,72 +158,72 @@ void owl_message_format(owl_message *m)
   }
 }
 
-void owl_message_set_class(owl_message *m, char *class)
+void owl_message_set_class(owl_message *m, const char *class)
 {
   owl_message_set_attribute(m, "class", class);
 }
 
-char *owl_message_get_class(owl_message *m)
+const char *owl_message_get_class(owl_message *m)
 {
-  char *class;
+  const char *class;
 
   class=owl_message_get_attribute_value(m, "class");
   if (!class) return("");
   return(class);
 }
 
-void owl_message_set_instance(owl_message *m, char *inst)
+void owl_message_set_instance(owl_message *m, const char *inst)
 {
   owl_message_set_attribute(m, "instance", inst);
 }
 
-char *owl_message_get_instance(owl_message *m)
+const char *owl_message_get_instance(owl_message *m)
 {
-  char *instance;
+  const char *instance;
 
   instance=owl_message_get_attribute_value(m, "instance");
   if (!instance) return("");
   return(instance);
 }
 
-void owl_message_set_sender(owl_message *m, char *sender)
+void owl_message_set_sender(owl_message *m, const char *sender)
 {
   owl_message_set_attribute(m, "sender", sender);
 }
 
-char *owl_message_get_sender(owl_message *m)
+const char *owl_message_get_sender(owl_message *m)
 {
-  char *sender;
+  const char *sender;
 
   sender=owl_message_get_attribute_value(m, "sender");
   if (!sender) return("");
   return(sender);
 }
 
-void owl_message_set_zsig(owl_message *m, char *zsig)
+void owl_message_set_zsig(owl_message *m, const char *zsig)
 {
   owl_message_set_attribute(m, "zsig", zsig);
 }
 
-char *owl_message_get_zsig(owl_message *m)
+const char *owl_message_get_zsig(owl_message *m)
 {
-  char *zsig;
+  const char *zsig;
 
   zsig=owl_message_get_attribute_value(m, "zsig");
   if (!zsig) return("");
   return(zsig);
 }
 
-void owl_message_set_recipient(owl_message *m, char *recip)
+void owl_message_set_recipient(owl_message *m, const char *recip)
 {
   owl_message_set_attribute(m, "recipient", recip);
 }
 
-char *owl_message_get_recipient(owl_message *m)
+const char *owl_message_get_recipient(owl_message *m)
 {
   /* this is stupid for outgoing messages, we need to fix it. */
 
-  char *recip;
+  const char *recip;
 
   recip=owl_message_get_attribute_value(m, "recipient");
   if (!recip) return("");
@@ -235,23 +235,23 @@ void owl_message_set_realm(owl_message *m, const char *realm)
   owl_message_set_attribute(m, "realm", realm);
 }
 
-char *owl_message_get_realm(owl_message *m)
+const char *owl_message_get_realm(owl_message *m)
 {
-  char *realm;
+  const char *realm;
   
   realm=owl_message_get_attribute_value(m, "realm");
   if (!realm) return("");
   return(realm);
 }
 
-void owl_message_set_body(owl_message *m, char *body)
+void owl_message_set_body(owl_message *m, const char *body)
 {
   owl_message_set_attribute(m, "body", body);
 }
 
-char *owl_message_get_body(owl_message *m)
+const char *owl_message_get_body(owl_message *m)
 {
-  char *body;
+  const char *body;
 
   body=owl_message_get_attribute_value(m, "body");
   if (!body) return("");
@@ -259,14 +259,14 @@ char *owl_message_get_body(owl_message *m)
 }
 
 
-void owl_message_set_opcode(owl_message *m, char *opcode)
+void owl_message_set_opcode(owl_message *m, const char *opcode)
 {
   owl_message_set_attribute(m, "opcode", opcode);
 }
 
-char *owl_message_get_opcode(owl_message *m)
+const char *owl_message_get_opcode(owl_message *m)
 {
-  char *opcode;
+  const char *opcode;
 
   opcode=owl_message_get_attribute_value(m, "opcode");
   if (!opcode) return("");
@@ -287,7 +287,7 @@ void owl_message_set_islogout(owl_message *m)
 
 int owl_message_is_loginout(owl_message *m)
 {
-  char *res;
+  const char *res;
 
   res=owl_message_get_attribute_value(m, "loginout");
   if (!res) return(0);
@@ -296,7 +296,7 @@ int owl_message_is_loginout(owl_message *m)
 
 int owl_message_is_login(owl_message *m)
 {
-  char *res;
+  const char *res;
 
   res=owl_message_get_attribute_value(m, "loginout");
   if (!res) return(0);
@@ -307,7 +307,7 @@ int owl_message_is_login(owl_message *m)
 
 int owl_message_is_logout(owl_message *m)
 {
-  char *res;
+  const char *res;
 
   res=owl_message_get_attribute_value(m, "loginout");
   if (!res) return(0);
@@ -322,14 +322,14 @@ void owl_message_set_isprivate(owl_message *m)
 
 int owl_message_is_private(owl_message *m)
 {
-  char *res;
+  const char *res;
 
   res=owl_message_get_attribute_value(m, "isprivate");
   if (!res) return(0);
   return !strcmp(res, "true");
 }
 
-char *owl_message_get_timestr(owl_message *m)
+const char *owl_message_get_timestr(owl_message *m)
 {
   if (m->timestr) return(m->timestr);
   return("");
@@ -355,13 +355,13 @@ void owl_message_set_type_aim(owl_message *m)
   owl_message_set_attribute(m, "type", "AIM");
 }
 
-void owl_message_set_type(owl_message *m, char* type)
+void owl_message_set_type(owl_message *m, const char* type)
 {
   owl_message_set_attribute(m, "type", type);
 }
 
-int owl_message_is_type(owl_message *m, char *type) {
-  char * t = owl_message_get_attribute_value(m, "type");
+int owl_message_is_type(owl_message *m, const char *type) {
+  const char * t = owl_message_get_attribute_value(m, "type");
   if(!t) return 0;
   return !strcasecmp(t, type);
 }
@@ -398,7 +398,7 @@ int owl_message_is_pseudo(owl_message *m)
   return(0);
 }
 
-char *owl_message_get_text(owl_message *m)
+const char *owl_message_get_text(owl_message *m)
 {
   owl_message_format(m);
   return(owl_fmtext_get_text(&(m->fmtext->fmtext)));
@@ -461,14 +461,14 @@ void owl_message_unmark_delete(owl_message *m)
   m->delete=0;
 }
 
-char *owl_message_get_zwriteline(owl_message *m)
+const char *owl_message_get_zwriteline(owl_message *m)
 {
-  char *z = owl_message_get_attribute_value(m, "zwriteline");
+  const char *z = owl_message_get_attribute_value(m, "zwriteline");
   if (!z) return "";
   return z;
 }
 
-void owl_message_set_zwriteline(owl_message *m, char *line)
+void owl_message_set_zwriteline(owl_message *m, const char *line)
 {
   owl_message_set_attribute(m, "zwriteline", line);
 }
@@ -492,12 +492,12 @@ void *owl_message_get_notice(owl_message *m)
 }
 #endif
 
-void owl_message_set_hostname(owl_message *m, char *hostname)
+void owl_message_set_hostname(owl_message *m, const char *hostname)
 {
   m->hostname=owl_global_intern(&g, hostname);
 }
 
-char *owl_message_get_hostname(owl_message *m)
+const char *owl_message_get_hostname(owl_message *m)
 {
   return(m->hostname);
 }
@@ -541,7 +541,7 @@ int owl_message_is_question(owl_message *m)
 }
 
 int owl_message_is_answered(owl_message *m) {
-  char *q;
+  const char *q;
   if(!owl_message_is_question(m)) return 0;
   q = owl_message_get_attribute_value(m, "question");
   if(!q) return 0;
@@ -567,7 +567,7 @@ int owl_message_is_mail(owl_message *m)
 /* caller must free return value. */
 char *owl_message_get_cc(owl_message *m)
 {
-  char *cur;
+  const char *cur;
   char *out, *end;
 
   cur = owl_message_get_body(m);
@@ -585,7 +585,7 @@ char *owl_message_get_cc(owl_message *m)
 char *owl_message_get_cc_without_recipient(owl_message *m)
 {
   char *cc, *out, *end, *shortuser, *recip;
-  char *user;
+  const char *user;
 
   cc = owl_message_get_cc(m);
   if (cc == NULL)
@@ -624,15 +624,15 @@ int owl_message_get_id(owl_message *m)
   return(m->id);
 }
 
-char *owl_message_get_type(owl_message *m) {
-  char * type = owl_message_get_attribute_value(m, "type");
+const char *owl_message_get_type(owl_message *m) {
+  const char * type = owl_message_get_attribute_value(m, "type");
   if(!type) {
     return "generic";
   }
   return type;
 }
 
-char *owl_message_get_direction(owl_message *m) {
+const char *owl_message_get_direction(owl_message *m) {
   switch (m->direction) {
   case OWL_MESSAGE_DIRECTION_IN:
     return("in");
@@ -645,7 +645,7 @@ char *owl_message_get_direction(owl_message *m) {
   }
 }
 
-int owl_message_parse_direction(char *d) {
+int owl_message_parse_direction(const char *d) {
   if(!strcmp(d, "in")) {
     return OWL_MESSAGE_DIRECTION_IN;
   } else if(!strcmp(d, "out")) {
@@ -656,7 +656,7 @@ int owl_message_parse_direction(char *d) {
 }
 
 
-char *owl_message_get_login(owl_message *m) {
+const char *owl_message_get_login(owl_message *m) {
   if (owl_message_is_login(m)) {
     return "login";
   } else if (owl_message_is_logout(m)) {
@@ -667,7 +667,7 @@ char *owl_message_get_login(owl_message *m) {
 }
 
 
-char *owl_message_get_header(owl_message *m) {
+const char *owl_message_get_header(owl_message *m) {
   return owl_message_get_attribute_value(m, "adminheader");
 }
 
@@ -687,7 +687,7 @@ int owl_message_search(owl_message *m, owl_regex *re)
  *                 0 it's not a login/logout message
  *                 1 it's a login message
  */
-void owl_message_create_aim(owl_message *m, char *sender, char *recipient, char *text, int direction, int loginout)
+void owl_message_create_aim(owl_message *m, const char *sender, const char *recipient, const char *text, int direction, int loginout)
 {
   owl_message_init(m);
   owl_message_set_body(m, text);
@@ -713,7 +713,7 @@ void owl_message_create_aim(owl_message *m, char *sender, char *recipient, char 
   }
 }
 
-void owl_message_create_admin(owl_message *m, char *header, char *text)
+void owl_message_create_admin(owl_message *m, const char *header, const char *text)
 {
   owl_message_init(m);
   owl_message_set_type_admin(m);
@@ -722,7 +722,7 @@ void owl_message_create_admin(owl_message *m, char *header, char *text)
 }
 
 /* caller should set the direction */
-void owl_message_create_loopback(owl_message *m, char *text)
+void owl_message_create_loopback(owl_message *m, const char *text)
 {
   owl_message_init(m);
   owl_message_set_type_loopback(m);
@@ -736,7 +736,7 @@ void owl_message_create_loopback(owl_message *m, char *text)
 void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 {
   struct hostent *hent;
-  char *ptr;
+  const char *ptr;
   char *tmp, *tmp2;
   int len;
 
@@ -851,10 +851,10 @@ void owl_message_create_from_znotice(owl_message *m, void *n)
 #endif
 
 /* If 'direction' is '0' it is a login message, '1' is a logout message. */
-void owl_message_create_pseudo_zlogin(owl_message *m, int direction, char *user, char *host, char *time, char *tty)
+void owl_message_create_pseudo_zlogin(owl_message *m, int direction, const char *user, const char *host, const char *time, const char *tty)
 {
   char *longuser;
-  char *ptr;
+  const char *ptr;
 
 #ifdef HAVE_LIBZEPHYR
   memset(&(m->notice), 0, sizeof(ZNotice_t));
@@ -897,7 +897,7 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, char *user,
   owl_free(longuser);
 }
 
-void owl_message_create_from_zwriteline(owl_message *m, char *line, char *body, char *zsig)
+void owl_message_create_from_zwriteline(owl_message *m, const char *line, const char *body, const char *zsig)
 {
   owl_zwrite z;
   int ret;

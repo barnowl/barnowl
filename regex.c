@@ -7,11 +7,11 @@ void owl_regex_init(owl_regex *re)
   re->string=NULL;
 }
 
-int owl_regex_create(owl_regex *re, char *string)
+int owl_regex_create(owl_regex *re, const char *string)
 {
   int ret;
   char buff1[LINE];
-  char *ptr;
+  const char *ptr;
   
   re->string=owl_strdup(string);
 
@@ -35,7 +35,7 @@ int owl_regex_create(owl_regex *re, char *string)
   return(0);
 }
 
-int owl_regex_create_quoted(owl_regex *re, char *string)
+int owl_regex_create_quoted(owl_regex *re, const char *string)
 {
   char *quoted;
   
@@ -45,7 +45,7 @@ int owl_regex_create_quoted(owl_regex *re, char *string)
   return(0);
 }
 
-int owl_regex_compare(owl_regex *re, char *string, int *start, int *end)
+int owl_regex_compare(owl_regex *re, const char *string, int *start, int *end)
 {
   int out, ret;
   regmatch_t match;
@@ -73,7 +73,7 @@ int owl_regex_is_set(owl_regex *re)
   return(0);
 }
 
-char *owl_regex_get_string(owl_regex *re)
+const char *owl_regex_get_string(owl_regex *re)
 {
   return(re->string);
 }

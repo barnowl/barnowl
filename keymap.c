@@ -2,7 +2,7 @@
 #include "owl.h"
 
 /* returns 0 on success */
-int owl_keymap_init(owl_keymap *km, char *name, char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
+int owl_keymap_init(owl_keymap *km, const char *name, const char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
 {
   if (!name || !desc) return(-1);
   if ((km->name = owl_strdup(name)) == NULL) return(-1);
@@ -29,7 +29,7 @@ void owl_keymap_set_submap(owl_keymap *km, owl_keymap *submap)
 }
 
 /* creates and adds a key binding */
-int owl_keymap_create_binding(owl_keymap *km, char *keyseq, char *command, void (*function_fn)(void), char *desc)
+int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *command, void (*function_fn)(void), const char *desc)
 {
   owl_keybinding *kb, *curkb;
   int i;
@@ -102,7 +102,7 @@ void owl_keymap_get_details(owl_keymap *km, owl_fmtext *fm)
   for (i=0; i<nbindings; i++) {
     char buff[100];
     owl_cmd *cmd;
-    char *tmpdesc, *desc = "";
+    const char *tmpdesc, *desc = "";
 
     kb = owl_list_get_element(&km->bindings, i);
     owl_keybinding_tostring(kb, buff, 100);
@@ -148,7 +148,7 @@ void owl_keyhandler_add_keymap(owl_keyhandler *kh, owl_keymap *km)
   owl_dict_insert_element(&kh->keymaps, km->name, km, NULL);
 }
 
-owl_keymap *owl_keyhandler_create_and_add_keymap(owl_keyhandler *kh, char *name, char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
+owl_keymap *owl_keyhandler_create_and_add_keymap(owl_keyhandler *kh, const char *name, const char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
 {
   owl_keymap *km;
   km = owl_malloc(sizeof(owl_keymap));
@@ -166,7 +166,7 @@ void owl_keyhandler_reset(owl_keyhandler *kh)
   kh->kpstackpos = -1;
 }
 
-owl_keymap *owl_keyhandler_get_keymap(owl_keyhandler *kh, char *mapname)
+owl_keymap *owl_keyhandler_get_keymap(owl_keyhandler *kh, const char *mapname)
 {
   return owl_dict_find_element(&kh->keymaps, mapname);
 }
@@ -186,7 +186,7 @@ void owl_keyhandler_keymap_namelist_free(owl_list *l)
 
 /* sets the active keymap, which will also reset any key state.
  * returns the new keymap, or NULL on failure. */
-owl_keymap *owl_keyhandler_activate(owl_keyhandler *kh, char *mapname)
+owl_keymap *owl_keyhandler_activate(owl_keyhandler *kh, const char *mapname)
 {
   owl_keymap *km;
   if (kh->active && !strcmp(mapname, kh->active->name)) return(kh->active);

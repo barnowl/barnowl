@@ -42,7 +42,7 @@ int owl_fmtext_is_format_char(gunichar c)
 /* append text to the end of 'f' with attribute 'attr' and color
  * 'color'
  */
-void owl_fmtext_append_attr(owl_fmtext *f, char *text, char attr, short fgcolor, short bgcolor)
+void owl_fmtext_append_attr(owl_fmtext *f, const char *text, char attr, short fgcolor, short bgcolor)
 {
   char attrbuff[6];
   int newlen, a = 0, fg = 0, bg = 0;
@@ -82,13 +82,13 @@ void owl_fmtext_append_attr(owl_fmtext *f, char *text, char attr, short fgcolor,
 }
 
 /* Append normal, uncolored text 'text' to 'f' */
-void owl_fmtext_append_normal(owl_fmtext *f, char *text)
+void owl_fmtext_append_normal(owl_fmtext *f, const char *text)
 {
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_NONE, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
 }
 
 /* Append normal, uncolored text specified by format string to 'f' */
-void owl_fmtext_appendf_normal(owl_fmtext *f, char *fmt, ...)
+void owl_fmtext_appendf_normal(owl_fmtext *f, const char *fmt, ...)
 {
   va_list ap;
   char *buff;
@@ -102,25 +102,25 @@ void owl_fmtext_appendf_normal(owl_fmtext *f, char *fmt, ...)
 }
 
 /* Append normal text 'text' to 'f' with color 'color' */
-void owl_fmtext_append_normal_color(owl_fmtext *f, char *text, int fgcolor, int bgcolor)
+void owl_fmtext_append_normal_color(owl_fmtext *f, const char *text, int fgcolor, int bgcolor)
 {
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_NONE, fgcolor, bgcolor);
 }
 
 /* Append bold text 'text' to 'f' */
-void owl_fmtext_append_bold(owl_fmtext *f, char *text)
+void owl_fmtext_append_bold(owl_fmtext *f, const char *text)
 {
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_BOLD, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
 }
 
 /* Append reverse video text 'text' to 'f' */
-void owl_fmtext_append_reverse(owl_fmtext *f, char *text)
+void owl_fmtext_append_reverse(owl_fmtext *f, const char *text)
 {
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_REVERSE, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
 }
 
 /* Append reversed and bold, uncolored text 'text' to 'f' */
-void owl_fmtext_append_reversebold(owl_fmtext *f, char *text)
+void owl_fmtext_append_reversebold(owl_fmtext *f, const char *text)
 {
   owl_fmtext_append_attr(f, text, OWL_FMTEXT_ATTR_REVERSE | OWL_FMTEXT_ATTR_BOLD, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
 }
@@ -171,7 +171,7 @@ void _owl_fmtext_update_attributes(gunichar c, char *attr, short *fgcolor, short
 /* Internal function. Scan for attribute characters. */
 void _owl_fmtext_scan_attributes(owl_fmtext *f, int start, char *attr, short *fgcolor, short *bgcolor) /*noproto*/
 {
-  char *p;
+  const char *p;
   p = strchr(f->textbuff, OWL_FMTEXT_UC_STARTBYTE_UTF8);
   while (p && p < f->textbuff + start) {
     _owl_fmtext_update_attributes(g_utf8_get_char(p), attr, fgcolor, bgcolor);
@@ -381,7 +381,7 @@ void owl_fmtext_curs_waddstr_without_search(owl_fmtext *f, WINDOW *w)
  */
 int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *out)
 {
-  char *ptr1, *ptr2;
+  const char *ptr1, *ptr2;
   int i, offset;
   
   /* find the starting line */
@@ -425,7 +425,7 @@ int owl_fmtext_truncate_lines(owl_fmtext *in, int aline, int lines, owl_fmtext *
  */
 void owl_fmtext_truncate_cols(owl_fmtext *in, int acol, int bcol, owl_fmtext *out)
 {
-  char *ptr_s, *ptr_e, *ptr_c, *last;
+  const char *ptr_s, *ptr_e, *ptr_c, *last;
   int col, st, padding, chwidth;
 
   /* copy the default attributes */
@@ -516,7 +516,7 @@ int owl_fmtext_num_lines(owl_fmtext *f)
   return(lines);
 }
 
-char *owl_fmtext_get_text(owl_fmtext *f)
+const char *owl_fmtext_get_text(owl_fmtext *f)
 {
   return(f->textbuff);
 }
@@ -564,10 +564,10 @@ int owl_fmtext_search(owl_fmtext *f, owl_regex *re)
 /* Append the text 'text' to 'f' and interpret the zephyr style
  * formatting syntax to set appropriate attributes.
  */
-void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
+void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
 {
   int stacksize, curattrs, curcolor;
-  char *ptr, *txtptr, *tmpptr;
+  const char *ptr, *txtptr, *tmpptr;
   char *buff;
   int attrstack[32], chrstack[32], colorstack[32];
 
@@ -769,10 +769,10 @@ void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
  * joins the elements together with join_with. 
  * If format_fn is specified, passes it the list element value
  * and it will return a string which this needs to free. */
-void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, char *join_with, char *(format_fn)(char *))
+void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, const char *join_with, char *(format_fn)(const char *))
 {
   int i, size;
-  char *elem;
+  const char *elem;
   char *text;
 
   size = owl_list_get_size(l);

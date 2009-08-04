@@ -14,7 +14,7 @@ void owl_history_set_norepeats(owl_history *h)
   h->repeats=0;
 }
 
-char *owl_history_get_prev(owl_history *h)
+const char *owl_history_get_prev(owl_history *h)
 {
 
   if (!h) return NULL;
@@ -31,7 +31,7 @@ char *owl_history_get_prev(owl_history *h)
   return(owl_list_get_element(&(h->hist), h->cur));
 }
 
-char *owl_history_get_next(owl_history *h)
+const char *owl_history_get_next(owl_history *h)
 {
   if (!h) return NULL;
   if (owl_list_get_size(&(h->hist))==0) return(NULL);
@@ -43,7 +43,7 @@ char *owl_history_get_next(owl_history *h)
   return(owl_list_get_element(&(h->hist), h->cur));
 }
 
-void owl_history_store(owl_history *h, char *line)
+void owl_history_store(owl_history *h, const char *line)
 {
   int size;
 

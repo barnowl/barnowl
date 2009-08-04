@@ -37,7 +37,7 @@ void owl_cmddict_get_names(owl_cmddict *d, owl_list *l) {
   owl_dict_get_keys(d, l);
 }
 
-owl_cmd *owl_cmddict_find(owl_cmddict *d, char *name) {
+owl_cmd *owl_cmddict_find(owl_cmddict *d, const char *name) {
   return owl_dict_find_element(d, name);
 }
 
@@ -46,7 +46,7 @@ void owl_cmddict_namelist_free(owl_list *l) {
 }
 
 /* creates a new command alias */
-int owl_cmddict_add_alias(owl_cmddict *cd, char *alias_from, char *alias_to) {
+int owl_cmddict_add_alias(owl_cmddict *cd, const char *alias_from, const char *alias_to) {
   owl_cmd *cmd;
   cmd = owl_malloc(sizeof(owl_cmd));
   owl_cmd_create_alias(cmd, alias_from, alias_to);
@@ -64,7 +64,7 @@ int owl_cmddict_add_cmd(owl_cmddict *cd, owl_cmd * cmd) {
   return owl_dict_insert_element(cd, newcmd->name, newcmd, (void(*)(void*))owl_cmd_free);
 }
 
-char *_owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char **argv, int argc, char *buff) {
+char *_owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, const char *const *argv, int argc, const char *buff) {
   char *retval = NULL;
   owl_cmd *cmd;
 
@@ -77,7 +77,7 @@ char *_owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char **argv, int a
   return retval;
 }
 
-char *owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char *cmdbuff) {
+char *owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, const char *cmdbuff) {
   char **argv;
   int argc;
   char *tmpbuff;
@@ -102,7 +102,7 @@ char *owl_cmddict_execute(owl_cmddict *cd, owl_context *ctx, char *cmdbuff) {
   return retval;
 }
 
-char *owl_cmddict_execute_argv(owl_cmddict *cd, owl_context *ctx, char **argv, int argc) {
+char *owl_cmddict_execute_argv(owl_cmddict *cd, owl_context *ctx, const char *const *argv, int argc) {
   char *buff, *ptr;
   int len = 0, i;
   char *retval = NULL;
@@ -142,7 +142,7 @@ int owl_cmd_create_from_template(owl_cmd *cmd, owl_cmd *templ) {
   return(0);
 }
 
-int owl_cmd_create_alias(owl_cmd *cmd, char *name, char *aliased_to) {
+int owl_cmd_create_alias(owl_cmd *cmd, const char *name, const char *aliased_to) {
   memset(cmd, 0, sizeof(owl_cmd));
   cmd->name = owl_strdup(name);
   cmd->cmd_aliased_to = owl_strdup(aliased_to);
@@ -166,10 +166,10 @@ int owl_cmd_is_context_valid(owl_cmd *cmd, owl_context *ctx) {
   else return 0;
 }
 
-char *owl_cmd_execute(owl_cmd *cmd, owl_cmddict *cd, owl_context *ctx, int argc, char **argv, char *cmdbuff) {
+char *owl_cmd_execute(owl_cmd *cmd, owl_cmddict *cd, owl_context *ctx, int argc, const char *const *argv, const char *cmdbuff) {
   static int alias_recurse_depth = 0;
   int ival=0;
-  char *cmdbuffargs;
+  const char *cmdbuffargs;
   char *newcmd, *rv=NULL;
 
   if (argc < 1) return(NULL);
@@ -205,7 +205,7 @@ char *owl_cmd_execute(owl_cmd *cmd, owl_cmddict *cd, owl_context *ctx, int argc,
   }
 
   if (cmd->cmd_i_fn || cmd->cmd_ctxi_fn) {
-      char *ep = "x";
+      const char *ep = "x";
       if (argc != 2) {
 	owl_function_makemsg("Wrong number of arguments for %s command.", argv[0]);
 	return NULL;
@@ -237,7 +237,7 @@ char *owl_cmd_execute(owl_cmd *cmd, owl_cmddict *cd, owl_context *ctx, int argc,
 }
 
 /* returns a reference */
-char *owl_cmd_get_summary(owl_cmd *cmd) {
+const char *owl_cmd_get_summary(owl_cmd *cmd) {
   return cmd->summary;
 }
 
@@ -254,8 +254,8 @@ char *owl_cmd_describe(owl_cmd *cmd) {
 
 
 
-void owl_cmd_get_help(owl_cmddict *d, char *name, owl_fmtext *fm) {
-  char *s;
+void owl_cmd_get_help(owl_cmddict *d, const char *name, owl_fmtext *fm) {
+  const char *s;
   char *indent;
   owl_cmd *cmd;
 

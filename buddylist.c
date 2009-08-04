@@ -7,7 +7,7 @@ void owl_buddylist_init(owl_buddylist *bl)
 
 /* add a (logged-in) AIM buddy to the buddy list
  */
-void owl_buddylist_add_aim_buddy(owl_buddylist *bl, char *screenname)
+void owl_buddylist_add_aim_buddy(owl_buddylist *bl, const char *screenname)
 {
   owl_buddy *b;
   b=owl_malloc(sizeof(owl_buddy));
@@ -18,7 +18,7 @@ void owl_buddylist_add_aim_buddy(owl_buddylist *bl, char *screenname)
 
 /* remove an AIM buddy from the buddy list
  */
-int owl_buddylist_remove_aim_buddy(owl_buddylist *bl, char *name)
+int owl_buddylist_remove_aim_buddy(owl_buddylist *bl, const char *name)
 {
   int i, j;
   owl_buddy *b;
@@ -39,7 +39,7 @@ int owl_buddylist_remove_aim_buddy(owl_buddylist *bl, char *name)
  * has logged in, and displaying a message if they were not already
  * logged in.
  */
-void owl_buddylist_oncoming(owl_buddylist *bl, char *screenname)
+void owl_buddylist_oncoming(owl_buddylist *bl, const char *screenname)
 {
   owl_message *m;
 
@@ -65,7 +65,7 @@ void owl_buddylist_oncoming(owl_buddylist *bl, char *screenname)
 /* Deal with an "offgoing" message.  This means recognizing the user
  * has logged out, and sending a message if they were logged in.
  */
-void owl_buddylist_offgoing(owl_buddylist *bl, char *screenname)
+void owl_buddylist_offgoing(owl_buddylist *bl, const char *screenname)
 {
   owl_message *m;
 
@@ -102,7 +102,7 @@ owl_buddy *owl_buddylist_get_buddy_n(owl_buddylist *bl, int index)
 /* return the AIM buddy with screenname 'name'.  If
  * no such buddy is logged in, return NULL.
  */
-owl_buddy *owl_buddylist_get_aim_buddy(owl_buddylist *bl, char *name)
+owl_buddy *owl_buddylist_get_aim_buddy(owl_buddylist *bl, const char *name)
 {
   int i, j;
   owl_buddy *b;
@@ -118,7 +118,7 @@ owl_buddy *owl_buddylist_get_aim_buddy(owl_buddylist *bl, char *name)
 /* return 1 if the buddy 'screenname' is logged in,
  * otherwise return 0
  */
-int owl_buddylist_is_aim_buddy_loggedin(owl_buddylist *bl, char *screenname)
+int owl_buddylist_is_aim_buddy_loggedin(owl_buddylist *bl, const char *screenname)
 {
   owl_buddy *b;
 

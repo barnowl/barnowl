@@ -104,7 +104,7 @@ void owl_log_generic(owl_message *m, FILE *file) {
     fprintf(file, "%s\n\n", owl_message_get_body(m));
 }
 
-void owl_log_append(owl_message *m, char *filename) {
+void owl_log_append(owl_message *m, const char *filename) {
     FILE *file;
     file=fopen(filename, "a");
     if (!file) {
@@ -170,7 +170,7 @@ void owl_log_outgoing(owl_message *m)
 }
 
 
-void owl_log_outgoing_zephyr_error(char *to, char *text)
+void owl_log_outgoing_zephyr_error(const char *to, const char *text)
 {
   FILE *file;
   char filename[MAXPATHLEN], *logpath;
@@ -229,7 +229,7 @@ void owl_log_outgoing_zephyr_error(char *to, char *text)
 void owl_log_incoming(owl_message *m)
 {
   char filename[MAXPATHLEN], allfilename[MAXPATHLEN], *logpath;
-  char *from=NULL;
+  const char *from=NULL;
   char *frombuff=NULL;
   int len, ch, i, personal;
 
@@ -242,7 +242,7 @@ void owl_log_incoming(owl_message *m)
     }
   } else if (owl_message_is_type_jabber(m)) {
     /* This needs to be fixed to handle groupchat */
-    char* msgtype = owl_message_get_attribute_value(m,"jtype");
+    const char* msgtype = owl_message_get_attribute_value(m,"jtype");
     if (msgtype && !strcmp(msgtype,"groupchat")) {
       personal = 0;
     } else {

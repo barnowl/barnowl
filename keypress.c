@@ -4,7 +4,7 @@
 
 static struct _owl_keypress_specialmap {
   int   kj;
-  char *ks;
+  const char *ks;
 } specialmap[] = {
 #ifdef KEY_CODE_YES
    { KEY_CODE_YES, 	"CODE_YES" }, 
@@ -174,7 +174,7 @@ int owl_keypress_tostring(int j, int esc, char *buff, int bufflen)
 
 
 /* returns ERR on failure, else a keycode */
-int owl_keypress_fromstring(char *kb)
+int owl_keypress_fromstring(const char *kb)
 {
   struct _owl_keypress_specialmap *sm;
   int ismeta=0, isctrl=0;

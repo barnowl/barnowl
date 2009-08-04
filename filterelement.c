@@ -1,8 +1,8 @@
 #include "owl.h"
 
-static char * owl_filterelement_get_field(owl_message *m, char * field)
+static const char * owl_filterelement_get_field(owl_message *m, const char * field)
 {
-  char *match;
+  const char *match;
   if (!strcasecmp(field, "class")) {
     match=owl_message_get_class(m);
   } else if (!strcasecmp(field, "instance")) {
@@ -59,7 +59,7 @@ static int owl_filterelement_match_true(owl_filterelement *fe, owl_message *m)
 
 static int owl_filterelement_match_re(owl_filterelement *fe, owl_message *m)
 {
-  char * val = owl_filterelement_get_field(m, fe->field);
+  const char * val = owl_filterelement_get_field(m, fe->field);
   return !owl_regex_compare(&(fe->re), val, NULL, NULL);
 }
 
@@ -78,7 +78,7 @@ static int owl_filterelement_match_filter(owl_filterelement *fe, owl_message *m)
 
 static int owl_filterelement_match_perl(owl_filterelement *fe, owl_message *m)
 {
-  char *subname;
+  const char *subname;
   char *perlrv;
   int   tf=0;
 
@@ -136,7 +136,7 @@ static void owl_filterelement_print_false(owl_filterelement *fe, GString *buf)
 
 static void owl_filterelement_print_re(owl_filterelement *fe, GString *buf)
 {
-  char *re, *q;
+  const char *re, *q;
   g_string_append(buf, fe->field);
   g_string_append(buf, " ");
 
@@ -211,7 +211,7 @@ void owl_filterelement_create_false(owl_filterelement *fe)
   fe->print_elt = owl_filterelement_print_false;
 }
 
-int owl_filterelement_create_re(owl_filterelement *fe, char *field, char *re)
+int owl_filterelement_create_re(owl_filterelement *fe, const char *field, const char *re)
 {
   owl_filterelement_create(fe);
   fe->field=owl_strdup(field);
@@ -225,7 +225,7 @@ int owl_filterelement_create_re(owl_filterelement *fe, char *field, char *re)
   return 0;
 }
 
-void owl_filterelement_create_filter(owl_filterelement *fe, char *name)
+void owl_filterelement_create_filter(owl_filterelement *fe, const char *name)
 {
   owl_filterelement_create(fe);
   fe->field=owl_strdup(name);
@@ -233,7 +233,7 @@ void owl_filterelement_create_filter(owl_filterelement *fe, char *name)
   fe->print_elt = owl_filterelement_print_filter;
 }
 
-void owl_filterelement_create_perl(owl_filterelement *fe, char *name)
+void owl_filterelement_create_perl(owl_filterelement *fe, const char *name)
 {
   owl_filterelement_create(fe);
   fe->field=owl_strdup(name);

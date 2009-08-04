@@ -1,13 +1,13 @@
 #include "owl.h"
 
-void owl_buddy_create(owl_buddy *b, int proto, char *name)
+void owl_buddy_create(owl_buddy *b, int proto, const char *name)
 {
   b->proto=proto;
   b->name=owl_strdup(name);
   b->idlesince=0;
 }
 
-char *owl_buddy_get_name(owl_buddy *b)
+const char *owl_buddy_get_name(owl_buddy *b)
 {
   if (b->name) return(b->name);
   return("");

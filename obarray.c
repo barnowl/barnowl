@@ -13,10 +13,10 @@
  * return its index, and the interned value in *val. Otherwise, return
  * the index it should be inserted at.
  */
-int owl_obarray_lookup(owl_obarray *oa, char * key, char ** val) /*noproto*/
+int owl_obarray_lookup(owl_obarray *oa, const char * key, const char ** val) /*noproto*/
 {
   int first, last, mid;
-  char * str;
+  const char * str;
   int cmp;
 
   mid = 0;
@@ -40,17 +40,17 @@ int owl_obarray_lookup(owl_obarray *oa, char * key, char ** val) /*noproto*/
 }
 
 /* Returns NULL if the string doesn't exist in the obarray */
-char * owl_obarray_find(owl_obarray *oa, char * string)
+const char * owl_obarray_find(owl_obarray *oa, const char * string)
 {
-  char *v;
+  const char *v;
   owl_obarray_lookup(oa, string, &v);
   return v;
 }
 
 /* Inserts the string into the obarray if it doesn't exist */
-char * owl_obarray_insert(owl_obarray *oa, char * string)
+const char * owl_obarray_insert(owl_obarray *oa, const char * string)
 {
-  char *v;
+  const char *v;
   int i;
   i = owl_obarray_lookup(oa, string, &v);
   if(!v) {
@@ -76,7 +76,7 @@ void owl_obarray_init(owl_obarray *oa)
 
 int owl_obarray_regtest(void) {
   int numfailed = 0;
-  char *p,*p2;
+  const char *p,*p2;
 
   owl_obarray oa;
   owl_obarray_init(&oa);

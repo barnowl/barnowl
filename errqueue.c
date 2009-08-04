@@ -5,7 +5,7 @@ void owl_errqueue_init(owl_errqueue *eq)
   owl_list_create(&(eq->errlist));
 }
 
-void owl_errqueue_append_err(owl_errqueue *eq, char *msg)
+void owl_errqueue_append_err(owl_errqueue *eq, const char *msg)
 {
   owl_list_append_element(&(eq->errlist), owl_strdup(msg));
 }

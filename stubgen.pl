@@ -27,9 +27,9 @@ foreach $file (@ARGV) {
 	print "int owl_global_is_$altvarname(owl_global *g) {\n";
 	print "  return owl_variable_get_bool(&g->vars, \"$varname\");\n}\n";
     } elsif ($vartype =~ /^PATH/ or $vartype =~ /^STRING/) {
-	print "void owl_global_set_$altvarname(owl_global *g, char *text) {\n";
+	print "void owl_global_set_$altvarname(owl_global *g, const char *text) {\n";
 	print "  owl_variable_set_string(&g->vars, \"$varname\", text);\n}\n";
-	print "char *owl_global_get_$altvarname(owl_global *g) {\n";
+	print "const char *owl_global_get_$altvarname(owl_global *g) {\n";
 	print "  return owl_variable_get_string(&g->vars, \"$varname\");\n}\n";
     } elsif ($vartype =~ /^INT/ or $vartype =~ /^ENUM/) {
 	print "void owl_global_set_$altvarname(owl_global *g, int n) {\n";

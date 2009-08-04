@@ -201,11 +201,11 @@ static inline char *zstr(const char *str)
 }
 #endif
 
-/* Convert char ** into char **.  This conversion is safe,
+/* Convert char *const * into const char *const *.  This conversion is safe,
  * and implicit in C++ (conv.qual 4) but for some reason not in C. */
-static inline char **strs(char **pstr)
+static inline const char *const *strs(char *const *pstr)
 {
-  return (char **)pstr;
+  return (const char *const *)pstr;
 }
 
 typedef struct _owl_variable {
@@ -217,26 +217,26 @@ typedef struct _owl_variable {
   char *summary;		/* summary of usage */
   char *description;		/* detailed description */
   void *val;                    /* current value */
-  int  (*validate_fn)(struct _owl_variable *v, void *newval);
+  int  (*validate_fn)(struct _owl_variable *v, const void *newval);
                                 /* returns 1 if newval is valid */
-  int  (*set_fn)(struct _owl_variable *v, void *newval); 
+  int  (*set_fn)(struct _owl_variable *v, const void *newval); 
                                 /* sets the variable to a value
 				 * of the appropriate type.
 				 * unless documented, this 
 				 * should make a copy. 
 				 * returns 0 on success. */
-  int  (*set_fromstring_fn)(struct _owl_variable *v, char *newval);
+  int  (*set_fromstring_fn)(struct _owl_variable *v, const char *newval);
                                 /* sets the variable to a value
 				 * of the appropriate type.
 				 * unless documented, this 
 				 * should make a copy. 
 				 * returns 0 on success. */
-  void *(*get_fn)(struct _owl_variable *v);
+  const void *(*get_fn)(struct _owl_variable *v);
 				/* returns a reference to the current value.
 				 * WARNING:  this approach is hard to make
 				 * thread-safe... */
   int  (*get_tostring_fn)(struct _owl_variable *v, 
-			  char *buf, int bufsize, void *val); 
+			  char *buf, int bufsize, const void *val); 
                                 /* converts val to a string 
 				 * and puts into buf */
   void  (*free_fn)(struct _owl_variable *v);
@@ -298,14 +298,14 @@ typedef struct _owl_cmd {	/* command */
   char *cmd_aliased_to;		/* what this command is aliased to... */
   
   /* These don't take any context */
-  char *(*cmd_args_fn)(int argc, char **argv, char *buff);  
+  char *(*cmd_args_fn)(int argc, const char *const *argv, const char *buff);  
 				/* takes argv and the full command as buff.
 				 * caller must free return value if !NULL */
   void (*cmd_v_fn)(void);	/* takes no args */
   void (*cmd_i_fn)(int i);	/* takes an int as an arg */
 
   /* The following also take the active context if it's valid */
-  char *(*cmd_ctxargs_fn)(void *ctx, int argc, char **argv, char *buff);  
+  char *(*cmd_ctxargs_fn)(void *ctx, int argc, const char *const *argv, const char *buff);  
 				/* takes argv and the full command as buff.
 				 * caller must free return value if !NULL */
   void (*cmd_ctxv_fn)(void *ctx);	        /* takes no args */
@@ -327,7 +327,7 @@ typedef struct _owl_zwrite {
 } owl_zwrite;
 
 typedef struct _owl_pair {
-  char *key;
+  const char *key;
   char *value;
 } owl_pair;
 
@@ -341,7 +341,7 @@ typedef struct _owl_message {
 #endif
   struct _owl_fmtext_cache * fmtext;
   int delete;
-  char *hostname;
+  const char *hostname;
   owl_list attributes;            /* this is a list of pairs */
   char *timestr;
   time_t time;

@@ -4,7 +4,7 @@
 void owl_help()
 {
   owl_fmtext fm;
-  char *varname;
+  const char *varname;
   owl_list varnames;
   int i, numvarnames;
 

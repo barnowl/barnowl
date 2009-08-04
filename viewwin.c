@@ -6,7 +6,7 @@
 /* initialize the viewwin e.  'win' is an already initialzed curses
  * window that will be used by viewwin
  */
-void owl_viewwin_init_text(owl_viewwin *v, WINDOW *win, int winlines, int wincols, char *text)
+void owl_viewwin_init_text(owl_viewwin *v, WINDOW *win, int winlines, int wincols, const char *text)
 {
   owl_fmtext_init_null(&(v->fmtext));
   if (text) {
@@ -24,7 +24,7 @@ void owl_viewwin_init_text(owl_viewwin *v, WINDOW *win, int winlines, int wincol
   v->onclose_hook = NULL;
 }
 
-void owl_viewwin_append_text(owl_viewwin *v, char *text) {
+void owl_viewwin_append_text(owl_viewwin *v, const char *text) {
     owl_fmtext_append_normal(&(v->fmtext), text);
     v->textlines=owl_fmtext_num_lines(&(v->fmtext));  
 }

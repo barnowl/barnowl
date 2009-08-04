@@ -8,7 +8,7 @@
 #include <sys/wait.h>
 
 /* starts up popexec in a new viewwin */
-owl_popexec *owl_popexec_new(char *command)
+owl_popexec *owl_popexec_new(const char *command)
 {
   owl_popexec *pe;
   owl_popwin *pw;

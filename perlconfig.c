@@ -13,7 +13,7 @@ extern XS(boot_DynaLoader);
 
 static void owl_perl_xs_init(pTHX)
 {
-  char *file = __FILE__;
+  const char *file = __FILE__;
   dXSUB_SYS;
   {
     newXS("BarnOwl::bootstrap", boot_BarnOwl, file);
@@ -25,7 +25,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
 {
   HV *h, *stash;
   SV *hr;
-  char *type;
+  const char *type;
   char *ptr, *utype, *blessas;
   int i, j;
   owl_pair *pair;
@@ -134,7 +134,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
   owl_message * m;
   HE * ent;
   I32 count, len;
-  char *key,*val;
+  const char *key,*val;
   HV * hash;
   struct tm tm;
 
@@ -196,7 +196,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
 
 /* Calls in a scalar context, passing it a hash reference.
    If return value is non-null, caller must free. */
-char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
+char *owl_perlconfig_call_with_message(const char *subname, owl_message *m)
 {
   dSP ;
   int count;
@@ -245,7 +245,7 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
 /* Calls a method on a perl object representing a message.
    If the return value is non-null, the caller must free it.
  */
-char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc, char ** argv)
+char * owl_perlconfig_message_call_method(owl_message *m, const char *method, int argc, const char ** argv)
 {
   dSP;
   unsigned int count, i;
@@ -295,12 +295,12 @@ char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc
 }
 
 
-char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** Penv)
+char *owl_perlconfig_initperl(const char * file, int *Pargc, char ***Pargv, char *** Penv)
 {
   int ret;
   PerlInterpreter *p;
   char *err;
-  char *args[4] = {"", "-e", "0;", NULL};
+  const char *args[4] = {"", "-e", "0;", NULL};
   AV *inc;
   char *path;
 
@@ -371,17 +371,17 @@ char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** P
 }
 
 /* returns whether or not a function exists */
-int owl_perlconfig_is_function(char *fn) {
+int owl_perlconfig_is_function(const char *fn) {
   if (get_cv(fn, FALSE)) return(1);
   else return(0);
 }
 
 /* caller is responsible for freeing returned string */
-char *owl_perlconfig_execute(char *line)
+char *owl_perlconfig_execute(const char *line)
 {
   STRLEN len;
   SV *response;
-  char *preout;
+  const char *preout;
   char *out;
 
   if (!owl_global_have_config(&g)) return NULL;
@@ -407,7 +407,7 @@ char *owl_perlconfig_execute(char *line)
   return(out);
 }
 
-void owl_perlconfig_getmsg(owl_message *m, char *subname)
+void owl_perlconfig_getmsg(owl_message *m, const char *subname)
 {
   char *ptr = NULL;
   if (owl_perlconfig_is_function("BarnOwl::Hooks::_receive_msg")) {
@@ -418,7 +418,7 @@ void owl_perlconfig_getmsg(owl_message *m, char *subname)
 }
 
 /* Called on all new messages; receivemsg is only called on incoming ones */
-void owl_perlconfig_newmsg(owl_message *m, char *subname)
+void owl_perlconfig_newmsg(owl_message *m, const char *subname)
 {
   char *ptr = NULL;
   if (owl_perlconfig_is_function("BarnOwl::Hooks::_new_msg")) {
@@ -428,7 +428,7 @@ void owl_perlconfig_newmsg(owl_message *m, char *subname)
   if (ptr) owl_free(ptr);
 }
 
-void owl_perlconfig_new_command(char *name)
+void owl_perlconfig_new_command(const char *name)
 {
   dSP;
 
@@ -451,7 +451,7 @@ void owl_perlconfig_new_command(char *name)
   LEAVE;
 }
 
-char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
+char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, const char *const *argv)
 {
   int i, count;
   char * ret = NULL;

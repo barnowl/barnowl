@@ -5,14 +5,14 @@
 #include <ctype.h>
 #include <pwd.h>
 
-void sepbar(char *in)
+void sepbar(const char *in)
 {
   char buff[1024];
   WINDOW *sepwin;
   owl_messagelist *ml;
   owl_view *v;
   int x, y, i;
-  char *foo, *appendtosepbar;
+  const char *foo, *appendtosepbar;
 
   sepwin=owl_global_get_curs_sepwin(&g);
   ml=owl_global_get_msglist(&g);
@@ -124,7 +124,7 @@ void sepbar(char *in)
   wnoutrefresh(sepwin);
 }
 
-char **atokenize(char *buffer, char *sep, int *i)
+char **atokenize(const char *buffer, const char *sep, int *i)
 {
   /* each element of return must be freed by user */
   char **args;
@@ -156,7 +156,7 @@ char **atokenize(char *buffer, char *sep, int *i)
   return(args);
 }
 
-char *skiptokens(char *buff, int n) {
+const char *skiptokens(const char *buff, int n) {
   /* skips n tokens and returns where that would be.
    * TODO: handle quotes more sanely. */
   
@@ -176,7 +176,7 @@ char *skiptokens(char *buff, int n) {
 /* Return a "nice" version of the path.  Tilde expansion is done, and
  * duplicate slashes are removed.  Caller must free the return.
  */
-char *owl_util_makepath(char *in)
+char *owl_util_makepath(const char *in)
 {
   int i, j, x;
   char *out, user[MAXPATHLEN];
@@ -261,7 +261,7 @@ void owl_parsefree(char **argv, int argc)
   owl_free(argv);
 }
 
-char **owl_parseline(char *line, int *argc)
+char **owl_parseline(const char *line, int *argc)
 {
   /* break a command line up into argv, argc.  The caller must free
      the returned values.  If there is an error argc will be set to
@@ -408,7 +408,7 @@ char *owl_sprintf(const char *fmt, ...)
 /* Return the owl color associated with the named color.  Return -1
  * if the named color is not available
  */
-int owl_util_string_to_color(char *color)
+int owl_util_string_to_color(const char *color)
 {
   int c;
   if (!strcasecmp(color, "black")) {
@@ -438,7 +438,7 @@ int owl_util_string_to_color(char *color)
 }
 
 /* Return a string name of the given owl color */
-char *owl_util_color_to_string(int color)
+const char *owl_util_color_to_string(int color)
 {
   if (color==OWL_COLOR_BLACK)   return("black");
   if (color==OWL_COLOR_RED)     return("red");
@@ -455,7 +455,7 @@ char *owl_util_color_to_string(int color)
 /* Get the default tty name.  Caller must free the return */
 char *owl_util_get_default_tty()
 {
-  char *tmp;
+  const char *tmp;
   char *out;
 
   if (getenv("DISPLAY")) {
@@ -479,7 +479,7 @@ void owl_hack_animate()
   owl_messagelist *ml;
   owl_message *m;
   owl_fmtext *fm;
-  char *text, *ptr;
+  const char *text, *ptr;
   int place;
 
   /* grab the first message and make sure its id is 0 */
@@ -531,7 +531,7 @@ void owl_hack_animate()
 /* strip leading and trailing new lines.  Caller must free the
  * return.
  */
-char *owl_util_stripnewlines(char *in)
+char *owl_util_stripnewlines(const char *in)
 {
   
   char  *tmp, *ptr1, *ptr2, *out;
@@ -557,7 +557,7 @@ char *owl_util_stripnewlines(char *in)
  * inefficient impelementation which reads the entire file into
  * memory.
  */
-void owl_util_file_deleteline(char *filename, char *line, int backup)
+void owl_util_file_deleteline(const char *filename, const char *line, int backup)
 {
   char buff[LINE], *text;
   char *backupfilename=NULL;
@@ -645,7 +645,7 @@ int owl_util_min(int a, int b)
    leading `un' or trailing `.d'.
    The caller is responsible for freeing the allocated string.
 */
-char * owl_util_baseclass(char * class)
+char * owl_util_baseclass(const char * class)
 {
   char *start, *end;
 
@@ -663,9 +663,9 @@ char * owl_util_baseclass(char * class)
   return start;
 }
 
-char * owl_get_datadir()
+const char * owl_get_datadir()
 {
-  char * datadir = getenv("BARNOWL_DATA_DIR");
+  const char * datadir = getenv("BARNOWL_DATA_DIR");
   if(datadir != NULL)
     return datadir;
   return DATADIR;

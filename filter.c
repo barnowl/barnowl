@@ -1,7 +1,7 @@
 #include <string.h>
 #include "owl.h"
 
-int owl_filter_init_fromstring(owl_filter *f, char *name, char *string)
+int owl_filter_init_fromstring(owl_filter *f, const char *name, const char *string)
 {
   char **argv;
   int argc, out;
@@ -12,7 +12,7 @@ int owl_filter_init_fromstring(owl_filter *f, char *name, char *string)
   return(out);
 }
 
-int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
+int owl_filter_init(owl_filter *f, const char *name, int argc, const char *const *argv)
 {
   f->name=owl_strdup(name);
   f->fgcolor=OWL_COLOR_DEFAULT;
@@ -55,7 +55,7 @@ int owl_filter_init(owl_filter *f, char *name, int argc, char **argv)
 
 /* A primitive expression is one without any toplevel ``and'' or ``or''s*/
 
-static owl_filterelement * owl_filter_parse_primitive_expression(int argc, char **argv, int *next)
+static owl_filterelement * owl_filter_parse_primitive_expression(int argc, const char *const *argv, int *next)
 {
   owl_filterelement *fe, *op;
   int i = 0, skip;
@@ -111,7 +111,7 @@ err:
   return NULL;
 }
 
-owl_filterelement * owl_filter_parse_expression(int argc, char **argv, int *next)
+owl_filterelement * owl_filter_parse_expression(int argc, const char *const *argv, int *next)
 {
   int i = 0, skip;
   owl_filterelement * op1 = NULL, * op2 = NULL, *tmp;
@@ -150,7 +150,7 @@ err:
   return NULL;
 }
 
-char *owl_filter_get_name(owl_filter *f)
+const char *owl_filter_get_name(owl_filter *f)
 {
   return(f->name);
 }
@@ -269,7 +269,7 @@ void owl_filter_free(owl_filter *f)
 
 #ifdef OWL_INCLUDE_REG_TESTS
 
-int owl_filter_test_string(char * filt, owl_message *m, int shouldmatch) /* noproto */ {
+int owl_filter_test_string(const char * filt, owl_message *m, int shouldmatch) /* noproto */ {
   owl_filter f;
   int ok;
   int failed = 0;
