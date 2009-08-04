@@ -9,7 +9,7 @@ void sepbar(const char *in)
 {
   char buff[1024];
   WINDOW *sepwin;
-  owl_messagelist *ml;
+  const owl_messagelist *ml;
   owl_view *v;
   int x, y, i;
   const char *foo, *appendtosepbar;
@@ -476,7 +476,7 @@ char *owl_util_get_default_tty()
 /* Animation hack */
 void owl_hack_animate()
 {
-  owl_messagelist *ml;
+  const owl_messagelist *ml;
   owl_message *m;
   owl_fmtext *fm;
   const char *text, *ptr;

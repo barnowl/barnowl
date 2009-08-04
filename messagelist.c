@@ -8,17 +8,17 @@ int owl_messagelist_create(owl_messagelist *ml)
   return(0);
 }
 
-int owl_messagelist_get_size(owl_messagelist *ml)
+int owl_messagelist_get_size(const owl_messagelist *ml)
 {
   return(owl_list_get_size(&(ml->list)));
 }
 
-void *owl_messagelist_get_element(owl_messagelist *ml, int n)
+void *owl_messagelist_get_element(const owl_messagelist *ml, int n)
 {
   return(owl_list_get_element(&(ml->list), n));
 }
 
-owl_message *owl_messagelist_get_by_id(owl_messagelist *ml, int target_id)
+owl_message *owl_messagelist_get_by_id(const owl_messagelist *ml, int target_id)
 {
   /* return the message with id == 'id'.  If it doesn't exist return NULL. */
   int first, last, mid, msg_id;
@@ -89,7 +89,7 @@ int owl_messagelist_expunge(owl_messagelist *ml)
   return(0);
 }
 
-void owl_messagelist_invalidate_formats(owl_messagelist *ml)
+void owl_messagelist_invalidate_formats(const owl_messagelist *ml)
 {
   int i, j;
   owl_message *m;

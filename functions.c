@@ -1726,7 +1726,7 @@ void owl_function_show_variable(const char *name)
  * If flag is 1, deletes.  If flag is 0, undeletes. */
 void owl_function_delete_by_id(int id, int flag)
 {
-  owl_messagelist *ml;
+  const owl_messagelist *ml;
   owl_message *m;
   ml = owl_global_get_msglist(&g);
   m = owl_messagelist_get_by_id(ml, id);

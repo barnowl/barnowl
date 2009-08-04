@@ -29,7 +29,7 @@ void owl_view_consider_message(owl_view *v, owl_message *m)
 void owl_view_recalculate(owl_view *v)
 {
   int i, j;
-  owl_messagelist *gml;
+  const owl_messagelist *gml;
   owl_messagelist *ml;
   owl_message *m;
 
