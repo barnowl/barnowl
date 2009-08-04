@@ -1342,7 +1342,7 @@ void owl_function_popless_text(const char *text)
   owl_global_set_needrefresh(&g);
 }
 
-void owl_function_popless_fmtext(owl_fmtext *fm)
+void owl_function_popless_fmtext(const owl_fmtext *fm)
 {
   owl_popwin *pw;
   owl_viewwin *v;

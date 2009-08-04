@@ -32,7 +32,7 @@ void owl_viewwin_append_text(owl_viewwin *v, const char *text) {
 /* initialize the viewwin e.  'win' is an already initialzed curses
  * window that will be used by viewwin
  */
-void owl_viewwin_init_fmtext(owl_viewwin *v, WINDOW *win, int winlines, int wincols, owl_fmtext *fmtext)
+void owl_viewwin_init_fmtext(owl_viewwin *v, WINDOW *win, int winlines, int wincols, const owl_fmtext *fmtext)
 {
   owl_fmtext_copy(&(v->fmtext), fmtext);
   v->textlines=owl_fmtext_num_lines(&(v->fmtext));
