@@ -466,7 +466,7 @@ int owl_zephyr_unsub(const char *class, const char *inst, const char *recip)
  * definition).  Caller must free the return.
  */
 #ifdef HAVE_LIBZEPHYR
-char *owl_zephyr_get_field(ZNotice_t *n, int j)
+char *owl_zephyr_get_field(const ZNotice_t *n, int j)
 {
   int i, count, save;
   char *out;
@@ -498,7 +498,7 @@ char *owl_zephyr_get_field(ZNotice_t *n, int j)
   return(owl_strdup(""));
 }
 
-char *owl_zephyr_get_field_as_utf8(ZNotice_t *n, int j)
+char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
 {
   int i, count, save;
 
@@ -544,7 +544,7 @@ char *owl_zephyr_get_field_as_utf8(void *n, int j)
 
 
 #ifdef HAVE_LIBZEPHYR
-int owl_zephyr_get_num_fields(ZNotice_t *n)
+int owl_zephyr_get_num_fields(const ZNotice_t *n)
 {
   int i, fields;
 
@@ -559,7 +559,7 @@ int owl_zephyr_get_num_fields(ZNotice_t *n)
   return(fields);
 }
 #else
-int owl_zephyr_get_num_fields(void *n)
+int owl_zephyr_get_num_fields(const void *n)
 {
   return(0);
 }
@@ -569,7 +569,7 @@ int owl_zephyr_get_num_fields(void *n)
 /* return a pointer to the message, place the message length in k
  * caller must free the return
  */
-char *owl_zephyr_get_message(ZNotice_t *n, owl_message *m)
+char *owl_zephyr_get_message(const ZNotice_t *n, owl_message *m)
 {
   /* don't let ping messages have a body */
   if (!strcasecmp(n->z_opcode, "ping")) {
@@ -634,7 +634,7 @@ char *owl_zephyr_get_message(ZNotice_t *n, owl_message *m)
 #endif
 
 #ifdef HAVE_LIBZEPHYR
-const char *owl_zephyr_get_zsig(ZNotice_t *n, int *k)
+const char *owl_zephyr_get_zsig(const ZNotice_t *n, int *k)
 {
   /* return a pointer to the zsig if there is one */
 
@@ -655,7 +655,7 @@ const char *owl_zephyr_get_zsig(ZNotice_t *n, int *k)
   return(n->z_message);
 }
 #else
-const char *owl_zephyr_get_zsig(void *n, int *k)
+const char *owl_zephyr_get_zsig(const void *n, int *k)
 {
   return("");
 }
@@ -724,7 +724,7 @@ void send_ping(const char *to, const char *zclass, const char *zinstance)
 }
 
 #ifdef HAVE_LIBZEPHYR
-void owl_zephyr_handle_ack(ZNotice_t *retnotice)
+void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
 {
   char *tmp;
   
@@ -802,13 +802,13 @@ void owl_zephyr_handle_ack(ZNotice_t *retnotice)
   }
 }
 #else
-void owl_zephyr_handle_ack(void *retnotice)
+void owl_zephyr_handle_ack(const void *retnotice)
 {
 }
 #endif
 
 #ifdef HAVE_LIBZEPHYR
-int owl_zephyr_notice_is_ack(ZNotice_t *n)
+int owl_zephyr_notice_is_ack(const ZNotice_t *n)
 {
   if (n->z_kind == SERVNAK || n->z_kind == SERVACK || n->z_kind == HMACK) {
     if (!strcasecmp(n->z_class, LOGIN_CLASS)) return(0);
@@ -817,7 +817,7 @@ int owl_zephyr_notice_is_ack(ZNotice_t *n)
   return(0);
 }
 #else
-int owl_zephyr_notice_is_ack(void *n)
+int owl_zephyr_notice_is_ack(const void *n)
 {
   return(0);
 }
@@ -1075,7 +1075,7 @@ void owl_zephyr_delbuddy(const char *name)
 
 /* return auth string */
 #ifdef HAVE_LIBZEPHYR
-const char *owl_zephyr_get_authstr(ZNotice_t *n)
+const char *owl_zephyr_get_authstr(const ZNotice_t *n)
 {
 
   if (!n) return("UNKNOWN");
@@ -1091,7 +1091,7 @@ const char *owl_zephyr_get_authstr(ZNotice_t *n)
   }           
 }
 #else
-const char *owl_zephyr_get_authstr(void *n)
+const char *owl_zephyr_get_authstr(const void *n)
 {
   return("");
 }

@@ -1414,7 +1414,7 @@ void owl_function_info()
   owl_fmtext fm, attrfm;
   owl_view *v;
 #ifdef HAVE_LIBZEPHYR
-  ZNotice_t *n;
+  const ZNotice_t *n;
 #endif
 
   owl_fmtext_init_null(&fm);

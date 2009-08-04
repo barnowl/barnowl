@@ -481,7 +481,7 @@ int owl_message_is_delete(owl_message *m)
 }
 
 #ifdef HAVE_LIBZEPHYR
-ZNotice_t *owl_message_get_notice(owl_message *m)
+const ZNotice_t *owl_message_get_notice(owl_message *m)
 {
   return(&(m->notice));
 }
@@ -733,7 +733,7 @@ void owl_message_create_loopback(owl_message *m, const char *text)
 }
 
 #ifdef HAVE_LIBZEPHYR
-void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
+void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
 {
   struct hostent *hent;
   const char *ptr;
@@ -845,7 +845,7 @@ void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 #endif  
 }
 #else
-void owl_message_create_from_znotice(owl_message *m, void *n)
+void owl_message_create_from_znotice(owl_message *m, const void *n)
 {
 }
 #endif
