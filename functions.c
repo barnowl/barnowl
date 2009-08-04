@@ -38,7 +38,7 @@ void owl_function_command_alias(const char *alias_from, const char *alias_to)
   owl_cmddict_add_alias(owl_global_get_cmddict(&g), alias_from, alias_to);
 }
 
-owl_cmd *owl_function_get_cmd(const char *name)
+const owl_cmd *owl_function_get_cmd(const char *name)
 {
   return owl_cmddict_find(owl_global_get_cmddict(&g), name);
 }
@@ -109,7 +109,7 @@ char *owl_function_style_describe(const char *name) {
 
 char *owl_function_cmd_describe(const char *name)
 {
-  owl_cmd *cmd = owl_cmddict_find(owl_global_get_cmddict(&g), name);
+  const owl_cmd *cmd = owl_cmddict_find(owl_global_get_cmddict(&g), name);
   if (cmd) return owl_cmd_describe(cmd);
   else return(NULL);
 }

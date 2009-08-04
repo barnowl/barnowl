@@ -101,7 +101,7 @@ void owl_keymap_get_details(owl_keymap *km, owl_fmtext *fm)
   nbindings = owl_list_get_size(&km->bindings);
   for (i=0; i<nbindings; i++) {
     char buff[100];
-    owl_cmd *cmd;
+    const owl_cmd *cmd;
     const char *tmpdesc, *desc = "";
 
     kb = owl_list_get_element(&km->bindings, i);

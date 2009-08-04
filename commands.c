@@ -39,7 +39,7 @@
           NULL, NULL, NULL, NULL, NULL, NULL, ((void(*)(void*,int))fn), NULL }
 
 
-owl_cmd commands_to_init[]
+const owl_cmd commands_to_init[]
   = {
   OWLCMD_ARGS("zlog", owl_command_zlog, OWL_CTX_ANY,
 	      "send a login or logout notification",

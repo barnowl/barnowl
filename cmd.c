@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "owl.h"
 
-extern owl_cmd commands_to_init[];
+extern const owl_cmd commands_to_init[];
 
 /**************************************************************************/
 /***************************** COMMAND DICT *******************************/
@@ -22,8 +22,8 @@ int owl_cmddict_init(owl_cmddict *cd) {
 }
 
 /* for bulk initialization at startup */
-int owl_cmddict_add_from_list(owl_cmddict *cd, owl_cmd *cmds) {
-  owl_cmd *cur;
+int owl_cmddict_add_from_list(owl_cmddict *cd, const owl_cmd *cmds) {
+  const owl_cmd *cur;
   int ret = 0;
   for (cur = cmds; cur->name != NULL; cur++) {
     ret = owl_cmddict_add_cmd(cd, cur);
@@ -37,7 +37,7 @@ void owl_cmddict_get_names(const owl_cmddict *d, owl_list *l) {
   owl_dict_get_keys(d, l);
 }
 
-owl_cmd *owl_cmddict_find(const owl_cmddict *d, const char *name) {
+const owl_cmd *owl_cmddict_find(const owl_cmddict *d, const char *name) {
   return owl_dict_find_element(d, name);
 }
 
@@ -54,7 +54,7 @@ int owl_cmddict_add_alias(owl_cmddict *cd, const char *alias_from, const char *a
   return(0);
 }
 
-int owl_cmddict_add_cmd(owl_cmddict *cd, owl_cmd * cmd) {
+int owl_cmddict_add_cmd(owl_cmddict *cd, const owl_cmd * cmd) {
   owl_cmd * newcmd = owl_malloc(sizeof(owl_cmd));
   if(owl_cmd_create_from_template(newcmd, cmd) < 0) {
     owl_free(newcmd);
@@ -66,7 +66,7 @@ int owl_cmddict_add_cmd(owl_cmddict *cd, owl_cmd * cmd) {
 
 char *_owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const char *const *argv, int argc, const char *buff) {
   char *retval = NULL;
-  owl_cmd *cmd;
+  const owl_cmd *cmd;
 
   if (!strcmp(argv[0], "")) {
   } else if (NULL != (cmd = owl_dict_find_element(cd, argv[0]))) {
@@ -131,7 +131,7 @@ char *owl_cmddict_execute_argv(const owl_cmddict *cd, const owl_context *ctx, co
 /*********************************************************************/
 
 /* sets up a new command based on a template, copying strings */
-int owl_cmd_create_from_template(owl_cmd *cmd, owl_cmd *templ) {
+int owl_cmd_create_from_template(owl_cmd *cmd, const owl_cmd *templ) {
   *cmd = *templ;
   if (!templ->name) return(-1);
   cmd->name = owl_strdup(templ->name);
@@ -161,12 +161,12 @@ void owl_cmd_free(owl_cmd *cmd) {
   if (cmd->cmd_perl) owl_perlconfig_cmd_free(cmd);
 }
 
-int owl_cmd_is_context_valid(owl_cmd *cmd, const owl_context *ctx) { 
+int owl_cmd_is_context_valid(const owl_cmd *cmd, const owl_context *ctx) { 
   if (owl_context_matches(ctx, cmd->validctx)) return 1;
   else return 0;
 }
 
-char *owl_cmd_execute(owl_cmd *cmd, const owl_cmddict *cd, const owl_context *ctx, int argc, const char *const *argv, const char *cmdbuff) {
+char *owl_cmd_execute(const owl_cmd *cmd, const owl_cmddict *cd, const owl_context *ctx, int argc, const char *const *argv, const char *cmdbuff) {
   static int alias_recurse_depth = 0;
   int ival=0;
   const char *cmdbuffargs;
@@ -237,12 +237,12 @@ char *owl_cmd_execute(owl_cmd *cmd, const owl_cmddict *cd, const owl_context *ct
 }
 
 /* returns a reference */
-const char *owl_cmd_get_summary(owl_cmd *cmd) {
+const char *owl_cmd_get_summary(const owl_cmd *cmd) {
   return cmd->summary;
 }
 
 /* returns a summary line describing this keymap.  the caller must free. */
-char *owl_cmd_describe(owl_cmd *cmd) {
+char *owl_cmd_describe(const owl_cmd *cmd) {
   char *s;
   int slen;
   if (!cmd || !cmd->name || !cmd->summary) return NULL;

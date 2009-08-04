@@ -451,7 +451,7 @@ void owl_perlconfig_new_command(const char *name)
   LEAVE;
 }
 
-char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, const char *const *argv)
+char *owl_perlconfig_perlcmd(const owl_cmd *cmd, int argc, const char *const *argv)
 {
   int i, count;
   char * ret = NULL;
