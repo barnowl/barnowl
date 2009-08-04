@@ -68,7 +68,7 @@ char *owl_keymap_summary(owl_keymap *km)
 void owl_keymap_get_details(owl_keymap *km, owl_fmtext *fm)
 {
   int i, nbindings; 
-  owl_keybinding *kb;
+  const owl_keybinding *kb;
   
   owl_fmtext_append_bold(fm, "KEYMAP - ");
   owl_fmtext_append_bold(fm, km->name);
@@ -202,7 +202,7 @@ owl_keymap *owl_keyhandler_activate(owl_keyhandler *kh, const char *mapname)
 int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
 {
   owl_keymap     *km;
-  owl_keybinding *kb;
+  const owl_keybinding *kb;
   int i, match;
 
   if (!kh->active) {
