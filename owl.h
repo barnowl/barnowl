@@ -217,7 +217,7 @@ typedef struct _owl_variable {
   char *summary;		/* summary of usage */
   char *description;		/* detailed description */
   void *val;                    /* current value */
-  int  (*validate_fn)(struct _owl_variable *v, const void *newval);
+  int  (*validate_fn)(const struct _owl_variable *v, const void *newval);
                                 /* returns 1 if newval is valid */
   int  (*set_fn)(struct _owl_variable *v, const void *newval); 
                                 /* sets the variable to a value
@@ -231,11 +231,11 @@ typedef struct _owl_variable {
 				 * unless documented, this 
 				 * should make a copy. 
 				 * returns 0 on success. */
-  const void *(*get_fn)(struct _owl_variable *v);
+  const void *(*get_fn)(const struct _owl_variable *v);
 				/* returns a reference to the current value.
 				 * WARNING:  this approach is hard to make
 				 * thread-safe... */
-  int  (*get_tostring_fn)(struct _owl_variable *v, 
+  int  (*get_tostring_fn)(const struct _owl_variable *v, 
 			  char *buf, int bufsize, const void *val); 
                                 /* converts val to a string 
 				 * and puts into buf */

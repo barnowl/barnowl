@@ -374,14 +374,14 @@ static owl_variable variables_to_init[] = {
 
 /* commonly useful */
 
-int owl_variable_int_validate_gt0(owl_variable *v, const void *newval)
+int owl_variable_int_validate_gt0(const owl_variable *v, const void *newval)
 {
   if (newval == NULL) return(0);
   else if (*(const int*)newval < 1) return(0);
   else return (1);
 }
 
-int owl_variable_int_validate_positive(owl_variable *v, const void *newval)
+int owl_variable_int_validate_positive(const owl_variable *v, const void *newval)
 {
   if (newval == NULL) return(0);
   else if (*(const int*)newval < 0) return(0);
@@ -627,15 +627,15 @@ void owl_variable_free(owl_variable *v) {
 }
 
 
-const char *owl_variable_get_description(owl_variable *v) {
+const char *owl_variable_get_description(const owl_variable *v) {
   return v->description;
 }
 
-const char *owl_variable_get_summary(owl_variable *v) {
+const char *owl_variable_get_summary(const owl_variable *v) {
   return v->summary;
 }
 
-const char *owl_variable_get_validsettings(owl_variable *v) {
+const char *owl_variable_get_validsettings(const owl_variable *v) {
   if (v->validsettings) {
     return v->validsettings;
   } else {
@@ -838,7 +838,7 @@ void owl_variable_get_help(owl_vardict *d, const char *name, owl_fmtext *fm) {
 
 /* default common functions */
 
-const void *owl_variable_get_default(owl_variable *v) {
+const void *owl_variable_get_default(const owl_variable *v) {
   return v->val;
 }
 
@@ -848,7 +848,7 @@ void owl_variable_free_default(owl_variable *v) {
 
 /* default functions for booleans */
 
-int owl_variable_bool_validate_default(owl_variable *v, const void *newval) {
+int owl_variable_bool_validate_default(const owl_variable *v, const void *newval) {
   if (newval == NULL) return(0);
   else if (*(const int*)newval==1 || *(const int*)newval==0) return(1);
   else return (0);
@@ -870,7 +870,7 @@ int owl_variable_bool_set_fromstring_default(owl_variable *v, const char *newval
   return (v->set_fn(v, &i));
 }
 
-int owl_variable_bool_get_tostring_default(owl_variable *v, char* buf, int bufsize, const void *val) {
+int owl_variable_bool_get_tostring_default(const owl_variable *v, char* buf, int bufsize, const void *val) {
   if (val == NULL) {
     snprintf(buf, bufsize, "<null>");
     return -1;
@@ -888,7 +888,7 @@ int owl_variable_bool_get_tostring_default(owl_variable *v, char* buf, int bufsi
 
 /* default functions for integers */
 
-int owl_variable_int_validate_default(owl_variable *v, const void *newval) {
+int owl_variable_int_validate_default(const owl_variable *v, const void *newval) {
   if (newval == NULL) return(0);
   else return (1);
 }
@@ -909,7 +909,7 @@ int owl_variable_int_set_fromstring_default(owl_variable *v, const char *newval)
   return (v->set_fn(v, &i));
 }
 
-int owl_variable_int_get_tostring_default(owl_variable *v, char* buf, int bufsize, const void *val) {
+int owl_variable_int_get_tostring_default(const owl_variable *v, char* buf, int bufsize, const void *val) {
   if (val == NULL) {
     snprintf(buf, bufsize, "<null>");
     return -1;
@@ -921,7 +921,7 @@ int owl_variable_int_get_tostring_default(owl_variable *v, char* buf, int bufsiz
 
 /* default functions for enums (a variant of integers) */
 
-int owl_variable_enum_validate(owl_variable *v, const void *newval) {  
+int owl_variable_enum_validate(const owl_variable *v, const void *newval) {  
   char **enums;
   int nenums, val;
   if (newval == NULL) return(0);
@@ -951,7 +951,7 @@ int owl_variable_enum_set_fromstring(owl_variable *v, const char *newval) {
   return (v->set_fn(v, &val));
 }
 
-int owl_variable_enum_get_tostring(owl_variable *v, char* buf, int bufsize, const void *val) {
+int owl_variable_enum_get_tostring(const owl_variable *v, char* buf, int bufsize, const void *val) {
   char **enums;
   int nenums, i;
 
@@ -972,7 +972,7 @@ int owl_variable_enum_get_tostring(owl_variable *v, char* buf, int bufsize, cons
 
 /* default functions for stringeans */
 
-int owl_variable_string_validate_default(struct _owl_variable *v, const void *newval) {
+int owl_variable_string_validate_default(const struct _owl_variable *v, const void *newval) {
   if (newval == NULL) return(0);
   else return (1);
 }
@@ -990,7 +990,7 @@ int owl_variable_string_set_fromstring_default(owl_variable *v, const char *newv
   return (v->set_fn(v, newval));
 }
 
-int owl_variable_string_get_tostring_default(owl_variable *v, char* buf, int bufsize, const void *val) {
+int owl_variable_string_get_tostring_default(const owl_variable *v, char* buf, int bufsize, const void *val) {
   if (val == NULL) {
     snprintf(buf, bufsize, "<null>");
     return -1;
