@@ -2,11 +2,11 @@
 
 static int dispatch_active = 0;
 
-int _owl_select_timer_cmp(owl_timer *t1, owl_timer *t2) {
+int _owl_select_timer_cmp(const owl_timer *t1, const owl_timer *t2) {
   return t1->time - t2->time;
 }
 
-int _owl_select_timer_eq(owl_timer *t1, owl_timer *t2) {
+int _owl_select_timer_eq(const owl_timer *t1, const owl_timer *t2) {
   return t1 == t2;
 }
 
