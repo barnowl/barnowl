@@ -2013,7 +2013,7 @@ char *owl_command_reply(int argc, const char *const *argv, const char *buff)
     owl_function_reply(1, !edit);
   } else if (argc==2 && !strcmp(argv[1], "zaway")) {
     const owl_message *m;
-    owl_view    *v;
+    const owl_view    *v;
     v = owl_global_get_current_view(&g);    
     m = owl_view_get_element(v, owl_global_get_curmsg(&g));
     if (m) owl_zephyr_zaway(m);
@@ -2586,7 +2586,7 @@ char *owl_command_message(int argc, const char *const *argv, const char *buff)
 void owl_command_yes(void)
 {
   owl_message *m;
-  owl_view *v;
+  const owl_view *v;
   const char *cmd;
 
   v = owl_global_get_current_view(&g);
@@ -2620,7 +2620,7 @@ void owl_command_yes(void)
 void owl_command_no(void)
 {
   owl_message *m;
-  owl_view *v;
+  const owl_view *v;
   const char *cmd;
 
   v = owl_global_get_current_view(&g);

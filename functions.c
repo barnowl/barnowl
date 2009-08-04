@@ -61,7 +61,7 @@ void owl_function_show_commands()
 
 void owl_function_show_view(const char *viewname)
 {
-  owl_view *v;
+  const owl_view *v;
   owl_fmtext fm;
 
   /* we only have the one view right now */
@@ -592,7 +592,7 @@ void owl_function_loopwrite(const char *msg)
 void owl_function_nextmsg_full(const char *filter, int skip_deleted, int last_if_none)
 {
   int curmsg, i, viewsize, found;
-  owl_view *v;
+  const owl_view *v;
   const owl_filter *f = NULL;
   const owl_message *m;
 
@@ -645,7 +645,7 @@ void owl_function_nextmsg_full(const char *filter, int skip_deleted, int last_if
 void owl_function_prevmsg_full(const char *filter, int skip_deleted, int first_if_none)
 {
   int curmsg, i, viewsize, found;
-  owl_view *v;
+  const owl_view *v;
   const owl_filter *f = NULL;
   const owl_message *m;
 
@@ -817,7 +817,7 @@ void owl_function_firstmsg()
 void owl_function_lastmsg_noredisplay()
 {
   int oldcurmsg, curmsg;
-  owl_view *v;
+  const owl_view *v;
 
   v=owl_global_get_current_view(&g);
   oldcurmsg=owl_global_get_curmsg(&g);
@@ -1040,7 +1040,7 @@ void owl_function_quit()
 void owl_function_calculate_topmsg(int direction)
 {
   int recwinlines, topmsg, curmsg;
-  owl_view *v;
+  const owl_view *v;
 
   v=owl_global_get_current_view(&g);
   curmsg=owl_global_get_curmsg(&g);
@@ -1084,12 +1084,12 @@ void owl_function_calculate_topmsg(int direction)
  * the top message currently being displayed,
  * and the number of lines in the recwin.
  */
-int owl_function_calculate_topmsg_top(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines)
+int owl_function_calculate_topmsg_top(int direction, const owl_view *v, int curmsg, int topmsg, int recwinlines)
 {
   return(curmsg);
 }
 
-int owl_function_calculate_topmsg_neartop(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines)
+int owl_function_calculate_topmsg_neartop(int direction, const owl_view *v, int curmsg, int topmsg, int recwinlines)
 {
   if (curmsg>0 
       && (owl_message_get_numlines(owl_view_get_element(v, curmsg-1))
@@ -1100,7 +1100,7 @@ int owl_function_calculate_topmsg_neartop(int direction, owl_view *v, int curmsg
   }
 }
   
-int owl_function_calculate_topmsg_center(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines)
+int owl_function_calculate_topmsg_center(int direction, const owl_view *v, int curmsg, int topmsg, int recwinlines)
 {
   int i, last, lines;
 
@@ -1114,7 +1114,7 @@ int owl_function_calculate_topmsg_center(int direction, owl_view *v, int curmsg,
   return(last);
 }
   
-int owl_function_calculate_topmsg_paged(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines, int center_on_page)
+int owl_function_calculate_topmsg_paged(int direction, const owl_view *v, int curmsg, int topmsg, int recwinlines, int center_on_page)
 {
   int i, last, lines, savey;
   
@@ -1154,7 +1154,7 @@ int owl_function_calculate_topmsg_paged(int direction, owl_view *v, int curmsg, 
   return(topmsg);
 }
 
-int owl_function_calculate_topmsg_normal(int direction, owl_view *v, int curmsg, int topmsg, int recwinlines)
+int owl_function_calculate_topmsg_normal(int direction, const owl_view *v, int curmsg, int topmsg, int recwinlines)
 {
   int savey, i, foo, y;
 
@@ -1412,7 +1412,7 @@ void owl_function_info()
 {
   const owl_message *m;
   owl_fmtext fm, attrfm;
-  owl_view *v;
+  const owl_view *v;
 #ifdef HAVE_LIBZEPHYR
   const ZNotice_t *n;
 #endif
@@ -1545,7 +1545,7 @@ void owl_function_info()
  */
 void owl_function_curmsg_to_popwin()
 {
-  owl_view *v;
+  const owl_view *v;
   const owl_message *m;
   const owl_style *s;
   owl_fmtext fm;
@@ -1572,7 +1572,7 @@ void owl_function_page_curmsg(int step)
   /* scroll down or up within the current message IF the message is truncated */
 
   int offset, curmsg, lines;
-  owl_view *v;
+  const owl_view *v;
   owl_message *m;
 
   offset=owl_global_get_curmsg_vert_offset(&g);
@@ -1750,7 +1750,7 @@ void owl_function_delete_automsgs()
 
   int i, j, count;
   owl_message *m;
-  owl_view *v;
+  const owl_view *v;
   const owl_filter *f;
 
   /* get the trash filter */
@@ -2154,7 +2154,7 @@ void owl_function_change_currentview_filter(const char *filtname)
 void owl_function_create_filter(int argc, const char *const *argv)
 {
   owl_filter *f;
-  owl_view *v;
+  const owl_view *v;
   int ret, inuse=0;
 
   if (argc < 2) {
@@ -2544,7 +2544,7 @@ char *owl_function_typefilt(const char *type)
  * unmarks for deletion. */
 void owl_function_delete_curview_msgs(int flag)
 {
-  owl_view *v;
+  const owl_view *v;
   int i, j;
 
   v=owl_global_get_current_view(&g);
@@ -2578,7 +2578,7 @@ void owl_function_delete_curview_msgs(int flag)
  */
 char *owl_function_smartfilter(int type)
 {
-  owl_view *v;
+  const owl_view *v;
   const owl_message *m;
   char *zperson, *filtname=NULL;
   const char *argv[1];
@@ -2650,7 +2650,7 @@ void owl_function_smartzpunt(int type)
 {
   /* Starts a zpunt command based on the current class,instance pair. 
    * If type=0, uses just class.  If type=1, uses instance as well. */
-  owl_view *v;
+  const owl_view *v;
   const owl_message *m;
   const char *cmdprefix, *mclass, *minst;
   char *cmd;
@@ -2997,7 +2997,7 @@ void owl_function_search_helper(int mode, int direction)
    * contains the string.
    */
 
-  owl_view *v;
+  const owl_view *v;
   int viewsize, i, curmsg, start;
   owl_message *m;
 
@@ -3192,7 +3192,7 @@ void owl_function_dump(const char *filename)
 {
   int i, j, count;
   owl_message *m;
-  owl_view *v;
+  const owl_view *v;
   FILE *file;
   char *plaintext;
 
@@ -3575,7 +3575,7 @@ void _owl_function_mark_message(const owl_message *m)
 void owl_function_mark_message()
 {
   const owl_message *m;
-  owl_view *v;
+  const owl_view *v;
 
   v=owl_global_get_current_view(&g);
 
@@ -3595,7 +3595,7 @@ void owl_function_swap_cur_marked()
 {
   int marked_id;
   const owl_message *m;
-  owl_view *v;
+  const owl_view *v;
 
   marked_id=owl_global_get_markedmsgid(&g);
   if (marked_id == -1) {

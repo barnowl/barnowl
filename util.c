@@ -10,7 +10,7 @@ void sepbar(const char *in)
   char buff[1024];
   WINDOW *sepwin;
   const owl_messagelist *ml;
-  owl_view *v;
+  const owl_view *v;
   int x, y, i;
   const char *foo, *appendtosepbar;
 

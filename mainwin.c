@@ -13,7 +13,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
   int x, y, savey, recwinlines, start;
   int topmsg, curmsg, fgcolor, bgcolor;
   WINDOW *recwin;
-  owl_view *v;
+  const owl_view *v;
   const owl_list *filtlist;
   const owl_filter *f;
 

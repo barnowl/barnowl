@@ -696,7 +696,7 @@ int owl_global_message_is_puntable(owl_global *g, const owl_message *m) {
 }
 
 int owl_global_should_followlast(owl_global *g) {
-  owl_view *v;
+  const owl_view *v;
   
   if (!owl_global_is__followlast(g)) return(0);
   

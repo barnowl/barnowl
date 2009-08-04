@@ -114,7 +114,7 @@ SV *owl_perlconfig_message2hashref(const owl_message *m)
 SV *owl_perlconfig_curmessage2hashref(void) /*noproto*/
 {
   int curmsg;
-  owl_view *v;
+  const owl_view *v;
   v=owl_global_get_current_view(&g);
   if (owl_view_get_size(v) < 1) {
     return &PL_sv_undef;

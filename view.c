@@ -10,7 +10,7 @@ void owl_view_create(owl_view *v, const char *name, owl_filter *f, const owl_sty
   owl_view_recalculate(v);
 }
 
-const char *owl_view_get_name(owl_view *v)
+const char *owl_view_get_name(const owl_view *v)
 {
   return(v->name);
 }
@@ -61,16 +61,16 @@ void owl_view_set_style(owl_view *v, const owl_style *s)
   v->style=s;
 }
 
-const owl_style *owl_view_get_style(owl_view *v)
+const owl_style *owl_view_get_style(const owl_view *v)
 {
   return(v->style);
 }
 
-const char *owl_view_get_style_name(owl_view *v) {
+const char *owl_view_get_style_name(const owl_view *v) {
   return(owl_style_get_name(v->style));
 }
 
-owl_message *owl_view_get_element(owl_view *v, int index)
+owl_message *owl_view_get_element(const owl_view *v, int index)
 {
   return(owl_messagelist_get_element(&(v->ml), index));
 }
@@ -85,14 +85,14 @@ void owl_view_undelete_element(owl_view *v, int index)
   owl_messagelist_undelete_element(&(v->ml), index);
 }
 
-int owl_view_get_size(owl_view *v)
+int owl_view_get_size(const owl_view *v)
 {
   return(owl_messagelist_get_size(&(v->ml)));
 }
 
 /* Returns the position in the view with a message closest 
  * to the passed msgid. */
-int owl_view_get_nearest_to_msgid(owl_view *v, int targetid)
+int owl_view_get_nearest_to_msgid(const owl_view *v, int targetid)
 {
   int first, last, mid = 0, max, bestdist, curid = 0;
 
@@ -121,7 +121,7 @@ int owl_view_get_nearest_to_msgid(owl_view *v, int targetid)
   return mid;
 }
 
-int owl_view_get_nearest_to_saved(owl_view *v)
+int owl_view_get_nearest_to_saved(const owl_view *v)
 {
   int cachedid;
 
@@ -138,7 +138,7 @@ void owl_view_save_curmsgid(owl_view *v, int curid)
 }
 
 /* fmtext should already be initialized */
-void owl_view_to_fmtext(owl_view *v, owl_fmtext *fm)
+void owl_view_to_fmtext(const owl_view *v, owl_fmtext *fm)
 {
   owl_fmtext_append_normal(fm, "Name: ");
   owl_fmtext_append_normal(fm, v->name);
@@ -153,7 +153,7 @@ void owl_view_to_fmtext(owl_view *v, owl_fmtext *fm)
   owl_fmtext_append_normal(fm, "\n");
 }
 
-const char *owl_view_get_filtname(owl_view *v)
+const char *owl_view_get_filtname(const owl_view *v)
 {
   return(owl_filter_get_name(v->filter));
 }
