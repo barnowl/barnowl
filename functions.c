@@ -2901,7 +2901,7 @@ void owl_function_show_keymaps()
   owl_list l;
   owl_fmtext fm;
   const owl_keymap *km;
-  owl_keyhandler *kh;
+  const owl_keyhandler *kh;
   int i, numkm;
   const char *kmname;
 

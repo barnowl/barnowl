@@ -105,7 +105,7 @@ const char *owl_keybinding_get_desc(const owl_keybinding *kb)
 }
 
 /* returns 0 on no match, 1 on subset match, and 2 on complete match */
-int owl_keybinding_match(const owl_keybinding *kb, owl_keyhandler *kh)
+int owl_keybinding_match(const owl_keybinding *kb, const owl_keyhandler *kh)
 {
   int i;
   for(i = 0; i <= kh->kpstackpos && i < kb->len; i++) {

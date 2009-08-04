@@ -166,13 +166,13 @@ void owl_keyhandler_reset(owl_keyhandler *kh)
   kh->kpstackpos = -1;
 }
 
-owl_keymap *owl_keyhandler_get_keymap(owl_keyhandler *kh, const char *mapname)
+owl_keymap *owl_keyhandler_get_keymap(const owl_keyhandler *kh, const char *mapname)
 {
   return owl_dict_find_element(&kh->keymaps, mapname);
 }
 
 /* free the list with owl_cmddict_namelist_free */
-void owl_keyhandler_get_keymap_names(owl_keyhandler *kh, owl_list *l)
+void owl_keyhandler_get_keymap_names(const owl_keyhandler *kh, owl_list *l)
 {
   owl_dict_get_keys(&kh->keymaps, l);
 }
