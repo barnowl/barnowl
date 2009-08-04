@@ -94,7 +94,7 @@ void owl_function_show_styles() {
 char *owl_function_style_describe(const char *name) {
   const char *desc;
   char *s;
-  owl_style *style;
+  const owl_style *style;
   style = owl_global_get_style_by_name(&g, name);
   if (style) {
     desc = owl_style_get_description(style);
@@ -1547,7 +1547,7 @@ void owl_function_curmsg_to_popwin()
 {
   owl_view *v;
   const owl_message *m;
-  owl_style *s;
+  const owl_style *s;
   owl_fmtext fm;
 
   v=owl_global_get_current_view(&g);
@@ -3361,7 +3361,7 @@ void owl_function_source(const char *filename)
 
 void owl_function_change_style(owl_view *v, const char *stylename)
 {
-  owl_style *s;
+  const owl_style *s;
 
   s=owl_global_get_style_by_name(&g, stylename);
   if (!s) {
@@ -3377,7 +3377,7 @@ void owl_function_change_style(owl_view *v, const char *stylename)
 void owl_function_toggleoneline()
 {
   owl_view *v;
-  owl_style *s;
+  const owl_style *s;
 
   v=owl_global_get_current_view(&g);
   s=owl_view_get_style(v);

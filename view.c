@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "owl.h"
 
-void owl_view_create(owl_view *v, const char *name, owl_filter *f, owl_style *s)
+void owl_view_create(owl_view *v, const char *name, owl_filter *f, const owl_style *s)
 {
   v->name=owl_strdup(name);
   v->filter=f;
@@ -56,12 +56,12 @@ void owl_view_new_filter(owl_view *v, owl_filter *f)
   owl_view_recalculate(v);
 }
 
-void owl_view_set_style(owl_view *v, owl_style *s)
+void owl_view_set_style(owl_view *v, const owl_style *s)
 {
   v->style=s;
 }
 
-owl_style *owl_view_get_style(owl_view *v)
+const owl_style *owl_view_get_style(owl_view *v)
 {
   return(v->style);
 }

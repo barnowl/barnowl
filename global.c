@@ -842,7 +842,7 @@ owl_buddylist *owl_global_get_buddylist(owl_global *g)
 
 /* Return the style with name 'name'.  If it does not exist return
  * NULL */
-owl_style *owl_global_get_style_by_name(owl_global *g, const char *name)
+const owl_style *owl_global_get_style_by_name(owl_global *g, const char *name)
 {
   return owl_dict_find_element(&(g->styledict), name);
 }

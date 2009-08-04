@@ -47,7 +47,7 @@ int main(int argc, char **argv, char **env)
   char *perlout, *perlerr;
   const char *confdir;
   owl_filter *f;
-  owl_style *s;
+  const owl_style *s;
   time_t nexttime, now;
   struct tm *today;
   const char *dir;

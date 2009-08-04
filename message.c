@@ -144,7 +144,7 @@ owl_fmtext *owl_message_get_fmtext(owl_message *m)
 
 void owl_message_format(owl_message *m)
 {
-  owl_style *s;
+  const owl_style *s;
   owl_view *v;
 
   if (!m->fmtext) {
