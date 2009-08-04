@@ -60,7 +60,6 @@ owl_popexec *owl_popexec_new(char *command)
     pe->refcount++;
   } else {
     /* in the child process */
-    char *argv[4];
     int i;
     int fdlimit = sysconf(_SC_OPEN_MAX);
 
@@ -71,11 +70,7 @@ owl_popexec *owl_popexec_new(char *command)
     dup2(child_write_fd, 2 /*stderr*/);
     close(child_write_fd);
 
-    argv[0] = "sh";
-    argv[1] = "-c";
-    argv[2] = command;
-    argv[3] = 0;
-    execv("/bin/sh", argv);
+    execl("/bin/sh", "sh", "-c", command, (const char *)NULL);
     _exit(127);
   }
 
