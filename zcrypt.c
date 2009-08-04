@@ -49,9 +49,6 @@ typedef struct
 } ZWRITEOPTIONS;
 
 char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance);
-char *BuildArgString(char **argv, int start, int end);
-static int do_encrypt(char *keystring, int zephyr, char *class, char *instance, ZWRITEOPTIONS *zoptions, char* keyfile);
-int do_decrypt(char *keystring);
 
 #ifndef HAVE_DES_ECB_ENCRYPT_PROTO
 int des_ecb_encrypt(char [], char [], des_key_schedule, int);
@@ -118,7 +115,6 @@ int owl_zcrypt_decrypt(char *out, char *in, char *class, char *instance) {
 }
 
 int owl_zcrypt_encrypt(char *out, char *in, char *class, char *instance) {
-  /*  static int do_encrypt(char *keystring, int zephyr, char *class, char *instance, ZWRITEOPTIONS *zoptions, char* keyfile) { */
   char *fname, keystring[MAX_KEY];
   FILE *fkey;
   des_cblock key;
