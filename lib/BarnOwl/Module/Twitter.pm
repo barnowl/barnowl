@@ -186,63 +186,41 @@ sub twitter {
     }
 }
 
-sub twitter_direct {
+# do_for_default_account( SUB( HANDLE, ARGS...), ACCOUNT, ARGS... )
+sub do_for_default_account {
+    my $lambda = shift;
+    die ("do_for_default_account has nothing to do") unless defined $lambda && ref($lambda) eq 'CODE';
     my $account = shift;
 
-    my $sent = 0;
     if (defined $account) {
         my $handle = find_account($account);
-        $handle->twitter_direct(@_);
+        $lambda->($handle, @_);
     } elsif (defined $default_handle) {
-        $default_handle->twitter_direct(@_);
+        $lambda->($default_handle, @_);
     }
     else {
-        $twitter_handles[0]->twitter_direct(@_);
+        $lambda->($twitter_handles[0], @_);
     }
+}
+
+sub twitter_direct {
+    my $account = shift;
+    do_for_default_account( sub { my $handle = shift; $handle->twitter_direct(@_); }, $account, @_);
 }
 
 sub twitter_atreply {
     my $account = shift;
-
-    my $sent = 0;
-    if (defined $account) {
-        my $handle = find_account($account);
-        $handle->twitter_atreply(@_);
-    }
-    elsif (defined $default_handle) {
-        $default_handle->twitter_atreply(@_);
-    }
-    else {
-        $twitter_handles[0]->twitter_atreply(@_);
-    }
+    do_for_default_account( sub { my $handle = shift; $handle->twitter_atreply(@_); }, $account, @_);
 }
 
 sub twitter_follow {
     my $account = shift;
-
-    if (defined $account) {
-        my $handle = find_account($account);
-        $handle->twitter_follow(@_);
-    } elsif (defined $default_handle) {
-        $default_handle->twitter_follow(@_);
-    }
-    else {
-        $twitter_handles[0]->twitter_follow(@_);
-    }
+    do_for_default_account( sub { my $handle = shift; $handle->twitter_follow(@_); }, $account, @_);
 }
 
 sub twitter_unfollow {
     my $account = shift;
-
-    if (defined $account) {
-        my $handle = find_account($account);
-        $handle->twitter_unfollow(@_);
-    } elsif (defined $default_handle) {
-        $default_handle->twitter_unfollow(@_);
-    }
-    else {
-        $twitter_handles[0]->twitter_unfollow(@_);
-    }
+    do_for_default_account( sub { my $handle = shift; $handle->twitter_unfollow(@_); }, $account, @_);
 }
 
 BarnOwl::new_command(twitter => \&cmd_twitter, {
