@@ -613,7 +613,7 @@ void owl_variable_dict_free(owl_vardict *d) {
 }
 
 /* free the list with owl_variable_dict_namelist_free */
-void owl_variable_dict_get_names(owl_vardict *d, owl_list *l) {
+void owl_variable_dict_get_names(const owl_vardict *d, owl_list *l) {
   owl_dict_get_keys(d, l);
 }
 
@@ -701,7 +701,7 @@ int owl_variable_set_bool_off(owl_vardict *d, const char *name) {
   return owl_variable_set_int(d,name,0);
 }
 
-int owl_variable_get_tostring(owl_vardict *d, const char *name, char *buf, int bufsize) {
+int owl_variable_get_tostring(const owl_vardict *d, const char *name, char *buf, int bufsize) {
   owl_variable *v;
   if (!name) return(-1);
   v = owl_dict_find_element(d, name);
@@ -709,7 +709,7 @@ int owl_variable_get_tostring(owl_vardict *d, const char *name, char *buf, int b
   return v->get_tostring_fn(v, buf, bufsize, v->val);
 }
 
-int owl_variable_get_default_tostring(owl_vardict *d, const char *name, char *buf, int bufsize) {
+int owl_variable_get_default_tostring(const owl_vardict *d, const char *name, char *buf, int bufsize) {
   owl_variable *v;
   if (!name) return(-1);
   v = owl_dict_find_element(d, name);
@@ -721,7 +721,7 @@ int owl_variable_get_default_tostring(owl_vardict *d, const char *name, char *bu
   }
 }
 
-owl_variable *owl_variable_get_var(owl_vardict *d, const char *name, int require_type) {
+owl_variable *owl_variable_get_var(const owl_vardict *d, const char *name, int require_type) {
   owl_variable *v;
   if (!name) return(NULL);
   v = owl_dict_find_element(d, name);
@@ -730,37 +730,37 @@ owl_variable *owl_variable_get_var(owl_vardict *d, const char *name, int require
 }
 
 /* returns a reference */
-const void *owl_variable_get(owl_vardict *d, const char *name, int require_type) {
+const void *owl_variable_get(const owl_vardict *d, const char *name, int require_type) {
   owl_variable *v = owl_variable_get_var(d, name, require_type);
   if(v == NULL) return NULL;
   return v->get_fn(v);
 }
 
 /* returns a reference */
-const char *owl_variable_get_string(owl_vardict *d, const char *name) {
+const char *owl_variable_get_string(const owl_vardict *d, const char *name) {
   return owl_variable_get(d,name, OWL_VARIABLE_STRING);
 }
 
 /* returns a reference */
-const void *owl_variable_get_other(owl_vardict *d, const char *name) {
+const void *owl_variable_get_other(const owl_vardict *d, const char *name) {
   return owl_variable_get(d,name, OWL_VARIABLE_OTHER);
 }
 
-int owl_variable_get_int(owl_vardict *d, const char *name) {
+int owl_variable_get_int(const owl_vardict *d, const char *name) {
   const int *pi;
   pi = owl_variable_get(d,name,OWL_VARIABLE_INT);
   if (!pi) return(-1);
   return(*pi);
 }
 
-int owl_variable_get_bool(owl_vardict *d, const char *name) {
+int owl_variable_get_bool(const owl_vardict *d, const char *name) {
   const int *pi;
   pi = owl_variable_get(d,name,OWL_VARIABLE_BOOL);
   if (!pi) return(-1);
   return(*pi);
 }
 
-void owl_variable_describe(owl_vardict *d, const char *name, owl_fmtext *fm) {
+void owl_variable_describe(const owl_vardict *d, const char *name, owl_fmtext *fm) {
   char defaultbuf[50];
   char buf[1024];
   int buflen = 1023;
@@ -784,7 +784,7 @@ void owl_variable_describe(owl_vardict *d, const char *name, owl_fmtext *fm) {
   owl_fmtext_append_normal(fm, buf);
 }
 
-void owl_variable_get_help(owl_vardict *d, const char *name, owl_fmtext *fm) {
+void owl_variable_get_help(const owl_vardict *d, const char *name, owl_fmtext *fm) {
   char buff[1024];
   int bufflen = 1023;
   owl_variable *v;
