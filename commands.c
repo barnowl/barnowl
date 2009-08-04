@@ -1885,7 +1885,8 @@ char *owl_command_zwrite(int argc, char **argv, char *buff)
 
 char *owl_command_aimwrite(int argc, char **argv, char *buff)
 {
-  char *newbuff, *recip, **myargv;
+  char *newbuff, *recip;
+  char **myargv;
   int i, j, myargc;
   owl_message *m;
   

@@ -567,7 +567,8 @@ int owl_fmtext_search(owl_fmtext *f, owl_regex *re)
 void owl_fmtext_append_ztext(owl_fmtext *f, char *text)
 {
   int stacksize, curattrs, curcolor;
-  char *ptr, *txtptr, *buff, *tmpptr;
+  char *ptr, *txtptr, *tmpptr;
+  char *buff;
   int attrstack[32], chrstack[32], colorstack[32];
 
   curattrs=OWL_FMTEXT_ATTR_NONE;

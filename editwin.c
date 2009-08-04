@@ -693,7 +693,8 @@ void owl_editwin_delete_char(owl_editwin *e)
  */
 void owl_editwin_transpose_chars(owl_editwin *e)
 {
-  char *middle, *end, *start, *tmp;
+  char *middle, *end, *start;
+  char *tmp;
 
   if (e->bufflen == 0) return;
 

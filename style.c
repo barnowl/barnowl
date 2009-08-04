@@ -40,7 +40,8 @@ char *owl_style_get_description(owl_style *s)
  */
 void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, owl_message *m)
 {
-  char *body, *indent;
+  char *body;
+  char *indent;
   int curlen;
 
   SV *sv = NULL;

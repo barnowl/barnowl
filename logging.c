@@ -229,7 +229,8 @@ void owl_log_outgoing_zephyr_error(char *to, char *text)
 void owl_log_incoming(owl_message *m)
 {
   char filename[MAXPATHLEN], allfilename[MAXPATHLEN], *logpath;
-  char *frombuff=NULL, *from=NULL;
+  char *from=NULL;
+  char *frombuff=NULL;
   int len, ch, i, personal;
 
   /* figure out if it's a "personal" message or not */

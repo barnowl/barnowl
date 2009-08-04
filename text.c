@@ -47,7 +47,8 @@ int owl_text_num_lines(char *in)
 /* caller must free the return */
 char *owl_text_htmlstrip(char *in)
 {
-  char *ptr1, *end, *ptr2, *ptr3, *out, *out2;
+  char *ptr1, *end, *ptr2, *ptr3;
+  char *out, *out2;
 
   out=owl_malloc(strlen(in)+30);
   strcpy(out, "");

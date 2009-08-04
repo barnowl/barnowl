@@ -78,7 +78,8 @@ static int owl_filterelement_match_filter(owl_filterelement *fe, owl_message *m)
 
 static int owl_filterelement_match_perl(owl_filterelement *fe, owl_message *m)
 {
-  char *subname, *perlrv;
+  char *subname;
+  char *perlrv;
   int   tf=0;
 
   subname = fe->field;

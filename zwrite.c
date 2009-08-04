@@ -7,7 +7,8 @@
 int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 {
   int argc, badargs, myargc, i, len;
-  char **argv, **myargv;
+  char **argv;
+  char **myargv;
   char *msg = NULL;
 
   badargs=0;
@@ -150,7 +151,8 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 
 void owl_zwrite_populate_zsig(owl_zwrite *z)
 {
-  char *zsigproc, *zsigowlvar, *zsigzvar, *ptr;
+  char *zsigproc, *zsigowlvar, *zsigzvar;
+  char *ptr;
   struct passwd *pw;
 
   /* get a zsig, if not given */

@@ -758,7 +758,8 @@ char *owl_global_get_aim_screenname_for_filters(owl_global *g)
 
 void owl_global_set_aimloggedin(owl_global *g, char *screenname)
 {
-  char *sn_escaped, *quote;
+  char *sn_escaped;
+  char *quote;
   g->aim_loggedin=1;
   if (g->aim_screenname) owl_free(g->aim_screenname);
   if (g->aim_screenname_for_filters) owl_free(g->aim_screenname_for_filters);

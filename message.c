@@ -567,7 +567,8 @@ int owl_message_is_mail(owl_message *m)
 /* caller must free return value. */
 char *owl_message_get_cc(owl_message *m)
 {
-  char *cur, *out, *end;
+  char *cur;
+  char *out, *end;
 
   cur = owl_message_get_body(m);
   while (*cur && *cur==' ') cur++;
@@ -583,7 +584,8 @@ char *owl_message_get_cc(owl_message *m)
 /* caller must free return value */
 char *owl_message_get_cc_without_recipient(owl_message *m)
 {
-  char *cc, *out, *end, *user, *shortuser, *recip;
+  char *cc, *out, *end, *shortuser, *recip;
+  char *user;
 
   cc = owl_message_get_cc(m);
   if (cc == NULL)
@@ -734,7 +736,8 @@ void owl_message_create_loopback(owl_message *m, char *text)
 void owl_message_create_from_znotice(owl_message *m, ZNotice_t *n)
 {
   struct hostent *hent;
-  char *ptr, *tmp, *tmp2;
+  char *ptr;
+  char *tmp, *tmp2;
   int len;
 
   owl_message_init(m);
@@ -850,7 +853,8 @@ void owl_message_create_from_znotice(owl_message *m, void *n)
 /* If 'direction' is '0' it is a login message, '1' is a logout message. */
 void owl_message_create_pseudo_zlogin(owl_message *m, int direction, char *user, char *host, char *time, char *tty)
 {
-  char *longuser, *ptr;
+  char *longuser;
+  char *ptr;
 
 #ifdef HAVE_LIBZEPHYR
   memset(&(m->notice), 0, sizeof(ZNotice_t));

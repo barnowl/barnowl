@@ -455,7 +455,8 @@ char *owl_util_color_to_string(int color)
 /* Get the default tty name.  Caller must free the return */
 char *owl_util_get_default_tty()
 {
-  char *out, *tmp;
+  char *tmp;
+  char *out;
 
   if (getenv("DISPLAY")) {
     out=owl_strdup(getenv("DISPLAY"));

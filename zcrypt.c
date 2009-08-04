@@ -69,7 +69,8 @@ int des_ecb_encrypt(char [], char [], des_key_schedule, int);
  * return 0 on success, otherwise -1
  */
 int owl_zcrypt_decrypt(char *out, char *in, char *class, char *instance) {
-  char *fname, keystring[MAX_KEY], *inptr, *endptr;
+  char *inptr, *endptr;
+  char *fname, keystring[MAX_KEY];
   FILE *fkey;
   des_cblock key;
   des_key_schedule schedule;

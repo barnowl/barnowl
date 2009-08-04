@@ -43,7 +43,8 @@ int main(int argc, char **argv, char **env)
   int debug, argcsave, followlast;
   int newmsgs, nexttimediff;
   struct sigaction sigact;
-  char *configfile, *tty, *perlout, *perlerr, **argvsave;
+  char *configfile, *tty, **argvsave;
+  char *perlout, *perlerr;
   char *confdir;
   owl_filter *f;
   owl_style *s;

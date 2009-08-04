@@ -380,7 +380,8 @@ char *owl_perlconfig_execute(char *line)
 {
   STRLEN len;
   SV *response;
-  char *out, *preout;
+  char *preout;
+  char *out;
 
   if (!owl_global_have_config(&g)) return NULL;
 

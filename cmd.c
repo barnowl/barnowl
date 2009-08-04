@@ -169,7 +169,8 @@ int owl_cmd_is_context_valid(owl_cmd *cmd, owl_context *ctx) {
 char *owl_cmd_execute(owl_cmd *cmd, owl_cmddict *cd, owl_context *ctx, int argc, char **argv, char *cmdbuff) {
   static int alias_recurse_depth = 0;
   int ival=0;
-  char *cmdbuffargs, *newcmd, *rv=NULL;
+  char *cmdbuffargs;
+  char *newcmd, *rv=NULL;
 
   if (argc < 1) return(NULL);
 
@@ -254,7 +255,8 @@ char *owl_cmd_describe(owl_cmd *cmd) {
 
 
 void owl_cmd_get_help(owl_cmddict *d, char *name, owl_fmtext *fm) {
-  char *indent, *s;
+  char *s;
+  char *indent;
   owl_cmd *cmd;
 
   if (!name || (cmd = owl_dict_find_element(d, name)) == NULL) {

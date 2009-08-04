@@ -92,7 +92,8 @@ void owl_function_show_styles() {
 }
 
 char *owl_function_style_describe(char *name) {
-  char *desc, *s;
+  char *desc;
+  char *s;
   owl_style *style;
   style = owl_global_get_style_by_name(&g, name);
   if (style) {
@@ -499,7 +500,8 @@ void owl_callback_aimwrite(owl_editwin *e) {
 void owl_function_aimwrite(char *line, char *msg)
 {
   int ret;
-  char *to, *format_msg;
+  char *to;
+  char *format_msg;
   owl_message *m;
 
   to = line + 9;
@@ -881,7 +883,8 @@ void owl_function_unsuball()
 void owl_function_loadsubs(char *file)
 {
   int ret, ret2;
-  char *foo, *path;
+  char *foo;
+  char *path;
 
   if (file==NULL) {
     ret=owl_zephyr_loadsubs(NULL, 0);
@@ -2015,7 +2018,8 @@ char *owl_function_exec(int argc, char **argv, char *buff, int type)
    * if type == 0 return output
    * else display in a popup
    */
-  char *newbuff, *redirect = " 2>&1 < /dev/null";
+  char *redirect = " 2>&1 < /dev/null";
+  char *newbuff;
   char *out, buff2[1024];
   int size;
   FILE *p;
@@ -2648,7 +2652,8 @@ void owl_function_smartzpunt(int type)
    * If type=0, uses just class.  If type=1, uses instance as well. */
   owl_view *v;
   owl_message *m;
-  char *cmd, *cmdprefix, *mclass, *minst;
+  char *cmdprefix, *mclass, *minst;
+  char *cmd;
   
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
@@ -3077,7 +3082,8 @@ void owl_function_buddylist(int aim, int zephyr, char *filename)
 #ifdef HAVE_LIBZEPHYR
   int x;
   owl_list anyone;
-  char *tmp, *user;
+  char *user;
+  char *tmp;
   ZLocations_t location[200];
   int numlocs, ret;
 #endif
