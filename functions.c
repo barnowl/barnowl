@@ -2273,7 +2273,7 @@ char *owl_function_create_negative_filter(const char *filtername)
 
 void owl_function_show_filters()
 {
-  owl_list *l;
+  const owl_list *l;
   owl_filter *f;
   int i, j;
   owl_fmtext fm;
@@ -2319,7 +2319,7 @@ void owl_function_show_filter(const char *name)
 void owl_function_show_zpunts()
 {
   owl_filter *f;
-  owl_list *fl;
+  const owl_list *fl;
   char buff[5000];
   char *tmp;
   owl_fmtext fm;

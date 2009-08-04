@@ -14,7 +14,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
   int topmsg, curmsg, fgcolor, bgcolor;
   WINDOW *recwin;
   owl_view *v;
-  owl_list *filtlist;
+  const owl_list *filtlist;
   owl_filter *f;
 
   recwin=owl_global_get_curs_recwin(&g);

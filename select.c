@@ -83,7 +83,7 @@ void owl_select_process_timers(struct timespec *timeout)
 int owl_select_find_dispatch(int fd)
 {
   int i, len;
-  owl_list *dl;
+  const owl_list *dl;
   owl_dispatch *d;
   
   dl = owl_global_get_dispatchlist(&g);
@@ -198,7 +198,7 @@ int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
 {
   int i, len, max_fd;
   owl_dispatch *d;
-  owl_list *dl;
+  const owl_list *dl;
 
   dl = owl_global_get_dispatchlist(&g);
   FD_ZERO(r);
@@ -236,7 +236,7 @@ void owl_select_dispatch(fd_set *fds, int max_fd)
 {
   int i, len;
   owl_dispatch *d;
-  owl_list *dl;
+  const owl_list *dl;
 
   dl = owl_global_get_dispatchlist(&g);
   len = owl_select_dispatch_count();

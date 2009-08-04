@@ -769,7 +769,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
  * joins the elements together with join_with. 
  * If format_fn is specified, passes it the list element value
  * and it will return a string which this needs to free. */
-void owl_fmtext_append_list(owl_fmtext *f, owl_list *l, const char *join_with, char *(format_fn)(const char *))
+void owl_fmtext_append_list(owl_fmtext *f, const owl_list *l, const char *join_with, char *(format_fn)(const char *))
 {
   int i, size;
   const char *elem;

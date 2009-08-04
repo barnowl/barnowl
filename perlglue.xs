@@ -345,7 +345,7 @@ AV*
 all_filters()
 	PREINIT:
 		AV *filters;
-		owl_list *fl;
+		const owl_list *fl;
 		owl_filter *f;
 		int i;
 	CODE:

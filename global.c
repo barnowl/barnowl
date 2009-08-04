@@ -684,7 +684,7 @@ owl_list *owl_global_get_puntlist(owl_global *g) {
 }
 
 int owl_global_message_is_puntable(owl_global *g, owl_message *m) {
-  owl_list *pl;
+  const owl_list *pl;
   int i, j;
 
   pl=owl_global_get_puntlist(g);
