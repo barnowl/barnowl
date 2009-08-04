@@ -56,7 +56,8 @@ sub new {
 
     $self->{twitter}  = Net::Twitter::Lite->new(%twitter_args);
 
-    my $timeline = $self->{twitter}->friends_timeline({count => 1});
+    my $timeline = eval { $self->{twitter}->friends_timeline({count => 1}) };
+    warn "$@" if $@;
 
     if(!defined($timeline)) {
         $self->fail("Invalid credentials");
@@ -70,11 +71,13 @@ sub new {
     eval {
         $self->{last_direct} = $self->{twitter}->direct_messages()->[0]{id};
     };
+    warn "$@" if $@;
     $self->{last_direct} = 1 unless defined($self->{last_direct});
 
     eval {
         $self->{twitter}->{ua}->timeout(1);
     };
+    warn "$@" if $@;
 
     return $self;
 }
@@ -82,7 +85,8 @@ sub new {
 sub twitter_error {
     my $self = shift;
 
-    my $ratelimit = $self->{twitter}->rate_limit_status;
+    my $ratelimit = eval { $self->{twitter}->rate_limit_status };
+    warn "$@" if $@;
     unless(defined($ratelimit) && ref($ratelimit) eq 'HASH') {
         # Twitter's just sucking, sleep for 5 minutes
         $self->{last_direct_poll} = $self->{last_poll} = time + 60*5;
@@ -106,14 +110,16 @@ sub poll_twitter {
     $self->{last_poll} = time;
     return unless BarnOwl::getvar('twitter:poll') eq 'on';
 
-    my $timeline = $self->{twitter}->friends_timeline( { since_id => $self->{last_id} } );
+    my $timeline = eval { $self->{twitter}->friends_timeline( { since_id => $self->{last_id} } ) };
+    warn "$@" if $@;
     unless(defined($timeline) && ref($timeline) eq 'ARRAY') {
         $self->twitter_error();
         return;
     };
 
     if ($self->{cfg}->{show_unsubscribed_replies}) {
-        my $mentions = $self->{twitter}->mentions( { since_id => $self->{last_id} } );
+        my $mentions = eval { $self->{twitter}->mentions( { since_id => $self->{last_id} } ) };
+        warn "$@" if $@;
         unless (defined($mentions) && ref($mentions) eq 'ARRAY') {
             $self->twitter_error();
             return;
@@ -157,7 +163,8 @@ sub poll_direct {
     $self->{last_direct_poll} = time;
     return unless BarnOwl::getvar('twitter:poll') eq 'on';
 
-    my $direct = $self->{twitter}->direct_messages( { since_id => $self->{last_direct} } );
+    my $direct = eval { $self->{twitter}->direct_messages( { since_id => $self->{last_direct} } ) };
+    warn "$@" if $@;
     unless(defined($direct) && ref($direct) eq 'ARRAY') {
         $self->twitter_error();
         return;
