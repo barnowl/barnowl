@@ -1,6 +1,6 @@
 #include "owl.h"
 
-static const char * owl_filterelement_get_field(owl_message *m, const char * field)
+static const char * owl_filterelement_get_field(const owl_message *m, const char * field)
 {
   const char *match;
   if (!strcasecmp(field, "class")) {
@@ -47,23 +47,23 @@ static const char * owl_filterelement_get_field(owl_message *m, const char * fie
   return match;
 }
 
-static int owl_filterelement_match_false(owl_filterelement *fe, owl_message *m)
+static int owl_filterelement_match_false(owl_filterelement *fe, const owl_message *m)
 {
   return 0;
 }
 
-static int owl_filterelement_match_true(owl_filterelement *fe, owl_message *m)
+static int owl_filterelement_match_true(owl_filterelement *fe, const owl_message *m)
 {
   return 1;
 }
 
-static int owl_filterelement_match_re(owl_filterelement *fe, owl_message *m)
+static int owl_filterelement_match_re(owl_filterelement *fe, const owl_message *m)
 {
   const char * val = owl_filterelement_get_field(m, fe->field);
   return !owl_regex_compare(&(fe->re), val, NULL, NULL);
 }
 
-static int owl_filterelement_match_filter(owl_filterelement *fe, owl_message *m)
+static int owl_filterelement_match_filter(owl_filterelement *fe, const owl_message *m)
 {
   owl_filter *subfilter;
   subfilter=owl_global_get_filter(&g, fe->field);
@@ -76,7 +76,7 @@ static int owl_filterelement_match_filter(owl_filterelement *fe, owl_message *m)
   return owl_filter_message_match(subfilter, m);
 }
 
-static int owl_filterelement_match_perl(owl_filterelement *fe, owl_message *m)
+static int owl_filterelement_match_perl(owl_filterelement *fe, const owl_message *m)
 {
   const char *subname;
   char *perlrv;
@@ -96,7 +96,7 @@ static int owl_filterelement_match_perl(owl_filterelement *fe, owl_message *m)
   return tf;
 }
 
-static int owl_filterelement_match_group(owl_filterelement *fe, owl_message *m)
+static int owl_filterelement_match_group(owl_filterelement *fe, const owl_message *m)
 {
   return owl_filterelement_match(fe->left, m);
 }
@@ -105,19 +105,19 @@ static int owl_filterelement_match_group(owl_filterelement *fe, owl_message *m)
    not. Do we care?
 */
 
-static int owl_filterelement_match_and(owl_filterelement *fe, owl_message *m)
+static int owl_filterelement_match_and(owl_filterelement *fe, const owl_message *m)
 {
   return owl_filterelement_match(fe->left, m) &&
     owl_filterelement_match(fe->right, m);
 }
 
-static int owl_filterelement_match_or(owl_filterelement *fe, owl_message *m)
+static int owl_filterelement_match_or(owl_filterelement *fe, const owl_message *m)
 {
   return owl_filterelement_match(fe->left, m) ||
     owl_filterelement_match(fe->right, m);
 }
 
-static int owl_filterelement_match_not(owl_filterelement *fe, owl_message *m)
+static int owl_filterelement_match_not(owl_filterelement *fe, const owl_message *m)
 {
   return !owl_filterelement_match(fe->left, m);
 }
@@ -275,7 +275,7 @@ void owl_filterelement_create_or(owl_filterelement *fe, owl_filterelement *lhs, 
   fe->print_elt = owl_filterelement_print_or;
 }
 
-int owl_filterelement_match(owl_filterelement *fe, owl_message *m)
+int owl_filterelement_match(owl_filterelement *fe, const owl_message *m)
 {
   if(!fe) return 0;
   if(!fe->match_message) return 0;

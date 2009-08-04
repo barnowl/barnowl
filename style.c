@@ -38,7 +38,7 @@ const char *owl_style_get_description(owl_style *s)
 /* Use style 's' to format message 'm' into fmtext 'fm'.
  * 'fm' should already be be initialzed
  */
-void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, owl_message *m)
+void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, const owl_message *m)
 {
   const char *body;
   char *indent;

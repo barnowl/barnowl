@@ -211,7 +211,7 @@ int owl_global_get_markedmsgid(owl_global *g) {
 void owl_global_set_markedmsgid(owl_global *g, int i) {
   g->markedmsgid=i;
   /* i; index of message in the current view.
-  owl_message *m;
+  const owl_message *m;
   owl_view *v;
 
   v = owl_global_get_current_view(&g);
@@ -683,7 +683,7 @@ owl_list *owl_global_get_puntlist(owl_global *g) {
   return(&(g->puntlist));
 }
 
-int owl_global_message_is_puntable(owl_global *g, owl_message *m) {
+int owl_global_message_is_puntable(owl_global *g, const owl_message *m) {
   const owl_list *pl;
   int i, j;
 

@@ -188,7 +188,7 @@ int owl_filter_get_cachedmsgid(owl_filter *f)
 /* return 1 if the message matches the given filter, otherwise
  * return 0.
  */
-int owl_filter_message_match(owl_filter *f, owl_message *m)
+int owl_filter_message_match(owl_filter *f, const owl_message *m)
 {
   int ret;
   if(!f->root) return 0;
@@ -269,7 +269,7 @@ void owl_filter_free(owl_filter *f)
 
 #ifdef OWL_INCLUDE_REG_TESTS
 
-int owl_filter_test_string(const char * filt, owl_message *m, int shouldmatch) /* noproto */ {
+int owl_filter_test_string(const char * filt, const owl_message *m, int shouldmatch) /* noproto */ {
   owl_filter f;
   int ok;
   int failed = 0;

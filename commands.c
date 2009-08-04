@@ -2012,7 +2012,7 @@ char *owl_command_reply(int argc, const char *const *argv, const char *buff)
   } else if (argc==2 && !strcmp(argv[1], "sender")) {
     owl_function_reply(1, !edit);
   } else if (argc==2 && !strcmp(argv[1], "zaway")) {
-    owl_message *m;
+    const owl_message *m;
     owl_view    *v;
     v = owl_global_get_current_view(&g);    
     m = owl_view_get_element(v, owl_global_get_curmsg(&g));

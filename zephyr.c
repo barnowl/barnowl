@@ -569,7 +569,7 @@ int owl_zephyr_get_num_fields(const void *n)
 /* return a pointer to the message, place the message length in k
  * caller must free the return
  */
-char *owl_zephyr_get_message(const ZNotice_t *n, owl_message *m)
+char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
 {
   /* don't let ping messages have a body */
   if (!strcasecmp(n->z_opcode, "ping")) {
@@ -823,7 +823,7 @@ int owl_zephyr_notice_is_ack(const void *n)
 }
 #endif
   
-void owl_zephyr_zaway(owl_message *m)
+void owl_zephyr_zaway(const owl_message *m)
 {
 #ifdef HAVE_LIBZEPHYR
   char *tmpbuff, *myuser, *to;

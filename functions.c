@@ -594,7 +594,7 @@ void owl_function_nextmsg_full(const char *filter, int skip_deleted, int last_if
   int curmsg, i, viewsize, found;
   owl_view *v;
   owl_filter *f = NULL;
-  owl_message *m;
+  const owl_message *m;
 
   v=owl_global_get_current_view(&g);
 
@@ -647,7 +647,7 @@ void owl_function_prevmsg_full(const char *filter, int skip_deleted, int first_i
   int curmsg, i, viewsize, found;
   owl_view *v;
   owl_filter *f = NULL;
-  owl_message *m;
+  const owl_message *m;
 
   v=owl_global_get_current_view(&g);
 
@@ -773,7 +773,7 @@ void owl_function_undeletecur(int move_after)
 void owl_function_expunge()
 {
   int curmsg;
-  owl_message *m;
+  const owl_message *m;
   owl_messagelist *ml;
   owl_view *v;
   int lastmsgid=0;
@@ -1410,7 +1410,7 @@ void owl_function_about()
 
 void owl_function_info()
 {
-  owl_message *m;
+  const owl_message *m;
   owl_fmtext fm, attrfm;
   owl_view *v;
 #ifdef HAVE_LIBZEPHYR
@@ -1546,7 +1546,7 @@ void owl_function_info()
 void owl_function_curmsg_to_popwin()
 {
   owl_view *v;
-  owl_message *m;
+  const owl_message *m;
   owl_style *s;
   owl_fmtext fm;
 
@@ -1885,7 +1885,7 @@ void owl_function_show_term()
 void owl_function_reply(int type, int enter)
 {
   char *buff=NULL;
-  owl_message *m;
+  const owl_message *m;
   owl_filter *f;
   
   if (owl_view_get_size(owl_global_get_current_view(&g))==0) {
@@ -2108,7 +2108,7 @@ void owl_function_change_currentview_filter(const char *filtname)
   owl_view *v;
   owl_filter *f;
   int curid=-1, newpos, curmsg;
-  owl_message *curm=NULL;
+  const owl_message *curm=NULL;
 
   v=owl_global_get_current_view(&g);
 
@@ -2579,7 +2579,7 @@ void owl_function_delete_curview_msgs(int flag)
 char *owl_function_smartfilter(int type)
 {
   owl_view *v;
-  owl_message *m;
+  const owl_message *m;
   char *zperson, *filtname=NULL;
   const char *argv[1];
   
@@ -2651,7 +2651,7 @@ void owl_function_smartzpunt(int type)
   /* Starts a zpunt command based on the current class,instance pair. 
    * If type=0, uses just class.  If type=1, uses instance as well. */
   owl_view *v;
-  owl_message *m;
+  const owl_message *m;
   const char *cmdprefix, *mclass, *minst;
   char *cmd;
   
@@ -3566,7 +3566,7 @@ void owl_function_unmask_sigint(sigset_t *oldmask) {
   sigprocmask(SIG_UNBLOCK, &intr, oldmask);
 }
 
-void _owl_function_mark_message(owl_message *m)
+void _owl_function_mark_message(const owl_message *m)
 {
   if (m)
     owl_global_set_markedmsgid(&g, owl_message_get_id(m));
@@ -3574,7 +3574,7 @@ void _owl_function_mark_message(owl_message *m)
 
 void owl_function_mark_message()
 {
-  owl_message *m;
+  const owl_message *m;
   owl_view *v;
 
   v=owl_global_get_current_view(&g);
@@ -3594,7 +3594,7 @@ void owl_function_mark_message()
 void owl_function_swap_cur_marked()
 {
   int marked_id;
-  owl_message *m;
+  const owl_message *m;
   owl_view *v;
 
   marked_id=owl_global_get_markedmsgid(&g);

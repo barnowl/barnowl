@@ -21,7 +21,7 @@ static void owl_perl_xs_init(pTHX)
   }
 }
 
-SV *owl_perlconfig_message2hashref(owl_message *m)
+SV *owl_perlconfig_message2hashref(const owl_message *m)
 {
   HV *h, *stash;
   SV *hr;
@@ -196,7 +196,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
 
 /* Calls in a scalar context, passing it a hash reference.
    If return value is non-null, caller must free. */
-char *owl_perlconfig_call_with_message(const char *subname, owl_message *m)
+char *owl_perlconfig_call_with_message(const char *subname, const owl_message *m)
 {
   dSP ;
   int count;
@@ -245,7 +245,7 @@ char *owl_perlconfig_call_with_message(const char *subname, owl_message *m)
 /* Calls a method on a perl object representing a message.
    If the return value is non-null, the caller must free it.
  */
-char * owl_perlconfig_message_call_method(owl_message *m, const char *method, int argc, const char ** argv)
+char * owl_perlconfig_message_call_method(const owl_message *m, const char *method, int argc, const char ** argv)
 {
   dSP;
   unsigned int count, i;
@@ -407,7 +407,7 @@ char *owl_perlconfig_execute(const char *line)
   return(out);
 }
 
-void owl_perlconfig_getmsg(owl_message *m, const char *subname)
+void owl_perlconfig_getmsg(const owl_message *m, const char *subname)
 {
   char *ptr = NULL;
   if (owl_perlconfig_is_function("BarnOwl::Hooks::_receive_msg")) {
@@ -418,7 +418,7 @@ void owl_perlconfig_getmsg(owl_message *m, const char *subname)
 }
 
 /* Called on all new messages; receivemsg is only called on incoming ones */
-void owl_perlconfig_newmsg(owl_message *m, const char *subname)
+void owl_perlconfig_newmsg(const owl_message *m, const char *subname)
 {
   char *ptr = NULL;
   if (owl_perlconfig_is_function("BarnOwl::Hooks::_new_msg")) {
