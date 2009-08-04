@@ -84,7 +84,7 @@ int owl_select_find_dispatch(int fd)
 {
   int i, len;
   const owl_list *dl;
-  owl_dispatch *d;
+  const owl_dispatch *d;
   
   dl = owl_global_get_dispatchlist(&g);
   len = owl_list_get_size(dl);
@@ -225,7 +225,7 @@ void owl_select_gc()
    * during the iteration.
    */
   for(i = owl_list_get_size(dl) - 1; i >= 0; i--) {
-    owl_dispatch *d = owl_list_get_element(dl, i);
+    const owl_dispatch *d = owl_list_get_element(dl, i);
     if(d->needs_gc) {
       owl_select_remove_dispatch_at(i);
     }
