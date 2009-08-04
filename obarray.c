@@ -54,8 +54,9 @@ char * owl_obarray_insert(owl_obarray *oa, char * string)
   int i;
   i = owl_obarray_lookup(oa, string, &v);
   if(!v) {
-    v = owl_strdup(string);
-    owl_list_insert_element(&(oa->strings), i, v);
+    char *v2 = owl_strdup(string);
+    owl_list_insert_element(&(oa->strings), i, v2);
+    return v2;
   }
   return v;
 }

@@ -25,7 +25,8 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
 {
   HV *h, *stash;
   SV *hr;
-  char *ptr, *blessas, *type;
+  char *type;
+  char *ptr, *utype, *blessas;
   int i, j;
   owl_pair *pair;
   owl_filter *wrap;
@@ -94,9 +95,9 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
 
   type = owl_message_get_type(m);
   if(!type || !*type) type = "generic";
-  type = owl_strdup(type);
-  type[0] = toupper(type[0]);
-  blessas = owl_sprintf("BarnOwl::Message::%s", type);
+  utype = owl_strdup(type);
+  utype[0] = toupper(type[0]);
+  blessas = owl_sprintf("BarnOwl::Message::%s", utype);
 
   hr = newRV_noinc((SV*)h);
   stash =  gv_stashpv(blessas,0);
@@ -105,7 +106,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
     stash = gv_stashpv("BarnOwl::Message", 1);
   }
   hr = sv_bless(hr,stash);
-  owl_free(type);
+  owl_free(utype);
   owl_free(blessas);
   return hr;
 }
@@ -311,7 +312,7 @@ char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** P
 
   owl_global_set_no_have_config(&g);
 
-  ret=perl_parse(p, owl_perl_xs_init, 2, args, NULL);
+  ret=perl_parse(p, owl_perl_xs_init, 2, (char **)args, NULL);
   if (ret || SvTRUE(ERRSV)) {
     err=owl_strdup(SvPV_nolen(ERRSV));
     sv_setsv(ERRSV, &PL_sv_undef);     /* and clear the error */

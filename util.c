@@ -560,7 +560,7 @@ char *owl_util_stripnewlines(char *in)
 void owl_util_file_deleteline(char *filename, char *line, int backup)
 {
   char buff[LINE], *text;
-  char *backupfilename="";
+  char *backupfilename=NULL;
   FILE *file, *backupfile=NULL;
   int size, newline;
 
@@ -649,12 +649,11 @@ char * owl_util_baseclass(char * class)
 {
   char *start, *end;
 
-  start = class;
-  while(!strncmp(start, "un", 2)) {
-    start += 2;
+  while(!strncmp(class, "un", 2)) {
+    class += 2;
   }
 
-  start = owl_strdup(start);
+  start = owl_strdup(class);
   end = start + strlen(start) - 1;
   while(end > start && *end == 'd' && *(end-1) == '.') {
     end -= 2;

@@ -2464,8 +2464,8 @@ char *owl_command_getview(int argc, char **argv, char *buff)
     return NULL;
   }
   filtname = owl_view_get_filtname(owl_global_get_current_view(&g));
-  if (filtname) filtname = owl_strdup(filtname);
-  return filtname;
+  if (filtname) return owl_strdup(filtname);
+  return NULL;
 }
 
 char *owl_command_getvar(int argc, char **argv, char *buff)
@@ -2565,8 +2565,8 @@ char *owl_command_getstyle(int argc, char **argv, char *buff)
     return NULL;
   }
   stylename = owl_view_get_style_name(owl_global_get_current_view(&g));
-  if (stylename) stylename = owl_strdup(stylename);
-  return stylename;
+  if (stylename) return owl_strdup(stylename);
+  return NULL;
 }
 
 char *owl_command_error(int argc, char **argv, char *buff)

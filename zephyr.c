@@ -1210,20 +1210,20 @@ char *owl_zephyr_smartstripped_user(char *in)
   out=owl_strdup(in);
 
   /* bail immeaditly if we don't have to do any work */
-  ptr=strchr(in, '.');
-  if (!strchr(in, '/') && !ptr) {
+  ptr=strchr(out, '.');
+  if (!strchr(out, '/') && !ptr) {
     /* no '/' and no '.' */
     return(out);
   }
-  if (ptr && strchr(in, '@') && (ptr > strchr(in, '@'))) {
+  if (ptr && strchr(out, '@') && (ptr > strchr(out, '@'))) {
     /* There's a '.' but it's in the realm */
     return(out);
   }
-  if (!strncasecmp(in, OWL_WEBZEPHYR_PRINCIPAL, strlen(OWL_WEBZEPHYR_PRINCIPAL))) {
+  if (!strncasecmp(out, OWL_WEBZEPHYR_PRINCIPAL, strlen(OWL_WEBZEPHYR_PRINCIPAL))) {
     return(out);
   }
 
-  /* remove the realm from ptr, but hold on to it */
+  /* remove the realm from out, but hold on to it */
   realm=strchr(out, '@');
   if (realm) realm[0]='\0';
 

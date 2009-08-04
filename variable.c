@@ -904,7 +904,7 @@ int owl_variable_int_set_default(owl_variable *v, void *newval) {
 int owl_variable_int_set_fromstring_default(owl_variable *v, char *newval) {
   int i;
   char *ep = "x";
-  i = strtol(newval, &ep, 10);
+  i = strtol(newval, (char **)&ep, 10);
   if (*ep || ep==newval) return(-1);
   return (v->set_fn(v, &i));
 }
@@ -1014,7 +1014,7 @@ int owl_variable_regtest(void) {
   owl_vardict vd;
   int numfailed=0;
   char buf[1024];
-  owl_variable * v;
+  void *v;
 
   in_regtest = 1;
 

@@ -1670,7 +1670,7 @@ static int faimtest_parse_searchreply(aim_session_t *sess, aim_frame_t *fr, ...)
   owl_function_debugmsg("faimtest_parse_searchreply: E-Mail Search Results for %s: ", address);
   for (i=0; i<num; i++) {
     owl_function_debugmsg("  %s", &SNs[i*(MAXSNLEN+1)]);
-    owl_list_append_element(&list, &SNs[i*(MAXSNLEN+1)]);
+    owl_list_append_element(&list, (void *)&SNs[i*(MAXSNLEN+1)]);
   }
   owl_function_aimsearch_results(address, &list);
   owl_list_free_simple(&list);

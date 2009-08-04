@@ -210,7 +210,7 @@ char *owl_cmd_execute(owl_cmd *cmd, owl_cmddict *cd, owl_context *ctx, int argc,
 	owl_function_makemsg("Wrong number of arguments for %s command.", argv[0]);
 	return NULL;
       }
-      ival = strtol(argv[1], &ep, 10);
+      ival = strtol(argv[1], (char **)&ep, 10);
       if (*ep || ep==argv[1]) {
 	owl_function_makemsg("Invalid argument '%s' for %s command.", argv[1], argv[0]);
 	return(NULL);
