@@ -1303,6 +1303,7 @@ sub baseJID {
 
 sub resolveConnectedJID {
     my $givenJIDStr = shift;
+    my $loose = shift || 0;
     my $givenJID    = new Net::Jabber::JID;
     $givenJID->SetJID($givenJIDStr);
 
@@ -1310,40 +1311,63 @@ sub resolveConnectedJID {
     if ( $givenJID->GetResource() ) {
         # Specified account exists
         return $givenJIDStr if ($conn->jidExists($givenJIDStr) );
+        return resolveConnectedJID($givenJID->GetJID('base')) if $loose;
         die("Invalid account: $givenJIDStr");
     }
 
     # Disambiguate.
     else {
-        my $matchingJID = "";
-        my $errStr =
-          "Ambiguous account reference. Please specify a resource.\n";
-        my $ambiguous = 0;
+        my $JIDMatchingJID = "";
+        my $strMatchingJID = "";
+        my $JIDMatches = "";
+        my $strMatches = "";
+        my $JIDAmbiguous = 0;
+        my $strAmbiguous = 0;
 
         foreach my $jid ( $conn->getJIDs() ) {
             my $cJID = new Net::Jabber::JID;
             $cJID->SetJID($jid);
             if ( $givenJIDStr eq $cJID->GetJID('base') ) {
-                $ambiguous = 1 if ( $matchingJID ne "" );
-                $matchingJID = $jid;
-                $errStr .= "\t$jid\n";
+                $JIDAmbiguous = 1 if ( $JIDMatchingJID ne "" );
+                $JIDMatchingJID = $jid;
+                $JIDMatches .= "\t$jid\n";
+            }
+            if ( $cJID->GetJID('base') =~ /$givenJIDStr/ ) {
+                $strAmbiguous = 1 if ( $strMatchingJID ne "" );
+                $strMatchingJID = $jid;
+                $strMatches .= "\t$jid\n";
             }
         }
 
         # Need further disambiguation.
-        if ($ambiguous) {
-            die($errStr);
-        }
-
-        # Not one of ours.
-        elsif ( $matchingJID eq "" ) {
-            die("Invalid account: $givenJIDStr");
+        if ($JIDAmbiguous) {
+            my $errStr =
+                "Ambiguous account reference. Please specify a resource.\n";
+            die($errStr.$JIDMatches);
         }
 
         # It's this one.
-        else {
-            return $matchingJID;
+        elsif ($JIDMatchingJID ne "") {
+            return $JIDMatchingJID;
         }
+
+        # Further resolution by substring.
+        elsif ($strAmbiguous) {
+            my $errStr =
+                "Ambiguous account reference. Please be more specific.\n";
+            die($errStr.$strMatches);
+        }
+
+        # It's this one, by substring.
+        elsif ($strMatchingJID ne "") {
+            return $strMatchingJID;
+        }
+
+        # Not one of ours.
+        else {
+            die("Invalid account: $givenJIDStr");
+        }
+
     }
     return "";
 }
@@ -1386,7 +1410,7 @@ sub guess_jwrite {
     my ($from_jid, $to_jid);
     my @matches;
     if($from) {
-        $from_jid = resolveConnectedJID($from);
+        $from_jid = resolveConnectedJID($from, 1);
         die("Unable to resolve account $from") unless $from_jid;
         $to_jid = resolveDestJID($to, $from_jid);
         push @matches, [$from_jid, $to_jid] if $to_jid;
