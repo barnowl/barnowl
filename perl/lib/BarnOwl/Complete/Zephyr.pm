@@ -5,9 +5,9 @@ package BarnOwl::Complete::Zephyr;
 
 use BarnOwl::Completion::Util qw(complete_flags);
 
-my %classes = ();
-my %realms = map {$_ => 1} qw(ATHENA.MIT.EDU ANDREW.CMU.EDU ZONE.MIT.EDU);
-my %users = ();
+our %classes = ();
+our %realms = map {$_ => 1} qw(ATHENA.MIT.EDU ANDREW.CMU.EDU ZONE.MIT.EDU);
+our %users = ();
 
 sub complete_class    { keys %classes }
 sub complete_instance { }
