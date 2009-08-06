@@ -42,8 +42,8 @@ my %show = (
 sub complete_command { return sort @BarnOwl::all_commands; }
 sub complete_color { return @all_colors; }
 sub complete_filter_name { return @{BarnOwl::all_filters()}; }
-sub complete_variable {}        # stub
-sub complete_style {}           # stub
+sub complete_variable    { return @{BarnOwl::all_variables()}; }
+sub complete_style       { return @{BarnOwl::all_styles()}; }
 
 my %filter_cmds = (
     sender    => \&BarnOwl::Complete::Zephyr::complete_user,

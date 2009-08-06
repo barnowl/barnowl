@@ -362,6 +362,55 @@ all_filters()
 	OUTPUT:
 		RETVAL
 
+AV*
+all_styles()
+	PREINIT:
+		AV *styles;
+		owl_list l;
+		char *name;
+		int i;
+	CODE:
+	{
+		owl_list_create(&l);
+		owl_global_get_style_names(&g, &l);
+		styles = newAV();
+		for(i=0;i<owl_list_get_size(&l);i++) {
+			name = owl_list_get_element(&l, i);
+			av_push(styles, newSVpv(name, 0));
+		}
+		RETVAL = styles;
+		sv_2mortal((SV*)RETVAL);
+	}
+	OUTPUT:
+		RETVAL
+	CLEANUP:
+		owl_list_free_all(&l, owl_free);
+
+
+AV*
+all_variables()
+	PREINIT:
+		AV *vars;
+		owl_list l;
+		char *name;
+		int i;
+	CODE:
+	{
+		owl_list_create(&l);
+		owl_dict_get_keys(owl_global_get_vardict(&g), &l);
+		vars = newAV();
+		for(i=0;i<owl_list_get_size(&l);i++) {
+			name = owl_list_get_element(&l, i);
+			av_push(vars, newSVpv(name, 0));
+		}
+		RETVAL = vars;
+		sv_2mortal((SV*)RETVAL);
+	}
+	OUTPUT:
+		RETVAL
+	CLEANUP:
+		owl_list_free_all(&l, owl_free);
+
 MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 
 
