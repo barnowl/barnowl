@@ -248,5 +248,6 @@ BarnOwl::Completion::register_completer(view    => \&complete_view);
 BarnOwl::Completion::register_completer(show    => \&complete_show);
 BarnOwl::Completion::register_completer(getvar  => \&complete_getvar);
 BarnOwl::Completion::register_completer(set     => \&complete_set);
+BarnOwl::Completion::register_completer(unset   => \&complete_set);
 
 1;
