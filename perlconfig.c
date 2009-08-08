@@ -57,7 +57,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
     (void)hv_store(h, "fields", strlen("fields"), newRV_noinc((SV*)av_zfields), 0);
 
     (void)hv_store(h, "auth", strlen("auth"), 
-                   newSVpv(owl_zephyr_get_authstr(owl_message_get_notice(m)->z_checked_auth),0),0);
+                   newSVpv(owl_zephyr_get_authstr(owl_message_get_notice(m)),0),0);
   }
 
   j=owl_list_get_size(&(m->attributes));

@@ -1489,10 +1489,10 @@ void owl_function_info()
       if (!owl_message_is_pseudo(m)) {
 	owl_fmtext_append_normal(&fm, "\n");
 	owl_fmtext_appendf_normal(&fm, "  Port      : %i\n", ntohs(n->z_port));
-	owl_fmtext_appendf_normal(&fm, "  Auth Tried: %s\n", owl_zephyr_get_authstr(n->z_auth));
+	owl_fmtext_appendf_normal(&fm, "  Auth      : %s\n", owl_zephyr_get_authstr(n));
 
 	/* FIXME make these more descriptive */
-	owl_fmtext_appendf_normal(&fm, "  Auth Check: %s\n", owl_zephyr_get_authstr(n->z_checked_auth));
+	owl_fmtext_appendf_normal(&fm, "  Checkd Ath: %i\n", n->z_checked_auth);
 	owl_fmtext_appendf_normal(&fm, "  Multi notc: %s\n", n->z_multinotice);
 	owl_fmtext_appendf_normal(&fm, "  Num other : %i\n", n->z_num_other_fields);
 	owl_fmtext_appendf_normal(&fm, "  Msg Len   : %i\n", n->z_message_len);

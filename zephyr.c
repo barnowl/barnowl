@@ -1075,18 +1075,20 @@ void owl_zephyr_delbuddy(char *name)
 
 /* return auth string */
 #ifdef HAVE_LIBZEPHYR
-char *owl_zephyr_get_authstr(int a)
+char *owl_zephyr_get_authstr(ZNotice_t *n)
 {
 
-  if (a == ZAUTH_FAILED) {
+  if (!n) return("UNKNOWN");
+
+  if (n->z_auth == ZAUTH_FAILED) {
     return ("FAILED");
-  } else if (a == ZAUTH_NO) {
+  } else if (n->z_auth == ZAUTH_NO) {
     return ("NO");
-  } else if (a == ZAUTH_YES) {
+  } else if (n->z_auth == ZAUTH_YES) {
     return ("YES");
   } else {
     return ("UNKNOWN");
-  }
+  }           
 }
 #else
 char *owl_zephyr_get_authstr(void *n)
