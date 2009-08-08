@@ -6,9 +6,9 @@
 #include <string.h>
 #include "owl.h"
 
+#ifdef HAVE_LIBZEPHYR
 static GList *deferred_subs = NULL;
 
-#ifdef HAVE_LIBZEPHYR
 typedef struct _owl_sub_list {                            /* noproto */
   ZSubscription_t *subs;
   int nsubs;

@@ -3068,14 +3068,15 @@ char *owl_function_ztext_stylestrip(char *zt)
 /* Popup a buddylisting.  If filename is NULL use the default .anyone */
 void owl_function_buddylist(int aim, int zephyr, char *filename)
 {
-  int i, j, x, idle;
+  int i, j, idle;
   int interrupted = 0;
   owl_fmtext fm;
   owl_buddylist *bl;
   owl_buddy *b;
-  owl_list anyone;
   char *timestr;
 #ifdef HAVE_LIBZEPHYR
+  int x;
+  owl_list anyone;
   char *tmp, *user;
   ZLocations_t location[200];
   int numlocs, ret;
