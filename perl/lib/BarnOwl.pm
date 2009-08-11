@@ -313,26 +313,31 @@ sub quote {
 
 =cut
 
-BarnOwl::new_command("filterappend",
-    sub { filter_append_helper('appending', '', @_); },
-    {
-        summary => "append '<text>' to filter",
-        usage => "filterappend <filter> <text>",
-    });
+sub register_builtin_commands {
+    BarnOwl::new_command("filterappend",
+                         sub { filter_append_helper('appending', '', @_); },
+                       {
+                           summary => "append '<text>' to filter",
+                           usage => "filterappend <filter> <text>",
+                       });
 
-BarnOwl::new_command("filterand",
-    sub { filter_append_helper('and-ing', 'and', @_); },
-    {
-        summary => "append 'and <text>' to filter",
-        usage => "filterand <filter> <text>",
-    });
+    BarnOwl::new_command("filterand",
+                         sub { filter_append_helper('and-ing', 'and', @_); },
+                       {
+                           summary => "append 'and <text>' to filter",
+                           usage => "filterand <filter> <text>",
+                       });
 
-BarnOwl::new_command("filteror",
-    sub { filter_append_helper('or-ing', 'or', @_); },
-    {
-        summary => "append 'or <text>' to filter",
-        usage => "filteror <filter> <text>",
-    });
+    BarnOwl::new_command("filteror",
+                         sub { filter_append_helper('or-ing', 'or', @_); },
+                       {
+                           summary => "append 'or <text>' to filter",
+                           usage => "filteror <filter> <text>",
+                       });
+
+}
+
+$BarnOwl::Hooks::startup->add("BarnOwl::register_builtin_commands");
 
 =head3 filter_append_helper ACTION SEP FUNC FILTER APPEND_TEXT
 
