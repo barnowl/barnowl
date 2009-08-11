@@ -1208,8 +1208,14 @@ static int owl_editwin_check_dotsend(owl_editwin *e)
 
   if(strcmp(e->buff + e->index, "\n.\n") == 0) {
     owl_editwin_point_move(e, 1);
-    owl_editwin_replace(e, 2, "");
     zdot = 1;
+  } else if(e->index == e->lock &&
+            strcmp(e->buff + e->index, ".\n") == 0) {
+    zdot = 1;
+  }
+
+  if(zdot) {
+    owl_editwin_replace(e, 2, "");
   }
 
   oe_restore_excursion(e, &x);
