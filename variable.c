@@ -440,9 +440,9 @@ int owl_variable_disable_ctrl_d_set(owl_variable *v, void *newval)
     if (*(int*)newval == 2) {
       owl_function_command_norv("bindkey editmulti C-d command edit:delete-next-char");
     } else if (*(int*)newval == 1) {
-      owl_function_command_norv("bindkey editmulti C-d command editmulti:done-or-delete");
+      owl_function_command_norv("bindkey editmulti C-d command edit:done-or-delete");
     } else {
-      owl_function_command_norv("bindkey editmulti C-d command editmulti:done");
+      owl_function_command_norv("bindkey editmulti C-d command edit:done");
     }
   }  
   return owl_variable_int_set_default(v, newval);  
