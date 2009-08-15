@@ -91,7 +91,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
       myargc--;
       len = 0;
       for (i=0;i<myargc;i++) {
-        len += strlen(myargv[i-1]) + 1;
+        len += strlen(myargv[i]) + 1;
       }
       msg = owl_malloc(len);
       msg[0] = '\0';
