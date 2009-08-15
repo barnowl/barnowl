@@ -1,3 +1,37 @@
+1.3
+ * Clean up the edit window code significantly. -kcr
+ * Support inputting tabs in the editwin. -kcr
+ * Support C-y for yanking text in the editwin. -kcr
+ * Implement some convenience commands for working with filters. -adehnert
+ * IRC: Fix "ARRAY(0x...)" at the start of 'whois' output. -nelhage
+ * Expands tabs to 8 spaces in incoming and outgoing messages. -nelhage
+ * Make 'zwrite -C ... -m ...' add a CC: line. -nelhage
+ * Switch the build system to use automake. -nelhage
+ * Make BarnOwl::$COMMAND to warn if it tokenizes its arguments. -nelhage
+ * Expose more editwin functionality to perl. -nelhage
+ * Quash a zephyr 3 warning by adding some missing consts. -andersk
+ * Fix crash on malformed multi command. -andersk
+ * owl_command_punt_unpunt: Plug memory leak. -andersk
+ * stderr_redirect_handler: Plug a memory leak. -andersk
+ * Jabber: Sort roster entries. -asedeno
+ * Get rid of a whole bunch of useless casts. -andersk
+ * Reimplement search in terms of owl_regex. -andersk
+ * Export owl_function_debugmsg to perl as BarnOwl::debug(). -nelhage
+ * Implement a tab-completion framework. -nelhage
+ * Tab-complete commands. -nelhage
+ * Tab-complete zephyr commands. -nelhage
+ * Tab-complete help command. -davidben
+ * Tab-complete :jwrite. -asedeno
+ * Tab-complete :filter. -davidben
+ * Tab-complete IRC commands. -broder
+ * Tab-complete the :show command. nelhage
+ * Tab-complete :vu and :vc. -nelhage
+ * Tab-complete :set and :getvar. -davidben
+ * Tab-complete :view. -davidben
+ * Improve JID resolution. -asedeno
+ * Quash some unused variable warnings building --without-zephyr. -andersk
+ * Use 'const' modifiers in the source where appropriate. -andersk
+
 1.2.1
  * Fix building with Zephyr support. -nelhage
  * Support --with-stack-protector in 'configure'. -nelhage
