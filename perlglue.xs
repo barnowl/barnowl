@@ -31,10 +31,10 @@ MODULE = BarnOwl		PACKAGE = BarnOwl
 
 char *
 command(cmd, ...)
-	char *cmd
+	const char *cmd
 	PREINIT:
 		char *rv = NULL;
-		char **argv;
+		const char **argv;
 		int i;
 	CODE:
 	{
@@ -84,7 +84,7 @@ zephyr_getrealm()
 	OUTPUT:
 		RETVAL
 
-char *
+const char *
 zephyr_getsender()
 	CODE:
 		RETVAL = owl_zephyr_get_sender();
@@ -93,8 +93,8 @@ zephyr_getsender()
 
 void
 zephyr_zwrite(cmd,msg)
-	char *cmd
-	char *msg
+	const char *cmd
+	const char *msg
 	PREINIT:
 		int i;
 	CODE:
@@ -102,7 +102,7 @@ zephyr_zwrite(cmd,msg)
 
 char *
 ztext_stylestrip(ztext)
-	char *ztext
+	const char *ztext
 	PREINIT:
 		char *rv = NULL;
 	CODE:
@@ -115,7 +115,7 @@ ztext_stylestrip(ztext)
 
 char *
 zephyr_smartstrip_user(in)
-	char *in
+	const char *in
 	PREINIT:
 		char *rv = NULL;
 	CODE:
@@ -156,15 +156,15 @@ void queue_message(msg)
 	}
 
 void admin_message(header, body) 
-	char *header
-	char *body
+	const char *header
+	const char *body
 	CODE:
 	{
 		owl_function_adminmsg(header, body);		
 	}
 
 void start_question(line, callback)
-	char *line
+	const char *line
 	SV *callback
 	PREINIT:
 	CODE:
@@ -180,7 +180,7 @@ void start_question(line, callback)
 	}
 
 void start_password(line, callback)
-	char *line
+	const char *line
 	SV *callback
 	PREINIT:
 	CODE:
@@ -196,7 +196,7 @@ void start_password(line, callback)
 	}
 
 void start_edit_win(line, callback)
-	char *line
+	const char *line
 	SV *callback
 	PREINIT:
 		owl_editwin * e;
@@ -222,14 +222,14 @@ void start_edit_win(line, callback)
 	}
 
 
-char * 
+const char * 
 get_data_dir ()
 	CODE:
 		RETVAL = owl_get_datadir();
 	OUTPUT:
 	RETVAL
 
-char * 
+const char * 
 get_config_dir ()
 	CODE:
 		RETVAL = owl_global_get_confdir(&g);
@@ -238,7 +238,7 @@ get_config_dir ()
 
 void
 popless_text(text) 
-	char *text
+	const char *text
 	CODE:
 	{
 		owl_function_popless_text(text);
@@ -246,7 +246,7 @@ popless_text(text)
 
 void
 popless_ztext(text) 
-	char *text
+	const char *text
 	CODE:
 	{
 		owl_fmtext fm;
@@ -258,7 +258,7 @@ popless_ztext(text)
 
 void
 error(text) 
-	char *text
+	const char *text
 	CODE:
 	{
 		owl_function_error("%s", text);
@@ -266,7 +266,7 @@ error(text)
 
 void
 debug(text)
-	char *text
+	const char *text
 	CODE:
 	{
 		owl_function_debugmsg("%s", text);
@@ -274,7 +274,7 @@ debug(text)
 
 void
 message(text)
-	char *text
+	const char *text
 	CODE:
 	{
 		owl_function_makemsg("%s", text);
@@ -282,7 +282,7 @@ message(text)
 
 void
 create_style(name, object)
-     char *name
+     const char *name
      SV  *object
      PREINIT:
 		owl_style *s;
@@ -302,7 +302,7 @@ getnumcolors()
 
 void
 _remove_filter(filterName)
-	char *filterName
+	const char *filterName
 	CODE:
 	{
 		/* Don't delete the current view, or the 'all' filter */
@@ -314,7 +314,7 @@ _remove_filter(filterName)
 
 char *
 wordwrap(in, cols)
-	char *in
+	const char *in
 	int cols
 	PREINIT:
 		char *rv = NULL;
@@ -345,8 +345,8 @@ AV*
 all_filters()
 	PREINIT:
 		AV *filters;
-		owl_list *fl;
-		owl_filter *f;
+		const owl_list *fl;
+		const owl_filter *f;
 		int i;
 	CODE:
 	{
@@ -367,7 +367,7 @@ all_styles()
 	PREINIT:
 		AV *styles;
 		owl_list l;
-		char *name;
+		const char *name;
 		int i;
 	CODE:
 	{
@@ -392,7 +392,7 @@ all_variables()
 	PREINIT:
 		AV *vars;
 		owl_list l;
-		char *name;
+		const char *name;
 		int i;
 	CODE:
 	{
@@ -447,10 +447,10 @@ new_command(name, func, summary, usage, description)
 
 void
 new_variable_string(name, ival, summ, desc)
-	char * name
-	char * ival
-	char * summ
-	char * desc
+	const char * name
+	const char * ival
+	const char * summ
+	const char * desc
 	CODE:
 	owl_variable_dict_newvar_string(owl_global_get_vardict(&g),
 					name,
@@ -460,10 +460,10 @@ new_variable_string(name, ival, summ, desc)
 
 void
 new_variable_int(name, ival, summ, desc)
-	char * name
+	const char * name
 	int ival
-	char * summ
-	char * desc
+	const char * summ
+	const char * desc
 	CODE:
 	owl_variable_dict_newvar_int(owl_global_get_vardict(&g),
 				     name,
@@ -473,10 +473,10 @@ new_variable_int(name, ival, summ, desc)
 
 void
 new_variable_bool(name, ival, summ, desc)
-	char * name
+	const char * name
 	int ival
-	char * summ
-	char * desc
+	const char * summ
+	const char * desc
 	CODE:
 	owl_variable_dict_newvar_bool(owl_global_get_vardict(&g),
 				      name,
@@ -519,7 +519,7 @@ MODULE = BarnOwl		PACKAGE = BarnOwl::Editwin
 int
 replace(count, string)
 	int count;
-	char *string;
+	const char *string;
 	CODE:
 		RETVAL = owl_editwin_replace(owl_global_get_typwin(&g), count, string);
 	OUTPUT:
@@ -535,7 +535,7 @@ point_move(delta)
 
 int
 replace_region(string)
-	char *string;
+	const char *string;
 	CODE:
 		RETVAL = owl_editwin_replace_region(owl_global_get_typwin(&g), string);
 	OUTPUT:

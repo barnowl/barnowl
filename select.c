@@ -2,11 +2,11 @@
 
 static int dispatch_active = 0;
 
-int _owl_select_timer_cmp(owl_timer *t1, owl_timer *t2) {
+int _owl_select_timer_cmp(const owl_timer *t1, const owl_timer *t2) {
   return t1->time - t2->time;
 }
 
-int _owl_select_timer_eq(owl_timer *t1, owl_timer *t2) {
+int _owl_select_timer_eq(const owl_timer *t1, const owl_timer *t2) {
   return t1 == t2;
 }
 
@@ -83,8 +83,8 @@ void owl_select_process_timers(struct timespec *timeout)
 int owl_select_find_dispatch(int fd)
 {
   int i, len;
-  owl_list *dl;
-  owl_dispatch *d;
+  const owl_list *dl;
+  const owl_dispatch *d;
   
   dl = owl_global_get_dispatchlist(&g);
   len = owl_list_get_size(dl);
@@ -198,7 +198,7 @@ int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
 {
   int i, len, max_fd;
   owl_dispatch *d;
-  owl_list *dl;
+  const owl_list *dl;
 
   dl = owl_global_get_dispatchlist(&g);
   FD_ZERO(r);
@@ -225,7 +225,7 @@ void owl_select_gc()
    * during the iteration.
    */
   for(i = owl_list_get_size(dl) - 1; i >= 0; i--) {
-    owl_dispatch *d = owl_list_get_element(dl, i);
+    const owl_dispatch *d = owl_list_get_element(dl, i);
     if(d->needs_gc) {
       owl_select_remove_dispatch_at(i);
     }
@@ -236,7 +236,7 @@ void owl_select_dispatch(fd_set *fds, int max_fd)
 {
   int i, len;
   owl_dispatch *d;
-  owl_list *dl;
+  const owl_list *dl;
 
   dl = owl_global_get_dispatchlist(&g);
   len = owl_select_dispatch_count();

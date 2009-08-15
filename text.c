@@ -4,9 +4,9 @@
 #include <ctype.h>
 #include "owl.h"
 
-void owl_text_indent(char *out, char *in, int n)
+void owl_text_indent(char *out, const char *in, int n)
 {
-  char *ptr1, *ptr2, *last;
+  const char *ptr1, *ptr2, *last;
   int i;
 
   strcpy(out, "");
@@ -28,7 +28,7 @@ void owl_text_indent(char *out, char *in, int n)
   }
 }
 
-int owl_text_num_lines(char *in)
+int owl_text_num_lines(const char *in)
 {
   int lines, i;
 
@@ -45,9 +45,10 @@ int owl_text_num_lines(char *in)
 
 
 /* caller must free the return */
-char *owl_text_htmlstrip(char *in)
+char *owl_text_htmlstrip(const char *in)
 {
-  char *ptr1, *end, *ptr2, *ptr3, *out, *out2;
+  const char *ptr1, *end, *ptr2, *ptr3;
+  char *out, *out2;
 
   out=owl_malloc(strlen(in)+30);
   strcpy(out, "");
@@ -127,10 +128,10 @@ char *owl_text_htmlstrip(char *in)
 #define OWL_TAB_WIDTH 8
 
 /* Caller must free return */
-char *owl_text_expand_tabs(char *in)
+char *owl_text_expand_tabs(const char *in)
 {
   int ntabs = 0;
-  char *p = in;
+  const char *p = in;
   char *ret, *out;
   int col;
 
@@ -164,7 +165,7 @@ char *owl_text_expand_tabs(char *in)
 }
 
 /* caller must free the return */
-char *owl_text_wordwrap(char *in, int col)
+char *owl_text_wordwrap(const char *in, int col)
 {
   char *out;
   int cur, lastspace, len, lastnewline;
@@ -225,10 +226,10 @@ void owl_text_wordunwrap(char *in)
 }
 
 /* return 1 if a string is only whitespace, otherwise 0 */
-int only_whitespace(char *s)
+int only_whitespace(const char *s)
 {
   if (g_utf8_validate(s,-1,NULL)) {
-    char *p;
+    const char *p;
     for(p = s; p[0]; p=g_utf8_next_char(p)) {
       if (!g_unichar_isspace(g_utf8_get_char(p))) return 0;
     }
@@ -242,7 +243,7 @@ int only_whitespace(char *s)
   return(1);
 }
 
-char *owl_getquoting(char *line)
+const char *owl_getquoting(const char *line)
 {
   if (line[0]=='\0') return("'");
   if (strchr(line, '\'')) return("\"");
@@ -255,7 +256,7 @@ char *owl_getquoting(char *line)
  * Does not currently handle backslash quoting, but may in the future.
  * Caller must free returned string.
  */
-char *owl_text_substitute(char *in, char *from, char *to)
+char *owl_text_substitute(const char *in, const char *from, const char *to)
 {
   
   char *out;
@@ -305,7 +306,7 @@ void owl_text_tr(char *buff, char a, char b)
  * permissable for a character in 'quotestr' to be in 'toquote'.
  * On success returns the string, on error returns NULL.
  */
-char *owl_text_quote(char *in, char *toquote, char *quotestr)
+char *owl_text_quote(const char *in, const char *toquote, const char *quotestr)
 {
   int i, x, r, place, escape;
   int in_len, toquote_len, quotestr_len;

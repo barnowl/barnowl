@@ -23,14 +23,14 @@ int owl_dict_create(owl_dict *d) {
   return(0);
 }
 
-int owl_dict_get_size(owl_dict *d) {
+int owl_dict_get_size(const owl_dict *d) {
   return(d->size);
 }
 
 /* Finds the position of an element with key k, or of the element where
  * this element would logically go, and stores the index in pos.
  * Returns 1 if found, else 0. */
-int _owl_dict_find_pos(owl_dict *d, char *k, int *pos) {
+int _owl_dict_find_pos(const owl_dict *d, const char *k, int *pos) {
   int lo = 0, hi = d->size;
   while (lo < hi) {
     int mid = (lo + hi)/2; /* lo goes up and we can't hit hi, so no +1 */
@@ -49,7 +49,7 @@ int _owl_dict_find_pos(owl_dict *d, char *k, int *pos) {
 }
 
 /* returns the value corresponding to key k */
-void *owl_dict_find_element(owl_dict *d, char *k) {
+void *owl_dict_find_element(const owl_dict *d, const char *k) {
   int found, pos;
   found = _owl_dict_find_pos(d, k, &pos);
   if (!found) {
@@ -60,7 +60,7 @@ void *owl_dict_find_element(owl_dict *d, char *k) {
 
 /* creates a list and fills it in with keys.  duplicates the keys, 
  * so they will need to be freed by the caller. */
-int owl_dict_get_keys(owl_dict *d, owl_list *l) {
+int owl_dict_get_keys(const owl_dict *d, owl_list *l) {
   int i;
   char *dupk;
   if (owl_list_create(l)) return(-1);
@@ -81,7 +81,7 @@ void owl_dict_noop_free(void *x) {
    and will run free_on_replace on the old element.
    Will return -2 if replace=NULL and match was found.
 */
-int owl_dict_insert_element(owl_dict *d, char *k, void *v, void (*free_on_replace)(void *old)) {
+int owl_dict_insert_element(owl_dict *d, const char *k, void *v, void (*free_on_replace)(void *old)) {
   int pos, found;
   char *dupk;
   found = _owl_dict_find_pos(d, k, &pos);
@@ -112,7 +112,7 @@ int owl_dict_insert_element(owl_dict *d, char *k, void *v, void (*free_on_replac
 
 /* Doesn't free the value of the element, but does
  * return it so the caller can free it. */
-void *owl_dict_remove_element(owl_dict *d, char *k) {
+void *owl_dict_remove_element(owl_dict *d, const char *k) {
   int i;
   int pos, found;
   void *v;

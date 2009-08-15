@@ -5,7 +5,7 @@ void owl_zbuddylist_create(owl_zbuddylist *zb)
   owl_list_create(&(zb->zusers));
 }
 
-int owl_zbuddylist_adduser(owl_zbuddylist *zb, char *name)
+int owl_zbuddylist_adduser(owl_zbuddylist *zb, const char *name)
 {
   int i, j;
   char *user;
@@ -23,7 +23,7 @@ int owl_zbuddylist_adduser(owl_zbuddylist *zb, char *name)
   return(0);
 }
 
-int owl_zbuddylist_deluser(owl_zbuddylist *zb, char *name)
+int owl_zbuddylist_deluser(owl_zbuddylist *zb, const char *name)
 {
   int i, j;
   char *user, *ptr;
@@ -44,7 +44,7 @@ int owl_zbuddylist_deluser(owl_zbuddylist *zb, char *name)
   return(-1);
 }
 
-int owl_zbuddylist_contains_user(owl_zbuddylist *zb, char *name)
+int owl_zbuddylist_contains_user(const owl_zbuddylist *zb, const char *name)
 {
   int i, j;
   char *user;

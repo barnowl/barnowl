@@ -11,7 +11,7 @@
  */
 
 /* sets up a new keybinding for a command */
-int owl_keybinding_init(owl_keybinding *kb, char *keyseq, char *command, void (*function_fn)(void), char *desc)
+int owl_keybinding_init(owl_keybinding *kb, const char *keyseq, const char *command, void (*function_fn)(void), const char *desc)
 {
   char **ktokens;
   int    nktokens, i;
@@ -67,7 +67,7 @@ void owl_keybinding_free_all(owl_keybinding *kb)
 }
 
 /* executes a keybinding */
-void owl_keybinding_execute(owl_keybinding *kb, int j)
+void owl_keybinding_execute(const owl_keybinding *kb, int j)
 {
   if (kb->type == OWL_KEYBINDING_COMMAND && kb->command) {
     owl_function_command_norv(kb->command);
@@ -94,18 +94,18 @@ int owl_keybinding_stack_tostring(int *j, int len, char *buff, int bufflen)
 }
 
 /* returns 0 on success */
-int owl_keybinding_tostring(owl_keybinding *kb, char *buff, int bufflen)
+int owl_keybinding_tostring(const owl_keybinding *kb, char *buff, int bufflen)
 {
   return owl_keybinding_stack_tostring(kb->keys, kb->len, buff, bufflen);
 }
 
-char *owl_keybinding_get_desc(owl_keybinding *kb)
+const char *owl_keybinding_get_desc(const owl_keybinding *kb)
 {
   return kb->desc;
 }
 
 /* returns 0 on no match, 1 on subset match, and 2 on complete match */
-int owl_keybinding_match(owl_keybinding *kb, owl_keyhandler *kh)
+int owl_keybinding_match(const owl_keybinding *kb, const owl_keyhandler *kh)
 {
   int i;
   for(i = 0; i <= kh->kpstackpos && i < kb->len; i++) {
@@ -125,7 +125,7 @@ int owl_keybinding_match(owl_keybinding *kb, owl_keyhandler *kh)
 }
 
 /* returns 1 if keypress sequence is the same */
-int owl_keybinding_equal(owl_keybinding *kb1, owl_keybinding *kb2)
+int owl_keybinding_equal(const owl_keybinding *kb1, const owl_keybinding *kb2)
 {
   int i;
 

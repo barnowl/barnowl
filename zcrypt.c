@@ -48,7 +48,7 @@ typedef struct
   char *message;
 } ZWRITEOPTIONS;
 
-char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance);
+char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *instance);
 
 #ifndef HAVE_DES_ECB_ENCRYPT_PROTO
 int des_ecb_encrypt(char [], char [], des_key_schedule, int);
@@ -68,8 +68,9 @@ int des_ecb_encrypt(char [], char [], des_key_schedule, int);
  *
  * return 0 on success, otherwise -1
  */
-int owl_zcrypt_decrypt(char *out, char *in, char *class, char *instance) {
-  char *fname, keystring[MAX_KEY], *inptr, *endptr;
+int owl_zcrypt_decrypt(char *out, const char *in, const char *class, const char *instance) {
+  const char *inptr, *endptr;
+  char *fname, keystring[MAX_KEY];
   FILE *fkey;
   des_cblock key;
   des_key_schedule schedule;
@@ -114,14 +115,14 @@ int owl_zcrypt_decrypt(char *out, char *in, char *class, char *instance) {
   return(0);
 }
 
-int owl_zcrypt_encrypt(char *out, char *in, char *class, char *instance) {
+int owl_zcrypt_encrypt(char *out, const char *in, const char *class, const char *instance) {
   char *fname, keystring[MAX_KEY];
   FILE *fkey;
   des_cblock key;
   des_key_schedule schedule;
   char input[8], output[8];
   int size, length, i;
-  char *inbuff = NULL, *inptr;
+  const char *inbuff = NULL, *inptr;
   int use_buffer = FALSE;
   int num_blocks=0, last_block_size=0;
 
@@ -181,7 +182,7 @@ int owl_zcrypt_encrypt(char *out, char *in, char *class, char *instance) {
 #define MAX_BUFF 258
 #define MAX_SEARCH 3
 /* Find the class/instance in the .crypt-table */
-char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance) {
+char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *instance) {
   char *keyfile = NULL;
   char *varname[MAX_SEARCH];
   int length[MAX_SEARCH], i;

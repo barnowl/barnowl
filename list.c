@@ -13,7 +13,7 @@ int owl_list_create(owl_list *l)
   return(0);
 }
 
-int owl_list_get_size(owl_list *l)
+int owl_list_get_size(const owl_list *l)
 {
   return(l->size);
 }
@@ -32,7 +32,7 @@ void owl_list_grow(owl_list *l, int n) /*noproto*/
 
 }
 
-void *owl_list_get_element(owl_list *l, int n)
+void *owl_list_get_element(const owl_list *l, int n)
 {
   if (n>l->size-1) return(NULL);
   return(l->list[n]);

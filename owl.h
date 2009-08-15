@@ -193,6 +193,21 @@ typedef void SV;
 
 #define LINE 2048
 
+#ifdef HAVE_LIBZEPHYR
+/* libzephyr doesn't use const, so we appease the type system with this cast. */
+static inline char *zstr(const char *str)
+{
+  return (char *)str;
+}
+#endif
+
+/* Convert char *const * into const char *const *.  This conversion is safe,
+ * and implicit in C++ (conv.qual 4) but for some reason not in C. */
+static inline const char *const *strs(char *const *pstr)
+{
+  return (const char *const *)pstr;
+}
+
 typedef struct _owl_variable {
   char *name;
   int   type;  /* OWL_VARIABLE_* */
@@ -202,26 +217,26 @@ typedef struct _owl_variable {
   char *summary;		/* summary of usage */
   char *description;		/* detailed description */
   void *val;                    /* current value */
-  int  (*validate_fn)(struct _owl_variable *v, void *newval);
+  int  (*validate_fn)(const struct _owl_variable *v, const void *newval);
                                 /* returns 1 if newval is valid */
-  int  (*set_fn)(struct _owl_variable *v, void *newval); 
+  int  (*set_fn)(struct _owl_variable *v, const void *newval); 
                                 /* sets the variable to a value
 				 * of the appropriate type.
 				 * unless documented, this 
 				 * should make a copy. 
 				 * returns 0 on success. */
-  int  (*set_fromstring_fn)(struct _owl_variable *v, char *newval);
+  int  (*set_fromstring_fn)(struct _owl_variable *v, const char *newval);
                                 /* sets the variable to a value
 				 * of the appropriate type.
 				 * unless documented, this 
 				 * should make a copy. 
 				 * returns 0 on success. */
-  void *(*get_fn)(struct _owl_variable *v);
+  const void *(*get_fn)(const struct _owl_variable *v);
 				/* returns a reference to the current value.
 				 * WARNING:  this approach is hard to make
 				 * thread-safe... */
-  int  (*get_tostring_fn)(struct _owl_variable *v, 
-			  char *buf, int bufsize, void *val); 
+  int  (*get_tostring_fn)(const struct _owl_variable *v, 
+			  char *buf, int bufsize, const void *val); 
                                 /* converts val to a string 
 				 * and puts into buf */
   void  (*free_fn)(struct _owl_variable *v);
@@ -283,14 +298,14 @@ typedef struct _owl_cmd {	/* command */
   char *cmd_aliased_to;		/* what this command is aliased to... */
   
   /* These don't take any context */
-  char *(*cmd_args_fn)(int argc, char **argv, char *buff);  
+  char *(*cmd_args_fn)(int argc, const char *const *argv, const char *buff);  
 				/* takes argv and the full command as buff.
 				 * caller must free return value if !NULL */
   void (*cmd_v_fn)(void);	/* takes no args */
   void (*cmd_i_fn)(int i);	/* takes an int as an arg */
 
   /* The following also take the active context if it's valid */
-  char *(*cmd_ctxargs_fn)(void *ctx, int argc, char **argv, char *buff);  
+  char *(*cmd_ctxargs_fn)(void *ctx, int argc, const char *const *argv, const char *buff);  
 				/* takes argv and the full command as buff.
 				 * caller must free return value if !NULL */
   void (*cmd_ctxv_fn)(void *ctx);	        /* takes no args */
@@ -312,7 +327,7 @@ typedef struct _owl_zwrite {
 } owl_zwrite;
 
 typedef struct _owl_pair {
-  char *key;
+  const char *key;
   char *value;
 } owl_pair;
 
@@ -326,7 +341,7 @@ typedef struct _owl_message {
 #endif
   struct _owl_fmtext_cache * fmtext;
   int delete;
-  char *hostname;
+  const char *hostname;
   owl_list attributes;            /* this is a list of pairs */
   char *timestr;
   time_t time;
@@ -382,9 +397,9 @@ typedef struct _owl_regex {
 } owl_regex;
 
 typedef struct _owl_filterelement {
-  int (*match_message)(struct _owl_filterelement *fe, owl_message *m);
+  int (*match_message)(const struct _owl_filterelement *fe, const owl_message *m);
   /* Append a string representation of the filterelement onto buf*/
-  void (*print_elt)(struct _owl_filterelement *fe, GString *buf);
+  void (*print_elt)(const struct _owl_filterelement *fe, GString *buf);
   /* Operands for and,or,not*/
   struct _owl_filterelement *left, *right;
   /* For regex filters*/
@@ -405,7 +420,7 @@ typedef struct _owl_view {
   char *name;
   owl_filter *filter;
   owl_messagelist ml;
-  owl_style *style;
+  const owl_style *style;
 } owl_view;
 
 typedef struct _owl_history {
@@ -432,7 +447,7 @@ typedef struct _owl_keymap {
   char     *name;		/* name of keymap */
   char     *desc;		/* description */
   owl_list  bindings;		/* key bindings */
-  struct _owl_keymap *submap;	/* submap */
+  const struct _owl_keymap *submap;	/* submap */
   void (*default_fn)(owl_input j);	/* default action (takes a keypress) */
   void (*prealways_fn)(owl_input  j);	/* always called before a keypress is received */
   void (*postalways_fn)(owl_input  j);	/* always called after keypress is processed */
@@ -440,7 +455,7 @@ typedef struct _owl_keymap {
 
 typedef struct _owl_keyhandler {
   owl_dict  keymaps;		/* dictionary of keymaps */
-  owl_keymap *active;		/* currently active keymap */
+  const owl_keymap *active;		/* currently active keymap */
   int	    in_esc;		/* escape pressed? */
   int       kpstack[OWL_KEYMAP_MAXSTACK+1]; /* current stack of keypresses */
   int       kpstackpos;		/* location in stack (-1 = none) */

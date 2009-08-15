@@ -1,24 +1,24 @@
 #define OWL_PERL
 #include "owl.h"
 
-void owl_style_create_perl(owl_style *s, char *name, SV *obj)
+void owl_style_create_perl(owl_style *s, const char *name, SV *obj)
 {
   s->name=owl_strdup(name);
   s->perlobj = SvREFCNT_inc(obj);
 }
 
-int owl_style_matches_name(owl_style *s, char *name)
+int owl_style_matches_name(const owl_style *s, const char *name)
 {
   if (!strcmp(s->name, name)) return(1);
   return(0);
 }
 
-char *owl_style_get_name(owl_style *s)
+const char *owl_style_get_name(const owl_style *s)
 {
   return(s->name);
 }
 
-char *owl_style_get_description(owl_style *s)
+const char *owl_style_get_description(const owl_style *s)
 {
   SV *sv = NULL;
   OWL_PERL_CALL_METHOD(s->perlobj,
@@ -38,9 +38,10 @@ char *owl_style_get_description(owl_style *s)
 /* Use style 's' to format message 'm' into fmtext 'fm'.
  * 'fm' should already be be initialzed
  */
-void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, owl_message *m)
+void owl_style_get_formattext(const owl_style *s, owl_fmtext *fm, const owl_message *m)
 {
-  char *body, *indent;
+  const char *body;
+  char *indent;
   int curlen;
 
   SV *sv = NULL;
@@ -77,7 +78,7 @@ void owl_style_get_formattext(owl_style *s, owl_fmtext *fm, owl_message *m)
     SvREFCNT_dec(sv);
 }
 
-int owl_style_validate(owl_style *s) {
+int owl_style_validate(const owl_style *s) {
   if (!s || !s->perlobj || !SvOK(s->perlobj)) {
     return -1;
   }

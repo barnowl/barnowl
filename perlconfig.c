@@ -13,7 +13,7 @@ extern XS(boot_DynaLoader);
 
 static void owl_perl_xs_init(pTHX)
 {
-  char *file = __FILE__;
+  const char *file = __FILE__;
   dXSUB_SYS;
   {
     newXS("BarnOwl::bootstrap", boot_BarnOwl, file);
@@ -21,14 +21,15 @@ static void owl_perl_xs_init(pTHX)
   }
 }
 
-SV *owl_perlconfig_message2hashref(owl_message *m)
+SV *owl_perlconfig_message2hashref(const owl_message *m)
 {
   HV *h, *stash;
   SV *hr;
-  char *ptr, *blessas, *type;
+  const char *type;
+  char *ptr, *utype, *blessas;
   int i, j;
-  owl_pair *pair;
-  owl_filter *wrap;
+  const owl_pair *pair;
+  const owl_filter *wrap;
 
   if (!m) return &PL_sv_undef;
   wrap = owl_global_get_filter(&g, "wordwrap");
@@ -94,9 +95,9 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
 
   type = owl_message_get_type(m);
   if(!type || !*type) type = "generic";
-  type = owl_strdup(type);
-  type[0] = toupper(type[0]);
-  blessas = owl_sprintf("BarnOwl::Message::%s", type);
+  utype = owl_strdup(type);
+  utype[0] = toupper(type[0]);
+  blessas = owl_sprintf("BarnOwl::Message::%s", utype);
 
   hr = newRV_noinc((SV*)h);
   stash =  gv_stashpv(blessas,0);
@@ -105,7 +106,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
     stash = gv_stashpv("BarnOwl::Message", 1);
   }
   hr = sv_bless(hr,stash);
-  owl_free(type);
+  owl_free(utype);
   owl_free(blessas);
   return hr;
 }
@@ -113,7 +114,7 @@ SV *owl_perlconfig_message2hashref(owl_message *m)
 SV *owl_perlconfig_curmessage2hashref(void) /*noproto*/
 {
   int curmsg;
-  owl_view *v;
+  const owl_view *v;
   v=owl_global_get_current_view(&g);
   if (owl_view_get_size(v) < 1) {
     return &PL_sv_undef;
@@ -133,7 +134,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
   owl_message * m;
   HE * ent;
   I32 count, len;
-  char *key,*val;
+  const char *key,*val;
   HV * hash;
   struct tm tm;
 
@@ -178,13 +179,13 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
     n->z_port = 0;
     n->z_auth = ZAUTH_NO;
     n->z_checked_auth = 0;
-    n->z_class = owl_message_get_class(m);
-    n->z_class_inst = owl_message_get_instance(m);
-    n->z_opcode = owl_message_get_opcode(m);
-    n->z_sender = owl_message_get_sender(m);
-    n->z_recipient = owl_message_get_recipient(m);
-    n->z_default_format = "[zephyr created from perl]";
-    n->z_multinotice = "[zephyr created from perl]";
+    n->z_class = zstr(owl_message_get_class(m));
+    n->z_class_inst = zstr(owl_message_get_instance(m));
+    n->z_opcode = zstr(owl_message_get_opcode(m));
+    n->z_sender = zstr(owl_message_get_sender(m));
+    n->z_recipient = zstr(owl_message_get_recipient(m));
+    n->z_default_format = zstr("[zephyr created from perl]");
+    n->z_multinotice = zstr("[zephyr created from perl]");
     n->z_num_other_fields = 0;
     n->z_message = owl_sprintf("%s%c%s", owl_message_get_zsig(m), '\0', owl_message_get_body(m));
     n->z_message_len = strlen(owl_message_get_zsig(m)) + strlen(owl_message_get_body(m)) + 1;
@@ -195,7 +196,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
 
 /* Calls in a scalar context, passing it a hash reference.
    If return value is non-null, caller must free. */
-char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
+char *owl_perlconfig_call_with_message(const char *subname, const owl_message *m)
 {
   dSP ;
   int count;
@@ -244,7 +245,7 @@ char *owl_perlconfig_call_with_message(char *subname, owl_message *m)
 /* Calls a method on a perl object representing a message.
    If the return value is non-null, the caller must free it.
  */
-char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc, char ** argv)
+char * owl_perlconfig_message_call_method(const owl_message *m, const char *method, int argc, const char ** argv)
 {
   dSP;
   unsigned int count, i;
@@ -294,12 +295,12 @@ char * owl_perlconfig_message_call_method(owl_message *m, char *method, int argc
 }
 
 
-char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** Penv)
+char *owl_perlconfig_initperl(const char * file, int *Pargc, char ***Pargv, char *** Penv)
 {
   int ret;
   PerlInterpreter *p;
   char *err;
-  char *args[4] = {"", "-e", "0;", NULL};
+  const char *args[4] = {"", "-e", "0;", NULL};
   AV *inc;
   char *path;
 
@@ -311,7 +312,7 @@ char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** P
 
   owl_global_set_no_have_config(&g);
 
-  ret=perl_parse(p, owl_perl_xs_init, 2, args, NULL);
+  ret=perl_parse(p, owl_perl_xs_init, 2, (char **)args, NULL);
   if (ret || SvTRUE(ERRSV)) {
     err=owl_strdup(SvPV_nolen(ERRSV));
     sv_setsv(ERRSV, &PL_sv_undef);     /* and clear the error */
@@ -370,17 +371,18 @@ char *owl_perlconfig_initperl(char * file, int *Pargc, char ***Pargv, char *** P
 }
 
 /* returns whether or not a function exists */
-int owl_perlconfig_is_function(char *fn) {
+int owl_perlconfig_is_function(const char *fn) {
   if (get_cv(fn, FALSE)) return(1);
   else return(0);
 }
 
 /* caller is responsible for freeing returned string */
-char *owl_perlconfig_execute(char *line)
+char *owl_perlconfig_execute(const char *line)
 {
   STRLEN len;
   SV *response;
-  char *out, *preout;
+  const char *preout;
+  char *out;
 
   if (!owl_global_have_config(&g)) return NULL;
 
@@ -405,7 +407,7 @@ char *owl_perlconfig_execute(char *line)
   return(out);
 }
 
-void owl_perlconfig_getmsg(owl_message *m, char *subname)
+void owl_perlconfig_getmsg(const owl_message *m, const char *subname)
 {
   char *ptr = NULL;
   if (owl_perlconfig_is_function("BarnOwl::Hooks::_receive_msg")) {
@@ -416,7 +418,7 @@ void owl_perlconfig_getmsg(owl_message *m, char *subname)
 }
 
 /* Called on all new messages; receivemsg is only called on incoming ones */
-void owl_perlconfig_newmsg(owl_message *m, char *subname)
+void owl_perlconfig_newmsg(const owl_message *m, const char *subname)
 {
   char *ptr = NULL;
   if (owl_perlconfig_is_function("BarnOwl::Hooks::_new_msg")) {
@@ -426,7 +428,7 @@ void owl_perlconfig_newmsg(owl_message *m, char *subname)
   if (ptr) owl_free(ptr);
 }
 
-void owl_perlconfig_new_command(char *name)
+void owl_perlconfig_new_command(const char *name)
 {
   dSP;
 
@@ -449,7 +451,7 @@ void owl_perlconfig_new_command(char *name)
   LEAVE;
 }
 
-char *owl_perlconfig_perlcmd(owl_cmd *cmd, int argc, char **argv)
+char *owl_perlconfig_perlcmd(const owl_cmd *cmd, int argc, const char *const *argv)
 {
   int i, count;
   char * ret = NULL;

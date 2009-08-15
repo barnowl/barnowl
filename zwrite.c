@@ -4,10 +4,11 @@
 #include <unistd.h>
 #include "owl.h"
 
-int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
+int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
 {
   int argc, badargs, myargc, i, len;
-  char **argv, **myargv;
+  char **argv;
+  const char *const *myargv;
   char *msg = NULL;
 
   badargs=0;
@@ -24,7 +25,8 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
   owl_list_create(&(z->recips));
 
   /* parse the command line for options */
-  argv=myargv=owl_parseline(line, &argc);
+  argv=owl_parseline(line, &argc);
+  myargv=strs(argv);
   if (argc<0) {
     owl_function_error("Unbalanced quotes in zwrite");
     return(-1);
@@ -149,7 +151,8 @@ int owl_zwrite_create_from_line(owl_zwrite *z, char *line)
 
 void owl_zwrite_populate_zsig(owl_zwrite *z)
 {
-  char *zsigproc, *zsigowlvar, *zsigzvar, *ptr;
+  const char *zsigproc, *zsigowlvar, *zsigzvar;
+  char *ptr;
   struct passwd *pw;
 
   /* get a zsig, if not given */
@@ -199,7 +202,7 @@ void owl_zwrite_populate_zsig(owl_zwrite *z)
   }
 }
 
-void owl_zwrite_send_ping(owl_zwrite *z)
+void owl_zwrite_send_ping(const owl_zwrite *z)
 {
   int i, j;
   char *to;
@@ -215,7 +218,7 @@ void owl_zwrite_send_ping(owl_zwrite *z)
   j=owl_list_get_size(&(z->recips));
   for (i=0; i<j; i++) {
     if (strcmp(z->realm, "")) {
-      to = owl_sprintf("%s@%s", (char *) owl_list_get_element(&(z->recips), i), z->realm);
+      to = owl_sprintf("%s@%s", (const char *) owl_list_get_element(&(z->recips), i), z->realm);
     } else {
       to = owl_strdup(owl_list_get_element(&(z->recips), i));
     }
@@ -225,7 +228,7 @@ void owl_zwrite_send_ping(owl_zwrite *z)
 
 }
 
-void owl_zwrite_set_message(owl_zwrite *z, char *msg)
+void owl_zwrite_set_message(owl_zwrite *z, const char *msg)
 {
   int i, j;
   char *toline = NULL;
@@ -239,9 +242,9 @@ void owl_zwrite_set_message(owl_zwrite *z, char *msg)
     for (i=0; i<j; i++) {
       tmp = toline;
       if (strcmp(z->realm, "")) {
-        toline = owl_sprintf( "%s%s@%s ", toline, (char *) owl_list_get_element(&(z->recips), i), z->realm);
+        toline = owl_sprintf( "%s%s@%s ", toline, (const char *) owl_list_get_element(&(z->recips), i), z->realm);
       } else {
-        toline = owl_sprintf( "%s%s ", toline, (char *) owl_list_get_element(&(z->recips), i));
+        toline = owl_sprintf( "%s%s ", toline, (const char *) owl_list_get_element(&(z->recips), i));
       }
       owl_free(tmp);
       tmp = NULL;
@@ -259,19 +262,19 @@ void owl_zwrite_set_message(owl_zwrite *z, char *msg)
   }
 }
 
-char *owl_zwrite_get_message(owl_zwrite *z)
+const char *owl_zwrite_get_message(const owl_zwrite *z)
 {
   if (z->message) return(z->message);
   return("");
 }
 
-int owl_zwrite_is_message_set(owl_zwrite *z)
+int owl_zwrite_is_message_set(const owl_zwrite *z)
 {
   if (z->message) return(1);
   return(0);
 }
 
-int owl_zwrite_send_message(owl_zwrite *z)
+int owl_zwrite_send_message(const owl_zwrite *z)
 {
   int i, j;
   char *to = NULL;
@@ -282,7 +285,7 @@ int owl_zwrite_send_message(owl_zwrite *z)
   if (j>0) {
     for (i=0; i<j; i++) {
       if (strcmp(z->realm, "")) {
-        to = owl_sprintf("%s@%s", (char *) owl_list_get_element(&(z->recips), i), z->realm);
+        to = owl_sprintf("%s@%s", (const char *) owl_list_get_element(&(z->recips), i), z->realm);
       } else {
         to = owl_strdup( owl_list_get_element(&(z->recips), i));
       }
@@ -298,7 +301,7 @@ int owl_zwrite_send_message(owl_zwrite *z)
   return(0);
 }
 
-int owl_zwrite_create_and_send_from_line(char *cmd, char *msg)
+int owl_zwrite_create_and_send_from_line(const char *cmd, const char *msg)
 {
   owl_zwrite z;
   int rv;
@@ -313,39 +316,39 @@ int owl_zwrite_create_and_send_from_line(char *cmd, char *msg)
   return(0);
 }
 
-char *owl_zwrite_get_class(owl_zwrite *z)
+const char *owl_zwrite_get_class(const owl_zwrite *z)
 {
   return(z->class);
 }
 
-char *owl_zwrite_get_instance(owl_zwrite *z)
+const char *owl_zwrite_get_instance(const owl_zwrite *z)
 {
   return(z->inst);
 }
 
-char *owl_zwrite_get_opcode(owl_zwrite *z)
+const char *owl_zwrite_get_opcode(const owl_zwrite *z)
 {
   return(z->opcode);
 }
 
-void owl_zwrite_set_opcode(owl_zwrite *z, char *opcode)
+void owl_zwrite_set_opcode(owl_zwrite *z, const char *opcode)
 {
   if (z->opcode) owl_free(z->opcode);
   z->opcode=owl_validate_utf8(opcode);
 }
 
-char *owl_zwrite_get_realm(owl_zwrite *z)
+const char *owl_zwrite_get_realm(const owl_zwrite *z)
 {
   return(z->realm);
 }
 
-char *owl_zwrite_get_zsig(owl_zwrite *z)
+const char *owl_zwrite_get_zsig(const owl_zwrite *z)
 {
   if (z->zsig) return(z->zsig);
   return("");
 }
 
-void owl_zwrite_get_recipstr(owl_zwrite *z, char *buff)
+void owl_zwrite_get_recipstr(const owl_zwrite *z, char *buff)
 {
   int i, j;
 
@@ -358,17 +361,17 @@ void owl_zwrite_get_recipstr(owl_zwrite *z, char *buff)
   buff[strlen(buff)-1]='\0';
 }
 
-int owl_zwrite_get_numrecips(owl_zwrite *z)
+int owl_zwrite_get_numrecips(const owl_zwrite *z)
 {
   return(owl_list_get_size(&(z->recips)));
 }
 
-char *owl_zwrite_get_recip_n(owl_zwrite *z, int n)
+const char *owl_zwrite_get_recip_n(const owl_zwrite *z, int n)
 {
   return(owl_list_get_element(&(z->recips), n));
 }
 
-int owl_zwrite_is_personal(owl_zwrite *z)
+int owl_zwrite_is_personal(const owl_zwrite *z)
 {
   /* return true if at least one of the recipients is personal */
   int i, j;

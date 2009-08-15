@@ -24,17 +24,17 @@ foreach $file (@ARGV) {
 	print "  owl_variable_set_bool_on(&g->vars, \"$varname\");\n}\n";
 	print "void owl_global_set_${altvarname}_off(owl_global *g) {\n";
 	print "  owl_variable_set_bool_off(&g->vars, \"$varname\");\n}\n";
-	print "int owl_global_is_$altvarname(owl_global *g) {\n";
+	print "int owl_global_is_$altvarname(const owl_global *g) {\n";
 	print "  return owl_variable_get_bool(&g->vars, \"$varname\");\n}\n";
     } elsif ($vartype =~ /^PATH/ or $vartype =~ /^STRING/) {
-	print "void owl_global_set_$altvarname(owl_global *g, char *text) {\n";
+	print "void owl_global_set_$altvarname(owl_global *g, const char *text) {\n";
 	print "  owl_variable_set_string(&g->vars, \"$varname\", text);\n}\n";
-	print "char *owl_global_get_$altvarname(owl_global *g) {\n";
+	print "const char *owl_global_get_$altvarname(const owl_global *g) {\n";
 	print "  return owl_variable_get_string(&g->vars, \"$varname\");\n}\n";
     } elsif ($vartype =~ /^INT/ or $vartype =~ /^ENUM/) {
 	print "void owl_global_set_$altvarname(owl_global *g, int n) {\n";
 	print "  owl_variable_set_int(&g->vars, \"$varname\", n);\n}\n";
-	print "int owl_global_get_$altvarname(owl_global *g) {\n";
+	print "int owl_global_get_$altvarname(const owl_global *g) {\n";
 	print "  return owl_variable_get_int(&g->vars, \"$varname\");\n}\n";
     } 
     }

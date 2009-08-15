@@ -43,13 +43,14 @@ int main(int argc, char **argv, char **env)
   int debug, argcsave, followlast;
   int newmsgs, nexttimediff;
   struct sigaction sigact;
-  char *configfile, *tty, *perlout, *perlerr, **argvsave;
-  char *confdir;
+  const char *configfile, *tty, *const *argvsave;
+  char *perlout, *perlerr;
+  const char *confdir;
   owl_filter *f;
-  owl_style *s;
+  const owl_style *s;
   time_t nexttime, now;
   struct tm *today;
-  char *dir;
+  const char *dir;
   struct termios tio;
   owl_message *m;
 
@@ -57,7 +58,7 @@ int main(int argc, char **argv, char **env)
     g_error ("GLib version 2.12.0 or above is needed.");
 
   argcsave=argc;
-  argvsave=argv;
+  argvsave=strs(argv);
   configfile=NULL;
   confdir = NULL;
   tty=NULL;
@@ -485,7 +486,7 @@ int main(int argc, char **argv, char **env)
  * was ignored due to user settings or otherwise.
  */
 int owl_process_message(owl_message *m) {
-  owl_filter *f;
+  const owl_filter *f;
   /* if this message it on the puntlist, nuke it and continue */
   if (owl_global_message_is_puntable(&g, m)) {
     owl_message_free(m);

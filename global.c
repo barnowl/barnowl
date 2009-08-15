@@ -167,21 +167,21 @@ owl_context *owl_global_get_context(owl_global *g) {
   return(&g->ctx);
 }
 			 
-int owl_global_get_lines(owl_global *g) {
+int owl_global_get_lines(const owl_global *g) {
   return(g->lines);
 }
 
-int owl_global_get_cols(owl_global *g) {
+int owl_global_get_cols(const owl_global *g) {
   return(g->cols);
 }
 
-int owl_global_get_recwin_lines(owl_global *g) {
+int owl_global_get_recwin_lines(const owl_global *g) {
   return(g->recwinlines);
 }
 
 /* curmsg */
 
-int owl_global_get_curmsg(owl_global *g) {
+int owl_global_get_curmsg(const owl_global *g) {
   return(g->curmsg);
 }
 
@@ -194,7 +194,7 @@ void owl_global_set_curmsg(owl_global *g, int i) {
 
 /* topmsg */
 
-int owl_global_get_topmsg(owl_global *g) {
+int owl_global_get_topmsg(const owl_global *g) {
   return(g->topmsg);
 }
 
@@ -204,14 +204,14 @@ void owl_global_set_topmsg(owl_global *g, int i) {
 
 /* markedmsgid */
 
-int owl_global_get_markedmsgid(owl_global *g) {
+int owl_global_get_markedmsgid(const owl_global *g) {
   return(g->markedmsgid);
 }
 
 void owl_global_set_markedmsgid(owl_global *g, int i) {
   g->markedmsgid=i;
   /* i; index of message in the current view.
-  owl_message *m;
+  const owl_message *m;
   owl_view *v;
 
   v = owl_global_get_current_view(&g);
@@ -244,35 +244,35 @@ owl_keyhandler *owl_global_get_keyhandler(owl_global *g) {
 
 /* curses windows */
 
-WINDOW *owl_global_get_curs_recwin(owl_global *g) {
+WINDOW *owl_global_get_curs_recwin(const owl_global *g) {
   return(g->recwin);
 }
 
-WINDOW *owl_global_get_curs_sepwin(owl_global *g) {
+WINDOW *owl_global_get_curs_sepwin(const owl_global *g) {
   return(g->sepwin);
 }
 
-WINDOW *owl_global_get_curs_msgwin(owl_global *g) {
+WINDOW *owl_global_get_curs_msgwin(const owl_global *g) {
   return(g->msgwin);
 }
 
-WINDOW *owl_global_get_curs_typwin(owl_global *g) {
+WINDOW *owl_global_get_curs_typwin(const owl_global *g) {
   return(g->typwin);
 }
 
 /* typwin */
 
-owl_editwin *owl_global_get_typwin(owl_global *g) {
+owl_editwin *owl_global_get_typwin(const owl_global *g) {
   return(g->tw);
 }
 
 /* buffercommand */
 
-void owl_global_set_buffercommand(owl_global *g, char *command) {
+void owl_global_set_buffercommand(owl_global *g, const char *command) {
   owl_editwin_set_command(owl_global_get_typwin(g), command);
 }
 
-char *owl_global_get_buffercommand(owl_global *g) {
+const char *owl_global_get_buffercommand(const owl_global *g) {
   return owl_editwin_get_command(owl_global_get_typwin(g));
 }
 
@@ -280,13 +280,13 @@ void owl_global_set_buffercallback(owl_global *g, void (*cb)(owl_editwin*)) {
   owl_editwin_set_callback(owl_global_get_typwin(g), cb);
 }
 
-void (*owl_global_get_buffercallback(owl_global *g))(owl_editwin*) {
+void (*owl_global_get_buffercallback(const owl_global *g))(owl_editwin*) {
   return owl_editwin_get_callback(owl_global_get_typwin(g));
 }
 
 /* refresh */
 
-int owl_global_is_needrefresh(owl_global *g) {
+int owl_global_is_needrefresh(const owl_global *g) {
   if (g->needrefresh==1) return(1);
   return(0);
 }
@@ -317,13 +317,13 @@ void owl_global_set_rightshift(owl_global *g, int i) {
   g->rightshift=i;
 }
 
-int owl_global_get_rightshift(owl_global *g) {
+int owl_global_get_rightshift(const owl_global *g) {
   return(g->rightshift);
 }
 
 /* typwin */
 
-int owl_global_is_typwin_active(owl_global *g) {
+int owl_global_is_typwin_active(const owl_global *g) {
   if (g->typwinactive==1) return(1);
   return(0);
 }
@@ -350,12 +350,12 @@ void owl_global_set_resize_pending(owl_global *g) {
   g->resizepending=1;
 }
 
-char *owl_global_get_homedir(owl_global *g) {
+const char *owl_global_get_homedir(const owl_global *g) {
   if (g->homedir) return(g->homedir);
   return("/");
 }
 
-char *owl_global_get_confdir(owl_global *g) {
+const char *owl_global_get_confdir(const owl_global *g) {
   if (g->confdir) return(g->confdir);
   return("/");
 }
@@ -363,19 +363,19 @@ char *owl_global_get_confdir(owl_global *g) {
 /*
  * Setting this also sets startupfile to confdir/startup
  */
-void owl_global_set_confdir(owl_global *g, char *cd) {
+void owl_global_set_confdir(owl_global *g, const char *cd) {
   free(g->confdir);
   g->confdir = owl_strdup(cd);
   free(g->startupfile);
   g->startupfile = owl_sprintf("%s/startup", cd);
 }
 
-char *owl_global_get_startupfile(owl_global *g) {
+const char *owl_global_get_startupfile(const owl_global *g) {
   if(g->startupfile) return(g->startupfile);
   return("/");
 }
 
-int owl_global_get_direction(owl_global *g) {
+int owl_global_get_direction(const owl_global *g) {
   return(g->direction);
 }
 
@@ -393,11 +393,11 @@ void owl_global_set_perlinterp(owl_global *g, void *p) {
   g->perl=p;
 }
 
-void *owl_global_get_perlinterp(owl_global *g) {
+void *owl_global_get_perlinterp(const owl_global *g) {
   return(g->perl);
 }
 
-int owl_global_is_config_format(owl_global *g) {
+int owl_global_is_config_format(const owl_global *g) {
   if (g->config_format) return(1);
   return(0);
 }
@@ -497,22 +497,22 @@ void owl_global_resize(owl_global *g, int x, int y) {
 
 /* debug */
 
-int owl_global_is_debug_fast(owl_global *g) {
+int owl_global_is_debug_fast(const owl_global *g) {
   if (g->debug) return(1);
   return(0);
 }
 
 /* starttime */
 
-time_t owl_global_get_starttime(owl_global *g) {
+time_t owl_global_get_starttime(const owl_global *g) {
   return(g->starttime);
 }
 
-time_t owl_global_get_runtime(owl_global *g) {
+time_t owl_global_get_runtime(const owl_global *g) {
   return(time(NULL)-g->starttime);
 }
 
-time_t owl_global_get_lastinputtime(owl_global *g) {
+time_t owl_global_get_lastinputtime(const owl_global *g) {
   return(g->lastinputtime);
 }
 
@@ -520,11 +520,11 @@ void owl_global_set_lastinputtime(owl_global *g, time_t time) {
   g->lastinputtime = time;
 }
 
-time_t owl_global_get_idletime(owl_global *g) {
+time_t owl_global_get_idletime(const owl_global *g) {
   return(time(NULL)-g->lastinputtime);
 }
 
-void owl_global_get_runtime_string(owl_global *g, char *buff) {
+void owl_global_get_runtime_string(const owl_global *g, char *buff) {
   time_t diff;
 
   diff=time(NULL)-owl_global_get_starttime(g);
@@ -533,7 +533,7 @@ void owl_global_get_runtime_string(owl_global *g, char *buff) {
   sprintf(buff, "%i seconds", (int) diff);
 }
 
-char *owl_global_get_hostname(owl_global *g) {
+const char *owl_global_get_hostname(const owl_global *g) {
   if (g->thishost) return(g->thishost);
   return("");
 }
@@ -548,11 +548,11 @@ void owl_global_add_userclue(owl_global *g, int clue) {
   g->userclue|=clue;
 }
 
-int owl_global_get_userclue(owl_global *g) {
+int owl_global_get_userclue(const owl_global *g) {
   return(g->userclue);
 }
 
-int owl_global_is_userclue(owl_global *g, int clue) {
+int owl_global_is_userclue(const owl_global *g, int clue) {
   if (g->userclue & clue) return(1);
   return(0);
 }
@@ -566,7 +566,7 @@ owl_viewwin *owl_global_get_viewwin(owl_global *g) {
 
 /* vert offset */
 
-int owl_global_get_curmsg_vert_offset(owl_global *g) {
+int owl_global_get_curmsg_vert_offset(const owl_global *g) {
   return(g->curmsg_vert_offset);
 }
 
@@ -576,7 +576,7 @@ void owl_global_set_curmsg_vert_offset(owl_global *g, int i) {
 
 /* startup args */
 
-void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
+void owl_global_set_startupargs(owl_global *g, int argc, const char *const *argv) {
   int i, len;
 
   if (g->startupargs) owl_free(g->startupargs);
@@ -594,7 +594,7 @@ void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
   g->startupargs[strlen(g->startupargs)-1]='\0';
 }
 
-char *owl_global_get_startupargs(owl_global *g) {
+const char *owl_global_get_startupargs(const owl_global *g) {
   if (g->startupargs) return(g->startupargs);
   return("");
 }
@@ -615,7 +615,7 @@ owl_list *owl_global_get_filterlist(owl_global *g) {
   return(&(g->filterlist));
 }
 
-owl_filter *owl_global_get_filter(owl_global *g, char *name) {
+owl_filter *owl_global_get_filter(const owl_global *g, const char *name) {
   int i, j;
   owl_filter *f;
 
@@ -633,7 +633,7 @@ void owl_global_add_filter(owl_global *g, owl_filter *f) {
   owl_list_append_element(&(g->filterlist), f);
 }
 
-void owl_global_remove_filter(owl_global *g, char *name) {
+void owl_global_remove_filter(owl_global *g, const char *name) {
   int i, j;
   owl_filter *f;
 
@@ -662,14 +662,14 @@ owl_view *owl_global_get_current_view(owl_global *g) {
 
 /* has colors */
 
-int owl_global_get_hascolors(owl_global *g) {
+int owl_global_get_hascolors(const owl_global *g) {
   if (g->hascolors) return(1);
   return(0);
 }
 
 /* color pairs */
 
-int owl_global_get_colorpairs(owl_global *g) {
+int owl_global_get_colorpairs(const owl_global *g) {
   return(g->colorpairs);
 }
 
@@ -683,8 +683,8 @@ owl_list *owl_global_get_puntlist(owl_global *g) {
   return(&(g->puntlist));
 }
 
-int owl_global_message_is_puntable(owl_global *g, owl_message *m) {
-  owl_list *pl;
+int owl_global_message_is_puntable(owl_global *g, const owl_message *m) {
+  const owl_list *pl;
   int i, j;
 
   pl=owl_global_get_puntlist(g);
@@ -696,7 +696,7 @@ int owl_global_message_is_puntable(owl_global *g, owl_message *m) {
 }
 
 int owl_global_should_followlast(owl_global *g) {
-  owl_view *v;
+  const owl_view *v;
   
   if (!owl_global_is__followlast(g)) return(0);
   
@@ -706,12 +706,12 @@ int owl_global_should_followlast(owl_global *g) {
   return(0);
 }
 
-int owl_global_is_search_active(owl_global *g) {
+int owl_global_is_search_active(const owl_global *g) {
   if (owl_regex_is_set(&g->search_re)) return(1);
   return(0);
 }
 
-void owl_global_set_search_re(owl_global *g, owl_regex *re) {
+void owl_global_set_search_re(owl_global *g, const owl_regex *re) {
   if (owl_regex_is_set(&g->search_re)) {
     owl_regex_free(&g->search_re);
     owl_regex_init(&g->search_re);
@@ -720,7 +720,7 @@ void owl_global_set_search_re(owl_global *g, owl_regex *re) {
     owl_regex_copy(re, &g->search_re);
 }
 
-owl_regex *owl_global_get_search_re(owl_global *g) {
+const owl_regex *owl_global_get_search_re(const owl_global *g) {
   return &g->search_re;
 }
 
@@ -728,19 +728,19 @@ void owl_global_set_newmsgproc_pid(owl_global *g, int i) {
   g->newmsgproc_pid=i;
 }
 
-int owl_global_get_newmsgproc_pid(owl_global *g) {
+int owl_global_get_newmsgproc_pid(const owl_global *g) {
   return(g->newmsgproc_pid);
 }
 
 /* AIM stuff */
 
-int owl_global_is_aimloggedin(owl_global *g)
+int owl_global_is_aimloggedin(const owl_global *g)
 {
   if (g->aim_loggedin) return(1);
   return(0);
 }
 
-char *owl_global_get_aim_screenname(owl_global *g)
+const char *owl_global_get_aim_screenname(const owl_global *g)
 {
   if (owl_global_is_aimloggedin(g)) {
     return (g->aim_screenname);
@@ -748,7 +748,7 @@ char *owl_global_get_aim_screenname(owl_global *g)
   return("");
 }
 
-char *owl_global_get_aim_screenname_for_filters(owl_global *g)
+const char *owl_global_get_aim_screenname_for_filters(const owl_global *g)
 {
   if (owl_global_is_aimloggedin(g)) {
     return (g->aim_screenname_for_filters);
@@ -756,9 +756,10 @@ char *owl_global_get_aim_screenname_for_filters(owl_global *g)
   return("");
 }
 
-void owl_global_set_aimloggedin(owl_global *g, char *screenname)
+void owl_global_set_aimloggedin(owl_global *g, const char *screenname)
 {
-  char *sn_escaped, *quote;
+  char *sn_escaped;
+  const char *quote;
   g->aim_loggedin=1;
   if (g->aim_screenname) owl_free(g->aim_screenname);
   if (g->aim_screenname_for_filters) owl_free(g->aim_screenname_for_filters);
@@ -774,7 +775,7 @@ void owl_global_set_aimnologgedin(owl_global *g)
   g->aim_loggedin=0;
 }
 
-int owl_global_is_doaimevents(owl_global *g)
+int owl_global_is_doaimevents(const owl_global *g)
 {
   if (g->aim_doprocessing) return(1);
   return(0);
@@ -841,14 +842,14 @@ owl_buddylist *owl_global_get_buddylist(owl_global *g)
 
 /* Return the style with name 'name'.  If it does not exist return
  * NULL */
-owl_style *owl_global_get_style_by_name(owl_global *g, char *name)
+const owl_style *owl_global_get_style_by_name(const owl_global *g, const char *name)
 {
   return owl_dict_find_element(&(g->styledict), name);
 }
 
 /* creates a list and fills it in with keys.  duplicates the keys, 
  * so they will need to be freed by the caller. */
-int owl_global_get_style_names(owl_global *g, owl_list *l) {
+int owl_global_get_style_names(const owl_global *g, owl_list *l) {
   return owl_dict_get_keys(&(g->styledict), l);
 }
 
@@ -871,7 +872,7 @@ void owl_global_set_haveaim(owl_global *g)
   g->haveaim=1;
 }
 
-int owl_global_is_haveaim(owl_global *g)
+int owl_global_is_haveaim(const owl_global *g)
 {
   if (g->haveaim) return(1);
   return(0);
@@ -887,7 +888,7 @@ void owl_global_unset_ignore_aimlogin(owl_global *g)
     g->ignoreaimlogin = 0;
 }
 
-int owl_global_is_ignore_aimlogin(owl_global *g)
+int owl_global_is_ignore_aimlogin(const owl_global *g)
 {
     return g->ignoreaimlogin;
 }
@@ -897,7 +898,7 @@ void owl_global_set_havezephyr(owl_global *g)
   g->havezephyr=1;
 }
 
-int owl_global_is_havezephyr(owl_global *g)
+int owl_global_is_havezephyr(const owl_global *g)
 {
   if (g->havezephyr) return(1);
   return(0);
@@ -940,7 +941,7 @@ struct termios *owl_global_get_startup_tio(owl_global *g)
   return(&(g->startup_tio));
 }
 
-char * owl_global_intern(owl_global *g, char * string)
+const char * owl_global_intern(owl_global *g, const char * string)
 {
   return owl_obarray_insert(&(g->obarray), string);
 }
@@ -955,7 +956,7 @@ GList **owl_global_get_timerlist(owl_global *g)
   return &(g->timerlist);
 }
 
-int owl_global_is_interrupted(owl_global *g) {
+int owl_global_is_interrupted(const owl_global *g) {
   return g->interrupted;
 }
 
