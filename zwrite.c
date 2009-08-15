@@ -95,6 +95,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
       for (i=0;i<myargc;i++) {
         len += strlen(myargv[i]) + 1;
       }
+      len++;    /* NULL after the last trailing ' ' in the loop below. */
       msg = owl_malloc(len);
       msg[0] = '\0';
       while (myargc) {
