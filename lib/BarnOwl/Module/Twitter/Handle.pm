@@ -279,4 +279,9 @@ sub twitter_unfollow {
     }
 }
 
+sub nickname {
+    my $self = shift;
+    return $self->{cfg}->{account_nickname};
+}
+
 1;

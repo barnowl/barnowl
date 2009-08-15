@@ -170,6 +170,15 @@ sub find_account {
     }
 }
 
+sub find_account_default {
+    my $name = shift;
+    if(defined($name)) {
+        return find_account($name);
+    } else {
+        return $default_handle;
+    }
+}
+
 sub twitter {
     my $account = shift;
 
@@ -184,43 +193,6 @@ sub twitter {
             $handle->twitter(@_) if $handle->{cfg}->{publish_tweets};
         }
     }
-}
-
-# do_for_default_account( SUB( HANDLE, ARGS...), ACCOUNT, ARGS... )
-sub do_for_default_account {
-    my $lambda = shift;
-    die ("do_for_default_account has nothing to do") unless defined $lambda && ref($lambda) eq 'CODE';
-    my $account = shift;
-
-    if (defined $account) {
-        my $handle = find_account($account);
-        $lambda->($handle, @_);
-    } elsif (defined $default_handle) {
-        $lambda->($default_handle, @_);
-    }
-    else {
-        $lambda->($twitter_handles[0], @_);
-    }
-}
-
-sub twitter_direct {
-    my $account = shift;
-    do_for_default_account( sub { my $handle = shift; $handle->twitter_direct(@_); }, $account, @_);
-}
-
-sub twitter_atreply {
-    my $account = shift;
-    do_for_default_account( sub { my $handle = shift; $handle->twitter_atreply(@_); }, $account, @_);
-}
-
-sub twitter_follow {
-    my $account = shift;
-    do_for_default_account( sub { my $handle = shift; $handle->twitter_follow(@_); }, $account, @_);
-}
-
-sub twitter_unfollow {
-    my $account = shift;
-    do_for_default_account( sub { my $handle = shift; $handle->twitter_unfollow(@_); }, $account, @_);
 }
 
 BarnOwl::new_command(twitter => \&cmd_twitter, {
@@ -282,16 +254,19 @@ sub cmd_twitter_direct {
     my $cmd = shift;
     my $user = shift;
     die("Usage: $cmd USER\n") unless $user;
-    my $account = shift;
-    BarnOwl::start_edit_win("$cmd $user" . (defined $account ? " $account" : ""), sub{twitter_direct($account, $user, shift)});
+    my $account = find_account_default(shift);
+    BarnOwl::start_edit_win("$cmd $user " . ($account->nickname||""),
+                            sub { $account->twitter_direct($user, shift) });
 }
 
 sub cmd_twitter_atreply {
     my $cmd  = shift;
     my $user = shift || die("Usage: $cmd USER [In-Reply-To ID]\n");
     my $id   = shift;
-    my $account = shift;
-    BarnOwl::start_edit_win("Reply to \@" . $user . (defined $account ? " on $account" : ""), sub { twitter_atreply($account, $user, $id, shift) });
+    my $account = find_account_default(shift);
+
+    BarnOwl::start_edit_win("Reply to \@" . $user . ($account->nickname ? (" on " . $account->nickname) : ""),
+                            sub { $account->twitter_atreply($user, $id, shift) });
 }
 
 sub cmd_twitter_follow {
@@ -299,7 +274,7 @@ sub cmd_twitter_follow {
     my $user = shift;
     die("Usage: $cmd USER\n") unless $user;
     my $account = shift;
-    twitter_follow($account, $user);
+    find_account_default($account)->twitter_follow($user);
 }
 
 sub cmd_twitter_unfollow {
@@ -307,7 +282,7 @@ sub cmd_twitter_unfollow {
     my $user = shift;
     die("Usage: $cmd USER\n") unless $user;
     my $account = shift;
-    twitter_unfollow($account, $user);
+    find_account_default($account)->twitter_unfollow($user);
 }
 
 eval {
