@@ -10,6 +10,10 @@ VERS=$(perl -ne 'print $1 if m{^AC_INIT\(\[[^\]]+\],\s*\[([^\]]+)\]}' configure.
 TAG=barnowl-$VERS
 TGZ="$TAG-src"
 
+if [ "$VERS" != "$(head -1 ChangeLog)" ]; then
+    die "No ChangeLog entry for version $VERS, aborting."
+fi
+
 if git cat-file -t "$TAG" > /dev/null 2>&1; then
     die "Error: Object $TAG already exists."
 fi
