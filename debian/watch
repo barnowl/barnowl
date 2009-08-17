@@ -1,2 +1,2 @@
 version=3
-opts=downloadurlmangle=s/attachment/raw-attachment/ http://barnowl.mit.edu/attachment/wiki/Download/barnowl-(.*)-src.tgz 
+http://barnowl.mit.edu/dist/barnowl-(.*)-src.tgz 
