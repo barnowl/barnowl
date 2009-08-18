@@ -5,8 +5,6 @@
 #include <ctype.h>
 #include "owl.h"
 
-static int in_regtest = 0;
-
 #define OWLVAR_BOOL(name,default,summary,description) \
         { name, OWL_VARIABLE_BOOL, NULL, default, "on,off", summary,description, NULL, \
         NULL, NULL, NULL, NULL, NULL, NULL }
@@ -433,9 +431,6 @@ int owl_variable_pseudologins_set(owl_variable *v, const void *newval)
  * any user setting of this */
 int owl_variable_disable_ctrl_d_set(owl_variable *v, const void *newval)
 {
-
-  if (in_regtest) return owl_variable_int_set_default(v, newval);
-
   if (newval && !owl_context_is_startup(owl_global_get_context(&g))) {
     if (*(const int*)newval == 2) {
       owl_function_command_norv("bindkey editmulti C-d command edit:delete-next-char");
@@ -1000,81 +995,3 @@ int owl_variable_string_get_tostring_default(const owl_variable *v, char* buf, i
   }
 }
 
-
-
-/**************************************************************************/
-/************************* REGRESSION TESTS *******************************/
-/**************************************************************************/
-
-#ifdef OWL_INCLUDE_REG_TESTS
-
-#include "test.h"
-
-int owl_variable_regtest(void) {
-  owl_vardict vd;
-  int numfailed=0;
-  char buf[1024];
-  const void *v;
-
-  in_regtest = 1;
-
-  printf("# BEGIN testing owl_variable\n");
-  FAIL_UNLESS("setup", 0==owl_variable_dict_setup(&vd));
-
-  FAIL_UNLESS("get bool", 0==owl_variable_get_bool(&vd,"rxping"));
-  FAIL_UNLESS("get bool (no such)", -1==owl_variable_get_bool(&vd,"mumble"));
-  FAIL_UNLESS("get bool as string 1", 0==owl_variable_get_tostring(&vd,"rxping", buf, 1024));
-  FAIL_UNLESS("get bool as string 2", 0==strcmp(buf,"off"));
-  FAIL_UNLESS("set bool 1", 0==owl_variable_set_bool_on(&vd,"rxping"));
-  FAIL_UNLESS("get bool 2", 1==owl_variable_get_bool(&vd,"rxping"));
-  FAIL_UNLESS("set bool 3", 0==owl_variable_set_fromstring(&vd,"rxping","off",0,0));
-  FAIL_UNLESS("get bool 4", 0==owl_variable_get_bool(&vd,"rxping"));
-  FAIL_UNLESS("set bool 5", -1==owl_variable_set_fromstring(&vd,"rxping","xxx",0,0));
-  FAIL_UNLESS("get bool 6", 0==owl_variable_get_bool(&vd,"rxping"));
-
-
-  FAIL_UNLESS("get string", 0==strcmp("~/zlog/people", owl_variable_get_string(&vd,"logpath")));
-  FAIL_UNLESS("set string 7", 0==owl_variable_set_string(&vd,"logpath","whee"));
-  FAIL_UNLESS("get string", 0==strcmp("whee", owl_variable_get_string(&vd,"logpath")));
-
-  FAIL_UNLESS("get int", 8==owl_variable_get_int(&vd,"typewinsize"));
-  FAIL_UNLESS("get int (no such)", -1==owl_variable_get_int(&vd,"mmble"));
-  FAIL_UNLESS("get int as string 1", 0==owl_variable_get_tostring(&vd,"typewinsize", buf, 1024));
-  FAIL_UNLESS("get int as string 2", 0==strcmp(buf,"8"));
-  FAIL_UNLESS("set int 1", 0==owl_variable_set_int(&vd,"typewinsize",12));
-  FAIL_UNLESS("get int 2", 12==owl_variable_get_int(&vd,"typewinsize"));
-  FAIL_UNLESS("set int 1b", -1==owl_variable_set_int(&vd,"typewinsize",-3));
-  FAIL_UNLESS("get int 2b", 12==owl_variable_get_int(&vd,"typewinsize"));
-  FAIL_UNLESS("set int 3", 0==owl_variable_set_fromstring(&vd,"typewinsize","9",0,0));
-  FAIL_UNLESS("get int 4", 9==owl_variable_get_int(&vd,"typewinsize"));
-  FAIL_UNLESS("set int 5", -1==owl_variable_set_fromstring(&vd,"typewinsize","xxx",0,0));
-  FAIL_UNLESS("set int 6", -1==owl_variable_set_fromstring(&vd,"typewinsize","",0,0));
-  FAIL_UNLESS("get int 7", 9==owl_variable_get_int(&vd,"typewinsize"));
-
-  owl_variable_dict_newvar_string(&vd, "stringvar", "", "", "testval");
-  FAIL_UNLESS("get new string var", NULL != (v = owl_variable_get(&vd, "stringvar", OWL_VARIABLE_STRING)));
-  FAIL_UNLESS("get new string val", !strcmp("testval", owl_variable_get_string(&vd, "stringvar")));
-  owl_variable_set_string(&vd, "stringvar", "new val");
-  FAIL_UNLESS("update string val", !strcmp("new val", owl_variable_get_string(&vd, "stringvar")));
-
-  owl_variable_dict_newvar_int(&vd, "intvar", "", "", 47);
-  FAIL_UNLESS("get new int var", NULL != (v = owl_variable_get(&vd, "intvar", OWL_VARIABLE_INT)));
-  FAIL_UNLESS("get new int val", 47 == owl_variable_get_int(&vd, "intvar"));
-  owl_variable_set_int(&vd, "intvar", 17);
-  FAIL_UNLESS("update bool val", 17 == owl_variable_get_int(&vd, "intvar"));
-
-  owl_variable_dict_newvar_bool(&vd, "boolvar", "", "", 1);
-  FAIL_UNLESS("get new bool var", NULL != (v = owl_variable_get(&vd, "boolvar", OWL_VARIABLE_BOOL)));
-  FAIL_UNLESS("get new bool val", owl_variable_get_bool(&vd, "boolvar"));
-  owl_variable_set_bool_off(&vd, "boolvar");
-  FAIL_UNLESS("update string val", !owl_variable_get_bool(&vd, "boolvar"));
-
-  owl_variable_dict_free(&vd);
-
-  /* if (numfailed) printf("*** WARNING: failures encountered with owl_variable\n"); */
-  printf("# END testing owl_variable (%d failures)\n", numfailed);
-  return(numfailed);
-}
-
-
-#endif /* OWL_INCLUDE_REG_TESTS */

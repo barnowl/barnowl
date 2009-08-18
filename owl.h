@@ -173,8 +173,6 @@ typedef void SV;
 #define OWL_DEFAULT_ZAWAYMSG    "I'm sorry, but I am currently away from the terminal and am\nnot able to receive your message.\n"
 #define OWL_DEFAULT_AAWAYMSG    "I'm sorry, but I am currently away from the terminal and am\nnot able to receive your message.\n"
 
-#define OWL_INCLUDE_REG_TESTS   1  /* whether to build in regression tests */
-
 #define OWL_CMD_ALIAS_SUMMARY_PREFIX "command alias to: "
 
 #define OWL_WEBZEPHYR_PRINCIPAL "daemon.webzephyr"

@@ -10,7 +10,7 @@ barnowl_bin_SOURCES = $(BASE_SRCS) \
 barnowl_bin_LDADD = libfaim/libfaim.a libzcrypt.a
 
 tester_SOURCES = $(BASE_SRCS) \
-     owl.h owl_perl.h config.h test.h \
+     owl.h owl_perl.h config.h \
      libzcrypt.a \
      $(GEN_C) $(GEN_H) \
      tester.c
