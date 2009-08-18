@@ -41,7 +41,7 @@ sub test_tokenize {
 }
 
 
-new_ok('BarnOwl::Completion::Context' => ['Hello, W', 'orld']);
+isa_ok(BarnOwl::Completion::Context->new('Hello, W', 'orld'), 'BarnOwl::Completion::Context');
 
 no warnings 'qw';
 test_tokenize('Hello, W', 'orld',
