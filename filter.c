@@ -310,8 +310,10 @@ int owl_filter_regtest(void) {
   owl_message_set_recipient(&m, "joe");
   owl_message_set_attribute(&m, "foo", "bar");
 
-#define TEST_FILTER(f, e) numfailed += owl_filter_test_string(f, &m, e)
-
+#define TEST_FILTER(f, e) do {                          \
+    numtests++;                                         \
+    numfailed += owl_filter_test_string(f, &m, e);      \
+      } while(0)
 
   TEST_FILTER("true", 1);
   TEST_FILTER("false", 0);

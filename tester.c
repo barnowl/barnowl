@@ -4,20 +4,19 @@
 
 owl_global g;
 
-#define OWL_UTIL_NTESTS  9
-#define OWL_DICT_NTESTS  19
-#define OWL_OBARRAY_NTESTS  6
-#define OWL_VARIABLE_NTESTS  36
-#define OWL_FILTER_NTESTS  24
+int numtests;
 
 int main(int argc, char **argv, char **env)
 {
   owl_errqueue_init(owl_global_get_errqueue(&g));
   owl_obarray_init(&(g.obarray));
 
+  numtests = 0;
   int numfailures=0;
-  printf("1..%d\n", OWL_UTIL_NTESTS+OWL_DICT_NTESTS+OWL_VARIABLE_NTESTS
-         +OWL_FILTER_NTESTS+OWL_OBARRAY_NTESTS);
+  /*
+    printf("1..%d\n", OWL_UTIL_NTESTS+OWL_DICT_NTESTS+OWL_VARIABLE_NTESTS
+    +OWL_FILTER_NTESTS+OWL_OBARRAY_NTESTS);
+  */
   numfailures += owl_util_regtest();
   numfailures += owl_dict_regtest();
   numfailures += owl_variable_regtest();
@@ -26,5 +25,6 @@ int main(int argc, char **argv, char **env)
   if (numfailures) {
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
+  printf("1..%d\n", numtests);
   return(numfailures);
 }
