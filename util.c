@@ -157,15 +157,17 @@ char **atokenize(const char *buffer, const char *sep, int *i)
 }
 
 const char *skiptokens(const char *buff, int n) {
-  /* skips n tokens and returns where that would be.
-   * TODO: handle quotes more sanely. */
-  
-  int inquotes=0;
+  /* skips n tokens and returns where that would be. */
+  char quote = 0;
   while (*buff && n>0) {
       while (*buff == ' ') buff++;
-      while (*buff && (inquotes || *buff != ' ')) { 
-	if (*buff == '"' || *buff == '\'') inquotes=!inquotes;
-	buff++;
+      while (*buff && (quote || *buff != ' ')) {
+        if(quote) {
+          if(*buff == quote) quote = 0;
+        } else if(*buff == '"' || *buff == '\'') {
+          quote = *buff;
+        }
+        buff++;
       }
       while (*buff == ' ') buff++;
       n--;

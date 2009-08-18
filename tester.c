@@ -70,6 +70,21 @@ int owl_util_regtest(void)
   FAIL_UNLESS("expand_tabs 3",
               !strcmp("                2 tabs", owl_text_expand_tabs("\t\t2 tabs")));
 
+  FAIL_UNLESS("skiptokens 1",
+              !strcmp("world", skiptokens("hello world", 1)));
+
+  FAIL_UNLESS("skiptokens 2",
+              !strcmp("c d e", skiptokens("a   b c d e", 2)));
+
+  FAIL_UNLESS("skiptokens 3",
+              !strcmp("\"b\" c d e", skiptokens("a \"b\" c d e", 1)));
+
+  FAIL_UNLESS("skiptokens 4",
+              !strcmp("c d e", skiptokens("a \"b\" c d e", 2)));
+
+  FAIL_UNLESS("skiptokens 5",
+              !strcmp("c d e", skiptokens("a \"'\" c d e", 2)));
+
   /* if (numfailed) printf("*** WARNING: failures encountered with owl_util\n"); */
   printf("# END testing owl_util (%d failures)\n", numfailed);
   return(numfailed);
