@@ -10,19 +10,7 @@ struct owlfaim_priv {
   char *screenname;
   char *password;
   char *server;
-  char *proxy;
-  char *proxyusername;
-  char *proxypass;
-  char *ohcaptainmycaptain;
   int connected;
-
-  FILE *listingfile;
-  char *listingpath;
-
-  fu8_t *buddyicon;
-  int buddyiconlen;
-  time_t buddyiconstamp;
-  fu16_t buddyiconsum;
 };
 
 static const char *msgerrreasons[] = {
@@ -466,7 +454,6 @@ int owl_aim_process_events()
       }
     }
   }
-  /* free(priv->buddyicon); */
   /* exit(0); */
   return(0);
 }
@@ -1167,7 +1154,6 @@ static int faimtest_parse_userinfo(aim_session_t *sess, aim_frame_t *fr, ...)
  */
 static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, struct aim_incomingim_ch1_args *args)
 {
-  struct owlfaim_priv *priv = sess->aux_data;
   owl_message *m;
   char *stripmsg, *nz_screenname, *wrapmsg;
   char realmsg[8192+1] = {""};
@@ -1304,10 +1290,6 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
     faimtest_handlecmd(sess, conn, userinfo, tmpstr);
   }
   */
-  
-  if (priv->buddyicon && (args->icbmflags & AIM_IMFLAGS_BUDDYREQ)) {
-    /* aim_send_icon(sess, userinfo->sn, priv->buddyicon, priv->buddyiconlen, priv->buddyiconstamp, priv->buddyiconsum); */
-  }
   
   return(1);
 }
