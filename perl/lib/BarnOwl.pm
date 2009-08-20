@@ -289,24 +289,31 @@ sub _new_variable {
     $func->($name, $args{default}, $args{summary}, $args{description});
 }
 
-=head2 quote STRING
+=head2 quote LIST
 
-Return a version of STRING fully quoted to survive processing by
-BarnOwl's command parser.
+Quotes each of the strings in LIST and returns a string that will be
+correctly decoded to LIST by the BarnOwl command parser.  For example:
+
+    quote('zwrite', 'andersk', '-m', 'Hello, world!')
+    # returns "zwrite andersk -m 'Hello, world!'"
 
 =cut
 
 sub quote {
-    my $str = shift;
-    return "''" if $str eq '';
-    if ($str !~ /['" ]/) {
-        return "$str";
+    my @quoted;
+    for my $str (@_) {
+        if ($str eq '') {
+            push @quoted, "''";
+        } elsif ($str !~ /['" ]/) {
+            push @quoted, "$str";
+        } elsif ($str !~ /'/) {
+            push @quoted, "'$str'";
+        } else {
+            (my $qstr = $str) =~ s/"/"'"'"/g;
+            push @quoted, '"' . $qstr . '"';
+        }
     }
-    if ($str !~ /'/) {
-        return "'$str'";
-    }
-    $str =~ s/"/"'"'"/g;
-    return '"' . $str . '"';
+    return join(' ', @quoted);
 }
 
 =head2 Modify filters by appending text
