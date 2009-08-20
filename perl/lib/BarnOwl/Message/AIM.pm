@@ -13,9 +13,9 @@ sub is_private {
 sub replycmd {
     my $self = shift;
     if ($self->is_incoming) {
-        return "aimwrite " . BarnOwl::quote($self->sender);
+        return BarnOwl::quote('aimwrite', $self->sender);
     } else {
-        return "aimwrite " . BarnOwl::quote($self->recipient);
+        return BarnOwl::quote('aimwrite', $self->recipient);
     }
 }
 
