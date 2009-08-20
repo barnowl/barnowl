@@ -65,7 +65,7 @@ sub insert_completion {
 
 sub show_completions {
     my @words = @_;
-    my $all = join(" ", map {BarnOwl::quote($_)} @words);
+    my $all = BarnOwl::quote(@words);
     my $width = BarnOwl::getnumcols();
     if (length($all) > $width-1) {
         $all = substr($all, 0, $width-4) . "...";
