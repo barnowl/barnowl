@@ -584,11 +584,11 @@ sub cmd_jwrite {
            );
     }
 
-    my $cmd = "jwrite $jwrite_to -a $jwrite_from";
-    $cmd .= " -t $jwrite_thread" if $jwrite_thread;
-    $cmd .= " -s $jwrite_subject" if $jwrite_subject;
+    my @cmd = ('jwrite', $jwrite_to, '-a', $jwrite_from);
+    push @cmd, '-t', $jwrite_thread if $jwrite_thread;
+    push @cmd, '-s', $jwrite_subject if $jwrite_subject;
 
-    BarnOwl::start_edit_win($cmd, \&process_owl_jwrite );
+    BarnOwl::start_edit_win(BarnOwl::quote(@cmd), \&process_owl_jwrite);
 }
 
 sub cmd_jmuc {
