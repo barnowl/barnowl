@@ -386,7 +386,7 @@ sub cmd_msg {
     if(@_) {
         process_msg($conn, $to, join(" ", @_));
     } else {
-        BarnOwl::start_edit_win("/msg -a " . $conn->alias . " $to", sub {process_msg($conn, $to, @_)});
+        BarnOwl::start_edit_win(BarnOwl::quote('/msg', '-a', $conn->alias, $to), sub {process_msg($conn, $to, @_)});
     }
     return;
 }
@@ -413,8 +413,8 @@ sub process_msg {
         sender      => $conn->nick,
         is_private($to) ?
           (isprivate  => 'true') : (channel => $to),
-        replycmd    => "irc-msg -a " . $conn->alias . " $to",
-        replysendercmd => "irc-msg -a " . $conn->alias . " $to"
+        replycmd    => BarnOwl::quote('irc-msg',  '-a', $conn->alias, $to),
+        replysendercmd => BarnOwl::quote('irc-msg', '-a', $conn->alias, $to),
        );
     BarnOwl::queue_message($msg);
     return;

@@ -118,9 +118,9 @@ sub on_msg {
           (notice     => 'true') : (),
         is_private($recipient) ?
           (isprivate  => 'true') : (channel => $recipient),
-        replycmd    => 'irc-msg -a ' . $self->alias . ' ' .
-            (is_private($recipient) ? $evt->nick : $recipient),
-        replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
+        replycmd    => BarnOwl::quote('irc-msg', '-a', $self->alias,
+          (is_private($recipient) ? $evt->nick : $recipient)),
+        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
        );
 
     BarnOwl::queue_message($msg);
@@ -169,8 +169,8 @@ sub on_join {
         loginout   => 'login',
         action     => 'join',
         channel    => $evt->to,
-        replycmd => 'irc-msg -a ' . $self->alias . ' ' . join(' ', $evt->to),
-        replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
+        replycmd   => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->to),
+        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
         );
     BarnOwl::queue_message($msg);
 }
@@ -181,8 +181,8 @@ sub on_part {
         loginout   => 'logout',
         action     => 'part',
         channel    => $evt->to,
-        replycmd => 'irc-msg -a ' . $self->alias . ' ' . join(' ', $evt->to),
-        replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
+        replycmd   => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->to),
+        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
         );
     BarnOwl::queue_message($msg);
 }
@@ -194,8 +194,8 @@ sub on_quit {
         action     => 'quit',
         from       => $evt->to,
         reason     => [$evt->args]->[0],
-        replycmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick,
-        replysendercmd => 'irc-msg -a ' . $self->alias . ' ' . $evt->nick
+        replycmd   => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
+        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
         );
     BarnOwl::queue_message($msg);
 }
