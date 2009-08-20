@@ -578,8 +578,8 @@ static inline void oe_fixup(int *target, int start, int end, int change) {
 int owl_editwin_replace_region(owl_editwin *e, const char *s)
 {
   oe_excursion x;
-  oe_save_excursion(e, &x);
   int ret;
+  oe_save_excursion(e, &x);
 
   if(e->index > e->mark) {
     owl_editwin_exchange_point_and_mark(e);

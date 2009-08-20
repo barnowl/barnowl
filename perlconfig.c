@@ -574,13 +574,13 @@ void owl_perlconfig_dispatch(owl_dispatch *d)
 
 void owl_perlconfig_perl_timer(owl_timer *t, void *data)
 {
+  dSP;
   SV *obj = data;
 
   if(!SvROK(obj)) {
     return;
   }
 
-  dSP;
   ENTER;
   SAVETMPS;
 

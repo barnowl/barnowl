@@ -1886,6 +1886,7 @@ void owl_function_reply(int type, int enter)
   if (owl_view_get_size(owl_global_get_current_view(&g))==0) {
     owl_function_error("No message selected");
   } else {
+    char *cmd;
     
     m=owl_view_get_element(owl_global_get_current_view(&g), owl_global_get_curmsg(&g));
     if (!m) {
@@ -1908,7 +1909,6 @@ void owl_function_reply(int type, int enter)
       return;
     }
 
-    char *cmd;
     if((type == 0 &&
         (cmd=owl_perlconfig_message_call_method(m, "replycmd", 0, NULL))) ||
        (type == 1 &&
