@@ -82,24 +82,20 @@ sub pretty_recipient {
 sub context_reply_cmd {
     my $mclass = shift;
     my $minstance = shift;
-    my $class = "";
+    my @class;
     if (lc($mclass) ne "message") {
-        $class = "-c " . BarnOwl::quote($mclass);
+        @class = ('-c', $mclass);
     }
-    my $instance = "";
+    my @instance;
     if (lc($minstance) ne "personal") {
-        $instance = "-i " . BarnOwl::quote($minstance);
+        @instance = ('-i', $minstance);
     }
-    if (($class eq "") or  ($instance eq "")) {
-        return $class . $instance;
-    } else {
-        return $class . " " . $instance;
-    }
+    return (@class, @instance);
 }
 
 sub personal_context {
     my ($m) = @_;
-    return context_reply_cmd($m->class, $m->instance);
+    return BarnOwl::quote(context_reply_cmd($m->class, $m->instance));
 }
 
 sub short_personal_context {
@@ -177,17 +173,16 @@ sub replycmd {
         }
     }
 
-    my $cmd;
+    my @cmd;
     if(lc $self->opcode eq 'crypt' and ( not $sender or $self->is_private)) {
         # Responses to zcrypted messages should be zcrypted, so long as we
         # aren't switching to personals
-        $cmd = 'zcrypt';
+        @cmd = ('zcrypt');
     } else {
-        $cmd = 'zwrite';
+        @cmd = ('zwrite');
     }
 
-    my $context_part = context_reply_cmd($class, $instance);
-    $cmd .= " " . $context_part unless ($context_part eq '');
+    push @cmd, context_reply_cmd($class, $instance);
     if ($to ne '') {
         $to = strip_realm($to);
         if (defined $cc) {
@@ -195,15 +190,15 @@ sub replycmd {
             my %cc = map {$_ => 1} @cc;
             delete $cc{strip_realm(BarnOwl::zephyr_getsender())};
             @cc = keys %cc;
-            $cmd .= " -C " . join(" ", @cc);
+            push @cmd, '-C', @cc;
         } else {
             if(BarnOwl::getvar('smartstrip') eq 'on') {
                 $to = BarnOwl::zephyr_smartstrip_user($to);
             }
-            $cmd .= " $to";
+            push @cmd, $to;
         }
     }
-    return $cmd;
+    return BarnOwl::quote(@cmd);
 }
 
 sub replysendercmd {
