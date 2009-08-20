@@ -897,34 +897,32 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, const char 
   owl_free(longuser);
 }
 
-void owl_message_create_from_zwriteline(owl_message *m, const char *line, const char *body, const char *zsig)
+void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const char *body)
 {
-  owl_zwrite z;
   int ret;
   char hostbuff[5000];
   
   owl_message_init(m);
 
-  /* create a zwrite for the purpose of filling in other message fields */
-  owl_zwrite_create_from_line(&z, line);
-
   /* set things */
   owl_message_set_direction_out(m);
   owl_message_set_type_zephyr(m);
   owl_message_set_sender(m, owl_zephyr_get_sender());
-  owl_message_set_class(m, owl_zwrite_get_class(&z));
-  owl_message_set_instance(m, owl_zwrite_get_instance(&z));
-  if (owl_zwrite_get_numrecips(&z)>0) {
-    char *longzuser = long_zuser(owl_zwrite_get_recip_n(&z, 0));
+  owl_message_set_class(m, owl_zwrite_get_class(z));
+  owl_message_set_instance(m, owl_zwrite_get_instance(z));
+  if (owl_zwrite_get_numrecips(z)>0) {
+    char *longzuser = long_zuser(owl_zwrite_get_recip_n(z, 0));
     owl_message_set_recipient(m,
 			      longzuser); /* only gets the first user, must fix */
     owl_free(longzuser);
   }
-  owl_message_set_opcode(m, owl_zwrite_get_opcode(&z));
-  owl_message_set_realm(m, owl_zwrite_get_realm(&z)); /* also a hack, but not here */
-  owl_message_set_zwriteline(m, line);
+  owl_message_set_opcode(m, owl_zwrite_get_opcode(z));
+  owl_message_set_realm(m, owl_zwrite_get_realm(z)); /* also a hack, but not here */
+  if(z->zwriteline) {
+    owl_message_set_zwriteline(m, z->zwriteline);
+  }
   owl_message_set_body(m, body);
-  owl_message_set_zsig(m, zsig);
+  owl_message_set_zsig(m, owl_zwrite_get_zsig(z));
   
   /* save the hostname */
   ret=gethostname(hostbuff, MAXHOSTNAMELEN);
@@ -936,11 +934,9 @@ void owl_message_create_from_zwriteline(owl_message *m, const char *line, const 
   }
 
   /* set the "isprivate" attribute if it's a private zephyr. */
-  if (owl_zwrite_is_personal(&z)) {
+  if (owl_zwrite_is_personal(z)) {
     owl_message_set_isprivate(m);
   }
-
-  owl_zwrite_free(&z);
 }
 
 void owl_message_free(owl_message *m)

@@ -170,7 +170,7 @@ void owl_log_outgoing(const owl_message *m)
 }
 
 
-void owl_log_outgoing_zephyr_error(const char *to, const char *text)
+void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
 {
   FILE *file;
   char filename[MAXPATHLEN], *logpath;
@@ -180,9 +180,8 @@ void owl_log_outgoing_zephyr_error(const char *to, const char *text)
   /* create a present message so we can pass it to
    * owl_log_shouldlog_message()
    */
-  zwriteline=owl_sprintf("zwrite %s", to);
-  m=owl_function_make_outgoing_zephyr(text, zwriteline, "");
-  owl_free(zwriteline);
+  m = owl_malloc(sizeof(owl_message));
+  owl_message_create_from_zwrite(m, zw, text);
   if (!owl_log_shouldlog_message(m)) {
     owl_message_free(m);
     return;
@@ -190,7 +189,7 @@ void owl_log_outgoing_zephyr_error(const char *to, const char *text)
   owl_message_free(m);
 
   /* chop off a local realm */
-  tobuff=short_zuser(to);
+  tobuff = short_zuser(owl_list_get_element(&(zw->recips), 0));
 
   /* expand ~ in path names */
   logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));

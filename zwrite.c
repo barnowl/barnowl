@@ -23,6 +23,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
   z->cc=0;
   z->noping=0;
   owl_list_create(&(z->recips));
+  z->zwriteline = owl_strdup(line);
 
   /* parse the command line for options */
   argv=owl_parseline(line, &argc);
@@ -349,6 +350,12 @@ const char *owl_zwrite_get_zsig(const owl_zwrite *z)
   return("");
 }
 
+void owl_zwrite_set_zsig(owl_zwrite *z, const char *zsig)
+{
+  if(z->zsig) owl_free(z->zsig);
+  z->zsig = owl_strdup(zsig);
+}
+
 void owl_zwrite_get_recipstr(const owl_zwrite *z, char *buff)
 {
   int i, j;
@@ -389,6 +396,7 @@ int owl_zwrite_is_personal(const owl_zwrite *z)
 void owl_zwrite_free(owl_zwrite *z)
 {
   owl_list_free_all(&(z->recips), &owl_free);
+  if (z->zwriteline) owl_free(z->zwriteline);
   if (z->class) owl_free(z->class);
   if (z->inst) owl_free(z->inst);
   if (z->opcode) owl_free(z->opcode);

@@ -768,6 +768,9 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
       owl_function_adminmsg("", buff);
     } else {
       char buff[BUFFLEN];
+      owl_zwrite zw;
+      char *realm;
+
       tmp = short_zuser(retnotice->z_recipient);
       owl_function_error("%s: Not logged in or subscribing.", tmp);
       /*
@@ -795,7 +798,24 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
                  tmp);
       }
       owl_function_adminmsg("", buff);
-      owl_log_outgoing_zephyr_error(tmp, buff);
+
+      memset(&zw, 0, sizeof(zw));
+      zw.class = owl_strdup(retnotice->z_class);
+      zw.inst  = owl_strdup(retnotice->z_class_inst);
+      realm = strchr(retnotice->z_recipient, '@');
+      if(realm) {
+        zw.realm = owl_strdup(realm + 1);
+      } else {
+        zw.realm = owl_strdup(owl_zephyr_get_realm());
+      }
+      zw.opcode = owl_strdup(retnotice->z_opcode);
+      zw.zsig   = owl_strdup("");
+      owl_list_create(&(zw.recips));
+      owl_list_append_element(&(zw.recips), owl_strdup(tmp));
+
+      owl_log_outgoing_zephyr_error(&zw, buff);
+
+      owl_zwrite_free(&zw);
       owl_free(tmp);
     }
   } else {

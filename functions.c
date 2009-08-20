@@ -228,10 +228,16 @@ void owl_function_adminmsg(const char *header, const char *body)
 owl_message *owl_function_make_outgoing_zephyr(const char *body, const char *zwriteline, const char *zsig)
 {
   owl_message *m;
+  owl_zwrite zw;
+
+  owl_zwrite_create_from_line(&zw, zwriteline);
+  owl_zwrite_set_zsig(&zw, zsig);
 
   /* create the message */
   m=owl_malloc(sizeof(owl_message));
-  owl_message_create_from_zwriteline(m, zwriteline, body, zsig);
+  
+  owl_message_create_from_zwrite(m, &zw, body);
+  owl_zwrite_free(&zw);
 
   return(m);
 }
