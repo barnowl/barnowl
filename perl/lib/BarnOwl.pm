@@ -361,8 +361,8 @@ sub filter_append_helper
     my @append = @_;
     my $oldfilter = BarnOwl::getfilter($filter);
     chomp $oldfilter;
-    my $newfilter = join(' ', $oldfilter, $sep, @_);
-    my $msgtext = "To filter '$filter' $action\n'".join(' ', @append)."' to get\n'$newfilter'";
+    my $newfilter = "$oldfilter $sep " . quote(@append);
+    my $msgtext = "To filter " . quote($filter) . " $action\n" . quote(@append) . "\nto get\n$newfilter";
     if (BarnOwl::getvar('showfilterchange') eq 'on') {
         BarnOwl::admin_message("Filter", $msgtext);
     }
