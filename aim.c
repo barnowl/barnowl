@@ -1156,7 +1156,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
 {
   owl_message *m;
   char *stripmsg, *nz_screenname, *wrapmsg;
-  char realmsg[8192+1] = {""};
+  char realmsg[8192+1] = "";
   /* int clienttype = AIM_CLIENTTYPE_UNKNOWN; */
 
   /* clienttype = aim_fingerprintclient(args->features, args->featureslen); */
