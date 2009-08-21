@@ -724,11 +724,11 @@ const owl_regex *owl_global_get_search_re(const owl_global *g) {
   return &g->search_re;
 }
 
-void owl_global_set_newmsgproc_pid(owl_global *g, int i) {
+void owl_global_set_newmsgproc_pid(owl_global *g, pid_t i) {
   g->newmsgproc_pid=i;
 }
 
-int owl_global_get_newmsgproc_pid(const owl_global *g) {
+pid_t owl_global_get_newmsgproc_pid(const owl_global *g) {
   return(g->newmsgproc_pid);
 }
 

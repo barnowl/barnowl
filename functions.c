@@ -3241,7 +3241,8 @@ void owl_function_do_newmsgproc(void)
     
     /* if it exited, fork & exec a new one */
     if (owl_global_get_newmsgproc_pid(&g)==0) {
-      int i, myargc;
+      pid_t i;
+      int myargc;
       i=fork();
       if (i) {
 	/* parent set the child's pid */

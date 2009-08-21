@@ -507,7 +507,7 @@ typedef struct _owl_popexec {
   int refcount;
   owl_viewwin *vwin;
   int winactive;
-  int pid;			/* or 0 if it has terminated */
+  pid_t pid;			/* or 0 if it has terminated */
   owl_dispatch dispatch;
 } owl_popexec;
 
@@ -557,7 +557,7 @@ typedef struct _owl_global {
   int hascolors;
   int colorpairs;
   owl_colorpair_mgr cpmgr;
-  int newmsgproc_pid;
+  pid_t newmsgproc_pid;
   int malloced, freed;
   owl_regex search_re;
   aim_session_t aimsess;

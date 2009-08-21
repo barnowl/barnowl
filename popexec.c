@@ -14,7 +14,7 @@ owl_popexec *owl_popexec_new(const char *command)
   owl_popwin *pw;
   owl_viewwin *v;
   int pipefds[2], child_write_fd, parent_read_fd;
-  int pid;
+  pid_t pid;
 
   pe = owl_malloc(sizeof(owl_popexec));
   if (!pe) return NULL;
