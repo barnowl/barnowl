@@ -91,7 +91,6 @@ sub common_prefix {
 
 sub get_completions {
     my $ctx = shift;
-    my @words = ();
     if($ctx->word == 0) {
         return complete_command($ctx->words->[0]);
     } else {
