@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #define INITSIZE 10
-#define GROWBY 1.5
+#define GROWBY 3 / 2
 
 int owl_list_create(owl_list *l)
 {
@@ -24,10 +24,11 @@ void owl_list_grow(owl_list *l, int n) /*noproto*/
   void *ptr;
 
   if ((l->size+n) > l->avail) {
-    ptr=owl_realloc(l->list, l->avail*GROWBY*sizeof(void *));
+    int avail = MAX(l->avail * GROWBY, l->size + n);
+    ptr = owl_realloc(l->list, avail * sizeof(void *));
     if (ptr==NULL) abort();
     l->list=ptr;
-    l->avail=l->avail*GROWBY;
+    l->avail = avail;
   }
 
 }

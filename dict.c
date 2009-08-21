@@ -12,8 +12,7 @@
 
 
 #define INITSIZE 30
-#define GROWAT 2
-#define GROWBY 1.5
+#define GROWBY 3 / 2
 
 int owl_dict_create(owl_dict *d) {
   d->size=0;
@@ -92,9 +91,10 @@ int owl_dict_insert_element(owl_dict *d, const char *k, void *v, void (*free_on_
   } else if (found && !free_on_replace) {
     return(-2);
   } else {
-    if ((d->size+1) > (d->avail/GROWAT)) {
-      d->els=owl_realloc(d->els, d->avail*GROWBY*sizeof(void *));
-      d->avail=d->avail*GROWBY;
+    if (d->size + 1 > d->avail) {
+      int avail = MAX(d->avail * GROWBY, d->size + 1);
+      d->els = owl_realloc(d->els, avail * sizeof(owl_dict_el));
+      d->avail = avail;
       if (d->els==NULL) return(-1);
     }
     if ((dupk = owl_strdup(k)) == NULL) return(-1);
