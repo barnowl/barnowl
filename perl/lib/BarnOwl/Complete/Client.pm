@@ -242,6 +242,12 @@ sub complete_set_args {
     return complete_variable();
 }
 
+sub complete_startup {
+    my $ctx = shift;
+    my $new_ctx = $ctx->shift_words(1);
+    return BarnOwl::Completion::get_completions($new_ctx);
+}
+
 BarnOwl::Completion::register_completer(help    => \&complete_help);
 BarnOwl::Completion::register_completer(filter  => \&complete_filter);
 BarnOwl::Completion::register_completer(view    => \&complete_view);
@@ -249,5 +255,6 @@ BarnOwl::Completion::register_completer(show    => \&complete_show);
 BarnOwl::Completion::register_completer(getvar  => \&complete_getvar);
 BarnOwl::Completion::register_completer(set     => \&complete_set);
 BarnOwl::Completion::register_completer(unset   => \&complete_set);
+BarnOwl::Completion::register_completer(startup => \&complete_startup);
 
 1;
