@@ -12,7 +12,7 @@ use base qw( BarnOwl::Message );
 sub strip_realm {
     my $sender = shift;
     my $realm = BarnOwl::zephyr_getrealm();
-    $sender =~ s/\@$realm$//;
+    $sender =~ s/\@\Q$realm\E$//;
     return $sender;
 }
 
