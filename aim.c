@@ -797,7 +797,7 @@ static int faimtest_icbmparaminfo(aim_session_t *sess, aim_frame_t *fr, ...)
   params = va_arg(ap, struct aim_icbmparameters *);
   va_end(ap);
   
-  owl_function_debugmsg("faimtest_icbmparaminfo: ICBM Parameters: maxchannel = %d, default flags = 0x%08lx, max msg len = %d, max sender evil = %f, max reciever evil = %f, min msg interval = %ld",
+  owl_function_debugmsg("faimtest_icbmparaminfo: ICBM Parameters: maxchannel = %d, default flags = 0x%08x, max msg len = %d, max sender evil = %f, max reciever evil = %f, min msg interval = %u",
 		       params->maxchan, params->flags, params->maxmsglen, ((float)params->maxsenderwarn)/10.0, ((float)params->maxrecverwarn)/10.0, params->minmsginterval);
      
   /*
@@ -1273,7 +1273,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   
   if (args->icbmflags & AIM_IMFLAGS_HASICON) {
     /* aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_BUDDYREQ, "You have an icon"); */
-    owl_function_debugmsg("faimtest_parse_incoming_im_chan1: icbm: their icon: iconstamp = %ld, iconlen = 0x%08lx, iconsum = 0x%04x\n", args->iconstamp, args->iconlen, args->iconsum);
+    owl_function_debugmsg("faimtest_parse_incoming_im_chan1: icbm: their icon: iconstamp = %ld, iconlen = 0x%08x, iconsum = 0x%04x\n", args->iconstamp, args->iconlen, args->iconsum);
   }
 
   /*
@@ -1328,10 +1328,10 @@ static int faimtest_parse_incoming_im_chan2(aim_session_t *sess, aim_conn_t *con
 
     /* aim_chat_join(sess, conn, args->info.chat.roominfo.exchange, args->info.chat.roominfo.name, args->info.chat.roominfo.instance); */
   } else if (args->reqclass == AIM_CAPS_BUDDYICON) {
-    owl_function_debugmsg("faimtest_parse_incoming_im_chan2: Buddy Icon from %s, length = %lu\n",
+    owl_function_debugmsg("faimtest_parse_incoming_im_chan2: Buddy Icon from %s, length = %u\n",
 			  userinfo->sn, args->info.icon.length);
   } else if (args->reqclass == AIM_CAPS_ICQRTF) {
-    owl_function_debugmsg("faimtest_parse_incoming_im_chan2: RTF message from %s: (fgcolor = 0x%08lx, bgcolor = 0x%08lx) %s\n",
+    owl_function_debugmsg("faimtest_parse_incoming_im_chan2: RTF message from %s: (fgcolor = 0x%08x, bgcolor = 0x%08x) %s\n",
 			  userinfo->sn, args->info.rtfmsg.fgcolor, args->info.rtfmsg.bgcolor, args->info.rtfmsg.rtfmsg);
   } else {
     owl_function_debugmsg("faimtest_parse_incoming_im_chan2: icbm: unknown reqclass (%d)\n", args->reqclass);
@@ -1600,7 +1600,7 @@ static int faimtest_parse_ratechange(aim_session_t *sess, aim_frame_t *fr, ...)
   
   va_end(ap);
   
-  owl_function_debugmsg("faimtest_parse_ratechange: rate %s (rate class 0x%04x): curavg = %ld, maxavg = %ld, alert at %ld, clear warning at %ld, limit at %ld, disconnect at %ld (window size = %ld)",
+  owl_function_debugmsg("faimtest_parse_ratechange: rate %s (rate class 0x%04x): curavg = %u, maxavg = %u, alert at %u, clear warning at %u, limit at %u, disconnect at %u (window size = %u)",
 			(code < 5)?codes[code]:"invalid",
 			rateclass,
 			currentavg, maxavg,
@@ -1757,7 +1757,7 @@ static int ssidata(aim_session_t *sess, aim_frame_t *fr, ...)
   list = va_arg(ap, struct aim_ssi_item *);
   va_end(ap);
   
-  owl_function_debugmsg("ssiddata: got SSI data (0x%02x, %d items, %ld)", fmtver, itemcount, stamp);
+  owl_function_debugmsg("ssiddata: got SSI data (0x%02x, %d items, %u)", fmtver, itemcount, stamp);
   /*
   for (curitem=sess->ssi.local; curitem; curitem=curitem->next) {
     for (l = list; l; l = l->next) {
@@ -1788,7 +1788,7 @@ static int offlinemsg(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
   
   if (msg->type == 0x0001) {
-    owl_function_debugmsg("offlinemsg: from %ld at %d/%d/%d %02d:%02d : %s", msg->sender, msg->year, msg->month, msg->day, msg->hour, msg->minute, msg->msg);
+    owl_function_debugmsg("offlinemsg: from %u at %d/%d/%d %02d:%02d : %s", msg->sender, msg->year, msg->month, msg->day, msg->hour, msg->minute, msg->msg);
   } else {
     owl_function_debugmsg("unknown offline message type 0x%04x", msg->type);
   }

@@ -269,7 +269,7 @@ char * owl_perlconfig_message_call_method(const owl_message *m, const char *meth
   SPAGAIN;
 
   if(count != 1) {
-    fprintf(stderr, "perl returned wrong count %d\n", count);
+    fprintf(stderr, "perl returned wrong count %u\n", count);
     abort();
   }
 
