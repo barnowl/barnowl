@@ -21,7 +21,7 @@
 	 * complex argument processing or something, we define a
 	 * simple version here that takes arguments in as flat a
 	 * manner as possible, to simplify the XS code, put it in
-	 * BarnOwl::Intenal::, and write a perl wrapper in BarnOwl.pm
+	 * BarnOwl::Internal::, and write a perl wrapper in BarnOwl.pm
 	 * that munges the arguments as appropriate and calls the
 	 * internal version.
 	 */
