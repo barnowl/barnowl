@@ -111,7 +111,7 @@ SV *owl_perlconfig_message2hashref(const owl_message *m)
   return hr;
 }
 
-SV *owl_perlconfig_curmessage2hashref(void) /*noproto*/
+SV *owl_perlconfig_curmessage2hashref(void)
 {
   int curmsg;
   const owl_view *v;

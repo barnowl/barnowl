@@ -6,7 +6,6 @@
 
 #define OWL_PERL
 #include "owl.h"
-SV *owl_perlconfig_curmessage2hashref(void);
 
 #define SV_IS_CODEREF(sv) (SvROK((sv)) && SvTYPE(SvRV((sv))) == SVt_PVCV)
 
