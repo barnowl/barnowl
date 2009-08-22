@@ -187,7 +187,7 @@ void owl_zwrite_populate_zsig(owl_zwrite *z)
 	  strcat(z->zsig, buff);
 	}
 	pclose(file);
-	if (z->zsig[strlen(z->zsig)-1]=='\n') {
+	if (z->zsig[0] != '\0' && z->zsig[strlen(z->zsig) - 1] == '\n') {
 	  z->zsig[strlen(z->zsig)-1]='\0';
 	}
       }

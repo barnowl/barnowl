@@ -377,14 +377,15 @@ int owl_zephyr_loadloginsubs(const char *filename)
   file=fopen(subsfile, "r");
   if (file) {
     while ( fgets(buffer, 1024, file)!=NULL ) {
-      if (buffer[0]=='#' || buffer[0]=='\n' || buffer[0]=='\n') continue;
+      if (buffer[0] == '\0' || buffer[0] == '#' || buffer[0] == '\n') continue;
       
       if (count == numSubs) {
         numSubs *= 2;
         subs = owl_realloc(subs, numSubs * sizeof(ZSubscription_t));
       }
 
-      buffer[strlen(buffer)-1]='\0';
+      if (buffer[strlen(buffer) - 1] == '\n')
+	buffer[strlen(buffer) - 1] = '\0';
       subs[count].zsub_class=owl_strdup("login");
       subs[count].zsub_recipient=owl_strdup("*");
       if (strchr(buffer, '@')) {

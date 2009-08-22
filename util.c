@@ -594,7 +594,7 @@ void owl_util_file_deleteline(const char *filename, const char *line, int backup
   while (fgets(buff, LINE, file)!=NULL) {
     /* strip the newline */
     newline=0;
-    if (buff[strlen(buff)-1]=='\n') {
+    if (buff[0] != '\0' && buff[strlen(buff) - 1] == '\n') {
       buff[strlen(buff)-1]='\0';
       newline=1;
     }

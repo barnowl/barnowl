@@ -11,7 +11,7 @@ void owl_viewwin_init_text(owl_viewwin *v, WINDOW *win, int winlines, int wincol
   owl_fmtext_init_null(&(v->fmtext));
   if (text) {
     owl_fmtext_append_normal(&(v->fmtext), text);
-    if (text[strlen(text)-1]!='\n' && text[0]!='\0') {
+    if (text[0] != '\0' && text[strlen(text) - 1] != '\n') {
       owl_fmtext_append_normal(&(v->fmtext), "\n");
     }
     v->textlines=owl_fmtext_num_lines(&(v->fmtext));

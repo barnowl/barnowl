@@ -1927,7 +1927,8 @@ char *owl_command_aimwrite(int argc, const char *const *argv, const char *buff)
 	myargc--;
 	myargv++;
       }
-      newbuff[strlen(newbuff)-1]='\0'; /* remove last space */
+      if (strlen(newbuff) >= 1)
+	newbuff[strlen(newbuff) - 1] = '\0'; /* remove last space */
 
       recip=owl_malloc(strlen(argv[0])+5);
       sprintf(recip, "%s ", argv[1]);

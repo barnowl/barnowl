@@ -3348,8 +3348,9 @@ void owl_function_source(const char *filename)
     return;
   }
   while (fgets(buff, LINE, file)!=NULL) {
-    if (buff[0] == '#') continue;
-    buff[strlen(buff)-1]='\0';
+    if (buff[0] == '\0' || buff[0] == '#') continue;
+    if (buff[strlen(buff) - 1] == '\n')
+      buff[strlen(buff) - 1] = '\0';
     owl_function_command(buff);
   }
   fclose(file);
