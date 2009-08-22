@@ -987,11 +987,7 @@ void owl_zephyr_delsub(const char *filename, const char *class, const char *inst
 /* caller must free the return */
 char *owl_zephyr_makesubline(const char *class, const char *inst, const char *recip)
 {
-  char *out;
-
-  out=owl_malloc(strlen(class)+strlen(inst)+strlen(recip)+30);
-  sprintf(out, "%s,%s,%s\n", class, inst, !strcmp(recip, "") ? "*" : recip);
-  return(out);
+  return owl_sprintf("%s,%s,%s\n", class, inst, !strcmp(recip, "") ? "*" : recip);
 }
 
 

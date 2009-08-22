@@ -942,17 +942,9 @@ static int getaimdata(aim_session_t *sess, unsigned char **bufret, int *buflenre
     return -1;
   
   if (modname) {
-    if (!(filename = owl_malloc(strlen(priv->aimbinarypath)+1+strlen(modname)+4+1))) {
-      /* perror("memrequest: malloc"); */
-      return -1;
-    }
-    sprintf(filename, "%s/%s.ocm", priv->aimbinarypath, modname);
+    filename = owl_sprintf("%s/%s.ocm", priv->aimbinarypath, modname);
   } else {
-    if (!(filename = owl_malloc(strlen(priv->aimbinarypath)+1+strlen(defaultmod)+1))) {
-      /* perror("memrequest: malloc"); */
-      return -1;
-    }
-    sprintf(filename, "%s/%s", priv->aimbinarypath, defaultmod);
+    filename = owl_sprintf("%s/%s", priv->aimbinarypath, defaultmod);
   }
   
   if (stat(filename, &st) == -1) {

@@ -2029,9 +2029,7 @@ char *owl_function_exec(int argc, const char *const *argv, const char *buff, int
   }
 
   buff = skiptokens(buff, 1);
-  newbuff = owl_malloc(strlen(buff)+strlen(redirect)+1);
-  strcpy(newbuff, buff);
-  strcat(newbuff, redirect);
+  newbuff = owl_sprintf("%s%s", buff, redirect);
 
   if (type == 1) {
     owl_popexec_new(newbuff);

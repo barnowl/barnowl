@@ -146,9 +146,7 @@ int owl_cmd_create_alias(owl_cmd *cmd, const char *name, const char *aliased_to)
   memset(cmd, 0, sizeof(owl_cmd));
   cmd->name = owl_strdup(name);
   cmd->cmd_aliased_to = owl_strdup(aliased_to);
-  cmd->summary = owl_malloc(strlen(aliased_to)+strlen(OWL_CMD_ALIAS_SUMMARY_PREFIX)+2);
-  strcpy(cmd->summary, OWL_CMD_ALIAS_SUMMARY_PREFIX);
-  strcat(cmd->summary, aliased_to);
+  cmd->summary = owl_sprintf("%s%s", OWL_CMD_ALIAS_SUMMARY_PREFIX, aliased_to);
   return(0);
 }
 
@@ -180,10 +178,7 @@ char *owl_cmd_execute(const owl_cmd *cmd, const owl_cmddict *cd, const owl_conte
       owl_function_makemsg("Alias loop detected for '%s'.", cmdbuff);
     } else {
       cmdbuffargs = skiptokens(cmdbuff, 1);
-      newcmd = owl_malloc(strlen(cmd->cmd_aliased_to)+strlen(cmdbuffargs)+2);
-      strcpy(newcmd, cmd->cmd_aliased_to);
-      strcat(newcmd, " ");
-      strcat(newcmd, cmdbuffargs);
+      newcmd = owl_sprintf("%s %s", cmd->cmd_aliased_to, cmdbuffargs);
       rv = owl_function_command(newcmd);
       owl_free(newcmd);
     } 
@@ -243,13 +238,8 @@ const char *owl_cmd_get_summary(const owl_cmd *cmd) {
 
 /* returns a summary line describing this keymap.  the caller must free. */
 char *owl_cmd_describe(const owl_cmd *cmd) {
-  char *s;
-  int slen;
   if (!cmd || !cmd->name || !cmd->summary) return NULL;
-  slen = strlen(cmd->name)+strlen(cmd->summary)+30;
-  s = owl_malloc(slen);
-  snprintf(s, slen-1, "%-25s - %s", cmd->name, cmd->summary);
-  return s;
+  return owl_sprintf("%-25s - %s", cmd->name, cmd->summary);
 }
 
 

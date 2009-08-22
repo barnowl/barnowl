@@ -244,13 +244,7 @@ char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *ins
       /* printf("Could not find key table entry.\n"); */
     } else {
       /* Prepare result to be returned */
-      char *temp = keyfile;
-      keyfile = owl_malloc(strlen(temp) + 1);
-      if (keyfile) {
-	strcpy(keyfile, temp);
-      } else {
-	/* printf("Memory allocation error.\n"); */
-      }
+      keyfile = owl_strdup(keyfile);
     }
     
     fclose(fsearch);

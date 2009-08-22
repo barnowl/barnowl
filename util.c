@@ -146,8 +146,7 @@ char **atokenize(const char *buffer, const char *sep, int *i)
       done=1;
     } else {
       args=owl_realloc(args, sizeof(char *) * (count+1));
-      args[count]=owl_malloc(strlen(foo)+1);
-      strcpy(args[count], foo);
+      args[count] = owl_strdup(foo);
       count++;
     }
   }
@@ -324,8 +323,7 @@ char **owl_parseline(const char *line, int *argc)
     if (quote=='\0') {
       /* add the argument */
       argv=owl_realloc(argv, sizeof(char *)*((*argc)+1));
-      argv[*argc]=owl_malloc(strlen(curarg)+2);
-      strcpy(argv[*argc], curarg);
+      argv[*argc] = owl_strdup(curarg);
       *argc=*argc+1;
       strcpy(curarg, "");
       between=1;

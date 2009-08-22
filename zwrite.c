@@ -169,10 +169,10 @@ void owl_zwrite_populate_zsig(owl_zwrite *z)
       char buff[LINE], *openline;
       
       /* simple hack for now to nuke stderr */
-      openline=owl_malloc(strlen(zsigproc)+40);
-      strcpy(openline, zsigproc);
-#if !(OWL_STDERR_REDIR)
-      strcat(openline, " 2> /dev/null");
+#if OWL_STDERR_REDIR
+      openline = owl_strdup(zsigproc);
+#else
+      openline = owl_sprintf("%s 2> /dev/null", zsigproc);
 #endif
       file=popen(openline, "r");
       owl_free(openline);

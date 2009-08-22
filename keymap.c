@@ -55,13 +55,8 @@ int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *co
 /* returns a summary line describing this keymap.  the caller must free. */
 char *owl_keymap_summary(const owl_keymap *km)
 {
-  char *s;
-  int slen;
   if (!km || !km->name || !km->desc) return NULL;
-  slen = strlen(km->name)+strlen(km->desc)+20;
-  s = owl_malloc(slen);
-  snprintf(s, slen-1, "%-15s - %s", km->name, km->desc);
-  return s;
+  return owl_sprintf("%-15s - %s", km->name, km->desc);
 }
 
 /* Appends details about the keymap to fm */
