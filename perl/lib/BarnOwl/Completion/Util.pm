@@ -28,6 +28,7 @@ sub complete_flags {
         } elsif($word =~ m{^--}) {
             if($word eq '--') {
                 $optsdone = 1;
+                $idx++;
                 last;
             }
             $flag = $word if(exists $args->{$word});
@@ -39,6 +40,8 @@ sub complete_flags {
         }
         $idx++;
     }
+    # Account for any words we skipped
+    $argct += $ctx->word - $idx;
 
     if($flag) {
         my $c = $args->{$flag};
