@@ -14,6 +14,8 @@ sub complete_flags {
     my $args    = shift;
     my $default = shift;
 
+    my %options = ();
+    %options = @_ if @_;
 
     my $idx = 1;
     my $flag = undef;
@@ -37,6 +39,11 @@ sub complete_flags {
             $flag = $word if(exists $args->{$word});
         } else {
             $argct++;
+            if ($options{stop_at_nonflag}) {
+                $optsdone = 1;
+                $idx++;
+                last;
+            }
         }
         $idx++;
     }
