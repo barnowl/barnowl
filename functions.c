@@ -2853,6 +2853,7 @@ void owl_function_punt(const char *filter, int direction)
   if (ret) {
     owl_function_error("Error creating filter for zpunt");
     owl_filter_free(f);
+    owl_free(f);
     return;
   }
 
@@ -2864,6 +2865,7 @@ void owl_function_punt(const char *filter, int direction)
       /* if we're punting, then just silently bow out on this duplicate */
       if (direction==0) {
 	owl_filter_free(f);
+	owl_free(f);
 	return;
       }
 
@@ -2872,6 +2874,7 @@ void owl_function_punt(const char *filter, int direction)
 	owl_filter_free(owl_list_get_element(fl, i));
 	owl_list_remove_element(fl, i);
         owl_filter_free(f);
+	owl_free(f);
 	return;
       }
     }
