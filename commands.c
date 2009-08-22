@@ -1919,7 +1919,6 @@ char *owl_command_aimwrite(int argc, const char *const *argv, const char *buff)
       /* Once we have -m, gobble up everything else on the line */
       myargv++;
       myargc--;
-      newbuff=owl_malloc(1);
       newbuff=owl_strdup("");
       while (myargc) {
 	newbuff=owl_realloc(newbuff, strlen(newbuff)+strlen(myargv[0])+5);
