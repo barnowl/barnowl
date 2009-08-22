@@ -216,7 +216,7 @@ int owl_filterelement_create_re(owl_filterelement *fe, const char *field, const 
   owl_filterelement_create(fe);
   fe->field=owl_strdup(field);
   if(owl_regex_create(&(fe->re), re)) {
-    free(fe->field);
+    owl_free(fe->field);
     fe->field = NULL;
     return (-1);
   }

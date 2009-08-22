@@ -169,7 +169,7 @@ int owl_select_add_perl_dispatch(int fd, SV *cb)
     }
   }
 
-  d = malloc(sizeof(owl_dispatch));
+  d = owl_malloc(sizeof(owl_dispatch));
   d->fd = fd;
   d->cfunc = owl_perlconfig_dispatch;
   d->destroy = owl_perlconfig_dispatch_free;

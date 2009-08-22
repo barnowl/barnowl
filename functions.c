@@ -886,7 +886,7 @@ void owl_function_loadsubs(const char *file)
   } else {
     path = owl_util_makepath(file);
     ret=owl_zephyr_loadsubs(path, 1);
-    free(path);
+    owl_free(path);
   }
 
   /* for backwards compatibility for now */
@@ -2846,7 +2846,7 @@ void owl_function_punt(const char *filter, int direction)
   fl=owl_global_get_puntlist(&g);
 
   /* first, create the filter */
-  f=malloc(sizeof(owl_filter));
+  f=owl_malloc(sizeof(owl_filter));
 
   owl_function_debugmsg("About to filter %s", filter);
   ret=owl_filter_init_fromstring(f, "punt-filter", filter);

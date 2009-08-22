@@ -750,7 +750,7 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
         } else { /* classed personal */
           owl_function_makemsg("Message sent to %s on -c %s -i %s\n", tmp, retnotice->z_class, retnotice->z_class_inst);
         }
-        free(tmp);
+        owl_free(tmp);
       } else {
         /* class / instance message */
           owl_function_makemsg("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);

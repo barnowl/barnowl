@@ -364,9 +364,9 @@ const char *owl_global_get_confdir(const owl_global *g) {
  * Setting this also sets startupfile to confdir/startup
  */
 void owl_global_set_confdir(owl_global *g, const char *cd) {
-  free(g->confdir);
+  owl_free(g->confdir);
   g->confdir = owl_strdup(cd);
-  free(g->startupfile);
+  owl_free(g->startupfile);
   g->startupfile = owl_sprintf("%s/startup", cd);
 }
 

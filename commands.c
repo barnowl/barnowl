@@ -1922,7 +1922,7 @@ char *owl_command_aimwrite(int argc, const char *const *argv, const char *buff)
       newbuff=owl_malloc(1);
       newbuff=owl_strdup("");
       while (myargc) {
-	newbuff=realloc(newbuff, strlen(newbuff)+strlen(myargv[0])+5);
+	newbuff=owl_realloc(newbuff, strlen(newbuff)+strlen(myargv[0])+5);
 	strcat(newbuff, myargv[0]);
 	strcat(newbuff, " ");
 	myargc--;

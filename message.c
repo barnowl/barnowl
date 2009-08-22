@@ -603,7 +603,7 @@ char *owl_message_get_cc_without_recipient(const owl_message *m)
       end[strlen(user)] = ' ';
       end += strlen(user) + 1;
     }
-    free(shortuser);
+    owl_free(shortuser);
     user = strtok(NULL, " ");
   }
   end[0] = '\0';

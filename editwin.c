@@ -115,7 +115,7 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   oe_set_index(e, 0);
   oe_set_mark(e, -1);
   if (e->killbuf != NULL)
-    free(e->killbuf);
+    owl_free(e->killbuf);
   e->killbuf = NULL;
   e->goal_column = -1;
   e->cursorx = -1;
