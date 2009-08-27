@@ -174,7 +174,7 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
 {
   FILE *file;
   char filename[MAXPATHLEN], *logpath;
-  char *tobuff, *zwriteline;
+  char *tobuff;
   owl_message *m;
 
   /* create a present message so we can pass it to
