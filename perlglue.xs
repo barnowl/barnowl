@@ -353,7 +353,7 @@ all_filters()
 		filters = newAV();
 		for(i=0;i<owl_list_get_size(fl);i++) {
 			f = owl_list_get_element(fl, i);
-			av_push(filters, newSVpv(owl_filter_get_name(f), 0));
+			av_push(filters, owl_new_sv(owl_filter_get_name(f)));
 		}
 		RETVAL = filters;
 		sv_2mortal((SV*)RETVAL);
@@ -375,7 +375,7 @@ all_styles()
 		styles = newAV();
 		for(i=0;i<owl_list_get_size(&l);i++) {
 			name = owl_list_get_element(&l, i);
-			av_push(styles, newSVpv(name, 0));
+			av_push(styles, owl_new_sv(name));
 		}
 		RETVAL = styles;
 		sv_2mortal((SV*)RETVAL);
@@ -400,7 +400,7 @@ all_variables()
 		vars = newAV();
 		for(i=0;i<owl_list_get_size(&l);i++) {
 			name = owl_list_get_element(&l, i);
-			av_push(vars, newSVpv(name, 0));
+			av_push(vars, owl_new_sv(name));
 		}
 		RETVAL = vars;
 		sv_2mortal((SV*)RETVAL);

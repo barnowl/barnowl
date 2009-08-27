@@ -21,6 +21,18 @@ static void owl_perl_xs_init(pTHX)
   }
 }
 
+
+SV *owl_new_sv(const char * str)
+{
+  SV *ret = newSVpv(str, 0);
+  if(is_utf8_string(str, strlen(str))) {
+    SvUTF8_on(ret);
+  } else {
+    owl_function_error("Internal error! Non-UTF-8 string encountered:\n%s", str);
+  }
+  return ret;
+}
+
 SV *owl_perlconfig_message2hashref(const owl_message *m)
 {
   HV *h, *stash;
@@ -41,7 +53,7 @@ SV *owl_perlconfig_message2hashref(const owl_message *m)
   h = newHV();
 
 #define MSG2H(h,field) (void)hv_store(h, #field, strlen(#field),        \
-                                      newSVpv(owl_message_get_##field(m),0), 0)
+                                      owl_new_sv(owl_message_get_##field(m)), 0)
 
   if (owl_message_is_type_zephyr(m)
       && owl_message_is_direction_in(m)) {
@@ -52,20 +64,20 @@ SV *owl_perlconfig_message2hashref(const owl_message *m)
     j=owl_zephyr_get_num_fields(owl_message_get_notice(m));
     for (i=0; i<j; i++) {
       ptr=owl_zephyr_get_field_as_utf8(owl_message_get_notice(m), i+1);
-      av_push(av_zfields, newSVpvn(ptr, strlen(ptr)));
+      av_push(av_zfields, owl_new_sv(ptr));
       owl_free(ptr);
     }
     (void)hv_store(h, "fields", strlen("fields"), newRV_noinc((SV*)av_zfields), 0);
 
     (void)hv_store(h, "auth", strlen("auth"), 
-                   newSVpv(owl_zephyr_get_authstr(owl_message_get_notice(m)),0),0);
+                   owl_new_sv(owl_zephyr_get_authstr(owl_message_get_notice(m))),0);
   }
 
   j=owl_list_get_size(&(m->attributes));
   for(i=0; i<j; i++) {
     pair=owl_list_get_element(&(m->attributes), i);
     (void)hv_store(h, owl_pair_get_key(pair), strlen(owl_pair_get_key(pair)),
-                   newSVpv(owl_pair_get_value(pair),0),0);
+                   owl_new_sv(owl_pair_get_value(pair)),0);
   }
   
   MSG2H(h, type);
@@ -84,7 +96,7 @@ SV *owl_perlconfig_message2hashref(const owl_message *m)
   if (owl_message_get_header(m)) {
     MSG2H(h, header); 
   }
-  (void)hv_store(h, "time", strlen("time"), newSVpv(owl_message_get_timestr(m),0),0);
+  (void)hv_store(h, "time", strlen("time"), owl_new_sv(owl_message_get_timestr(m)),0);
   (void)hv_store(h, "unix_time", strlen("unix_time"), newSViv(m->time), 0);
   (void)hv_store(h, "id", strlen("id"), newSViv(owl_message_get_id(m)),0);
   (void)hv_store(h, "deleted", strlen("deleted"), newSViv(owl_message_is_delete(m)),0);
@@ -260,7 +272,7 @@ char * owl_perlconfig_message_call_method(const owl_message *m, const char *meth
   PUSHMARK(SP);
   XPUSHs(sv_2mortal(msgref));
   for(i=0;i<argc;i++) {
-    XPUSHs(sv_2mortal(newSVpv(argv[i], 0)));
+    XPUSHs(sv_2mortal(owl_new_sv(argv[i])));
   }
   PUTBACK;
 
@@ -351,7 +363,7 @@ char *owl_perlconfig_initperl(const char * file, int *Pargc, char ***Pargv, char
   inc = get_av("INC", 0);
   path = owl_sprintf("%s/lib", owl_get_datadir());
   av_unshift(inc, 1);
-  av_store(inc, 0, newSVpv(path, 0));
+  av_store(inc, 0, owl_new_sv(path));
   owl_free(path);
 
   eval_pv("use BarnOwl;", FALSE);
@@ -436,7 +448,7 @@ void owl_perlconfig_new_command(const char *name)
   SAVETMPS;
 
   PUSHMARK(SP);
-  XPUSHs(sv_2mortal(newSVpv(name, 0)));
+  XPUSHs(sv_2mortal(owl_new_sv(name)));
   PUTBACK;
 
   call_pv("BarnOwl::Hooks::_new_command", G_SCALAR|G_VOID);
@@ -463,9 +475,7 @@ char *owl_perlconfig_perlcmd(const owl_cmd *cmd, int argc, const char *const *ar
 
   PUSHMARK(SP);
   for(i=0;i<argc;i++) {
-    SV *tmp = newSVpv(argv[i], 0);
-    SvUTF8_on(tmp);
-    XPUSHs(sv_2mortal(tmp));
+    XPUSHs(sv_2mortal(owl_new_sv(argv[i])));
   }
   PUTBACK;
 
@@ -511,8 +521,7 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
   if(cb == NULL) {
     owl_function_error("Perl callback is NULL!");
   }
-  text = newSVpv(owl_editwin_get_text(e), 0);
-  SvUTF8_on(text);
+  text = owl_new_sv(owl_editwin_get_text(e));
 
   ENTER;
   SAVETMPS;
