@@ -303,11 +303,6 @@ char *owl_strdup(const char *s1)
   return(g_strdup(s1));
 }
 
-void *owl_realloc(void *ptr, size_t size)
-{
-  return(g_realloc(ptr, size));
-}
-
 /* allocates memory and returns the string or null.
  * caller must free the string. 
  */
@@ -695,7 +690,7 @@ static int owl_getline_internal(char **s, FILE *fp, int newline)
     c = getc(fp);
     if ((target + 1) > size) {
       size += BUFSIZ;
-      *s = owl_realloc(*s, size);
+      *s = g_renew(char, *s, size);
     }
     if (c == EOF)
       break;
@@ -712,7 +707,7 @@ static int owl_getline_internal(char **s, FILE *fp, int newline)
 
 /* Read a line from fp, allocating memory to hold it, returning the number of
  * byte read.  *s should either be NULL or a pointer to memory allocated with
- * g_malloc; it will be owl_realloc'd as appropriate.  The caller must
+ * g_malloc; it will be g_renew'd as appropriate.  The caller must
  * eventually free it.  (This is roughly the interface of getline in the gnu
  * libc).
  *
@@ -738,7 +733,7 @@ char *owl_slurp(FILE *fp)
   int count;
 
   while (1) {
-    buf = owl_realloc(buf, size + BUFSIZ);
+    buf = g_renew(char, buf, size + BUFSIZ);
     p = &buf[size];
     size += BUFSIZ;
 

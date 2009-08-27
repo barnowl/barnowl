@@ -285,7 +285,7 @@ char *owl_text_substitute(const char *in, const char *from, const char *to)
   while (in[inpos]) {
     if (!strncmp(in+inpos, from, fromlen)) {
       outlen += tolen;
-      out = owl_realloc(out, outlen);
+      out = g_renew(char, out, outlen);
       strcpy(out+outpos, to);
       inpos += fromlen;
       outpos += tolen;

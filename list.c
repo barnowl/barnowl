@@ -25,7 +25,7 @@ static void owl_list_grow(owl_list *l, int n)
 
   if ((l->size+n) > l->avail) {
     int avail = MAX(l->avail * GROWBY, l->size + n);
-    ptr = owl_realloc(l->list, avail * sizeof(void *));
+    ptr = g_renew(void *, l->list, avail);
     if (ptr==NULL) abort();
     l->list=ptr;
     l->avail = avail;

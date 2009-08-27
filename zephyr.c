@@ -285,7 +285,7 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
 
     if (count >= subSize) {
       subSize *= 2;
-      subs = owl_realloc(subs, sizeof(ZSubscription_t) * subSize);
+      subs = g_renew(ZSubscription_t, subs, subSize);
     }
     
     /* add it to the list of subs */
@@ -396,7 +396,7 @@ int owl_zephyr_loadloginsubs(const char *filename)
 
       if (count == numSubs) {
         numSubs *= 2;
-        subs = owl_realloc(subs, numSubs * sizeof(ZSubscription_t));
+        subs = g_renew(ZSubscription_t, subs, numSubs);
       }
 
       subs[count].zsub_class = owl_strdup("login");

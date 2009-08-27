@@ -95,7 +95,7 @@ int owl_dict_insert_element(owl_dict *d, const char *k, void *v, void (*delete_o
   } else {
     if (d->size + 1 > d->avail) {
       int avail = MAX(d->avail * GROWBY, d->size + 1);
-      d->els = owl_realloc(d->els, avail * sizeof(owl_dict_el));
+      d->els = g_renew(owl_dict_el, d->els, avail);
       d->avail = avail;
       if (d->els==NULL) return(-1);
     }

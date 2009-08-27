@@ -653,7 +653,7 @@ static int owl_editwin_replace_internal(owl_editwin *e, int replace, const char 
   need = strlen(s) - free;
   if (need > 0) {
     size = e->allocated + need + INCR - (need % INCR);
-    e->buff = owl_realloc(e->buff, size);
+    e->buff = g_renew(char, e->buff, size);
     e->allocated = size;
   }
 
