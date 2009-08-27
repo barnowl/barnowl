@@ -284,24 +284,11 @@ char *owl_util_minutes_to_timestr(int in)
   run-=hours*60;
 
   if (days>0) {
-    out=owl_sprintf("%i d %2.2i:%2.2li", days, hours, run);
+    out=g_strdup_printf("%i d %2.2i:%2.2li", days, hours, run);
   } else {
-    out=owl_sprintf("    %2.2i:%2.2li", hours, run);
+    out=g_strdup_printf("    %2.2i:%2.2li", hours, run);
   }
   return(out);
-}
-
-/* allocates memory and returns the string or null.
- * caller must free the string. 
- */
-char *owl_sprintf(const char *fmt, ...)
-{
-  va_list ap;
-  char *ret = NULL;
-  va_start(ap, fmt);
-  ret = g_strdup_vprintf(fmt, ap);
-  va_end(ap);
-  return ret;
 }
 
 /* These are in order of their value in owl.h */
@@ -467,7 +454,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
   if (actual_filename == NULL)
     return -1; /* resolving the symlink failed, but we already logged this error */
 
-  newfile = owl_sprintf("%s.new", actual_filename);
+  newfile = g_strdup_printf("%s.new", actual_filename);
   if ((new = fopen(newfile, "w")) == NULL) {
     owl_function_error("Cannot open %s (for writing): %s",
 		       actual_filename, strerror(errno));
@@ -499,7 +486,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
   fclose(old);
 
   if (backup) {
-    backupfile = owl_sprintf("%s.backup", actual_filename);
+    backupfile = g_strdup_printf("%s.backup", actual_filename);
     unlink(backupfile);
     if (link(actual_filename, backupfile) != 0) {
       owl_function_error("Cannot link %s: %s", backupfile, strerror(errno));

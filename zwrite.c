@@ -175,7 +175,7 @@ void owl_zwrite_send_ping(const owl_zwrite *z)
   j=owl_list_get_size(&(z->recips));
   for (i=0; i<j; i++) {
     if (strcmp(z->realm, "")) {
-      to = owl_sprintf("%s@%s", (const char *) owl_list_get_element(&(z->recips), i), z->realm);
+      to = g_strdup_printf("%s@%s", (const char *) owl_list_get_element(&(z->recips), i), z->realm);
     } else {
       to = g_strdup(owl_list_get_element(&(z->recips), i));
     }
@@ -206,16 +206,16 @@ void owl_zwrite_set_message(owl_zwrite *z, const char *msg)
     for (i=0; i<j; i++) {
       tmp = toline;
       if (strcmp(z->realm, "")) {
-        toline = owl_sprintf( "%s%s@%s ", toline, (const char *) owl_list_get_element(&(z->recips), i), z->realm);
+        toline = g_strdup_printf( "%s%s@%s ", toline, (const char *) owl_list_get_element(&(z->recips), i), z->realm);
       } else {
-        toline = owl_sprintf( "%s%s ", toline, (const char *) owl_list_get_element(&(z->recips), i));
+        toline = g_strdup_printf( "%s%s ", toline, (const char *) owl_list_get_element(&(z->recips), i));
       }
       g_free(tmp);
       tmp = NULL;
     }
     tmp = owl_validate_utf8(msg);
     tmp2 = owl_text_expand_tabs(tmp);
-    z->message=owl_sprintf("%s\n%s", toline, tmp2);
+    z->message=g_strdup_printf("%s\n%s", toline, tmp2);
     g_free(toline);
     g_free(tmp);
     g_free(tmp2);
@@ -249,7 +249,7 @@ int owl_zwrite_send_message(const owl_zwrite *z)
   if (j>0) {
     for (i=0; i<j; i++) {
       if (strcmp(z->realm, "")) {
-        to = owl_sprintf("%s@%s", (const char *) owl_list_get_element(&(z->recips), i), z->realm);
+        to = g_strdup_printf("%s@%s", (const char *) owl_list_get_element(&(z->recips), i), z->realm);
       } else {
         to = g_strdup( owl_list_get_element(&(z->recips), i));
       }
@@ -261,7 +261,7 @@ int owl_zwrite_send_message(const owl_zwrite *z)
       to = NULL;
     }
   } else {
-    to = owl_sprintf( "@%s", z->realm);
+    to = g_strdup_printf( "@%s", z->realm);
     ret = send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
   }
   g_free(to);

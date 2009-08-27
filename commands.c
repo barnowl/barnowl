@@ -1412,7 +1412,7 @@ char *owl_command_get_shift(int argc, const char *const *argv, const char *buff)
     owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
     return NULL;
   }
-  return owl_sprintf("%d", owl_global_get_rightshift(&g));
+  return g_strdup_printf("%d", owl_global_get_rightshift(&g));
 }
 
 void owl_command_set_shift(int shift)

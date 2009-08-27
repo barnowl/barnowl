@@ -148,13 +148,13 @@ void owl_log_outgoing(const owl_message *m)
 
     to = short_zuser(owl_message_get_recipient(m));
   } else if (owl_message_is_type_jabber(m)) {
-    to = owl_sprintf("jabber:%s", owl_message_get_recipient(m));
+    to = g_strdup_printf("jabber:%s", owl_message_get_recipient(m));
     owl_text_tr(to, '/', '_');
   } else if (owl_message_is_type_aim(m)) {
     char *temp2;
     temp = owl_aim_normalize_screenname(owl_message_get_recipient(m));
     temp2 = g_utf8_strdown(temp,-1);
-    to = owl_sprintf("aim:%s", temp2);
+    to = g_strdup_printf("aim:%s", temp2);
     g_free(temp2);
     g_free(temp);
   } else {
@@ -268,16 +268,16 @@ void owl_log_incoming(const owl_message *m)
     char *normalto, *temp;
     temp = owl_aim_normalize_screenname(owl_message_get_sender(m));
     normalto = g_utf8_strdown(temp, -1);
-    from=frombuff=owl_sprintf("aim:%s", normalto);
+    from=frombuff=g_strdup_printf("aim:%s", normalto);
     g_free(normalto);
     g_free(temp);
   } else if (owl_message_is_type_loopback(m)) {
     from=frombuff=g_strdup("loopback");
   } else if (owl_message_is_type_jabber(m)) {
     if (personal) {
-      from=frombuff=owl_sprintf("jabber:%s",owl_message_get_sender(m));
+      from=frombuff=g_strdup_printf("jabber:%s",owl_message_get_sender(m));
     } else {
-      from=frombuff=owl_sprintf("jabber:%s",owl_message_get_recipient(m));
+      from=frombuff=g_strdup_printf("jabber:%s",owl_message_get_recipient(m));
     }
   } else {
     from=frombuff=g_strdup("unknown");

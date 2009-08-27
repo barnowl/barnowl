@@ -200,7 +200,7 @@ void owl_aim_successful_login(const char *screenname)
   owl_global_set_aimloggedin(&g, screenname);
   owl_global_set_doaimevents(&g); /* this should already be on */
   owl_function_makemsg("%s logged in", screenname);
-  buff=owl_sprintf("Logged in to AIM as %s", screenname);
+  buff=g_strdup_printf("Logged in to AIM as %s", screenname);
   owl_function_adminmsg("", buff);
   g_free(buff);
 

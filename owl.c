@@ -433,7 +433,7 @@ void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
     buf[navail] = '\0';
   }
 
-  err = owl_sprintf("[stderr]\n%s", buf);
+  err = g_strdup_printf("[stderr]\n%s", buf);
 
   owl_function_log_err(err);
   g_free(err);

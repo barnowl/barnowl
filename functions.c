@@ -95,13 +95,13 @@ void owl_function_show_styles(void) {
 static void _owl_function_timer_append_fmtext(gpointer data, gpointer user_data) {
   owl_fmtext *fm = user_data;
   owl_timer *timer = data;
-  char *str = owl_sprintf("- %s: in %d seconds",
-                          timer->name ? timer->name : "(unnamed)",
-                          (int)(timer->time - time(NULL)));
+  char *str = g_strdup_printf("- %s: in %d seconds",
+                              timer->name ? timer->name : "(unnamed)",
+                              (int)(timer->time - time(NULL)));
   owl_fmtext_append_normal(fm, str);
   g_free(str);
   if (timer->interval) {
-    str = owl_sprintf(", repeat every %d seconds", timer->interval);
+    str = g_strdup_printf(", repeat every %d seconds", timer->interval);
     owl_fmtext_append_normal(fm, str);
     g_free(str);
   }
@@ -132,9 +132,9 @@ char *owl_function_style_describe(const char *name) {
   } else {
     desc = "???";
   }
-  s = owl_sprintf("%-20s - %s%s", name, 
-		  0==owl_style_validate(style)?"":"[INVALID] ",
-		  desc);
+  s = g_strdup_printf("%-20s - %s%s", name,
+		      0 == owl_style_validate(style) ? "" : "[INVALID] ",
+		      desc);
   return s;
 }
 
@@ -215,7 +215,7 @@ void owl_function_show_quickstart(void)
     if (owl_perlconfig_is_function("BarnOwl::Hooks::_get_quickstart")) {
         char *perlquickstart = owl_perlconfig_execute("BarnOwl::Hooks::_get_quickstart()");
         if (perlquickstart) {
-            char *result = owl_sprintf("%s%s", message, perlquickstart);
+            char *result = g_strdup_printf("%s%s", message, perlquickstart);
             owl_function_adminmsg("BarnOwl Quickstart", result);
             g_free(result);
             g_free(perlquickstart);
@@ -310,7 +310,7 @@ void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin 
   e = owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_MULTILINE,
                                    owl_global_get_msg_history(&g));
   owl_editwin_set_dotsend(e);
-  s = owl_sprintf("----> %s\n", line);
+  s = g_strdup_printf("----> %s\n", line);
   owl_editwin_set_locktext(e, s);
   g_free(s);
 
@@ -353,7 +353,7 @@ void owl_function_aimwrite_setup(const char *to)
 {
   /* TODO: We probably actually want an owl_aimwrite object like
    * owl_zwrite. */
-  char *line = owl_sprintf("aimwrite %s", to);
+  char *line = g_strdup_printf("aimwrite %s", to);
   owl_function_write_setup("message");
   owl_function_start_edit_win(line,
                               &owl_callback_aimwrite,
@@ -437,7 +437,7 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
   }
   old_msg = g_strdup(owl_zwrite_get_message(z));
 
-  zcrypt = owl_sprintf("%s/zcrypt", owl_get_bindir());
+  zcrypt = g_strdup_printf("%s/zcrypt", owl_get_bindir());
   argv[0] = "zcrypt";
   argv[1] = "-E";
   argv[2] = "-c"; argv[3] = owl_zwrite_get_class(z);
@@ -1990,7 +1990,7 @@ char *owl_function_exec(int argc, const char *const *argv, const char *buff, int
   }
 
   buff = skiptokens(buff, 1);
-  newbuff = owl_sprintf("%s%s", buff, redirect);
+  newbuff = g_strdup_printf("%s%s", buff, redirect);
 
   if (type == OWL_OUTPUT_POPUP) {
     owl_popexec_new(newbuff);
@@ -2192,7 +2192,7 @@ char *owl_function_create_negative_filter(const char *filtername)
   if (!strncmp(filtername, "not-", 4)) {
     newname=g_strdup(filtername+4);
   } else {
-    newname=owl_sprintf("not-%s", filtername);
+    newname=g_strdup_printf("not-%s", filtername);
   }
 
   tmpfilt=owl_global_get_filter(&g, newname);
@@ -2244,7 +2244,7 @@ void owl_function_show_filter(const char *name)
     return;
   }
   tmp = owl_filter_print(f);
-  buff = owl_sprintf("%s: %s", owl_filter_get_name(f), tmp);
+  buff = g_strdup_printf("%s: %s", owl_filter_get_name(f), tmp);
   owl_function_popless_text(buff);
   g_free(buff);
   g_free(tmp);
@@ -2304,9 +2304,9 @@ char *owl_function_classinstfilt(const char *c, const char *i, int related)
 
   /* name for the filter */
   if (!instance) {
-    filtname = owl_sprintf("%sclass-%s", related ? "related-" : "", class);
+    filtname = g_strdup_printf("%sclass-%s", related ? "related-" : "", class);
   } else {
-    filtname = owl_sprintf("%sclass-%s-instance-%s", related ? "related-" : "", class, instance);
+    filtname = g_strdup_printf("%sclass-%s-instance-%s", related ? "related-" : "", class, instance);
   }
   /* downcase it */
   {
@@ -2378,7 +2378,7 @@ char *owl_function_zuserfilt(const char *longuser)
 
   /* name for the filter */
   shortuser = short_zuser(longuser);
-  filtname = owl_sprintf("user-%s", shortuser);
+  filtname = g_strdup_printf("user-%s", shortuser);
   g_free(shortuser);
 
   /* if it already exists then go with it.  This lets users override */
@@ -2424,7 +2424,7 @@ char *owl_function_aimuserfilt(const char *user)
   char *escuser;
 
   /* name for the filter */
-  filtname=owl_sprintf("aimuser-%s", user);
+  filtname=g_strdup_printf("aimuser-%s", user);
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2434,7 +2434,7 @@ char *owl_function_aimuserfilt(const char *user)
   /* create the new-internal filter */
   escuser = owl_text_quote(user, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
 
-  argbuff = owl_sprintf(
+  argbuff = g_strdup_printf(
       "( type ^aim$ and ( ( sender ^%1$s$ and recipient ^%2$s$ ) or "
       "( sender ^%2$s$ and recipient ^%1$s$ ) ) )",
       escuser, owl_global_get_aim_screenname_for_filters(&g));
@@ -2461,7 +2461,7 @@ char *owl_function_typefilt(const char *type)
   char *argbuff, *filtname, *esctype;
 
   /* name for the filter */
-  filtname=owl_sprintf("type-%s", type);
+  filtname=g_strdup_printf("type-%s", type);
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2520,7 +2520,7 @@ static char *owl_function_smartfilter_cc(const owl_message *m) {
 
   ccs = owl_message_get_attribute_value(m, "zephyr_ccs");
 
-  filtname = owl_sprintf("conversation-%s", ccs);
+  filtname = g_strdup_printf("conversation-%s", ccs);
   owl_text_tr(filtname, ' ', '-');
 
   if (owl_global_get_filter(&g, filtname)) {
@@ -2762,8 +2762,8 @@ void owl_function_show_colors(void)
   owl_fmtext_append_normal_color(&fm, "white\n", OWL_COLOR_WHITE, OWL_COLOR_DEFAULT);
 
   for(i = 8; i < COLORS; ++i) {
-    char* str1 = owl_sprintf("%4i:     ",i);
-    char* str2 = owl_sprintf("%i\n",i);
+    char* str1 = g_strdup_printf("%4i:     ",i);
+    char* str2 = g_strdup_printf("%i\n",i);
     owl_fmtext_append_normal(&fm,str1);
     owl_fmtext_append_normal_color(&fm, str2, i, OWL_COLOR_DEFAULT);
     g_free(str1);
@@ -3391,7 +3391,7 @@ void owl_function_log_err(const char *string)
   date=g_strdup(ctime(&now));
   date[strlen(date)-1]='\0';
 
-  buff = owl_sprintf("%s %s", date, string);
+  buff = g_strdup_printf("%s %s", date, string);
 
   owl_errqueue_append_err(owl_global_get_errqueue(&g), buff);
 

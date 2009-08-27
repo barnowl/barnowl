@@ -84,7 +84,7 @@ int owl_keymap_remove_binding(owl_keymap *km, const char *keyseq)
 char *owl_keymap_summary(const owl_keymap *km)
 {
   if (!km || !km->name || !km->desc) return NULL;
-  return owl_sprintf("%-15s - %s", km->name, km->desc);
+  return g_strdup_printf("%-15s - %s", km->name, km->desc);
 }
 
 /* Appends details about the keymap to fm */

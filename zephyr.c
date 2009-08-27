@@ -24,7 +24,7 @@ static char *owl_zephyr_dotfile(const char *name, const char *input)
   if (input != NULL)
     return g_strdup(input);
   else
-    return owl_sprintf("%s/%s", owl_global_get_homedir(&g), name);
+    return g_strdup_printf("%s/%s", owl_global_get_homedir(&g), name);
 }
 
 #ifdef HAVE_LIBZEPHYR
@@ -587,7 +587,7 @@ char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
     field3 = owl_zephyr_get_field(n, 3);
     field4 = owl_zephyr_get_field(n, 4);
 
-    msg = owl_sprintf("%s service on %s %s\n%s", n->z_opcode, n->z_class_inst, field3, field4);
+    msg = g_strdup_printf("%s service on %s %s\n%s", n->z_opcode, n->z_class_inst, field3, field4);
     g_free(field3);
     g_free(field4);
     if (msg) {
@@ -605,7 +605,7 @@ char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
     field4 = owl_zephyr_get_field(n, 4);
     field5 = owl_zephyr_get_field(n, 5);
     
-    msg = owl_sprintf("New transaction [%s] entered in %s\nFrom: %s (%s)\nSubject: %s", field1, field2, field3, field5, field4);
+    msg = g_strdup_printf("New transaction [%s] entered in %s\nFrom: %s (%s)\nSubject: %s", field1, field2, field3, field5, field4);
     g_free(field1);
     g_free(field2);
     g_free(field3);
@@ -621,7 +621,7 @@ char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
     
     field1 = owl_zephyr_get_field(n, 1);
     
-    msg = owl_sprintf("MOIRA %s on %s: %s", n->z_class_inst, owl_message_get_hostname(m), field1);
+    msg = g_strdup_printf("MOIRA %s on %s: %s", n->z_class_inst, owl_message_get_hostname(m), field1);
     g_free(field1);
     if (msg) {
       return msg;
@@ -881,9 +881,9 @@ void owl_zephyr_zaway(const owl_message *m)
 
   myuser=short_zuser(to);
   if (!strcasecmp(owl_message_get_instance(m), "personal")) {
-    tmpbuff = owl_sprintf("zwrite %s", myuser);
+    tmpbuff = g_strdup_printf("zwrite %s", myuser);
   } else {
-    tmpbuff = owl_sprintf("zwrite -i %s %s", owl_message_get_instance(m), myuser);
+    tmpbuff = g_strdup_printf("zwrite -i %s %s", owl_message_get_instance(m), myuser);
   }
   g_free(myuser);
   g_free(to);
@@ -926,17 +926,17 @@ char *owl_zephyr_zlocate(const char *user, int auth)
   ZResetAuthentication();
   ret = ZLocateUser(zstr(user), &numlocs, auth ? ZAUTH : ZNOAUTH);
   if (ret != ZERR_NONE)
-    return owl_sprintf("Error locating user %s: %s\n",
-		       user, error_message(ret));
+    return g_strdup_printf("Error locating user %s: %s\n",
+			   user, error_message(ret));
 
   myuser = short_zuser(user);
   if (numlocs == 0) {
-    result = owl_sprintf("%s: Hidden or not logged in\n", myuser);
+    result = g_strdup_printf("%s: Hidden or not logged in\n", myuser);
   } else {
     result = g_strdup("");
     for (; numlocs; numlocs--) {
       ZGetLocations(&locations, &one);
-      p = owl_sprintf("%s%s: %s\t%s\t%s\n",
+      p = g_strdup_printf("%s%s: %s\t%s\t%s\n",
 			  result, myuser,
 			  locations.host ? locations.host : "?",
 			  locations.tty ? locations.tty : "?",
@@ -1016,7 +1016,7 @@ void owl_zephyr_delsub(const char *filename, const char *class, const char *inst
 /* caller must free the return */
 char *owl_zephyr_makesubline(const char *class, const char *inst, const char *recip)
 {
-  return owl_sprintf("%s,%s,%s\n", class, inst, !strcmp(recip, "") ? "*" : recip);
+  return g_strdup_printf("%s,%s,%s\n", class, inst, !strcmp(recip, "") ? "*" : recip);
 }
 
 
@@ -1145,10 +1145,10 @@ char *owl_zephyr_getsubs(void)
       return g_strdup("Error while getting subscriptions\n");
     } else {
       /* g_string_append_printf would be backwards. */
-      char *tmp = owl_sprintf("<%s,%s,%s>\n",
-                              sub.zsub_class,
-                              sub.zsub_classinst,
-                              sub.zsub_recipient);
+      char *tmp = g_strdup_printf("<%s,%s,%s>\n",
+                                  sub.zsub_class,
+                                  sub.zsub_classinst,
+                                  sub.zsub_recipient);
       g_string_prepend(buf, tmp);
       g_free(tmp);
     }
@@ -1202,7 +1202,7 @@ char *long_zuser(const char *in)
   if (strchr(in, '@')) {
     return(g_strdup(in));
   }
-  return(owl_sprintf("%s@%s", in, owl_zephyr_get_realm()));
+  return(g_strdup_printf("%s@%s", in, owl_zephyr_get_realm()));
 }
 
 /* strip out the instance from a zsender's principal.  Preserves the

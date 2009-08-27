@@ -126,9 +126,9 @@ void owl_message_attributes_tofmtext(const owl_message *m, owl_fmtext *fm) {
   j=owl_list_get_size(&(m->attributes));
   for (i=0; i<j; i++) {
     p=owl_list_get_element(&(m->attributes), i);
-    buff=owl_sprintf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), owl_pair_get_value(p));
+    buff=g_strdup_printf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), owl_pair_get_value(p));
     if(buff == NULL) {
-      buff=owl_sprintf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), "<error>");
+      buff=g_strdup_printf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), "<error>");
       if(buff == NULL)
         buff=g_strdup("   <error>\n");
     }
@@ -887,7 +887,7 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
     int status;
     char *zcrypt;
 
-    zcrypt = owl_sprintf("%s/zcrypt", owl_get_bindir());
+    zcrypt = g_strdup_printf("%s/zcrypt", owl_get_bindir());
 
     rv = call_filter(zcrypt, argv, owl_message_get_body(m), &out, &status);
     g_free(zcrypt);

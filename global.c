@@ -93,7 +93,7 @@ void owl_global_init(owl_global *g) {
 
   g->confdir = NULL;
   g->startupfile = NULL;
-  cd = owl_sprintf("%s/%s", g->homedir, OWL_CONFIG_DIR);
+  cd = g_strdup_printf("%s/%s", g->homedir, OWL_CONFIG_DIR);
   owl_global_set_confdir(g, cd);
   g_free(cd);
 
@@ -381,7 +381,7 @@ void owl_global_set_confdir(owl_global *g, const char *cd) {
   g_free(g->confdir);
   g->confdir = g_strdup(cd);
   g_free(g->startupfile);
-  g->startupfile = owl_sprintf("%s/startup", cd);
+  g->startupfile = g_strdup_printf("%s/startup", cd);
 }
 
 const char *owl_global_get_startupfile(const owl_global *g) {
@@ -964,7 +964,7 @@ FILE *owl_global_get_debug_file_handle(owl_global *g) {
 
     g->debug_file = NULL;
 
-    path = owl_sprintf("%s.%d", filename, getpid());
+    path = g_strdup_printf("%s.%d", filename, getpid());
     fd = open(path, O_CREAT|O_WRONLY|O_EXCL, 0600);
     g_free(path);
 

@@ -149,7 +149,7 @@ SV *owl_perlconfig_message2hashref(const owl_message *m)
   if(!type || !*type) type = "generic";
   utype = g_strdup(type);
   utype[0] = toupper(type[0]);
-  blessas = owl_sprintf("BarnOwl::Message::%s", utype);
+  blessas = g_strdup_printf("BarnOwl::Message::%s", utype);
 
   hr = newRV_noinc((SV*)h);
   stash =  gv_stashpv(blessas,0);
@@ -239,7 +239,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
     n->z_default_format = zstr("[zephyr created from perl]");
     n->z_multinotice = zstr("[zephyr created from perl]");
     n->z_num_other_fields = 0;
-    n->z_message = owl_sprintf("%s%c%s", owl_message_get_zsig(m), '\0', owl_message_get_body(m));
+    n->z_message = g_strdup_printf("%s%c%s", owl_message_get_zsig(m), '\0', owl_message_get_body(m));
     n->z_message_len = strlen(owl_message_get_zsig(m)) + strlen(owl_message_get_body(m)) + 1;
   }
 #endif
@@ -403,7 +403,7 @@ char *owl_perlconfig_initperl(const char * file, int *Pargc, char ***Pargv, char
 
   /* Add the system lib path to @INC */
   inc = get_av("INC", 0);
-  path = owl_sprintf("%s/lib", owl_get_datadir());
+  path = g_strdup_printf("%s/lib", owl_get_datadir());
   av_unshift(inc, 1);
   av_store(inc, 0, owl_new_sv(path));
   g_free(path);
