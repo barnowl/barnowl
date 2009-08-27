@@ -46,7 +46,7 @@ void owl_message_init(owl_message *m)
   
   /* save the time */
   m->time=time(NULL);
-  m->timestr=owl_strdup(ctime(&(m->time)));
+  m->timestr=g_strdup(ctime(&(m->time)));
   m->timestr[strlen(m->timestr)-1]='\0';
 
   m->fmtext = NULL;
@@ -130,7 +130,7 @@ void owl_message_attributes_tofmtext(const owl_message *m, owl_fmtext *fm) {
     if(buff == NULL) {
       buff=owl_sprintf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), "<error>");
       if(buff == NULL)
-        buff=owl_strdup("   <error>\n");
+        buff=g_strdup("   <error>\n");
     }
     owl_fmtext_append_normal(fm, buff);
     g_free(buff);
@@ -585,7 +585,7 @@ char *owl_message_get_cc(const owl_message *m)
   if (strncasecmp(cur, "cc:", 3)) return(NULL);
   cur+=3;
   while (*cur && *cur==' ') cur++;
-  out = owl_strdup(cur);
+  out = g_strdup(cur);
   end = strchr(out, '\n');
   if (end) end[0] = '\0';
   return(out);
@@ -608,7 +608,7 @@ GList *owl_message_get_cc_without_recipient(const owl_message *m)
   while (user != NULL) {
     shortuser = short_zuser(user);
     if (strcasecmp(shortuser, recip) != 0) {
-      out = g_list_prepend(out, owl_strdup(user));
+      out = g_list_prepend(out, g_strdup(user));
     }
     g_free(shortuser);
     user = strtok(NULL, " ");
@@ -794,7 +794,7 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   /* save the time, we need to nuke the string saved by message_init */
   if (m->timestr) g_free(m->timestr);
   m->time=n->z_time.tv_sec;
-  m->timestr=owl_strdup(ctime(&(m->time)));
+  m->timestr=g_strdup(ctime(&(m->time)));
   m->timestr[strlen(m->timestr)-1]='\0';
 
   /* set other info */

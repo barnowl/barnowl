@@ -158,7 +158,7 @@ void owl_log_outgoing(const owl_message *m)
     g_free(temp2);
     g_free(temp);
   } else {
-    to = owl_strdup("loopback");
+    to = g_strdup("loopback");
   }
 
   snprintf(filename, MAXPATHLEN, "%s/%s", logpath, to);
@@ -261,7 +261,7 @@ void owl_log_incoming(const owl_message *m)
     if (personal) {
       from=frombuff=short_zuser(owl_message_get_sender(m));
     } else {
-      from=frombuff=owl_strdup(owl_message_get_class(m));
+      from=frombuff=g_strdup(owl_message_get_class(m));
     }
   } else if (owl_message_is_type_aim(m)) {
     /* we do not yet handle chat rooms */
@@ -272,7 +272,7 @@ void owl_log_incoming(const owl_message *m)
     g_free(normalto);
     g_free(temp);
   } else if (owl_message_is_type_loopback(m)) {
-    from=frombuff=owl_strdup("loopback");
+    from=frombuff=g_strdup("loopback");
   } else if (owl_message_is_type_jabber(m)) {
     if (personal) {
       from=frombuff=owl_sprintf("jabber:%s",owl_message_get_sender(m));
@@ -280,7 +280,7 @@ void owl_log_incoming(const owl_message *m)
       from=frombuff=owl_sprintf("jabber:%s",owl_message_get_recipient(m));
     }
   } else {
-    from=frombuff=owl_strdup("unknown");
+    from=frombuff=g_strdup("unknown");
   }
   
   /* check for malicious sender formats */

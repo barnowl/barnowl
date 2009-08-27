@@ -13,7 +13,7 @@ int owl_regex_create(owl_regex *re, const char *string)
   char buff1[LINE];
   const char *ptr;
   
-  re->string=owl_strdup(string);
+  re->string=g_strdup(string);
 
   ptr=string;
   re->negate=0;

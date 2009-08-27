@@ -213,7 +213,7 @@ void owl_filterelement_create_false(owl_filterelement *fe)
 int owl_filterelement_create_re(owl_filterelement *fe, const char *field, const char *re)
 {
   owl_filterelement_create(fe);
-  fe->field=owl_strdup(field);
+  fe->field=g_strdup(field);
   if(owl_regex_create(&(fe->re), re)) {
     g_free(fe->field);
     fe->field = NULL;
@@ -227,7 +227,7 @@ int owl_filterelement_create_re(owl_filterelement *fe, const char *field, const 
 void owl_filterelement_create_filter(owl_filterelement *fe, const char *name)
 {
   owl_filterelement_create(fe);
-  fe->field=owl_strdup(name);
+  fe->field=g_strdup(name);
   fe->match_message = owl_filterelement_match_filter;
   fe->print_elt = owl_filterelement_print_filter;
 }
@@ -235,7 +235,7 @@ void owl_filterelement_create_filter(owl_filterelement *fe, const char *name)
 void owl_filterelement_create_perl(owl_filterelement *fe, const char *name)
 {
   owl_filterelement_create(fe);
-  fe->field=owl_strdup(name);
+  fe->field=g_strdup(name);
   fe->match_message = owl_filterelement_match_perl;
   fe->print_elt = owl_filterelement_print_perl;
 }

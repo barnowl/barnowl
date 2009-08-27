@@ -22,7 +22,7 @@ Code_t ZResetAuthentication(void);
 static char *owl_zephyr_dotfile(const char *name, const char *input)
 {
   if (input != NULL)
-    return owl_strdup(input);
+    return g_strdup(input);
   else
     return owl_sprintf("%s/%s", owl_global_get_homedir(&g), name);
 }
@@ -291,13 +291,13 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
     /* add it to the list of subs */
     if ((tmp = strtok(start, ",\n\r")) == NULL)
       continue;
-    subs[count].zsub_class = owl_strdup(tmp);
+    subs[count].zsub_class = g_strdup(tmp);
     if ((tmp=strtok(NULL, ",\n\r")) == NULL)
       continue;
-    subs[count].zsub_classinst = owl_strdup(tmp);
+    subs[count].zsub_classinst = g_strdup(tmp);
     if ((tmp = strtok(NULL, " \t\n\r")) == NULL)
       continue;
-    subs[count].zsub_recipient = owl_strdup(tmp);
+    subs[count].zsub_recipient = g_strdup(tmp);
 
     /* if it started with '-' then add it to the global punt list, and
      * remove it from the list of subs. */
@@ -336,9 +336,9 @@ int owl_zephyr_loadbarnowldefaultsubs(void)
   ZResetAuthentication();
   count=0;
 
-  subs[count].zsub_class=owl_strdup("message");
-  subs[count].zsub_classinst=owl_strdup("*");
-  subs[count].zsub_recipient=owl_strdup("%me%");
+  subs[count].zsub_class=g_strdup("message");
+  subs[count].zsub_classinst=g_strdup("*");
+  subs[count].zsub_recipient=g_strdup("%me%");
   count++;
 
   ret = owl_zephyr_loadsubs_helper(subs, count);
@@ -399,8 +399,8 @@ int owl_zephyr_loadloginsubs(const char *filename)
         subs = g_renew(ZSubscription_t, subs, numSubs);
       }
 
-      subs[count].zsub_class = owl_strdup("login");
-      subs[count].zsub_recipient = owl_strdup("*");
+      subs[count].zsub_class = g_strdup("login");
+      subs[count].zsub_recipient = g_strdup("*");
       subs[count].zsub_classinst = long_zuser(buffer);
 
       count++;
@@ -482,7 +482,7 @@ char *owl_zephyr_get_field(const ZNotice_t *n, int j)
 
   /* If there's no message here, just run along now */
   if (n->z_message_len == 0)
-    return(owl_strdup(""));
+    return(g_strdup(""));
 
   count=save=0;
   for (i=0; i<n->z_message_len; i++) {
@@ -490,7 +490,7 @@ char *owl_zephyr_get_field(const ZNotice_t *n, int j)
       count++;
       if (count==j) {
 	/* just found the end of the field we're looking for */
-	return(owl_strdup(n->z_message+save));
+	return(g_strdup(n->z_message+save));
       } else {
 	save=i+1;
       }
@@ -501,7 +501,7 @@ char *owl_zephyr_get_field(const ZNotice_t *n, int j)
     return g_strndup(n->z_message + save, n->z_message_len - save);
   }
 
-  return(owl_strdup(""));
+  return(g_strdup(""));
 }
 
 char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
@@ -510,7 +510,7 @@ char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
 
   /* If there's no message here, just run along now */
   if (n->z_message_len == 0)
-    return(owl_strdup(""));
+    return(g_strdup(""));
 
   count=save=0;
   for (i = 0; i < n->z_message_len; i++) {
@@ -533,12 +533,12 @@ char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
     return out;
   }
 
-  return(owl_strdup(""));
+  return(g_strdup(""));
 }
 #else
 char *owl_zephyr_get_field(void *n, int j)
 {
-  return(owl_strdup(""));
+  return(g_strdup(""));
 }
 char *owl_zephyr_get_field_as_utf8(void *n, int j)
 {
@@ -577,7 +577,7 @@ char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
 {
   /* don't let ping messages have a body */
   if (!strcasecmp(n->z_opcode, "ping")) {
-    return(owl_strdup(""));
+    return(g_strdup(""));
   }
 
   /* deal with MIT NOC messages */
@@ -803,18 +803,18 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
       owl_function_adminmsg("", buff);
 
       memset(&zw, 0, sizeof(zw));
-      zw.class = owl_strdup(retnotice->z_class);
-      zw.inst  = owl_strdup(retnotice->z_class_inst);
+      zw.class = g_strdup(retnotice->z_class);
+      zw.inst  = g_strdup(retnotice->z_class_inst);
       realm = strchr(retnotice->z_recipient, '@');
       if(realm) {
-        zw.realm = owl_strdup(realm + 1);
+        zw.realm = g_strdup(realm + 1);
       } else {
-        zw.realm = owl_strdup(owl_zephyr_get_realm());
+        zw.realm = g_strdup(owl_zephyr_get_realm());
       }
-      zw.opcode = owl_strdup(retnotice->z_opcode);
-      zw.zsig   = owl_strdup("");
+      zw.opcode = g_strdup(retnotice->z_opcode);
+      zw.zsig   = g_strdup("");
       owl_list_create(&(zw.recips));
-      owl_list_append_element(&(zw.recips), owl_strdup(tmp));
+      owl_list_append_element(&(zw.recips), g_strdup(tmp));
 
       owl_log_outgoing_zephyr_error(&zw, buff);
 
@@ -869,7 +869,7 @@ void owl_zephyr_zaway(const owl_message *m)
   if (owl_global_is_smartstrip(&g)) {
     to=owl_zephyr_smartstripped_user(owl_message_get_sender(m));
   } else {
-    to=owl_strdup(owl_message_get_sender(m));
+    to=g_strdup(owl_message_get_sender(m));
   }
 
   send_zephyr("",
@@ -933,7 +933,7 @@ char *owl_zephyr_zlocate(const char *user, int auth)
   if (numlocs == 0) {
     result = owl_sprintf("%s: Hidden or not logged in\n", myuser);
   } else {
-    result = owl_strdup("");
+    result = g_strdup("");
     for (; numlocs; numlocs--) {
       ZGetLocations(&locations, &one);
       p = owl_sprintf("%s%s: %s\t%s\t%s\n",
@@ -949,7 +949,7 @@ char *owl_zephyr_zlocate(const char *user, int auth)
 
   return result;
 #else
-  return owl_strdup("");
+  return g_strdup("");
 #endif
 }
 
@@ -1131,9 +1131,9 @@ char *owl_zephyr_getsubs(void)
 
   ret=ZRetrieveSubscriptions(0, &num);
   if (ret==ZERR_TOOMANYSUBS) {
-    return(owl_strdup("Zephyr: too many subscriptions\n"));
+    return(g_strdup("Zephyr: too many subscriptions\n"));
   } else if (ret || (num <= 0)) {
-    return(owl_strdup("Zephyr: error retriving subscriptions\n"));
+    return(g_strdup("Zephyr: error retriving subscriptions\n"));
   }
 
   buf = g_string_new("");
@@ -1142,7 +1142,7 @@ char *owl_zephyr_getsubs(void)
     if ((ret = ZGetSubscriptions(&sub, &one)) != ZERR_NONE) {
       ZFlushSubscriptions();
       g_string_free(buf, true);
-      return owl_strdup("Error while getting subscriptions\n");
+      return g_strdup("Error while getting subscriptions\n");
     } else {
       /* g_string_append_printf would be backwards. */
       char *tmp = owl_sprintf("<%s,%s,%s>\n",
@@ -1157,7 +1157,7 @@ char *owl_zephyr_getsubs(void)
   ZFlushSubscriptions();
   return g_string_free(buf, false);
 #else
-  return(owl_strdup("Zephyr not available"));
+  return(g_strdup("Zephyr not available"));
 #endif
 }
 
@@ -1184,7 +1184,7 @@ char *short_zuser(const char *in)
 {
   char *out, *ptr;
 
-  out=owl_strdup(in);
+  out=g_strdup(in);
   ptr=strchr(out, '@');
   if (ptr) {
     if (!strcasecmp(ptr+1, owl_zephyr_get_realm())) {
@@ -1200,7 +1200,7 @@ char *short_zuser(const char *in)
 char *long_zuser(const char *in)
 {
   if (strchr(in, '@')) {
-    return(owl_strdup(in));
+    return(g_strdup(in));
   }
   return(owl_sprintf("%s@%s", in, owl_zephyr_get_realm()));
 }
@@ -1214,7 +1214,7 @@ char *owl_zephyr_smartstripped_user(const char *in)
 {
   char *slash, *dot, *realm, *out;
 
-  out = owl_strdup(in);
+  out = g_strdup(in);
 
   /* bail immeaditly if we don't have to do any work */
   slash = strchr(out, '/');

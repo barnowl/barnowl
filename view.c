@@ -3,7 +3,7 @@
 
 void owl_view_create(owl_view *v, const char *name, owl_filter *f, const owl_style *s)
 {
-  v->name=owl_strdup(name);
+  v->name=g_strdup(name);
   v->filter=f;
   v->style=s;
   owl_messagelist_create(&(v->ml));

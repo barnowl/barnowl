@@ -357,7 +357,7 @@ void owl_function_aimwrite_setup(const char *to)
   owl_function_write_setup("message");
   owl_function_start_edit_win(line,
                               &owl_callback_aimwrite,
-                              owl_strdup(to),
+                              g_strdup(to),
                               g_free);
   g_free(line);
 }
@@ -435,7 +435,7 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
   if (msg) {
     owl_zwrite_set_message(z, msg);
   }
-  old_msg = owl_strdup(owl_zwrite_get_message(z));
+  old_msg = g_strdup(owl_zwrite_get_message(z));
 
   zcrypt = owl_sprintf("%s/zcrypt", owl_get_bindir());
   argv[0] = "zcrypt";
@@ -490,7 +490,7 @@ void owl_function_aimwrite(const char *to, const char *msg, bool unwrap)
   owl_message *m;
 
   /* make a formatted copy of the message */
-  format_msg = owl_strdup(msg);
+  format_msg = g_strdup(msg);
   if (unwrap)
     owl_text_wordunwrap(format_msg);
   
@@ -521,7 +521,7 @@ void owl_function_send_aimawymsg(const char *to, const char *msg)
   owl_message *m;
 
   /* make a formatted copy of the message */
-  format_msg=owl_strdup(msg);
+  format_msg=g_strdup(msg);
   owl_text_wordunwrap(format_msg);
   
   /* send the message */
@@ -2190,7 +2190,7 @@ char *owl_function_create_negative_filter(const char *filtername)
   owl_function_debugmsg("owl_function_create_negative_filter");
   
   if (!strncmp(filtername, "not-", 4)) {
-    newname=owl_strdup(filtername+4);
+    newname=g_strdup(filtername+4);
   } else {
     newname=owl_sprintf("not-%s", filtername);
   }
@@ -2296,9 +2296,9 @@ char *owl_function_classinstfilt(const char *c, const char *i, int related)
       instance = owl_util_baseclass(i);
     }
   } else {
-    class = owl_strdup(c);
+    class = g_strdup(c);
     if (i) {
-      instance = owl_strdup(i);
+      instance = g_strdup(i);
     }
   }
 
@@ -2428,7 +2428,7 @@ char *owl_function_aimuserfilt(const char *user)
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
-    return(owl_strdup(filtname));
+    return(g_strdup(filtname));
   }
 
   /* create the new-internal filter */
@@ -3050,7 +3050,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
       if (idle!=0) {
 	timestr=owl_util_minutes_to_timestr(idle);
       } else {
-	timestr=owl_strdup("");
+	timestr=g_strdup("");
       }
       owl_fmtext_appendf_normal(&fm, "  %-20.20s %-12.12s\n", owl_buddy_get_name(b), timestr);
       g_free(timestr);
@@ -3285,7 +3285,7 @@ void owl_function_source(const char *filename)
 
   if (!filename) {
     fail_silent = 1;
-    path = owl_strdup(owl_global_get_startupfile(&g));
+    path = g_strdup(owl_global_get_startupfile(&g));
   } else {
     path = owl_util_makepath(filename);
   }
@@ -3388,7 +3388,7 @@ void owl_function_log_err(const char *string)
   char *buff;
 
   now=time(NULL);
-  date=owl_strdup(ctime(&now));
+  date=g_strdup(ctime(&now));
   date[strlen(date)-1]='\0';
 
   buff = owl_sprintf("%s %s", date, string);

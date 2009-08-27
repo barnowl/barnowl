@@ -135,9 +135,9 @@ int owl_aim_login(const char *screenname, const char *password)
   /* this will leak, I know and just don't care right now */
   priv=g_new0(struct owlfaim_priv, 1);
 
-  priv->screenname = owl_strdup(screenname);
-  priv->password = owl_strdup(password);
-  priv->server = owl_strdup(FAIM_LOGIN_SERVER);
+  priv->screenname = g_strdup(screenname);
+  priv->password = g_strdup(password);
+  priv->server = g_strdup(FAIM_LOGIN_SERVER);
   sess->aux_data = priv;
 
   conn=aim_newconn(sess, AIM_CONN_TYPE_AUTH, priv->server ? priv->server : FAIM_LOGIN_SERVER);
@@ -345,7 +345,7 @@ int owl_aim_set_awaymsg(const char *msg)
   char *foo;
   /* there is a max away message lentgh we should check against */
 
-  foo=owl_strdup(msg);
+  foo=g_strdup(msg);
   len=strlen(foo);
   if (len>500) {
     foo[500]='\0';
@@ -1024,7 +1024,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   char *realmsg = NULL;
 
   if (!args->msg) {
-    realmsg = owl_strdup("");
+    realmsg = g_strdup("");
   } else if (args->icbmflags & AIM_IMFLAGS_UNICODE) {
     realmsg = g_convert(args->msg, args->msglen, "UTF-8", "UCS-2BE",
                         NULL, NULL, NULL);
@@ -1032,11 +1032,11 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
     realmsg = g_convert(args->msg, args->msglen, "UTF-8", "ISO-8859-1",
                         NULL, NULL, NULL);
   } else {
-    realmsg = owl_strdup(args->msg);
+    realmsg = g_strdup(args->msg);
   }
 
   if (!realmsg) {
-    realmsg = owl_strdup("[Error decoding incoming IM]");
+    realmsg = g_strdup("[Error decoding incoming IM]");
   }
 
   owl_function_debugmsg("faimtest_parse_incoming_im_chan1: message from: %s", userinfo->sn?userinfo->sn:"");

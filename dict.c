@@ -64,7 +64,7 @@ int owl_dict_get_keys(const owl_dict *d, owl_list *l) {
   char *dupk;
   if (owl_list_create(l)) return(-1);
   for (i=0; i<d->size; i++) {
-    if ((dupk = owl_strdup(d->els[i].k)) == NULL) return(-1);
+    if ((dupk = g_strdup(d->els[i].k)) == NULL) return(-1);
     owl_list_append_element(l, dupk);
   }
   return(0);
@@ -99,7 +99,7 @@ int owl_dict_insert_element(owl_dict *d, const char *k, void *v, void (*delete_o
       d->avail = avail;
       if (d->els==NULL) return(-1);
     }
-    if ((dupk = owl_strdup(k)) == NULL) return(-1);
+    if ((dupk = g_strdup(k)) == NULL) return(-1);
     if (pos!=d->size) {
       /* shift forward to leave us a slot */
       memmove(d->els+pos+1, d->els+pos, 

@@ -147,7 +147,7 @@ SV *owl_perlconfig_message2hashref(const owl_message *m)
 
   type = owl_message_get_type(m);
   if(!type || !*type) type = "generic";
-  utype = owl_strdup(type);
+  utype = g_strdup(type);
   utype[0] = toupper(type[0]);
   blessas = owl_sprintf("BarnOwl::Message::%s", utype);
 
@@ -213,7 +213,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
     } else if (!strcmp(key, "zwriteline")) {
       owl_message_set_zwriteline(m, val);
     } else if (!strcmp(key, "time")) {
-      m->timestr = owl_strdup(val);
+      m->timestr = g_strdup(val);
       strptime(val, "%a %b %d %T %Y", &tm);
       m->time = mktime(&tm);
     } else {
@@ -281,7 +281,7 @@ char *owl_perlconfig_call_with_message(const char *subname, const owl_message *m
   srv = POPs;
 
   if (srv) {
-    out = owl_strdup(SvPV_nolen(srv));
+    out = g_strdup(SvPV_nolen(srv));
   } else {
     out = NULL;
   }
@@ -334,7 +334,7 @@ char * owl_perlconfig_message_call_method(const owl_message *m, const char *meth
   srv = POPs;
 
   if (srv) {
-    out = owl_strdup(SvPV_nolen(srv));
+    out = g_strdup(SvPV_nolen(srv));
   } else {
     out = NULL;
   }
@@ -368,14 +368,14 @@ char *owl_perlconfig_initperl(const char * file, int *Pargc, char ***Pargv, char
 
   ret=perl_parse(p, owl_perl_xs_init, 2, (char **)args, NULL);
   if (ret || SvTRUE(ERRSV)) {
-    err=owl_strdup(SvPV_nolen(ERRSV));
+    err=g_strdup(SvPV_nolen(ERRSV));
     sv_setsv(ERRSV, &PL_sv_undef);     /* and clear the error */
     return(err);
   }
 
   ret=perl_run(p);
   if (ret || SvTRUE(ERRSV)) {
-    err=owl_strdup(SvPV_nolen(ERRSV));
+    err=g_strdup(SvPV_nolen(ERRSV));
     sv_setsv(ERRSV, &PL_sv_undef);     /* and clear the error */
     return(err);
   }
@@ -411,7 +411,7 @@ char *owl_perlconfig_initperl(const char * file, int *Pargc, char ***Pargv, char
   eval_pv("use BarnOwl;", FALSE);
 
   if (SvTRUE(ERRSV)) {
-    err=owl_strdup(SvPV_nolen(ERRSV));
+    err=g_strdup(SvPV_nolen(ERRSV));
     sv_setsv (ERRSV, &PL_sv_undef);     /* and clear the error */
     return(err);
   }
@@ -449,7 +449,7 @@ char *owl_perlconfig_execute(const char *line)
     sv_setsv (ERRSV, &PL_sv_undef);     /* and clear the error */
   }
 
-  out = owl_strdup(SvPV(response, len));
+  out = g_strdup(SvPV(response, len));
   FREETMPS;
   LEAVE;
 
@@ -528,7 +528,7 @@ char *owl_perlconfig_perlcmd(const owl_cmd *cmd, int argc, const char *const *ar
       croak("Perl command %s returned more than one value!", cmd->name);
     rv = POPs;
     if(SvTRUE(rv)) {
-      ret = owl_strdup(SvPV_nolen(rv));
+      ret = g_strdup(SvPV_nolen(rv));
     }
   }
 

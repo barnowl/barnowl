@@ -3,7 +3,7 @@
 void owl_buddy_create(owl_buddy *b, int proto, const char *name)
 {
   b->proto=proto;
-  b->name=owl_strdup(name);
+  b->name=g_strdup(name);
   b->idlesince=0;
 }
 

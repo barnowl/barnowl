@@ -68,7 +68,7 @@ void owl_history_store(owl_history *h, const char *line)
   }
 
   /* add the new line */
-  owl_list_prepend_element(&(h->hist), owl_strdup(line));
+  owl_list_prepend_element(&(h->hist), g_strdup(line));
 }
 
 void owl_history_set_partial(owl_history *h)

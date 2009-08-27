@@ -79,13 +79,13 @@ void owl_parse_options(int argc, char *argv[], owl_options *opts) {
       opts->load_initial_subs = 0;
       break;
     case 'c':
-      opts->configfile = owl_strdup(optarg);
+      opts->configfile = g_strdup(optarg);
       break;
     case 's':
-      opts->confdir = owl_strdup(optarg);
+      opts->confdir = g_strdup(optarg);
       break;
     case 't':
-      opts->tty = owl_strdup(optarg);
+      opts->tty = g_strdup(optarg);
       break;
     case 'D':
       opts->rm_debug = 1;

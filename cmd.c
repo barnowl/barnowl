@@ -87,7 +87,7 @@ char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const c
   char *tmpbuff;
   char *retval = NULL;
 
-  tmpbuff=owl_strdup(cmdbuff);
+  tmpbuff=g_strdup(cmdbuff);
   argv=owl_parseline(tmpbuff, &argc);
   if (argc < 0) {
     g_free(tmpbuff);
@@ -134,18 +134,18 @@ char *owl_cmddict_execute_argv(const owl_cmddict *cd, const owl_context *ctx, co
 int owl_cmd_create_from_template(owl_cmd *cmd, const owl_cmd *templ) {
   *cmd = *templ;
   if (!templ->name) return(-1);
-  cmd->name = owl_strdup(templ->name);
-  if (templ->summary)     cmd->summary     = owl_strdup(templ->summary);
-  if (templ->usage)       cmd->usage       = owl_strdup(templ->usage);
-  if (templ->description) cmd->description = owl_strdup(templ->description);
-  if (templ->cmd_aliased_to) cmd->cmd_aliased_to = owl_strdup(templ->cmd_aliased_to);
+  cmd->name = g_strdup(templ->name);
+  if (templ->summary)     cmd->summary     = g_strdup(templ->summary);
+  if (templ->usage)       cmd->usage       = g_strdup(templ->usage);
+  if (templ->description) cmd->description = g_strdup(templ->description);
+  if (templ->cmd_aliased_to) cmd->cmd_aliased_to = g_strdup(templ->cmd_aliased_to);
   return(0);
 }
 
 int owl_cmd_create_alias(owl_cmd *cmd, const char *name, const char *aliased_to) {
   memset(cmd, 0, sizeof(owl_cmd));
-  cmd->name = owl_strdup(name);
-  cmd->cmd_aliased_to = owl_strdup(aliased_to);
+  cmd->name = g_strdup(name);
+  cmd->cmd_aliased_to = g_strdup(aliased_to);
   cmd->summary = owl_sprintf("%s%s", OWL_CMD_ALIAS_SUMMARY_PREFIX, aliased_to);
   return(0);
 }

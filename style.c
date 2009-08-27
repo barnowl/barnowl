@@ -4,7 +4,7 @@
 /* Assumes owenership of one existing ref on `obj`*/
 void owl_style_create_perl(owl_style *s, const char *name, SV *obj)
 {
-  s->name=owl_strdup(name);
+  s->name=g_strdup(name);
   s->perlobj = obj;
 }
 

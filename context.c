@@ -14,7 +14,7 @@ owl_context *owl_context_new(int mode, void *data, const char *keymap, owl_windo
   c->mode = mode;
   c->data = data;
   c->cursor = cursor ? g_object_ref(cursor) : NULL;
-  c->keymap = owl_strdup(keymap);
+  c->keymap = g_strdup(keymap);
   return c;
 }
 

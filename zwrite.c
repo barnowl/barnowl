@@ -34,7 +34,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
   z->cc=0;
   z->noping=0;
   owl_list_create(&(z->recips));
-  z->zwriteline = owl_strdup(line);
+  z->zwriteline = g_strdup(line);
 
   /* parse the command line for options */
   argv=owl_parseline(line, &argc);
@@ -45,7 +45,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
   }
   myargc=argc;
   if (myargc && *(myargv[0])!='-') {
-    z->cmd=owl_strdup(myargv[0]);
+    z->cmd=g_strdup(myargv[0]);
     myargc--;
     myargv++;
   }
@@ -136,10 +136,10 @@ int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
   }
 
   /* now deal with defaults */
-  if (z->class==NULL) z->class=owl_strdup("message");
-  if (z->inst==NULL) z->inst=owl_strdup("personal");
-  if (z->realm==NULL) z->realm=owl_strdup("");
-  if (z->opcode==NULL) z->opcode=owl_strdup("");
+  if (z->class==NULL) z->class=g_strdup("message");
+  if (z->inst==NULL) z->inst=g_strdup("personal");
+  if (z->realm==NULL) z->realm=g_strdup("");
+  if (z->opcode==NULL) z->opcode=g_strdup("");
   /* z->message is allowed to stay NULL */
 
   if(msg) {
@@ -177,7 +177,7 @@ void owl_zwrite_send_ping(const owl_zwrite *z)
     if (strcmp(z->realm, "")) {
       to = owl_sprintf("%s@%s", (const char *) owl_list_get_element(&(z->recips), i), z->realm);
     } else {
-      to = owl_strdup(owl_list_get_element(&(z->recips), i));
+      to = g_strdup(owl_list_get_element(&(z->recips), i));
     }
     send_ping(to, z->class, z->inst);
     g_free(to);
@@ -202,7 +202,7 @@ void owl_zwrite_set_message(owl_zwrite *z, const char *msg)
 
   j=owl_list_get_size(&(z->recips));
   if (j>0 && z->cc) {
-    toline = owl_strdup( "CC: ");
+    toline = g_strdup( "CC: ");
     for (i=0; i<j; i++) {
       tmp = toline;
       if (strcmp(z->realm, "")) {
@@ -251,7 +251,7 @@ int owl_zwrite_send_message(const owl_zwrite *z)
       if (strcmp(z->realm, "")) {
         to = owl_sprintf("%s@%s", (const char *) owl_list_get_element(&(z->recips), i), z->realm);
       } else {
-        to = owl_strdup( owl_list_get_element(&(z->recips), i));
+        to = g_strdup( owl_list_get_element(&(z->recips), i));
       }
       ret = send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
       /* Abort on the first error, to match the zwrite binary. */
@@ -318,7 +318,7 @@ const char *owl_zwrite_get_zsig(const owl_zwrite *z)
 void owl_zwrite_set_zsig(owl_zwrite *z, const char *zsig)
 {
   if(z->zsig) g_free(z->zsig);
-  z->zsig = owl_strdup(zsig);
+  z->zsig = g_strdup(zsig);
 }
 
 void owl_zwrite_get_recipstr(const owl_zwrite *z, char *buff)

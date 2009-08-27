@@ -192,7 +192,7 @@ char *owl_text_wordwrap(const char *in, int col)
   char *out;
   int cur, lastspace, len, lastnewline;
 
-  out=owl_strdup(in);
+  out=g_strdup(in);
   len=strlen(in);
   cur=0;
   lastspace=-1;
@@ -275,7 +275,7 @@ char *owl_text_substitute(const char *in, const char *from, const char *to)
   char *out;
   int   outlen, tolen, fromlen, inpos=0, outpos=0;
 
-  if (!*from) return owl_strdup(in);
+  if (!*from) return g_strdup(in);
 
   outlen = strlen(in)+1;
   tolen  = strlen(to);

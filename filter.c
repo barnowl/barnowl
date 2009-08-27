@@ -20,7 +20,7 @@ owl_filter *owl_filter_new(const char *name, int argc, const char *const *argv)
 
   f = g_new(owl_filter, 1);
 
-  f->name=owl_strdup(name);
+  f->name=g_strdup(name);
   f->fgcolor=OWL_COLOR_DEFAULT;
   f->bgcolor=OWL_COLOR_DEFAULT;
 

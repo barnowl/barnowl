@@ -26,9 +26,9 @@ int owl_keybinding_init(owl_keybinding *kb, const char *keyseq, const char *comm
     return(-1);
   }
 
-  if (command) kb->command = owl_strdup(command);
+  if (command) kb->command = g_strdup(command);
   kb->function_fn = function_fn;
-  if (desc) kb->desc = owl_strdup(desc);
+  if (desc) kb->desc = g_strdup(desc);
   else kb->desc = NULL;
   return(0);
 }

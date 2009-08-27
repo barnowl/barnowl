@@ -25,9 +25,9 @@ void owl_global_init(owl_global *g) {
   gethostname(hostname, MAXHOSTNAMELEN);
   hent=gethostbyname(hostname);
   if (!hent) {
-    g->thishost=owl_strdup("localhost");
+    g->thishost=g_strdup("localhost");
   } else {
-    g->thishost=owl_strdup(hent->h_name);
+    g->thishost=g_strdup(hent->h_name);
   }
 
   g->lines=LINES;
@@ -89,7 +89,7 @@ void owl_global_init(owl_global *g) {
   homedir = getenv("HOME");
   if (!homedir)
     homedir = g_get_home_dir();
-  g->homedir = owl_strdup(homedir);
+  g->homedir = g_strdup(homedir);
 
   g->confdir = NULL;
   g->startupfile = NULL;
@@ -379,7 +379,7 @@ const char *owl_global_get_confdir(const owl_global *g) {
  */
 void owl_global_set_confdir(owl_global *g, const char *cd) {
   g_free(g->confdir);
-  g->confdir = owl_strdup(cd);
+  g->confdir = g_strdup(cd);
   g_free(g->startupfile);
   g->startupfile = owl_sprintf("%s/startup", cd);
 }
@@ -700,7 +700,7 @@ void owl_global_set_aimloggedin(owl_global *g, const char *screenname)
   g->aim_loggedin=1;
   if (g->aim_screenname) g_free(g->aim_screenname);
   if (g->aim_screenname_for_filters) g_free(g->aim_screenname_for_filters);
-  g->aim_screenname=owl_strdup(screenname);
+  g->aim_screenname=g_strdup(screenname);
   sn_escaped = owl_text_quote(screenname, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   g->aim_screenname_for_filters = owl_arg_quote(sn_escaped);
   g_free(sn_escaped);
@@ -972,7 +972,7 @@ FILE *owl_global_get_debug_file_handle(owl_global *g) {
       g->debug_file = fdopen(fd, "a");
 
     g_free(open_file);
-    open_file = owl_strdup(filename);
+    open_file = g_strdup(filename);
   }
   return g->debug_file;
 }

@@ -7,7 +7,7 @@ void owl_errqueue_init(owl_errqueue *eq)
 
 void owl_errqueue_append_err(owl_errqueue *eq, const char *msg)
 {
-  owl_list_append_element(&(eq->errlist), owl_strdup(msg));
+  owl_list_append_element(&(eq->errlist), g_strdup(msg));
 }
 
 /* fmtext should already be initialized */

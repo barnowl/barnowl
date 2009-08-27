@@ -291,13 +291,6 @@ char *owl_util_minutes_to_timestr(int in)
   return(out);
 }
 
-/* hooks for doing memory allocation et. al. in owl */
-
-char *owl_strdup(const char *s1)
-{
-  return(g_strdup(s1));
-}
-
 /* allocates memory and returns the string or null.
  * caller must free the string. 
  */
@@ -362,15 +355,15 @@ char *owl_util_get_default_tty(void)
   char *out;
 
   if (getenv("DISPLAY")) {
-    out=owl_strdup(getenv("DISPLAY"));
+    out=g_strdup(getenv("DISPLAY"));
   } else if ((tmp=ttyname(fileno(stdout)))!=NULL) {
-    out=owl_strdup(tmp);
+    out=g_strdup(tmp);
     if (!strncmp(out, "/dev/", 5)) {
       g_free(out);
-      out=owl_strdup(tmp+5);
+      out=g_strdup(tmp+5);
     }
   } else {
-    out=owl_strdup("unknown");
+    out=g_strdup("unknown");
   }
   return(out);
 }
@@ -383,7 +376,7 @@ char *owl_util_stripnewlines(const char *in)
   
   char  *tmp, *ptr1, *ptr2, *out;
 
-  ptr1=tmp=owl_strdup(in);
+  ptr1=tmp=g_strdup(in);
   while (ptr1[0]=='\n') {
     ptr1++;
   }
@@ -393,7 +386,7 @@ char *owl_util_stripnewlines(const char *in)
     ptr2--;
   }
 
-  out=owl_strdup(ptr1);
+  out=g_strdup(ptr1);
   g_free(tmp);
   return(out);
 }
@@ -544,7 +537,7 @@ char * owl_util_baseclass(const char * class)
     class += 2;
   }
 
-  start = owl_strdup(class);
+  start = g_strdup(class);
   end = start + strlen(start) - 1;
   while(end > start && *end == 'd' && *(end-1) == '.') {
     end -= 2;
@@ -600,7 +593,7 @@ char * owl_strip_format_chars(const char *in)
     if (s) strcat(r,s);
   }
   else {
-    r = owl_strdup("");
+    r = g_strdup("");
   }
   return r;
 }
@@ -629,9 +622,9 @@ char * owl_validate_utf8(const char *in)
 {
   char *out;
   if (g_utf8_validate(in, -1, NULL)) {
-    out = owl_strdup(in);
+    out = g_strdup(in);
   } else {
-    out = owl_strdup("");
+    out = g_strdup("");
   }
   return out;
 }

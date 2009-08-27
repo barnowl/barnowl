@@ -22,7 +22,7 @@ owl_timer *owl_select_add_timer(const char* name, int after, int interval, void 
   t->callback = cb;
   t->destroy = destroy;
   t->data = data;
-  t->name = name ? owl_strdup(name) : NULL;
+  t->name = name ? g_strdup(name) : NULL;
 
   *timers = g_list_insert_sorted(*timers, t,
                                  (GCompareFunc)_owl_select_timer_cmp);

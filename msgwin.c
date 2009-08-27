@@ -23,7 +23,7 @@ static void owl_msgwin_redraw(owl_window *w, WINDOW *curswin, void *msgwin_)
 
 void owl_msgwin_set_text(owl_msgwin *msgwin, const char *msg)
 {
-  owl_msgwin_set_text_nocopy(msgwin, owl_strdup(msg));
+  owl_msgwin_set_text_nocopy(msgwin, g_strdup(msg));
 }
 
 void owl_msgwin_set_text_nocopy(owl_msgwin *msgwin, char *msg)

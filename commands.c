@@ -1273,7 +1273,7 @@ char *owl_command_next(int argc, const char *const *argv, const char *buff)
       last_if_none=1;
       argc-=1; argv+=1; 
     } else if (argc>=2 && !strcmp(argv[1], "--filter")) {
-      filter = owl_strdup(argv[2]);
+      filter = g_strdup(argv[2]);
       argc-=2; argv+=2; 
     } else if (argc>=2 && !strcmp(argv[1], "--smart-filter")) {
       filter = owl_function_smartfilter(0, 0);
@@ -1303,7 +1303,7 @@ char *owl_command_prev(int argc, const char *const *argv, const char *buff)
       first_if_none=1;
       argc-=1; argv+=1; 
     } else if (argc>=2 && !strcmp(argv[1], "--filter")) {
-      filter = owl_strdup(argv[2]);
+      filter = g_strdup(argv[2]);
       argc-=2; argv+=2; 
     } else if (argc>=2 && !strcmp(argv[1], "--smart-filter")) {
       filter = owl_function_smartfilter(0, 0);
@@ -1674,7 +1674,7 @@ char *owl_command_multi(int argc, const char *const *argv, const char *buff)
     owl_function_makemsg("Invalid arguments to 'multi' command.");    
     return NULL;
   }
-  newbuff = owl_strdup(skiptokens(buff, 1));
+  newbuff = g_strdup(skiptokens(buff, 1));
   if (!strcmp(argv[0], "(")) {
     for (i=strlen(newbuff)-1; i>=0; i--) {
       if (newbuff[i] == ')') {
@@ -2500,7 +2500,7 @@ char *owl_command_getview(int argc, const char *const *argv, const char *buff)
     return NULL;
   }
   filtname = owl_view_get_filtname(owl_global_get_current_view(&g));
-  if (filtname) return owl_strdup(filtname);
+  if (filtname) return g_strdup(filtname);
   return NULL;
 }
 
@@ -2515,7 +2515,7 @@ char *owl_command_getvar(int argc, const char *const *argv, const char *buff)
 				argv[1], tmpbuff, 1024)) {
     return NULL;
   }
-  return owl_strdup(tmpbuff); 
+  return g_strdup(tmpbuff); 
 }
 
 char *owl_command_getfilter(int argc, const char *const *argv, const char *buf)
@@ -2575,7 +2575,7 @@ char *owl_command_aimlogin(int argc, const char *const *argv, const char *buff)
   /* if we get two arguments, ask for the password */
   if (argc==2) {
     owl_editwin *e = owl_function_start_password("AIM Password: ");
-    owl_editwin_set_cbdata(e, owl_strdup(argv[1]), g_free);
+    owl_editwin_set_cbdata(e, g_strdup(argv[1]), g_free);
     owl_editwin_set_callback(e, owl_callback_aimlogin);
     return(NULL);
   } else {
@@ -2603,7 +2603,7 @@ char *owl_command_getstyle(int argc, const char *const *argv, const char *buff)
     return NULL;
   }
   stylename = owl_view_get_style_name(owl_global_get_current_view(&g));
-  if (stylename) return owl_strdup(stylename);
+  if (stylename) return g_strdup(stylename);
   return NULL;
 }
 
