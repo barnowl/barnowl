@@ -95,7 +95,7 @@ void owl_global_init(owl_global *g) {
   g->startupfile = NULL;
   cd = owl_sprintf("%s/%s", g->homedir, OWL_CONFIG_DIR);
   owl_global_set_confdir(g, cd);
-  owl_free(cd);
+  g_free(cd);
 
   owl_messagelist_create(&(g->msglist));
 
@@ -378,9 +378,9 @@ const char *owl_global_get_confdir(const owl_global *g) {
  * Setting this also sets startupfile to confdir/startup
  */
 void owl_global_set_confdir(owl_global *g, const char *cd) {
-  owl_free(g->confdir);
+  g_free(g->confdir);
   g->confdir = owl_strdup(cd);
-  owl_free(g->startupfile);
+  g_free(g->startupfile);
   g->startupfile = owl_sprintf("%s/startup", cd);
 }
 
@@ -527,7 +527,7 @@ void owl_global_set_curmsg_vert_offset(owl_global *g, int i) {
 /* startup args */
 
 void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
-  if (g->startupargs) owl_free(g->startupargs);
+  if (g->startupargs) g_free(g->startupargs);
   g->startupargs = g_strjoinv(" ", argv);
 }
 
@@ -563,7 +563,7 @@ static void owl_global_delete_filter_ent(void *data)
   owl_global_filter_ent *e = data;
   e->g->filterlist = g_list_remove(e->g->filterlist, e->f);
   owl_filter_delete(e->f);
-  owl_free(e);
+  g_free(e);
 }
 
 void owl_global_add_filter(owl_global *g, owl_filter *f) {
@@ -698,12 +698,12 @@ void owl_global_set_aimloggedin(owl_global *g, const char *screenname)
 {
   char *sn_escaped;
   g->aim_loggedin=1;
-  if (g->aim_screenname) owl_free(g->aim_screenname);
-  if (g->aim_screenname_for_filters) owl_free(g->aim_screenname_for_filters);
+  if (g->aim_screenname) g_free(g->aim_screenname);
+  if (g->aim_screenname_for_filters) g_free(g->aim_screenname_for_filters);
   g->aim_screenname=owl_strdup(screenname);
   sn_escaped = owl_text_quote(screenname, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   g->aim_screenname_for_filters = owl_arg_quote(sn_escaped);
-  owl_free(sn_escaped);
+  g_free(sn_escaped);
 }
 
 void owl_global_set_aimnologgedin(owl_global *g)
@@ -966,12 +966,12 @@ FILE *owl_global_get_debug_file_handle(owl_global *g) {
 
     path = owl_sprintf("%s.%d", filename, getpid());
     fd = open(path, O_CREAT|O_WRONLY|O_EXCL, 0600);
-    owl_free(path);
+    g_free(path);
 
     if (fd >= 0)
       g->debug_file = fdopen(fd, "a");
 
-    owl_free(open_file);
+    g_free(open_file);
     open_file = owl_strdup(filename);
   }
   return g->debug_file;

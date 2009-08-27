@@ -1246,7 +1246,7 @@ char *owl_command_dump(int argc, const char *const *argv, const char *buff)
   }
   filename=owl_util_makepath(argv[1]);
   owl_function_dump(filename);
-  owl_free(filename);
+  g_free(filename);
   return(NULL);
 }
 
@@ -1287,7 +1287,7 @@ char *owl_command_next(int argc, const char *const *argv, const char *buff)
     }
   }
   owl_function_nextmsg_full(filter, skip_deleted, last_if_none);
-  if (filter) owl_free(filter);
+  if (filter) g_free(filter);
   return(NULL);
 }
 
@@ -1317,7 +1317,7 @@ char *owl_command_prev(int argc, const char *const *argv, const char *buff)
     }
   }
   owl_function_prevmsg_full(filter, skip_deleted, first_if_none);
-  if (filter) owl_free(filter);
+  if (filter) g_free(filter);
   return(NULL);
 }
 
@@ -1356,11 +1356,11 @@ char *owl_command_smartnarrow(int argc, const char *const *argv, const char *buf
 
   if (filtname) {
     owl_function_change_currentview_filter(filtname);
-    owl_free(filtname);
+    g_free(filtname);
   }
 
 done:
-  owl_free(tmp_argv);
+  g_free(tmp_argv);
 
   return NULL;
 }
@@ -1682,7 +1682,7 @@ char *owl_command_multi(int argc, const char *const *argv, const char *buff)
 	break;
       } else if (newbuff[i] != ' ') {
 	owl_function_makemsg("Invalid arguments to 'multi' command.");    
-	owl_free(newbuff);
+	g_free(newbuff);
 	return NULL;
       }
     }
@@ -1690,11 +1690,11 @@ char *owl_command_multi(int argc, const char *const *argv, const char *buff)
   commands = g_strsplit_set(newbuff, ";", 0);
   for (i = 0; commands[i] != NULL; i++) {
     if (lastrv) {
-      owl_free(lastrv);
+      g_free(lastrv);
     }
     lastrv = owl_function_command(commands[i]);
   }
-  owl_free(newbuff);
+  g_free(newbuff);
   g_strfreev(commands);
   return lastrv;
 }
@@ -2016,7 +2016,7 @@ char *owl_command_aimwrite(int argc, const char *const *argv, const char *buff)
     owl_function_aimwrite_setup(recip->str);
  err:
   g_string_free(recip, true);
-  owl_free(message);
+  g_free(message);
   return NULL;
 }
 
@@ -2103,7 +2103,7 @@ char *owl_command_view(int argc, const char *const *argv, const char *buff)
       char *foo;
       foo=owl_function_create_negative_filter(owl_view_get_filtname(owl_global_get_current_view(&g)));
       owl_function_change_currentview_filter(foo);
-      owl_free(foo);
+      g_free(foo);
       return(NULL);
     }
   }
@@ -2128,7 +2128,7 @@ char *owl_command_view(int argc, const char *const *argv, const char *buff)
     }
     owl_function_create_filter(argc, myargv);
     owl_function_change_currentview_filter("owl-dynamic");
-    owl_free(myargv);
+    g_free(myargv);
     return NULL;
   }
 
@@ -2263,7 +2263,7 @@ char *owl_command_viewclass(int argc, const char *const *argv, const char *buff)
   filtname = owl_function_classinstfilt(argv[1], NULL, owl_global_is_narrow_related(&g));
   if (filtname) {
     owl_function_change_currentview_filter(filtname);
-    owl_free(filtname);
+    g_free(filtname);
   }
   return NULL;
 }
@@ -2278,10 +2278,10 @@ char *owl_command_viewuser(int argc, const char *const *argv, const char *buff)
   }
   longuser = long_zuser(argv[1]);
   filtname = owl_function_zuserfilt(longuser);
-  owl_free(longuser);
+  g_free(longuser);
   if (filtname) {
     owl_function_change_currentview_filter(filtname);
-    owl_free(filtname);
+    g_free(filtname);
   }
   return NULL;
 }
@@ -2382,7 +2382,7 @@ char *owl_command_colorclass(int argc, const char *const *argv, const char *buff
   filtname=owl_function_classinstfilt(argv[1], NULL, owl_global_is_narrow_related(&g));
   if (filtname) {
     (void) owl_function_color_filter(filtname, argv[2], (argc == 4 ? argv[3] : NULL));
-    owl_free(filtname);
+    g_free(filtname);
   }
   return NULL;
 }
@@ -2485,7 +2485,7 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
     }
     text = owl_string_build_quoted("filter %q", argv[1]);
     owl_function_punt(text, unpunt);
-    owl_free(text);
+    g_free(text);
   } else {
     owl_function_punt(skiptokens(buff, 1), unpunt);
   }
@@ -2575,7 +2575,7 @@ char *owl_command_aimlogin(int argc, const char *const *argv, const char *buff)
   /* if we get two arguments, ask for the password */
   if (argc==2) {
     owl_editwin *e = owl_function_start_password("AIM Password: ");
-    owl_editwin_set_cbdata(e, owl_strdup(argv[1]), owl_free);
+    owl_editwin_set_cbdata(e, owl_strdup(argv[1]), g_free);
     owl_editwin_set_callback(e, owl_callback_aimlogin);
     return(NULL);
   } else {

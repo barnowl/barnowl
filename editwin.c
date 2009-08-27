@@ -83,14 +83,14 @@ static void _owl_editwin_delete(owl_editwin *e)
     g_signal_handler_disconnect(e->win, e->resized_id);
     g_object_unref(e->win);
   }
-  owl_free(e->buff);
+  g_free(e->buff);
   /* just in case someone forgot to clean up */
   while (e->excursions) {
     oe_release_excursion(e, e->excursions);
   }
   oe_destroy_cbdata(e);
 
-  owl_free(e);
+  g_free(e);
 }
 
 static inline void oe_set_index(owl_editwin *e, int index)
@@ -305,7 +305,7 @@ void owl_editwin_clear(owl_editwin *e)
     locktext[lock] = 0;
   }
 
-  owl_free(e->buff);
+  g_free(e->buff);
   _owl_editwin_init(e, e->winlines, e->wincols, e->style, e->hist);
 
   if (lock > 0) {
@@ -319,7 +319,7 @@ void owl_editwin_clear(owl_editwin *e)
   }
 
   if (locktext)
-    owl_free(locktext);
+    g_free(locktext);
 
   oe_set_index(e, lock);
 }
@@ -387,7 +387,7 @@ owl_editwin_excursion *owl_editwin_begin_excursion(owl_editwin *e)
 void owl_editwin_end_excursion(owl_editwin *e, owl_editwin_excursion *x)
 {
   oe_restore_excursion(e, x);
-  owl_free(x);
+  g_free(x);
 }
 
 static inline const char *oe_next_point(owl_editwin *e, const char *p)
@@ -1072,7 +1072,7 @@ static const char *oe_copy_buf(owl_editwin *e, const char *buf, int len)
   p = g_new(char, len + 1);
 
   if (p != NULL) {
-    owl_free(killbuf);
+    g_free(killbuf);
     memcpy(p, buf, len);
     p[len] = 0;
     owl_global_set_kill_buffer(&g,p);

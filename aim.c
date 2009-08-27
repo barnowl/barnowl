@@ -202,7 +202,7 @@ void owl_aim_successful_login(const char *screenname)
   owl_function_makemsg("%s logged in", screenname);
   buff=owl_sprintf("Logged in to AIM as %s", screenname);
   owl_function_adminmsg("", buff);
-  owl_free(buff);
+  g_free(buff);
 
   owl_function_debugmsg("Successful AIM login for %s", screenname);
 
@@ -291,7 +291,7 @@ static int owl_aim_do_send(const char *to, const char *msg, int flags)
 
   ret=aim_im_sendch1_ext(owl_global_get_aimsess(&g), &args);
 
-  owl_free(encoded);
+  g_free(encoded);
 
   return(ret);
 }
@@ -355,7 +355,7 @@ int owl_aim_set_awaymsg(const char *msg)
   aim_locate_setprofile(owl_global_get_aimsess(&g),
 			NULL, NULL, 0,
 			"us-ascii", foo, len);
-  owl_free(foo);
+  g_free(foo);
 
   /*
   aim_bos_setprofile(owl_global_get_aimsess(&g),
@@ -1053,9 +1053,9 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
 			 0);
   if (args->icbmflags & AIM_IMFLAGS_AWAY) owl_message_set_attribute(m, "isauto", "");
   owl_global_messagequeue_addmsg(&g, m);
-  owl_free(stripmsg);
-  owl_free(wrapmsg);
-  owl_free(nz_screenname);
+  g_free(stripmsg);
+  g_free(wrapmsg);
+  g_free(nz_screenname);
 
   return(1);
 
@@ -1081,7 +1081,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
     owl_function_debugmsg("faimtest_parse_incoming_im_chan1: icbm: their icon: iconstamp = %ld, iconlen = 0x%08x, iconsum = 0x%04x\n", args->iconstamp, args->iconlen, args->iconsum);
   }
 
-  owl_free(realmsg);
+  g_free(realmsg);
 
   return(1);
 }
@@ -1194,7 +1194,7 @@ static int faimtest_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...)
   
   owl_function_debugmsg("parse_oncoming sn: %s idle: %i", userinfo->sn, userinfo->idletime);
     
-  owl_free(nz_screenname);
+  g_free(nz_screenname);
   
   /*
     printf("%ld  %s is now online (flags: %04x = %s%s%s%s%s%s%s%s) (caps = %s = 0x%08lx)\n",
@@ -1226,7 +1226,7 @@ static int faimtest_parse_offgoing(aim_session_t *sess, aim_frame_t *fr, ...)
 
   nz_screenname=owl_aim_normalize_screenname(userinfo->sn);
   owl_buddylist_offgoing(owl_global_get_buddylist(&g), nz_screenname);
-  owl_free(nz_screenname);
+  g_free(nz_screenname);
 
   if (userinfo->present & AIM_USERINFO_PRESENT_IDLE) {
     owl_function_debugmsg("parse_offgoing sn: %s idle time %i", userinfo->sn, userinfo->idletime);

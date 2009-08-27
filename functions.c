@@ -31,7 +31,7 @@ void owl_function_command_norv(const char *cmdbuff)
 {
   char *rv;
   rv=owl_function_command(cmdbuff);
-  if (rv) owl_free(rv);
+  if (rv) g_free(rv);
 }
 
 void owl_function_command_alias(const char *alias_from, const char *alias_to)
@@ -88,7 +88,7 @@ void owl_function_show_styles(void) {
   owl_fmtext_append_list(&fm, &l, "\n", owl_function_style_describe);
   owl_fmtext_append_normal(&fm, "\n");
   owl_function_popless_fmtext(&fm);
-  owl_list_cleanup(&l, owl_free);
+  owl_list_cleanup(&l, g_free);
   owl_fmtext_cleanup(&fm);
 }
 
@@ -99,11 +99,11 @@ static void _owl_function_timer_append_fmtext(gpointer data, gpointer user_data)
                           timer->name ? timer->name : "(unnamed)",
                           (int)(timer->time - time(NULL)));
   owl_fmtext_append_normal(fm, str);
-  owl_free(str);
+  g_free(str);
   if (timer->interval) {
     str = owl_sprintf(", repeat every %d seconds", timer->interval);
     owl_fmtext_append_normal(fm, str);
-    owl_free(str);
+    g_free(str);
   }
   owl_fmtext_append_normal(fm, "\n");
 }
@@ -217,8 +217,8 @@ void owl_function_show_quickstart(void)
         if (perlquickstart) {
             char *result = owl_sprintf("%s%s", message, perlquickstart);
             owl_function_adminmsg("BarnOwl Quickstart", result);
-            owl_free(result);
-            owl_free(perlquickstart);
+            g_free(result);
+            g_free(perlquickstart);
             return;
         }
     }
@@ -312,7 +312,7 @@ void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin 
   owl_editwin_set_dotsend(e);
   s = owl_sprintf("----> %s\n", line);
   owl_editwin_set_locktext(e, s);
-  owl_free(s);
+  g_free(s);
 
   owl_editwin_set_cbdata(e, data, cleanup);
   owl_editwin_set_callback(e, callback);
@@ -358,8 +358,8 @@ void owl_function_aimwrite_setup(const char *to)
   owl_function_start_edit_win(line,
                               &owl_callback_aimwrite,
                               owl_strdup(to),
-                              owl_free);
-  owl_free(line);
+                              g_free);
+  g_free(line);
 }
 
 void owl_function_loopwrite_setup(void)
@@ -446,11 +446,11 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
 
   rv = call_filter(zcrypt, argv, owl_zwrite_get_message(z), &cryptmsg, &status);
 
-  owl_free(zcrypt);
+  g_free(zcrypt);
 
   if (rv || status) {
-    if(cryptmsg) owl_free(cryptmsg);
-    owl_free(old_msg);
+    if(cryptmsg) g_free(cryptmsg);
+    g_free(old_msg);
     owl_function_error("Error in zcrypt, possibly no key found.  Message not sent.");
     owl_function_beep();
     return;
@@ -475,7 +475,7 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
   }
 
   /* free the zwrite */
-  owl_free(cryptmsg);
+  g_free(cryptmsg);
 }
 
 void owl_callback_aimwrite(owl_editwin *e) {
@@ -511,7 +511,7 @@ void owl_function_aimwrite(const char *to, const char *msg, bool unwrap)
     owl_function_error("Could not create outgoing AIM message");
   }
 
-  owl_free(format_msg);
+  g_free(format_msg);
 }
 
 void owl_function_send_aimawymsg(const char *to, const char *msg)
@@ -539,7 +539,7 @@ void owl_function_send_aimawymsg(const char *to, const char *msg)
   } else {
     owl_function_error("Could not create AIM message");
   }
-  owl_free(format_msg);
+  g_free(format_msg);
 }
 
 void owl_callback_loopwrite(owl_editwin *e) {
@@ -870,7 +870,7 @@ void owl_function_loadsubs(const char *file)
   } else {
     path = owl_util_makepath(file);
     ret=owl_zephyr_loadsubs(path, 1);
-    owl_free(path);
+    g_free(path);
   }
 
   /* for backwards compatibility for now */
@@ -992,7 +992,7 @@ void owl_function_quit(void)
 
   /* execute the commands in shutdown */
   ret = owl_perlconfig_execute("BarnOwl::Hooks::_shutdown();");
-  if (ret) owl_free(ret);
+  if (ret) g_free(ret);
 
   /* signal our child process, if any */
   if (owl_global_get_newmsgproc_pid(&g)) {
@@ -1326,7 +1326,7 @@ void owl_function_popless_file(const char *filename)
   owl_fmtext_init_null(&fm);
   while (owl_getline(&s, file))
     owl_fmtext_append_normal(&fm, s);
-  owl_free(s);
+  g_free(s);
 
   owl_function_popless_fmtext(&fm);
   owl_fmtext_cleanup(&fm);
@@ -1465,7 +1465,7 @@ void owl_function_info(void)
 	    tmpbuff[30]='\0';
 	    strcat(tmpbuff, "...");
 	  }
-	  owl_free(ptr);
+	  g_free(ptr);
 
 	  for (j=0; j<strlen(tmpbuff); j++) {
 	    if (tmpbuff[j]=='\n') tmpbuff[j]='~';
@@ -1609,7 +1609,7 @@ void owl_function_getsubs(void)
     owl_function_popless_text("Error getting subscriptions");
   }
 	   
-  owl_free(buff);
+  g_free(buff);
 }
 
 void owl_function_printallvars(void)
@@ -1882,7 +1882,7 @@ void owl_function_reply(int type, int enter)
     } else {
       owl_function_start_command(buff);
     }
-    owl_free(buff);
+    g_free(buff);
   }
 }
 
@@ -1899,8 +1899,8 @@ void owl_function_zlocate(int argc, const char *const *argv, int auth)
     ptr = long_zuser(argv[i]);
     result = owl_zephyr_zlocate(ptr, auth);
     owl_fmtext_append_normal(&fm, result);
-    owl_free(result);
-    owl_free(ptr);
+    g_free(result);
+    g_free(ptr);
   }
 
   owl_function_popless_fmtext(&fm);
@@ -1915,7 +1915,7 @@ void owl_callback_command(owl_editwin *e)
   rv = owl_function_command(line);
    if (rv) {
     owl_function_makemsg("%s", rv);
-    owl_free(rv);
+    g_free(rv);
   }
 }
 
@@ -2000,14 +2000,14 @@ char *owl_function_exec(int argc, const char *const *argv, const char *buff, int
     pclose(p);
     
     if (type == OWL_OUTPUT_RETURN) {
-      owl_free(newbuff);
+      g_free(newbuff);
       return out;
     } else if (type == OWL_OUTPUT_ADMINMSG) {
       owl_function_adminmsg(buff, out);
     }
-    owl_free(out);
+    g_free(out);
   }
-  owl_free(newbuff);
+  g_free(newbuff);
   return NULL;
 }
 
@@ -2037,7 +2037,7 @@ char *owl_function_perl(int argc, const char *const *argv, const char *buff, int
     } else if (type == OWL_OUTPUT_RETURN) {
       return perlout;
     }
-    owl_free(perlout);
+    g_free(perlout);
   }
   return NULL;
 }
@@ -2246,8 +2246,8 @@ void owl_function_show_filter(const char *name)
   tmp = owl_filter_print(f);
   buff = owl_sprintf("%s: %s", owl_filter_get_name(f), tmp);
   owl_function_popless_text(buff);
-  owl_free(buff);
-  owl_free(tmp);
+  g_free(buff);
+  g_free(tmp);
 }
 
 void owl_function_show_zpunts(void)
@@ -2271,7 +2271,7 @@ void owl_function_show_zpunts(void)
     owl_fmtext_append_normal(&fm, buff);
     tmp = owl_filter_print(f);
     owl_fmtext_append_normal(&fm, tmp);
-    owl_free(tmp);
+    g_free(tmp);
   }
   owl_function_popless_fmtext(&fm);
   owl_fmtext_cleanup(&fm);
@@ -2312,7 +2312,7 @@ char *owl_function_classinstfilt(const char *c, const char *i, int related)
   {
     char *temp = g_utf8_strdown(filtname, -1);
     if (temp) {
-      owl_free(filtname);
+      g_free(filtname);
       filtname = temp;
     }
   }
@@ -2340,15 +2340,15 @@ char *owl_function_classinstfilt(const char *c, const char *i, int related)
                               " and instance ^%q$",
                               tmpinstance);
   }
-  owl_free(tmpclass);
-  owl_free(tmpinstance);
+  g_free(tmpclass);
+  g_free(tmpinstance);
 
   f = owl_filter_new_fromstring(filtname, buf->str);
   g_string_free(buf, true);
   if (f == NULL) {
     /* Couldn't make a filter for some reason. Return NULL. */
     owl_function_error("Error creating filter '%s'", filtname);
-    owl_free(filtname);
+    g_free(filtname);
     filtname = NULL;
     goto done;
   }
@@ -2357,9 +2357,9 @@ char *owl_function_classinstfilt(const char *c, const char *i, int related)
   owl_global_add_filter(&g, f);
 
 done:
-  owl_free(class);
+  g_free(class);
   if (instance) {
-    owl_free(instance);
+    g_free(instance);
   }
   return(filtname);
 }
@@ -2379,7 +2379,7 @@ char *owl_function_zuserfilt(const char *longuser)
   /* name for the filter */
   shortuser = short_zuser(longuser);
   filtname = owl_sprintf("user-%s", shortuser);
-  owl_free(shortuser);
+  g_free(shortuser);
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2393,15 +2393,15 @@ char *owl_function_zuserfilt(const char *longuser)
       "( ( direction ^in$ and sender ^%q$ ) or ( direction ^out$ and "
       "recipient ^%q$ ) ) ) or ( ( class ^login$ ) and ( sender ^%q$ ) )",
       esclonguser, esclonguser, esclonguser);
-  owl_free(esclonguser);
+  g_free(esclonguser);
 
   f = owl_filter_new_fromstring(filtname, argbuff);
-  owl_free(argbuff);
+  g_free(argbuff);
 
   if (f == NULL) {
     /* Couldn't make a filter for some reason. Return NULL. */
     owl_function_error("Error creating filter '%s'", filtname);
-    owl_free(filtname);
+    g_free(filtname);
     return NULL;
   }
 
@@ -2438,14 +2438,14 @@ char *owl_function_aimuserfilt(const char *user)
       "( type ^aim$ and ( ( sender ^%1$s$ and recipient ^%2$s$ ) or "
       "( sender ^%2$s$ and recipient ^%1$s$ ) ) )",
       escuser, owl_global_get_aim_screenname_for_filters(&g));
-  owl_free(escuser);
+  g_free(escuser);
 
   f = owl_filter_new_fromstring(filtname, argbuff);
-  owl_free(argbuff);
+  g_free(argbuff);
 
   if (f == NULL) {
     owl_function_error("Error creating filter '%s'", filtname);
-    owl_free(filtname);
+    g_free(filtname);
     return NULL;
   }
 
@@ -2472,14 +2472,14 @@ char *owl_function_typefilt(const char *type)
   esctype = owl_text_quote(type, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
 
   argbuff = owl_string_build_quoted("type ^%q$", esctype);
-  owl_free(esctype);
+  g_free(esctype);
 
   f = owl_filter_new_fromstring(filtname, argbuff);
-  owl_free(argbuff);
+  g_free(argbuff);
 
   if (f == NULL) {
     owl_function_error("Error creating filter '%s'", filtname);
-    owl_free(filtname);
+    g_free(filtname);
     return NULL;
   }
 
@@ -2532,14 +2532,14 @@ static char *owl_function_smartfilter_cc(const owl_message *m) {
   ccs_quoted = owl_text_quote(ccs, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   owl_string_append_quoted_arg(buf, ccs_quoted);
   g_string_append_c(buf, '$');
-  owl_free(ccs_quoted);
+  g_free(ccs_quoted);
 
   f = owl_filter_new_fromstring(filtname, buf->str);
   g_string_free(buf, true);
 
   if (f == NULL) {
     owl_function_error("Error creating filter '%s'", filtname);
-    owl_free(filtname);
+    g_free(filtname);
     return NULL;
   }
 
@@ -2766,8 +2766,8 @@ void owl_function_show_colors(void)
     char* str2 = owl_sprintf("%i\n",i);
     owl_fmtext_append_normal(&fm,str1);
     owl_fmtext_append_normal_color(&fm, str2, i, OWL_COLOR_DEFAULT);
-    owl_free(str1);
-     owl_free(str2);
+    g_free(str1);
+     g_free(str2);
   }
   
   owl_function_popless_fmtext(&fm);
@@ -2789,14 +2789,14 @@ void owl_function_zpunt(const char *class, const char *inst, const char *recip, 
   } else {
     quoted=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_string_appendf_quoted(buf, "class ^(un)*%q(\\.d)*$", quoted);
-    owl_free(quoted);
+    g_free(quoted);
   }
   if (!strcmp(inst, "*")) {
     g_string_append(buf, " and instance .*");
   } else {
     quoted=owl_text_quote(inst, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_string_appendf_quoted(buf, " and instance ^(un)*%q(\\.d)*$", quoted);
-    owl_free(quoted);
+    g_free(quoted);
   }
   if (!strcmp(recip, "*")) {
     /* g_string_append(buf, ""); */
@@ -2806,7 +2806,7 @@ void owl_function_zpunt(const char *class, const char *inst, const char *recip, 
     }
     quoted=owl_text_quote(recip, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
     owl_string_appendf_quoted(buf, " and recipient ^%q$", quoted);
-    owl_free(quoted);
+    g_free(quoted);
   }
 
   owl_function_punt(buf->str, direction);
@@ -3053,7 +3053,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
 	timestr=owl_strdup("");
       }
       owl_fmtext_appendf_normal(&fm, "  %-20.20s %-12.12s\n", owl_buddy_get_name(b), timestr);
-      owl_free(timestr);
+      g_free(timestr);
     }
   }
 
@@ -3106,7 +3106,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
                                         location[x].host,
                                         location[x].tty,
                                         location[x].time);
-              owl_free(tmp);
+              g_free(tmp);
             }
             if (numlocs>=200) {
               owl_fmtext_append_normal(&fm, "  Too many locations found for this user, truncating.\n");
@@ -3114,7 +3114,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
           }
         }
       }
-      owl_list_cleanup(&anyone, owl_free);
+      owl_list_cleanup(&anyone, g_free);
     }
   }
 #endif
@@ -3124,7 +3124,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
       char * perlblist = owl_perlconfig_execute("BarnOwl::Hooks::_get_blist()");
       if (perlblist) {
         owl_fmtext_append_ztext(&fm, perlblist);
-        owl_free(perlblist);
+        g_free(perlblist);
       }
     }
   }
@@ -3167,7 +3167,7 @@ void owl_function_dump(const char *filename)
     plaintext = owl_strip_format_chars(owl_message_get_text(m));
     if (plaintext) {
       fputs(plaintext, file);
-      owl_free(plaintext);
+      g_free(plaintext);
     }
   }
   fclose(file);
@@ -3290,7 +3290,7 @@ void owl_function_source(const char *filename)
     path = owl_util_makepath(filename);
   }
   file = fopen(path, "r");
-  owl_free(path);
+  g_free(path);
   if (!file) {
     if (!fail_silent) {
       owl_function_error("Error opening file: %s", filename);
@@ -3303,7 +3303,7 @@ void owl_function_source(const char *filename)
     owl_function_command(s);
   }
 
-  owl_free(s);
+  g_free(s);
   fclose(file);
 }
 
@@ -3376,7 +3376,7 @@ void owl_function_error(const char *fmt, ...)
     owl_function_makemsg("[Error] %s", buff);
   }
 
-  owl_free(buff);
+  g_free(buff);
 
   in_error--;
 }
@@ -3395,8 +3395,8 @@ void owl_function_log_err(const char *string)
 
   owl_errqueue_append_err(owl_global_get_errqueue(&g), buff);
 
-  owl_free(buff);
-  owl_free(date);
+  g_free(buff);
+  g_free(date);
 }
 
 void owl_function_showerrs(void)
@@ -3445,7 +3445,7 @@ void owl_function_zephyr_buddy_check(int notify)
   zaldptr = g_list_first(*zaldlist);
   while (zaldptr) {
     ZFreeALD(zaldptr->data);
-    owl_free(zaldptr->data);
+    g_free(zaldptr->data);
     zaldptr = g_list_next(zaldptr);
   }
   g_list_free(*zaldlist);
@@ -3460,11 +3460,11 @@ void owl_function_zephyr_buddy_check(int notify)
     if (ZRequestLocations(zstr(user), zald, UNACKED, ZAUTH) == ZERR_NONE) {
       *zaldlist = g_list_append(*zaldlist, zald);
     } else {
-      owl_free(zald);
+      g_free(zald);
     }
   }
 
-  owl_list_cleanup(&anyone, owl_free);
+  owl_list_cleanup(&anyone, g_free);
 #endif
 }
 

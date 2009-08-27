@@ -5,7 +5,7 @@
 #include "owl.h"
 
 /* Returns a copy of 'in' with each line indented 'n'
- * characters. Result must be freed with owl_free. */
+ * characters. Result must be freed with g_free. */
 char *owl_text_indent(const char *in, int n)
 {
   const char *ptr1, *ptr2, *last;
@@ -106,23 +106,23 @@ char *owl_text_htmlstrip(const char *in)
   }
 
   out2=owl_text_substitute(out, "&lt;", "<");
-  owl_free(out);
+  g_free(out);
   out=owl_text_substitute(out2, "&gt;", ">");
-  owl_free(out2);
+  g_free(out2);
   out2=owl_text_substitute(out, "&amp;", "&");
-  owl_free(out);
+  g_free(out);
   out=owl_text_substitute(out2, "&quot;", "\"");
-  owl_free(out2);
+  g_free(out2);
   out2=owl_text_substitute(out, "&nbsp;", " ");
-  owl_free(out);
+  g_free(out);
   out=owl_text_substitute(out2, "&ensp;", "  ");
-  owl_free(out2);
+  g_free(out2);
   out2=owl_text_substitute(out, "&emsp;", "   ");
-  owl_free(out);
+  g_free(out);
   out=owl_text_substitute(out2, "&endash;", "--");
-  owl_free(out2);
+  g_free(out2);
   out2=owl_text_substitute(out, "&emdash;", "---");
-  owl_free(out);
+  g_free(out);
 
   return(out2);
 }

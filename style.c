@@ -79,7 +79,7 @@ void owl_style_get_formattext(const owl_style *s, owl_fmtext *fm, const owl_mess
   owl_fmtext_expand_tabs(&with_tabs, fm, OWL_TAB_WIDTH - OWL_TAB);
   owl_fmtext_cleanup(&with_tabs);
 
-  owl_free(indent);
+  g_free(indent);
   if(sv)
     SvREFCNT_dec(sv);
 }
@@ -93,12 +93,12 @@ int owl_style_validate(const owl_style *s) {
 
 void owl_style_cleanup(owl_style *s)
 {
-  if (s->name) owl_free(s->name);
+  if (s->name) g_free(s->name);
   SvREFCNT_dec(s->perlobj);
 }
 
 void owl_style_delete(owl_style *s)
 {
   owl_style_cleanup(s);
-  owl_free(s);
+  g_free(s);
 }

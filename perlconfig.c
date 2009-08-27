@@ -30,7 +30,7 @@ SV *owl_new_sv(const char * str)
   } else {
     char *escape = owl_escape_highbit(str);
     owl_function_error("Internal error! Non-UTF-8 string encountered:\n%s", escape);
-    owl_free(escape);
+    g_free(escape);
   }
   return ret;
 }
@@ -68,7 +68,7 @@ HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const void *))
     element = owl_dict_find_element(d, key);
     (void)hv_store(ret, key, strlen(key), to_sv(element), 0);
   }
-  owl_list_cleanup(&l, owl_free);
+  owl_list_cleanup(&l, g_free);
 
   return ret;
 }
@@ -105,7 +105,7 @@ SV *owl_perlconfig_message2hashref(const owl_message *m)
     for (i=0; i<j; i++) {
       ptr=owl_zephyr_get_field_as_utf8(owl_message_get_notice(m), i+1);
       av_push(av_zfields, owl_new_sv(ptr));
-      owl_free(ptr);
+      g_free(ptr);
     }
     (void)hv_store(h, "fields", strlen("fields"), newRV_noinc((SV*)av_zfields), 0);
 
@@ -158,8 +158,8 @@ SV *owl_perlconfig_message2hashref(const owl_message *m)
     stash = gv_stashpv("BarnOwl::Message", 1);
   }
   hr = sv_bless(hr,stash);
-  owl_free(utype);
-  owl_free(blessas);
+  g_free(utype);
+  g_free(blessas);
   return hr;
 }
 
@@ -406,7 +406,7 @@ char *owl_perlconfig_initperl(const char * file, int *Pargc, char ***Pargv, char
   path = owl_sprintf("%s/lib", owl_get_datadir());
   av_unshift(inc, 1);
   av_store(inc, 0, owl_new_sv(path));
-  owl_free(path);
+  g_free(path);
 
   eval_pv("use BarnOwl;", FALSE);
 
@@ -463,7 +463,7 @@ void owl_perlconfig_getmsg(const owl_message *m, const char *subname)
     ptr = owl_perlconfig_call_with_message(subname?subname
                                            :"BarnOwl::_receive_msg_legacy_wrap", m);
   }
-  if (ptr) owl_free(ptr);
+  if (ptr) g_free(ptr);
 }
 
 /* Called on all new messages; receivemsg is only called on incoming ones */
@@ -474,7 +474,7 @@ void owl_perlconfig_newmsg(const owl_message *m, const char *subname)
     ptr = owl_perlconfig_call_with_message(subname?subname
                                            :"BarnOwl::Hooks::_new_msg", m);
   }
-  if (ptr) owl_free(ptr);
+  if (ptr) g_free(ptr);
 }
 
 void owl_perlconfig_new_command(const char *name)

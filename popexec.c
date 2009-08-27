@@ -139,7 +139,7 @@ void owl_popexec_inputhandler(const owl_io_dispatch *d, void *data)
   if (pe->winactive) {
     owl_viewwin_append_text(pe->vwin, buf);
   }
-  owl_free(buf);
+  g_free(buf);
   
 }
 
@@ -178,6 +178,6 @@ void owl_popexec_unref(owl_popexec *pe)
   pe->refcount--;
   if (pe->refcount<=0) {
     owl_function_debugmsg("doing free of %p", pe);
-    owl_free(pe);
+    g_free(pe);
   }
 }

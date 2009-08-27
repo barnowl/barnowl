@@ -21,8 +21,8 @@ int owl_keymap_init(owl_keymap *km, const char *name, const char *desc, void (*d
 /* note that this will free the memory for the bindings! */
 void owl_keymap_cleanup(owl_keymap *km)
 {
-  owl_free(km->name);
-  owl_free(km->desc);
+  g_free(km->name);
+  g_free(km->desc);
   owl_list_cleanup(&km->bindings, (void (*)(void *))owl_keybinding_delete);
 }
 
@@ -39,7 +39,7 @@ int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *co
 
   if ((kb = g_new(owl_keybinding, 1)) == NULL) return(-1);
   if (0 != owl_keybinding_init(kb, keyseq, command, function_fn, desc)) {
-    owl_free(kb);
+    g_free(kb);
     return(-1);
   }
   /* see if another matching binding, and if so remove it.
@@ -64,7 +64,7 @@ int owl_keymap_remove_binding(owl_keymap *km, const char *keyseq)
 
   if ((kb = g_new(owl_keybinding, 1)) == NULL) return(-1);
   if (0 != owl_keybinding_make_keys(kb, keyseq)) {
-    owl_free(kb);
+    g_free(kb);
     return(-1);
   }
 
@@ -224,7 +224,7 @@ void owl_keyhandler_get_keymap_names(const owl_keyhandler *kh, owl_list *l)
 
 void owl_keyhandler_keymap_namelist_cleanup(owl_list *l)
 {
-  owl_list_cleanup(l, owl_free);
+  owl_list_cleanup(l, g_free);
 }
 
 

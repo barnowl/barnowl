@@ -28,14 +28,14 @@ void owl_msgwin_set_text(owl_msgwin *msgwin, const char *msg)
 
 void owl_msgwin_set_text_nocopy(owl_msgwin *msgwin, char *msg)
 {
-  owl_free(msgwin->msg);
+  g_free(msgwin->msg);
   msgwin->msg = msg;
   owl_window_dirty(msgwin->window);
 }
 
 void owl_msgwin_cleanup(owl_msgwin *msgwin)
 {
-  owl_free(msgwin->msg);
+  g_free(msgwin->msg);
   msgwin->msg = NULL;
   if (msgwin->window) {
     g_signal_handler_disconnect(msgwin->window, msgwin->redraw_id);

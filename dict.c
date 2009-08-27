@@ -120,7 +120,7 @@ void *owl_dict_remove_element(owl_dict *d, const char *k) {
   void *v;
   found = _owl_dict_find_pos(d, k, &pos);
   if (!found) return(NULL);
-  owl_free(d->els[pos].k);
+  g_free(d->els[pos].k);
   v = d->els[pos].v;
   for (i=pos; i<d->size-1; i++) {
     d->els[i]=d->els[i+1];
@@ -135,9 +135,9 @@ void owl_dict_cleanup(owl_dict *d, void (*elefree)(void *))
   int i;
 
   for (i=0; i<d->size; i++) {
-    owl_free(d->els[i].k);
+    g_free(d->els[i].k);
     if (elefree) (elefree)(d->els[i].v);
   }
-  if (d->els) owl_free(d->els);
+  if (d->els) g_free(d->els);
 }
 

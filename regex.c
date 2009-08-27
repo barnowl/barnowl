@@ -27,7 +27,7 @@ int owl_regex_create(owl_regex *re, const char *string)
   if (ret) {
     regerror(ret, NULL, buff1, LINE);
     owl_function_makemsg("Error in regular expression: %s", buff1);
-    owl_free(re->string);
+    g_free(re->string);
     re->string=NULL;
     return(-1);
   }
@@ -41,7 +41,7 @@ int owl_regex_create_quoted(owl_regex *re, const char *string)
   
   quoted=owl_text_quote(string, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   owl_regex_create(re, quoted);
-  owl_free(quoted);
+  g_free(quoted);
   return(0);
 }
 
@@ -86,7 +86,7 @@ void owl_regex_copy(const owl_regex *a, owl_regex *b)
 void owl_regex_cleanup(owl_regex *re)
 {
     if (re->string) {
-        owl_free(re->string);
+        g_free(re->string);
         regfree(&(re->re));
     }
 }

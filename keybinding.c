@@ -49,7 +49,7 @@ int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq)
     kb->keys[i] = owl_keypress_fromstring(ktokens[i]);
     if (kb->keys[i] == ERR) {
       g_strfreev(ktokens);
-      owl_free(kb->keys);
+      g_free(kb->keys);
       return(-1);
     }
   }
@@ -61,16 +61,16 @@ int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq)
 /* Releases data associated with a keybinding */
 void owl_keybinding_cleanup(owl_keybinding *kb)
 {
-  if (kb->keys) owl_free(kb->keys);
-  if (kb->desc) owl_free(kb->desc);
-  if (kb->command) owl_free(kb->command);
+  if (kb->keys) g_free(kb->keys);
+  if (kb->desc) g_free(kb->desc);
+  if (kb->command) g_free(kb->command);
 }
 
 /* Releases data associated with a keybinding, and the kb itself */
 void owl_keybinding_delete(owl_keybinding *kb)
 {
   owl_keybinding_cleanup(kb);
-  owl_free(kb);
+  g_free(kb);
 }
 
 /* executes a keybinding */

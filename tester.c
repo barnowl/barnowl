@@ -133,7 +133,7 @@ int owl_util_regtest(void)
     do {                                                 \
       char *__value = (expr);                            \
       FAIL_UNLESS((desc), !strcmp((expected), __value)); \
-      owl_free(__value);                                 \
+      g_free(__value);                                 \
     } while (0)
 
   CHECK_STR_AND_FREE("owl_util_substitute 1", "foo",
@@ -190,7 +190,7 @@ int owl_util_regtest(void)
       FAIL_UNLESS(desc " - parsed",			\
 		  !strcmp(__argv[0], unquoted));	\
       owl_parse_delete(__argv, __argc);			\
-      owl_free(__quoted);				\
+      g_free(__quoted);				\
     } while (0)
 
   CHECK_QUOTING("boring text", "mango", "mango");
@@ -257,7 +257,7 @@ int owl_dict_regtest(void) {
   FAIL_UNLESS("get_keys result val",0==strcmp("b",owl_list_get_element(&l,1)));
   FAIL_UNLESS("get_keys result val",0==strcmp("c",owl_list_get_element(&l,2)));
 
-  owl_list_cleanup(&l, owl_free);
+  owl_list_cleanup(&l, g_free);
   owl_dict_cleanup(&d, NULL);
 
   /*  if (numfailed) printf("*** WARNING: failures encountered with owl_dict\n"); */
@@ -556,14 +556,14 @@ int owl_fmtext_regtest(void) {
   str = owl_fmtext_print_plain(&fm2);
   FAIL_UNLESS("lines corrected truncated",
 	      str && !strcmp(str, "1\n2\n3\n"));
-  owl_free(str);
+  g_free(str);
 
   owl_fmtext_clear(&fm2);
   owl_fmtext_truncate_lines(&fm1, 1, 5, &fm2);
   str = owl_fmtext_print_plain(&fm2);
   FAIL_UNLESS("lines corrected truncated",
 	      str && !strcmp(str, "1\n2\n3\n4\n"));
-  owl_free(str);
+  g_free(str);
 
   /* Test owl_fmtext_truncate_cols. */
   owl_fmtext_clear(&fm1);
@@ -578,7 +578,7 @@ int owl_fmtext_regtest(void) {
               str && !strcmp(str, "567890"
                                   "56789\n"
                                   "567890"));
-  owl_free(str);
+  g_free(str);
 
   owl_fmtext_clear(&fm1);
   owl_fmtext_append_normal(&fm1, "12\t1234");
@@ -591,7 +591,7 @@ int owl_fmtext_regtest(void) {
   FAIL_UNLESS("columns correctly truncated",
               str && !strcmp(str, "    123456"
                                   "5678      "));
-  owl_free(str);
+  g_free(str);
 
   /* Test owl_fmtext_expand_tabs. */
   owl_fmtext_clear(&fm1);
@@ -604,7 +604,7 @@ int owl_fmtext_regtest(void) {
   FAIL_UNLESS("tabs corrected expanded",
               str && !strcmp(str, "12      1234567 1\n"
                                   "12345678        1"));
-  owl_free(str);
+  g_free(str);
 
   owl_fmtext_clear(&fm2);
   owl_fmtext_expand_tabs(&fm1, &fm2, 1);
@@ -613,7 +613,7 @@ int owl_fmtext_regtest(void) {
   FAIL_UNLESS("tabs corrected expanded",
               str && !strcmp(str, "12     1234567 1\n"
                                   "12345678       1"));
-  owl_free(str);
+  g_free(str);
 
   /* Test owl_fmtext_search. */
   owl_fmtext_clear(&fm1);
@@ -682,7 +682,7 @@ static int owl_smartfilter_test_equals(const char *filtname, const char *expecte
   }
 
  out:
-  owl_free(filtstr);
+  g_free(filtstr);
   return failed;
 }
 
@@ -707,7 +707,7 @@ static int owl_classinstfilt_test(const char *c, const char *i, int related, con
   }
   if (filtname)
     owl_global_remove_filter(&g, filtname);
-  owl_free(filtname);
+  g_free(filtname);
   return failed;
 }
 
@@ -731,7 +731,7 @@ static int owl_zuserfilt_test(const char *longuser, const char *expected) {
   }
   if (filtname)
     owl_global_remove_filter(&g, filtname);
-  owl_free(filtname);
+  g_free(filtname);
   return failed;
 }
 

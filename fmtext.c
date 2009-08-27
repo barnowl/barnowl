@@ -72,7 +72,7 @@ void owl_fmtext_appendf_normal(owl_fmtext *f, const char *fmt, ...)
   if (!buff)
     return;
   owl_fmtext_append_attr(f, buff, OWL_FMTEXT_ATTR_NONE, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
-  owl_free(buff);
+  g_free(buff);
 }
 
 /* Append normal text 'text' to 'f' with color 'color' */
@@ -643,7 +643,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
       strncpy(buff, txtptr, ptr-txtptr);
       buff[ptr-txtptr]='\0';
       owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
-      owl_free(buff);
+      g_free(buff);
 
       /* update pointer to point at the @ */
       txtptr=ptr;
@@ -684,7 +684,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
         stacksize++;
         curattrs|=OWL_FMTEXT_ATTR_BOLD;
         txtptr+=6;
-        owl_free(buff);
+        g_free(buff);
         continue;
       } else if (!strcasecmp(buff, "@b")) {
         attrstack[stacksize]=OWL_FMTEXT_ATTR_BOLD;
@@ -693,7 +693,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
         stacksize++;
         curattrs|=OWL_FMTEXT_ATTR_BOLD;
         txtptr+=3;
-        owl_free(buff);
+        g_free(buff);
         continue;
       } else if (!strcasecmp(buff, "@i")) {
         attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
@@ -702,7 +702,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
         stacksize++;
         curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
         txtptr+=3;
-        owl_free(buff);
+        g_free(buff);
         continue;
       } else if (!strcasecmp(buff, "@italic")) {
         attrstack[stacksize]=OWL_FMTEXT_ATTR_UNDERLINE;
@@ -711,7 +711,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
         stacksize++;
         curattrs|=OWL_FMTEXT_ATTR_UNDERLINE;
         txtptr+=8;
-        owl_free(buff);
+        g_free(buff);
         continue;
       } else if (!strcasecmp(buff, "@")) {
 	attrstack[stacksize]=OWL_FMTEXT_ATTR_NONE;
@@ -719,7 +719,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
 	colorstack[stacksize]=curcolor;
         stacksize++;
         txtptr+=2;
-        owl_free(buff);
+        g_free(buff);
         continue;
 
         /* if it's a color read the color, set the current color and
@@ -727,7 +727,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
       } else if (!strcasecmp(buff, "@color") 
                  && owl_global_get_hascolors(&g)
                  && owl_global_is_colorztext(&g)) {
-        owl_free(buff);
+        g_free(buff);
         txtptr+=7;
         tmpptr=strpbrk(txtptr, "@{[<()>]}");
         if (tmpptr &&
@@ -745,7 +745,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
           curcolor=owl_util_string_to_color(buff);
           if (curcolor == OWL_COLOR_INVALID)
 	      curcolor = OWL_COLOR_DEFAULT;
-          owl_free(buff);
+          g_free(buff);
           txtptr=tmpptr+1;
           continue;
 
@@ -768,7 +768,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
       strncpy(buff, txtptr, ptr-txtptr);
       buff[ptr-txtptr]='\0';
       owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
-      owl_free(buff);
+      g_free(buff);
 
       /* now deal with the closer */
       txtptr=ptr;
@@ -779,7 +779,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
         buff[0]=ptr[0];
         buff[1]='\0';
         owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
-        owl_free(buff);
+        g_free(buff);
         txtptr++;
         continue;
       }
@@ -805,7 +805,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
         buff[0]=ptr[0];
         buff[1]='\0';
         owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
-        owl_free(buff);
+        g_free(buff);
         txtptr++;
         continue;
       }
@@ -815,7 +815,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
       strncpy(buff, txtptr, ptr-txtptr+1);
       buff[ptr-txtptr+1]='\0';
       owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
-      owl_free(buff);
+      g_free(buff);
       txtptr=ptr+1;
       continue;
     }
@@ -839,7 +839,7 @@ void owl_fmtext_append_list(owl_fmtext *f, const owl_list *l, const char *join_w
       text = format_fn(elem);
       if (text) {
         owl_fmtext_append_normal(f, text);
-        owl_free(text);
+        g_free(text);
       }
     } else if (elem) {
       owl_fmtext_append_normal(f, elem);

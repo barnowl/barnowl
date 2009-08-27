@@ -43,7 +43,7 @@ owl_viewwin *owl_viewwin_new_fmtext(owl_window *win, const owl_fmtext *fmtext)
   if (text[0] != '\0' && text[strlen(text) - 1] != '\n') {
       owl_fmtext_append_normal(&(v->fmtext), "\n");
   }
-  owl_free(text);
+  g_free(text);
   v->textlines=owl_fmtext_num_lines(&(v->fmtext));
   v->topline=0;
   v->rightshift=0;
@@ -203,7 +203,7 @@ char *owl_viewwin_command_start_search(owl_viewwin *v, int argc, const char *con
   ctx->cbdata = v;
   owl_global_push_context_obj(&g, ctx);
   owl_editwin_set_callback(tw, owl_viewwin_callback_search);
-  owl_editwin_set_cbdata(tw, data, owl_free);
+  owl_editwin_set_cbdata(tw, data, g_free);
   /* We aren't saving tw, so release the reference we were given. */
   owl_editwin_unref(tw);
   return NULL;
@@ -423,5 +423,5 @@ void owl_viewwin_delete(owl_viewwin *v)
   g_object_unref(v->content);
   g_object_unref(v->status);
   owl_fmtext_cleanup(&(v->fmtext));
-  owl_free(v);
+  g_free(v);
 }

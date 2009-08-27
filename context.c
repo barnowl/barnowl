@@ -68,8 +68,8 @@ void owl_context_delete(owl_context *ctx)
 {
   if (ctx->cursor)
     g_object_unref(ctx->cursor);
-  owl_free(ctx->keymap);
+  g_free(ctx->keymap);
   if (ctx->delete_cb)
     ctx->delete_cb(ctx);
-  owl_free(ctx);
+  g_free(ctx);
 }

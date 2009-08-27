@@ -114,7 +114,7 @@ static owl_filterelement * owl_filter_parse_primitive_expression(int argc, const
   return fe;
 err:
   owl_filterelement_cleanup(fe);
-  owl_free(fe);
+  g_free(fe);
   return NULL;
 }
 
@@ -152,7 +152,7 @@ owl_filterelement * owl_filter_parse_expression(int argc, const char *const *arg
 err:
   if(op1) {
     owl_filterelement_cleanup(op1);
-    owl_free(op1);
+    g_free(op1);
   }
   return NULL;
 }
@@ -244,8 +244,8 @@ int owl_filter_equiv(const owl_filter *a, const owl_filter *b)
   ret = ret && !strcmp(owl_filter_get_name(a),
                        owl_filter_get_name(b));
 
-  owl_free(buffa);
-  owl_free(buffb);
+  g_free(buffa);
+  g_free(buffb);
 
   return ret;
 }
@@ -262,9 +262,9 @@ void owl_filter_delete(owl_filter *f)
     return;
   if (f->root) {
     owl_filterelement_cleanup(f->root);
-    owl_free(f->root);
+    g_free(f->root);
   }
   if (f->name)
-    owl_free(f->name);
-  owl_free(f);
+    g_free(f->name);
+  g_free(f);
 }

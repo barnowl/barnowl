@@ -85,5 +85,5 @@ void owl_list_cleanup(owl_list *l, void (*elefree)(void *))
       (elefree)(l->list[i]);
     }
   }
-  owl_free(l->list);
+  g_free(l->list);
 }

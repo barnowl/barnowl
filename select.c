@@ -37,8 +37,8 @@ void owl_select_remove_timer(owl_timer *t)
     if(t->destroy) {
       t->destroy(t);
     }
-    owl_free(t->name);
-    owl_free(t);
+    g_free(t->name);
+    g_free(t);
   }
 }
 
@@ -127,7 +127,7 @@ void owl_select_remove_io_dispatch(const owl_io_dispatch *in)
         owl_list_remove_element(dl, elt);
         if (d->destroy)
           d->destroy(d);
-        owl_free(d);
+        g_free(d);
       }
     }
   }
@@ -322,7 +322,7 @@ void owl_select_psa_gc(void)
       if (a->destroy) {
         a->destroy(a);
       }
-      owl_free(a);
+      g_free(a);
     }
   }
 }

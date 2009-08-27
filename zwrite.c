@@ -144,7 +144,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
 
   if(msg) {
     owl_zwrite_set_message(z, msg);
-    owl_free(msg);
+    g_free(msg);
   }
 
   return(0);
@@ -180,7 +180,7 @@ void owl_zwrite_send_ping(const owl_zwrite *z)
       to = owl_strdup(owl_list_get_element(&(z->recips), i));
     }
     send_ping(to, z->class, z->inst);
-    owl_free(to);
+    g_free(to);
   }
 
 }
@@ -188,7 +188,7 @@ void owl_zwrite_send_ping(const owl_zwrite *z)
 /* Set the message with no post-processing*/
 void owl_zwrite_set_message_raw(owl_zwrite *z, const char *msg)
 {
-  if (z->message) owl_free(z->message);
+  if (z->message) g_free(z->message);
   z->message = owl_validate_utf8(msg);
 }
 
@@ -198,7 +198,7 @@ void owl_zwrite_set_message(owl_zwrite *z, const char *msg)
   char *toline = NULL;
   char *tmp = NULL, *tmp2;
 
-  if (z->message) owl_free(z->message);
+  if (z->message) g_free(z->message);
 
   j=owl_list_get_size(&(z->recips));
   if (j>0 && z->cc) {
@@ -210,19 +210,19 @@ void owl_zwrite_set_message(owl_zwrite *z, const char *msg)
       } else {
         toline = owl_sprintf( "%s%s ", toline, (const char *) owl_list_get_element(&(z->recips), i));
       }
-      owl_free(tmp);
+      g_free(tmp);
       tmp = NULL;
     }
     tmp = owl_validate_utf8(msg);
     tmp2 = owl_text_expand_tabs(tmp);
     z->message=owl_sprintf("%s\n%s", toline, tmp2);
-    owl_free(toline);
-    owl_free(tmp);
-    owl_free(tmp2);
+    g_free(toline);
+    g_free(tmp);
+    g_free(tmp2);
   } else {
     tmp=owl_validate_utf8(msg);
     z->message=owl_text_expand_tabs(tmp);
-    owl_free(tmp);
+    g_free(tmp);
   }
 }
 
@@ -257,14 +257,14 @@ int owl_zwrite_send_message(const owl_zwrite *z)
       /* Abort on the first error, to match the zwrite binary. */
       if (ret != 0)
         break;
-      owl_free(to);
+      g_free(to);
       to = NULL;
     }
   } else {
     to = owl_sprintf( "@%s", z->realm);
     ret = send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
   }
-  owl_free(to);
+  g_free(to);
   return ret;
 }
 
@@ -300,7 +300,7 @@ const char *owl_zwrite_get_opcode(const owl_zwrite *z)
 
 void owl_zwrite_set_opcode(owl_zwrite *z, const char *opcode)
 {
-  if (z->opcode) owl_free(z->opcode);
+  if (z->opcode) g_free(z->opcode);
   z->opcode=owl_validate_utf8(opcode);
 }
 
@@ -317,7 +317,7 @@ const char *owl_zwrite_get_zsig(const owl_zwrite *z)
 
 void owl_zwrite_set_zsig(owl_zwrite *z, const char *zsig)
 {
-  if(z->zsig) owl_free(z->zsig);
+  if(z->zsig) g_free(z->zsig);
   z->zsig = owl_strdup(zsig);
 }
 
@@ -361,26 +361,26 @@ int owl_zwrite_is_personal(const owl_zwrite *z)
 void owl_zwrite_delete(owl_zwrite *z)
 {
   owl_zwrite_cleanup(z);
-  owl_free(z);
+  g_free(z);
 }
 
 void owl_zwrite_cleanup(owl_zwrite *z)
 {
-  owl_list_cleanup(&(z->recips), &owl_free);
-  if (z->cmd) owl_free(z->cmd);
-  if (z->zwriteline) owl_free(z->zwriteline);
-  if (z->class) owl_free(z->class);
-  if (z->inst) owl_free(z->inst);
-  if (z->opcode) owl_free(z->opcode);
-  if (z->realm) owl_free(z->realm);
-  if (z->message) owl_free(z->message);
-  if (z->zsig) owl_free(z->zsig);
+  owl_list_cleanup(&(z->recips), &g_free);
+  if (z->cmd) g_free(z->cmd);
+  if (z->zwriteline) g_free(z->zwriteline);
+  if (z->class) g_free(z->class);
+  if (z->inst) g_free(z->inst);
+  if (z->opcode) g_free(z->opcode);
+  if (z->realm) g_free(z->realm);
+  if (z->message) g_free(z->message);
+  if (z->zsig) g_free(z->zsig);
 }
 
 /*
  * Returns a zwrite line suitable for replying, specifically the
  * message field is stripped out. Result should be freed with
- * owl_free.
+ * g_free.
  */
 char *owl_zwrite_get_replyline(const owl_zwrite *z)
 {

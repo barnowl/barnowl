@@ -78,7 +78,7 @@ void owl_log_zephyr(const owl_message *m, FILE *file) {
     fprintf(file, "Time: %s Host: %s\n", owl_message_get_timestr(m), owl_message_get_hostname(m));
     fprintf(file, "From: %s <%s>\n\n", owl_message_get_zsig(m), tmp);
     fprintf(file, "%s\n\n", owl_message_get_body(m));
-    owl_free(tmp);
+    g_free(tmp);
 }
 
 void owl_log_aim(const owl_message *m, FILE *file) {
@@ -141,8 +141,8 @@ void owl_log_outgoing(const owl_message *m)
       snprintf(filename, MAXPATHLEN, "%s/%s", logpath, temp);
       owl_log_append(m, filename);
 
-      owl_free(temp);
-      owl_free(cc->data);
+      g_free(temp);
+      g_free(cc->data);
       cc = g_list_delete_link(cc, cc);
     }
 
@@ -155,19 +155,19 @@ void owl_log_outgoing(const owl_message *m)
     temp = owl_aim_normalize_screenname(owl_message_get_recipient(m));
     temp2 = g_utf8_strdown(temp,-1);
     to = owl_sprintf("aim:%s", temp2);
-    owl_free(temp2);
-    owl_free(temp);
+    g_free(temp2);
+    g_free(temp);
   } else {
     to = owl_strdup("loopback");
   }
 
   snprintf(filename, MAXPATHLEN, "%s/%s", logpath, to);
   owl_log_append(m, filename);
-  owl_free(to);
+  g_free(to);
 
   snprintf(filename, MAXPATHLEN, "%s/all", logpath);
   owl_log_append(m, filename);
-  owl_free(logpath);
+  g_free(logpath);
 }
 
 
@@ -199,8 +199,8 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   file=fopen(filename, "a");
   if (!file) {
     owl_function_error("Unable to open file for outgoing logging");
-    owl_free(logpath);
-    owl_free(tobuff);
+    g_free(logpath);
+    g_free(tobuff);
     return;
   }
   fprintf(file, "ERROR (owl): %s\n%s\n", tobuff, text);
@@ -210,11 +210,11 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   fclose(file);
 
   snprintf(filename, MAXPATHLEN, "%s/all", logpath);
-  owl_free(logpath);
+  g_free(logpath);
   file=fopen(filename, "a");
   if (!file) {
     owl_function_error("Unable to open file for outgoing logging");
-    owl_free(tobuff);
+    g_free(tobuff);
     return;
   }
   fprintf(file, "ERROR (owl): %s\n%s\n", tobuff, text);
@@ -223,7 +223,7 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   }
   fclose(file);
 
-  owl_free(tobuff);
+  g_free(tobuff);
 }
 
 void owl_log_incoming(const owl_message *m)
@@ -269,8 +269,8 @@ void owl_log_incoming(const owl_message *m)
     temp = owl_aim_normalize_screenname(owl_message_get_sender(m));
     normalto = g_utf8_strdown(temp, -1);
     from=frombuff=owl_sprintf("aim:%s", normalto);
-    owl_free(normalto);
-    owl_free(temp);
+    g_free(normalto);
+    g_free(temp);
   } else if (owl_message_is_type_loopback(m)) {
     from=frombuff=owl_strdup("loopback");
   } else if (owl_message_is_type_jabber(m)) {
@@ -301,7 +301,7 @@ void owl_log_incoming(const owl_message *m)
     if (strcmp(from, "weird")) {
       char* temp = g_utf8_strdown(frombuff, -1);
       if (temp) {
-	owl_free(frombuff);
+	g_free(frombuff);
 	from = frombuff = temp;
       }
     }
@@ -335,12 +335,12 @@ void owl_log_incoming(const owl_message *m)
         owl_log_append(m, filename);
       }
 
-      owl_free(temp);
-      owl_free(cc->data);
+      g_free(temp);
+      g_free(cc->data);
       cc = g_list_delete_link(cc, cc);
     }
   }
 
-  owl_free(frombuff);
-  owl_free(logpath);
+  g_free(frombuff);
+  g_free(logpath);
 }

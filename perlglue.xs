@@ -48,14 +48,14 @@ command(cmd, ...)
 				argv[i] = SvPV_nolen(ST(i));
 			}
 			rv = owl_function_command_argv(argv, items);
-			owl_free(argv);
+			g_free(argv);
 		}
 		RETVAL = rv;
 	}
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		if (rv) owl_free(rv);
+		if (rv) g_free(rv);
 
 SV *
 getcurmsg()
@@ -112,7 +112,7 @@ ztext_stylestrip(ztext)
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		if (rv) owl_free(rv);
+		if (rv) g_free(rv);
 
 const utf8 *
 zephyr_smartstrip_user(in)
@@ -127,7 +127,7 @@ zephyr_smartstrip_user(in)
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		owl_free(rv);
+		g_free(rv);
 
 const utf8 *
 zephyr_getsubs()
@@ -139,7 +139,7 @@ zephyr_getsubs()
     OUTPUT:
 		RETVAL
     CLEANUP:
-		if (rv) owl_free(rv);
+		if (rv) g_free(rv);
 
 void
 queue_message(msg)
@@ -323,7 +323,7 @@ wordwrap(in, cols)
 		RETVAL
 	CLEANUP:
 		if (rv)
-			owl_free(rv);
+			g_free(rv);
 
 void
 remove_io_dispatch(fd)
@@ -341,7 +341,7 @@ all_filters()
 		owl_dict_get_keys(&g.filters, &fl);
 		RETVAL = owl_new_av(&fl, (SV*(*)(const void*))owl_new_sv);
 		sv_2mortal((SV*)RETVAL);
-		owl_list_cleanup(&fl, owl_free);
+		owl_list_cleanup(&fl, g_free);
 	}
 	OUTPUT:
 		RETVAL
@@ -360,7 +360,7 @@ all_styles()
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		owl_list_cleanup(&l, owl_free);
+		owl_list_cleanup(&l, g_free);
 
 
 AV*
@@ -377,7 +377,7 @@ all_variables()
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		owl_list_cleanup(&l, owl_free);
+		owl_list_cleanup(&l, g_free);
 
 
 AV*
@@ -395,7 +395,7 @@ all_keymaps()
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		owl_list_cleanup(&l, owl_free);
+		owl_list_cleanup(&l, g_free);
 
 void
 redisplay()
@@ -609,7 +609,7 @@ get_region()
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		owl_free(region);
+		g_free(region);
 
 SV *
 save_excursion(sub)

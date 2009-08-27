@@ -15,7 +15,7 @@ int owl_zbuddylist_adduser(owl_zbuddylist *zb, const char *name)
   j=owl_list_get_size(&(zb->zusers));
   for (i=0; i<j; i++) {
     if (!strcasecmp(user, owl_list_get_element(&(zb->zusers), i))) {
-      owl_free(user);
+      g_free(user);
       return(-1);
     }
   }
@@ -35,12 +35,12 @@ int owl_zbuddylist_deluser(owl_zbuddylist *zb, const char *name)
     ptr=owl_list_get_element(&(zb->zusers), i);
     if (!strcasecmp(user, ptr)) {
       owl_list_remove_element(&(zb->zusers), i);
-      owl_free(ptr);
-      owl_free(user);
+      g_free(ptr);
+      g_free(user);
       return(0);
     }
   }
-  owl_free(user);
+  g_free(user);
   return(-1);
 }
 
@@ -54,10 +54,10 @@ int owl_zbuddylist_contains_user(const owl_zbuddylist *zb, const char *name)
   j=owl_list_get_size(&(zb->zusers));
   for (i=0; i<j; i++) {
     if (!strcasecmp(user, owl_list_get_element(&(zb->zusers), i))) {
-      owl_free(user);
+      g_free(user);
       return(1);
     }
   }
-  owl_free(user);
+  g_free(user);
   return(0);
 }

@@ -177,7 +177,7 @@ char **owl_parseline(const char *line, int *argc)
   if (quote!='\0') {
     /* TODO: when we move to requiring glib 2.22+, use
      * g_ptr_array_new_with_free_func. */
-    g_ptr_array_foreach(argv, (GFunc)owl_free, NULL);
+    g_ptr_array_foreach(argv, (GFunc)g_free, NULL);
     g_ptr_array_free(argv, true);
     *argc = -1;
     return(NULL);
@@ -261,7 +261,7 @@ char *owl_string_build_quoted(const char *tmpl, ...)
 }
 
 /* Returns a quoted version of arg suitable for placing in a
- * command-line. Result should be freed with owl_free. */
+ * command-line. Result should be freed with g_free. */
 char *owl_arg_quote(const char *arg)
 {
   GString *buf = g_string_new("");;
@@ -292,11 +292,6 @@ char *owl_util_minutes_to_timestr(int in)
 }
 
 /* hooks for doing memory allocation et. al. in owl */
-
-void owl_free(void *ptr)
-{
-  g_free(ptr);
-}
 
 char *owl_strdup(const char *s1)
 {
@@ -371,7 +366,7 @@ char *owl_util_get_default_tty(void)
   } else if ((tmp=ttyname(fileno(stdout)))!=NULL) {
     out=owl_strdup(tmp);
     if (!strncmp(out, "/dev/", 5)) {
-      owl_free(out);
+      g_free(out);
       out=owl_strdup(tmp+5);
     }
   } else {
@@ -399,7 +394,7 @@ char *owl_util_stripnewlines(const char *in)
   }
 
   out=owl_strdup(ptr1);
-  owl_free(tmp);
+  g_free(tmp);
   return(out);
 }
 
@@ -483,7 +478,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
   if ((new = fopen(newfile, "w")) == NULL) {
     owl_function_error("Cannot open %s (for writing): %s",
 		       actual_filename, strerror(errno));
-    owl_free(newfile);
+    g_free(newfile);
     fclose(old);
     free(actual_filename);
     return -1;
@@ -494,7 +489,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
 		       actual_filename, strerror(errno));
     unlink(newfile);
     fclose(new);
-    owl_free(newfile);
+    g_free(newfile);
     fclose(old);
     free(actual_filename);
     return -1;
@@ -505,7 +500,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
       fprintf(new, "%s\n", buf);
     else
       numremoved++;
-  owl_free(buf);
+  g_free(buf);
 
   fclose(new);
   fclose(old);
@@ -515,12 +510,12 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
     unlink(backupfile);
     if (link(actual_filename, backupfile) != 0) {
       owl_function_error("Cannot link %s: %s", backupfile, strerror(errno));
-      owl_free(backupfile);
+      g_free(backupfile);
       unlink(newfile);
-      owl_free(newfile);
+      g_free(newfile);
       return -1;
     }
-    owl_free(backupfile);
+    g_free(backupfile);
   }
 
   if (rename(newfile, actual_filename) != 0) {
@@ -530,7 +525,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
   }
 
   unlink(newfile);
-  owl_free(newfile);
+  g_free(newfile);
 
   g_free(actual_filename);
 

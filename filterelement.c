@@ -93,7 +93,7 @@ static int owl_filterelement_match_perl(const owl_filterelement *fe, const owl_m
     if (0 == strcmp(perlrv, "1")) {
       tf=1;
     }
-    owl_free(perlrv);
+    g_free(perlrv);
   }
   return tf;
 }
@@ -215,7 +215,7 @@ int owl_filterelement_create_re(owl_filterelement *fe, const char *field, const 
   owl_filterelement_create(fe);
   fe->field=owl_strdup(field);
   if(owl_regex_create(&(fe->re), re)) {
-    owl_free(fe->field);
+    g_free(fe->field);
     fe->field = NULL;
     return (-1);
   }
@@ -324,14 +324,14 @@ int _owl_filterelement_is_toodeep(const owl_filterelement *fe, owl_dict *seen)
 
 void owl_filterelement_cleanup(owl_filterelement *fe)
 {
-  if (fe->field) owl_free(fe->field);
+  if (fe->field) g_free(fe->field);
   if (fe->left) {
     owl_filterelement_cleanup(fe->left);
-    owl_free(fe->left);
+    g_free(fe->left);
   }
   if (fe->right) {
     owl_filterelement_cleanup(fe->right);
-    owl_free(fe->right);
+    g_free(fe->right);
   }
   owl_regex_cleanup(&(fe->re));
 }

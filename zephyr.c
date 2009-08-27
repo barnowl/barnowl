@@ -111,7 +111,7 @@ void owl_zephyr_finish_initialization(const owl_io_dispatch *d, void *data) {
     owl_function_debugmsg("Loading %d deferred subs.", subs->nsubs);
     owl_zephyr_loadsubs_helper(subs->subs, subs->nsubs);
     deferred_subs = g_list_delete_link(deferred_subs, deferred_subs);
-    owl_free(subs);
+    g_free(subs);
   }
 
   /* zlog in if we need to */
@@ -126,7 +126,7 @@ void owl_zephyr_finish_initialization(const owl_io_dispatch *d, void *data) {
   }
 
   perl = owl_perlconfig_execute("BarnOwl::Zephyr::_zephyr_startup()");
-  owl_free(perl);
+  g_free(perl);
 
   owl_select_add_pre_select_action(owl_zephyr_pre_select_action, NULL, NULL);
 }
@@ -221,12 +221,12 @@ int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
 
     /* free stuff */
     for (i=0; i<count; i++) {
-      owl_free(subs[i].zsub_class);
-      owl_free(subs[i].zsub_classinst);
-      owl_free(subs[i].zsub_recipient);
+      g_free(subs[i].zsub_class);
+      g_free(subs[i].zsub_classinst);
+      g_free(subs[i].zsub_recipient);
     }
 
-    owl_free(subs);
+    g_free(subs);
   } else {
     owl_sub_list *s = g_new(owl_sub_list, 1);
     s->subs = subs;
@@ -262,7 +262,7 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
   subsfile = owl_zephyr_dotfile(".zephyr.subs", filename);
 
   if (stat(subsfile, &statbuff) != 0) {
-    owl_free(subsfile);
+    g_free(subsfile);
     if (error_on_nofile == 1)
       return -1;
     return 0;
@@ -271,7 +271,7 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
   ZResetAuthentication();
   count = 0;
   file = fopen(subsfile, "r");
-  owl_free(subsfile);
+  g_free(subsfile);
   if (!file)
     return -1;
   while (owl_getline(&buffer, file)) {
@@ -303,16 +303,16 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
      * remove it from the list of subs. */
     if (buffer[0] == '-') {
       owl_function_zpunt(subs[count].zsub_class, subs[count].zsub_classinst, subs[count].zsub_recipient, 0);
-      owl_free(subs[count].zsub_class);
-      owl_free(subs[count].zsub_classinst);
-      owl_free(subs[count].zsub_recipient);
+      g_free(subs[count].zsub_class);
+      g_free(subs[count].zsub_classinst);
+      g_free(subs[count].zsub_recipient);
     } else {
       count++;
     }
   }
   fclose(file);
   if (buffer)
-    owl_free(buffer);
+    g_free(buffer);
 
   return owl_zephyr_loadsubs_helper(subs, count);
 #else
@@ -380,15 +380,15 @@ int owl_zephyr_loadloginsubs(const char *filename)
   subsfile = owl_zephyr_dotfile(".anyone", filename);
 
   if (stat(subsfile, &statbuff) == -1) {
-    owl_free(subs);
-    owl_free(subsfile);
+    g_free(subs);
+    g_free(subsfile);
     return 0;
   }
 
   ZResetAuthentication();
   count = 0;
   file = fopen(subsfile, "r");
-  owl_free(subsfile);
+  g_free(subsfile);
   if (file) {
     while (owl_getline_chomp(&buffer, file)) {
       if (buffer[0] == '\0' || buffer[0] == '#')
@@ -410,7 +410,7 @@ int owl_zephyr_loadloginsubs(const char *filename)
     return 0;
   }
   if (buffer)
-    owl_free(buffer);
+    g_free(buffer);
 
   return owl_zephyr_loadsubs_helper(subs, count);
 #else
@@ -529,7 +529,7 @@ char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
     char *tmp, *out;
     tmp = g_strndup(n->z_message + save, n->z_message_len - save);
     out = owl_validate_or_convert(tmp);
-    owl_free(tmp);
+    g_free(tmp);
     return out;
   }
 
@@ -588,8 +588,8 @@ char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
     field4 = owl_zephyr_get_field(n, 4);
 
     msg = owl_sprintf("%s service on %s %s\n%s", n->z_opcode, n->z_class_inst, field3, field4);
-    owl_free(field3);
-    owl_free(field4);
+    g_free(field3);
+    g_free(field4);
     if (msg) {
       return msg;
     }
@@ -606,11 +606,11 @@ char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
     field5 = owl_zephyr_get_field(n, 5);
     
     msg = owl_sprintf("New transaction [%s] entered in %s\nFrom: %s (%s)\nSubject: %s", field1, field2, field3, field5, field4);
-    owl_free(field1);
-    owl_free(field2);
-    owl_free(field3);
-    owl_free(field4);
-    owl_free(field5);
+    g_free(field1);
+    g_free(field2);
+    g_free(field3);
+    g_free(field4);
+    g_free(field5);
     if (msg) {
       return msg;
     }
@@ -622,7 +622,7 @@ char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
     field1 = owl_zephyr_get_field(n, 1);
     
     msg = owl_sprintf("MOIRA %s on %s: %s", n->z_class_inst, owl_message_get_hostname(m), field1);
-    owl_free(field1);
+    g_free(field1);
     if (msg) {
       return msg;
     }
@@ -701,7 +701,7 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   ret=ZSrvSendNotice(&notice, ZAUTH, send_zephyr_helper);
   
   /* free then check the return */
-  owl_free(notice.z_message);
+  g_free(notice.z_message);
   ZFreeNotice(&notice);
   if (ret!=ZERR_NONE) {
     owl_function_error("Error sending zephyr");
@@ -754,7 +754,7 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
         } else { /* classed personal */
           owl_function_makemsg("Message sent to %s on -c %s -i %s\n", tmp, retnotice->z_class, retnotice->z_class_inst);
         }
-        owl_free(tmp);
+        g_free(tmp);
       } else {
         /* class / instance message */
           owl_function_makemsg("Message sent to -c %s -i %s\n", retnotice->z_class, retnotice->z_class_inst);
@@ -819,7 +819,7 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
       owl_log_outgoing_zephyr_error(&zw, buff);
 
       owl_zwrite_cleanup(&zw);
-      owl_free(tmp);
+      g_free(tmp);
     }
   } else {
     owl_function_error("Internal error on ack (%s)", retnotice->z_message);
@@ -885,8 +885,8 @@ void owl_zephyr_zaway(const owl_message *m)
   } else {
     tmpbuff = owl_sprintf("zwrite -i %s %s", owl_message_get_instance(m), myuser);
   }
-  owl_free(myuser);
-  owl_free(to);
+  g_free(myuser);
+  g_free(to);
 
   z = owl_zwrite_new(tmpbuff);
   owl_zwrite_set_message(z, owl_global_get_zaway_msg(&g));
@@ -895,7 +895,7 @@ void owl_zephyr_zaway(const owl_message *m)
   /* display the message as an admin message in the receive window */
   mout=owl_function_make_outgoing_zephyr(z);
   owl_global_messagequeue_addmsg(&g, mout);
-  owl_free(tmpbuff);
+  g_free(tmpbuff);
   owl_zwrite_delete(z);
 #endif
 }
@@ -941,11 +941,11 @@ char *owl_zephyr_zlocate(const char *user, int auth)
 			  locations.host ? locations.host : "?",
 			  locations.tty ? locations.tty : "?",
 			  locations.time ? locations.time : "?");
-      owl_free(result);
+      g_free(result);
       result = p;
     }
   }
-  owl_free(myuser);
+  g_free(myuser);
 
   return result;
 #else
@@ -973,7 +973,7 @@ void owl_zephyr_addsub(const char *filename, const char *class, const char *inst
       }
     }
     fclose(file);
-    owl_free(s);
+    g_free(s);
   }
 
   if (!duplicate) {
@@ -987,7 +987,7 @@ void owl_zephyr_addsub(const char *filename, const char *class, const char *inst
     }
   }
 
-  owl_free(line);
+  g_free(line);
 #endif
 }
 
@@ -1008,8 +1008,8 @@ void owl_zephyr_delsub(const char *filename, const char *class, const char *inst
   } else if (linesdeleted == 0) {
     owl_function_error("No subscription present in %s", subsfile);
   }
-  owl_free(subsfile);
-  owl_free(line);
+  g_free(subsfile);
+  g_free(line);
 #endif
 }
 
@@ -1077,7 +1077,7 @@ void owl_zephyr_addbuddy(const char *name)
   
   filename = owl_zephyr_dotfile(".anyone", NULL);
   file = fopen(filename, "a");
-  owl_free(filename);
+  g_free(filename);
   if (!file) {
     owl_function_error("Error opening zephyr buddy file for append");
     return;
@@ -1092,7 +1092,7 @@ void owl_zephyr_delbuddy(const char *name)
 
   filename = owl_zephyr_dotfile(".anyone", NULL);
   owl_util_file_deleteline(filename, name, 0);
-  owl_free(filename);
+  g_free(filename);
 }
 
 /* return auth string */
@@ -1150,7 +1150,7 @@ char *owl_zephyr_getsubs(void)
                               sub.zsub_classinst,
                               sub.zsub_recipient);
       g_string_prepend(buf, tmp);
-      owl_free(tmp);
+      g_free(tmp);
     }
   }
 
@@ -1268,10 +1268,10 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
   f = fopen(ourfile, "r");
   if (!f) {
     owl_function_error("Error opening file %s: %s", ourfile, strerror(errno) ? strerror(errno) : "");
-    owl_free(ourfile);
+    g_free(ourfile);
     return -1;
   }
-  owl_free(ourfile);
+  g_free(ourfile);
 
   while (owl_getline_chomp(&s, f)) {
     /* ignore comments, blank lines etc. */
@@ -1290,7 +1290,7 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
 
     owl_list_append_element(in, long_zuser(s));
   }
-  owl_free(s);
+  g_free(s);
   fclose(f);
   return 0;
 #else
@@ -1354,7 +1354,7 @@ void owl_zephyr_process_pseudologin(ZNotice_t *n)
       }
     }
     ZFreeALD(zald);
-    owl_free(zald);
+    g_free(zald);
   }
 }
 #else

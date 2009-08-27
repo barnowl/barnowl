@@ -91,7 +91,7 @@ void owl_popwin_delete(owl_popwin *pw)
   g_object_unref(pw->border);
   g_object_unref(pw->content);
 
-  owl_free(pw);
+  g_free(pw);
 }
 
 int owl_popwin_is_active(const owl_popwin *pw)

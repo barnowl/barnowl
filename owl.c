@@ -436,7 +436,7 @@ void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
   err = owl_sprintf("[stderr]\n%s", buf);
 
   owl_function_log_err(err);
-  owl_free(err);
+  g_free(err);
 }
 
 #endif /* OWL_STDERR_REDIR */
@@ -521,7 +521,7 @@ int main(int argc, char **argv, char **env)
   } else {
     char *tty = owl_util_get_default_tty();
     owl_global_set_tty(&g, tty);
-    owl_free(tty);
+    g_free(tty);
   }
 
   /* Initialize perl */
@@ -557,7 +557,7 @@ int main(int argc, char **argv, char **env)
   /* execute the startup function in the configfile */
   owl_function_debugmsg("startup: executing perl startup, if applicable");
   perlout = owl_perlconfig_execute("BarnOwl::Hooks::_startup();");
-  if (perlout) owl_free(perlout);
+  if (perlout) g_free(perlout);
 
   /* welcome message */
   owl_function_debugmsg("startup: creating splash message");
