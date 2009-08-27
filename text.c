@@ -52,7 +52,7 @@ char *owl_text_htmlstrip(const char *in)
   const char *ptr1, *end, *ptr2, *ptr3;
   char *out, *out2;
 
-  out=owl_malloc(strlen(in)+30);
+  out=g_new(char, strlen(in)+30);
   strcpy(out, "");
 
   ptr1=in;
@@ -155,7 +155,7 @@ char *owl_text_expand_tabs(const char *in)
     p = q;
   }
 
-  ret = owl_malloc(len + 1);
+  ret = g_new(char, len + 1);
 
   p = in;
   out = ret;
@@ -280,7 +280,7 @@ char *owl_text_substitute(const char *in, const char *from, const char *to)
   outlen = strlen(in)+1;
   tolen  = strlen(to);
   fromlen  = strlen(from);
-  out = owl_malloc(outlen);
+  out = g_new(char, outlen);
 
   while (in[inpos]) {
     if (!strncmp(in+inpos, from, fromlen)) {
@@ -334,7 +334,7 @@ char *owl_text_quote(const char *in, const char *toquote, const char *quotestr)
     if(strchr(toquote, in[i]) != NULL)
       escape++;
   }
-  out = owl_malloc(in_len + quotestr_len*escape+1);
+  out = g_new(char, in_len + quotestr_len*escape+1);
   for (i=0; i<in_len; i++) {
 
     /* check if it's a character that needs quoting */

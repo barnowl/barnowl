@@ -16,7 +16,7 @@
 
 int owl_dict_create(owl_dict *d) {
   d->size=0;
-  d->els=owl_malloc(INITSIZE*sizeof(owl_dict_el));
+  d->els=g_new(owl_dict_el, INITSIZE);
   d->avail=INITSIZE;
   if (d->els==NULL) return(-1);
   return(0);

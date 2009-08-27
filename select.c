@@ -14,7 +14,7 @@ int _owl_select_timer_eq(const owl_timer *t1, const owl_timer *t2) {
 
 owl_timer *owl_select_add_timer(const char* name, int after, int interval, void (*cb)(owl_timer *, void *), void (*destroy)(owl_timer*), void *data)
 {
-  owl_timer *t = owl_malloc(sizeof(owl_timer));
+  owl_timer *t = g_new(owl_timer, 1);
   GList **timers = owl_global_get_timerlist(&g);
 
   t->time = time(NULL) + after;
@@ -158,7 +158,7 @@ void owl_select_io_dispatch_gc(void)
  */
 const owl_io_dispatch *owl_select_add_io_dispatch(int fd, int mode, void (*cb)(const owl_io_dispatch *, void *), void (*destroy)(const owl_io_dispatch *), void *data)
 {
-  owl_io_dispatch *d = owl_malloc(sizeof(owl_io_dispatch));
+  owl_io_dispatch *d = g_new(owl_io_dispatch, 1);
   owl_list *dl = owl_global_get_io_dispatch_list(&g);
 
   d->fd = fd;
@@ -298,7 +298,7 @@ void owl_select_handle_intr(sigset_t *restore)
 
 owl_ps_action *owl_select_add_pre_select_action(int (*cb)(owl_ps_action *, void *), void (*destroy)(owl_ps_action *), void *data)
 {
-  owl_ps_action *a = owl_malloc(sizeof(owl_ps_action));
+  owl_ps_action *a = g_new(owl_ps_action, 1);
   owl_list *psa_list = owl_global_get_psa_list(&g);
   a->needs_gc = 0;
   a->callback = cb;

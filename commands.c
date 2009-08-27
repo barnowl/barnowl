@@ -1327,7 +1327,7 @@ char *owl_command_smartnarrow(int argc, const char *const *argv, const char *buf
 
   char opt;
   int instance = 0, related = 0, i;
-  const char **tmp_argv = owl_malloc(sizeof(char *) * argc);
+  const char **tmp_argv = g_new(const char *, argc);
 
   static const struct option options[] = {
     {"instance", 0, 0, 'i'},

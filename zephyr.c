@@ -228,7 +228,7 @@ int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
 
     owl_free(subs);
   } else {
-    owl_sub_list *s = owl_malloc(sizeof(owl_sub_list));
+    owl_sub_list *s = g_new(owl_sub_list, 1);
     s->subs = subs;
     s->nsubs = count;
     deferred_subs = g_list_append(deferred_subs, s);
@@ -258,7 +258,7 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
   int count;
   struct stat statbuff;
 
-  subs = owl_malloc(sizeof(ZSubscription_t) * subSize);
+  subs = g_new(ZSubscription_t, subSize);
   subsfile = owl_zephyr_dotfile(".zephyr.subs", filename);
 
   if (stat(subsfile, &statbuff) != 0) {
@@ -332,7 +332,7 @@ int owl_zephyr_loadbarnowldefaultsubs(void)
   int subSize = 10; /* Max Barnowl default subs we allow */
   int count, ret;
 
-  subs = owl_malloc(sizeof(ZSubscription_t) * subSize);
+  subs = g_new(ZSubscription_t, subSize);
   ZResetAuthentication();
   count=0;
 
@@ -376,7 +376,7 @@ int owl_zephyr_loadloginsubs(const char *filename)
   int count;
   struct stat statbuff;
 
-  subs = owl_malloc(numSubs * sizeof(ZSubscription_t));
+  subs = g_new(ZSubscription_t, numSubs);
   subsfile = owl_zephyr_dotfile(".anyone", filename);
 
   if (stat(subsfile, &statbuff) == -1) {
@@ -693,7 +693,7 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   if (opcode) notice.z_opcode=zstr(opcode);
 
   notice.z_message_len=strlen(zsig)+1+strlen(message);
-  notice.z_message=owl_malloc(notice.z_message_len+10);
+  notice.z_message=g_new(char, notice.z_message_len+10);
   strcpy(notice.z_message, zsig);
   memcpy(notice.z_message+strlen(zsig)+1, message, strlen(message));
 
@@ -1332,7 +1332,7 @@ void owl_zephyr_process_pseudologin(ZNotice_t *n)
           ret = ZGetLocations(&location, &numlocs);
           if (ret == ZERR_NONE) {
             /* Send a PSEUDO LOGIN! */
-            m = owl_malloc(sizeof(owl_message));
+            m = g_new(owl_message, 1);
             owl_message_create_pseudo_zlogin(m, 0, zald->user,
                                              location.host,
                                              location.time,
@@ -1345,7 +1345,7 @@ void owl_zephyr_process_pseudologin(ZNotice_t *n)
       } else if (numlocs == 0 && owl_zbuddylist_contains_user(zbl, zald->user)) {
         /* Send a PSEUDO LOGOUT! */
         if (notify) {
-          m = owl_malloc(sizeof(owl_message));
+          m = g_new(owl_message, 1);
           owl_message_create_pseudo_zlogin(m, 1, zald->user, "", "", "");
           owl_global_messagequeue_addmsg(&g, m);
         }
@@ -1420,7 +1420,7 @@ static int _owl_zephyr_process_events(void)
       }
 
       /* create the new message */
-      m=owl_malloc(sizeof(owl_message));
+      m=g_new(owl_message, 1);
       owl_message_create_from_znotice(m, &notice);
 
       owl_global_messagequeue_addmsg(&g, m);

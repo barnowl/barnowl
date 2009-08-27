@@ -192,7 +192,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
 
   hash = (HV*)SvRV(msg);
 
-  m = owl_malloc(sizeof(owl_message));
+  m = g_new(owl_message, 1);
   owl_message_init(m);
 
   hv_iterinit(hash);

@@ -49,7 +49,7 @@ void owl_cmddict_namelist_cleanup(owl_list *l)
 /* creates a new command alias */
 int owl_cmddict_add_alias(owl_cmddict *cd, const char *alias_from, const char *alias_to) {
   owl_cmd *cmd;
-  cmd = owl_malloc(sizeof(owl_cmd));
+  cmd = g_new(owl_cmd, 1);
   owl_cmd_create_alias(cmd, alias_from, alias_to);
   owl_perlconfig_new_command(cmd->name);
   owl_dict_insert_element(cd, cmd->name, cmd, (void (*)(void *))owl_cmd_delete);
@@ -57,7 +57,7 @@ int owl_cmddict_add_alias(owl_cmddict *cd, const char *alias_from, const char *a
 }
 
 int owl_cmddict_add_cmd(owl_cmddict *cd, const owl_cmd * cmd) {
-  owl_cmd * newcmd = owl_malloc(sizeof(owl_cmd));
+  owl_cmd * newcmd = g_new(owl_cmd, 1);
   if(owl_cmd_create_from_template(newcmd, cmd) < 0) {
     owl_free(newcmd);
     return -1;

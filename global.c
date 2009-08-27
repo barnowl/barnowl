@@ -567,7 +567,7 @@ static void owl_global_delete_filter_ent(void *data)
 }
 
 void owl_global_add_filter(owl_global *g, owl_filter *f) {
-  owl_global_filter_ent *e = owl_malloc(sizeof *e);
+  owl_global_filter_ent *e = g_new(owl_global_filter_ent, 1);
   e->g = g;
   e->f = f;
 

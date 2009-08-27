@@ -6,7 +6,7 @@
 
 owl_zwrite *owl_zwrite_new(const char *line)
 {
-  owl_zwrite *z = owl_malloc(sizeof *z);
+  owl_zwrite *z = g_new(owl_zwrite, 1);
   if (owl_zwrite_create_from_line(z, line) < 0) {
     owl_zwrite_delete(z);
     return NULL;

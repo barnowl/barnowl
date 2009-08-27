@@ -2,8 +2,7 @@
 
 owl_popwin *owl_popwin_new(void)
 {
-  owl_popwin *pw = owl_malloc(sizeof(owl_popwin));
-  memset(pw, 0, sizeof(*pw));
+  owl_popwin *pw = g_new0(owl_popwin, 1);
 
   pw->border = owl_window_new(NULL);
   pw->content = owl_window_new(pw->border);

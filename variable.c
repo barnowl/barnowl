@@ -478,7 +478,7 @@ int owl_variable_dict_setup(owl_vardict *vd) {
   owl_variable *var, *cur;
   if (owl_dict_create(vd)) return(-1);
   for (var = variables_to_init; var->name != NULL; var++) {
-    cur = owl_malloc(sizeof(owl_variable));
+    cur = g_new(owl_variable, 1);
     *cur = *var;
     /* strdup all the strings so we can delete them consistently. */
     cur->name = owl_strdup(var->name);
@@ -516,7 +516,7 @@ int owl_variable_dict_setup(owl_vardict *vd) {
 	cur->get_tostring_fn = owl_variable_bool_get_tostring_default;      
       if (!cur->delete_fn)
 	cur->delete_fn = owl_variable_delete_default;
-      cur->val = owl_malloc(sizeof(int));
+      cur->val = g_new(int, 1);
       cur->set_fn(cur, &cur->ival_default);
       break;
     case OWL_VARIABLE_INT:
@@ -532,7 +532,7 @@ int owl_variable_dict_setup(owl_vardict *vd) {
 	cur->get_tostring_fn = owl_variable_int_get_tostring_default;      
       if (!cur->delete_fn)
 	cur->delete_fn = owl_variable_delete_default;
-      cur->val = owl_malloc(sizeof(int));
+      cur->val = g_new(int, 1);
       cur->set_fn(cur, &cur->ival_default);
       break;
     default:
@@ -550,8 +550,7 @@ void owl_variable_dict_add_variable(owl_vardict * vardict,
 }
 
 owl_variable * owl_variable_newvar(const char *name, const char *summary, const char * description) {
-  owl_variable * var = owl_malloc(sizeof(owl_variable));
-  memset(var, 0, sizeof(owl_variable));
+  owl_variable * var = g_new0(owl_variable, 1);
   var->name = owl_strdup(name);
   var->summary = owl_strdup(summary);
   var->description = owl_strdup(description);
@@ -600,7 +599,7 @@ void owl_variable_dict_newvar_int(owl_vardict * vd, const char *name, const char
     var->get_fn = owl_variable_get_default;
     var->get_tostring_fn = owl_variable_int_get_tostring_default;
     var->delete_fn = owl_variable_delete_default;
-    var->val = owl_malloc(sizeof(int));
+    var->val = g_new(int, 1);
     var->set_fn(var, &initval);
     owl_variable_dict_add_variable(vd, var);
   }
@@ -621,7 +620,7 @@ void owl_variable_dict_newvar_bool(owl_vardict * vd, const char *name, const cha
     var->get_fn = owl_variable_get_default;
     var->get_tostring_fn = owl_variable_bool_get_tostring_default;
     var->delete_fn = owl_variable_delete_default;
-    var->val = owl_malloc(sizeof(int));
+    var->val = g_new(int, 1);
     var->set_fn(var, &initval);
     owl_variable_dict_add_variable(vd, var);
   }

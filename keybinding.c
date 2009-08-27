@@ -44,7 +44,7 @@ int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq)
     g_strfreev(ktokens);
     return(-1);
   }
-  kb->keys = owl_malloc(nktokens*sizeof(int));
+  kb->keys = g_new(int, nktokens);
   for (i=0; i<nktokens; i++) {
     kb->keys[i] = owl_keypress_fromstring(ktokens[i]);
     if (kb->keys[i] == ERR) {

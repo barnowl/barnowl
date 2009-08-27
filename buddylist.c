@@ -10,7 +10,7 @@ void owl_buddylist_init(owl_buddylist *bl)
 void owl_buddylist_add_aim_buddy(owl_buddylist *bl, const char *screenname)
 {
   owl_buddy *b;
-  b=owl_malloc(sizeof(owl_buddy));
+  b=g_new(owl_buddy, 1);
   
   owl_buddy_create(b, OWL_PROTOCOL_AIM, screenname);
   owl_list_append_element(&(bl->buddies), b);
@@ -51,7 +51,7 @@ void owl_buddylist_oncoming(owl_buddylist *bl, const char *screenname)
     if (owl_global_is_ignore_aimlogin(&g)) return;
 
     /* if not, create the login message */
-    m=owl_malloc(sizeof(owl_message));
+    m=g_new(owl_message, 1);
     owl_message_create_aim(m,
 			   screenname,
 			   owl_global_get_aim_screenname(&g),
@@ -70,7 +70,7 @@ void owl_buddylist_offgoing(owl_buddylist *bl, const char *screenname)
   owl_message *m;
 
   if (owl_buddylist_is_aim_buddy_loggedin(bl, screenname)) {
-    m=owl_malloc(sizeof(owl_message));
+    m=g_new(owl_message, 1);
     owl_message_create_aim(m,
 			   screenname,
 			   owl_global_get_aim_screenname(&g),

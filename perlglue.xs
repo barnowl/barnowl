@@ -42,7 +42,7 @@ command(cmd, ...)
 		if (items == 1) {
 			rv = owl_function_command(cmd);
 		} else {
-			argv = owl_malloc((items + 1) * sizeof *argv);
+			argv = g_new(const char *, items + 1);
 			argv[0] = cmd;
 			for(i = 1; i < items; i++) {
 				argv[i] = SvPV_nolen(ST(i));
@@ -286,7 +286,7 @@ create_style(name, object)
 		owl_style *s;
      CODE:
 	{
-		s = owl_malloc(sizeof(owl_style));
+		s = g_new(owl_style, 1);
 		owl_style_create_perl(s, name, newSVsv(object));
 		owl_global_add_style(&g, s);
 	}

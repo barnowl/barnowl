@@ -74,7 +74,7 @@ void owl_message_set_attribute(owl_message *m, const char *attrname, const char 
   }
 
   if(pair ==  NULL) {
-    pair = owl_malloc(sizeof(owl_pair));
+    pair = g_new(owl_pair, 1);
     owl_pair_create(pair, attrname, NULL);
     owl_list_append_element(&(m->attributes), pair);
   }

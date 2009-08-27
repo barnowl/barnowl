@@ -233,7 +233,7 @@ void owl_function_adminmsg(const char *header, const char *body)
 {
   owl_message *m;
 
-  m=owl_malloc(sizeof(owl_message));
+  m=g_new(owl_message, 1);
   owl_message_create_admin(m, header, body);
   
   /* add it to the global list and current view */
@@ -256,7 +256,7 @@ owl_message *owl_function_make_outgoing_zephyr(const owl_zwrite *z)
   owl_message *m;
 
   /* create the message */
-  m=owl_malloc(sizeof(owl_message));
+  m=g_new(owl_message, 1);
   owl_message_create_from_zwrite(m, z, owl_zwrite_get_message(z));
 
   return(m);
@@ -274,7 +274,7 @@ owl_message *owl_function_make_outgoing_aim(const char *body, const char *to)
   /* error if we're not logged into aim */
   if (!owl_global_is_aimloggedin(&g)) return(NULL);
   
-  m=owl_malloc(sizeof(owl_message));
+  m=g_new(owl_message, 1);
   owl_message_create_aim(m,
 			 owl_global_get_aim_screenname(&g),
 			 to,
@@ -293,7 +293,7 @@ owl_message *owl_function_make_outgoing_loopback(const char *body)
   owl_message *m;
 
   /* create the message */
-  m=owl_malloc(sizeof(owl_message));
+  m=g_new(owl_message, 1);
   owl_message_create_loopback(m, body);
   owl_message_set_direction_out(m);
 
@@ -552,7 +552,7 @@ void owl_function_loopwrite(const char *msg)
 
   /* create a message and put it on the message queue.  This simulates
    * an incoming message */
-  min=owl_malloc(sizeof(owl_message));
+  min=g_new(owl_message, 1);
   mout=owl_function_make_outgoing_loopback(msg);
 
   if (owl_global_is_displayoutgoing(&g)) {
@@ -3456,7 +3456,7 @@ void owl_function_zephyr_buddy_check(int notify)
   j = owl_list_get_size(&anyone);
   for (i = 0; i < j; i++) {
     user = owl_list_get_element(&anyone, i);
-    zald = owl_malloc(sizeof(ZAsyncLocateData_t));
+    zald = g_new(ZAsyncLocateData_t, 1);
     if (ZRequestLocations(zstr(user), zald, UNACKED, ZAUTH) == ZERR_NONE) {
       *zaldlist = g_list_append(*zaldlist, zald);
     } else {

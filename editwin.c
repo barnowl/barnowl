@@ -71,9 +71,7 @@ static void oe_window_resized(owl_window *w, owl_editwin *e);
 
 static owl_editwin *owl_editwin_allocate(void)
 {
-  owl_editwin *e;
-  e = owl_malloc(sizeof(owl_editwin));
-  memset(e, 0, sizeof(*e));
+  owl_editwin *e = g_new0(owl_editwin, 1);
   e->refcount = 1;
   return e;
 }
@@ -122,7 +120,7 @@ static void _owl_editwin_init(owl_editwin *e,
                               int style,
                               owl_history *hist)
 {
-  e->buff=owl_malloc(INCR);
+  e->buff=g_new(char, INCR);
   e->buff[0]='\0';
   e->bufflen=0;
   e->hist=hist;
@@ -302,7 +300,7 @@ void owl_editwin_clear(owl_editwin *e)
   char echochar=e->echochar;
 
   if (lock > 0) {
-    locktext = owl_malloc(lock+1);
+    locktext = g_new(char, lock+1);
     strncpy(locktext, e->buff, lock);
     locktext[lock] = 0;
   }
@@ -381,7 +379,7 @@ static void oe_restore_mark_only(owl_editwin *e, oe_excursion *x)
 /* External interface to oe_save_excursion */
 owl_editwin_excursion *owl_editwin_begin_excursion(owl_editwin *e)
 {
-  owl_editwin_excursion *x = owl_malloc(sizeof *x);
+  owl_editwin_excursion *x = g_new(owl_editwin_excursion, 1);
   oe_save_excursion(e, x);
   return x;
 }
@@ -746,7 +744,7 @@ void owl_editwin_transpose_chars(owl_editwin *e)
   if (start == NULL)
     return;
 
-  tmp = owl_malloc((end - start) + 1);
+  tmp = g_new(char, (end - start) + 1);
   tmp[(end - start)] = 0;
   memcpy(tmp, middle, end - middle);
   memcpy(tmp + (end - middle), start, middle - start);
@@ -1071,7 +1069,7 @@ static const char *oe_copy_buf(owl_editwin *e, const char *buf, int len)
   char *p;
   char *killbuf = owl_global_get_kill_buffer(&g);
 
-  p = owl_malloc(len + 1);
+  p = g_new(char, len + 1);
 
   if (p != NULL) {
     owl_free(killbuf);
@@ -1407,7 +1405,7 @@ static char *oe_chunk(owl_editwin *e, int start, int end)
 {
   char *p;
   
-  p = owl_malloc(end - start + 1);
+  p = g_new(char, end - start + 1);
   memcpy(p, e->buff + start, end - start);
   p[end - start] = 0;
 

@@ -13,8 +13,7 @@ static void owl_viewwin_set_window(owl_viewwin *v, owl_window *w);
  */
 owl_viewwin *owl_viewwin_new_text(owl_window *win, const char *text)
 {
-  owl_viewwin *v = owl_malloc(sizeof(owl_viewwin));
-  memset(v, 0, sizeof(*v));
+  owl_viewwin *v = g_new0(owl_viewwin, 1);
   owl_fmtext_init_null(&(v->fmtext));
   if (text) {
     owl_fmtext_append_normal(&(v->fmtext), text);
@@ -37,8 +36,7 @@ owl_viewwin *owl_viewwin_new_text(owl_window *win, const char *text)
 owl_viewwin *owl_viewwin_new_fmtext(owl_window *win, const owl_fmtext *fmtext)
 {
   char *text;
-  owl_viewwin *v = owl_malloc(sizeof(owl_viewwin));
-  memset(v, 0, sizeof(*v));
+  owl_viewwin *v = g_new0(owl_viewwin, 1);
 
   owl_fmtext_copy(&(v->fmtext), fmtext);
   text = owl_fmtext_print_plain(fmtext);
@@ -196,7 +194,7 @@ char *owl_viewwin_command_start_search(owl_viewwin *v, int argc, const char *con
   owl_editwin_set_locktext(tw, (direction == OWL_DIRECTION_DOWNWARDS) ? "/" : "?");
   owl_editwin_insert_string(tw, buffstart);
 
-  data = owl_malloc(sizeof(owl_viewwin_search_data));
+  data = g_new(owl_viewwin_search_data, 1);
   data->v = v;
   data->direction = direction;
 

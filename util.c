@@ -40,7 +40,7 @@ char *owl_util_makepath(const char *in)
   char *out, user[MAXPATHLEN];
   struct passwd *pw;
 
-  out=owl_malloc(MAXPATHLEN+1);
+  out=g_new(char, MAXPATHLEN+1);
   out[0]='\0';
   j=strlen(in);
   x=0;
@@ -292,11 +292,6 @@ char *owl_util_minutes_to_timestr(int in)
 }
 
 /* hooks for doing memory allocation et. al. in owl */
-
-void *owl_malloc(size_t size)
-{
-  return(g_malloc(size));
-}
 
 void owl_free(void *ptr)
 {
@@ -592,7 +587,7 @@ char * owl_strip_format_chars(const char *in)
   char *r;
   if (g_utf8_validate(in, -1, NULL)) {
     const char *s, *p;
-    r = owl_malloc(strlen(in)+1);
+    r = g_new(char, strlen(in)+1);
     r[0] = '\0';
     s = in;
     p = strchr(s, OWL_FMTEXT_UC_STARTBYTE_UTF8);
@@ -717,7 +712,7 @@ static int owl_getline_internal(char **s, FILE *fp, int newline)
 
 /* Read a line from fp, allocating memory to hold it, returning the number of
  * byte read.  *s should either be NULL or a pointer to memory allocated with
- * owl_malloc; it will be owl_realloc'd as appropriate.  The caller must
+ * g_malloc; it will be owl_realloc'd as appropriate.  The caller must
  * eventually free it.  (This is roughly the interface of getline in the gnu
  * libc).
  *

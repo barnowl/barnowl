@@ -639,7 +639,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
       return;
     } else if (ptr[0]=='@') {
       /* add the text up to this point then deal with the stack */
-      buff=owl_malloc(ptr-txtptr+20);
+      buff=g_new(char, ptr-txtptr+20);
       strncpy(buff, txtptr, ptr-txtptr);
       buff[ptr-txtptr]='\0';
       owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
@@ -674,7 +674,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
 
       /* check what command we've got, push it on the stack, start
          using it, and continue ... unless it's a color command */
-      buff=owl_malloc(tmpptr-ptr+20);
+      buff=g_new(char, tmpptr-ptr+20);
       strncpy(buff, ptr, tmpptr-ptr);
       buff[tmpptr-ptr]='\0';
       if (!strcasecmp(buff, "@bold")) {
@@ -737,7 +737,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
              (txtptr[-1]=='{' && tmpptr[0]=='}'))) {
 
           /* grab the color name */
-          buff=owl_malloc(tmpptr-txtptr+20);
+          buff=g_new(char, tmpptr-txtptr+20);
           strncpy(buff, txtptr, tmpptr-txtptr);
           buff[tmpptr-txtptr]='\0';
 
@@ -764,7 +764,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
 
     } else if (ptr[0]=='}' || ptr[0]==']' || ptr[0]==')' || ptr[0]=='>') {
       /* add the text up to this point first */
-      buff=owl_malloc(ptr-txtptr+20);
+      buff=g_new(char, ptr-txtptr+20);
       strncpy(buff, txtptr, ptr-txtptr);
       buff[ptr-txtptr]='\0';
       owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
@@ -775,7 +775,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
 
       /* first, if the stack is empty we must bail (just print and go) */
       if (stacksize==0) {
-        buff=owl_malloc(5);
+        buff=g_new(char, 5);
         buff[0]=ptr[0];
         buff[1]='\0';
         owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
@@ -801,7 +801,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
         continue;
       } else {
         /* otherwise print and continue */
-        buff=owl_malloc(5);
+        buff=g_new(char, 5);
         buff[0]=ptr[0];
         buff[1]='\0';
         owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
@@ -811,7 +811,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
       }
     } else {
       /* we've found an unattached opener, print everything and move on */
-      buff=owl_malloc(ptr-txtptr+20);
+      buff=g_new(char, ptr-txtptr+20);
       strncpy(buff, txtptr, ptr-txtptr+1);
       buff[ptr-txtptr+1]='\0';
       owl_fmtext_append_attr(f, buff, curattrs, curcolor, OWL_COLOR_DEFAULT);
@@ -863,9 +863,9 @@ void owl_fmtext_init_colorpair_mgr(owl_colorpair_mgr *cpmgr)
   /* This could be a bitarray if we wanted to save memory. */
   short i;
   /* The test is <= because we allocate COLORS+1 entries. */
-  cpmgr->pairs = owl_malloc((COLORS+1) * sizeof(short*));
+  cpmgr->pairs = g_new(short *, COLORS + 1);
   for(i = 0; i <= COLORS; i++) {
-    cpmgr->pairs[i] = owl_malloc((COLORS+1) * sizeof(short));
+    cpmgr->pairs[i] = g_new(short, COLORS + 1);
   }
   owl_fmtext_reset_colorpairs(cpmgr);
 }

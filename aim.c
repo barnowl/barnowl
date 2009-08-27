@@ -133,8 +133,7 @@ int owl_aim_login(const char *screenname, const char *password)
   aim_tx_setenqueue(sess, AIM_TX_IMMEDIATE, NULL);
   
   /* this will leak, I know and just don't care right now */
-  priv=owl_malloc(sizeof(struct owlfaim_priv));
-  memset(priv, 0, sizeof(struct owlfaim_priv));
+  priv=g_new0(struct owlfaim_priv, 1);
 
   priv->screenname = owl_strdup(screenname);
   priv->password = owl_strdup(password);
@@ -434,7 +433,7 @@ char *owl_aim_normalize_screenname(const char *in)
   int i, j, k;
 
   j=strlen(in);
-  out=owl_malloc(j+30);
+  out=g_new(char, j+30);
   k=0;
   for (i=0; i<j; i++) {
     if (in[i]!=' ') {
@@ -1045,7 +1044,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   stripmsg=owl_text_htmlstrip(realmsg);
   wrapmsg=owl_text_wordwrap(stripmsg, 70);
   nz_screenname=owl_aim_normalize_screenname(userinfo->sn);
-  m=owl_malloc(sizeof(owl_message));
+  m=g_new(owl_message, 1);
   owl_message_create_aim(m,
 			 nz_screenname,
 			 owl_global_get_aim_screenname(&g),

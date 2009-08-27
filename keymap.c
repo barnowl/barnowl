@@ -37,7 +37,7 @@ int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *co
   owl_keybinding *kb, *curkb;
   int i;
 
-  if ((kb = owl_malloc(sizeof(owl_keybinding))) == NULL) return(-1);
+  if ((kb = g_new(owl_keybinding, 1)) == NULL) return(-1);
   if (0 != owl_keybinding_init(kb, keyseq, command, function_fn, desc)) {
     owl_free(kb);
     return(-1);
@@ -62,7 +62,7 @@ int owl_keymap_remove_binding(owl_keymap *km, const char *keyseq)
   owl_keybinding *kb, *curkb;
   int i;
 
-  if ((kb = owl_malloc(sizeof(owl_keybinding))) == NULL) return(-1);
+  if ((kb = g_new(owl_keybinding, 1)) == NULL) return(-1);
   if (0 != owl_keybinding_make_keys(kb, keyseq)) {
     owl_free(kb);
     return(-1);
@@ -196,7 +196,7 @@ void owl_keyhandler_add_keymap(owl_keyhandler *kh, owl_keymap *km)
 owl_keymap *owl_keyhandler_create_and_add_keymap(owl_keyhandler *kh, const char *name, const char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
 {
   owl_keymap *km;
-  km = owl_malloc(sizeof(owl_keymap));
+  km = g_new(owl_keymap, 1);
   if (!km) return NULL;
   owl_keymap_init(km, name, desc, default_fn, prealways_fn, postalways_fn);
   owl_keyhandler_add_keymap(kh, km);
