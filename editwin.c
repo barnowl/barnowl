@@ -1201,22 +1201,24 @@ static int owl_editwin_check_dotsend(owl_editwin *e)
   oe_excursion x;
 
   if (!e->dotsend) return(0);
-  if (e->index != e->bufflen) return (0);
+  if (!owl_editwin_is_at_end(e)) return (0);
 
   oe_save_excursion(e, &x);
 
   owl_editwin_point_move(e, -3);
 
-  if(strcmp(e->buff + e->index, "\n.\n") == 0) {
+  if(strncmp(e->buff + e->index, "\n.\n", 3) == 0) {
     owl_editwin_point_move(e, 1);
     zdot = 1;
   } else if(e->index == e->lock &&
-            strcmp(e->buff + e->index, ".\n") == 0) {
+            strncmp(e->buff + e->index, ".\n", 2) == 0) {
     zdot = 1;
   }
 
   if(zdot) {
-    owl_editwin_replace(e, 2, "");
+    owl_editwin_set_mark(e);
+    owl_editwin_move_to_end(e);
+    owl_editwin_replace_region(e, "");
   }
 
   oe_restore_excursion(e, &x);
