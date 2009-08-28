@@ -73,7 +73,7 @@ AC_CHECK_LIB(resolv, res_search)
 
 AC_ARG_WITH([zephyr],
   [AS_HELP_STRING([--with-libzephyr],
-    [Disable Zephyr support])],
+    [Enable Zephyr support])],
   [],
   [with_zephyr=check])
 
