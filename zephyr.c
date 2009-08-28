@@ -1045,9 +1045,7 @@ void owl_zephyr_zlog_in(void)
   ret=ZSetLocation(zstr(eset));
   if (ret != ZERR_NONE) {
     /*
-      char buff[LINE];
-      sprintf(buff, "Error setting location: %s", error_message(ret));
-      owl_function_makemsg(buff);
+      owl_function_makemsg("Error setting location: %s", error_message(ret));
     */
   }
 #endif
@@ -1062,9 +1060,7 @@ void owl_zephyr_zlog_out(void)
   ret=ZUnsetLocation();
   if (ret != ZERR_NONE) {
     /*
-      char buff[LINE];
-      sprintf(buff, "Error unsetting location: %s", error_message(ret));
-      owl_function_makemsg(buff);
+      owl_function_makemsg("Error unsetting location: %s", error_message(ret));
     */
   }
 #endif
