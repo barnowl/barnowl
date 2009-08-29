@@ -119,6 +119,11 @@ void owl_zephyr_finish_initialization(owl_dispatch *d) {
     owl_function_debugmsg("startup: doing zlog in");
     owl_zephyr_zlog_in();
   }
+  /* check pseudo-logins if we need to */
+  if (owl_global_is_pseudologins(&g)) {
+    owl_function_debugmsg("startup: checking pseudo-logins");
+    owl_function_zephyr_buddy_check(0);
+  }
 }
 
 void owl_zephyr_load_initial_subs() {

@@ -3481,6 +3481,8 @@ void owl_function_zephyr_buddy_check(int notify)
   ZLocations_t location[200];
   int numlocs, ret;
 
+  if (!owl_global_is_havezephyr(&g)) return;
+
   zbl=owl_global_get_zephyr_buddylist(&g);
 
   owl_list_create(&anyone);
