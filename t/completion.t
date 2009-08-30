@@ -186,5 +186,21 @@ test_complete('cmd -a -d foo -c hello ','',
 test_complete('cmd -a -d foo -c ','',
               [qw(-a -b -c -d 0)], \&complete_word);
 
+# Test that words after -- are counted properly.
+test_complete('cmd -- hi there ','',
+              [qw(2)], \&complete_word);
+
+test_complete('cmd --','',
+              [qw(-a -b -c -d 0)], \&complete_word);
+
+test_complete('cmd -- ','',
+              [qw(0)], \&complete_word);
+
+test_complete('cmd foo -- ','',
+              [qw(1)], \&complete_word);
+
+test_complete('cmd foo -- bar ','',
+              [qw(2)], \&complete_word);
+
 1;
 
