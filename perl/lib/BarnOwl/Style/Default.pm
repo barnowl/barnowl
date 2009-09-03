@@ -41,7 +41,8 @@ BarnOwl::create_style("default", "BarnOwl::Style::Default");
 sub format_time {
     my $self = shift;
     my $m = shift;
-    return strftime('%H:%M', localtime($m->unix_time));
+    my $dateformat = BarnOwl::time_format('get_time_format');
+    return strftime($dateformat, localtime($m->unix_time));
 }
 
 sub format_login {

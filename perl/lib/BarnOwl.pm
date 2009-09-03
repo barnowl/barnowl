@@ -326,6 +326,7 @@ sub quote {
 =cut
 
 sub register_builtin_commands {
+    # Filter modification
     BarnOwl::new_command("filterappend",
                          sub { filter_append_helper('appending', '', @_); },
                        {
@@ -345,6 +346,28 @@ sub register_builtin_commands {
                        {
                            summary => "append 'or <text>' to filter",
                            usage => "filteror <filter> <text>",
+                       });
+
+    # Date formatting
+    BarnOwl::new_command("showdate",
+                         sub { BarnOwl::time_format('showdate', '%Y-%m-%d %H:%M'); },
+                       {
+                           summary => "Show date in timestamps for supporting styles.",
+                           usage => "showdate",
+                       });
+
+    BarnOwl::new_command("hidedate",
+                         sub { BarnOwl::time_format('hidedate', '%H:%M'); },
+                       {
+                           summary => "Don't show date in timestamps for supporting styles.",
+                           usage => "hidedate",
+                       });
+
+    BarnOwl::new_command("timeformat",
+                         \&BarnOwl::time_format,
+                       {
+                           summary => "Set the format for timestamps and re-display messages",
+                           usage => "timeformat <format>",
                        });
 
 }
@@ -377,5 +400,30 @@ sub filter_append_helper
 BarnOwl::new_variable_bool("showfilterchange",
                            { default => 1,
                              summary => 'Show modifications to filters by filterappend and friends.'});
+
+=head3 time_format FORMAT
+
+Set the format for displaying times (variable timeformat) and redisplay
+messages.
+
+=cut
+
+my $timeformat;
+
+sub time_format
+{
+    my $function = shift;
+    my $format = shift;
+    if(!$format)
+    {
+        return $timeformat;
+    }
+    if(shift)
+    {
+        return "Wrong number of arguments for command";
+    }
+    $timeformat = $format;
+    redisplay();
+}
 
 1;
