@@ -15,7 +15,7 @@ our @EXPORT_OK = qw(command getcurmsg getnumcols getidletime
                     add_dispath remove_dispatch
                     new_command
                     new_variable_int new_variable_bool new_variable_string
-                    quote);
+                    quote redisplay);
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 BEGIN {
@@ -169,6 +169,11 @@ object. The object must have a C<description> method which returns a
 string description of the style, and a and C<format_message> method
 which accepts a C<BarnOwl::Message> object and returns a string that
 is the result of formatting the message for display.
+
+=head2 redisplay
+
+Redraw all of the messages on screen. This is useful if you've just
+changed how a style renders messages.
 
 =cut
 

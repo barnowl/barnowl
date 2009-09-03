@@ -410,6 +410,15 @@ all_variables()
 	CLEANUP:
 		owl_list_free_all(&l, owl_free);
 
+void
+redisplay()
+	CODE:
+	{
+		owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
+		owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
+		owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+	}
+
 MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 
 
