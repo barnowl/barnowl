@@ -173,10 +173,12 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("SPACE",       "popless:scroll-down-page", "");
   BIND_CMD("NPAGE",       "popless:scroll-down-page", "");
   BIND_CMD("M-n",         "popless:scroll-down-page", "");
+  BIND_CMD("C-v",         "popless:scroll-down-page", "");
 
   BIND_CMD("b",           "popless:scroll-up-page", "");
   BIND_CMD("PPAGE",       "popless:scroll-up-page", "")
   BIND_CMD("M-p",         "popless:scroll-up-page", "");
+  BIND_CMD("M-v",         "popless:scroll-up-page", "");
 
   BIND_CMD("CR",          "popless:scroll-down-line", "");
   BIND_CMD("LF",          "popless:scroll-down-line", "");
