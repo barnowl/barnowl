@@ -1,10 +1,10 @@
 #include "owl.h"
 
 #define BIND_CMD(kpress, command, desc) \
-         owl_keymap_create_binding(km, kpress, command, NULL, desc);
+         owl_keymap_create_binding(km, kpress, command, NULL, desc)
 
 #define BIND_FNV(kpress, fn, desc) \
-         owl_keymap_create_binding(km, kpress, NULL, fn, desc);
+         owl_keymap_create_binding(km, kpress, NULL, fn, desc)
 
 
 /* sets up the default keymaps */
@@ -176,7 +176,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("C-v",         "popless:scroll-down-page", "");
 
   BIND_CMD("b",           "popless:scroll-up-page", "");
-  BIND_CMD("PPAGE",       "popless:scroll-up-page", "")
+  BIND_CMD("PPAGE",       "popless:scroll-up-page", "");
   BIND_CMD("M-p",         "popless:scroll-up-page", "");
   BIND_CMD("M-v",         "popless:scroll-up-page", "");
 
