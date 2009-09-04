@@ -210,9 +210,11 @@ sub _new_command {
             if(@_ == 1 && $_[0] =~ m{\s}) {
                 carp "DEPRECATED: ${package}::${symbol}: Tokenizing argument on ' '.\n"
                 . "In future versions, the argument list will be passed to\n"
-                . "'$command' directly. Tokenize yourself, or use BarnOwl::command()\n"
+                . "'$command' directly. Tokenize yourself, or use BarnOwl::command()\n";
+                BarnOwl::command("$command $_[0]");
+            } else {
+                BarnOwl::command($command, @_);
             }
-            BarnOwl::command($command . " " . join(" ", @_))
           };
         if(defined(*{"${package}::EXPORT_OK"}{ARRAY})
           && !contains(*{"${package}::EXPORT_OK"}{ARRAY}, $symbol)) {
