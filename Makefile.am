@@ -51,13 +51,13 @@ BUILT_SOURCES = $(GEN_C) $(GEN_H)
 proto: owl_prototypes.h
 
 perlglue.c: perlglue.xs
-	perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes perlglue.xs > perlglue.c
+	$(AM_V_GEN)perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes perlglue.xs > perlglue.c
 
 varstubs.c: stubgen.pl variable.c
-	perl $< $(filter-out $<,$+) > $@
+	$(AM_V_GEN)perl $< $(filter-out $<,$+) > $@
 
 owl_prototypes.h.new: codelist.pl varstubs.c $(BASE_SRCS) owl.c zcrypt.c
-	perl $< $(filter-out $<,$+) > $@
+	$(AM_V_GEN)perl $< $(filter-out $<,$+) > $@
 
 # For emacs flymake-mode
 check-syntax: proto

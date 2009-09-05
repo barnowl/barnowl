@@ -8,7 +8,7 @@ $(MODULES): %: %/Makefile
 
 MODULES_MAKEFILE = $(MODULES:=/Makefile)
 $(MODULES_MAKEFILE): %/Makefile: %/Makefile.PL
-	(cd $* && perl -I../../lib Makefile.PL)
+	$(AM_V_GEN)(cd $* && perl -I../../lib Makefile.PL)
 
 MODULES_CLEAN = $(MODULES:%=clean_%)
 clean-local: $(MODULES_CLEAN)
