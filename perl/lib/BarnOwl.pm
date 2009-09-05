@@ -408,7 +408,7 @@ messages.
 
 =cut
 
-my $timeformat;
+my $timeformat = '%H:%M';
 
 sub time_format
 {
