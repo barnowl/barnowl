@@ -48,7 +48,7 @@ sub barnowl_module {
 # --- $class section:
 
 $name.par: pm_to_blib
-\tcd blib; zip ../$name.par -r arch lib
+\tcd blib; zip -q ../$name.par -r arch lib
 
 END_MAKEFILE
 }
