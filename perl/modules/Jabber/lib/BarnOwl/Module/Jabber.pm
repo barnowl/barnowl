@@ -1117,8 +1117,8 @@ sub process_presence_subscribe {
 
     $props{body} = "Allow user ($from) to subscribe to your ($to) presence?\n" .
                    "(Answer with the `yes' or `no' commands)";
-    $props{yescommand} = "jroster auth $from -a $to";
-    $props{nocommand} = "jroster deauth $from -a $to";
+    $props{yescommand} = BarnOwl::quote('jroster', 'auth', $from, '-a', $to);
+    $props{nocommand} = BarnOwl::quote('jroster', 'deauth', $from, '-a', $to);
     $props{question} = "true";
     BarnOwl::queue_message(BarnOwl::Message->new(%props));
 }
