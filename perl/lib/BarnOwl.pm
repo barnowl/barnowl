@@ -426,4 +426,10 @@ sub time_format
     redisplay();
 }
 
+# Stub for owl::startup / BarnOwl::startup, so it isn't bound to the
+# startup command. This may be redefined in a user's configfile.
+sub startup
+{
+}
+
 1;
