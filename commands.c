@@ -1180,14 +1180,10 @@ char *owl_command_startup(int argc, const char *const *argv, const char *buff)
     return(NULL);
   }
 
-  ptr=strchr(buff, ' ');
-  if (!ptr) {
-    owl_function_makemsg("Parse error finding command for startup");
-    return(NULL);
-  }
+  ptr = skiptokens(buff, 1);
 
-  owl_function_command(ptr+1);
-  owl_function_addstartup(ptr+1);
+  owl_function_command(ptr);
+  owl_function_addstartup(ptr);
 
   return(NULL);
 }
@@ -1201,13 +1197,9 @@ char *owl_command_unstartup(int argc, const char *const *argv, const char *buff)
     return(NULL);
   }
 
-  ptr=strchr(buff, ' ');
-  if (!ptr) {
-    owl_function_makemsg("Parse error finding command for unstartup");
-    return(NULL);
-  }
+  ptr = skiptokens(buff, 1);
 
-  owl_function_delstartup(ptr+1);
+  owl_function_delstartup(ptr);
 
   return(NULL);
 }
