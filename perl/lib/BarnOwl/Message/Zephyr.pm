@@ -185,7 +185,7 @@ sub replycmd {
     push @cmd, context_reply_cmd($class, $instance);
     if ($to ne '') {
         $to = strip_realm($to);
-        if (defined $cc) {
+        if (defined $cc and not $sender) {
             my @cc = grep /^[^-]/, ($to, split /\s+/, $cc);
             my %cc = map {$_ => 1} @cc;
             delete $cc{strip_realm(BarnOwl::zephyr_getsender())};
