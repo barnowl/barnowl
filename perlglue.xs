@@ -419,6 +419,17 @@ redisplay()
 		owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 	}
 
+const char *
+skiptokens(str, n)
+	const char *str;
+	int n;
+	CODE:
+		RETVAL = skiptokens(str, n);
+	OUTPUT:
+		RETVAL
+
+
+
 MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 
 
