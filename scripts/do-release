@@ -5,12 +5,18 @@ die() {
     exit 1
 }
 
+force=
+
+if [ "$1" = "-f" ]; then
+    force=1
+fi
+
 VERS=$(perl -ne 'print $1 if m{^AC_INIT\(\[[^\]]+\],\s*\[([^\]]+)\]}' configure.ac) \
     || die "Unable to parse barnowl version"
 TAG=barnowl-$VERS
 TGZ="$TAG-src"
 
-if [ "$VERS" != "$(head -1 ChangeLog)" ]; then
+if [ ! "$force" ] && [ "$VERS" != "$(head -1 ChangeLog)" ]; then
     die "No ChangeLog entry for version $VERS, aborting."
 fi
 
