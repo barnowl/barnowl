@@ -1,6 +1,0 @@
-* We generate jwrite -i command lines, but don't do the right thing
-  with them yet. [nelhage]
-* The jabber roster looks ugly with multiline status messages and
-  long JIDs [nelhage]
-* reply to resource names from ichat (foo's computer) fails badly [hartmans]
-* viewuser doesn't work with AIM or Jabber
