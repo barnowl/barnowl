@@ -3396,24 +3396,42 @@ void owl_function_toggleoneline(void)
 
 void owl_function_error(const char *fmt, ...)
 {
+  static int in_error = 0;
   va_list ap;
   char *buff;
   const char *nl;
 
-  va_start(ap, fmt);
+  if (++in_error > 2) {
+    /* More than two nested errors, bail immediately. */
+    in_error--;
+    return;
+  }
 
+  va_start(ap, fmt);
   buff = g_strdup_vprintf(fmt, ap);
+  va_end(ap);
+
   owl_function_debugmsg("ERROR: %s", buff);
+  owl_function_log_err(buff);
+
   nl = strchr(buff, '\n');
-  if(nl && *(nl + 1)) {
+
+  /*
+    Showing admin messages triggers a lot of code. If we have a
+    recursive error call, that's the most likely candidate, so
+    suppress the call in that case, to try to avoid infinite looping.
+  */
+
+  if(nl && *(nl + 1) && in_error == 1) {
     /* Multiline error */
     owl_function_adminmsg("ERROR", buff);
   } else {
     owl_function_makemsg("[Error] %s", buff);
   }
-  owl_function_log_err(buff);
-  va_end(ap);
+
   owl_free(buff);
+
+  in_error--;
 }
 
 void owl_function_log_err(const char *string)
