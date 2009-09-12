@@ -28,7 +28,9 @@ SV *owl_new_sv(const char * str)
   if(is_utf8_string(str, strlen(str))) {
     SvUTF8_on(ret);
   } else {
-    owl_function_error("Internal error! Non-UTF-8 string encountered:\n%s", str);
+    char *escape = owl_escape_highbit(str);
+    owl_function_error("Internal error! Non-UTF-8 string encountered:\n%s", escape);
+    owl_free(escape);
   }
   return ret;
 }

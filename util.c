@@ -757,3 +757,19 @@ int owl_util_can_break_after(gunichar c)
   if (c >= 0x20000 && c <= 0x2ffff) {return 1;}  /* Han Ideogram */
   return 0;
 }
+
+char *owl_escape_highbit(const char *str)
+{
+  GString *out = g_string_new("");
+  unsigned char c;
+  while((c = (*str++))) {
+    if(c == '\\') {
+      g_string_append(out, "\\\\");
+    } else if(c & 0x80) {
+      g_string_append_printf(out, "\\x%02x", (int)c);
+    } else {
+      g_string_append_c(out, c);
+    }
+  }
+  return g_string_free(out, 0);
+}
