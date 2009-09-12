@@ -569,7 +569,7 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
 static inline void oe_fixup(int *target, int start, int end, int change) {
   if (*target > start) {
     if (*target <= end)
-      *target = end;
+      *target = end + change;
     else
       *target += change;
   }
