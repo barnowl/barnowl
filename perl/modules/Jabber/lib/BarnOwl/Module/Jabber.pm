@@ -69,7 +69,6 @@ sub onStart {
         register_owl_commands();
         register_keybindings();
         register_filters();
-        $BarnOwl::Hooks::mainLoop->add("BarnOwl::Module::Jabber::onMainLoop");
         $BarnOwl::Hooks::getBuddyList->add("BarnOwl::Module::Jabber::onGetBuddyList");
         $BarnOwl::Hooks::getQuickstart->add("BarnOwl::Module::Jabber::onGetQuickstart");
         $vars{show} = '';
@@ -105,8 +104,12 @@ sub onStart {
 
 $BarnOwl::Hooks::startup->add("BarnOwl::Module::Jabber::onStart");
 
-sub onMainLoop {
-    return if ( !$conn->connected() );
+sub do_keep_alive_and_auto_away {
+    if ( !$conn->connected() ) {
+        # We don't need this timer any more.
+        delete $vars{keepAliveTimer};
+        return;
+    }
 
     $vars{status_changed} = 0;
     my $auto_away = BarnOwl::getvar('jabber:auto_away_timeout');
@@ -120,11 +123,12 @@ sub onMainLoop {
         $vars{show} = 'away';
         $vars{status} = 'Auto away after '.$auto_away.' minute'.($auto_away == 1 ? '' : 's').' idle.';
         $vars{status_changed} = 1;
-    } elsif ($idletime == 0 && $vars{show} ne '') {
+    } elsif ($idletime <= $vars{idletime} && $vars{show} ne '') {
         $vars{show} = '';
         $vars{status} = '';
         $vars{status_changed} = 1;
     }
+    $vars{idletime} = $idletime;
 
     foreach my $jid ( $conn->getJIDs() ) {
         my $client = $conn->getConnectionFromJID($jid);
@@ -133,11 +137,11 @@ sub onMainLoop {
             $conn->removeConnection($jid);
             BarnOwl::error("Connection for $jid undefined -- error in reload?");
         }
-        # We keep this in the mainloop hook for keep-alives
-        my $status = $client->Process(0);
+        my $status = $client->Process(0); # keep-alive
         if ( !defined($status) ) {
             BarnOwl::error("Jabber account $jid disconnected!");
             do_logout($jid);
+            next;
         }
         if ($::shutdown) {
             do_logout($jid);
@@ -448,6 +452,14 @@ sub do_login {
                     my $name = $jq{name} || $buddy->GetUserID();
                     $completion_jids{$name} = 1;
                     $completion_jids{$buddy->GetJID()} = 1;
+                }
+                $vars{idletime} |= BarnOwl::getidletime();
+                unless (exists $vars{keepAliveTimer}) {
+                    $vars{keepAliveTimer} = BarnOwl::Timer->new({
+                        'after' => 5,
+                        'interval' => 5,
+                        'cb' => sub { BarnOwl::Module::Jabber::do_keep_alive_and_auto_away(@_) }
+                                                                });
                 }
             }
         }
