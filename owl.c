@@ -35,6 +35,121 @@ int stderr_replace(void);
 
 owl_global g;
 
+void owl_register_signal_handlers(void) /* noproto */ {
+  struct sigaction sigact;
+
+  /* signal handler */
+  /*sigact.sa_handler=sig_handler;*/
+  sigact.sa_sigaction=sig_handler;
+  sigemptyset(&sigact.sa_mask);
+  sigact.sa_flags=SA_SIGINFO;
+  sigaction(SIGWINCH, &sigact, NULL);
+  sigaction(SIGALRM, &sigact, NULL);
+  sigaction(SIGPIPE, &sigact, NULL);
+  sigaction(SIGTERM, &sigact, NULL);
+  sigaction(SIGHUP, &sigact, NULL);
+
+  sigact.sa_sigaction=sigint_handler;
+  sigaction(SIGINT, &sigact, NULL);
+
+}
+
+void owl_start_color(void) /* noproto */ {
+  start_color();
+#ifdef HAVE_USE_DEFAULT_COLORS
+  use_default_colors();
+#endif
+
+  /* define simple color pairs */
+  if (has_colors() && COLOR_PAIRS>=8) {
+    int bg = COLOR_BLACK;
+#ifdef HAVE_USE_DEFAULT_COLORS
+    bg = -1;
+#endif
+    init_pair(OWL_COLOR_BLACK,   COLOR_BLACK,   bg);
+    init_pair(OWL_COLOR_RED,     COLOR_RED,     bg);
+    init_pair(OWL_COLOR_GREEN,   COLOR_GREEN,   bg);
+    init_pair(OWL_COLOR_YELLOW,  COLOR_YELLOW,  bg);
+    init_pair(OWL_COLOR_BLUE,    COLOR_BLUE,    bg);
+    init_pair(OWL_COLOR_MAGENTA, COLOR_MAGENTA, bg);
+    init_pair(OWL_COLOR_CYAN,    COLOR_CYAN,    bg);
+    init_pair(OWL_COLOR_WHITE,   COLOR_WHITE,   bg);
+  }
+}
+
+void owl_start_curses(void) /* noproto */ {
+  struct termios tio;
+  /* save initial terminal settings */
+  tcgetattr(0, owl_global_get_startup_tio(&g));
+
+  /* turn ISTRIP off */
+  tcgetattr(0, &tio);
+  tio.c_iflag &= ~(ISTRIP|IEXTEN);
+  tio.c_cc[VQUIT] = 0;
+  tcsetattr(0, TCSAFLUSH, &tio);
+
+  /* screen init */
+  initscr();
+  cbreak();
+  noecho();
+
+  owl_start_color();
+}
+
+void owl_setup_default_filters(void) /* noproto */ {
+  owl_filter *f;
+
+  owl_function_debugmsg("startup: creating default filters");
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "personal", "isprivate ^true$ and ( not type ^zephyr$"
+                             " or ( class ^message  ) )");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "wordwrap", "not ( type ^admin$ or type ^zephyr$ ) ");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "trash", "class ^mail$ or opcode ^ping$ or type ^admin$ or ( not login ^none$ )");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "ping", "opcode ^ping$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "auto", "opcode ^auto$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "login", "not login ^none$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "reply-lockout", "class ^noc or class ^mail$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "out", "direction ^out$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "aim", "type ^aim$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "zephyr", "type ^zephyr$");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "none", "false");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+
+  f=owl_malloc(sizeof(owl_filter));
+  owl_filter_init_fromstring(f, "all", "true");
+  owl_list_append_element(owl_global_get_filterlist(&g), f);
+}
+
 int main(int argc, char **argv, char **env)
 {
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
@@ -42,16 +157,13 @@ int main(int argc, char **argv, char **env)
   owl_popwin *pw;
   int debug, argcsave, followlast;
   int newmsgs, nexttimediff;
-  struct sigaction sigact;
   const char *configfile, *tty, *const *argvsave;
   char *perlout, *perlerr;
   const char *confdir;
-  owl_filter *f;
   const owl_style *s;
   time_t nexttime, now;
   struct tm *today;
   const char *dir;
-  struct termios tio;
   owl_message *m;
 
   if (!GLIB_CHECK_VERSION (2, 12, 0))
@@ -124,58 +236,8 @@ int main(int argc, char **argv, char **env)
 
   owl_function_debugmsg("startup: Finished parsing arguments");
 
-  /* signal handler */
-  /*sigact.sa_handler=sig_handler;*/
-  sigact.sa_sigaction=sig_handler;
-  sigemptyset(&sigact.sa_mask);
-  sigact.sa_flags=SA_SIGINFO;
-  sigaction(SIGWINCH, &sigact, NULL);
-  sigaction(SIGALRM, &sigact, NULL);
-  sigaction(SIGPIPE, &sigact, NULL);
-  sigaction(SIGTERM, &sigact, NULL);
-  sigaction(SIGHUP, &sigact, NULL);
-
-  sigact.sa_sigaction=sigint_handler;
-  sigaction(SIGINT, &sigact, NULL);
-
-  /* save initial terminal settings */
-  tcgetattr(0, owl_global_get_startup_tio(&g));
-
-  /* turn ISTRIP off */
-  tcgetattr(0, &tio);
-  tio.c_iflag &= ~(ISTRIP|IEXTEN);
-  tio.c_cc[VQUIT] = 0;
-  tcsetattr(0, TCSAFLUSH, &tio);
-
-  /* screen init */
-  if (!getenv("TERMINFO")) {
-    owl_function_debugmsg("startup: Not setting TERMINFO");
-  } else {
-    owl_function_debugmsg("startup: leaving TERMINFO as %s from envrionment", getenv("TERMINFO"));
-  }
-  initscr();
-  start_color();
-#ifdef HAVE_USE_DEFAULT_COLORS
-  use_default_colors();
-#endif
-  cbreak();
-  noecho();
-
-  /* define simple color pairs */
-  if (has_colors() && COLOR_PAIRS>=8) {
-    int bg = COLOR_BLACK;
-#ifdef HAVE_USE_DEFAULT_COLORS
-    bg = -1;
-#endif
-    init_pair(OWL_COLOR_BLACK,   COLOR_BLACK,   bg);
-    init_pair(OWL_COLOR_RED,     COLOR_RED,     bg);
-    init_pair(OWL_COLOR_GREEN,   COLOR_GREEN,   bg);
-    init_pair(OWL_COLOR_YELLOW,  COLOR_YELLOW,  bg);
-    init_pair(OWL_COLOR_BLUE,    COLOR_BLUE,    bg);
-    init_pair(OWL_COLOR_MAGENTA, COLOR_MAGENTA, bg);
-    init_pair(OWL_COLOR_CYAN,    COLOR_CYAN,    bg);
-    init_pair(OWL_COLOR_WHITE,   COLOR_WHITE,   bg);
-  }
+  owl_register_signal_handlers();
+  owl_start_curses();
 
   /* owl global init */
   owl_global_init(&g);
@@ -236,62 +298,13 @@ int main(int argc, char **argv, char **env)
 
   owl_global_complete_setup(&g);
 
-  /* setup the default filters */
-  /* the personal filter will need to change again when AIM chat's are
-   *  included.  Also, there should be an %aimme% */
-  owl_function_debugmsg("startup: creating default filters");
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "personal", "isprivate ^true$ and ( not type ^zephyr$"
-                             " or ( class ^message  ) )");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "wordwrap", "not ( type ^admin$ or type ^zephyr$ ) ");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "trash", "class ^mail$ or opcode ^ping$ or type ^admin$ or ( not login ^none$ )");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "ping", "opcode ^ping$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "auto", "opcode ^auto$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "login", "not login ^none$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "reply-lockout", "class ^noc or class ^mail$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "out", "direction ^out$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "aim", "type ^aim$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "zephyr", "type ^zephyr$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "none", "false");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "all", "true");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
+  owl_setup_default_filters();
 
   /* set the current view */
   owl_function_debugmsg("startup: setting the current view");
-  owl_view_create(owl_global_get_current_view(&g), "main", f, owl_global_get_style_by_name(&g, "default"));
+  owl_view_create(owl_global_get_current_view(&g), "main",
+                  owl_global_get_filter(&g, "all"),
+                  owl_global_get_style_by_name(&g, "default"));
 
   /* AIM init */
   owl_function_debugmsg("startup: doing AIM initialization");
@@ -330,12 +343,7 @@ int main(int argc, char **argv, char **env)
 
   wrefresh(sepwin);
 
-  /* First buddy check to sync the list without notifications */
-  owl_function_debugmsg("startup: doing initial zephyr buddy check");
-  /* owl_function_zephyr_buddy_check(0); */
-
-  /* set the startup and default style, based on userclue and presence of a
-   * formatting function */
+  /* Set the default style */
   owl_function_debugmsg("startup: setting startup and default style");
   if (0 != strcmp(owl_global_get_default_style(&g), "__unspecified__")) {
     /* the style was set by the user: leave it alone */
@@ -355,7 +363,6 @@ int main(int argc, char **argv, char **env)
 
   nexttimediff=10;
   nexttime=time(NULL);
-
 
   owl_select_add_timer(180, 180, owl_zephyr_buddycheck_timer, NULL, NULL);
 
