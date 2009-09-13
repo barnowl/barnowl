@@ -35,6 +35,50 @@ int stderr_replace(void);
 
 owl_global g;
 
+typedef struct _owl_options {           /* noproto */
+  bool load_initial_subs;
+  char *configfile;
+  char *tty;
+  char *confdir;
+  bool debug;
+  bool rm_debug;
+} owl_options;
+
+/* TODO: free owl_options after init is done? */
+void owl_parse_options(int argc, char *argv[], owl_options *opts) /* noproto */ {
+  char c;
+
+  while((c = getopt(argc, argv, "nc:t:s:dDvh")) != -1) {
+    switch(c) {
+    case 'n':
+      opts->load_initial_subs = 0;
+      break;
+    case 'c':
+      opts->configfile = owl_strdup(optarg);
+      break;
+    case 's':
+      opts->confdir = owl_strdup(optarg);
+      break;
+    case 't':
+      opts->tty = owl_strdup(optarg);
+      break;
+    case 'D':
+      opts->rm_debug = 1;
+      /* fallthrough */
+    case 'd':
+      opts->debug = 1;
+      break;
+    case 'v':
+      printf("This is barnowl version %s\n", OWL_VERSION_STRING);
+      exit(0);
+    case 'h':
+    default:
+      usage();
+      exit(1);
+    }
+  }
+}
+
 void owl_register_signal_handlers(void) /* noproto */ {
   struct sigaction sigact;
 
@@ -155,84 +199,29 @@ int main(int argc, char **argv, char **env)
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
   owl_editwin *tw;
   owl_popwin *pw;
-  int debug, argcsave, followlast;
+  int argcsave, followlast;
   int newmsgs, nexttimediff;
-  const char *configfile, *tty, *const *argvsave;
+  const char *const *argvsave;
   char *perlout, *perlerr;
-  const char *confdir;
   const owl_style *s;
   time_t nexttime, now;
   struct tm *today;
   const char *dir;
   owl_message *m;
+  owl_options opts;
 
   if (!GLIB_CHECK_VERSION (2, 12, 0))
     g_error ("GLib version 2.12.0 or above is needed.");
 
   argcsave=argc;
   argvsave=strs(argv);
-  configfile=NULL;
-  confdir = NULL;
-  tty=NULL;
-  debug=0;
-  g.load_initial_subs = 1;
 
   setlocale(LC_ALL, "");
-  
-  if (argc>0) {
-    argv++;
-    argc--;
-  }
-  while (argc>0) {
-    if (!strcmp(argv[0], "-n")) {
-      g.load_initial_subs = 0;
-      argv++;
-      argc--;
-    } else if (!strcmp(argv[0], "-c")) {
-      if (argc<2) {
-        fprintf(stderr, "Too few arguments to -c\n");
-        usage();
-        exit(1);
-      }
-      configfile=argv[1];
-      argv+=2;
-      argc-=2;
-    } else if (!strcmp(argv[0], "-t")) {
-      if (argc<2) {
-        fprintf(stderr, "Too few arguments to -t\n");
-        usage();
-        exit(1);
-      }
-      tty=argv[1];
-      argv+=2;
-      argc-=2;
-    } else if (!strcmp(argv[0], "-s")){
-      if (argc<2) {
-        fprintf(stderr, "Too few arguments to -s\n");
-        usage();
-        exit(1);
-      }
-      confdir = argv[1];
-      argv+=2;
-      argc-=2;
-    } else if (!strcmp(argv[0], "-d")) {
-      debug=1;
-      argv++;
-      argc--;
-    } else if (!strcmp(argv[0], "-D")) {
-      debug=1;
-      unlink(OWL_DEBUG_FILE);
-      argv++;
-      argc--;
-    } else if (!strcmp(argv[0], "-v")) {
-      printf("This is barnowl version %s\n", OWL_VERSION_STRING);
-      exit(0);
-    } else {
-      fprintf(stderr, "Unknown argument\n");
-      usage();	      
-      exit(1);
-    }
-  }
+
+  memset(&opts, 0, sizeof opts);
+  opts.load_initial_subs = 1;
+  owl_parse_options(argc, argv, &opts);
+  g.load_initial_subs = opts.load_initial_subs;
 
   owl_function_debugmsg("startup: Finished parsing arguments");
 
@@ -241,8 +230,9 @@ int main(int argc, char **argv, char **env)
 
   /* owl global init */
   owl_global_init(&g);
-  if (debug) owl_global_set_debug_on(&g);
-  if (confdir) owl_global_set_confdir(&g, confdir);
+  if (opts.rm_debug) unlink(OWL_DEBUG_FILE);
+  if (opts.debug) owl_global_set_debug_on(&g);
+  if (opts.confdir) owl_global_set_confdir(&g, opts.confdir);
   owl_function_debugmsg("startup: first available debugging message");
   owl_global_set_startupargs(&g, argcsave, argvsave);
   owl_global_set_haveaim(&g);
@@ -277,8 +267,8 @@ int main(int argc, char **argv, char **env)
 
   /* set the tty, either from the command line, or by figuring it out */
   owl_function_debugmsg("startup: setting tty name");
-  if (tty) {
-    owl_global_set_tty(&g, tty);
+  if (opts.tty) {
+    owl_global_set_tty(&g, opts.tty);
   } else {
     owl_global_set_tty(&g, owl_util_get_default_tty());
   }
@@ -286,7 +276,7 @@ int main(int argc, char **argv, char **env)
   /* Initialize perl */
   owl_function_debugmsg("startup: processing config file");
   owl_context_set_readconfig(owl_global_get_context(&g));
-  perlerr=owl_perlconfig_initperl(configfile, &argc, &argv, &env);
+  perlerr=owl_perlconfig_initperl(opts.configfile, &argc, &argv, &env);
   if (perlerr) {
     endwin();
     fprintf(stderr, "Internal perl error: %s\n", perlerr);
@@ -368,7 +358,6 @@ int main(int argc, char **argv, char **env)
 
   /* If we ever deprecate the mainloop hook, remove this. */
   owl_select_add_timer(0, 1, owl_perlconfig_mainloop, NULL, NULL);
-
 
   owl_function_debugmsg("startup: entering main loop");
   /* main loop */
