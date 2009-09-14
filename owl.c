@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <getopt.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
@@ -46,9 +47,21 @@ typedef struct _owl_options {           /* noproto */
 
 /* TODO: free owl_options after init is done? */
 void owl_parse_options(int argc, char *argv[], owl_options *opts) /* noproto */ {
+  static const struct option long_options[] = {
+    { "no-subs",         0, 0, 'n' },
+    { "config-file",     1, 0, 'c' },
+    { "config-dir",      1, 0, 's' },
+    { "tty",             1, 0, 't' },
+    { "debug",           0, 0, 'd' },
+    { "remove-debug",    0, 0, 'D' },
+    { "version",         0, 0, 'v' },
+    { "help",            0, 0, 'h' },
+    { NULL, 0, NULL, 0}
+  };
   char c;
 
-  while((c = getopt(argc, argv, "nc:t:s:dDvh")) != -1) {
+  while((c = getopt_long(argc, argv, "nc:t:s:dDvh",
+                         long_options, NULL)) != -1) {
     switch(c) {
     case 'n':
       opts->load_initial_subs = 0;
@@ -649,14 +662,14 @@ void usage()
 {
   fprintf(stderr, "Barnowl version %s\n", OWL_VERSION_STRING);
   fprintf(stderr, "Usage: barnowl [-n] [-d] [-D] [-v] [-h] [-c <configfile>] [-s <confdir>] [-t <ttyname>]\n");
-  fprintf(stderr, "  -n      don't load zephyr subscriptions\n");
-  fprintf(stderr, "  -d      enable debugging\n");
-  fprintf(stderr, "  -D      enable debugging and delete previous debug file\n");
-  fprintf(stderr, "  -v      print the Barnowl version number and exit\n");
-  fprintf(stderr, "  -h      print this help message\n");
-  fprintf(stderr, "  -c      specify an alternate config file\n");
-  fprintf(stderr, "  -s      specify an alternate config dir (default ~/.owl)\n");
-  fprintf(stderr, "  -t      set the tty name\n");
+  fprintf(stderr, "  -n,--no-subs        don't load zephyr subscriptions\n");
+  fprintf(stderr, "  -d,--debug          enable debugging\n");
+  fprintf(stderr, "  -D,--remove-debug   enable debugging and delete previous debug file\n");
+  fprintf(stderr, "  -v,--version        print the Barnowl version number and exit\n");
+  fprintf(stderr, "  -h,--help           print this help message\n");
+  fprintf(stderr, "  -c,--config-file    specify an alternate config file\n");
+  fprintf(stderr, "  -s,--config-dir     specify an alternate config dir (default ~/.owl)\n");
+  fprintf(stderr, "  -t,--tty            set the tty name\n");
 }
 
 #if OWL_STDERR_REDIR
