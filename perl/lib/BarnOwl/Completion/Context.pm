@@ -39,6 +39,7 @@ The index of the point within C<$words->[$word]>.
 package BarnOwl::Completion::Context;
 
 use base qw(Class::Accessor::Fast);
+use Carp qw(croak);
 
 __PACKAGE__->mk_ro_accessors(qw(line point words word word_point
                                 word_start word_end));
@@ -63,6 +64,29 @@ sub new {
         word_end   => $word_end
        };
     return bless($self, $class);
+}
+
+=head2 shift_words N
+
+Returns a new C<Context> object, with the leading C<N> words
+stripped. All fields are updated as appopriate. If C<N> > C<<
+$self->word >>, C<croak>s with an error message.
+
+=cut
+
+sub shift_words {
+    my $self = shift;
+    my $n    = shift;
+
+    if($n > $self->word) {
+        croak "Context::shift: Unable to shift $n words";
+    }
+
+    my $before = substr($self->line, 0, $self->point);
+    my $after  = substr($self->line, $self->point);
+
+    return BarnOwl::Completion::Context->new(BarnOwl::skiptokens($before, $n),
+                                             $after);
 }
 
 =for doc

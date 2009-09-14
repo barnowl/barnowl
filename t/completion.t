@@ -19,6 +19,19 @@ sub test_tokenize {
     my $before_point = shift;
     my $after_point = shift;
     
+    my $ctx = BarnOwl::Completion::Context->new($before_point,
+                                                $after_point);
+    is($ctx->line, $before_point . $after_point);
+    is($ctx->point, length $before_point);
+
+    test_ctx($ctx, @_);
+}
+
+sub test_ctx {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my $ctx = shift;
+
     my $words = shift;
     my $word = shift;
     my $word_point = shift;
@@ -26,11 +39,6 @@ sub test_tokenize {
     my $word_start = shift;
     my $word_end   = shift;
 
-    my $ctx = BarnOwl::Completion::Context->new($before_point,
-                                                $after_point);
-
-    is($ctx->line, $before_point . $after_point);
-    is($ctx->point, length $before_point);
     is_deeply($ctx->words, $words);
     if (defined($word)) {
         is($ctx->word, $word, "Correct current word.");
@@ -38,6 +46,20 @@ sub test_tokenize {
         is($ctx->word_start, $word_start, "Correct start of word");
         is($ctx->word_end,   $word_end, "Correct end of word");
     }
+}
+
+sub test_shift {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my $before_point = shift;
+    my $after_point = shift;
+    my $shift = shift;
+    
+    my $ctx = BarnOwl::Completion::Context->new($before_point,
+                                                $after_point);
+    $ctx = $ctx->shift_words($shift);
+
+    test_ctx($ctx, @_);
 }
 
 
@@ -107,7 +129,26 @@ test_tokenize(q{Hello }, q{ World},
               [qw(Hello World)],
               1, -1, 7, 12);
 
+## Test Context::shift
+SKIP: {
+    skip "Can't yet test code that depends on perlglue.xs", 4;
+    test_shift('lorem ipsum dolor ', 'sit amet', 0,
+               [qw(lorem ipsum dolor sit amet)],
+               3, 0, 18, 21);
 
+    test_shift('lorem ipsum dolor ', 'sit amet', 1,
+               [qw(lorem ipsum dolor sit amet)],
+               2, 0, 12, 15);
+
+    test_shift('lorem ipsum dolor ', 'sit amet', 2,
+               [qw(lorem ipsum dolor sit amet)],
+               1, 0, 6, 9);
+
+    test_shift('lorem ipsum dolor ', 'sit amet', 3,
+               [qw(lorem ipsum dolor sit amet)],
+               0, 0, 0, 3);
+
+}
 ## Test common_prefix
 
 is(BarnOwl::Completion::common_prefix(qw(a b)), '');
