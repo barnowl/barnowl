@@ -1,5 +1,4 @@
 #! /usr/bin/perl
-# $Id$
 
 foreach $file (@ARGV) {
     open(FILE, $file);

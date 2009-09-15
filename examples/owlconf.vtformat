@@ -1,5 +1,4 @@
 ### The owlconf config file   -*- perl -*-  
-###  $Id$
 ###
 ### This file is interpreted by the perl interpreter.
 ### If you wish to execute an owl command use the

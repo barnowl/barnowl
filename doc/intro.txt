@@ -452,11 +452,3 @@ to execute the command.  For example:
 
 will result in "Control-s" followed by "v" in the recv window
 causing the command "view -s vt" to be run.
-
-
-
-==============================
-Section 6: FURTHER INFORMATION
-==============================
-
-$Id$
