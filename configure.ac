@@ -22,9 +22,9 @@ AS_IF([test "x$with_stack_protector" != xno],
     ])])
 
 AC_CHECK_LIB(ncursesw, initscr,, AC_MSG_ERROR(No libncursesw found.))
-AC_CHECK_LIB(nsl, gethostbyname)
-AC_CHECK_LIB(socket, socket)
-AC_CHECK_LIB(resolv, res_search)
+AC_SEARCH_LIBS([gethostbyname], [nsl])
+AC_SEARCH_LIBS([socket], [socket])
+AC_SEARCH_LIBS([res_search], [resolv])
 
 AC_ARG_WITH([zephyr],
   [AS_HELP_STRING([--with-libzephyr],
