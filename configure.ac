@@ -22,7 +22,6 @@ AS_IF([test "x$with_stack_protector" != xno],
     ])])
 
 AC_CHECK_LIB(ncursesw, initscr,, AC_MSG_ERROR(No libncursesw found.))
-AC_CHECK_LIB(com_err, com_err)
 AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(resolv, res_search)
@@ -53,6 +52,8 @@ AS_IF([test "x$with_zephyr" != xno],
     AC_CHECK_LIB([zephyr], [ZInitLocationInfo],
       AC_DEFINE([HAVE_LIBZEPHYR_ZINITLOCATIONINFO], [1],
                 [Have ZInitLocationInfo]),)
+    AC_CHECK_LIB([com_err], [com_err])
+    AC_CHECK_HEADERS([com_err.h])
    ],
    [if test "x$with_zephyr" != xcheck; then
       AC_MSG_FAILURE(
@@ -66,7 +67,7 @@ AC_CHECK_FUNCS(				   DES_string_to_key  DES_ecb_encrypt DES_key_sched)
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(strings.h sys/ioctl.h sys/filio.h unistd.h com_err.h)
+AC_CHECK_HEADERS(strings.h sys/ioctl.h sys/filio.h unistd.h)
 
 dnl Add CFLAGS for embeded perl
 FOO=`perl -MExtUtils::Embed -e ccopts`
