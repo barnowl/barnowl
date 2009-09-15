@@ -31,13 +31,25 @@ sub new {
     my $class = shift;
     my $cfg = shift;
 
+    my $val;
+
+    if(!exists $cfg->{default} &&
+       defined($val = delete $cfg->{default_sender})) {
+        $cfg->{default} = $val;
+    }
+
+    if(!exists $cfg->{show_mentions} &&
+       defined($val = delete $cfg->{show_unsubscribed_replies})) {
+        $cfg->{show_mentions} = $val;
+    }
+
     $cfg = {
         account_nickname => '',
-        default_sender   => 0,
+        default          => 0,
         poll_for_tweets  => 1,
         poll_for_dms     => 1,
         publish_tweets   => 1,
-        show_unsubscribed_replies => 1,
+        show_mentions    => 1,
         %$cfg
        };
 
@@ -117,7 +129,7 @@ sub poll_twitter {
         return;
     };
 
-    if ($self->{cfg}->{show_unsubscribed_replies}) {
+    if ($self->{cfg}->{show_mentions}) {
         my $mentions = eval { $self->{twitter}->mentions( { since_id => $self->{last_id} } ) };
         warn "$@" if $@;
         unless (defined($mentions) && ref($mentions) eq 'ARRAY') {

@@ -125,7 +125,7 @@ for my $cfg (@$raw_cfg) {
     push @twitter_handles, $twitter_handle;
 }
 
-$default_handle = first {$_->{cfg}->{default_sender}} @twitter_handles;
+$default_handle = first {$_->{cfg}->{default}} @twitter_handles;
 if (!$default_handle && @twitter_handles) {
     $default_handle = $twitter_handles[0];
 }
