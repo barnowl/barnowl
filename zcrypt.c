@@ -22,7 +22,12 @@
 #define OUTPUT_BLOCK_SIZE 16
 #include <unistd.h>
 #include <sys/types.h>
-#include <des.h>
+
+#ifdef HAVE_KERBEROS_IV
+#include <kerberosIV/des.h>
+#else
+#include <openssl/des.h>
+#endif
 
 #define MAX_KEY 128
 

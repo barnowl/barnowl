@@ -7,41 +7,6 @@ AC_CONFIG_HEADER([config.h])
 
 AC_PROG_CC
 
-dnl Check for Athena
-AC_MSG_CHECKING(for /usr/athena/include)
-if test -d /usr/athena/include; then
-	CFLAGS=${CFLAGS}\ -I/usr/athena/include
-	CPPFLAGS=${CPPFLAGS}\ -I/usr/athena/include
-	AC_MSG_RESULT(yes)
-else
-	AC_MSG_RESULT(no)
-fi
-AC_MSG_CHECKING(for /usr/athena/lib)
-if test -d /usr/athena/lib; then
-	LDFLAGS=${LDFLAGS}\ -L/usr/athena/lib
-	AC_MSG_RESULT(yes)
-else
-	AC_MSG_RESULT(no)
-fi
-
-dnl Check for kerberosIV include
-AC_MSG_CHECKING(for kerberosIV)
-if test -d /usr/include/kerberosIV; then
-        CFLAGS=${CFLAGS}\ -I/usr/include/kerberosIV
-        CPPFLAGS=${CPPFLAGS}\ -I/usr/include/kerberosIV
-        AC_MSG_RESULT(yes)
-elif test -d /usr/local/include/kerberosIV; then
-        CFLAGS=${CFLAGS}\ -I/usr/local/include/kerberosIV
-        CPPFLAGS=${CPPFLAGS}\ -I/usr/local/include/kerberosIV
-        AC_MSG_RESULT(yes)
-elif test -d /usr/include/openssl; then
-        CFLAGS=${CFLAGS}\ -I/usr/include/openssl
-        CPPFLAGS=${CPPFLAGS}\ -I/usr/include/openssl
-        AC_MSG_RESULT(OpenSSL DES found instead)
-else
-        AC_MSG_RESULT(no)
-fi
-
 AC_ARG_WITH([stack-protector],
   [AS_HELP_STRING([--with-stack-protector],
     [Enable gcc -fstack-protector])],
@@ -60,8 +25,6 @@ AC_CHECK_LIB(ncursesw, initscr,, AC_MSG_ERROR(No libncursesw found.))
 AC_CHECK_LIB(com_err, com_err)
 AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
-dnl AC_CHECK_LIB(des425, req_act_vno)
-AC_CHECK_LIB(des425, des_cbc_encrypt,,AC_CHECK_LIB(crypto,DES_cbc_encrypt))
 AC_CHECK_LIB(resolv, res_search)
 
 AC_ARG_WITH([zephyr],
@@ -71,7 +34,19 @@ AC_ARG_WITH([zephyr],
   [with_zephyr=check])
 
 AS_IF([test "x$with_zephyr" != xno],
-  [AC_CHECK_LIB([zephyr], [ZGetSender],
+  [AC_MSG_CHECKING([for Kerberos IV])
+   AS_IF([krb5-config krb4 --libs >/dev/null 2>&1],
+     [AC_MSG_RESULT([yes])
+      AC_DEFINE([HAVE_KERBEROS_IV], [1], [Define if you have kerberos IV])
+      CFLAGS="${CFLAGS} `krb5-config krb4 --cflags`"
+      LIBS="${LIBS} `krb5-config krb4 --libs`"
+     ],
+     [AC_MSG_RESULT([no])
+      PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
+      CFLAGS="${CFLAGS} ${LIBCRYPTO_CFLAGS}"
+      LIBS="${LIBS} ${LIBCRYPTO_LIBS}"
+     ])
+   AC_CHECK_LIB([zephyr], [ZGetSender],
    [LIBS="$LIBS -lzephyr"
     AC_DEFINE([HAVE_LIBZEPHYR], [1],
                 [Define if you have libzephyr])
