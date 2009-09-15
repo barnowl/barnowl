@@ -56,7 +56,7 @@ perlglue.c: perlglue.xs
 varstubs.c: stubgen.pl variable.c
 	$(AM_V_GEN)perl $< $(filter-out $<,$+) > $@
 
-owl_prototypes.h.new: codelist.pl varstubs.c $(BASE_SRCS) owl.c zcrypt.c
+owl_prototypes.h.new: codelist.pl varstubs.c $(BASE_SRCS) zcrypt.c
 	$(AM_V_GEN)perl $< $(filter-out $<,$+) > $@
 
 # For emacs flymake-mode
