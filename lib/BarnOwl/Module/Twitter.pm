@@ -106,7 +106,7 @@ $raw_cfg = [$raw_cfg] unless UNIVERSAL::isa $raw_cfg, "ARRAY";
         }
         my $user = $cfg->{user};
         if(! exists $cfg->{password}) {
-            fail("Account $user has no username set.");
+            fail("Account $user has no password set.");
         }
         if(@$raw_cfg > 1&&
            !exists($cfg->{account_nickname}) ) {
