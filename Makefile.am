@@ -4,24 +4,18 @@ check_PROGRAMS = tester
 barnowl_bin_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h config.h \
      owl.c \
-     libzcrypt.a \
      $(GEN_C) $(GEN_H)
 
-barnowl_bin_LDADD = libfaim/libfaim.a libzcrypt.a
+barnowl_bin_LDADD = libfaim/libfaim.a
 
 tester_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h config.h \
-     libzcrypt.a \
      $(GEN_C) $(GEN_H) \
      tester.c
 
-tester_LDADD = libfaim/libfaim.a libzcrypt.a
+tester_LDADD = libfaim/libfaim.a
 
 TESTS=runtests.sh
-
-noinst_LIBRARIES = libzcrypt.a
-
-libzcrypt_a_SOURCES = zcrypt.c
 
 CPPFLAGS = -I$(top_srcdir)/ \
            -I$(top_srcdir)/libfaim/
@@ -30,7 +24,7 @@ BASE_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
      commands.c global.c text.c fmtext.c editwin.c util.c logging.c \
      perlconfig.c keys.c functions.c zwrite.c viewwin.c help.c filter.c \
      regex.c history.c view.c dict.c variable.c filterelement.c pair.c \
-     keypress.c keymap.c keybinding.c cmd.c context.c \
+     keypress.c keymap.c keybinding.c cmd.c context.c zcrypt.c \
      aim.c buddy.c buddylist.c style.c errqueue.c \
      zbuddylist.c popexec.c obarray.c select.c wcwidth.c \
      glib_compat.c
@@ -55,7 +49,7 @@ perlglue.c: perlglue.xs
 varstubs.c: stubgen.pl variable.c
 	$(AM_V_GEN)perl $< $(filter-out $<,$+) > $@
 
-owl_prototypes.h.new: codelist.pl varstubs.c $(BASE_SRCS) zcrypt.c
+owl_prototypes.h.new: codelist.pl varstubs.c $(BASE_SRCS)
 	$(AM_V_GEN)perl $< $(filter-out $<,$+) > $@
 
 # For emacs flymake-mode
