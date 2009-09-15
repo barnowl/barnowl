@@ -1986,6 +1986,7 @@ char *owl_command_zcrypt(int argc, const char *const *argv, const char *buff)
   return(NULL);
 #else
   owl_function_makemsg("This Owl does not support zcrypt");
+  return NULL;
 #endif
 }
 
