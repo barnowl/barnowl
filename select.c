@@ -324,15 +324,32 @@ void owl_process_input_char(owl_input j)
   }
 }
 
-void owl_select_handle_intr(void)
+void owl_select_mask_signals(sigset_t *oldmask) {
+  sigset_t set;
+
+  sigemptyset(&set);
+  sigaddset(&set, SIGINT);
+  sigaddset(&set, SIGTSTP);
+  sigprocmask(SIG_BLOCK, &set, oldmask);
+}
+
+void owl_select_handle_intr(sigset_t *restore)
 {
   owl_input in;
 
   owl_global_unset_interrupted(&g);
-  owl_function_unmask_sigint(NULL);
+
+  sigprocmask(SIG_SETMASK, restore, NULL);
 
   in.ch = in.uch = owl_global_get_startup_tio(&g)->c_cc[VINTR];
   owl_process_input_char(in);
+}
+
+void owl_select_check_tstp() {
+  if(owl_global_is_sigstp(&g)) {
+    owl_function_makemsg("Use :suspend to suspend.");
+    owl_global_unset_got_sigstp(&g);
+  }
 }
 
 void owl_select(void)
@@ -346,9 +363,11 @@ void owl_select(void)
 
   owl_select_process_timers(&timeout);
 
-  owl_function_mask_sigint(&mask);
+  owl_select_mask_signals(&mask);
+
+  owl_select_check_tstp();
   if(owl_global_is_interrupted(&g)) {
-    owl_select_handle_intr();
+    owl_select_handle_intr(&mask);
     return;
   }
 
@@ -380,17 +399,18 @@ void owl_select(void)
   }
   /* END AIM HACK */
 
-
   ret = pselect(max_fd+1, &r, &aim_wfds, &e, &timeout, &mask);
 
   if(ret < 0 && errno == EINTR) {
+    owl_select_check_tstp();
     if(owl_global_is_interrupted(&g)) {
-      owl_select_handle_intr();
+      owl_select_handle_intr(NULL);
     }
+    sigprocmask(SIG_SETMASK, &mask, NULL);
     return;
   }
 
-  owl_function_unmask_sigint(NULL);
+  sigprocmask(SIG_SETMASK, &mask, NULL);
 
   if(ret > 0) {
     /* Merge fd_sets and clear AIM FDs. */

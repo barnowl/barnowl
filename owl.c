@@ -377,6 +377,11 @@ void sigint_handler(int sig, siginfo_t *si, void *data)
   owl_global_set_interrupted(&g);
 }
 
+void sigtstp_handler(int sig, siginfo_t *si, void *data)
+{
+  owl_global_set_got_sigstp(&g);
+}
+
 void owl_register_signal_handlers(void) {
   struct sigaction sigact;
 
@@ -394,6 +399,8 @@ void owl_register_signal_handlers(void) {
   sigact.sa_sigaction=sigint_handler;
   sigaction(SIGINT, &sigact, NULL);
 
+  sigact.sa_sigaction=sigtstp_handler;
+  sigaction(SIGTSTP, &sigact, NULL);
 }
 
 #if OWL_STDERR_REDIR

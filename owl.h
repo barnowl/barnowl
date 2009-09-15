@@ -587,6 +587,7 @@ typedef struct _owl_global {
   owl_timer *aim_nop_timer;
   int load_initial_subs;
   int interrupted;
+  int got_sigtstp;
 } owl_global;
 
 /* globals */
