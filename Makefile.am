@@ -22,7 +22,6 @@ TESTS=runtests.sh
 noinst_LIBRARIES = libzcrypt.a
 
 libzcrypt_a_SOURCES = zcrypt.c
-libzcrypt_a_CFLAGS  = -w
 
 CPPFLAGS = -I$(top_srcdir)/ \
            -I$(top_srcdir)/libfaim/
