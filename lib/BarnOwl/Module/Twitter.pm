@@ -95,6 +95,36 @@ if($@) {
 
 $raw_cfg = [$raw_cfg] unless UNIVERSAL::isa $raw_cfg, "ARRAY";
 
+# Perform some sanity checking on the configuration.
+{
+    my %nicks;
+    my $default = 0;
+
+    for my $cfg (@$raw_cfg) {
+        if(! exists $cfg->{user}) {
+            fail("Account has no username set.");
+        }
+        my $user = $cfg->{user};
+        if(! exists $cfg->{password}) {
+            fail("Account $user has no username set.");
+        }
+        if(@$raw_cfg > 1&&
+           !exists($cfg->{account_nickname}) ) {
+            fail("Account $user has no account_nickname set.");
+        }
+        if($cfg->{account_nickname}) {
+            if($nicks{$cfg->{account_nickname}}++) {
+                fail("Nickname " . $cfg->{account_nickname} . " specified more than once.");
+            }
+        }
+        if($cfg->{default} || $cfg->{default_sender}) {
+            if($default++) {
+                fail("Multiple accounts marked as 'default'.");
+            }
+        }
+    }
+}
+
 for my $cfg (@$raw_cfg) {
     my $twitter_args = { username   => $cfg->{user} || $user,
                         password   => $cfg->{password},
