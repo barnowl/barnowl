@@ -48,7 +48,7 @@ sub new {
         default          => 0,
         poll_for_tweets  => 1,
         poll_for_dms     => 1,
-        publish_tweets   => 1,
+        publish_tweets   => 0,
         show_mentions    => 1,
         %$cfg
        };
