@@ -88,17 +88,6 @@ AS_IF([test "x$with_zephyr" != xno],
 AC_CHECK_FUNCS(use_default_colors resizeterm des_string_to_key des_key_sched des_ecb_encrypt)
 AC_CHECK_FUNCS(				   DES_string_to_key  DES_ecb_encrypt DES_key_sched)
 
-AC_MSG_CHECKING(for des_ecb_encrypt prototype)
-AC_TRY_COMPILE([#include <des.h>
-int des_ecb_encrypt(char foo[], char bar[], des_key_schedule baz, int qux);],
-[int foo = des_ecb_encrypt(0,0,0,0);],
-ac_cv_des_ecb_encrypt_proto=no,
-ac_cv_des_ecb_encrypt_proto=yes)
-AC_MSG_RESULT($ac_cv_des_ecb_encrypt_proto)
-if test "$ac_cv_des_ecb_encrypt_proto" = yes; then
-	AC_DEFINE([HAVE_DES_ECB_ENCRYPT_PROTO], [], [have proto for des_ecb_encrypt])
-fi
-
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT

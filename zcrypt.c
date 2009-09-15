@@ -50,10 +50,6 @@ typedef struct
 
 char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *instance);
 
-#ifndef HAVE_DES_ECB_ENCRYPT_PROTO
-int des_ecb_encrypt(char [], char [], des_key_schedule, int);
-#endif
-
 #define M_NONE            0
 #define M_ZEPHYR_ENCRYPT  1
 #define M_DECRYPT         2
