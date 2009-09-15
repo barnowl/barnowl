@@ -71,9 +71,9 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(strings.h sys/ioctl.h sys/filio.h unistd.h)
 
 dnl Add CFLAGS for embeded perl
-FOO=`perl -MExtUtils::Embed -e ccopts`
-AC_MSG_NOTICE([Adding perl CFLAGS ${FOO}])
-CFLAGS=${CFLAGS}\ ${FOO}
+PERL_CFLAGS=`perl -MExtUtils::Embed -e ccopts`
+AC_MSG_NOTICE([Adding perl CFLAGS ${PERL_CFLAGS}])
+CFLAGS="${CFLAGS} ${PERL_CFLAGS}"
 
 dnl Find the location of perl XSUBPP
 AC_MSG_CHECKING(for the perl xsubpp precompiler)
