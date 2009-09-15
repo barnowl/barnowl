@@ -9,5 +9,6 @@ libfaim_a_SOURCES = admin.c \
      util.c odir.c bart.c \
      aim_cbtypes.h  aim.h  aim_internal.h  faimconfig.h md5.h
 
+libfaim_a_CFLAGS = $(LIBFAIM_CFLAGS)
 libfaim_a_CPPFLAGS = -DAIM_BUILDDATE=\"x\" -DAIM_BUILDTIME=\"x\" \
                      -I${top_srcdir}/libfaim

@@ -135,6 +135,11 @@ AC_DEFINE_UNQUOTED([DATADIR],["${prefix}/share/${PACKAGE}"],
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
+AX_C_CHECK_FLAG([-Wno-pointer-sign],[],[],
+  [LIBFAIM_CFLAGS="$LIBFAIM_CFLAGS -Wno-pointer-sign"])
+
+AC_SUBST([LIBFAIM_CFLAGS])
+
 AC_SUBST(XSUBPPDIR)
 AC_SUBST(XSUBPPFLAGS)
 
