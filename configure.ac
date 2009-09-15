@@ -61,8 +61,9 @@ AS_IF([test "x$with_zephyr" != xno],
     fi
    ])])
 
-AC_CHECK_FUNCS(use_default_colors resizeterm des_string_to_key des_key_sched des_ecb_encrypt)
-AC_CHECK_FUNCS(				   DES_string_to_key  DES_ecb_encrypt DES_key_sched)
+AC_CHECK_FUNCS([use_default_colors resizeterm])
+AC_CHECK_FUNCS([des_string_to_key des_key_sched des_ecb_encrypt])
+AC_CHECK_FUNCS([DES_string_to_key DES_ecb_encrypt DES_key_sched])
 
 dnl Checks for header files.
 AC_HEADER_STDC
