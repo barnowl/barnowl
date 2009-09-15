@@ -27,32 +27,70 @@ blogging service's documentation for more information.
 
 Twitter.par also supports using multiple Twitter and Twitter-compatible
 microblogging accounts from the same instance.  To enable this, add 
-additional hashes to your ~/.owl/twitter file (wrapped in a JSON list,
-eg. [{"account_nickname":"twitter","user":"nelhage","password":"sekrit"},
-{"account_nickname":"identica","service":"http://identi.ca/api",
-"user":"nelhage","password":"sekriter"}]
+additional hashes to your ~/.owl/twitter file as a JSON list, e.g.
+----------8<----------cut here----------8<----------
+[
+  {
+   "account_nickname": "twitter",
+   "user": "nelhage",
+   "password": "sekrit",
+   "default": true,
+   "publish_tweets": true
+  },
+  {
+   "account_nickname": "identica",
+   "service": "http://identi.ca/api",
+   "user": "nelhage",
+   "password": "sekriter",
+   "publish_tweets": true
+  }
+  {
+   "account_nickname": "sipb",
+   "user": "sipb",
+   "password":"m0ars3krit",
+   "poll_for_tweets": false,
+   "poll_for_dms": false,
+  }
+]
+----------8<----------cut here----------8<----------
 
-By default, public messages (excluding at-replies) are sent to all 
-accounts listed except those with publish_tweets set to false.
+Outgoing tweets sent via ":twitter" without an explicit sender, or
+mirrored from zephyr, go to every account with "publish_tweets" set.
 
-There are several additional account-specific parameters that control the 
+Outgoing direct messages and @-replies without an explicit sender come
+from whichever account has "default" set. If no account has "default",
+the first account is assumed to have "default" set. It is an error to
+have more than one account with "default" set to true.
+
+There are several account-specific parameters that control the
 behavior of Twitter.par when using multiple accounts:
 
 * account_nickname (string, required if multiple accounts are in use)
     Specify a short name by which you can refer to the account, eg.
-    "identica" (eg. :twitter-direct nelhage identica would send a direct 
-    message to @nelhage on identi.ca from your account nicknamed "identica").
-* default_sender (boolean, default false)
-    If true, direct messages and at-replies you send without specifying an
-    account will be sent using this account.  If no account has this parameter,
-    such messages will be sent using the first account listed.
+    "identica" (eg. :twitter-direct nelhage identica would send a
+    direct message to @nelhage on identi.ca from your account
+    nicknamed "identica").
+
+* default (boolean, default false)
+    If true, @-replies or direct messages you send without specifying
+    an account will be sent using this account.  If no account has
+    this parameter, such messages will be sent using the first account
+    listed.
+
 * poll_for_tweets (boolean, default true)
-    If true, tweets sent by your friends on this account will be displayed
-    in your BarnOwl message list.
+    If true, tweets sent by users this account follows will be
+    displayed in your BarnOwl message list.
+
 * poll_for_dms (boolean, default true)
-    If true, Direct Messages sent to you by your friends on this account 
-    will be displayed in your BarnOwl message list.
-* publish_tweets (boolean, default true)
-    If true, tweets you send without specifying an account (either with the 
-    :twitter command or mirrored from a zephyr class) will be published to 
-    this account.
+    If true, direct messages sent to this account will be displayed in
+    your BarnOwl message list.
+
+* publish_tweets (boolean, default false)
+    If true, tweets you send without specifying an account (either
+    with the :twitter command or mirrored from a zephyr class) will be
+    published to this account.
+
+* show_mentions (boolean, default true)
+    If true, BarnOwl will show all tweets that mention this account's
+    username, regardless of whether or not this account is following
+    the sender. Has no effect if poll_for_tweets is false.
