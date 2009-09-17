@@ -56,10 +56,10 @@ sub new {
     my $self = {
         'cfg'  => $cfg,
         'twitter' => undef,
-        'last_poll' => 0,
-        'last_direct_poll' => 0,
         'last_id' => undef,
         'last_direct' => undef,
+        'timer'        => undef,
+        'direct_timer' => undef
     };
 
     bless($self, $class);
@@ -91,7 +91,36 @@ sub new {
     };
     warn "$@" if $@;
 
+    $self->sleep(0);
+
     return $self;
+}
+
+=head2 sleep SECONDS
+
+Stop polling Twitter for SECONDS seconds.
+
+=cut
+
+sub sleep {
+    my $self  = shift;
+    my $delay = shift;
+
+    if($self->{cfg}->{poll_for_tweets}) {
+        $self->{timer} = BarnOwl::Timer->new({
+            after    => $delay,
+            interval => 60,
+            cb       => sub { $self->poll_twitter }
+           });
+    }
+
+    if($self->{cfg}->{poll_for_dms}) {
+        $self->{direct_timer} = BarnOwl::Timer->new({
+            after    => $delay,
+            interval => 120,
+            cb       => sub { $self->poll_direct }
+           });
+    }
 }
 
 sub twitter_error {
@@ -100,27 +129,27 @@ sub twitter_error {
     my $ratelimit = eval { $self->{twitter}->rate_limit_status };
     warn "$@" if $@;
     unless(defined($ratelimit) && ref($ratelimit) eq 'HASH') {
-        # Twitter's just sucking, sleep for 5 minutes
-        $self->{last_direct_poll} = $self->{last_poll} = time + 60*5;
-        # die("Twitter seems to be having problems.\n");
+        # Twitter's probably just sucking, try again later.
+        $self->sleep(5);
         return;
     }
+
     if(exists($ratelimit->{remaining_hits})
        && $ratelimit->{remaining_hits} <= 0) {
-        $self->{last_direct_poll} = $self->{last_poll} = $ratelimit->{reset_time_in_seconds};
+        $self->sleep(time - $ratelimit->{reset_time_in_seconds} + 60);
         die("Twitter: ratelimited until " . $ratelimit->{reset_time} . "\n");
     } elsif(exists($ratelimit->{error})) {
+        $self->sleep(60*20);
         die("Twitter: ". $ratelimit->{error} . "\n");
-        $self->{last_direct_poll} = $self->{last_poll} = time + 60*20;
     }
 }
 
 sub poll_twitter {
     my $self = shift;
 
-    return unless ( time - $self->{last_poll} ) >= 60;
-    $self->{last_poll} = time;
     return unless BarnOwl::getvar('twitter:poll') eq 'on';
+
+    BarnOwl::debug("Polling " . $self->{cfg}->{account_nickname});
 
     my $timeline = eval { $self->{twitter}->friends_timeline( { since_id => $self->{last_id} } ) };
     warn "$@" if $@;
@@ -171,9 +200,9 @@ sub poll_twitter {
 sub poll_direct {
     my $self = shift;
 
-    return unless ( time - $self->{last_direct_poll}) >= 120;
-    $self->{last_direct_poll} = time;
     return unless BarnOwl::getvar('twitter:poll') eq 'on';
+
+    BarnOwl::debug("Polling direct for " . $self->{cfg}->{account_nickname});
 
     my $direct = eval { $self->{twitter}->direct_messages( { since_id => $self->{last_direct} } ) };
     warn "$@" if $@;

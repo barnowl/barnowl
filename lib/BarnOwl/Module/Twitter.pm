@@ -186,16 +186,6 @@ sub handle_message {
     }
 }
 
-sub poll_messages {
-    return unless @twitter_handles;
-
-    my $handle = $twitter_handles[$next_service_to_poll];
-    $next_service_to_poll = ($next_service_to_poll + 1) % scalar(@twitter_handles);
-    
-    $handle->poll_twitter() if $handle->{cfg}->{poll_for_tweets};
-    $handle->poll_direct() if $handle->{cfg}->{poll_for_dms};
-}
-
 sub find_account {
     my $name = shift;
     my $handle = first {$_->{cfg}->{account_nickname} eq $name} @twitter_handles;
@@ -319,15 +309,6 @@ sub cmd_twitter_unfollow {
     die("Usage: $cmd USER\n") unless $user;
     my $account = shift;
     find_account_default($account)->twitter_unfollow($user);
-}
-
-eval {
-    $BarnOwl::Hooks::receiveMessage->add("BarnOwl::Module::Twitter::handle_message");
-    $BarnOwl::Hooks::mainLoop->add("BarnOwl::Module::Twitter::poll_messages");
-};
-if($@) {
-    $BarnOwl::Hooks::receiveMessage->add(\&handle_message);
-    $BarnOwl::Hooks::mainLoop->add(\&poll_messages);
 }
 
 BarnOwl::filter(qw{twitter type ^twitter$});
