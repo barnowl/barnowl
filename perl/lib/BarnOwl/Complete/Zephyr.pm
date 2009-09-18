@@ -44,9 +44,9 @@ sub complete_viewuser {
 sub on_message {
     my $m = shift;
     return unless $m->type eq 'zephyr';
-    $classes{$m->class} = 1;
-    $realms{$m->realm} = 1;
-    $users{BarnOwl::Message::Zephyr::strip_realm($m->sender)} = 1;
+    $classes{lc $m->class} = 1;
+    $realms{lc $m->realm} = 1;
+    $users{lc BarnOwl::Message::Zephyr::strip_realm($m->sender)} = 1;
 }
 
 BarnOwl::Completion::register_completer(zwrite    => \&complete_zwrite);
