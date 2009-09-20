@@ -5,14 +5,13 @@ package BarnOwl::Module::IRC::Completion;
 
 use BarnOwl::Completion::Util qw(complete_flags);
 
-my %networks = ();
-my %dests = ();
-my %servers = ();
+our %users = ();
+our %servers = ();
 
-sub complete_networks { keys %networks }
-sub complete_dests    { keys %dests }
-sub complete_channels { grep /^#/, keys %dests }
-sub complete_nicks    { grep /^[^#]/, keys %dests }
+sub complete_networks { keys %BarnOwl::Module::IRC::ircnets }
+sub complete_dests    { keys %users, complete_channels() }
+sub complete_channels { keys %BarnOwl::Module::IRC::channels }
+sub complete_nicks    { keys %users }
 sub complete_servers  { keys %servers }
 
 sub complete_irc_connect {
@@ -74,9 +73,12 @@ sub complete_irc_nick {
 sub on_message {
     my $m = shift;
     return unless $m->type eq 'IRC';
-    $networks{$m->network} = 1;
-    $dests{$m->recipient} = 1;
-    $dests{$m->sender} = 1;
+    if ($m->recipient !~ m{^#}) {
+        $users{$m->recipient} = 1;
+    }
+    if ($m->sender !~ m{^#}) {
+        $users{$m->sender} = 1;
+    }
     $servers{$m->server} = 1;
 }
 
