@@ -22,7 +22,12 @@
 #define OUTPUT_BLOCK_SIZE 16
 #include <unistd.h>
 #include <sys/types.h>
-#include <des.h>
+
+#ifdef HAVE_KERBEROS_IV
+#include <kerberosIV/des.h>
+#else
+#include <openssl/des.h>
+#endif
 
 #define MAX_KEY 128
 
@@ -50,16 +55,23 @@ typedef struct
 
 char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *instance);
 
-#ifndef HAVE_DES_ECB_ENCRYPT_PROTO
-int des_ecb_encrypt(char [], char [], des_key_schedule, int);
-#endif
-
 #define M_NONE            0
 #define M_ZEPHYR_ENCRYPT  1
 #define M_DECRYPT         2
 #define M_ENCRYPT         3
 #define M_RANDOMIZE       4
 #define M_SETKEY          5
+
+static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule schedule) {
+#ifdef HAVE_KERBEROS_IV
+  des_cblock key;
+#else
+  des_cblock _key, *key = &_key;
+#endif
+
+  des_string_to_key(keystring, key);
+  des_key_sched(key, schedule);
+}
 
 /* The 'owl_zcrypt_decrypt' function was written by kretch for Owl.
  * Decrypt the message in 'in' on class 'class' and instance
@@ -72,25 +84,25 @@ int owl_zcrypt_decrypt(char *out, const char *in, const char *class, const char 
   const char *inptr, *endptr;
   char *fname, keystring[MAX_KEY];
   FILE *fkey;
-  des_cblock key;
   des_key_schedule schedule;
-  char input[8], output[9];
+  unsigned char input[8], output[8];
   int i, c1, c2;
   
   fname=GetZephyrVarKeyFile("zcrypt", class, instance);
   if (!fname) return(-1);
   fkey=fopen(fname, "r");
   if (!fkey) return(-1);
-  fgets(keystring, MAX_KEY-1, fkey);
+  if (!fgets(keystring, MAX_KEY-1, fkey)) {
+    fclose(fkey);
+    return -1;
+  }
   fclose(fkey);
 
   strcpy(out, "");
 
   output[0] = '\0';    /* In case no message at all                 */
-  output[8] = '\0';    /* NULL at end will limit string length to 8 */
 
-  des_string_to_key(keystring, key);
-  des_key_sched(key, schedule);
+  owl_zcrypt_string_to_schedule(keystring, schedule);
 
   inptr=in;
   endptr=in+strlen(in)-1;
@@ -101,26 +113,20 @@ int owl_zcrypt_decrypt(char *out, const char *in, const char *class, const char 
       input[i]=c1 * 0x10 + c2;
       inptr+=2;
     }
-    des_ecb_encrypt(input, output, schedule, FALSE);
-    strcat(out, output);
+    des_ecb_encrypt(&input, &output, schedule, FALSE);
+    strncat(out, (const char *)output, 8);
   }
 
-  if (output[0]) {
-    if (output[strlen(output)-1] != '\n') {
-      strcat(out, "\n");
-    }
-  } else {
+  if (out[0] && out[strlen(out) - 1] != '\n')
     strcat(out, "\n");
-  }
   return(0);
 }
 
 int owl_zcrypt_encrypt(char *out, const char *in, const char *class, const char *instance) {
   char *fname, keystring[MAX_KEY];
   FILE *fkey;
-  des_cblock key;
   des_key_schedule schedule;
-  char input[8], output[8];
+  unsigned char input[8], output[8];
   int size, length, i;
   const char *inbuff = NULL, *inptr;
   int use_buffer = FALSE;
@@ -130,11 +136,13 @@ int owl_zcrypt_encrypt(char *out, const char *in, const char *class, const char 
   if (!fname) return(-1);
   fkey=fopen(fname, "r");
   if (!fkey) return(-1);
-  fgets(keystring, MAX_KEY-1, fkey);
+  if (!fgets(keystring, MAX_KEY-1, fkey)) {
+    fclose(fkey);
+    return -1;
+  }
   fclose(fkey);
 
-  des_string_to_key(keystring, key);
-  des_key_sched(key, schedule);
+  owl_zcrypt_string_to_schedule(keystring, schedule);
 
   inbuff=in;
   length=strlen(inbuff);
@@ -166,7 +174,7 @@ int owl_zcrypt_encrypt(char *out, const char *in, const char *class, const char 
     if (size<8) memset(input + size, 0, 8 - size);
 
     /* Encrypt and output the block */
-    des_ecb_encrypt(input, output, schedule, TRUE);
+    des_ecb_encrypt(&input, &output, schedule, TRUE);
 
     for (i = 0; i < 8; i++) {
       sprintf(out + strlen(out), "%c", ((output[i] & 0xf0) >> 4) + BASE_CODE);
@@ -215,7 +223,7 @@ char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *ins
   if (fsearch) {
     /* Scan file for a match */
     while (!feof(fsearch)) {
-      fgets(buffer, MAX_BUFF - 3, fsearch);
+      if (!fgets(buffer, MAX_BUFF - 3, fsearch)) break;
       for (i = 0; i < numsearch; i++) {
 	if (strncasecmp(varname[i], buffer, length[i]) == 0) {
 	  int j;
@@ -260,7 +268,5 @@ char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *ins
 
   return(keyfile);
 }
-
-static pid_t zephyrpipe_pid = 0;
 
 #endif
