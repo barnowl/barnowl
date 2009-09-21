@@ -526,15 +526,6 @@ time_t owl_global_get_idletime(const owl_global *g) {
   return(time(NULL)-g->lastinputtime);
 }
 
-void owl_global_get_runtime_string(const owl_global *g, char *buff) {
-  time_t diff;
-
-  diff=time(NULL)-owl_global_get_starttime(g);
-
-  /* print something nicer later */   
-  sprintf(buff, "%i seconds", (int) diff);
-}
-
 const char *owl_global_get_hostname(const owl_global *g) {
   if (g->thishost) return(g->thishost);
   return("");

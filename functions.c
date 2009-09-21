@@ -1227,24 +1227,22 @@ void owl_function_debugmsg(const char *fmt, ...)
 {
   FILE *file;
   time_t now;
-  char buff1[LINE], buff2[LINE];
   va_list ap;
   va_start(ap, fmt);
 
-  if (!owl_global_is_debug_fast(&g)) return;
+  if (!owl_global_is_debug_fast(&g))
+    return;
 
-  file=fopen(owl_global_get_debug_file(&g), "a");
-  if (!file) return;
+  file = fopen(owl_global_get_debug_file(&g), "a");
+  if (!file) /* XXX should report this */
+    return;
 
-  now=time(NULL);
-  strcpy(buff1, ctime(&now));
-  buff1[strlen(buff1)-1]='\0';
+  now = time(NULL);
 
-  owl_global_get_runtime_string(&g, buff2);
-  
-  fprintf(file, "[%i -  %s - %s]: ", (int) getpid(), buff1, buff2);
+  fprintf(file, "[%d -  %.24s - %lds]: ",
+	  (int) getpid(), ctime(&now), now - owl_global_get_starttime(&g));
   vfprintf(file, fmt, ap);
-  fprintf(file, "\n");
+  putc('\n', file);
   fclose(file);
 
   va_end(ap);
