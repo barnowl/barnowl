@@ -3,6 +3,7 @@ AC_INIT([BarnOwl],[1.4pre1],[bug-barnowl@mit.edu])
 AM_INIT_AUTOMAKE([-Wall foreign])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADER([config.h])
 
 AC_PROG_CC
