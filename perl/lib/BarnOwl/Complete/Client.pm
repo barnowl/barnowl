@@ -160,18 +160,6 @@ sub complete_filter_expr {
     return @completions;
 }
 
-sub complete_filter_args {
-    my $ctx = shift;
-    my $arg = shift;
-    return complete_filter_name() unless $arg;
-    my $idx = 2; # skip the filter name
-    while ($idx < $ctx->word) {
-        last unless ($ctx->words->[$idx] =~ m{^-});
-        $idx += 2; # skip the flag and the argument
-    }
-    return complete_filter_expr($ctx, $idx);
-}
-
 sub complete_help {
     my $ctx = shift;
     if($ctx->word == 1) {
@@ -193,13 +181,29 @@ sub complete_show {
 
 sub complete_filter {
     my $ctx = shift;
+    # Syntax: filter FILTERNAME FLAGS EXPR
+
+    # FILTERNAME
+    return complete_filter_name() if $ctx->word == 1;
+
+    # FLAGS
+    $ctx = $ctx->shift_words(1); # complete_flags starts at the second word
     return complete_flags($ctx,
         [qw()],
         {
            "-c" => \&complete_color,
            "-b" => \&complete_color,
         },
-         \&complete_filter_args
+        # EXPR
+        sub {
+            my $ctx = shift;
+            my $arg = shift;
+
+            # We pass stop_at_nonflag, so we can rewind to the start
+            my $idx = $ctx->word - $arg;
+            return complete_filter_expr($ctx, $idx);
+        },
+        stop_at_nonflag => 1
         );
 }
 
