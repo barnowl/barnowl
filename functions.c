@@ -1940,15 +1940,17 @@ void owl_function_reply(int type, int enter)
 void owl_function_zlocate(int argc, const char *const *argv, int auth)
 {
   owl_fmtext fm;
-  char *ptr, buff[LINE];
+  char *ptr;
+  char *result;
   int i;
 
   owl_fmtext_init_null(&fm);
 
   for (i=0; i<argc; i++) {
-    ptr=long_zuser(argv[i]);
-    owl_zephyr_zlocate(ptr, buff, auth);
-    owl_fmtext_append_normal(&fm, buff);
+    ptr = long_zuser(argv[i]);
+    result = owl_zephyr_zlocate(ptr, auth);
+    owl_fmtext_append_normal(&fm, result);
+    owl_free(result);
     owl_free(ptr);
   }
 

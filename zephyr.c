@@ -910,38 +910,41 @@ void owl_zephyr_hackaway_cr(ZNotice_t *n)
 }
 #endif
 
-void owl_zephyr_zlocate(const char *user, char *out, int auth)
+char *owl_zephyr_zlocate(const char *user, int auth)
 {
 #ifdef HAVE_LIBZEPHYR
   int ret, numlocs;
   int one = 1;
   ZLocations_t locations;
   char *myuser;
-  
-  strcpy(out, "");
+  char *p, *result;
+
   ZResetAuthentication();
-  ret=ZLocateUser(zstr(user),&numlocs,auth?ZAUTH:ZNOAUTH);
-  if (ret != ZERR_NONE) {
-    sprintf(out, "Error locating user %s\n", user);
-    return;
+  ret = ZLocateUser(zstr(user), &numlocs, auth ? ZAUTH : ZNOAUTH);
+  if (ret != ZERR_NONE)
+    return owl_sprintf("Error locating user %s: %s\n",
+		       user, error_message(ret));
+
+  myuser = short_zuser(user);
+  if (numlocs == 0) {
+    result = owl_sprintf("%s: Hidden or not logged in\n", myuser);
+  } else {
+    result = owl_strdup("");
+    for (; numlocs; numlocs--) {
+      ZGetLocations(&locations, &one);
+      p = owl_sprintf("%s%s: %s\t%s\t%s\n",
+			  result, myuser,
+			  locations.host ? locations.host : "?",
+			  locations.tty ? locations.tty : "?",
+			  locations.time ? locations.time : "?");
+      owl_free(result);
+      result = p;
+    }
   }
 
-  if (numlocs==0) {
-    myuser=short_zuser(user);
-    sprintf(out, "%s: Hidden or not logged in\n", myuser);
-    owl_free(myuser);
-    return;
-  }
-    
-  for (;numlocs;numlocs--) {
-    ZGetLocations(&locations,&one);
-    myuser=short_zuser(user);
-    sprintf(out + strlen(out), "%s: %s\t%s\t%s\n", myuser,
-	    locations.host ? locations.host : "?",
-	    locations.tty ? locations.tty : "?",
-	    locations.time ? locations.time : "?");
-    owl_free(myuser);
-  }
+  return result;
+#else
+  return owl_strdup("");
 #endif
 }
 
