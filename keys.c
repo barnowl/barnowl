@@ -348,6 +348,7 @@ void owl_keys_popless_postalways(owl_input j) {
   const owl_popwin *pw = owl_global_get_popwin(&g);
 
   if (pw && owl_popwin_is_active(pw) && v) {
+    owl_popwin_refresh(pw);
     owl_viewwin_redisplay(v, 1);
   }  
 }
