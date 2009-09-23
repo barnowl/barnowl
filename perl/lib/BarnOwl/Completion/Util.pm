@@ -23,6 +23,8 @@ sub complete_flags {
     my $argct = 0;
     my $optsdone = 0;
 
+    my %flags_seen;
+
     while($idx < $ctx->word) {
         my $word = $ctx->words->[$idx];
         if($flag) {
@@ -36,6 +38,7 @@ sub complete_flags {
             $flag = $word if(exists $args->{$word});
         } elsif ($word =~ m{^-}) {
             $word = "-" . substr($word, -1);
+            $flags_seen{$word} = 1; # record flag
             $flag = $word if(exists $args->{$word});
         } else {
             $argct++;
@@ -57,7 +60,9 @@ sub complete_flags {
         }
         return;
     } else {
-        return ($optsdone ? () : (@$no_args, keys %$args),
-                $default ? ($default->($ctx, $argct)) : ());
+        my @opts = $optsdone ? () : (@$no_args, keys %$args);
+        # filter out flags we've seen if needbe
+        @opts = grep {!$flags_seen{$_}} @opts unless $options{repeat_flags};
+        return (@opts, $default ? ($default->($ctx, $argct)) : ());
     }
 }

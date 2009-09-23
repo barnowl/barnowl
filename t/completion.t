@@ -203,10 +203,10 @@ test_complete('zwrite -c nelhage', '', [qw(nelhage nethack sipb help)]);
 test_complete('zwrite -c nelhage -i ', '', [qw()]);
 
 test_complete('zwrite -c nelhage ', '',
-              [qw(-n -C -m -c -i -r -O nelhage asedeno geofft)]);
+              [qw(-n -C -m -i -r -O nelhage asedeno geofft)]);
 
 test_complete('zwrite -c nelhage ', '-',
-              [qw(-n -C -m -c -i -r -O nelhage asedeno geofft)]);
+              [qw(-n -C -m -i -r -O nelhage asedeno geofft)]);
 
 test_complete('zwrite -c nelhage -- ', '',
               [qw(nelhage asedeno geofft)]);
@@ -218,7 +218,8 @@ sub complete_word {
                           {
                               "-d" => sub {qw(some words for completing)},
                           },
-                          sub {$_[1]});
+                          sub {$_[1]},
+                          repeat_flags => 1);
 }
 
 test_complete('cmd -a -d foo -c hello ','',
