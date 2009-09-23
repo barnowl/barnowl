@@ -150,9 +150,9 @@ sub _complete_filter_primitive_expr {
 
 sub complete_filter_expr {
     my $ctx = shift;
-    my $start = shift;
+
     my @completions = ();
-    _complete_filter_expr($ctx, $start, \@completions);
+    _complete_filter_expr($ctx, 0, \@completions);
     # Get rid of duplicates and sort
     my %hash = ();
     @hash{@completions} = ();
@@ -201,7 +201,8 @@ sub complete_filter {
 
             # We pass stop_at_nonflag, so we can rewind to the start
             my $idx = $ctx->word - $arg;
-            return complete_filter_expr($ctx, $idx);
+            $ctx = $ctx->shift_words($idx);
+            return complete_filter_expr($ctx);
         },
         stop_at_nonflag => 1
         );
@@ -216,7 +217,8 @@ sub complete_view {
         return;
     }
     if ($ctx->words->[1] eq "-d") {
-        return complete_filter_expr($ctx, 2);
+        $ctx = $ctx->shift_words(2);
+        return complete_filter_expr($ctx);
     }
     if ($ctx->words->[1] eq "-s") {
         return complete_style();
