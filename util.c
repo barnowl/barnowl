@@ -780,3 +780,70 @@ char *owl_escape_highbit(const char *str)
   }
   return g_string_free(out, 0);
 }
+
+/* innards of owl_getline{,_chomp} below */
+static int owl_getline_internal(char **s, FILE *fp, int newline)
+{
+  int size = 0;
+  int target = 0;
+  int count = 0;
+  int c;
+
+  while (1) {
+    c = getc(fp);
+    if ((target + 1) > size) {
+      size += BUFSIZ;
+      *s = owl_realloc(*s, size);
+    }
+    if (c == EOF)
+      break;
+    count++;
+    if (c != '\n' || newline)
+	(*s)[target++] = c;
+    if (c == '\n')
+      break;
+  }
+  (*s)[target] = 0;
+
+  return count;
+}
+
+/* Read a line from fp, allocating memory to hold it, returning the number of
+ * byte read.  *s should either be NULL or a pointer to memory allocated with
+ * owl_malloc; it will be owl_realloc'd as appropriate.  The caller must
+ * eventually free it.  (This is roughly the interface of getline in the gnu
+ * libc).
+ *
+ * The final newline will be included if it's there.
+ */
+int owl_getline(char **s, FILE *fp)
+{
+  return owl_getline_internal(s, fp, 1);
+}
+
+/* As above, but omitting the final newline */
+int owl_getline_chomp(char **s, FILE *fp)
+{
+  return owl_getline_internal(s, fp, 0);
+}
+
+/* Read the rest of the input available in fp into a string. */
+char *owl_slurp(FILE *fp)
+{
+  char *buf = NULL;
+  char *p;
+  int size = 0;
+  int count;
+
+  while (1) {
+    buf = owl_realloc(buf, size + BUFSIZ);
+    p = &buf[size];
+    size += BUFSIZ;
+
+    if ((count = fread(p, 1, BUFSIZ, fp)) < BUFSIZ)
+      break;
+  }
+  p[count] = 0;
+
+  return buf;
+}
