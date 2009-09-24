@@ -245,69 +245,74 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
 #ifdef HAVE_LIBZEPHYR
   FILE *file;
   char *tmp, *start;
-  char buffer[1024], subsfile[1024];
+  char *buffer = NULL;
+  char *subsfile;
   ZSubscription_t *subs;
   int subSize = 1024;
-  int count, ret;
+  int count;
   struct stat statbuff;
 
   subs = owl_malloc(sizeof(ZSubscription_t) * subSize);
-  if (filename==NULL) {
-    sprintf(subsfile, "%s/%s", owl_global_get_homedir(&g), ".zephyr.subs");
-  } else {
-    strcpy(subsfile, filename);
-  }
+  if (filename == NULL)
+    subsfile = owl_sprintf("%s/.zephyr.subs", owl_global_get_homedir(&g));
+  else
+    subsfile = owl_strdup(filename);
 
-  ret=stat(subsfile, &statbuff);
-  if (ret) {
-    if (error_on_nofile==1) return(-1);
-    return(0);
+  if (stat(subsfile, &statbuff) != 0) {
+    if (error_on_nofile == 1)
+      return -1;
+    return 0;
   }
 
   ZResetAuthentication();
-  count=0;
-  file=fopen(subsfile, "r");
-  if (!file) return(-1);
-  while ( fgets(buffer, 1024, file)!=NULL ) {
-    if (buffer[0]=='#' || buffer[0]=='\n' || buffer[0]=='\n') continue;
-    
-    if (buffer[0]=='-') {
-      start=buffer+1;
-    } else {
-      start=buffer;
-    }
-    
+  count = 0;
+  file = fopen(subsfile, "r");
+  owl_free(subsfile);
+  if (!file)
+    return -1;
+  while (owl_getline(&buffer, file)) {
+    if (buffer[0] == '#' || buffer[0] == '\n')
+	continue;
+
+    if (buffer[0] == '-')
+      start = buffer + 1;
+    else
+      start = buffer;
+
     if (count >= subSize) {
       subSize *= 2;
       subs = owl_realloc(subs, sizeof(ZSubscription_t) * subSize);
     }
     
     /* add it to the list of subs */
-    if ((tmp=strtok(start, ",\n\r"))==NULL) continue;
-    subs[count].zsub_class=owl_strdup(tmp);
-    if ((tmp=strtok(NULL, ",\n\r"))==NULL) continue;
-    subs[count].zsub_classinst=owl_strdup(tmp);
-    if ((tmp=strtok(NULL, " \t\n\r"))==NULL) continue;
-    subs[count].zsub_recipient=owl_strdup(tmp);
-    
+    if ((tmp = strtok(start, ",\n\r")) == NULL)
+      continue;
+    subs[count].zsub_class = owl_strdup(tmp);
+    if ((tmp=strtok(NULL, ",\n\r")) == NULL)
+      continue;
+    subs[count].zsub_classinst = owl_strdup(tmp);
+    if ((tmp = strtok(NULL, " \t\n\r")) == NULL)
+      continue;
+    subs[count].zsub_recipient = owl_strdup(tmp);
+
     /* if it started with '-' then add it to the global punt list, and
      * remove it from the list of subs. */
-    if (buffer[0]=='-') {
+    if (buffer[0] == '-') {
       owl_function_zpunt(subs[count].zsub_class, subs[count].zsub_classinst, subs[count].zsub_recipient, 0);
       owl_free(subs[count].zsub_class);
       owl_free(subs[count].zsub_classinst);
       owl_free(subs[count].zsub_recipient);
-    }
-    else {
+    } else {
       count++;
     }
   }
   fclose(file);
+  if (buffer)
+    owl_free(buffer);
 
-  ret = owl_zephyr_loadsubs_helper(subs, count);
-  return(ret);
+  return owl_zephyr_loadsubs_helper(subs, count);
 #else
-  return(0);
+  return 0;
 #endif
 }
 
@@ -361,57 +366,51 @@ int owl_zephyr_loadloginsubs(const char *filename)
   FILE *file;
   ZSubscription_t *subs;
   int numSubs = 100;
-  char subsfile[1024], buffer[1024];
-  int count, ret;
+  char *subsfile;
+  char *buffer = NULL;
+  int count;
   struct stat statbuff;
 
   subs = owl_malloc(numSubs * sizeof(ZSubscription_t));
 
-  if (filename==NULL) {
-    sprintf(subsfile, "%s/%s", owl_global_get_homedir(&g), ".anyone");
-  } else {
-    strcpy(subsfile, filename);
-  }
-  
-  ret=stat(subsfile, &statbuff);
-  if (ret) return(0);
+  if (filename==NULL)
+    subsfile = owl_sprintf("%s/%s", owl_global_get_homedir(&g), ".anyone");
+  else
+    subsfile = owl_strdup(filename);
 
-  ret=0;
+  if (stat(subsfile, &statbuff) == -1)
+    return 0;
 
   ZResetAuthentication();
-  count=0;
-  file=fopen(subsfile, "r");
+  count = 0;
+  file = fopen(subsfile, "r");
+  owl_free(subsfile);
   if (file) {
-    while ( fgets(buffer, 1024, file)!=NULL ) {
-      if (buffer[0] == '\0' || buffer[0] == '#' || buffer[0] == '\n') continue;
-      
+    while (owl_getline_chomp(&buffer, file)) {
+      if (buffer[0] == '\0' || buffer[0] == '#')
+	continue;
+
       if (count == numSubs) {
         numSubs *= 2;
         subs = owl_realloc(subs, numSubs * sizeof(ZSubscription_t));
       }
 
-      if (buffer[strlen(buffer) - 1] == '\n')
-	buffer[strlen(buffer) - 1] = '\0';
-      subs[count].zsub_class=owl_strdup("login");
-      subs[count].zsub_recipient=owl_strdup("*");
-      if (strchr(buffer, '@')) {
-        subs[count].zsub_classinst=owl_strdup(buffer);
-      } else {
-        subs[count].zsub_classinst=owl_sprintf("%s@%s", buffer, ZGetRealm());
-      }
+      subs[count].zsub_class = owl_strdup("login");
+      subs[count].zsub_recipient = owl_strdup("*");
+      subs[count].zsub_classinst = long_zuser(buffer);
 
       count++;
     }
     fclose(file);
   } else {
-    count=0;
-    ret=-1;
+    return 0;
   }
+  if (buffer)
+    owl_free(buffer);
 
-  ret = owl_zephyr_loadsubs_helper(subs, count);
-  return(ret);
+  return owl_zephyr_loadsubs_helper(subs, count);
 #else
-  return(0);
+  return 0;
 #endif
 }
 
@@ -952,42 +951,41 @@ char *owl_zephyr_zlocate(const char *user, int auth)
 void owl_zephyr_addsub(const char *filename, const char *class, const char *inst, const char *recip)
 {
 #ifdef HAVE_LIBZEPHYR
-  char *line, subsfile[LINE], buff[LINE];
+  char *line, *subsfile, *s = NULL;
   FILE *file;
+  int duplicate = 0;
 
-  line=owl_zephyr_makesubline(class, inst, recip);
+  line = owl_zephyr_makesubline(class, inst, recip);
 
-  if (filename==NULL) {
-    sprintf(subsfile, "%s/%s", owl_global_get_homedir(&g), ".zephyr.subs");
-  } else {
-    strcpy(subsfile, filename);
-  }
+  if (filename == NULL)
+    subsfile = owl_sprintf("%s/.zephyr.subs", owl_global_get_homedir(&g));
+  else
+    subsfile = owl_strdup(filename);
 
   /* if the file already exists, check to see if the sub is already there */
-  file=fopen(subsfile, "r");
+  file = fopen(subsfile, "r");
   if (file) {
-    while (fgets(buff, LINE, file)!=NULL) {
-      if (!strcasecmp(buff, line)) {
+    while (owl_getline(&s, file)) {
+      if (strcasecmp(s, line) == 0) {
 	owl_function_error("Subscription already present in %s", subsfile);
-	owl_free(line);
-	fclose(file);
-	return;
+	duplicate++;
       }
     }
     fclose(file);
+    owl_free(s);
   }
 
-  /* if we get here then we didn't find it */
-  file=fopen(subsfile, "a");
-  if (!file) {
-    owl_function_error("Error opening file %s for writing", subsfile);
-    owl_free(line);
-    return;
+  if (!duplicate) {
+    file = fopen(subsfile, "a");
+    if (file) {
+      fputs(line, file);
+      fclose(file);
+      owl_function_makemsg("Subscription added");
+    } else {
+      owl_function_error("Error opening file %s for writing", subsfile);
+    }
   }
-  fputs(line, file);
-  fclose(file);
-  owl_function_makemsg("Subscription added");
-  
+
   owl_free(line);
 #endif
 }
@@ -1276,51 +1274,43 @@ char *owl_zephyr_smartstripped_user(const char *in)
 int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
 {
 #ifdef HAVE_LIBZEPHYR
-  char *ourfile, *tmp, buff[LINE];
+  char *ourfile, *tmp, *s = NULL;
   FILE *f;
 
-  if (filename==NULL) {
-    ourfile=owl_sprintf("%s/.anyone", owl_global_get_homedir(&g));
-  } else {
-    ourfile=owl_strdup(filename);
-  }
-  
-  f=fopen(ourfile, "r");
+  if (filename == NULL)
+    ourfile = owl_sprintf("%s/.anyone", owl_global_get_homedir(&g));
+  else
+    ourfile = owl_strdup(filename);
+
+  f = fopen(ourfile, "r");
   if (!f) {
     owl_function_error("Error opening file %s: %s", ourfile, strerror(errno) ? strerror(errno) : "");
     owl_free(ourfile);
-    return(-1);
+    return -1;
   }
+  owl_free(ourfile);
 
-  while (fgets(buff, LINE, f)!=NULL) {
+  while (owl_getline_chomp(&s, f)) {
     /* ignore comments, blank lines etc. */
-    if (buff[0]=='#') continue;
-    if (buff[0]=='\n') continue;
-    if (buff[0]=='\0') continue;
-    
-    /* strip the \n */
-    buff[strlen(buff)-1]='\0';
-    
-    /* ingore from # on */
-    tmp=strchr(buff, '#');
-    if (tmp) tmp[0]='\0';
-    
-    /* ingore from SPC */
-    tmp=strchr(buff, ' ');
-    if (tmp) tmp[0]='\0';
-    
-    /* stick on the local realm. */
-    if (!strchr(buff, '@')) {
-      strcat(buff, "@");
-      strcat(buff, ZGetRealm());
-    }
-    owl_list_append_element(in, owl_strdup(buff));
+    if (s[0] == '#' || s[0] == '\0')
+      continue;
+
+    /* ignore from # on */
+    tmp = strchr(s, '#');
+    if (tmp)
+      tmp[0] = '\0';
+
+    /* ignore from SPC */
+    tmp = strchr(s, ' ');
+    if (tmp)
+      tmp[0] = '\0';
+
+    owl_list_append_element(in, long_zuser(s));
   }
   fclose(f);
-  owl_free(ourfile);
-  return(0);
+  return 0;
 #else
-  return(-1);
+  return -1;
 #endif
 }
 

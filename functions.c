@@ -1362,7 +1362,7 @@ void owl_function_popless_file(const char *filename)
 {
   owl_fmtext fm;
   FILE *file;
-  char buff[1024];
+  char *s = NULL;
 
   file=fopen(filename, "r");
   if (!file) {
@@ -1371,10 +1371,9 @@ void owl_function_popless_file(const char *filename)
   }
 
   owl_fmtext_init_null(&fm);
-  while (fgets(buff, 1024, file)) {
-    owl_fmtext_append_normal(&fm, buff);
-    /*    owl_fmtext_append_normal(&fm, "\n"); */
-  }
+  while (owl_getline(&s, file))
+    owl_fmtext_append_normal(&fm, s);
+  owl_free(s);
 
   owl_function_popless_fmtext(&fm);
   owl_fmtext_free(&fm);
@@ -2021,8 +2020,7 @@ char *owl_function_exec(int argc, const char *const *argv, const char *buff, int
    */
   const char *redirect = " 2>&1 < /dev/null";
   char *newbuff;
-  char *out, buff2[1024];
-  int size;
+  char *out;
   FILE *p;
 
 #if OWL_STDERR_REDIR
@@ -2040,15 +2038,8 @@ char *owl_function_exec(int argc, const char *const *argv, const char *buff, int
   if (type == 1) {
     owl_popexec_new(newbuff);
   } else {
-    p=popen(newbuff, "r");
-    out=owl_malloc(1024);
-    size=1024;
-    strcpy(out, "");
-    while (fgets(buff2, 1024, p)!=NULL) {
-      size+=1024;
-      out=owl_realloc(out, size);
-      strcat(out, buff2);
-    }
+    p = popen(newbuff, "r");
+    out = owl_slurp(p);
     pclose(p);
     
     if (type==1) {
@@ -3337,7 +3328,7 @@ void owl_function_source(const char *filename)
 {
   char *path;
   FILE *file;
-  char buff[LINE];
+  char *s = NULL;
   int fail_silent = 0;
 
   if (!filename) {
@@ -3346,7 +3337,7 @@ void owl_function_source(const char *filename)
   } else {
     path = owl_util_makepath(filename);
   }
-  file=fopen(path, "r");
+  file = fopen(path, "r");
   owl_free(path);
   if (!file) {
     if (!fail_silent) {
@@ -3354,12 +3345,13 @@ void owl_function_source(const char *filename)
     }
     return;
   }
-  while (fgets(buff, LINE, file)!=NULL) {
-    if (buff[0] == '\0' || buff[0] == '#') continue;
-    if (buff[strlen(buff) - 1] == '\n')
-      buff[strlen(buff) - 1] = '\0';
-    owl_function_command(buff);
+  while (owl_getline_chomp(&s, file)) {
+    if (s[0] == '\0' || s[0] == '#')
+      continue;
+    owl_function_command(s);
   }
+
+  owl_free(s);
   fclose(file);
 }
 
