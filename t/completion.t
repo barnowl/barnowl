@@ -130,25 +130,33 @@ test_tokenize(q{Hello }, q{ World},
               1, -1, 7, 12);
 
 ## Test Context::shift
-SKIP: {
-    skip "Can't yet test code that depends on perlglue.xs", 4;
-    test_shift('lorem ipsum dolor ', 'sit amet', 0,
-               [qw(lorem ipsum dolor sit amet)],
-               3, 0, 18, 21);
+test_shift('lorem ipsum dolor ', 'sit amet', 0,
+           [qw(lorem ipsum dolor sit amet)],
+           3, 0, 18, 21);
 
-    test_shift('lorem ipsum dolor ', 'sit amet', 1,
-               [qw(lorem ipsum dolor sit amet)],
-               2, 0, 12, 15);
+test_shift('lorem ipsum dolor ', 'sit amet', 1,
+           [qw(ipsum dolor sit amet)],
+           2, 0, 12, 15);
 
-    test_shift('lorem ipsum dolor ', 'sit amet', 2,
-               [qw(lorem ipsum dolor sit amet)],
-               1, 0, 6, 9);
+test_shift('lorem ipsum dolor ', 'sit amet', 2,
+           [qw(dolor sit amet)],
+           1, 0, 6, 9);
 
-    test_shift('lorem ipsum dolor ', 'sit amet', 3,
-               [qw(lorem ipsum dolor sit amet)],
-               0, 0, 0, 3);
+test_shift('lorem ipsum dolor ', 'sit amet', 3,
+           [qw(sit amet)],
+           0, 0, 0, 3);
 
-}
+eval {
+    my $before_point = 'lorem ipsum dolor';
+    my $after_point = 'sit amet';
+    my $shift = 4;
+
+    my $ctx = BarnOwl::Completion::Context->new($before_point,
+                                                $after_point);
+    $ctx = $ctx->shift_words($shift);
+};
+like($@, qr/^Context::shift: Unable to shift /, "Correctly die when shifting away the point");
+
 ## Test common_prefix
 
 is(BarnOwl::Completion::common_prefix(qw(a b)), '');
