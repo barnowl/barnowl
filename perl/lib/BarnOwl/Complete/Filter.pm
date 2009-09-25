@@ -58,7 +58,7 @@ sub _complete_filter_expr {
     # Grab an expression; we don't allow empty
     my $i = $start;
     $i = _complete_filter_primitive_expr($ctx, $start, $o_comp);
-    return $INCOMPLETE if $start == $INCOMPLETE;
+    return $INCOMPLETE if $i == $INCOMPLETE;
 
     while ($i <= $end) {
         if ($i == $end) {
