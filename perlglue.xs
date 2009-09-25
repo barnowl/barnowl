@@ -202,26 +202,12 @@ void
 start_edit_win(line, callback)
 	const char *line
 	SV *callback
-	PREINIT:
-		owl_editwin * e;
-		char buff[1024];
 	CODE:
 	{
 		if(!SV_IS_CODEREF(callback))
 			croak("Callback must be a subref");
 
-		e = owl_global_get_typwin(&g);
-		owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE,
-				      owl_global_get_msg_history(&g));
-		owl_editwin_clear(e);
-		owl_editwin_set_dotsend(e);
-		snprintf(buff, 1023, "----> %s\n", line);
-		owl_editwin_set_locktext(e, buff);
-
-		owl_global_set_typwin_active(&g);
-
-		owl_editwin_set_cbdata(owl_global_get_typwin(&g), SvREFCNT_inc(callback));
-		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
+		owl_function_start_edit_win(line, owl_perlconfig_edit_callback, SvREFCNT_inc(callback));
 	}
 
 

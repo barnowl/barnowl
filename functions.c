@@ -280,10 +280,46 @@ owl_message *owl_function_make_outgoing_loopback(const char *body)
   return(m);
 }
 
-void owl_function_zwrite_setup(const char *line)
+void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin *), void *data)
 {
   owl_editwin *e;
-  char buff[1024];
+  char *s;
+
+  /* create and setup the editwin */
+  e = owl_global_get_typwin(&g);
+  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE,
+			owl_global_get_msg_history(&g));
+  owl_editwin_clear(e);
+  owl_editwin_set_dotsend(e);
+  s = owl_sprintf("----> %s\n", line);
+  owl_editwin_set_locktext(e, s);
+  owl_free(s);
+
+  /* make it active */
+  owl_global_set_typwin_active(&g);
+
+  owl_editwin_set_cbdata(owl_global_get_typwin(&g), data);
+  owl_global_set_buffercallback(&g, callback);
+}
+
+static void owl_function_write_setup(const char *line, const char *noun, void (*callback)(owl_editwin *))
+{
+
+  if (!owl_global_get_lockout_ctrld(&g))
+    owl_function_makemsg("Type your %s below.  "
+			 "End with ^D or a dot on a line by itself."
+			 "  ^C will quit.", noun);
+  else
+    owl_function_makemsg("Type your %s below.  "
+			 "End with a dot on a line by itself.  ^C will quit.",
+			 noun);
+
+  owl_function_start_edit_win(line, callback, NULL);
+  owl_global_set_buffercommand(&g, line);
+}
+
+void owl_function_zwrite_setup(const char *line)
+{
   owl_zwrite z;
   int ret;
 
@@ -301,59 +337,12 @@ void owl_function_zwrite_setup(const char *line)
   }
   owl_zwrite_free(&z);
 
-  /* create and setup the editwin */
-  e=owl_global_get_typwin(&g);
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE, owl_global_get_msg_history(&g));
-
-  if (!owl_global_get_lockout_ctrld(&g)) {
-    owl_function_makemsg("Type your zephyr below.  End with ^D or a dot on a line by itself.  ^C will quit.");
-  } else {
-    owl_function_makemsg("Type your zephyr below.  End with a dot on a line by itself.  ^C will quit.");
-  }
-
-  owl_editwin_clear(e);
-  owl_editwin_set_dotsend(e);
-  strcpy(buff, "----> ");
-  strncat(buff, line, 1016);
-  strcat(buff, "\n");
-  owl_editwin_set_locktext(e, buff);
-
-  /* make it active */
-  owl_global_set_typwin_active(&g);
-
-  owl_global_set_buffercommand(&g, line);
-  owl_global_set_buffercallback(&g, &owl_callback_zwrite);
+  owl_function_write_setup(line, "zephyr", &owl_callback_zwrite);
 }
 
 void owl_function_aimwrite_setup(const char *line)
 {
-  owl_editwin *e;
-  char buff[1024];
-
-  /* check the arguments */
-
-  /* create and setup the editwin */
-  e=owl_global_get_typwin(&g);
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE, owl_global_get_msg_history(&g));
-
-  if (!owl_global_get_lockout_ctrld(&g)) {
-    owl_function_makemsg("Type your message below.  End with ^D or a dot on a line by itself.  ^C will quit.");
-  } else {
-    owl_function_makemsg("Type your message below.  End with a dot on a line by itself.  ^C will quit.");
-  }
-
-  owl_editwin_clear(e);
-  owl_editwin_set_dotsend(e);
-  strcpy(buff, "----> ");
-  strcat(buff, line);
-  strcat(buff, "\n");
-  owl_editwin_set_locktext(e, buff);
-
-  /* make it active */
-  owl_global_set_typwin_active(&g);
-
-  owl_global_set_buffercommand(&g, line);
-  owl_global_set_buffercallback(&g, &owl_callback_aimwrite);
+  owl_function_write_setup(line, "message", &owl_callback_aimwrite);
 }
 
 void owl_function_loopwrite_setup(void)
