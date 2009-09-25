@@ -992,6 +992,7 @@ void owl_zephyr_delsub(const char *filename, const char *class, const char *inst
 {
 #ifdef HAVE_LIBZEPHYR
   char *line, *subsfile;
+  int linesdeleted;
   
   line=owl_zephyr_makesubline(class, inst, recip);
   line[strlen(line)-1]='\0';
@@ -1002,10 +1003,14 @@ void owl_zephyr_delsub(const char *filename, const char *class, const char *inst
     subsfile=owl_strdup(filename);
   }
   
-  owl_util_file_deleteline(subsfile, line, 1);
+  linesdeleted = owl_util_file_deleteline(subsfile, line, 1);
+  if (linesdeleted > 0) {
+    owl_function_makemsg("Subscription removed");
+  } else {
+    owl_function_error("No subscription present in %s", subsfile);
+  }
   owl_free(subsfile);
   owl_free(line);
-  owl_function_makemsg("Subscription removed");
 #endif
 }
 

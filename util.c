@@ -556,19 +556,22 @@ char *owl_util_stripnewlines(const char *in)
  * backupfile containing the original contents.  This is an
  * inefficient impelementation which reads the entire file into
  * memory.
+ *
+ * Returns the number of lines removed
  */
-void owl_util_file_deleteline(const char *filename, const char *line, int backup)
+int owl_util_file_deleteline(const char *filename, const char *line, int backup)
 {
   char buff[LINE], *text;
   char *backupfilename=NULL;
   FILE *file, *backupfile=NULL;
   int size, newline;
+  int numremoved = 0;
 
   /* open the file for reading */
   file=fopen(filename, "r");
   if (!file) {
     owl_function_error("Error opening file %s", filename);
-    return;
+    return 0;
   }
 
   /* open the backup file for writing */
@@ -579,7 +582,7 @@ void owl_util_file_deleteline(const char *filename, const char *line, int backup
       owl_function_error("Error opening file %s for writing", backupfilename);
       owl_free(backupfilename);
       fclose(file);
-      return;
+      return 0;
     }
   }
 
@@ -603,6 +606,8 @@ void owl_util_file_deleteline(const char *filename, const char *line, int backup
       text=owl_realloc(text, size);
       strcat(text, buff);
       if (newline) strcat(text, "\n");
+    } else {
+      numremoved++;
     }
 
     /* write to backupfile if necessary */
@@ -627,6 +632,8 @@ void owl_util_file_deleteline(const char *filename, const char *line, int backup
   if (backup)
     owl_free(backupfilename);
   owl_free(text);
+
+  return numremoved;
 }
 
 int owl_util_max(int a, int b)
