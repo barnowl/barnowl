@@ -7,6 +7,8 @@ use Test::More qw(no_plan);
 use File::Basename;
 BEGIN {require (dirname($0) . "/mock.pl");};
 
+use BarnOwl::Complete::Filter qw(complete_filter_expr);
+
 =head1 DESCRIPTION
 
 Basic tests for tab-completion functionality.
@@ -251,6 +253,40 @@ test_complete('cmd foo -- ','',
 
 test_complete('cmd foo -- bar ','',
               [qw(2)], \&complete_word);
+
+
+# Test the filter expression completer
+test_complete('', '',
+              [qw[( body class direction false filter hostname instance login not opcode perl realm recipient sender true type]],
+              \&complete_filter_expr);
+
+test_complete('not ', '',
+              [qw[( body class direction false filter hostname instance login not opcode perl realm recipient sender true type]],
+              \&complete_filter_expr);
+
+test_complete('true ', '',
+              [qw[and or]],
+              \&complete_filter_expr);
+
+test_complete('( true ', '',
+              [qw[and or )]],
+              \&complete_filter_expr);
+
+test_complete('( body static and body analysis and not false and class davidben and ( instance python or instance hotd ', '',
+              [qw[and or )]],
+              \&complete_filter_expr);
+
+test_complete('type ', '',
+              [qw[admin aim zephyr]],
+              \&complete_filter_expr);
+
+test_complete('direction ', '',
+              [qw[in out none]],
+              \&complete_filter_expr);
+
+test_complete('login ', '',
+              [qw[login logout none]],
+              \&complete_filter_expr);
 
 1;
 
