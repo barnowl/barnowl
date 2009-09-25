@@ -1,5 +1,5 @@
 bin_PROGRAMS = barnowl.bin
-check_PROGRAMS = tester
+check_PROGRAMS = tester perl_tester
 
 barnowl_bin_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h config.h \
@@ -16,6 +16,14 @@ tester_SOURCES = $(BASE_SRCS) \
      tester.c
 
 tester_LDADD = libfaim/libfaim.a libzcrypt.a
+
+perl_tester_SOURCES = $(BASE_SRCS) \
+     owl.h owl_perl.h config.h \
+     libzcrypt.a \
+     $(GEN_C) $(GEN_H) \
+     perl_tester.c
+
+perl_tester_LDADD = libfaim/libfaim.a libzcrypt.a
 
 TESTS=runtests.sh
 
