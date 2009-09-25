@@ -551,87 +551,80 @@ char *owl_util_stripnewlines(const char *in)
   return(out);
 }
 
-/* Delete the line matching "line" from the named file.  If no such
- * line is found the file is left intact.  If backup==1 then create a
- * backupfile containing the original contents.  This is an
- * inefficient impelementation which reads the entire file into
- * memory.
+/* Delete all lines matching "line" from the named file.  If no such
+ * line is found the file is left intact.  If backup==1 then leave a
+ * backup file containing the original contents.  The match is
+ * case-insensitive.
  *
  * Returns the number of lines removed
  */
 int owl_util_file_deleteline(const char *filename, const char *line, int backup)
 {
-  char buff[LINE], *text;
-  char *backupfilename=NULL;
-  FILE *file, *backupfile=NULL;
-  int size, newline;
+  char *backupfile, *newfile, *buf = NULL;
+  FILE *old, *new;
+  struct stat st;
   int numremoved = 0;
 
-  /* open the file for reading */
-  file=fopen(filename, "r");
-  if (!file) {
-    owl_function_error("Error opening file %s", filename);
+  if ((old = fopen(filename, "r")) == NULL) {
+    owl_function_error("Cannot open %s (for reading): %s",
+		       filename, strerror(errno));
     return 0;
   }
 
-  /* open the backup file for writing */
+  if (fstat(fileno(old), &st) != 0) {
+    owl_function_error("Cannot stat %s: %s", filename, strerror(errno));
+    return 0;
+  }
+
+  newfile = owl_sprintf("%s.new", filename);
+  if ((new = fopen(newfile, "w")) == NULL) {
+    owl_function_error("Cannot open %s (for writing): %s",
+		       filename, strerror(errno));
+    free(newfile);
+    fclose(old);
+    return 0;
+  }
+
+  if (fchmod(fileno(new), st.st_mode & 0777) != 0) {
+    owl_function_error("Cannot set permissions on %s: %s",
+		       filename, strerror(errno));
+    unlink(newfile);
+    fclose(new);
+    free(newfile);
+    fclose(old);
+    return 0;
+  }
+
+  while (owl_getline_chomp(&buf, old))
+    if (strcasecmp(buf, line) != 0)
+      fprintf(new, "%s\n", buf);
+    else
+      numremoved++;
+
+  fclose(new);
+  fclose(old);
+
   if (backup) {
-    backupfilename=owl_sprintf("%s.backup", filename);
-    backupfile=fopen(backupfilename, "w");
-    if (!backupfile) {
-      owl_function_error("Error opening file %s for writing", backupfilename);
-      owl_free(backupfilename);
-      fclose(file);
+    backupfile = owl_sprintf("%s.backup", filename);
+    unlink(backupfile);
+    if (link(filename, backupfile) != 0) {
+      owl_function_error("Cannot link %s: %s", backupfile, strerror(errno));
+      owl_free(backupfile);
+      unlink(newfile);
+      owl_free(newfile);
       return 0;
     }
+    owl_free(backupfile);
   }
 
-  /* we'll read the entire file into memory, minus the line we don't want and
-   * and at the same time create the backup file if necessary
-   */
-  text=owl_malloc(LINE);
-  strcpy(text, "");
-  size=LINE;
-  while (fgets(buff, LINE, file)!=NULL) {
-    /* strip the newline */
-    newline=0;
-    if (buff[0] != '\0' && buff[strlen(buff) - 1] == '\n') {
-      buff[strlen(buff)-1]='\0';
-      newline=1;
-    }
-    
-    /* if we don't match the line, add to saved text in memory */
-    if (strcasecmp(buff, line)) {
-      size+=LINE;
-      text=owl_realloc(text, size);
-      strcat(text, buff);
-      if (newline) strcat(text, "\n");
-    } else {
-      numremoved++;
-    }
-
-    /* write to backupfile if necessary */
-    if (backup) {
-      fputs(buff, backupfile);
-      if (newline) fputs("\n", backupfile);
-    }
-  }
-  if (backup) fclose(backupfile);
-  fclose(file);
-
-  /* now rewrite the original file from memory */
-  file=fopen(filename, "w");
-  if (!file) {
-    owl_function_error("WARNING: Error opening %s for writing.  Use %s to restore.", filename, backupfilename);
-    owl_function_beep();
-  } else {
-    fputs(text, file);
-    fclose(file);
+  if (rename(newfile, filename) != 0) {
+    owl_function_error("Cannot move %s to %s: %s",
+		       newfile, filename, strerror(errno));
+    numremoved = 0;
   }
 
-  if (backup)
-    owl_free(backupfilename);
-  owl_free(text);
+  unlink(newfile);
+  owl_free(newfile);
 
   return numremoved;
 }
