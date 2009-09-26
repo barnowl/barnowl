@@ -153,55 +153,11 @@ int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
 
 void owl_zwrite_populate_zsig(owl_zwrite *z)
 {
-  const char *zsigproc, *zsigowlvar, *zsigzvar;
-  char *ptr;
-  struct passwd *pw;
-
   /* get a zsig, if not given */
-  if (z->zsig==NULL) {
-    zsigproc = owl_global_get_zsigproc(&g);
-    zsigowlvar = owl_global_get_zsig(&g);
-    zsigzvar = owl_zephyr_get_variable("zwrite-signature");
+  if (z->zsig != NULL)
+    return;
 
-    if (zsigowlvar && *zsigowlvar) {
-      z->zsig=owl_validate_utf8(zsigowlvar);
-    } else if (zsigproc && *zsigproc) {
-      FILE *file;
-      char buff[LINE], *openline;
-      
-      /* simple hack for now to nuke stderr */
-#if OWL_STDERR_REDIR
-      openline = owl_strdup(zsigproc);
-#else
-      openline = owl_sprintf("%s 2> /dev/null", zsigproc);
-#endif
-      file=popen(openline, "r");
-      owl_free(openline);
-      if (!file) {
-	if (zsigzvar && *zsigzvar) {
-	  z->zsig=owl_validate_utf8(zsigzvar);
-	}
-      } else {
-	z->zsig=owl_malloc(LINE*5);
-	strcpy(z->zsig, "");
-	while (fgets(buff, LINE, file)) { /* wrong sizing */
-	  strcat(z->zsig, buff);
-	}
-	pclose(file);
-	if (z->zsig[0] != '\0' && z->zsig[strlen(z->zsig) - 1] == '\n') {
-	  z->zsig[strlen(z->zsig)-1]='\0';
-	}
-      }
-    } else if (zsigzvar) {
-      z->zsig=owl_validate_utf8(zsigzvar);
-    } else if (((pw=getpwuid(getuid()))!=NULL) && (pw->pw_gecos)) {
-      z->zsig=owl_validate_utf8(pw->pw_gecos);
-      ptr=strchr(z->zsig, ',');
-      if (ptr) {
-	ptr[0]='\0';
-      }
-    }
-  }
+  z->zsig = owl_perlconfig_execute(owl_global_get_zsigfunc(&g));
 }
 
 void owl_zwrite_send_ping(const owl_zwrite *z)

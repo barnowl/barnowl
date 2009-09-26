@@ -426,6 +426,29 @@ sub time_format
     redisplay();
 }
 
+=head3 default_zephyr_signature
+
+Compute the default zephyr signature.
+
+=cut
+
+sub default_zephyr_signature
+{
+  if (my $zsig = getvar('zsig')) {
+    return $zsig;
+  }
+  if (my $zsigproc = getvar('zsigproc')) {
+    return `$zsigproc`;
+  }
+  my $zwrite_signature = get_zephyr_variable('zwrite-signature');
+  if (defined($zwrite_signature)) {
+    return $zwrite_signature;
+  }
+  my $name = ((getpwuid($<))[6]);
+  $name =~ s/,.*//;
+  return $name;
+}
+
 # Stub for owl::startup / BarnOwl::startup, so it isn't bound to the
 # startup command. This may be redefined in a user's configfile.
 sub startup

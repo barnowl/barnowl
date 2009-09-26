@@ -208,6 +208,12 @@ static owl_variable variables_to_init[] = {
          "principal. Note that customizing the sender name will\n"
          "cause your zephyrs to be sent unauthenticated."),
 
+  OWLVAR_STRING( "zsigfunc" /* %OwlVarStub */, "BarnOwl::default_zephyr_signature()",
+		 "zsig perl function",
+		 "Called every time you start a zephyrgram without an\n"
+		 "explicit zsig.  The default setting implements the policy\n"
+		 "descripted in the documentation for the 'zsig' variable.\n"),
+
   OWLVAR_STRING( "zsig" /* %OwlVarStub */, "",
 	         "zephyr signature",
 		 "The zsig to get on outgoing messages. If this variable is\n"
