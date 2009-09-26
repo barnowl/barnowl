@@ -610,7 +610,6 @@ static int owl_editwin_replace_internal(owl_editwin *e, int replace, const char 
 {
   int start, end, free, need, size, change;
   oe_excursion *x;
-  char *p;
 
   start = e->index;
   end   = start + replace;
@@ -620,12 +619,7 @@ static int owl_editwin_replace_internal(owl_editwin *e, int replace, const char 
   need = strlen(s) - free;
   if (need > 0) {
     size = e->allocated + need + INCR - (need % INCR);
-    p = owl_realloc(e->buff, size);
-    if (p == NULL) {
-      /* XXX signal impending doom somehow and don't do anything */
-      return 0;
-    }
-    e->buff = p;
+    e->buff = owl_realloc(e->buff, size);
     e->allocated = size;
   }
 
