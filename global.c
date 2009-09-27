@@ -481,7 +481,7 @@ void owl_global_resize(owl_global *g, int x, int y) {
   owl_mainwin_redisplay(&(g->mw));
   sepbar(NULL);
   owl_editwin_redisplay(g->tw, 0);
-  owl_function_full_redisplay(&g);
+  owl_function_full_redisplay();
 
   /* TODO: this should handle other forms of popwins */
   if (owl_popwin_is_active(owl_global_get_popwin(g)) 
