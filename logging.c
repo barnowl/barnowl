@@ -178,7 +178,7 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   owl_message *m;
 
   /* create a present message so we can pass it to
-   * owl_log_shouldlog_message()
+   * owl_log_shouldlog_message(void)
    */
   m = owl_malloc(sizeof(owl_message));
   owl_message_create_from_zwrite(m, zw, text);

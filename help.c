@@ -1,7 +1,7 @@
 #include "owl.h"
 #include <string.h>
 
-void owl_help()
+void owl_help(void)
 {
   owl_fmtext fm;
   const char *varname;

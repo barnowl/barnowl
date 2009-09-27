@@ -229,7 +229,7 @@ void owl_aim_logout(void)
   owl_select_remove_timer(g.aim_nop_timer);
 }
 
-void owl_aim_logged_out()
+void owl_aim_logged_out(void)
 {
   if (owl_global_is_aimloggedin(&g)) owl_function_adminmsg("", "Logged out of AIM");
   owl_aim_logout();
@@ -407,7 +407,7 @@ char *owl_aim_normalize_screenname(const char *in)
   return(out);
 }
 
-int owl_aim_process_events()
+int owl_aim_process_events(void)
 {
   aim_session_t *aimsess;
   aim_conn_t *waitingconn = NULL;
@@ -1994,7 +1994,7 @@ void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
   return;	
 }
 
-void owl_process_aim()
+void owl_process_aim(void)
 {
   if (owl_global_is_doaimevents(&g)) {
     owl_aim_process_events();

@@ -14,13 +14,13 @@ typedef struct _owl_sub_list {                            /* noproto */
   int nsubs;
 } owl_sub_list;
 
-Code_t ZResetAuthentication();
+Code_t ZResetAuthentication(void);
 #endif
 
 #define HM_SVC_FALLBACK		htons((unsigned short) 2104)
 
 #ifdef HAVE_LIBZEPHYR
-void owl_zephyr_initialize()
+void owl_zephyr_initialize(void)
 {
   int ret;
   struct servent *sp;
@@ -126,7 +126,7 @@ void owl_zephyr_finish_initialization(owl_dispatch *d) {
   }
 }
 
-void owl_zephyr_load_initial_subs() {
+void owl_zephyr_load_initial_subs(void) {
   int ret_sd, ret_bd, ret_u;
 
   owl_function_debugmsg("startup: loading initial zephyr subs");
@@ -153,13 +153,13 @@ void owl_zephyr_load_initial_subs() {
   }
 }
 #else
-void owl_zephyr_initialize()
+void owl_zephyr_initialize(void)
 {
 }
 #endif
 
 
-int owl_zephyr_shutdown()
+int owl_zephyr_shutdown(void)
 {
 #ifdef HAVE_LIBZEPHYR
   if(owl_global_is_havezephyr(&g)) {
@@ -170,7 +170,7 @@ int owl_zephyr_shutdown()
   return(0);
 }
 
-int owl_zephyr_zpending()
+int owl_zephyr_zpending(void)
 {
 #ifdef HAVE_LIBZEPHYR
   if(owl_global_is_havezephyr(&g))
@@ -182,7 +182,7 @@ int owl_zephyr_zpending()
 #endif
 }
 
-const char *owl_zephyr_get_realm()
+const char *owl_zephyr_get_realm(void)
 {
 #ifdef HAVE_LIBZEPHYR
   return(ZGetRealm());
@@ -191,7 +191,7 @@ const char *owl_zephyr_get_realm()
 #endif
 }
 
-const char *owl_zephyr_get_sender()
+const char *owl_zephyr_get_sender(void)
 {
 #ifdef HAVE_LIBZEPHYR
   return(ZGetSender());
@@ -315,7 +315,7 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
  * Returns 0 on success.
  * Return -2 if there is a failure from zephyr to load the subscriptions.
  */
-int owl_zephyr_loadbarnowldefaultsubs()
+int owl_zephyr_loadbarnowldefaultsubs(void)
 {
 #ifdef HAVE_LIBZEPHYR
   ZSubscription_t *subs;
@@ -339,7 +339,7 @@ int owl_zephyr_loadbarnowldefaultsubs()
 #endif
 }
 
-int owl_zephyr_loaddefaultsubs()
+int owl_zephyr_loaddefaultsubs(void)
 {
 #ifdef HAVE_LIBZEPHYR
   ZSubscription_t subs[10];
@@ -414,7 +414,7 @@ int owl_zephyr_loadloginsubs(const char *filename)
 #endif
 }
 
-void unsuball()
+void unsuball(void)
 {
 #if HAVE_LIBZEPHYR
   int ret;
@@ -1123,7 +1123,7 @@ const char *owl_zephyr_get_authstr(const void *n)
 /* Returns a buffer of subscriptions or an error message.  Caller must
  * free the return.
  */
-char *owl_zephyr_getsubs()
+char *owl_zephyr_getsubs(void)
 {
 #ifdef HAVE_LIBZEPHYR
   int ret, num, i, one;

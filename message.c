@@ -13,7 +13,7 @@
 static owl_fmtext_cache fmtext_cache[OWL_FMTEXT_CACHE_SIZE];
 static owl_fmtext_cache * fmtext_cache_next = fmtext_cache;
 
-void owl_message_init_fmtext_cache ()
+void owl_message_init_fmtext_cache(void)
 {
     int i;
     for(i = 0; i < OWL_FMTEXT_CACHE_SIZE; i++) {
@@ -22,7 +22,7 @@ void owl_message_init_fmtext_cache ()
     }
 }
 
-owl_fmtext_cache * owl_message_next_fmtext() /*noproto*/
+owl_fmtext_cache *owl_message_next_fmtext(void) /*noproto*/
 {
     owl_fmtext_cache * f = fmtext_cache_next;
     if(fmtext_cache_next->message != NULL) {

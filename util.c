@@ -453,7 +453,7 @@ const char *owl_util_color_to_string(int color)
 }
 
 /* Get the default tty name.  Caller must free the return */
-char *owl_util_get_default_tty()
+char *owl_util_get_default_tty(void)
 {
   const char *tmp;
   char *out;
@@ -474,7 +474,7 @@ char *owl_util_get_default_tty()
 
 
 /* Animation hack */
-void owl_hack_animate()
+void owl_hack_animate(void)
 {
   const owl_messagelist *ml;
   owl_message *m;
@@ -670,7 +670,7 @@ char * owl_util_baseclass(const char * class)
   return start;
 }
 
-const char * owl_get_datadir()
+const char * owl_get_datadir(void)
 {
   const char * datadir = getenv("BARNOWL_DATA_DIR");
   if(datadir != NULL)

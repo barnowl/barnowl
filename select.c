@@ -151,7 +151,7 @@ void owl_select_remove_dispatch(int fd)
   }
 }
 
-int owl_select_dispatch_count()
+int owl_select_dispatch_count(void)
 {
   return owl_list_get_size(owl_global_get_dispatchlist(&g));
 }
@@ -214,7 +214,7 @@ int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
   return max_fd + 1;
 }
 
-void owl_select_gc()
+void owl_select_gc(void)
 {
   int i;
   owl_list *dl;
@@ -324,7 +324,7 @@ void owl_process_input_char(owl_input j)
   }
 }
 
-void owl_select_handle_intr()
+void owl_select_handle_intr(void)
 {
   owl_input in;
 
@@ -335,7 +335,7 @@ void owl_select_handle_intr()
   owl_process_input_char(in);
 }
 
-void owl_select()
+void owl_select(void)
 {
   int i, max_fd, aim_max_fd, aim_done, ret;
   fd_set r;

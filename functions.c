@@ -43,7 +43,7 @@ const owl_cmd *owl_function_get_cmd(const char *name)
   return owl_cmddict_find(owl_global_get_cmddict(&g), name);
 }
 
-void owl_function_show_commands()
+void owl_function_show_commands(void)
 {
   owl_list l;
   owl_fmtext fm;
@@ -77,7 +77,7 @@ void owl_function_show_view(const char *viewname)
   owl_fmtext_free(&fm);
 }
 
-void owl_function_show_styles() {
+void owl_function_show_styles(void) {
   owl_list l;
   owl_fmtext fm;
 
@@ -119,7 +119,7 @@ void owl_function_show_command(const char *name)
   owl_function_help_for_command(name);
 }
 
-void owl_function_show_license()
+void owl_function_show_license(void)
 {
   const char *text;
 
@@ -165,7 +165,7 @@ void owl_function_show_license()
   owl_function_popless_text(text);
 }
 
-void owl_function_show_quickstart()
+void owl_function_show_quickstart(void)
 {
     const char *message =
     "Move between messages with the arrow keys, and press 'r' to reply.\n"
@@ -356,7 +356,7 @@ void owl_function_aimwrite_setup(const char *line)
   owl_global_set_buffercallback(&g, &owl_callback_aimwrite);
 }
 
-void owl_function_loopwrite_setup()
+void owl_function_loopwrite_setup(void)
 {
   owl_editwin *e;
 
@@ -692,22 +692,22 @@ void owl_function_prevmsg_full(const char *filter, int skip_deleted, int first_i
   }
 }
 
-void owl_function_nextmsg()
+void owl_function_nextmsg(void)
 {
   owl_function_nextmsg_full(NULL, 0, 1);
 }
 
-void owl_function_prevmsg()
+void owl_function_prevmsg(void)
 {
   owl_function_prevmsg_full(NULL, 0, 1);
 }
 
-void owl_function_nextmsg_notdeleted()
+void owl_function_nextmsg_notdeleted(void)
 {
   owl_function_nextmsg_full(NULL, 1, 1);
 }
 
-void owl_function_prevmsg_notdeleted()
+void owl_function_prevmsg_notdeleted(void)
 {
   owl_function_prevmsg_full(NULL, 1, 1);
 }
@@ -771,7 +771,7 @@ void owl_function_undeletecur(int move_after)
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
 
-void owl_function_expunge()
+void owl_function_expunge(void)
 {
   int curmsg;
   const owl_message *m;
@@ -807,7 +807,7 @@ void owl_function_expunge()
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
 
-void owl_function_firstmsg()
+void owl_function_firstmsg(void)
 {
   owl_global_set_curmsg(&g, 0);
   owl_global_set_topmsg(&g, 0);
@@ -815,7 +815,7 @@ void owl_function_firstmsg()
   owl_global_set_direction_downwards(&g);
 }
 
-void owl_function_lastmsg_noredisplay()
+void owl_function_lastmsg_noredisplay(void)
 {
   int oldcurmsg, curmsg;
   const owl_view *v;
@@ -837,20 +837,20 @@ void owl_function_lastmsg_noredisplay()
   owl_global_set_direction_downwards(&g);
 }
 
-void owl_function_lastmsg()
+void owl_function_lastmsg(void)
 {
   owl_function_lastmsg_noredisplay();
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));  
 }
 
-void owl_function_shift_right()
+void owl_function_shift_right(void)
 {
   owl_global_set_rightshift(&g, owl_global_get_rightshift(&g)+10);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_global_set_needrefresh(&g);
 }
 
-void owl_function_shift_left()
+void owl_function_shift_left(void)
 {
   int shift;
 
@@ -865,7 +865,7 @@ void owl_function_shift_left()
   }
 }
 
-void owl_function_unsuball()
+void owl_function_unsuball(void)
 {
   unsuball();
   owl_function_makemsg("Unsubscribed from all messages.");
@@ -945,7 +945,7 @@ void owl_function_aimlogin(const char *user, const char *passwd) {
   if (ret) owl_function_makemsg("Warning: login for %s failed.\n", user);
 }
 
-void owl_function_suspend()
+void owl_function_suspend(void)
 {
   endwin();
   printf("\n");
@@ -955,7 +955,7 @@ void owl_function_suspend()
   owl_command_resize();
 }
 
-void owl_function_zaway_toggle()
+void owl_function_zaway_toggle(void)
 {
   if (!owl_global_is_zaway(&g)) {
     owl_global_set_zaway_msg(&g, owl_global_get_zaway_msg_default(&g));
@@ -965,19 +965,19 @@ void owl_function_zaway_toggle()
   }
 }
 
-void owl_function_zaway_on()
+void owl_function_zaway_on(void)
 {
   owl_global_set_zaway_on(&g);
   owl_function_makemsg("zaway set (%s)", owl_global_get_zaway_msg(&g));
 }
 
-void owl_function_zaway_off()
+void owl_function_zaway_off(void)
 {
   owl_global_set_zaway_off(&g);
   owl_function_makemsg("zaway off");
 }
 
-void owl_function_aaway_toggle()
+void owl_function_aaway_toggle(void)
 {
   if (!owl_global_is_aaway(&g)) {
     owl_global_set_aaway_msg(&g, owl_global_get_aaway_msg_default(&g));
@@ -987,21 +987,21 @@ void owl_function_aaway_toggle()
   }
 }
 
-void owl_function_aaway_on()
+void owl_function_aaway_on(void)
 {
   owl_global_set_aaway_on(&g);
   /* owl_aim_set_awaymsg(owl_global_get_zaway_msg(&g)); */
   owl_function_makemsg("AIM away set (%s)", owl_global_get_aaway_msg(&g));
 }
 
-void owl_function_aaway_off()
+void owl_function_aaway_off(void)
 {
   owl_global_set_aaway_off(&g);
   /* owl_aim_set_awaymsg(""); */
   owl_function_makemsg("AIM away off");
 }
 
-void owl_function_quit()
+void owl_function_quit(void)
 {
   char *ret;
   
@@ -1226,12 +1226,12 @@ int owl_function_calculate_topmsg_normal(int direction, const owl_view *v, int c
   return(topmsg);
 }
 
-void owl_function_resize()
+void owl_function_resize(void)
 {
   owl_global_set_resize_pending(&g);
 }
 
-void owl_function_run_buffercommand()
+void owl_function_run_buffercommand(void)
 {
   owl_editwin_do_callback(owl_global_get_typwin(&g));
 }
@@ -1263,7 +1263,7 @@ void owl_function_debugmsg(const char *fmt, ...)
   va_end(ap);
 }
 
-void owl_function_beep()
+void owl_function_beep(void)
 {
   if (owl_global_is_bell(&g)) {
     beep();
@@ -1301,7 +1301,7 @@ void owl_function_set_cursor(WINDOW *win)
   wnoutrefresh(win);
 }
 
-void owl_function_full_redisplay()
+void owl_function_full_redisplay(void)
 {
   redrawwin(owl_global_get_curs_recwin(&g));
   redrawwin(owl_global_get_curs_sepwin(&g));
@@ -1383,7 +1383,7 @@ void owl_function_popless_file(const char *filename)
   fclose(file);
 }
 
-void owl_function_about()
+void owl_function_about(void)
 {
   owl_function_popless_text(
     "This is barnowl version " OWL_VERSION_STRING ".\n\n"
@@ -1409,7 +1409,7 @@ void owl_function_about()
   );
 }
 
-void owl_function_info()
+void owl_function_info(void)
 {
   const owl_message *m;
   owl_fmtext fm, attrfm;
@@ -1544,7 +1544,7 @@ void owl_function_info()
  * Use the 'default' style regardless of whatever
  * style the user may be using
  */
-void owl_function_curmsg_to_popwin()
+void owl_function_curmsg_to_popwin(void)
 {
   const owl_view *v;
   const owl_message *m;
@@ -1627,7 +1627,7 @@ void owl_function_resize_typwin(int newsize)
   owl_function_resize();
 }
 
-void owl_function_mainwin_pagedown()
+void owl_function_mainwin_pagedown(void)
 {
   int i;
 
@@ -1642,13 +1642,13 @@ void owl_function_mainwin_pagedown()
   owl_function_nextmsg();
 }
 
-void owl_function_mainwin_pageup()
+void owl_function_mainwin_pageup(void)
 {
   owl_global_set_curmsg(&g, owl_global_get_topmsg(&g));
   owl_function_prevmsg();
 }
 
-void owl_function_getsubs()
+void owl_function_getsubs(void)
 {
   char *buff;
 
@@ -1663,7 +1663,7 @@ void owl_function_getsubs()
   owl_free(buff);
 }
 
-void owl_function_printallvars()
+void owl_function_printallvars(void)
 {
   const char *name;
   char var[LINE];
@@ -1690,7 +1690,7 @@ void owl_function_printallvars()
   g_string_free(str, TRUE);
 }
 
-void owl_function_show_variables()
+void owl_function_show_variables(void)
 {
   owl_list varnames;
   owl_fmtext fm;  
@@ -1744,7 +1744,7 @@ void owl_function_delete_by_id(int id, int flag)
   }
 }
 
-void owl_function_delete_automsgs()
+void owl_function_delete_automsgs(void)
 {
   /* mark for deletion all messages in the current view that match the
    * 'trash' filter */
@@ -1777,7 +1777,7 @@ void owl_function_delete_automsgs()
   owl_global_set_needrefresh(&g);
 }
 
-void owl_function_status()
+void owl_function_status(void)
 {
   char buff[MAXPATHLEN+1];
   time_t start;
@@ -1857,7 +1857,7 @@ void owl_function_status()
   owl_fmtext_free(&fm);
 }
 
-void owl_function_show_term()
+void owl_function_show_term(void)
 {
   owl_fmtext fm;
 
@@ -2270,7 +2270,7 @@ char *owl_function_create_negative_filter(const char *filtername)
   return(newname);
 }
 
-void owl_function_show_filters()
+void owl_function_show_filters(void)
 {
   const owl_list *l;
   const owl_filter *f;
@@ -2315,7 +2315,7 @@ void owl_function_show_filter(const char *name)
   owl_free(tmp);
 }
 
-void owl_function_show_zpunts()
+void owl_function_show_zpunts(void)
 {
   const owl_filter *f;
   const owl_list *fl;
@@ -2748,7 +2748,7 @@ int owl_function_color_filter(const char *filtname, const char *fgcolor, const c
   return(0);
 }
 
-void owl_function_show_colors()
+void owl_function_show_colors(void)
 {
   owl_fmtext fm;
   int i; 
@@ -2898,7 +2898,7 @@ void owl_function_activate_keymap(const char *keymap)
   }
 }
 
-void owl_function_show_keymaps()
+void owl_function_show_keymaps(void)
 {
   owl_list l;
   owl_fmtext fm;
@@ -3378,7 +3378,7 @@ void owl_function_change_style(owl_view *v, const char *stylename)
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
 
-void owl_function_toggleoneline()
+void owl_function_toggleoneline(void)
 {
   owl_view *v;
   const owl_style *s;
@@ -3437,7 +3437,7 @@ void owl_function_log_err(const char *string)
   owl_free(date);
 }
 
-void owl_function_showerrs()
+void owl_function_showerrs(void)
 {
   owl_fmtext fm;
 
@@ -3551,7 +3551,7 @@ void owl_function_aimsearch_results(const char *email, owl_list *namelist)
   owl_fmtext_free(&fm);
 }
 
-int owl_function_get_color_count()
+int owl_function_get_color_count(void)
 {
      return COLORS;
 }
@@ -3578,7 +3578,7 @@ void _owl_function_mark_message(const owl_message *m)
     owl_global_set_markedmsgid(&g, owl_message_get_id(m));
 }
 
-void owl_function_mark_message()
+void owl_function_mark_message(void)
 {
   const owl_message *m;
   const owl_view *v;
@@ -3597,7 +3597,7 @@ void owl_function_mark_message()
   owl_function_makemsg("Mark set");
 }
 
-void owl_function_swap_cur_marked()
+void owl_function_swap_cur_marked(void)
 {
   int marked_id;
   const owl_message *m;

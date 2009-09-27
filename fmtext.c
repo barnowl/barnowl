@@ -829,7 +829,7 @@ void owl_fmtext_init_colorpair_mgr(owl_colorpair_mgr *cpmgr)
 }
 
 /* Reset used list */
-void owl_fmtext_reset_colorpairs()
+void owl_fmtext_reset_colorpairs(void)
 {
   if (owl_global_get_hascolors(&g)) {
     short i, j;

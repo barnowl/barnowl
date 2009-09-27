@@ -45,7 +45,7 @@ typedef struct _owl_options {
   bool rm_debug;
 } owl_options;
 
-void usage()
+void usage(void)
 {
   fprintf(stderr, "Barnowl version %s\n", OWL_VERSION_STRING);
   fprintf(stderr, "Usage: barnowl [-n] [-d] [-D] [-v] [-h] [-c <configfile>] [-s <confdir>] [-t <ttyname>]\n");

@@ -994,12 +994,12 @@ const owl_cmd commands_to_init[]
 
 };
 
-void owl_command_info()
+void owl_command_info(void)
 {
   owl_function_info();
 }
 
-void owl_command_nop()
+void owl_command_nop(void)
 {
 }
 
@@ -1047,27 +1047,27 @@ char *owl_command_zlist(int argc, const char *const *argv, const char *buff)
   return(NULL);
 }
 
-void owl_command_alist()
+void owl_command_alist(void)
 {
   owl_function_buddylist(1, 0, NULL);
 }
 
-void owl_command_blist()
+void owl_command_blist(void)
 {
   owl_function_buddylist(1, 1, NULL);
 }
 
-void owl_command_toggleoneline()
+void owl_command_toggleoneline(void)
 {
   owl_function_toggleoneline();
 }
 
-void owl_command_about()
+void owl_command_about(void)
 {
   owl_function_about();
 }
 
-void owl_command_version()
+void owl_command_version(void)
 {
   owl_function_makemsg("BarnOwl version %s", OWL_VERSION_STRING);
 }
@@ -1318,44 +1318,44 @@ char *owl_command_smartfilter(int argc, const char *const *argv, const char *buf
   return filtname;
 }
 
-void owl_command_expunge()
+void owl_command_expunge(void)
 {
   owl_function_expunge();
 }
 
-void owl_command_first()
+void owl_command_first(void)
 {
   owl_global_set_rightshift(&g, 0);
   owl_function_firstmsg();
 }
 
-void owl_command_last()
+void owl_command_last(void)
 {
   owl_function_lastmsg();
 }
 
-void owl_command_resize()
+void owl_command_resize(void)
 {
   owl_function_resize();
 }
 
-void owl_command_redisplay()
+void owl_command_redisplay(void)
 {
   owl_function_full_redisplay();
   owl_global_set_needrefresh(&g);
 }
 
-void owl_command_shift_right()
+void owl_command_shift_right(void)
 {
   owl_function_shift_right();
 }
 
-void owl_command_shift_left()
+void owl_command_shift_left(void)
 {
   owl_function_shift_left();
 }
 
-void owl_command_unsuball()
+void owl_command_unsuball(void)
 {
   owl_function_unsuball();
 }
@@ -1387,7 +1387,7 @@ char *owl_command_loadloginsubs(int argc, const char *const *argv, const char *b
   return(NULL);
 }
 
-void owl_command_suspend()
+void owl_command_suspend(void)
 {
   owl_function_suspend();
 }
@@ -1671,7 +1671,7 @@ char *owl_command_bindkey(int argc, const char *const *argv, const char *buff)
   return NULL;
 }
 
-void owl_command_quit()
+void owl_command_quit(void)
 {
   owl_function_quit();
 }
@@ -2310,7 +2310,7 @@ char *owl_command_undelete(int argc, const char *const *argv, const char *buff)
   return NULL;
 }
 
-void owl_command_beep()
+void owl_command_beep(void)
 {
   owl_function_beep();
 }
