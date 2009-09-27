@@ -296,17 +296,17 @@ const owl_cmd commands_to_init[]
 	      "znol [-f file]",
 	      "Print a znol-style listing of users logged in"),
 
-  OWLCMD_ARGS("alist", owl_command_alist, OWL_CTX_INTERACTIVE,
+  OWLCMD_VOID("alist", owl_command_alist, OWL_CTX_INTERACTIVE,
 	      "List AIM users logged in",
 	      "alist",
 	      "Print a listing of AIM users logged in"),
 
-  OWLCMD_ARGS("blist", owl_command_blist, OWL_CTX_INTERACTIVE,
+  OWLCMD_VOID("blist", owl_command_blist, OWL_CTX_INTERACTIVE,
 	      "List all buddies logged in",
 	      "blist",
 	      "Print a listing of buddies logged in, regardless of protocol."),
 
-  OWLCMD_ARGS("toggle-oneline", owl_command_toggleoneline, OWL_CTX_INTERACTIVE,
+  OWLCMD_VOID("toggle-oneline", owl_command_toggleoneline, OWL_CTX_INTERACTIVE,
 	      "Toggle the style between oneline and the default style",
 	      "toggle-oneline",
 	      ""),
@@ -1047,22 +1047,19 @@ char *owl_command_zlist(int argc, const char *const *argv, const char *buff)
   return(NULL);
 }
 
-char *owl_command_alist()
+void owl_command_alist()
 {
   owl_function_buddylist(1, 0, NULL);
-  return(NULL);
 }
 
-char *owl_command_blist()
+void owl_command_blist()
 {
   owl_function_buddylist(1, 1, NULL);
-  return(NULL);
 }
 
-char *owl_command_toggleoneline()
+void owl_command_toggleoneline()
 {
   owl_function_toggleoneline();
-  return(NULL);
 }
 
 void owl_command_about()
