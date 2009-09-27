@@ -204,7 +204,7 @@ int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
   FD_ZERO(r);
   FD_ZERO(e);
   max_fd = 0;
-  len = owl_select_dispatch_count(g);
+  len = owl_select_dispatch_count();
   for(i = 0; i < len; i++) {
     d = owl_list_get_element(dl, i);
     FD_SET(d->fd, r);
