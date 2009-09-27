@@ -545,7 +545,7 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
   owl_editwin_set_cbdata(e, NULL);
 }
 
-void owl_perlconfig_mainloop()
+void owl_perlconfig_mainloop(owl_timer *t, void *data)
 {
   dSP;
   if (!owl_perlconfig_is_function("BarnOwl::Hooks::_mainloop_hook"))
