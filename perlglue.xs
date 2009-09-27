@@ -173,8 +173,7 @@ void start_question(line, callback)
 
 		owl_function_start_question(line);
 
-		SvREFCNT_inc(callback);
-		owl_editwin_set_cbdata(owl_global_get_typwin(&g), callback);
+		owl_editwin_set_cbdata(owl_global_get_typwin(&g), SvREFCNT_inc(callback));
 		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
 	}
 
@@ -189,8 +188,7 @@ void start_password(line, callback)
 
 		owl_function_start_password(line);
 
-		SvREFCNT_inc(callback);
-		owl_editwin_set_cbdata(owl_global_get_typwin(&g), callback);
+		owl_editwin_set_cbdata(owl_global_get_typwin(&g), SvREFCNT_inc(callback));
 		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
 	}
 
@@ -215,8 +213,7 @@ void start_edit_win(line, callback)
 
 		owl_global_set_typwin_active(&g);
 
-		SvREFCNT_inc(callback);
-		owl_editwin_set_cbdata(owl_global_get_typwin(&g), callback);
+		owl_editwin_set_cbdata(owl_global_get_typwin(&g), SvREFCNT_inc(callback));
 		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
 	}
 
@@ -330,8 +327,7 @@ add_dispatch(fd, cb)
 	int fd
 	SV * cb
 	CODE:
-        SvREFCNT_inc(cb);
-	owl_select_add_perl_dispatch(fd, cb);
+	owl_select_add_perl_dispatch(fd, SvREFCNT_inc(cb));
 
 void
 remove_dispatch(fd)
@@ -436,9 +432,8 @@ new_command(name, func, summary, usage, description)
 		if(!SV_IS_CODEREF(func)) {
 			croak("Command function must be a coderef!");
 		}
-		SvREFCNT_inc(func);
 		cmd.name = name;
-		cmd.cmd_perl = func;
+		cmd.cmd_perl = SvREFCNT_inc(func);
 		cmd.summary = summary;
 		cmd.usage = usage;
 		cmd.description = description;
