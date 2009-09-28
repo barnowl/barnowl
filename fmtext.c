@@ -421,8 +421,8 @@ int owl_fmtext_truncate_lines(const owl_fmtext *in, int aline, int lines, owl_fm
  * new line for now.
  *
  * NOTE: This needs to be modified to deal with backing up if we find
- * a SPACING * COMBINING MARK at the end of a line. If that happens,
- * we should back up to * the last non-mark character and stop there.
+ * a SPACING COMBINING MARK at the end of a line. If that happens, we
+ * should back up to the last non-mark character and stop there.
  *
  * NOTE: If a line ends at bcol, we omit the newline. This is so printing
  * to ncurses works.
