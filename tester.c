@@ -11,7 +11,6 @@ int owl_dict_regtest(void);
 int owl_variable_regtest(void);
 int owl_filter_regtest(void);
 int owl_obarray_regtest(void);
-int owl_fmtext_regtest(void);
 
 int main(int argc, char **argv, char **env)
 {
@@ -29,7 +28,6 @@ int main(int argc, char **argv, char **env)
   numfailures += owl_variable_regtest();
   numfailures += owl_filter_regtest();
   numfailures += owl_obarray_regtest();
-  numfailures += owl_fmtext_regtest();
   if (numfailures) {
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
@@ -304,37 +302,6 @@ int owl_obarray_regtest(void) {
   FAIL_UNLESS("Didn't find a string that isn't there", p == NULL);
 
   printf("# END testing owl_obarray (%d failures)\n", numfailed);
-
-  return numfailed;
-}
-
-
-int owl_fmtext_regtest(void) {
-  int numfailed = 0;
-  char *p;
-
-  owl_fmtext fm1, fm2;
-
-  owl_fmtext_init_null(&fm1);
-  owl_fmtext_init_null(&fm2);
-
-  printf("# BEGIN testing owl_fmtext\n");
-
-  /* Test truncate_cols:
-   * - newline removal on long lines
-   * - handle lines without trailing newlines
-   * - don't kill short lines
-   */
-  owl_fmtext_append_normal(&fm1, "foo\n1234567890\n1234567890\nbaz");
-  owl_fmtext_truncate_cols(&fm1, 1, 5, &fm2);
-  p = owl_fmtext_print_plain(&fm2);
-  FAIL_UNLESS("returned truncating columns worked properly", p && !strcmp(p, "oo\n2345623456az"));
-  owl_free(p);
-
-  owl_fmtext_free(&fm1);
-  owl_fmtext_free(&fm2);
-
-  printf("# END testing owl_fmtext (%d failures)\n", numfailed);
 
   return numfailed;
 }

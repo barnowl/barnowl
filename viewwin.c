@@ -34,7 +34,13 @@ void owl_viewwin_append_text(owl_viewwin *v, const char *text) {
  */
 void owl_viewwin_init_fmtext(owl_viewwin *v, WINDOW *win, int winlines, int wincols, const owl_fmtext *fmtext)
 {
+  char *text;
+
   owl_fmtext_copy(&(v->fmtext), fmtext);
+  text = owl_fmtext_print_plain(fmtext);
+  if (text[0] != '\0' && text[strlen(text) - 1] != '\n') {
+      owl_fmtext_append_normal(&(v->fmtext), "\n");
+  }
   v->textlines=owl_fmtext_num_lines(&(v->fmtext));
   v->topline=0;
   v->rightshift=0;

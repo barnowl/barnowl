@@ -417,7 +417,8 @@ int owl_fmtext_truncate_lines(const owl_fmtext *in, int aline, int lines, owl_fm
 
 /* Truncate the message so that each line begins at column 'acol' and
  * ends at 'bcol' or sooner.  The first column is number 0.  The new
- * message is placed in 'out'.
+ * message is placed in 'out'.  The message is expected to end in a
+ * new line for now.
  *
  * NOTE: This needs to be modified to deal with backing up if we find
  * a SPACING * COMBINING MARK at the end of a line. If that happens,
@@ -441,9 +442,8 @@ void owl_fmtext_truncate_cols(const owl_fmtext *in, int acol, int bcol, owl_fmte
   while (ptr_s <= last) {
     ptr_e=strchr(ptr_s, '\n');
     if (!ptr_e) {
-      /* set it to the NULL at the end of the string, to handle a line that is
-       * not newline-terminated */
-      ptr_e = last+1;
+      /* but this shouldn't happen if we end in a \n */
+      break;
     }
     
     if (ptr_e == ptr_s) {
@@ -498,11 +498,7 @@ void owl_fmtext_truncate_cols(const owl_fmtext *in, int acol, int bcol, owl_fmte
     else {
       owl_fmtext_append_normal(out, "\n");
     }
-    /* Be careful if ptr_e is pointing to the NULL if we do not end with a
-     * newline. We don't really need this check, but pointing ptr_s past the
-     * NULL byte is just asking for problems later.
-     */
-    ptr_s = (ptr_e <= last) ? g_utf8_next_char(ptr_e) : ptr_e;
+    ptr_s = g_utf8_next_char(ptr_e);
   }
 }
 
