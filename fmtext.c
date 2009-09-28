@@ -271,6 +271,7 @@ void _owl_fmtext_wcolor_set(WINDOW *w, short pair) /*noproto*/
 {
   if (owl_global_get_hascolors(&g)) {
       wcolor_set(w,pair,NULL);
+      wbkgdset(w, COLOR_PAIR(pair));
   }
 }
 
@@ -364,6 +365,7 @@ void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_search) /*n
   if (s) {
     waddstr(w, s);
   }
+  wbkgdset(w, 0);
 }
 
 void owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w)
