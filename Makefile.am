@@ -1,4 +1,4 @@
-ACLOCAL_AMFLAGS = --install -I m4
+ACLOCAL_AMFLAGS = -I m4
 
 bin_PROGRAMS = barnowl.bin
 check_PROGRAMS = tester
