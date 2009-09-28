@@ -28,7 +28,7 @@
 
 MODULE = BarnOwl		PACKAGE = BarnOwl
 
-char *
+const char *
 command(cmd, ...)
 	const char *cmd
 	PREINIT:
@@ -99,7 +99,7 @@ zephyr_zwrite(cmd,msg)
 	CODE:
 		i = owl_zwrite_create_and_send_from_line(cmd, msg);
 
-char *
+const char *
 ztext_stylestrip(ztext)
 	const char *ztext
 	PREINIT:
@@ -112,7 +112,7 @@ ztext_stylestrip(ztext)
 	CLEANUP:
 		if (rv) owl_free(rv);
 
-char *
+const char *
 zephyr_smartstrip_user(in)
 	const char *in
 	PREINIT:
@@ -127,7 +127,7 @@ zephyr_smartstrip_user(in)
 	CLEANUP:
 		owl_free(rv);
 
-char *
+const char *
 zephyr_getsubs()
 	PREINIT:
 		char *rv = NULL;
@@ -308,7 +308,7 @@ _remove_filter(filterName)
 		}
 	}
 
-char *
+const char *
 wordwrap(in, cols)
 	const char *in
 	int cols
@@ -552,7 +552,7 @@ replace_region(string)
 	OUTPUT:
 		RETVAL
 
-char *
+const char *
 get_region()
 	PREINIT:
 		char *region;
