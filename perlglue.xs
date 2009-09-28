@@ -415,18 +415,13 @@ redisplay()
 		owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 	}
 
-char *
+const char *
 get_zephyr_variable(name)
 	const char *name;
-	PREINIT:
-		char *result;
 	CODE:
-		result = owl_strdup(owl_zephyr_get_variable(name));
-		RETVAL = result;
+		RETVAL = owl_zephyr_get_variable(name);
 	OUTPUT:
 		RETVAL
-	CLEANUP:
-		owl_free(result);
 
 MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 
