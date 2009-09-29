@@ -3192,7 +3192,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
 /* Dump messages in the current view to the file 'filename'. */
 void owl_function_dump(const char *filename) 
 {
-  int i, j, count;
+  int i, j;
   owl_message *m;
   const owl_view *v;
   FILE *file;
@@ -3215,7 +3215,6 @@ void owl_function_dump(const char *filename)
     return;
   }
 
-  count=0;
   j=owl_view_get_size(v);
   for (i=0; i<j; i++) {
     m=owl_view_get_element(v, i);
