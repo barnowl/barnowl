@@ -31,7 +31,6 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
   werase(recwin);
 
   recwinlines=owl_global_get_recwin_lines(&g);
-  topmsg=owl_global_get_topmsg(&g);
   viewsize=owl_view_get_size(v);
 
   /* if there are no messages or if topmsg is past the end of the messages,
