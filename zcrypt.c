@@ -129,7 +129,6 @@ int owl_zcrypt_encrypt(char *out, const char *in, const char *class, const char 
   unsigned char input[8], output[8];
   int size, length, i;
   const char *inbuff = NULL, *inptr;
-  int use_buffer = FALSE;
   int num_blocks=0, last_block_size=0;
 
   fname=GetZephyrVarKeyFile("zcrypt", class, instance);
@@ -148,7 +147,6 @@ int owl_zcrypt_encrypt(char *out, const char *in, const char *class, const char 
   length=strlen(inbuff);
   num_blocks=(length+7)/8;
   last_block_size=((length+7)%8)+1;
-  use_buffer=TRUE;
 
   strcpy(out, "");
   
