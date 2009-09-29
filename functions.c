@@ -471,7 +471,6 @@ void owl_function_zcrypt(const char *line, const char *msg)
 
   owl_zwrite_set_message(&z, cryptmsg);
   owl_zwrite_set_opcode(&z, "crypt");
-  mymsg=cryptmsg;
     
   owl_zwrite_send_message(&z);
   owl_function_makemsg("Waiting for ack...");
