@@ -465,7 +465,6 @@ static void oe_reframe(owl_editwin *e) {
   int goal = e->winlines / 2;
   int index;
   int count = 0;
-  int point;
   int n, i;
   int last;
 
@@ -474,7 +473,6 @@ static void oe_reframe(owl_editwin *e) {
      display text */
   e->lock = 0; /* we can (must) tread on the locktext */
 
-  point = e->index;
   last = -1;
   while (count < goal) {
     index = e->index;
