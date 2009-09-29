@@ -522,6 +522,7 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
 
   if(cb == NULL) {
     owl_function_error("Perl callback is NULL!");
+    return;
   }
   text = owl_new_sv(owl_editwin_get_text(e));
 
