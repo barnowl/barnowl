@@ -695,7 +695,7 @@ char * owl_strip_format_chars(const char *in)
       if (owl_fmtext_is_format_char(g_utf8_get_char(p))) {
 	strncat(r, s, p-s);
 	p = g_utf8_next_char(p);
-	while (p && owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+	while (owl_fmtext_is_format_char(g_utf8_get_char(p))) {
 	  p = g_utf8_next_char(p);
 	}
 	s = p;

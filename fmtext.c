@@ -344,7 +344,7 @@ void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_search) /*n
       attr = f->default_attrs;
       fg = f->default_fgcolor;
       bg = f->default_bgcolor;
-      while (p && owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+      while (owl_fmtext_is_format_char(g_utf8_get_char(p))) {
 	_owl_fmtext_update_attributes(g_utf8_get_char(p), &attr, &fg, &bg);
 	p = g_utf8_next_char(p);
       }
