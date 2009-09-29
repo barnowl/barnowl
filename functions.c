@@ -645,7 +645,7 @@ void owl_function_nextmsg_full(const char *filter, int skip_deleted, int last_if
 
 void owl_function_prevmsg_full(const char *filter, int skip_deleted, int first_if_none)
 {
-  int curmsg, i, viewsize, found;
+  int curmsg, i, found;
   const owl_view *v;
   const owl_filter *f = NULL;
   const owl_message *m;
@@ -661,7 +661,6 @@ void owl_function_prevmsg_full(const char *filter, int skip_deleted, int first_i
   }
 
   curmsg=owl_global_get_curmsg(&g);
-  viewsize=owl_view_get_size(v);
   found=0;
 
   /* just check to make sure we're in bounds... */
