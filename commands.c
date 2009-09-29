@@ -1016,21 +1016,12 @@ char *owl_command_help(int argc, const char *const *argv, const char *buff)
 
 char *owl_command_zlist(int argc, const char *const *argv, const char *buff)
 {
-  int elapsed=0, timesort=0;
   const char *file=NULL;
 
   argc--;
   argv++;
   while (argc) {
-    if (!strcmp(argv[0], "-e")) {
-      elapsed=1;
-      argc--;
-      argv++;
-    } else if (!strcmp(argv[0], "-t")) {
-      timesort=1;
-      argc--;
-      argv++;
-    } else if (!strcmp(argv[0], "-f")) {
+    if (!strcmp(argv[0], "-f")) {
       if (argc==1) {
 	owl_function_makemsg("zlist: -f needs an argument");
 	return(NULL);
