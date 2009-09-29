@@ -315,7 +315,6 @@ char *owl_text_quote(const char *in, const char *toquote, const char *quotestr)
   in_len=strlen(in);
   toquote_len=strlen(toquote);
   quotestr_len=strlen(quotestr);
-  out=owl_malloc((in_len*quotestr_len)+30);
   place=0;
   escape = 0;
   for (i=0; i<in_len; i++) {
