@@ -148,58 +148,38 @@ void owl_start_curses(void) {
   owl_start_color();
 }
 
-void owl_setup_default_filters(void) {
+static void owl_setup_default_filters(void)
+{
   owl_filter *f;
+  int i;
+  static const struct {
+    const char *name;
+    const char *desc;
+  } filters[] = {
+    { "personal",
+      "isprivate ^true$ and ( not type ^zephyr$ or ( class ^message  ) )" },
+    { "trash",
+      "class ^mail$ or opcode ^ping$ or type ^admin$ or ( not login ^none$ )" },
+    { "wordwrap", "not ( type ^admin$ or type ^zephyr$ )" },
+    { "ping", "opcode ^ping$" },
+    { "auto", "opcode ^auto$" },
+    { "login", "not login ^none$" },
+    { "reply-lockout", "class ^noc or class ^mail$" },
+    { "out", "direction ^out$" },
+    { "aim", "type ^aim$" },
+    { "zephyr", "type ^zephyr$" },
+    { "none", "false" },
+    { "all", "true" },
+    { NULL, NULL }
+  };
 
   owl_function_debugmsg("startup: creating default filters");
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "personal", "isprivate ^true$ and ( not type ^zephyr$"
-                             " or ( class ^message  ) )");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
 
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "wordwrap", "not ( type ^admin$ or type ^zephyr$ ) ");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "trash", "class ^mail$ or opcode ^ping$ or type ^admin$ or ( not login ^none$ )");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "ping", "opcode ^ping$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "auto", "opcode ^auto$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "login", "not login ^none$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "reply-lockout", "class ^noc or class ^mail$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "out", "direction ^out$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "aim", "type ^aim$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "zephyr", "type ^zephyr$");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "none", "false");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
-
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, "all", "true");
-  owl_list_append_element(owl_global_get_filterlist(&g), f);
+  for (i = 0; filters[i].name != NULL; i++) {
+    f = owl_malloc(sizeof(owl_filter));
+    owl_filter_init_fromstring(f, filters[i].name, filters[i].desc);
+    owl_list_append_element(owl_global_get_filterlist(&g), f);
+  }
 }
 
 /*
