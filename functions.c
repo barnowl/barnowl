@@ -2132,7 +2132,7 @@ void owl_function_create_filter(int argc, const char *const *argv)
 {
   owl_filter *f;
   const owl_view *v;
-  int ret, inuse=0;
+  int inuse = 0;
 
   if (argc < 2) {
     owl_function_error("Wrong number of arguments to filter command");
@@ -2182,10 +2182,8 @@ void owl_function_create_filter(int argc, const char *const *argv)
   }
 
   /* create the filter and check for errors */
-  f=owl_malloc(sizeof(owl_filter));
-  ret=owl_filter_init(f, argv[1], argc-2, argv+2);
-  if (ret==-1) {
-    owl_free(f);
+  f = owl_filter_new(argv[1], argc-2, argv+2);
+  if (f == NULL) {
     owl_function_error("Invalid filter");
     return;
   }
@@ -2381,8 +2379,7 @@ char *owl_function_classinstfilt(const char *c, const char *i)
   owl_free(tmpclass);
   if (tmpinstance) owl_free(tmpinstance);
 
-  f=owl_malloc(sizeof(owl_filter));
-  owl_filter_init_fromstring(f, filtname, argbuff);
+  f = owl_filter_new_fromstring(filtname, argbuff);
 
   /* add it to the global list */
   owl_global_add_filter(&g, f);
@@ -2420,8 +2417,6 @@ char *owl_function_zuserfilt(const char *user)
   }
 
   /* create the new-internal filter */
-  f=owl_malloc(sizeof(owl_filter));
-
   esclonguser = owl_text_quote(longuser, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
 
   argbuff=owl_sprintf("( type ^zephyr$ and filter personal and "
@@ -2429,7 +2424,7 @@ char *owl_function_zuserfilt(const char *user)
       "recipient ^%1$s$ ) ) ) or ( ( class ^login$ ) and ( sender ^%1$s$ ) )",
       esclonguser);
 
-  owl_filter_init_fromstring(f, filtname, argbuff);
+  f = owl_filter_new_fromstring(filtname, argbuff);
 
   /* add it to the global list */
   owl_global_add_filter(&g, f);
@@ -2464,8 +2459,6 @@ char *owl_function_aimuserfilt(const char *user)
   }
 
   /* create the new-internal filter */
-  f=owl_malloc(sizeof(owl_filter));
-
   escuser = owl_text_quote(user, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
 
   argbuff = owl_sprintf(
@@ -2473,7 +2466,7 @@ char *owl_function_aimuserfilt(const char *user)
       "( sender ^%2$s$ and recipient ^%1$s$ ) ) )",
       escuser, owl_global_get_aim_screenname_for_filters(&g));
 
-  owl_filter_init_fromstring(f, filtname, argbuff);
+  f = owl_filter_new_fromstring(filtname, argbuff);
 
   /* add it to the global list */
   owl_global_add_filter(&g, f);
@@ -2505,7 +2498,7 @@ char *owl_function_typefilt(const char *type)
 
   argbuff = owl_sprintf("type ^%s$", esctype);
 
-  owl_filter_init_fromstring(f, filtname, argbuff);
+  f = owl_filter_new_fromstring(filtname, argbuff);
 
   /* add it to the global list */
   owl_global_add_filter(&g, f);
@@ -2824,18 +2817,14 @@ void owl_function_punt(const char *filter, int direction)
 {
   owl_filter *f;
   owl_list *fl;
-  int ret, i, j;
+  int i, j;
   fl=owl_global_get_puntlist(&g);
 
   /* first, create the filter */
-  f=owl_malloc(sizeof(owl_filter));
-
   owl_function_debugmsg("About to filter %s", filter);
-  ret=owl_filter_init_fromstring(f, "punt-filter", filter);
-  if (ret) {
+  f = owl_filter_new_fromstring("punt-filter", filter);
+  if (f == NULL) {
     owl_function_error("Error creating filter for zpunt");
-    owl_filter_free(f);
-    owl_free(f);
     return;
   }
 
@@ -2846,17 +2835,15 @@ void owl_function_punt(const char *filter, int direction)
       owl_function_debugmsg("found an equivalent punt filter");
       /* if we're punting, then just silently bow out on this duplicate */
       if (direction==0) {
-	owl_filter_free(f);
-	owl_free(f);
+	owl_filter_delete(f);
 	return;
       }
 
       /* if we're unpunting, then remove this filter from the puntlist */
       if (direction==1) {
-	owl_filter_free(owl_list_get_element(fl, i));
+	owl_filter_delete(owl_list_get_element(fl, i));
 	owl_list_remove_element(fl, i);
-        owl_filter_free(f);
-	owl_free(f);
+	owl_filter_delete(f);
 	return;
       }
     }

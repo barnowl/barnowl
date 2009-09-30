@@ -2425,7 +2425,7 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
       if(i < owl_list_get_size(fl)) {
         f = owl_list_get_element(fl, i);
         owl_list_remove_element(fl, i);
-        owl_filter_free(f);
+        owl_filter_delete(f);
         return;
       } else {
         owl_function_error("No such filter number: %d", i+1);

@@ -634,7 +634,7 @@ void owl_global_remove_filter(owl_global *g, const char *name) {
   for (i=0; i<j; i++) {
     f=owl_list_get_element(&(g->filterlist), i);
     if (!strcmp(name, owl_filter_get_name(f))) {
-      owl_filter_free(f);
+      owl_filter_delete(f);
       owl_list_remove_element(&(g->filterlist), i);
       break;
     }

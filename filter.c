@@ -1,19 +1,25 @@
 #include <string.h>
 #include "owl.h"
 
-int owl_filter_init_fromstring(owl_filter *f, const char *name, const char *string)
+owl_filter *owl_filter_new_fromstring(const char *name, const char *string)
 {
+  owl_filter *f;
   char **argv;
-  int argc, out;
+  int argc;
 
-  argv=owl_parseline(string, &argc);
-  out=owl_filter_init(f, name, argc, strs(argv));
+  argv = owl_parseline(string, &argc);
+  f = owl_filter_new(name, argc, strs(argv));
   owl_parsefree(argv, argc);
-  return(out);
+
+  return f;
 }
 
-int owl_filter_init(owl_filter *f, const char *name, int argc, const char *const *argv)
+owl_filter *owl_filter_new(const char *name, int argc, const char *const *argv)
 {
+  owl_filter *f;
+
+  f = owl_malloc(sizeof(owl_filter));
+
   f->name=owl_strdup(name);
   f->fgcolor=OWL_COLOR_DEFAULT;
   f->bgcolor=OWL_COLOR_DEFAULT;
@@ -39,17 +45,19 @@ int owl_filter_init(owl_filter *f, const char *name, int argc, const char *const
     argv+=2;
   }
 
-  if(!(f->root = owl_filter_parse_expression(argc, argv, NULL)))
-    return(-1);
+  if (!(f->root = owl_filter_parse_expression(argc, argv, NULL))) {
+    owl_filter_delete(f);
+    return NULL;
+  }
 
   /* Now check for recursion. */
   if (owl_filter_is_toodeep(f)) {
     owl_function_error("Filter loop!");
-    owl_filter_free(f);
-    return(-1);
+    owl_filter_delete(f);
+    return NULL;
   }
 
-  return(0);
+  return f;
 }
 
 
@@ -254,11 +262,15 @@ int owl_filter_is_toodeep(const owl_filter *f)
   return owl_filterelement_is_toodeep(f, f->root);
 }
 
-void owl_filter_free(owl_filter *f)
+void owl_filter_delete(owl_filter *f)
 {
-  if(f->root) {
+  if (f == NULL)
+    return;
+  if (f->root) {
     owl_filterelement_free(f->root);
     owl_free(f->root);
   }
-  if (f->name) owl_free(f->name);
+  if (f->name)
+    owl_free(f->name);
+  owl_free(f);
 }

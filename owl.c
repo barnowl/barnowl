@@ -150,7 +150,6 @@ void owl_start_curses(void) {
 
 static void owl_setup_default_filters(void)
 {
-  owl_filter *f;
   int i;
   static const struct {
     const char *name;
@@ -175,11 +174,10 @@ static void owl_setup_default_filters(void)
 
   owl_function_debugmsg("startup: creating default filters");
 
-  for (i = 0; filters[i].name != NULL; i++) {
-    f = owl_malloc(sizeof(owl_filter));
-    owl_filter_init_fromstring(f, filters[i].name, filters[i].desc);
-    owl_list_append_element(owl_global_get_filterlist(&g), f);
-  }
+  for (i = 0; filters[i].name != NULL; i++)
+    owl_list_append_element(owl_global_get_filterlist(&g),
+			    owl_filter_new_fromstring(filters[i].name,
+						      filters[i].desc));
 }
 
 /*
