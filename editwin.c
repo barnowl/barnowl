@@ -1070,7 +1070,7 @@ void owl_editwin_kill_region(owl_editwin *e)
   if (e->index > e->mark)
     owl_editwin_exchange_point_and_mark(e);
 
-  owl_editwin_replace(e, oe_copy_region(e), "");
+  owl_editwin_replace_internal(e, oe_copy_region(e), "");
 }
 
 void owl_editwin_move_to_line_start(owl_editwin *e)
