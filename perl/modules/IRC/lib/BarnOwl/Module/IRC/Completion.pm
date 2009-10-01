@@ -73,10 +73,10 @@ sub complete_irc_nick {
 sub on_message {
     my $m = shift;
     return unless $m->type eq 'IRC';
-    if ($m->recipient !~ m{^#}) {
+    if ($m->recipient && $m->recipient !~ m{^#}) {
         $users{$m->recipient} = 1;
     }
-    if ($m->sender !~ m{^#}) {
+    if ($m->sender && $m->sender !~ m{^#}) {
         $users{$m->sender} = 1;
     }
     $servers{$m->server} = 1;
