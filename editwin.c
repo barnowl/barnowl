@@ -325,21 +325,15 @@ static void oe_save_excursion(owl_editwin *e, oe_excursion *x)
 
 static void oe_release_excursion(owl_editwin *e, oe_excursion *x)
 {
-  oe_excursion *p;
+  oe_excursion **px;
 
   x->valid = 0;
-  if (e->excursions == NULL)
-    /* XXX huh. */ ;
-  else if (e->excursions == x)
-    e->excursions = x->next;
-  else {
-    for (p = e->excursions; p->next != NULL; p = p->next)
-      if (p->next == x) {
-	p->next = p->next->next;
-	break;
-      }
-    /* and if we ran off the end? XXX */
-  }
+  for (px = &e->excursions; *px != NULL; px = &(*px)->next)
+    if (*px == x) {
+      *px = x->next;
+      return;
+    }
+  abort();
 }
 
 static void oe_restore_excursion(owl_editwin *e, oe_excursion *x)
