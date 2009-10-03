@@ -7,6 +7,8 @@ use Test::More qw(no_plan);
 use File::Basename;
 BEGIN {require (dirname($0) . "/mock.pl");};
 
+use BarnOwl::Complete::Filter qw(complete_filter_expr);
+
 =head1 DESCRIPTION
 
 Basic tests for tab-completion functionality.
@@ -19,6 +21,19 @@ sub test_tokenize {
     my $before_point = shift;
     my $after_point = shift;
     
+    my $ctx = BarnOwl::Completion::Context->new($before_point,
+                                                $after_point);
+    is($ctx->line, $before_point . $after_point);
+    is($ctx->point, length $before_point);
+
+    test_ctx($ctx, @_);
+}
+
+sub test_ctx {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my $ctx = shift;
+
     my $words = shift;
     my $word = shift;
     my $word_point = shift;
@@ -26,11 +41,6 @@ sub test_tokenize {
     my $word_start = shift;
     my $word_end   = shift;
 
-    my $ctx = BarnOwl::Completion::Context->new($before_point,
-                                                $after_point);
-
-    is($ctx->line, $before_point . $after_point);
-    is($ctx->point, length $before_point);
     is_deeply($ctx->words, $words);
     if (defined($word)) {
         is($ctx->word, $word, "Correct current word.");
@@ -38,6 +48,20 @@ sub test_tokenize {
         is($ctx->word_start, $word_start, "Correct start of word");
         is($ctx->word_end,   $word_end, "Correct end of word");
     }
+}
+
+sub test_shift {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my $before_point = shift;
+    my $after_point = shift;
+    my $shift = shift;
+    
+    my $ctx = BarnOwl::Completion::Context->new($before_point,
+                                                $after_point);
+    $ctx = $ctx->shift_words($shift);
+
+    test_ctx($ctx, @_);
 }
 
 
@@ -107,6 +131,33 @@ test_tokenize(q{Hello }, q{ World},
               [qw(Hello World)],
               1, -1, 7, 12);
 
+## Test Context::shift
+test_shift('lorem ipsum dolor ', 'sit amet', 0,
+           [qw(lorem ipsum dolor sit amet)],
+           3, 0, 18, 21);
+
+test_shift('lorem ipsum dolor ', 'sit amet', 1,
+           [qw(ipsum dolor sit amet)],
+           2, 0, 12, 15);
+
+test_shift('lorem ipsum dolor ', 'sit amet', 2,
+           [qw(dolor sit amet)],
+           1, 0, 6, 9);
+
+test_shift('lorem ipsum dolor ', 'sit amet', 3,
+           [qw(sit amet)],
+           0, 0, 0, 3);
+
+eval {
+    my $before_point = 'lorem ipsum dolor';
+    my $after_point = 'sit amet';
+    my $shift = 4;
+
+    my $ctx = BarnOwl::Completion::Context->new($before_point,
+                                                $after_point);
+    $ctx = $ctx->shift_words($shift);
+};
+like($@, qr/^Context::shift: Unable to shift /, "Correctly die when shifting away the point");
 
 ## Test common_prefix
 
@@ -162,10 +213,10 @@ test_complete('zwrite -c nelhage', '', [qw(nelhage nethack sipb help)]);
 test_complete('zwrite -c nelhage -i ', '', [qw()]);
 
 test_complete('zwrite -c nelhage ', '',
-              [qw(-n -C -m -c -i -r -O nelhage asedeno geofft)]);
+              [qw(-n -C -m -i -r -O nelhage asedeno geofft)]);
 
 test_complete('zwrite -c nelhage ', '-',
-              [qw(-n -C -m -c -i -r -O nelhage asedeno geofft)]);
+              [qw(-n -C -m -i -r -O nelhage asedeno geofft)]);
 
 test_complete('zwrite -c nelhage -- ', '',
               [qw(nelhage asedeno geofft)]);
@@ -177,7 +228,8 @@ sub complete_word {
                           {
                               "-d" => sub {qw(some words for completing)},
                           },
-                          sub {$_[1]});
+                          sub {$_[1]},
+                          repeat_flags => 1);
 }
 
 test_complete('cmd -a -d foo -c hello ','',
@@ -201,6 +253,40 @@ test_complete('cmd foo -- ','',
 
 test_complete('cmd foo -- bar ','',
               [qw(2)], \&complete_word);
+
+
+# Test the filter expression completer
+test_complete('', '',
+              [qw[( body class direction false filter hostname instance login not opcode perl realm recipient sender true type]],
+              \&complete_filter_expr);
+
+test_complete('not ', '',
+              [qw[( body class direction false filter hostname instance login not opcode perl realm recipient sender true type]],
+              \&complete_filter_expr);
+
+test_complete('true ', '',
+              [qw[and or]],
+              \&complete_filter_expr);
+
+test_complete('( true ', '',
+              [qw[and or )]],
+              \&complete_filter_expr);
+
+test_complete('( body static and body analysis and not false and class davidben and ( instance python or instance hotd ', '',
+              [qw[and or )]],
+              \&complete_filter_expr);
+
+test_complete('type ', '',
+              [qw[admin aim zephyr]],
+              \&complete_filter_expr);
+
+test_complete('direction ', '',
+              [qw[in out none]],
+              \&complete_filter_expr);
+
+test_complete('login ', '',
+              [qw[login logout none]],
+              \&complete_filter_expr);
 
 1;
 

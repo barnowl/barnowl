@@ -1,2 +1,2 @@
 #!/bin/sh
-prove t/
+prove t/ --perl ./perl_tester

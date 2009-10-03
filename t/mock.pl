@@ -6,7 +6,6 @@ use strict;
 use warnings;
 use Carp;
 
-sub bootstrap {}
 sub get_data_dir {"."}
 sub get_config_dir {"."}
 sub create_style {}

@@ -423,6 +423,17 @@ get_zephyr_variable(name)
 	OUTPUT:
 		RETVAL
 
+const char *
+skiptokens(str, n)
+	const char *str;
+	int n;
+	CODE:
+		RETVAL = skiptokens(str, n);
+	OUTPUT:
+		RETVAL
+
+
+
 MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 
 
