@@ -345,7 +345,7 @@ void owl_select_handle_intr(sigset_t *restore)
   owl_process_input_char(in);
 }
 
-void owl_select_check_tstp() {
+void owl_select_check_tstp(void) {
   if(owl_global_is_sigstp(&g)) {
     owl_function_makemsg("Use :suspend to suspend.");
     owl_global_unset_got_sigstp(&g);
