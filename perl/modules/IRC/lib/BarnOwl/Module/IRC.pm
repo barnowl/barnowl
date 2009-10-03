@@ -398,10 +398,10 @@ sub process_msg {
     # Strip whitespace. In the future -- send one message/line?
     $body =~ tr/\n\r/  /;
     if ($body =~ /^\/me (.*)/) {
-        $conn->conn->me($to, $1);
+        $conn->conn->me($to, Encode::encode('utf-8', $1));
         $body = '* '.$conn->nick.' '.$1;
     } else {
-        $conn->conn->privmsg($to, $body);
+        $conn->conn->privmsg($to, Encode::encode('utf-8', $body));
     }
     my $msg = BarnOwl::Message->new(
         type        => 'IRC',
