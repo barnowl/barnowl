@@ -56,21 +56,15 @@ void owl_fmtext_append_attr(owl_fmtext *f, const char *text, char attr, short fg
   _owl_fmtext_realloc(f, newlen);
 
   /* Set attributes */
-  if (a) {
-    memset(attrbuff,0,6);
-    g_unichar_to_utf8(OWL_FMTEXT_UC_ATTR | attr, attrbuff);
-    strcat(f->textbuff, attrbuff);      
-  }
-  if (fg) {
-    memset(attrbuff,0,6);
-    g_unichar_to_utf8(OWL_FMTEXT_UC_FGCOLOR | fgcolor, attrbuff);
-    strcat(f->textbuff, attrbuff);      
-  }
-  if (bg) {
-    memset(attrbuff,0,6);
-    g_unichar_to_utf8(OWL_FMTEXT_UC_BGCOLOR | bgcolor, attrbuff);
-    strcat(f->textbuff, attrbuff);      
-  }
+  if (a)
+    strncat(f->textbuff, attrbuff,
+	    g_unichar_to_utf8(OWL_FMTEXT_UC_ATTR | attr, attrbuff));
+  if (fg)
+    strncat(f->textbuff, attrbuff,
+	    g_unichar_to_utf8(OWL_FMTEXT_UC_FGCOLOR | fgcolor, attrbuff));
+  if (bg)
+    strncat(f->textbuff, attrbuff,
+	    g_unichar_to_utf8(OWL_FMTEXT_UC_BGCOLOR | bgcolor, attrbuff));
   
   strcat(f->textbuff, text);
 
@@ -201,21 +195,15 @@ void _owl_fmtext_append_fmtext(owl_fmtext *f, const owl_fmtext *in, int start, i
   newlen=strlen(f->textbuff)+(stop-start+1) + (4 * (a + fg + bg)) + 12;
   _owl_fmtext_realloc(f, newlen);
 
-  if (a) {
-    memset(attrbuff,0,6);
-    g_unichar_to_utf8(OWL_FMTEXT_UC_ATTR | attr, attrbuff);
-    strcat(f->textbuff, attrbuff);      
-  }
-  if (fg) {
-    memset(attrbuff,0,6);
-    g_unichar_to_utf8(OWL_FMTEXT_UC_FGCOLOR | fgcolor, attrbuff);
-    strcat(f->textbuff, attrbuff);      
-  }
-  if (bg) {
-    memset(attrbuff,0,6);
-    g_unichar_to_utf8(OWL_FMTEXT_UC_BGCOLOR | bgcolor, attrbuff);
-    strcat(f->textbuff, attrbuff);      
-  }
+  if (a)
+    strncat(f->textbuff, attrbuff,
+	    g_unichar_to_utf8(OWL_FMTEXT_UC_ATTR | attr, attrbuff));
+  if (fg)
+    strncat(f->textbuff, attrbuff,
+	    g_unichar_to_utf8(OWL_FMTEXT_UC_FGCOLOR | fgcolor, attrbuff));
+  if (bg)
+    strncat(f->textbuff, attrbuff,
+	    g_unichar_to_utf8(OWL_FMTEXT_UC_BGCOLOR | bgcolor, attrbuff));
 
   strncat(f->textbuff, in->textbuff+start, stop-start+1);
 

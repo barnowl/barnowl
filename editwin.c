@@ -1251,8 +1251,6 @@ static void oe_insert_char(owl_editwin *e, gunichar c)
     c = '\n';
 
   if (!g_unichar_iscntrl(c) || c == '\n' || c== '\t' ) {
-    memset(tmp, 0, 7);
-
     if (c == '\n' && e->style == OWL_EDITWIN_STYLE_ONELINE) {
       return;
     }
@@ -1295,7 +1293,7 @@ static void oe_insert_char(owl_editwin *e, gunichar c)
     if (replaced >= 0 && (c == ' ' || c == '\t'))
       return; /* our work here is done */
 
-    g_unichar_to_utf8(c, tmp);
+    tmp[g_unichar_to_utf8(c, tmp)] = '\0';
     owl_editwin_replace(e, 0, tmp);
   }
 }
