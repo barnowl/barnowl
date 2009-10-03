@@ -195,6 +195,11 @@ sub _new_command {
     (my $symbol = $command) =~ s/-/_/g;
     my $package = "BarnOwl";
 
+
+    if(!contains(\@BarnOwl::all_commands, $command)) {
+        push @BarnOwl::all_commands, $command;
+    }
+
     if($symbol =~ m{^edit:(.+)$}) {
         $symbol = $1;
         $package = "BarnOwl::Editwin";
@@ -220,10 +225,6 @@ sub _new_command {
           && !contains(*{"${package}::EXPORT_OK"}{ARRAY}, $symbol)) {
             push @{*{"${package}::EXPORT_OK"}{ARRAY}}, $symbol;
         }
-    }
-
-    if(!contains(\@BarnOwl::all_commands, $command)) {
-        push @BarnOwl::all_commands, $command;
     }
 }
 
