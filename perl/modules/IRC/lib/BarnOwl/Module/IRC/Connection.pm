@@ -203,6 +203,14 @@ sub on_quit {
 sub on_disconnect {
     my $self = shift;
     delete $BarnOwl::Module::IRC::ircnets{$self->alias};
+    for my $k (keys %BarnOwl::Module::IRC::channels) {
+        my @conns = grep {$_ ne $self} @{$BarnOwl::Module::IRC::channels{$k}};
+        if(@conns) {
+            $BarnOwl::Module::IRC::channels{$k} = \@conns;
+        } else {
+            delete $BarnOwl::Module::IRC::channels{$k};
+        }
+    }
     BarnOwl::remove_dispatch($self->{FD});
     BarnOwl::admin_message('IRC',
                            "[" . $self->alias . "] Disconnected from server");
