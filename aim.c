@@ -248,24 +248,64 @@ void owl_aim_login_error(const char *message)
   owl_select_remove_timer(g.aim_nop_timer);
 }
 
-int owl_aim_send_im(const char *to, const char *msg)
+/*
+ * I got these constants by skimming libfaim/im.c
+ *
+ * "UNICODE" actually means "UCS-2BE".
+ */
+#define AIM_CHARSET_ISO_8859_1         0x0003
+#define AIM_CHARSET_UNICODE            0x0002
+
+int owl_aim_do_send(const char *to, const char *msg, int flags) /* noproto */
 {
   int ret;
+  char *encoded;
+  struct aim_sendimext_args args;
+    gsize len;
 
-  ret=aim_im_sendch1(owl_global_get_aimsess(&g), to, 0, msg);
-    
-  /* I don't know how to check for an error yet */
+  encoded = g_convert(msg, -1, "ISO-8859-1", "UTF-8", NULL, &len, NULL);
+  if (encoded) {
+    owl_function_debugmsg("Encoded outgoing AIM as ISO-8859-1");
+    args.charset = AIM_CHARSET_ISO_8859_1;
+    args.charsubset = 0;
+    args.flags = AIM_IMFLAGS_ISO_8859_1;
+  } else {
+    owl_function_debugmsg("Encoding outgoing IM as UCS-2BE");
+    encoded = g_convert(msg, -1, "UCS-2BE", "UTF-8", NULL, &len, NULL);
+    if (!encoded) {
+      /*
+       * TODO: Strip or HTML-encode characters, or figure out how to
+       * send in a differen charset.
+       */
+      owl_function_error("Unable to encode outgoing AIM message in UCS-2");
+      return 1;
+    }
+
+    args.charset = AIM_CHARSET_UNICODE;
+    args.charsubset = 0;
+    args.flags = AIM_IMFLAGS_UNICODE;
+  }
+
+  args.destsn = to;
+  args.msg = encoded;
+  args.msglen = len;
+  args.flags |= flags;
+
+  ret=aim_im_sendch1_ext(owl_global_get_aimsess(&g), &args);
+
+  owl_free(encoded);
+
   return(ret);
+}
+
+int owl_aim_send_im(const char *to, const char *msg)
+{
+  return owl_aim_do_send(to, msg, 0);
 }
 
 int owl_aim_send_awaymsg(const char *to, const char *msg)
 {
-  int ret;
-
-  ret=aim_im_sendch1(owl_global_get_aimsess(&g), to, AIM_IMFLAGS_AWAY, msg);
-
-  /* I don't know how to check for an error yet */
-  return(ret);
+  return owl_aim_do_send(to, msg, AIM_IMFLAGS_AWAY);
 }
 
 void owl_aim_addbuddy(const char *name)
