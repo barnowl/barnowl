@@ -1,0 +1,8 @@
+TYPEMAP
+utf8 *         T_PV_UTF8
+const utf8 *   T_PV_UTF8
+
+OUTPUT
+T_PV_UTF8
+        sv_setpv((SV*)$arg, $var);
+        SvUTF8_on((SV*)$arg);
