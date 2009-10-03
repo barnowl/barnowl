@@ -3,6 +3,7 @@
 *.par
 *~
 .#*
+.*.swp
 .deps
 META.yml
 Makefile
