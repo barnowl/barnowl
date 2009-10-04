@@ -81,6 +81,7 @@ void owl_zephyr_initialize(void)
 
 void owl_zephyr_finish_initialization(owl_dispatch *d) {
   Code_t code;
+  char *perl;
 
   owl_select_remove_dispatch(d->fd);
 
@@ -124,6 +125,9 @@ void owl_zephyr_finish_initialization(owl_dispatch *d) {
     owl_function_debugmsg("startup: checking pseudo-logins");
     owl_function_zephyr_buddy_check(0);
   }
+
+ perl = owl_perlconfig_execute("BarnOwl::Zephyr::_zephyr_startup()");
+ owl_free(perl);
 }
 
 void owl_zephyr_load_initial_subs(void) {
