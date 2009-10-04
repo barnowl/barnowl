@@ -171,7 +171,7 @@ int owl_zephyr_shutdown(void)
     ZClosePort();
   }
 #endif
-  return(0);
+  return 0;
 }
 
 int owl_zephyr_zpending(void)
@@ -179,29 +179,26 @@ int owl_zephyr_zpending(void)
 #ifdef HAVE_LIBZEPHYR
   if(owl_global_is_havezephyr(&g))
     return(ZPending());
-  else
-    return 0;
-#else
-  return(0);
 #endif
+  return 0;
 }
 
 const char *owl_zephyr_get_realm(void)
 {
 #ifdef HAVE_LIBZEPHYR
-  return(ZGetRealm());
-#else
-  return("");
+  if (owl_global_is_havezephyr(&g))
+    return(ZGetRealm());
 #endif
+  return "";
 }
 
 const char *owl_zephyr_get_sender(void)
 {
 #ifdef HAVE_LIBZEPHYR
-  return(ZGetSender());
-#else
-  return("");
+  if (owl_global_is_havezephyr(&g))
+    return(ZGetSender());
 #endif
+  return "";
 }
 
 #ifdef HAVE_LIBZEPHYR
