@@ -376,6 +376,25 @@ all_variables()
 	CLEANUP:
 		owl_list_free_all(&l, owl_free);
 
+
+AV*
+all_keymaps()
+	PREINIT:
+		owl_list l;
+		const owl_keyhandler *kh;
+	CODE:
+	{
+		owl_list_create(&l);
+		kh = owl_global_get_keyhandler(&g);
+		owl_keyhandler_get_keymap_names(kh, &l);
+		RETVAL = owl_new_av(&l, (SV*(*)(const void*))owl_new_sv);
+		sv_2mortal((SV*)RETVAL);
+	}
+	OUTPUT:
+		RETVAL
+	CLEANUP:
+		owl_list_free_all(&l, owl_free);
+
 void
 redisplay()
 	CODE:
