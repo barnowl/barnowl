@@ -314,6 +314,10 @@ void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_search) /*n
 	char tmp2;
 	int start, end;
 	while (owl_regex_compare(owl_global_get_search_re(&g), s, &start, &end) == 0) {
+	  /* Prevent an infinite loop matching the empty string. */
+	  if (end == 0)
+	    break;
+
 	  /* Found search string, highlight it. */
 
 	  tmp2 = s[start];
