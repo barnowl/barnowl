@@ -860,7 +860,7 @@ const owl_cmd commands_to_init[]
 
   OWLCMD_VOID_CTX("edit:history-next", owl_command_edit_history_next, 
 		  OWL_CTX_EDIT,
-		  "replaces the text with the previous history",
+		  "replaces the text with the next history",
 		  "", ""),
 
   OWLCMD_VOID_CTX("edit:history-prev", owl_command_edit_history_prev, 
