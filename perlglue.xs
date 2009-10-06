@@ -333,19 +333,11 @@ remove_dispatch(fd)
 AV*
 all_filters()
 	PREINIT:
-		AV *filters;
 		const owl_list *fl;
-		const owl_filter *f;
-		int i;
 	CODE:
 	{
 		fl = owl_global_get_filterlist(&g);
-		filters = newAV();
-		for(i=0;i<owl_list_get_size(fl);i++) {
-			f = owl_list_get_element(fl, i);
-			av_push(filters, owl_new_sv(owl_filter_get_name(f)));
-		}
-		RETVAL = filters;
+		RETVAL = owl_new_av(fl, (SV*(*)(const void*))owl_filter_to_sv);
 		sv_2mortal((SV*)RETVAL);
 	}
 	OUTPUT:
@@ -354,20 +346,12 @@ all_filters()
 AV*
 all_styles()
 	PREINIT:
-		AV *styles;
 		owl_list l;
-		const char *name;
-		int i;
 	CODE:
 	{
 		owl_list_create(&l);
 		owl_global_get_style_names(&g, &l);
-		styles = newAV();
-		for(i=0;i<owl_list_get_size(&l);i++) {
-			name = owl_list_get_element(&l, i);
-			av_push(styles, owl_new_sv(name));
-		}
-		RETVAL = styles;
+		RETVAL = owl_new_av(&l, (SV*(*)(const void*))owl_new_sv);
 		sv_2mortal((SV*)RETVAL);
 	}
 	OUTPUT:
@@ -379,20 +363,12 @@ all_styles()
 AV*
 all_variables()
 	PREINIT:
-		AV *vars;
 		owl_list l;
-		const char *name;
-		int i;
 	CODE:
 	{
 		owl_list_create(&l);
 		owl_dict_get_keys(owl_global_get_vardict(&g), &l);
-		vars = newAV();
-		for(i=0;i<owl_list_get_size(&l);i++) {
-			name = owl_list_get_element(&l, i);
-			av_push(vars, owl_new_sv(name));
-		}
-		RETVAL = vars;
+		RETVAL = owl_new_av(&l, (SV*(*)(const void*))owl_new_sv);
 		sv_2mortal((SV*)RETVAL);
 	}
 	OUTPUT:
