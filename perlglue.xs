@@ -139,7 +139,8 @@ zephyr_getsubs()
     CLEANUP:
 		if (rv) owl_free(rv);
 
-void queue_message(msg) 
+void
+queue_message(msg)
 	SV *msg
 	PREINIT:
 		owl_message *m;
@@ -154,7 +155,8 @@ void queue_message(msg)
 		owl_global_messagequeue_addmsg(&g, m);
 	}
 
-void admin_message(header, body) 
+void
+admin_message(header, body)
 	const char *header
 	const char *body
 	CODE:
@@ -162,7 +164,8 @@ void admin_message(header, body)
 		owl_function_adminmsg(header, body);		
 	}
 
-void start_question(line, callback)
+void
+start_question(line, callback)
 	const char *line
 	SV *callback
 	PREINIT:
@@ -177,7 +180,8 @@ void start_question(line, callback)
 		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
 	}
 
-void start_password(line, callback)
+void
+start_password(line, callback)
 	const char *line
 	SV *callback
 	PREINIT:
@@ -192,7 +196,8 @@ void start_password(line, callback)
 		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
 	}
 
-void start_edit_win(line, callback)
+void
+start_edit_win(line, callback)
 	const char *line
 	SV *callback
 	PREINIT:
