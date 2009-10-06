@@ -51,6 +51,28 @@ AV *owl_new_av(const owl_list *l, SV *(*to_sv)(const void *))
   return ret;
 }
 
+HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const void *))
+{
+  HV *ret;
+  owl_list l;
+  const char *key;
+  void *element;
+  int i;
+
+  ret = newHV();
+
+  /* TODO: add an iterator-like interface to owl_dict */
+  owl_dict_get_keys(d, &l);
+  for (i = 0; i < owl_list_get_size(&l); i++) {
+    key = owl_list_get_element(&l, i);
+    element = owl_dict_find_element(d, key);
+    (void)hv_store(ret, key, strlen(key), to_sv(element), 0);
+  }
+  owl_list_free_all(&l, owl_free);
+
+  return ret;
+}
+
 SV *owl_perlconfig_message2hashref(const owl_message *m)
 {
   HV *h, *stash;
