@@ -25,8 +25,7 @@ use BarnOwl::Module::Twitter::Handle;
 
 our @twitter_handles = ();
 our $default_handle = undef;
-my $user     = BarnOwl::zephyr_getsender();
-my ($class)  = ($user =~ /(^[^@]+)/);
+my $class    = $ENV{USER};
 my $instance = "status";
 my $opcode   = "twitter";
 my $use_reply_to = 0;
@@ -132,7 +131,7 @@ if (scalar @$raw_cfg == 1 && !exists($raw_cfg->[0]{publish_tweets})) {
 }
 
 for my $cfg (@$raw_cfg) {
-    my $twitter_args = { username   => $cfg->{user} || $user,
+    my $twitter_args = { username   => $cfg->{user},
                         password   => $cfg->{password},
                         source     => 'barnowl', 
                     };
@@ -175,7 +174,7 @@ sub match {
 sub handle_message {
     my $m = shift;
     ($class, $instance, $opcode) = map{BarnOwl::getvar("twitter:$_")} qw(class instance opcode);
-    if($m->sender eq $user
+    if($m->sender eq BarnOwl::zephyr_getsender()
        && match($m->class, $class)
        && match($m->instance, $instance)
        && match($m->opcode, $opcode)
