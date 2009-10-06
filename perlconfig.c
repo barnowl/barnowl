@@ -35,6 +35,22 @@ SV *owl_new_sv(const char * str)
   return ret;
 }
 
+AV *owl_new_av(const owl_list *l, SV *(*to_sv)(const void *))
+{
+  AV *ret;
+  int i;
+  void *element;
+
+  ret = newAV();
+
+  for (i = 0; i < owl_list_get_size(l); i++) {
+    element = owl_list_get_element(l, i);
+    av_push(ret, to_sv(element));
+  }
+
+  return ret;
+}
+
 SV *owl_perlconfig_message2hashref(const owl_message *m)
 {
   HV *h, *stash;
