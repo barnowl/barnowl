@@ -130,13 +130,13 @@ sub twitter_error {
     warn "$@" if $@;
     unless(defined($ratelimit) && ref($ratelimit) eq 'HASH') {
         # Twitter's probably just sucking, try again later.
-        $self->sleep(5);
+        $self->sleep(5*60);
         return;
     }
 
     if(exists($ratelimit->{remaining_hits})
        && $ratelimit->{remaining_hits} <= 0) {
-        $self->sleep(time - $ratelimit->{reset_time_in_seconds} + 60);
+        $self->sleep($ratelimit->{reset_time_in_seconds} - time + 60);
         die("Twitter: ratelimited until " . $ratelimit->{reset_time} . "\n");
     } elsif(exists($ratelimit->{error})) {
         $self->sleep(60*20);
