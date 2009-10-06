@@ -23,9 +23,12 @@ my %show = (
     colors      => undef,
     commands    => undef,
     command     => \&complete_command,
+    errors      => undef,
     filters     => undef,
     filter      => \&complete_filter_name,
     license     => undef,
+    keymaps     => undef,
+    keymap      => \&complete_keymap,
     quickstart  => undef,
     startup     => undef,
     status      => undef,
@@ -44,6 +47,7 @@ sub complete_command { return sort @BarnOwl::all_commands; }
 sub complete_color { return @all_colors; }
 sub complete_variable    { return @{BarnOwl::all_variables()}; }
 sub complete_style       { return @{BarnOwl::all_styles()}; }
+sub complete_keymap      { return @{BarnOwl::all_keymaps()}; }
 
 sub complete_help {
     my $ctx = shift;
