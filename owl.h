@@ -43,6 +43,8 @@ typedef void WINDOW;
 #include "XSUB.h"
 #else
 typedef void SV;
+typedef void AV;
+typedef void HV;
 #endif
 
 #define OWL_VERSION_STRING PACKAGE_VERSION
