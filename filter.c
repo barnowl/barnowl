@@ -163,6 +163,11 @@ const char *owl_filter_get_name(const owl_filter *f)
   return(f->name);
 }
 
+SV *owl_filter_to_sv(const owl_filter *f)
+{
+  return owl_new_sv(owl_filter_get_name(f));
+}
+
 void owl_filter_set_fgcolor(owl_filter *f, int color)
 {
   f->fgcolor=color;
