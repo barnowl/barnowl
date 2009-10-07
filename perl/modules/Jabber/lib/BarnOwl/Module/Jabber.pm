@@ -320,7 +320,7 @@ sub register_owl_commands() {
               . "sub <jid>     Subscribe to <jid>'s presence. (implicit add)\n\n"
               . "add <jid>     Adds <jid> to your roster.\n\n"
               . "unsub <jid>   Unsubscribe from <jid>'s presence.\n\n"
-              . "remove <jid>  Removes <jid> to your roster. (implicit unsub)\n\n"
+              . "remove <jid>  Removes <jid> from your roster. (implicit unsub)\n\n"
               . "auth <jid>    Authorizes <jid> to subscribe to your presence.\n\n"
               . "deauth <jid>  De-authorizes <jid>'s subscription to your presence.\n\n"
               . "The following arguments are supported for all commands\n\n"
