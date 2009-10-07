@@ -434,19 +434,15 @@ Compute the default zephyr signature.
 
 sub default_zephyr_signature
 {
-  if (my $zsig = getvar('zsig')) {
-    return $zsig;
+  my $zsig = getvar('zsig');
+  if (!$zsig && (my $zsigproc = getvar('zsigproc'))) {
+    $zsig = `$zsigproc`;
+  } elsif (!defined($zsig = get_zephyr_variable('zwrite-signature'))) {
+    $zsig = ((getpwuid($<))[6]);
+    $zsig =~ s/,.*//;
   }
-  if (my $zsigproc = getvar('zsigproc')) {
-    return `$zsigproc`;
-  }
-  my $zwrite_signature = get_zephyr_variable('zwrite-signature');
-  if (defined($zwrite_signature)) {
-    return $zwrite_signature;
-  }
-  my $name = ((getpwuid($<))[6]);
-  $name =~ s/,.*//;
-  return $name;
+  chomp($zsig);
+  return $zsig;
 }
 
 # Stub for owl::startup / BarnOwl::startup, so it isn't bound to the
