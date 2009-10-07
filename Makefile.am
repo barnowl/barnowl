@@ -19,11 +19,10 @@ tester_LDADD = libfaim/libfaim.a
 
 perl_tester_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h config.h \
-     libzcrypt.a \
      $(GEN_C) $(GEN_H) \
      perl_tester.c
 
-perl_tester_LDADD = libfaim/libfaim.a libzcrypt.a
+perl_tester_LDADD = libfaim/libfaim.a
 
 TESTS=runtests.sh
 
