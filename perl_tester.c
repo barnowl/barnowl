@@ -31,5 +31,6 @@ int main(int argc, char **argv, char **env)
   perl_destruct(my_perl);
   perl_free(my_perl);
   PERL_SYS_TERM();
+  return 0;
 }
 
