@@ -16,6 +16,8 @@ package BarnOwl::Module::Twitter::Handle;
 use Net::Twitter::Lite;
 use HTML::Entities;
 
+use Scalar::Util qw(weaken);
+
 use BarnOwl;
 use BarnOwl::Message::Twitter;
 
@@ -106,11 +108,13 @@ sub sleep {
     my $self  = shift;
     my $delay = shift;
 
+    my $weak = weaken($self);
+
     if($self->{cfg}->{poll_for_tweets}) {
         $self->{timer} = BarnOwl::Timer->new({
             after    => $delay,
             interval => 60,
-            cb       => sub { $self->poll_twitter }
+            cb       => sub { $weak->poll_twitter if $weak }
            });
     }
 
@@ -118,7 +122,7 @@ sub sleep {
         $self->{direct_timer} = BarnOwl::Timer->new({
             after    => $delay,
             interval => 120,
-            cb       => sub { $self->poll_direct }
+            cb       => sub { $weak->poll_direct if $weak }
            });
     }
 }
