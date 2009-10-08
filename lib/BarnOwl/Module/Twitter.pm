@@ -174,7 +174,8 @@ sub match {
 sub handle_message {
     my $m = shift;
     ($class, $instance, $opcode) = map{BarnOwl::getvar("twitter:$_")} qw(class instance opcode);
-    if($m->sender eq BarnOwl::zephyr_getsender()
+    if($m->type eq 'zephyr'
+       && $m->sender eq BarnOwl::zephyr_getsender()
        && match($m->class, $class)
        && match($m->instance, $instance)
        && match($m->opcode, $opcode)
