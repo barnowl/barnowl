@@ -15,7 +15,7 @@ SYNOPSIS
  "password":"sekrit"
 }
 ----------8<----------end cut ----------8<----------
-  (2) Copy Twitter.par into ~/.owl/twitter
+  (2) Copy Twitter.par into ~/.owl/modules/
   (3) Run ":reload-module Twitter" inside BarnOwl
   (4) Start receiving tweets in BarnOwl!
       You can send tweets with the ":twitter" command.
