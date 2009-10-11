@@ -1,0 +1,9 @@
+#!/bin/sh
+version=$1; shift
+
+(
+    echo $version;
+    git log --no-merges --format=' * %s -%ae' "$@"
+    echo
+    cat ChangeLog
+) | sponge ChangeLog
