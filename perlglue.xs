@@ -9,6 +9,8 @@
 
 #define SV_IS_CODEREF(sv) (SvROK((sv)) && SvTYPE(SvRV((sv))) == SVt_PVCV)
 
+typedef char utf8;
+
 	/*************************************************************
 	 * NOTE
 	 *************************************************************
@@ -28,7 +30,7 @@
 
 MODULE = BarnOwl		PACKAGE = BarnOwl
 
-const char *
+const utf8 *
 command(cmd, ...)
 	const char *cmd
 	PREINIT:
@@ -76,14 +78,14 @@ getidletime()
 	OUTPUT:
 		RETVAL
 
-const char *
+const utf8 *
 zephyr_getrealm()
 	CODE:
 		RETVAL = owl_zephyr_get_realm();
 	OUTPUT:
 		RETVAL
 
-const char *
+const utf8 *
 zephyr_getsender()
 	CODE:
 		RETVAL = owl_zephyr_get_sender();
@@ -99,7 +101,7 @@ zephyr_zwrite(cmd,msg)
 	CODE:
 		i = owl_zwrite_create_and_send_from_line(cmd, msg);
 
-const char *
+const utf8 *
 ztext_stylestrip(ztext)
 	const char *ztext
 	PREINIT:
@@ -112,7 +114,7 @@ ztext_stylestrip(ztext)
 	CLEANUP:
 		if (rv) owl_free(rv);
 
-const char *
+const utf8 *
 zephyr_smartstrip_user(in)
 	const char *in
 	PREINIT:
@@ -127,7 +129,7 @@ zephyr_smartstrip_user(in)
 	CLEANUP:
 		owl_free(rv);
 
-const char *
+const utf8 *
 zephyr_getsubs()
 	PREINIT:
 		char *rv = NULL;
@@ -313,7 +315,7 @@ _remove_filter(filterName)
 		}
 	}
 
-const char *
+const utf8 *
 wordwrap(in, cols)
 	const char *in
 	int cols
@@ -325,7 +327,8 @@ wordwrap(in, cols)
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		if (rv) owl_free(rv);
+		if (rv)
+			owl_free(rv);
 
 void
 add_dispatch(fd, cb)
@@ -428,7 +431,7 @@ get_zephyr_variable(name)
 	OUTPUT:
 		RETVAL
 
-const char *
+const utf8 *
 skiptokens(str, n)
 	const char *str;
 	int n;
@@ -568,7 +571,7 @@ replace_region(string)
 	OUTPUT:
 		RETVAL
 
-const char *
+const utf8 *
 get_region()
 	PREINIT:
 		char *region;

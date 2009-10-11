@@ -41,6 +41,8 @@ BASE_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
 GEN_C = varstubs.c perlglue.c
 GEN_H = owl_prototypes.h
 
+TYPEMAP = typemap
+
 BUILT_SOURCES = $(GEN_C) $(GEN_H)
 
 # Only copy file into place if file.new is different
@@ -52,8 +54,8 @@ BUILT_SOURCES = $(GEN_C) $(GEN_H)
 
 proto: owl_prototypes.h
 
-perlglue.c: perlglue.xs
-	$(AM_V_GEN)perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes perlglue.xs > perlglue.c
+perlglue.c: perlglue.xs $(TYPEMAP)
+	$(AM_V_GEN)perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes perlglue.xs -typemap $(TYPEMAP) > perlglue.c
 
 varstubs.c: stubgen.pl variable.c
 	$(AM_V_GEN)perl $< $(filter-out $<,$+) > $@

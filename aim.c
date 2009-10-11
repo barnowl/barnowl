@@ -248,24 +248,64 @@ void owl_aim_login_error(const char *message)
   owl_select_remove_timer(g.aim_nop_timer);
 }
 
-int owl_aim_send_im(const char *to, const char *msg)
+/*
+ * I got these constants by skimming libfaim/im.c
+ *
+ * "UNICODE" actually means "UCS-2BE".
+ */
+#define AIM_CHARSET_ISO_8859_1         0x0003
+#define AIM_CHARSET_UNICODE            0x0002
+
+int owl_aim_do_send(const char *to, const char *msg, int flags) /* noproto */
 {
   int ret;
+  char *encoded;
+  struct aim_sendimext_args args;
+    gsize len;
 
-  ret=aim_im_sendch1(owl_global_get_aimsess(&g), to, 0, msg);
-    
-  /* I don't know how to check for an error yet */
+  encoded = g_convert(msg, -1, "ISO-8859-1", "UTF-8", NULL, &len, NULL);
+  if (encoded) {
+    owl_function_debugmsg("Encoded outgoing AIM as ISO-8859-1");
+    args.charset = AIM_CHARSET_ISO_8859_1;
+    args.charsubset = 0;
+    args.flags = AIM_IMFLAGS_ISO_8859_1;
+  } else {
+    owl_function_debugmsg("Encoding outgoing IM as UCS-2BE");
+    encoded = g_convert(msg, -1, "UCS-2BE", "UTF-8", NULL, &len, NULL);
+    if (!encoded) {
+      /*
+       * TODO: Strip or HTML-encode characters, or figure out how to
+       * send in a differen charset.
+       */
+      owl_function_error("Unable to encode outgoing AIM message in UCS-2");
+      return 1;
+    }
+
+    args.charset = AIM_CHARSET_UNICODE;
+    args.charsubset = 0;
+    args.flags = AIM_IMFLAGS_UNICODE;
+  }
+
+  args.destsn = to;
+  args.msg = encoded;
+  args.msglen = len;
+  args.flags |= flags;
+
+  ret=aim_im_sendch1_ext(owl_global_get_aimsess(&g), &args);
+
+  owl_free(encoded);
+
   return(ret);
+}
+
+int owl_aim_send_im(const char *to, const char *msg)
+{
+  return owl_aim_do_send(to, msg, 0);
 }
 
 int owl_aim_send_awaymsg(const char *to, const char *msg)
 {
-  int ret;
-
-  ret=aim_im_sendch1(owl_global_get_aimsess(&g), to, AIM_IMFLAGS_AWAY, msg);
-
-  /* I don't know how to check for an error yet */
-  return(ret);
+  return owl_aim_do_send(to, msg, AIM_IMFLAGS_AWAY);
 }
 
 void owl_aim_addbuddy(const char *name)
@@ -1148,82 +1188,22 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
 {
   owl_message *m;
   char *stripmsg, *nz_screenname, *wrapmsg;
-  char realmsg[8192+1] = "";
-  /* int clienttype = AIM_CLIENTTYPE_UNKNOWN; */
+  char *realmsg = NULL;
 
-  /* clienttype = aim_fingerprintclient(args->features, args->featureslen); */
-
-  /*
-  printf("icbm: sn = \"%s\"\n", userinfo->sn);
-  printf("icbm: probable client type: %d\n", clienttype);
-  printf("icbm: warnlevel = %f\n", aim_userinfo_warnlevel(userinfo));
-  printf("icbm: flags = 0x%04x = ", userinfo->flags);
-  printuserflags(userinfo->flags);
-  printf("\n");
-  */
-
-  /*
-  printf("icbm: membersince = %lu\n", userinfo->membersince);
-  printf("icbm: onlinesince = %lu\n", userinfo->onlinesince);
-  printf("icbm: idletime = 0x%04x\n", userinfo->idletime);
-  printf("icbm: capabilities = %s = 0x%08lx\n", (userinfo->present & AIM_USERINFO_PRESENT_CAPABILITIES) ? "present" : "not present", userinfo->capabilities);
-  */
-
-  /*
-  printf("icbm: icbmflags = ");
-  if (args->icbmflags & AIM_IMFLAGS_AWAY) printf("away ");
-  if (args->icbmflags & AIM_IMFLAGS_ACK) printf("ackrequest ");
-  if (args->icbmflags & AIM_IMFLAGS_OFFLINE) printf("offline ");
-  if (args->icbmflags & AIM_IMFLAGS_BUDDYREQ) printf("buddyreq ");
-  if (args->icbmflags & AIM_IMFLAGS_HASICON) printf("hasicon ");
-  printf("\n");
-  */
-
-  /*
-  if (args->icbmflags & AIM_IMFLAGS_CUSTOMCHARSET) {
-  printf("icbm: encoding flags = {%04x, %04x}\n", args->charset, args->charsubset);
-  }
-  */
-  
-  /*
-   * Quickly convert it to eight bit format, replacing non-ASCII UNICODE 
-   * characters with their equivelent HTML entity.
-   */
-  if (args->icbmflags & AIM_IMFLAGS_UNICODE) {
-    int i;
-    
-    for (i=0; i<args->msglen; i+=2) {
-      fu16_t uni;
-
-      uni = ((args->msg[i] & 0xff) << 8) | (args->msg[i+1] & 0xff);
-      if ((uni < 128) || ((uni >= 160) && (uni <= 255))) { /* ISO 8859-1 */
-	snprintf(realmsg+strlen(realmsg), sizeof(realmsg)-strlen(realmsg), "%c", uni);
-      } else { /* something else, do UNICODE entity */
-	snprintf(realmsg+strlen(realmsg), sizeof(realmsg)-strlen(realmsg), "&#%04x;", uni);
-      }
-    }
+  if (!args->msg) {
+    realmsg = owl_strdup("");
+  } else if (args->icbmflags & AIM_IMFLAGS_UNICODE) {
+    realmsg = g_convert(args->msg, args->msglen, "UTF-8", "UCS-2BE",
+                        NULL, NULL, NULL);
+  } else if(args->icbmflags & AIM_IMFLAGS_ISO_8859_1) {
+    realmsg = g_convert(args->msg, args->msglen, "UTF-8", "ISO-8859-1",
+                        NULL, NULL, NULL);
   } else {
-    /*
-     * For non-UNICODE encodings (ASCII and ISO 8859-1), there is 
-     * no need to do anything special here.  Most 
-     * terminals/whatever will be able to display such characters 
-     * unmodified.
-     *
-     * Beware that PC-ASCII 128 through 159 are _not_ actually 
-     * defined in ASCII or ISO 8859-1, and you should send them as 
-     * UNICODE.  WinAIM will send these characters in a UNICODE 
-     * message, so you need to do so as well.
-     *
-     * You may not think it necessary to handle UNICODE messages.  
-     * You're probably wrong.  For one thing, Microsoft "Smart
-     * Quotes" will be sent by WinAIM as UNICODE (not HTML UNICODE,
-     * but real UNICODE). If you don't parse UNICODE at all, your 
-     * users will get a blank message instead of the message 
-     * containing Smart Quotes.
-     *
-     */
-    if (args->msg && args->msglen)
-      strncpy(realmsg, args->msg, sizeof(realmsg));
+    realmsg = owl_strdup(args->msg);
+  }
+
+  if (!realmsg) {
+    realmsg = owl_strdup("[Error decoding incoming IM]");
   }
 
   owl_function_debugmsg("faimtest_parse_incoming_im_chan1: message from: %s", userinfo->sn?userinfo->sn:"");
@@ -1268,21 +1248,8 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
     owl_function_debugmsg("faimtest_parse_incoming_im_chan1: icbm: their icon: iconstamp = %ld, iconlen = 0x%08x, iconsum = 0x%04x\n", args->iconstamp, args->iconlen, args->iconsum);
   }
 
-  /*
-  if (realmsg) {
-    int i = 0;
-    while (realmsg[i] == '<') {
-      if (realmsg[i] == '<') {
-	while (realmsg[i] != '>')
-	  i++;
-	i++;
-      }
-    }
-    tmpstr = realmsg+i;
-    faimtest_handlecmd(sess, conn, userinfo, tmpstr);
-  }
-  */
-  
+  owl_free(realmsg);
+
   return(1);
 }
 
