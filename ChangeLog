@@ -1,3 +1,53 @@
+1.4
+ * Fix description of edit:history-next -davidben@mit.edu
+ * Don’t loop infinitely on matching the empty string. -andersk@mit.edu
+ * Fix a typo in the jroster help message. -asedeno@mit.edu
+ * IRC: Handle 'nosuchchannel' events. -nelhage@mit.edu
+ * Add a function for perl to query whether Zephyr is available. -nelhage@mit.edu
+ * Add a perl hook that is called once Zephyr is initialized. -nelhage@mit.edu
+ * AIM: Decode incoming messages properly. -nelhage@mit.edu
+ * AIM: Correctly send outgoing IMs with high-bit characters. -nelhage@mit.edu
+ * IRC: Encode outgoing messages as utf-8. -nelhage@mit.edu
+ * Return unicode strings to perl. -nelhage@mit.edu
+ * IRC: Fix '-a' with commands that take a channel. -nelhage@mit.edu
+ * Catch ^Z and display a message instead of suspending. -nelhage@mit.edu
+ * Fix missing commands from command completion. -nelhage@mit.edu
+ * Make kill-region stop killing extra bytes after multibyte characters. -andersk@mit.edu
+ * Squelch some 'uninitialized' warnings in IRC completion. -nelhage@mit.edu
+ * Add minimal completion for 'aimwrite'. -nelhage@mit.edu
+ * Zephyr completion: Convert fields to lowercase for completing. -nelhage@mit.edu
+ * Implement a shift_words method on completion contexts. -nelhage@mit.edu
+ * Export skiptokens to perl. -nelhage@mit.edu
+ * owl_text_quote: Don’t leak a kretch-sized buffer. -andersk@mit.edu
+ * Spread the background color across the right hand side of messages -kcr@1ts.org
+ * Perl callout for zsig computation + move default to perl -kcr@1ts.org
+ * BarnOwl::get_zephyr_variable gets you a .zephyr.vars variable -kcr@1ts.org
+ * Correctly prototype functions with no parameters as foo(void), not foo(). -andersk@mit.edu
+ * Cause unsub to warn user if user wasn't subbed -davidben@mit.edu
+ * Refresh popwin border when we redisplay viewwin -davidben@mit.edu
+ * owl_command_zcrypt: Fix a compile warning building without zcrypt. -nelhage@mit.edu
+ * Compile with warnings enabled by default. -andersk@mit.edu
+ * Add equivalent long options for all short options. -nelhage@mit.edu
+ * Remove defunct TODO and BUGS files. -nelhage@mit.edu
+ * editwin: Properly update points inside a replaced region. -nelhage@mit.edu
+ * Shift-R on CC zephyrs should go to the sender only -adehnert@mit.edu
+ * BarnOwl::Module::Jabber: Quote jroster auth, deauth commands. -andersk@mit.edu
+ * Use automake’s silent-rules mode if available, for quieter build output. -andersk@mit.edu
+ * Add configurable time display -adehnert@mit.edu
+ * Add BarnOwl::redisplay() -asedeno@mit.edu
+ * Bind C-v and M-v in popless windows -nelhage@mit.edu
+ * Fix an off by one error in some editwin code. -asedeno@mit.edu
+ * Make zdots work even if the buffer has trailing whitespace. -nelhage@mit.edu
+ * Fix pseudo-login interation with zephyr initialization. -asedeno@mit.edu
+ * Correct the --with-libzephyr help message in the configure script. -broder@mit.edu
+ * Set the UTF-8 flag on on strings we pass to Perl. -nelhage@mit.edu
+   * aim.c, perlconfig.c: Fix format string bugs. -andersk@mit.edu
+ * BarnOwl::Completion: Use multi-argument quote. -andersk@mit.edu
+ * Jabber: Add quoting for editwin prompt. -andersk@mit.edu
+ * IRC: Add quoting for reply commands and editwin prompt. -andersk@mit.edu
+ * Fix quoting for filterappend, filterand, filteror. -andersk@mit.edu
+ * skiptokens: Handle quotes more correctly. -nelhage@mit.edu
+
 1.3
  * Clean up the edit window code significantly. -kcr
  * Support inputting tabs in the editwin. -kcr
