@@ -441,6 +441,14 @@ skiptokens(str, n)
 		RETVAL
 
 
+MODULE = BarnOwl		PACKAGE = BarnOwl::Zephyr
+
+int
+have_zephyr()
+	CODE:
+		RETVAL = owl_global_is_havezephyr(&g);
+	OUTPUT:
+		RETVAL
 
 MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 

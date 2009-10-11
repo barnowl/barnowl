@@ -81,6 +81,7 @@ void owl_zephyr_initialize(void)
 
 void owl_zephyr_finish_initialization(owl_dispatch *d) {
   Code_t code;
+  char *perl;
 
   owl_select_remove_dispatch(d->fd);
 
@@ -124,6 +125,9 @@ void owl_zephyr_finish_initialization(owl_dispatch *d) {
     owl_function_debugmsg("startup: checking pseudo-logins");
     owl_function_zephyr_buddy_check(0);
   }
+
+ perl = owl_perlconfig_execute("BarnOwl::Zephyr::_zephyr_startup()");
+ owl_free(perl);
 }
 
 void owl_zephyr_load_initial_subs(void) {
@@ -167,7 +171,7 @@ int owl_zephyr_shutdown(void)
     ZClosePort();
   }
 #endif
-  return(0);
+  return 0;
 }
 
 int owl_zephyr_zpending(void)
@@ -175,29 +179,26 @@ int owl_zephyr_zpending(void)
 #ifdef HAVE_LIBZEPHYR
   if(owl_global_is_havezephyr(&g))
     return(ZPending());
-  else
-    return 0;
-#else
-  return(0);
 #endif
+  return 0;
 }
 
 const char *owl_zephyr_get_realm(void)
 {
 #ifdef HAVE_LIBZEPHYR
-  return(ZGetRealm());
-#else
-  return("");
+  if (owl_global_is_havezephyr(&g))
+    return(ZGetRealm());
 #endif
+  return "";
 }
 
 const char *owl_zephyr_get_sender(void)
 {
 #ifdef HAVE_LIBZEPHYR
-  return(ZGetSender());
-#else
-  return("");
+  if (owl_global_is_havezephyr(&g))
+    return(ZGetSender());
 #endif
+  return "";
 }
 
 #ifdef HAVE_LIBZEPHYR

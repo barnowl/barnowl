@@ -31,6 +31,7 @@ use BarnOwl::Hook;
 use BarnOwl::Hooks;
 use BarnOwl::Message;
 use BarnOwl::Style;
+use BarnOwl::Zephyr;
 use BarnOwl::Timer;
 use BarnOwl::Editwin;
 use BarnOwl::Completion;
