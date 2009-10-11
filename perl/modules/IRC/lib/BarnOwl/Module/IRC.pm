@@ -544,21 +544,20 @@ sub mk_irc_command {
         if(defined($alias)) {
             $conn = get_connection_by_alias($alias);
         }
-        if(!$conn && $use_channel) {
+        if($use_channel) {
             $channel = $ARGV[0];
             if(defined($channel) && $channel =~ /^#/) {
                 if($channels{$channel} && @{$channels{$channel}} == 1) {
                     shift @ARGV;
-                    $conn = $channels{$channel}[0];
-                }  
-            } else {
-                if($m && $m->type eq 'IRC' && !$m->is_private) {
-                    $channel = $m->channel;
-                } else {
-                    undef $channel;
+                    $conn = $channels{$channel}[0] unless $conn;
                 }
+            } elsif ($m && $m->type eq 'IRC' && !$m->is_private) {
+                $channel = $m->channel;
+            } else {
+                undef $channel;
             }
         }
+
         if(!$channel && $use_channel == REQUIRE_CHANNEL) {
             die("Usage: $cmd <channel>\n");
         }

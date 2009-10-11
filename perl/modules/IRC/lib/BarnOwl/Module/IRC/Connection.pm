@@ -73,9 +73,7 @@ sub new {
     $self->conn->add_handler(endofnames=> sub { shift; $self->on_endofnames(@_) });
     $self->conn->add_handler(endofwhois=> sub { shift; $self->on_endofwhois(@_) });
     $self->conn->add_handler(mode      => sub { shift; $self->on_mode(@_) });
-
-    # * nosuchchannel
-    # * 
+    $self->conn->add_handler(nosuchchannel => sub { shift; $self->on_nosuchchannel(@_) });
 
     return $self;
 }
@@ -203,6 +201,14 @@ sub on_quit {
 sub on_disconnect {
     my $self = shift;
     delete $BarnOwl::Module::IRC::ircnets{$self->alias};
+    for my $k (keys %BarnOwl::Module::IRC::channels) {
+        my @conns = grep {$_ ne $self} @{$BarnOwl::Module::IRC::channels{$k}};
+        if(@conns) {
+            $BarnOwl::Module::IRC::channels{$k} = \@conns;
+        } else {
+            delete $BarnOwl::Module::IRC::channels{$k};
+        }
+    }
     BarnOwl::remove_dispatch($self->{FD});
     BarnOwl::admin_message('IRC',
                            "[" . $self->alias . "] Disconnected from server");
@@ -281,6 +287,13 @@ sub on_mode {
                            "[" . $self->alias . "] User " . ($evt->nick) . + " set mode " .
                            join(" ", $evt->args) . "on " . $evt->to->[0]
                           );
+}
+
+sub on_nosuchchannel {
+    my ($self, $evt) = @_;
+    BarnOwl::admin_message("IRC",
+                           "[" . $self->alias . "] " .
+                           "No such channel: " . [$evt->args]->[1])
 }
 
 sub on_event {
