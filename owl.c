@@ -296,6 +296,46 @@ int owl_process_message(owl_message *m) {
   return 1;
 }
 
+/*
+ * Process any new messages we have waiting in the message queue.
+ * Returns 1 if any messages were added to the message list, and 0 otherwise.
+ */
+int owl_process_messages(owl_ps_action *d, void *p)
+{
+  int newmsgs=0;
+  owl_message *m;
+
+  /* Grab incoming messages. */
+  while (owl_global_messagequeue_pending(&g)) {
+    m = owl_global_messagequeue_popmsg(&g);
+    if (owl_process_message(m))
+      newmsgs = 1;
+  }
+
+  if (newmsgs) {
+    /* follow the last message if we're supposed to */
+    if (owl_global_should_followlast(&g))
+      owl_function_lastmsg_noredisplay();
+
+    /* do the newmsgproc thing */
+    owl_function_do_newmsgproc();
+
+    /* redisplay if necessary */
+    /* this should be optimized to not run if the new messages won't be displayed */
+    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+    sepbar(NULL);
+    if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
+      owl_popwin_refresh(owl_global_get_popwin(&g));
+      /* TODO: this is a broken kludge */
+      if (owl_global_get_viewwin(&g)) {
+        owl_viewwin_redisplay(owl_global_get_viewwin(&g), 0);
+      }
+    }
+    owl_global_set_needrefresh(&g);
+  }
+  return newmsgs;
+}
+
 void owl_process_input(owl_dispatch *d)
 {
   owl_input j;
@@ -468,13 +508,11 @@ int main(int argc, char **argv, char **env)
   WINDOW *recwin, *sepwin, *typwin, *msgwin;
   owl_editwin *tw;
   owl_popwin *pw;
-  int argcsave, followlast;
-  int newmsgs;
+  int argcsave;
   const char *const *argvsave;
   char *perlout, *perlerr;
   const owl_style *s;
   const char *dir;
-  owl_message *m;
   owl_options opts;
 
   if (!GLIB_CHECK_VERSION (2, 12, 0))
@@ -623,6 +661,8 @@ int main(int argc, char **argv, char **env)
   /* If we ever deprecate the mainloop hook, remove this. */
   owl_select_add_timer(0, 1, owl_perlconfig_mainloop, NULL, NULL);
 
+  owl_select_add_pre_select_action(owl_process_messages, NULL, NULL);
+
   owl_function_debugmsg("startup: entering main loop");
   /* main loop */
   while (1) {
@@ -635,43 +675,6 @@ int main(int argc, char **argv, char **env)
     recwin=owl_global_get_curs_recwin(&g);
     sepwin=owl_global_get_curs_sepwin(&g);
     typwin=owl_global_get_curs_typwin(&g);
-
-    followlast=owl_global_should_followlast(&g);
-
-    /* Grab incoming messages. */
-    newmsgs=0;
-    while(owl_global_messagequeue_pending(&g)) {
-
-      m = owl_global_messagequeue_popmsg(&g);
-
-      if(owl_process_message(m))
-        newmsgs = 1;
-    }
-
-    /* follow the last message if we're supposed to */
-    if (newmsgs && followlast) {
-      owl_function_lastmsg_noredisplay();
-    }
-
-    /* do the newmsgproc thing */
-    if (newmsgs) {
-      owl_function_do_newmsgproc();
-    }
-    
-    /* redisplay if necessary */
-    /* this should be optimized to not run if the new messages won't be displayed */
-    if (newmsgs) {
-      owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-      sepbar(NULL);
-      if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
-	owl_popwin_refresh(owl_global_get_popwin(&g));
-	/* TODO: this is a broken kludge */
-	if (owl_global_get_viewwin(&g)) {
-	  owl_viewwin_redisplay(owl_global_get_viewwin(&g), 0);
-	}
-      }
-      owl_global_set_needrefresh(&g);
-    }
 
     /* if a popwin just came up, refresh it */
     pw=owl_global_get_popwin(&g);
