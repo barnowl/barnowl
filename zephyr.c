@@ -134,8 +134,10 @@ void owl_zephyr_finish_initialization(owl_dispatch *d) {
     owl_function_zephyr_buddy_check(0);
   }
 
- perl = owl_perlconfig_execute("BarnOwl::Zephyr::_zephyr_startup()");
- owl_free(perl);
+  perl = owl_perlconfig_execute("BarnOwl::Zephyr::_zephyr_startup()");
+  owl_free(perl);
+
+  owl_select_add_pre_select_action(owl_zephyr_pre_select_action, NULL, NULL);
 }
 
 void owl_zephyr_load_initial_subs(void) {
@@ -1304,13 +1306,23 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
 #endif
 }
 
-#ifdef HAVE_LIBZEPHYR
-void owl_zephyr_process_events(owl_dispatch *d) {
+/*
+ * Process zephyrgrams from libzephyr's queue. To prevent starvation,
+ * process a maximum of OWL_MAX_ZEPHYRGRAMS_TO_PROCESS.
+ *
+ * Returns the number of zephyrgrams processed.
+ */
+
+#define OWL_MAX_ZEPHYRGRAMS_TO_PROCESS 20
+
+int _owl_zephyr_process_events(void) /* noproto */
+{
   int zpendcount=0;
+#ifdef HAVE_LIBZEPHYR
   ZNotice_t notice;
   owl_message *m=NULL;
 
-  while(owl_zephyr_zpending() && zpendcount < 20) {
+  while(owl_zephyr_zpending() && zpendcount < OWL_MAX_ZEPHYRGRAMS_TO_PROCESS) {
     if (owl_zephyr_zpending()) {
       ZReceiveNotice(&notice, NULL);
       zpendcount++;
@@ -1333,10 +1345,16 @@ void owl_zephyr_process_events(owl_dispatch *d) {
       owl_global_messagequeue_addmsg(&g, m);
     }
   }
+#endif
+  return zpendcount;
 }
 
-#else
-void owl_zephyr_process_events(owl_dispatch *d) {
-  
+void owl_zephyr_process_events(owl_dispatch *d)
+{
+  _owl_zephyr_process_events();
 }
-#endif
+
+int owl_zephyr_pre_select_action(owl_ps_action *a, void *p)
+{
+  return _owl_zephyr_process_events();
+}
