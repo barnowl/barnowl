@@ -469,12 +469,10 @@ int main(int argc, char **argv, char **env)
   owl_editwin *tw;
   owl_popwin *pw;
   int argcsave, followlast;
-  int newmsgs, nexttimediff;
+  int newmsgs;
   const char *const *argvsave;
   char *perlout, *perlerr;
   const owl_style *s;
-  time_t nexttime, now;
-  struct tm *today;
   const char *dir;
   owl_message *m;
   owl_options opts;
@@ -620,9 +618,6 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: setting context interactive");
   owl_context_set_interactive(owl_global_get_context(&g));
 
-  nexttimediff=10;
-  nexttime=time(NULL);
-
   owl_select_add_timer(180, 180, owl_zephyr_buddycheck_timer, NULL, NULL);
 
   /* If we ever deprecate the mainloop hook, remove this. */
@@ -642,21 +637,6 @@ int main(int argc, char **argv, char **env)
     typwin=owl_global_get_curs_typwin(&g);
 
     followlast=owl_global_should_followlast(&g);
-
-    /* little hack */
-    now=time(NULL);
-    today=localtime(&now);
-    if (today->tm_mon==9 && today->tm_mday==31 && owl_global_get_runtime(&g)<600) {
-      if (time(NULL)>nexttime) {
-	if (nexttimediff==1) {
-	  nexttimediff=10;
-	} else {
-	  nexttimediff=1;
-	}
-	nexttime+=nexttimediff;
-	owl_hack_animate();
-      }
-    }
 
     /* Grab incoming messages. */
     newmsgs=0;

@@ -474,62 +474,6 @@ char *owl_util_get_default_tty(void)
   return(out);
 }
 
-
-/* Animation hack */
-void owl_hack_animate(void)
-{
-  const owl_messagelist *ml;
-  owl_message *m;
-  owl_fmtext *fm;
-  const char *text, *ptr;
-  int place;
-
-  /* grab the first message and make sure its id is 0 */
-  ml=owl_global_get_msglist(&g);
-  m=owl_messagelist_get_element(ml, 0);
-  if (!m) return;
-  if (owl_message_get_id(m)!=0) return;
-
-  fm=owl_message_get_fmtext(m);
-  text=owl_fmtext_get_text(fm);
-
-  ptr=strstr(text, "OvO");
-  if (ptr) {
-    place=ptr-text;
-    owl_fmtext_set_char(fm, place, '-');
-    owl_fmtext_set_char(fm, place+2, '-');
-
-    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-    if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
-      owl_popwin_refresh(owl_global_get_popwin(&g));
-      /* TODO: this is a broken kludge */
-      if (owl_global_get_viewwin(&g)) {
-	owl_viewwin_redisplay(owl_global_get_viewwin(&g), 0);
-      }
-    }
-    owl_global_set_needrefresh(&g);
-    return;
-  }
-
-  ptr=strstr(text, "-v-");
-  if (ptr) {
-    place=ptr-text;
-    owl_fmtext_set_char(fm, place, 'O');
-    owl_fmtext_set_char(fm, place+2, 'O');
-
-    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-    if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
-      owl_popwin_refresh(owl_global_get_popwin(&g));
-      /* TODO: this is a broken kludge */
-      if (owl_global_get_viewwin(&g)) {
-	owl_viewwin_redisplay(owl_global_get_viewwin(&g), 0);
-      }
-    }
-    owl_global_set_needrefresh(&g);
-    return;
-  }
-}
-
 /* strip leading and trailing new lines.  Caller must free the
  * return.
  */
