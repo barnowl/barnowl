@@ -735,7 +735,11 @@ void owl_message_create_loopback(owl_message *m, const char *text)
 #ifdef HAVE_LIBZEPHYR
 void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
 {
+#ifdef ZNOTICE_SOCKADDR
+  char hbuf[NI_MAXHOST];
+#else /* !ZNOTICE_SOCKADDR */
   struct hostent *hent;
+#endif /* ZNOTICE_SOCKADDR */
   const char *ptr;
   char *tmp, *tmp2;
   int len;
@@ -809,13 +813,18 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   }
 
   /* save the hostname */
+#ifdef ZNOTICE_SOCKADDR
+  owl_function_debugmsg("About to do getnameinfo");
+  if (getnameinfo(&n->z_sender_sockaddr.sa, sizeof(n->z_sender_sockaddr), hbuf, sizeof(hbuf), NULL, 0, 0) == 0)
+    owl_message_set_hostname(m, hbuf);
+#else /* !ZNOTICE_SOCKADDR */
   owl_function_debugmsg("About to do gethostbyaddr");
-  hent=gethostbyaddr(&(n->z_uid.zuid_addr), sizeof(n->z_uid.zuid_addr), AF_INET);
-  if (hent && hent->h_name) {
+  hent = gethostbyaddr(&n->z_uid.zuid_addr, sizeof(n->z_uid.zuid_addr), AF_INET);
+  if (hent && hent->h_name)
     owl_message_set_hostname(m, hent->h_name);
-  } else {
+  else
     owl_message_set_hostname(m, inet_ntoa(n->z_sender_addr));
-  }
+#endif /* ZNOTICE_SOCKADDR */
 
   /* set the body */
   tmp=owl_zephyr_get_message(n, m);
