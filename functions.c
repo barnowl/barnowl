@@ -3144,8 +3144,9 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
             break;
           }
 
-          if (ret!=ZERR_NONE) {
           owl_function_unmask_sigint(NULL);
+
+          if (ret!=ZERR_NONE) {
             owl_function_error("Error getting location for %s", user);
             continue;
           }
