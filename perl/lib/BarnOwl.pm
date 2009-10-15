@@ -446,6 +446,49 @@ sub default_zephyr_signature
   return $zsig;
 }
 
+=head3 random_zephyr_siganture
+
+Pick a random zephyr signature.
+
+=head3 reload_zephyr_signatures
+
+Reload the random zephyr signatures
+
+=head3 $random_zsig_separator
+
+What to split the zsigs on
+
+=cut
+
+our $random_zsig_separator='\n';
+
+{
+  my $zsigs;
+
+  sub reload_zephyr_signatures {
+    my $slurp;
+
+    srand;
+
+    if (open(ZSIGS, "$ENV{'HOME'}/.zsigs")) {
+      {
+	local $/ = undef;
+	$slurp = <ZSIGS>;
+      }
+      $zsigs = [split(/$random_zsig_separator/, $slurp)];
+    } else {
+      $zsigs = [default_zephyr_signature()];
+    }
+  }
+
+  sub random_zephyr_signature {
+    if (!defined($zsigs)) {
+      reload_zephyr_signatures();
+    }
+    return $zsigs->[int(rand($#{$zsigs}))];
+  }
+}
+
 # Stub for owl::startup / BarnOwl::startup, so it isn't bound to the
 # startup command. This may be redefined in a user's configfile.
 sub startup
