@@ -78,6 +78,24 @@ Use ':irc-connect @b[server]' to connect to an IRC server, and
 END_QUICKSTART
 }
 
+sub buddylist {
+    my $list = "";
+
+    for my $net (sort keys %ircnets) {
+        my $conn = $ircnets{$net};
+        my ($nick, $server) = ($conn->nick, $conn->server);
+        $list .= BarnOwl::Style::boldify("IRC channels for $net ($nick\@$server)\n");
+
+        for my $chan (keys %channels) {
+            next unless grep $_ eq $conn, @{$channels{$chan}};
+            $list .= "  $chan\n";
+        }
+        $list .= "\n";
+    }
+
+    return $list;
+}
+
 #sub mainloop_hook {
 #    return unless defined $irc;
 #    eval {
@@ -305,6 +323,7 @@ END_DESCR
 $BarnOwl::Hooks::startup->add('BarnOwl::Module::IRC::startup');
 $BarnOwl::Hooks::shutdown->add('BarnOwl::Module::IRC::shutdown');
 $BarnOwl::Hooks::getQuickstart->add('BarnOwl::Module::IRC::quickstart');
+$BarnOwl::Hooks::getBuddyList->add("BarnOwl::Module::IRC::buddylist");
 
 ################################################################################
 ######################## Owl command handlers ##################################
