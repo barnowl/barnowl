@@ -56,10 +56,10 @@ perlglue.c: perlglue.xs $(TYPEMAP)
 	$(AM_V_GEN)perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes perlglue.xs > perlglue.c
 
 varstubs.c: stubgen.pl variable.c
-	$(AM_V_GEN)perl $< $(filter-out $<,$+) > $@
+	$(AM_V_GEN)perl $< $(sort $(filter-out $<,$+)) > $@
 
 owl_prototypes.h.new: codelist.pl varstubs.c $(BASE_SRCS)
-	$(AM_V_GEN)perl $< $(filter-out $<,$+) > $@
+	$(AM_V_GEN)perl $< $(sort $(filter-out $<,$+)) > $@
 
 # For emacs flymake-mode
 check-syntax: proto
