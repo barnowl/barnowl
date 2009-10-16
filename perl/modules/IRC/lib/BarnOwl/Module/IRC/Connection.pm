@@ -130,6 +130,7 @@ sub on_ping {
 
 sub on_admin_msg {
     my ($self, $evt) = @_;
+    return if BarnOwl::Module::IRC->skip_msg($evt->type);
     BarnOwl::admin_message("IRC",
             BarnOwl::Style::boldify('IRC ' . $evt->type . ' message from '
                 . $self->alias) . "\n"

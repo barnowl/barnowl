@@ -58,7 +58,15 @@ sub startup {
         description => 'If set, display all unrecognized IRC events as ' .
         'admin messages. Intended for debugging and development use only.'
        });
-    
+
+    BarnOwl::new_variable_string('irc:skip', {
+        default     => 'welcome yourhost created ' .
+        'luserclient luserme luserop luserchannels',
+        summary     => 'Skip messages of these types',
+        description => 'If set, each (space-separated) message type ' .
+        'provided will be hidden and ignored if received.'
+       });
+
     register_commands();
     register_handlers();
     BarnOwl::filter(qw{irc type ^IRC$ or ( type ^admin$ and adminheader ^IRC$ )});
@@ -119,6 +127,13 @@ sub register_handlers {
         $irc = Net::IRC->new;
         $irc->timeout(0);
     }
+}
+
+sub skip_msg {
+    my $class = shift;
+    my $type = lc shift;
+    my $skip = lc BarnOwl::getvar('irc:skip');
+    return grep {$_ eq $type} split ' ', $skip;
 }
 
 use constant OPTIONAL_CHANNEL => 1;
