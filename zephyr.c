@@ -19,6 +19,14 @@ Code_t ZResetAuthentication(void);
 
 #define HM_SVC_FALLBACK		htons((unsigned short) 2104)
 
+static char *owl_zephyr_dotfile(const char *name, const char *input)
+{
+  if (input != NULL)
+    return owl_strdup(input);
+  else
+    return owl_sprintf("%s/%s", owl_global_get_homedir(&g), name);
+}
+
 #ifdef HAVE_LIBZEPHYR
 void owl_zephyr_initialize(void)
 {
@@ -253,10 +261,7 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
   struct stat statbuff;
 
   subs = owl_malloc(sizeof(ZSubscription_t) * subSize);
-  if (filename == NULL)
-    subsfile = owl_sprintf("%s/.zephyr.subs", owl_global_get_homedir(&g));
-  else
-    subsfile = owl_strdup(filename);
+  subsfile = owl_zephyr_dotfile(".zephyr.subs", filename);
 
   if (stat(subsfile, &statbuff) != 0) {
     if (error_on_nofile == 1)
@@ -372,11 +377,7 @@ int owl_zephyr_loadloginsubs(const char *filename)
   struct stat statbuff;
 
   subs = owl_malloc(numSubs * sizeof(ZSubscription_t));
-
-  if (filename==NULL)
-    subsfile = owl_sprintf("%s/%s", owl_global_get_homedir(&g), ".anyone");
-  else
-    subsfile = owl_strdup(filename);
+  subsfile = owl_zephyr_dotfile(".anyone", filename);
 
   if (stat(subsfile, &statbuff) == -1)
     return 0;
@@ -956,11 +957,7 @@ void owl_zephyr_addsub(const char *filename, const char *class, const char *inst
   int duplicate = 0;
 
   line = owl_zephyr_makesubline(class, inst, recip);
-
-  if (filename == NULL)
-    subsfile = owl_sprintf("%s/.zephyr.subs", owl_global_get_homedir(&g));
-  else
-    subsfile = owl_strdup(filename);
+  subsfile = owl_zephyr_dotfile(".zephyr.subs", filename);
 
   /* if the file already exists, check to see if the sub is already there */
   file = fopen(subsfile, "r");
@@ -999,11 +996,7 @@ void owl_zephyr_delsub(const char *filename, const char *class, const char *inst
   line=owl_zephyr_makesubline(class, inst, recip);
   line[strlen(line)-1]='\0';
 
-  if (!filename) {
-    subsfile=owl_sprintf("%s/.zephyr.subs", owl_global_get_homedir(&g));
-  } else {
-    subsfile=owl_strdup(filename);
-  }
+  subsfile = owl_zephyr_dotfile(".zephyr.subs", filename);
   
   linesdeleted = owl_util_file_deleteline(subsfile, line, 1);
   if (linesdeleted > 0) {
@@ -1078,8 +1071,8 @@ void owl_zephyr_addbuddy(const char *name)
   char *filename;
   FILE *file;
   
-  filename=owl_sprintf("%s/.anyone", owl_global_get_homedir(&g));
-  file=fopen(filename, "a");
+  filename = owl_zephyr_dotfile(".anyone", NULL);
+  file = fopen(filename, "a");
   owl_free(filename);
   if (!file) {
     owl_function_error("Error opening zephyr buddy file for append");
@@ -1093,7 +1086,7 @@ void owl_zephyr_delbuddy(const char *name)
 {
   char *filename;
 
-  filename=owl_sprintf("%s/.anyone", owl_global_get_homedir(&g));
+  filename = owl_zephyr_dotfile(".anyone", NULL);
   owl_util_file_deleteline(filename, name, 0);
   owl_free(filename);
 }
@@ -1277,10 +1270,7 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
   char *ourfile, *tmp, *s = NULL;
   FILE *f;
 
-  if (filename == NULL)
-    ourfile = owl_sprintf("%s/.anyone", owl_global_get_homedir(&g));
-  else
-    ourfile = owl_strdup(filename);
+  ourfile = owl_zephyr_dotfile(".anyone", filename);
 
   f = fopen(ourfile, "r");
   if (!f) {
