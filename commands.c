@@ -85,9 +85,12 @@ const owl_cmd commands_to_init[]
   OWLCMD_ARGS("bindkey", owl_command_bindkey, OWL_CTX_ANY,
 	      "creates a binding in a keymap",
 	      "bindkey <keymap> <keyseq> command <command>",
+	      "(Note: There is a literal word "command" between <keyseq>\n"
+	      " and <command>.)\n"
 	      "Binds a key sequence to a command within a keymap.\n"
 	      "Use 'show keymaps' to see the existing keymaps.\n"
-	      "Key sequences may be things like M-C-t or NPAGE.\n"),
+	      "Key sequences may be things like M-C-t or NPAGE.\n\n"
+	      "Ex.: bindkey recv C-b command zwrite -c barnowl"),
 
   OWLCMD_ARGS("zwrite", owl_command_zwrite, OWL_CTX_INTERACTIVE,
 	      "send a zephyr",
