@@ -498,7 +498,7 @@ sub cmd_logout {
         }
         # Logged into multiple accounts, account specified.
         else {
-            if ( $_[1] eq '-a' )    #All accounts.
+            if ( $_[1] eq '-A' )    #All accounts.
             {
                 foreach my $jid ( $conn->getJIDs() ) {
                     do_logout($jid);
