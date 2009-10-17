@@ -36,7 +36,7 @@ BEGIN {
         if($IO::Socket::SSL::VERSION eq "0.97") {
             BarnOwl::error("You are using IO::Socket:SSL 0.97, which \n" .
                            "contains bugs causing it not to work with barnowl's\n" .
-                           "jabber support. We recommend updating to the latest\n" .
+                           "Jabber support. We recommend updating to the latest\n" .
                            "IO::Socket::SSL from CPAN. \n");
             die("Not loading Jabber.par\n");
         }
@@ -205,7 +205,7 @@ sub getSingleBuddyList {
     my $blist = "";
     my $roster = $conn->getRosterFromJID($jid);
     if ($roster) {
-        $blist .= "\n" . BarnOwl::Style::boldify("Jabber Roster for $jid\n");
+        $blist .= "\n" . BarnOwl::Style::boldify("Jabber roster for $jid\n");
 
         my @gTexts = ();
         foreach my $group ( $roster->groups() ) {
@@ -257,19 +257,22 @@ sub register_owl_commands() {
     BarnOwl::new_command(
         jabberlogin => \&cmd_login,
         {
-            summary => "Log into jabber",
-            usage   => "jabberlogin JID [PASSWORD]"
+            summary => "Log in to Jabber",
+            usage   => "jabberlogin <jid> [<password>]"
         }
     );
     BarnOwl::new_command(
         jabberlogout => \&cmd_logout,
-        { summary => "Log out of jabber" }
+        { 
+            summary => "Log out of Jabber",
+            usage   => "jabberlogout [<jid>]" 
+        }
     );
     BarnOwl::new_command(
         jwrite => \&cmd_jwrite,
         {
             summary => "Send a Jabber Message",
-            usage   => "jwrite JID [-t thread] [-s subject]"
+            usage   => "jwrite <jid> [-t <thread>] [-s <subject>]"
         }
     );
     BarnOwl::new_command(
@@ -290,32 +293,32 @@ sub register_owl_commands() {
         jmuc => \&cmd_jmuc,
         {
             summary     => "Jabber MUC related commands.",
-            description => "jmuc sends jabber commands related to muc.\n\n"
+            description => "jmuc sends Jabber commands related to MUC.\n\n"
               . "The following commands are available\n\n"
-              . "join <muc>  Join a muc.\n\n"
-              . "part <muc>  Part a muc.\n"
-              . "            The muc is taken from the current message if not supplied.\n\n"
-              . "invite <jid> <muc>\n"
+              . "join <muc>  Join a MUC.\n\n"
+              . "part <muc>  Part a MUC.\n"
+              . "            The MUC is taken from the current message if not supplied.\n\n"
+              . "invite <jid> [<muc>]\n"
               . "            Invite <jid> to <muc>.\n"
-              . "            The muc is taken from the current message if not supplied.\n\n"
-              . "configure <muc>\n"
+              . "            The MUC is taken from the current message if not supplied.\n\n"
+              . "configure [<muc>]\n"
               . "            Configures a MUC.\n"
               . "            Necessary to initalize a new MUC.\n"
               . "            At present, only the default configuration is supported.\n"
-              . "            The muc is taken from the current message if not supplied.\n\n"
-              . "presence <muc>\n"
+              . "            The MUC is taken from the current message if not supplied.\n\n"
+              . "presence [<muc>]\n"
               . "            Shows the roster for <muc>.\n"
-              . "            The muc is taken from the current message if not supplied.\n\n"
+              . "            The MUC is taken from the current message if not supplied.\n\n"
               . "presence -a\n"
               . "            Shows rosters for all MUCs you're participating in.\n\n",
-            usage => "jmuc COMMAND ARGS"
+            usage => "jmuc <command> [<args>]"
         }
     );
     BarnOwl::new_command(
         jroster => \&cmd_jroster,
         {
-            summary     => "Jabber Roster related commands.",
-            description => "jroster sends jabber commands related to rosters.\n\n"
+            summary     => "Jabber roster related commands.",
+            description => "jroster sends Jabber commands related to rosters.\n\n"
               . "The following commands are available\n\n"
               . "sub <jid>     Subscribe to <jid>'s presence. (implicit add)\n\n"
               . "add <jid>     Adds <jid> to your roster.\n\n"
@@ -330,10 +333,10 @@ sub register_owl_commands() {
               . "-g <group>    Add <jid> to group <group>.\n"
               . "              May be specified more than once, will not remove <jid> from any groups.\n\n"
               . "-p            Purge. Removes <jid> from all groups.\n"
-              . "              May be combined with -g completely alter <jid>'s groups.\n\n"
+              . "              May be combined with -g.\n\n"
               . "-n <name>     Sets <name> as <jid>'s short name.\n\n"
               . "Note: Unless -n is used, you can specify multiple <jid> arguments.\n",
-            usage       => "jroster COMMAND ARGS"
+            usage       => "jroster <command> <args>"
         }
     );
 }
@@ -391,7 +394,7 @@ sub do_login {
     $vars{jlogin_authhash}->{password} = sub { return $vars{jlogin_password} || '' };
     my $jidStr = $vars{jlogin_jid};
     if ( !$jidStr && $vars{jlogin_havepass}) {
-        BarnOwl::error("Got password but have no jid!");
+        BarnOwl::error("Got password but have no JID!");
     }
     else
     {
@@ -420,7 +423,7 @@ sub do_login {
         my $status = $client->Connect( %{ $vars{jlogin_connhash} } );
         if ( !$status ) {
             $conn->removeConnection($jidStr);
-            BarnOwl::error("We failed to connect");
+            BarnOwl::error("We failed to connect.");
         } else {
             my @result = $client->AuthSend( %{ $vars{jlogin_authhash} } );
 
@@ -481,7 +484,7 @@ sub do_logout {
 }
 
 sub cmd_logout {
-    return "You are not logged into jabber." unless ($conn->connected() > 0);
+    return "You are not logged into Jabber." unless ($conn->connected() > 0);
     # Logged into multiple accounts
     if ( $conn->connected() > 1 ) {
         # Logged into multiple accounts, no accout specified.
@@ -546,12 +549,12 @@ sub cmd_jwrite {
         'subject=s' => \$jwrite_subject,
         'account=s' => \$from,
         'id=s'     =>  \$jwrite_sid,
-    ) or die("Usage: jwrite JID [-t thread] [-s 'subject'] [-a account]\n");
+    ) or die("Usage: jwrite <jid> [-t <thread>] [-s <subject>] [-a <account>]\n");
     $jwrite_type = 'groupchat' if $gc;
 
     if ( scalar @ARGV != 1 ) {
         BarnOwl::error(
-            "Usage: jwrite JID [-t thread] [-s 'subject'] [-a account]");
+            "Usage: jwrite <jid> [-t <thread>] [-s <subject>] [-a <account>]");
         return;
     }
     else {
@@ -645,7 +648,7 @@ sub cmd_jmuc {
             return unless $jid;
         }
         else {
-            BarnOwl::error('You must specify an account with -a {jid}');
+            BarnOwl::error('You must specify an account with -a <jid>');
         }
         return $func->( $jid, $muc, @ARGV );
     }
@@ -658,7 +661,7 @@ sub jmuc_join {
     GetOptions( 'password=s' => \$password );
 
     $muc = shift @ARGV
-      or die("Usage: jmuc join MUC [-p password] [-a account]");
+      or die("Usage: jmuc join <muc> [-p <password>] [-a <account>]");
 
     die("Error: Must specify a fully-qualified MUC name (e.g. barnowl\@conference.mit.edu)\n")
         unless $muc =~ /@/;
@@ -679,7 +682,7 @@ sub jmuc_part {
     my ( $jid, $muc, @args ) = @_;
 
     $muc = shift @args if scalar @args;
-    die("Usage: jmuc part MUC [-a account]") unless $muc;
+    die("Usage: jmuc part [<muc>] [-a <account>]") unless $muc;
 
     if($conn->getConnectionFromJID($jid)->MUCLeave(JID => $muc)) {
         queue_admin_msg("$jid has left $muc.");
@@ -694,7 +697,7 @@ sub jmuc_invite {
     my $invite_jid = shift @args;
     $muc = shift @args if scalar @args;
 
-    die('Usage: jmuc invite JID [muc] [-a account]')
+    die('Usage: jmuc invite <jid> [<muc>] [-a <account>]')
       unless $muc && $invite_jid;
 
     my $message = Net::Jabber::Message->new();
@@ -709,7 +712,7 @@ sub jmuc_invite {
 sub jmuc_configure {
     my ( $jid, $muc, @args ) = @_;
     $muc = shift @args if scalar @args;
-    die("Usage: jmuc configure [muc]") unless $muc;
+    die("Usage: jmuc configure [<muc>]") unless $muc;
     my $iq = Net::Jabber::IQ->new();
     $iq->SetTo($muc);
     $iq->SetType('set');
@@ -750,7 +753,7 @@ sub jmuc_presence {
     my ( $jid, $muc, @args ) = @_;
 
     $muc = shift @args if scalar @args;
-    die("Usage: jmuc presence MUC") unless $muc;
+    die("Usage: jmuc presence [<muc>]") unless $muc;
 
     if ($muc eq '-a') {
         my $str = "";
@@ -816,7 +819,7 @@ sub cmd_jroster {
             return unless $jid;
         }
         else {
-            BarnOwl::error('You must specify an account with -a {jid}');
+            BarnOwl::error('You must specify an account with -a <jid>');
         }
         return $func->( $jid, $name, \@groups, $purgeGroups,  @ARGV );
     }
@@ -840,7 +843,7 @@ sub cmd_jaway {
         return unless $jid;
     }
     else {
-        BarnOwl::error('You must specify an account with -a {jid}');
+        BarnOwl::error('You must specify an account with -a <jid>');
     }
 
     $p->SetShow($show eq "online" ? "" : $show) if $show;
