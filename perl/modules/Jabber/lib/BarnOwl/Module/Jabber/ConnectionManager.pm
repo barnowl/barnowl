@@ -72,6 +72,21 @@ sub jidExists {
     return exists $self->{$jidStr};
 }
 
+sub baseJIDExists {
+    my $self = shift;
+    my $jidStr = shift;
+    my $jid = new Net::Jabber::JID;
+    $jid->SetJID($jidStr);
+    my $baseJID = $jid->GetJID('base');
+
+    foreach my $cjidStr ( keys %{ $self } ) {
+        my $cJID = new Net::Jabber::JID;
+        $cJID->SetJID($cjidStr);
+        return $cjidStr if ($cJID->GetJID('base') eq $baseJID);
+    }
+    return 0;
+}
+
 sub sidExists {
     my $self = shift;
     my $sid = shift || "";

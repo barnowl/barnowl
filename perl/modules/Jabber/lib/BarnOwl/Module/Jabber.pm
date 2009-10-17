@@ -351,16 +351,27 @@ sub register_filters {
 
 sub cmd_login {
     my $cmd = shift;
+    my $jidStr = shift;
     my $jid = new Net::Jabber::JID;
-    $jid->SetJID(shift);
+    $jid->SetJID($jidStr);
     my $password = '';
     $password = shift if @_;
 
     my $uid           = $jid->GetUserID();
     my $componentname = $jid->GetServer();
-    my $resource      = $jid->GetResource() || 'owl';
+    my $resource      = $jid->GetResource();
+
+    if ($resource eq '') {
+        my $cjidStr = $conn->baseJIDExists($jidStr);
+        if ($cjidStr) {
+            BarnOwl::error("Already logged in as $cjidStr.");
+            return;
+        }
+    }
+
+    $resource ||= 'owl';
     $jid->SetResource($resource);
-    my $jidStr = $jid->GetJID('full');
+    $jidStr = $jid->GetJID('full');
 
     if ( !$uid || !$componentname ) {
         BarnOwl::error("usage: $cmd JID");
