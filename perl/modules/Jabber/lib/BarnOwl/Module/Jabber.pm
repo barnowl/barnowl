@@ -369,7 +369,7 @@ sub cmd_login {
         }
     }
 
-    $resource ||= 'owl';
+    $resource ||= 'barnowl';
     $jid->SetResource($resource);
     $jidStr = $jid->GetJID('full');
 
