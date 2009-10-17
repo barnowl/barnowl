@@ -263,9 +263,13 @@ sub register_owl_commands() {
     );
     BarnOwl::new_command(
         jabberlogout => \&cmd_logout,
-        { 
+        {
             summary => "Log out of Jabber",
-            usage   => "jabberlogout [<jid>]" 
+            usage   => "jabberlogout [-A|<jid>]",
+            description => "jabberlogout logs you out of Jabber.\n\n"
+              . "If you are connected to one account, no further arguments are necessary.\n\n"
+              . "-A            Log out of all accounts.\n"
+              . "<jid>         Which account to log out of.\n"
         }
     );
     BarnOwl::new_command(
