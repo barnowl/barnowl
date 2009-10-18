@@ -42,6 +42,7 @@ L<Net::Jabber::MUC/new> and L<Net::Jabber::MUC/Connect>
 sub MUCJoin {
     my $self = shift;
     my $muc = Net::Jabber::MUC->new(connection => $self, @_);
+    $muc->{ARGS} = @_; # Save these for later
     $muc->Join(@_);
 
     # Add MUC to list of MUCs, unless we're just changing nicks.

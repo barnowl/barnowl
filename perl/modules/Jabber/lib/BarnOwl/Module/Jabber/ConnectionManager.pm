@@ -97,6 +97,10 @@ sub tryReconnect {
     BarnOwl::admin_message(Jabber => "Reconnected to jabber as $jidStr");
     $self->{$jidStr}{Status} = "available";
 
+    foreach my $muc ($self->{$jidStr}->{Client}->MUCs()) {
+        $muc->Join($muc->{ARGS});
+    }
+
     return 1;
 }
 
