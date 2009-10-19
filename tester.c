@@ -11,6 +11,7 @@ int owl_dict_regtest(void);
 int owl_variable_regtest(void);
 int owl_filter_regtest(void);
 int owl_obarray_regtest(void);
+int owl_editwin_regtest(void);
 
 int main(int argc, char **argv, char **env)
 {
@@ -28,6 +29,7 @@ int main(int argc, char **argv, char **env)
   numfailures += owl_variable_regtest();
   numfailures += owl_filter_regtest();
   numfailures += owl_obarray_regtest();
+  numfailures += owl_editwin_regtest();
   if (numfailures) {
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
@@ -307,6 +309,46 @@ int owl_obarray_regtest(void) {
   FAIL_UNLESS("Didn't find a string that isn't there", p == NULL);
 
   printf("# END testing owl_obarray (%d failures)\n", numfailed);
+
+  return numfailed;
+}
+
+int owl_editwin_regtest(void) {
+  int numfailed = 0;
+  const char *p;
+
+  printf("# BEGIN testing owl_editwin\n");
+
+  owl_editwin *oe;
+  oe = owl_editwin_allocate();
+  owl_editwin_init(oe, NULL, 80, 80, OWL_EDITWIN_STYLE_MULTILINE, NULL);
+
+  /* TODO: make the strings a little more lenient w.r.t trailing whitespace */
+
+  /* check paragraph fill */
+  owl_editwin_insert_string(oe, "blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah.\n\nblah");
+  owl_editwin_move_to_top(oe);
+  owl_editwin_fill_paragraph(oe);
+  p = owl_editwin_get_text(oe);
+  FAIL_UNLESS("text was correctly wrapped", p && !strcmp(p, "blah blah blah blah blah blah blah blah blah blah blah blah blah blah\n"
+							    "blah blah blah.\n"
+							    "\n"
+							    "blah"));
+
+  /* check that lines ending with ". " correctly fill */
+  owl_editwin_fullclear(oe);
+  owl_editwin_insert_string(oe, "blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah. \n\nblah");
+  owl_editwin_move_to_top(oe);
+  owl_editwin_fill_paragraph(oe);
+  p = owl_editwin_get_text(oe);
+  FAIL_UNLESS("text was correctly wrapped", p && !strcmp(p, "blah blah blah blah blah blah blah blah blah blah blah blah blah blah\n"
+							    "blah blah blah. \n"
+							    "\n"
+							    "blah"));
+
+  owl_editwin_free(oe);
+
+  printf("# END testing owl_editwin (%d failures)\n", numfailed);
 
   return numfailed;
 }
