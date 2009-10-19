@@ -1308,12 +1308,11 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
 void owl_zephyr_process_events(owl_dispatch *d) {
   int zpendcount=0;
   ZNotice_t notice;
-  struct sockaddr_in from;
   owl_message *m=NULL;
 
   while(owl_zephyr_zpending() && zpendcount < 20) {
     if (owl_zephyr_zpending()) {
-      ZReceiveNotice(&notice, &from);
+      ZReceiveNotice(&notice, NULL);
       zpendcount++;
 
       /* is this an ack from a zephyr we sent? */
