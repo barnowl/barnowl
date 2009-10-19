@@ -1160,7 +1160,8 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
         owl_editwin_replace(e, 1, " ");
       }
 
-      if (sentence && g_unichar_isspace(owl_editwin_get_char_at_point(e)))
+      if (sentence && g_unichar_isspace(owl_editwin_get_char_at_point(e))
+	  && e->index < e->mark)
         owl_editwin_point_move(e, 1);
 
       while(g_unichar_isspace(owl_editwin_get_char_at_point(e))
