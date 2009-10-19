@@ -1,4 +1,9 @@
 1.4
+ * Better documentation for jabberlogout. -asedeno@mit.edu
+ * jabberlogout -a --> jabberlogout -A -asedeno@mit.edu
+ * Updated Jabber documentation for consistency. -zhangc@mit.edu
+ * Document :bindkey more clearly. -geofft@mit.edu
+ * Fix a bug with ^C getting disabled. -nelhage@mit.edu
  * Fix description of edit:history-next -davidben@mit.edu
  * Don’t loop infinitely on matching the empty string. -andersk@mit.edu
  * Fix a typo in the jroster help message. -asedeno@mit.edu
