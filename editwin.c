@@ -70,6 +70,19 @@ owl_editwin *owl_editwin_allocate(void)
   return e;
 }
 
+void owl_editwin_free(owl_editwin *e)
+{
+  owl_free(e->buff);
+  owl_free(e->killbuf);
+  owl_free(e->command);
+  /* just in case someone forgot to clean up */
+  while (e->excursions) {
+    oe_release_excursion(e, e->excursions);
+  }
+
+  owl_free(e);
+}
+
 static int oe_count_glyphs(const char *s)
 {
   int count = 0;
