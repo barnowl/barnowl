@@ -25,7 +25,7 @@ static void owl_perl_xs_init(pTHX)
 SV *owl_new_sv(const char * str)
 {
   SV *ret = newSVpv(str, 0);
-  if(is_utf8_string((U8*)str, strlen(str))) {
+  if (is_utf8_string((const U8 *)str, strlen(str))) {
     SvUTF8_on(ret);
   } else {
     char *escape = owl_escape_highbit(str);
