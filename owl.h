@@ -192,10 +192,14 @@ typedef void SV;
 #define LINE 2048
 
 #ifdef HAVE_LIBZEPHYR
-/* libzephyr doesn't use const, so we appease the type system with this cast. */
+/* libzephyr doesn't use const, so we appease the type system with this kludge.
+ * This just casts const char * to char * in a way that doesn't yield a warning
+ * from gcc -Wcast-qual. */
 static inline char *zstr(const char *str)
 {
-  return (char *)str;
+  union { char *rw; const char *ro; } u;
+  u.ro = str;
+  return u.rw;
 }
 #endif
 
