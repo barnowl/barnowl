@@ -904,8 +904,8 @@ int owl_variable_int_set_default(owl_variable *v, const void *newval) {
 
 int owl_variable_int_set_fromstring_default(owl_variable *v, const char *newval) {
   int i;
-  const char *ep = "x";
-  i = strtol(newval, (char **)&ep, 10);
+  char *ep;
+  i = strtol(newval, &ep, 10);
   if (*ep || ep==newval) return(-1);
   return (v->set_fn(v, &i));
 }
