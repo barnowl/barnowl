@@ -112,6 +112,7 @@ void owl_global_init(owl_global *g) {
 
   owl_message_init_fmtext_cache();
   owl_list_create(&(g->dispatchlist));
+  owl_list_create(&(g->io_dispatch_list));
   owl_list_create(&(g->psa_list));
   g->timerlist = NULL;
   g->interrupted = FALSE;
@@ -942,6 +943,11 @@ const char * owl_global_intern(owl_global *g, const char * string)
 owl_list *owl_global_get_dispatchlist(owl_global *g)
 {
   return &(g->dispatchlist);
+}
+
+owl_list *owl_global_get_io_dispatch_list(owl_global *g)
+{
+  return &(g->io_dispatch_list);
 }
 
 owl_list *owl_global_get_psa_list(owl_global *g)

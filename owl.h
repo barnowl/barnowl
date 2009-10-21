@@ -104,9 +104,9 @@ typedef void SV;
 #define OWL_MESSAGE_DIRECTION_IN    1
 #define OWL_MESSAGE_DIRECTION_OUT   2
 
-#define OWL_MUX_READ   1
-#define OWL_MUX_WRITE  2
-#define OWL_MUX_EXCEPT 4
+#define OWL_IO_READ   1
+#define OWL_IO_WRITE  2
+#define OWL_IO_EXCEPT 4
 
 #define OWL_DIRECTION_NONE      0
 #define OWL_DIRECTION_DOWNWARDS 1
@@ -508,6 +508,15 @@ typedef struct _owl_dispatch {
   void *data;
 } owl_dispatch;
 
+typedef struct _owl_io_dispatch {
+  int fd;                                     /* FD to watch for dispatch. */
+  int mode;
+  int needs_gc;
+  void (*callback)(const struct _owl_io_dispatch *, void *); /* C function to dispatch to. */
+  void (*destroy)(const struct _owl_io_dispatch *);  /* Destructor */
+  void *data;
+} owl_io_dispatch;
+
 typedef struct _owl_ps_action {
   int needs_gc;
   int (*callback)(struct _owl_ps_action *, void *);
@@ -594,6 +603,7 @@ typedef struct _owl_global {
   struct termios startup_tio;
   owl_obarray obarray;
   owl_list dispatchlist;
+  owl_list io_dispatch_list;
   owl_list psa_list;
   GList *timerlist;
   owl_timer *aim_nop_timer;

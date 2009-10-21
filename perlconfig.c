@@ -509,6 +509,11 @@ void owl_perlconfig_dispatch_free(owl_dispatch *d)
   owl_free(d);
 }
 
+void owl_perlconfig_io_dispatch_destroy(const owl_io_dispatch *d)
+{
+  SvREFCNT_dec(d->data);
+}
+
 void owl_perlconfig_edit_callback(owl_editwin *e)
 {
   SV *cb = owl_editwin_get_cbdata(e);
@@ -569,6 +574,31 @@ void owl_perlconfig_dispatch(owl_dispatch *d)
   PUSHMARK(SP);
   PUTBACK;
   
+  call_sv(cb, G_DISCARD|G_KEEPERR|G_EVAL);
+
+  if(SvTRUE(ERRSV)) {
+    owl_function_error("%s", SvPV_nolen(ERRSV));
+  }
+
+  FREETMPS;
+  LEAVE;
+}
+
+void owl_perlconfig_io_dispatch(const owl_io_dispatch *d, void *data)
+{
+  SV *cb = data;
+  dSP;
+  if(cb == NULL) {
+    owl_function_error("Perl callback is NULL!");
+    return;
+  }
+
+  ENTER;
+  SAVETMPS;
+
+  PUSHMARK(SP);
+  PUTBACK;
+
   call_sv(cb, G_DISCARD|G_KEEPERR|G_EVAL);
 
   if(SvTRUE(ERRSV)) {
