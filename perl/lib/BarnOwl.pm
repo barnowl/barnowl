@@ -436,11 +436,13 @@ Compute the default zephyr signature.
 sub default_zephyr_signature
 {
   my $zsig = getvar('zsig');
-  if (!$zsig && (my $zsigproc = getvar('zsigproc'))) {
-    $zsig = `$zsigproc`;
-  } elsif (!defined($zsig = get_zephyr_variable('zwrite-signature'))) {
-    $zsig = ((getpwuid($<))[6]);
-    $zsig =~ s/,.*//;
+  if (!$zsig) {
+      if (my $zsigproc = getvar('zsigproc')) {
+	  $zsig = `$zsigproc`;
+      } elsif (!defined($zsig = get_zephyr_variable('zwrite-signature'))) {
+	  $zsig = ((getpwuid($<))[6]);
+	  $zsig =~ s/,.*//;
+      }
   }
   chomp($zsig);
   return $zsig;
