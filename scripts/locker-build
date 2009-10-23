@@ -79,11 +79,14 @@ $TAR -C "$TMPDIR" -xzf "$SRC_TGZ" || die "Unable to untar"
 
     echo "Building BarnOwl version $VERS"
 
+    opt_rpath="-Wl,-R"
+    [ $(uname) = "SunOS" ] && opt_rpath="-R"
+
     BARNOWL="/afs/sipb.mit.edu/project/barnowl/arch/$ATHENA_SYS"
     export PKG_CONFIG_PATH="$BARNOWL/lib/pkgconfig"
 
     CFLAGS="-I$BARNOWL/include" \
-        LDFLAGS="-L$BARNOWL/lib -Wl,-R$BARNOWL/lib" \
+        LDFLAGS="-L$BARNOWL/lib $opt_rpath$BARNOWL/lib" \
         ./configure --exec-prefix="/mit/barnowl/arch/$ATHENA_SYS" \
         --prefix="/mit/barnowl/builds/barnowl-$VERS" --mandir=/mit/barnowl/man \
         --program-suffix="-$VERS" \
