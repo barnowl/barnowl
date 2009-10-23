@@ -153,8 +153,8 @@ const owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("unset", owl_command_unset, OWL_CTX_ANY,
 	      "unset a boolean variable value",
-	      "set [-q] <variable>\n"
-	      "set",
+	      "unset [-q] <variable>\n"
+	      "unset",
 	      "Set the named boolean variable to off.\n"
 	      "If -q is specified, is silent and doesn't print a message.\n"),
 
