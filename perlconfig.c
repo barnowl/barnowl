@@ -395,7 +395,6 @@ char *owl_perlconfig_execute(const char *line)
 {
   STRLEN len;
   SV *response;
-  const char *preout;
   char *out;
 
   if (!owl_global_have_config(&g)) return NULL;
@@ -410,11 +409,7 @@ char *owl_perlconfig_execute(const char *line)
     sv_setsv (ERRSV, &PL_sv_undef);     /* and clear the error */
   }
 
-  preout=SvPV(response, len);
-  if (len == 0 || preout[len - 1] != '\n')
-    out = owl_sprintf("%s\n", preout);
-  else
-    out = owl_strdup(preout);
+  out = owl_strdup(SvPV(response, len));
   FREETMPS;
   LEAVE;
 
