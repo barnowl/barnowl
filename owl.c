@@ -314,7 +314,7 @@ int owl_process_messages(owl_ps_action *d, void *p)
   return newmsgs;
 }
 
-void owl_process_input(owl_dispatch *d)
+void owl_process_input(const owl_io_dispatch *d, void *data)
 {
   owl_input j;
   WINDOW *typwin;
@@ -443,7 +443,7 @@ int stderr_replace(void)
 }
 
 /* Sends stderr (read from rfd) messages to the error console */
-void stderr_redirect_handler(owl_dispatch *d)
+void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
 {
   int navail, bread;
   char buf[4096];
@@ -520,27 +520,14 @@ int main(int argc, char **argv, char **env)
   owl_global_set_startupargs(&g, argcsave, argvsave);
   owl_global_set_haveaim(&g);
 
-  /* prepare stdin dispatch */
-  {
-    owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
-    d->fd = STDIN;
-    d->cfunc = &owl_process_input;
-    d->destroy = NULL;
-    owl_select_add_dispatch(d);
-  }
-
+  /* register STDIN dispatch; throw away return, we won't need it */
+  owl_select_add_io_dispatch(STDIN, OWL_IO_READ, &owl_process_input, NULL, NULL);
   owl_zephyr_initialize();
 
 #if OWL_STDERR_REDIR
   /* Do this only after we've started curses up... */
-  {
-    owl_dispatch *d = owl_malloc(sizeof(owl_dispatch));
-    owl_function_debugmsg("startup: doing stderr redirection");
-    d->fd = stderr_replace();
-    d->cfunc = stderr_redirect_handler;
-    d->destroy = NULL;
-    owl_select_add_dispatch(d);
-  }
+  owl_function_debugmsg("startup: doing stderr redirection");
+  owl_select_add_io_dispatch(stderr_replace(), OWL_IO_READ, &stderr_redirect_handler, NULL, NULL);
 #endif
 
   /* create the owl directory, in case it does not exist */

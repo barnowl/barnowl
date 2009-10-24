@@ -35,7 +35,6 @@ void owl_zephyr_initialize(void)
   struct sockaddr_in sin;
   ZNotice_t req;
   Code_t code;
-  owl_dispatch *dispatch;
 
   /*
    * Code modified from libzephyr's ZhmStat.c
@@ -79,19 +78,14 @@ void owl_zephyr_initialize(void)
     return;
   }
 
-  dispatch = owl_malloc(sizeof(*dispatch));
-  dispatch->fd = ZGetFD();
-  dispatch->cfunc = owl_zephyr_finish_initialization;
-  dispatch->destroy = (void(*)(owl_dispatch*))owl_free;
-
-  owl_select_add_dispatch(dispatch);
+  owl_select_add_io_dispatch(ZGetFD(), OWL_IO_READ|OWL_IO_EXCEPT, &owl_zephyr_finish_initialization, NULL, NULL);
 }
 
-void owl_zephyr_finish_initialization(owl_dispatch *d) {
+void owl_zephyr_finish_initialization(const owl_io_dispatch *d, void *data) {
   Code_t code;
   char *perl;
 
-  owl_select_remove_dispatch(d->fd);
+  owl_select_remove_io_dispatch(d);
 
   ZClosePort();
 
@@ -105,11 +99,8 @@ void owl_zephyr_finish_initialization(owl_dispatch *d) {
     return;
   }
 
-  d = owl_malloc(sizeof(owl_dispatch));
-  d->fd = ZGetFD();
-  d->cfunc = &owl_zephyr_process_events;
-  d->destroy = NULL;
-  owl_select_add_dispatch(d);
+  owl_select_add_io_dispatch(ZGetFD(), OWL_IO_READ|OWL_IO_EXCEPT, &owl_zephyr_process_events, NULL, NULL);
+
   owl_global_set_havezephyr(&g);
 
   if(g.load_initial_subs) {
@@ -1349,7 +1340,7 @@ int _owl_zephyr_process_events(void) /* noproto */
   return zpendcount;
 }
 
-void owl_zephyr_process_events(owl_dispatch *d)
+void owl_zephyr_process_events(const owl_io_dispatch *d, void *data)
 {
   _owl_zephyr_process_events();
 }

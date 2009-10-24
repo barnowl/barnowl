@@ -529,7 +529,7 @@ typedef struct _owl_popexec {
   owl_viewwin *vwin;
   int winactive;
   pid_t pid;			/* or 0 if it has terminated */
-  owl_dispatch dispatch;
+  const owl_io_dispatch *dispatch;
 } owl_popexec;
 
 typedef struct _owl_global {
