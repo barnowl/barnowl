@@ -23,7 +23,7 @@ const char *owl_style_get_description(const owl_style *s)
   SV *sv = NULL;
   OWL_PERL_CALL_METHOD(s->perlobj,
                        "description",
-                       /* no args */,
+                       ;,
                        "Error in style_get_description: %s",
                        0,
                        sv = SvREFCNT_inc(POPs);
