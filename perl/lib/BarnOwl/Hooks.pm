@@ -107,7 +107,17 @@ sub _load_perl_commands {
                            description =>
                            "This is the function responsible for tab-completion."
                        });
+    BarnOwl::new_command('edit:help' => \&BarnOwl::Help::show_help,
+                       {
+                           summary     => "Display help for the current command",
+                           usage       => "help",
+                           description =>
+                           "Opens the help information on the current command.\n" .
+                           "Returns to the previous editing context afterwards.\n\n" .
+                           "SEE ALSO: help"
+                         });
     BarnOwl::bindkey(editline => TAB => command => 'edit:complete');
+    BarnOwl::bindkey(editline => 'M-h' => command => 'edit:help');
 }
 
 sub _load_owlconf {

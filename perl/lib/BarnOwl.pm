@@ -36,6 +36,7 @@ use BarnOwl::Zephyr;
 use BarnOwl::Timer;
 use BarnOwl::Editwin;
 use BarnOwl::Completion;
+use BarnOwl::Help;
 
 use List::Util qw(max);
 
