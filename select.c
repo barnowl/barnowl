@@ -157,44 +157,6 @@ int owl_select_dispatch_count(void)
   return owl_list_get_size(owl_global_get_dispatchlist(&g));
 }
 
-int owl_select_add_perl_dispatch(int fd, SV *cb)
-{
-  int elt;
-  owl_dispatch *d;
-  elt = owl_select_find_dispatch(fd);
-  if (elt != -1) {
-    d = owl_list_get_element(owl_global_get_dispatchlist(&g), elt);
-    if (d->cfunc != owl_perlconfig_dispatch) {
-      /* don't mess with non-perl dispatch functions from here. */
-      return 1;
-    }
-  }
-
-  d = owl_malloc(sizeof(owl_dispatch));
-  d->fd = fd;
-  d->cfunc = owl_perlconfig_dispatch;
-  d->destroy = owl_perlconfig_dispatch_free;
-  d->data = cb;
-  owl_select_add_dispatch(d);
-  return 0;
-}
-
-int owl_select_remove_perl_dispatch(int fd)
-{
-  int elt;
-  owl_dispatch *d;
-  
-  elt = owl_select_find_dispatch(fd);
-  if (elt != -1) {
-    d = owl_list_get_element(owl_global_get_dispatchlist(&g), elt);
-    if (d->cfunc == owl_perlconfig_dispatch) {
-      owl_select_remove_dispatch_at(elt);
-      return 0;
-    }
-  }
-  return 1;
-}
-
 int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
 {
   int i, len, max_fd;
