@@ -52,4 +52,4 @@
     LEAVE; \
 }
 
-#endif //INC_PERL_PERL_H
+#endif /* INC_PERL_PERL_H */
