@@ -406,32 +406,34 @@ char *owl_sprintf(const char *fmt, ...)
   return ret;
 }
 
+/* These are in order of their value in owl.h */
+static const struct {
+  int number;
+  const char *name;
+} color_map[] = {
+  {OWL_COLOR_INVALID, "invalid"},
+  {OWL_COLOR_DEFAULT, "default"},
+  {OWL_COLOR_BLACK, "black"},
+  {OWL_COLOR_RED, "red"},
+  {OWL_COLOR_GREEN, "green"},
+  {OWL_COLOR_YELLOW,"yellow"},
+  {OWL_COLOR_BLUE, "blue"},
+  {OWL_COLOR_MAGENTA, "magenta"},
+  {OWL_COLOR_CYAN, "cyan"},
+  {OWL_COLOR_WHITE, "white"},
+};
 
 /* Return the owl color associated with the named color.  Return -1
  * if the named color is not available
  */
 int owl_util_string_to_color(const char *color)
 {
-  int c;
-  if (!strcasecmp(color, "black")) {
-    return(OWL_COLOR_BLACK);
-  } else if (!strcasecmp(color, "red")) {
-    return(OWL_COLOR_RED);
-  } else if (!strcasecmp(color, "green")) {
-    return(OWL_COLOR_GREEN);
-  } else if (!strcasecmp(color, "yellow")) {
-    return(OWL_COLOR_YELLOW);
-  } else if (!strcasecmp(color, "blue")) {
-    return(OWL_COLOR_BLUE);
-  } else if (!strcasecmp(color, "magenta")) {
-    return(OWL_COLOR_MAGENTA);
-  } else if (!strcasecmp(color, "cyan")) {
-    return(OWL_COLOR_CYAN);
-  } else if (!strcasecmp(color, "white")) {
-    return(OWL_COLOR_WHITE);
-  } else if (!strcasecmp(color, "default")) {
-    return(OWL_COLOR_DEFAULT);
-  }
+  int c, i;
+
+  for (i = 0; i < (sizeof(color_map)/sizeof(color_map[0])); i++)
+    if (strcasecmp(color, color_map[i].name) == 0)
+      return color_map[i].number;
+
   c = atoi(color);
   if (c >= -1 && c < COLORS) {
     return(c);
@@ -442,15 +444,8 @@ int owl_util_string_to_color(const char *color)
 /* Return a string name of the given owl color */
 const char *owl_util_color_to_string(int color)
 {
-  if (color==OWL_COLOR_BLACK)   return("black");
-  if (color==OWL_COLOR_RED)     return("red");
-  if (color==OWL_COLOR_GREEN)   return("green");
-  if (color==OWL_COLOR_YELLOW)  return("yellow");
-  if (color==OWL_COLOR_BLUE)    return("blue");
-  if (color==OWL_COLOR_MAGENTA) return("magenta");
-  if (color==OWL_COLOR_CYAN)    return("cyan");
-  if (color==OWL_COLOR_WHITE)   return("white");
-  if (color==OWL_COLOR_DEFAULT) return("default");
+  if (color >= OWL_COLOR_INVALID && color <= OWL_COLOR_WHITE)
+    return color_map[color - OWL_COLOR_INVALID].name;
   return("Unknown color");
 }
 
