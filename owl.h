@@ -500,14 +500,6 @@ typedef struct _owl_obarray {
   owl_list strings;
 } owl_obarray;
 
-typedef struct _owl_dispatch {
-  int fd;                                 /* FD to watch for dispatch. */
-  int needs_gc;
-  void (*cfunc)(struct _owl_dispatch*);   /* C function to dispatch to. */
-  void (*destroy)(struct _owl_dispatch*); /* Destructor */
-  void *data;
-} owl_dispatch;
-
 typedef struct _owl_io_dispatch {
   int fd;                                     /* FD to watch for dispatch. */
   int mode;
@@ -602,7 +594,6 @@ typedef struct _owl_global {
   owl_timer zephyr_buddycheck_timer;
   struct termios startup_tio;
   owl_obarray obarray;
-  owl_list dispatchlist;
   owl_list io_dispatch_list;
   owl_list psa_list;
   GList *timerlist;

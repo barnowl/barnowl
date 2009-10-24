@@ -80,145 +80,6 @@ void owl_select_process_timers(struct timespec *timeout)
   timeout->tv_nsec = 0;
 }
 
-/* Returns the index of the dispatch for the file descriptor. */
-int owl_select_find_dispatch(int fd)
-{
-  int i, len;
-  const owl_list *dl;
-  const owl_dispatch *d;
-  
-  dl = owl_global_get_dispatchlist(&g);
-  len = owl_list_get_size(dl);
-  for(i = 0; i < len; i++) {
-    d = owl_list_get_element(dl, i);
-    if (d->fd == fd) return i;
-  }
-  return -1;
-}
-
-void owl_select_remove_dispatch_at(int elt) /* noproto */
-{
-  owl_list *dl;
-  owl_dispatch *d;
-
-  dl = owl_global_get_dispatchlist(&g);
-  d = owl_list_get_element(dl, elt);
-  owl_list_remove_element(dl, elt);
-  if (d->destroy) {
-    d->destroy(d);
-  }
-}
-
-/* Adds a new owl_dispatch to the list, replacing existing ones if needed. */
-void owl_select_add_dispatch(owl_dispatch *d)
-{
-  int elt;
-  owl_list *dl;
-
-  d->needs_gc = 0;
-
-  elt = owl_select_find_dispatch(d->fd);
-  dl = owl_global_get_dispatchlist(&g);
-  
-  if (elt != -1) {  /* If we have a dispatch for this FD */
-    owl_dispatch *d_old;
-    d_old = owl_list_get_element(dl, elt);
-    /* Ignore if we're adding the same dispatch again.  Otherwise
-       replace the old dispatch. */
-    if (d_old != d) {
-      owl_select_remove_dispatch_at(elt);
-    }
-  }
-  owl_list_append_element(dl, d);
-}
-
-/* Removes an owl_dispatch to the list, based on it's file descriptor. */
-void owl_select_remove_dispatch(int fd)
-{
-  int elt;
-  owl_list *dl;
-  owl_dispatch *d;
-
-  elt = owl_select_find_dispatch(fd);
-  if(elt == -1) {
-    return;
-  } else if(dispatch_active) {
-    /* Defer the removal until dispatch is done walking the list */
-    dl = owl_global_get_dispatchlist(&g);
-    d = owl_list_get_element(dl, elt);
-    d->needs_gc = 1;
-  } else {
-    owl_select_remove_dispatch_at(elt);
-  }
-}
-
-int owl_select_dispatch_count(void)
-{
-  return owl_list_get_size(owl_global_get_dispatchlist(&g));
-}
-
-int owl_select_dispatch_prepare_fd_sets(fd_set *r, fd_set *e)
-{
-  int i, len, max_fd;
-  owl_dispatch *d;
-  const owl_list *dl;
-
-  dl = owl_global_get_dispatchlist(&g);
-  max_fd = 0;
-  len = owl_select_dispatch_count();
-  for(i = 0; i < len; i++) {
-    d = owl_list_get_element(dl, i);
-    FD_SET(d->fd, r);
-    FD_SET(d->fd, e);
-    if (max_fd < d->fd) max_fd = d->fd;
-  }
-  return max_fd + 1;
-}
-
-void owl_select_gc(void)
-{
-  int i;
-  owl_list *dl;
-
-  dl = owl_global_get_dispatchlist(&g);
-  /*
-   * Count down so we aren't set off by removing items from the list
-   * during the iteration.
-   */
-  for(i = owl_list_get_size(dl) - 1; i >= 0; i--) {
-    const owl_dispatch *d = owl_list_get_element(dl, i);
-    if(d->needs_gc) {
-      owl_select_remove_dispatch_at(i);
-    }
-  }
-}
-
-void owl_select_dispatch(fd_set *fds, int max_fd)
-{
-  int i, len;
-  owl_dispatch *d;
-  const owl_list *dl;
-
-  dl = owl_global_get_dispatchlist(&g);
-  len = owl_select_dispatch_count();
-
-  dispatch_active = 1;
-
-  for(i = 0; i < len; i++) {
-    d = owl_list_get_element(dl, i);
-    /* While d shouldn't normally be null, the list may be altered by
-     * functions we dispatch to. */
-    if (d != NULL && !d->needs_gc && FD_ISSET(d->fd, fds)) {
-      if (d->cfunc != NULL) {
-        d->cfunc(d);
-      }
-    }
-  }
-
-  dispatch_active = 0;
-  owl_select_gc();
-}
-
 static const owl_io_dispatch *owl_select_find_io_dispatch_by_fd(const int fd)
 {
   int i, len;
@@ -545,9 +406,7 @@ void owl_select(void)
   FD_ZERO(&w);
   FD_ZERO(&e);
 
-  max_fd = owl_select_dispatch_prepare_fd_sets(&r, &e);
-  max_fd2 = owl_select_prepare_io_dispatch_fd_sets(&r, &w, &e);
-  if (max_fd < max_fd2) max_fd = max_fd2;
+  max_fd = owl_select_prepare_io_dispatch_fd_sets(&r, &w, &e);
 
   /* AIM HACK: 
    *
@@ -616,7 +475,6 @@ void owl_select(void)
     }
     /* NOTE: the same dispatch function is called for both exceptional
        and read ready FDs. */
-    owl_select_dispatch(&r, max_fd);
     owl_select_io_dispatch(&r, &w, &e, max_fd);
   }
 }

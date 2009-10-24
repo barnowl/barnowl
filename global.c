@@ -111,7 +111,6 @@ void owl_global_init(owl_global *g) {
   owl_obarray_init(&(g->obarray));
 
   owl_message_init_fmtext_cache();
-  owl_list_create(&(g->dispatchlist));
   owl_list_create(&(g->io_dispatch_list));
   owl_list_create(&(g->psa_list));
   g->timerlist = NULL;
@@ -938,11 +937,6 @@ struct termios *owl_global_get_startup_tio(owl_global *g)
 const char * owl_global_intern(owl_global *g, const char * string)
 {
   return owl_obarray_insert(&(g->obarray), string);
-}
-
-owl_list *owl_global_get_dispatchlist(owl_global *g)
-{
-  return &(g->dispatchlist);
 }
 
 owl_list *owl_global_get_io_dispatch_list(owl_global *g)
