@@ -209,7 +209,7 @@ sub on_disconnect {
             delete $BarnOwl::Module::IRC::channels{$k};
         }
     }
-    BarnOwl::remove_dispatch($self->{FD});
+    BarnOwl::remove_io_dispatch($self->{FD});
     BarnOwl::admin_message('IRC',
                            "[" . $self->alias . "] Disconnected from server");
 }
