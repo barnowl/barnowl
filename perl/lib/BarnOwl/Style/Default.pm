@@ -23,6 +23,7 @@ sub format_message
         $fmt = $self->format_chat($m);
     }
     $fmt = BarnOwl::Style::boldify($fmt) if $self->should_bold($m);
+    $fmt = $self->humanize($fmt);
     return $fmt;
 }
 
@@ -85,7 +86,7 @@ sub chat_header {
     my $header;
     if ( $m->is_personal ) {
         my $personal_context = $m->personal_context;
-        $personal_context = ' [' . $personal_context . ']' if $personal_context;
+        $personal_context = ' [' . $self->humanize($personal_context, 1) . ']' if $personal_context;
 
         if ( $m->direction eq "out" ) {
             $header = ucfirst $m->type . $personal_context . " sent to " . $m->pretty_recipient;
@@ -93,15 +94,15 @@ sub chat_header {
             $header = ucfirst $m->type . $personal_context . " from " . $m->pretty_sender;
         }
     } else {
-        $header = $m->context;
+        $header = $self->humanize($m->context, 1);
         if(defined $m->subcontext) {
-            $header .= ' / ' . $m->subcontext;
+            $header .= ' / ' . $self->humanize($m->subcontext, 1);
         }
         $header .= ' / @b{' . $m->pretty_sender . '}';
     }
 
     if($m->opcode) {
-        $header .= " [" . $m->opcode . "]";
+        $header .= " [" . $self->humanize($m->opcode, 1) . "]";
     }
     $header .= "  " . $self->format_time($m);
     $header .= $self->format_sender($m);
@@ -137,5 +138,58 @@ sub indent_body
     return "    ".$body;
 }
 
+=head3 humanize STRING [one_line]
+
+Method that takes a STRING with control characters and makes it human
+readable in such a way as to not do anything funky with the terminal.
+If one_line is true, be more conservative about what we treat as
+control character.
+
+=cut
+
+sub humanize
+{
+  my $self = shift;
+  my $s = shift;
+  my $oneline = shift;
+  sub _humanize_char
+  {
+    my $c = ord(shift);
+
+    if ($c < ord(' ')) {
+      return ('^' . chr($c + ord('@')));
+    } elsif ($c == 255) {
+      return ('^?');
+    } else {
+      return (sprintf('\\x{%x}', $c));
+    }
+  }
+  my $colorize = (BarnOwl::getvar('colorztext') eq 'on')
+    ? '@color(cyan)' : '';
+
+  my $chars = $oneline ? qr/[[:cntrl:]]/ : qr/[^[:print:]]|[\r\cK\f]/;
+
+  $s =~ s/($chars)/
+    "\@b($colorize" . _humanize_char($1) . ')'/eg;
+
+  return $s;
+}
+
+=head3 humanize_short STRING
+
+As above, but always be conservative, and replace with a '?' instead
+of something mmore elaborate.
+
+=cut
+
+sub humanize_short
+{
+  my $self = shift;
+  my $s = shift;
+
+  $s =~ s/[[:cntrl:]]/?/g;
+
+  return $s;
+}
 
 1;

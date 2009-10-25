@@ -79,6 +79,7 @@ sub format_chat
   my $body = $m->{body};
   $body =~ tr/\n/ /;
   $line .= $body;
+  $line = $self->humanize_short($line);
   return $line;
 }
 
