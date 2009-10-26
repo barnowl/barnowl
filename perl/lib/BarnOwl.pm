@@ -444,12 +444,20 @@ sub filter_append_helper
     if (BarnOwl::getvar('showfilterchange') eq 'on') {
         BarnOwl::admin_message("Filter", $msgtext);
     }
-    BarnOwl::filter($filter, $newfilter);
+    set_filter($filter, $newfilter);
     return;
 }
 BarnOwl::new_variable_bool("showfilterchange",
                            { default => 1,
                              summary => 'Show modifications to filters by filterappend and friends.'});
+
+sub set_filter
+{
+    my $filtername = shift;
+    my $filtertext = shift;
+    my $cmd = 'filter ' . BarnOwl::quote($filtername) . ' ' . $filtertext;
+    BarnOwl::command($cmd);
+}
 
 =head3 time_format FORMAT
 
