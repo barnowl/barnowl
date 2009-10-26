@@ -429,13 +429,14 @@ static const struct {
 int owl_util_string_to_color(const char *color)
 {
   int c, i;
+  char *p;
 
   for (i = 0; i < (sizeof(color_map)/sizeof(color_map[0])); i++)
     if (strcasecmp(color, color_map[i].name) == 0)
       return color_map[i].number;
 
-  c = atoi(color);
-  if (c >= -1 && c < COLORS) {
+  c = strtol(color, &p, 10);
+  if (p != color && c >= -1 && c < COLORS) {
     return(c);
   }
   return(OWL_COLOR_INVALID);
