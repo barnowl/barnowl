@@ -23,6 +23,7 @@ AS_IF([test "x$with_stack_protector" != xno],
     ])])
 
 AC_CHECK_LIB(ncursesw, initscr,, AC_MSG_ERROR(No libncursesw found.))
+AC_CHECK_LIB(panelw, update_panels,, AC_MSG_ERROR(No libpanelw found.))
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([res_search], [resolv])
