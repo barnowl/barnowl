@@ -470,11 +470,11 @@ sub do_login {
 		my $fullJid = $client->{SESSION}->{FULLJID} || $jidStr;
 		$conn->renameConnection($jidStr, $fullJid);
                 queue_admin_msg("Connected to jabber as $fullJid");
-                # The remove_dispatch() method is called from the
+                # The remove_io_dispatch() method is called from the
                 # ConnectionManager's removeConnection() method.
                 $client->{fileno} = $client->getSocket()->fileno();
                 #queue_admin_msg("Connected to jabber as $fullJid ($client->{fileno})");
-                BarnOwl::add_dispatch($client->{fileno}, sub { $client->OwlProcess($fullJid) });
+                BarnOwl::add_io_dispatch($client->{fileno}, 'r', sub { $client->OwlProcess($fullJid) });
 
                 # populate completion from roster.
                 for my $buddy ( $roster->jids('all') ) {

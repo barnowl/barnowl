@@ -380,7 +380,7 @@ sub cmd_connect {
         BarnOwl::admin_message("IRC", "Connected to $alias as $nick");
         $ircnets{$alias} = $conn;
         my $fd = $conn->getSocket()->fileno();
-        BarnOwl::add_dispatch($fd, \&OwlProcess);
+        BarnOwl::add_io_dispatch($fd, 'r', \&OwlProcess);
         $conn->{FD} = $fd;
     } else {
         die("IRC::Connection->connect failed: $!");

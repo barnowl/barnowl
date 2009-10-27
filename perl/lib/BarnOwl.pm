@@ -12,7 +12,8 @@ our @EXPORT_OK = qw(command getcurmsg getnumcols getidletime
                     get_data_dir get_config_dir popless_text popless_ztext
                     error debug
                     create_style getnumcolors wordwrap
-                    add_dispath remove_dispatch
+                    add_dispatch remove_dispatch
+                    add_io_dispatch remove_io_dispatch
                     new_command
                     new_variable_int new_variable_bool new_variable_string
                     quote redisplay);
@@ -61,7 +62,6 @@ value, return it as a string, otherwise return undef.
 
 Returns the current message as a C<BarnOwl::Message> subclass, or
 undef if there is no message selected
-
 =head2 getnumcols
 
 Returns the width of the display window BarnOwl is currently using
@@ -159,9 +159,58 @@ Adds a file descriptor to C<BarnOwl>'s internal C<select()>
 loop. C<CALLBACK> will be invoked whenever data is available to be
 read from C<FD>.
 
+C<add_dispatch> has been deprecated in favor of C<add_io_dispatch>,
+and is now a wrapper for it called with C<mode> set to C<'r'>.
+
+=cut
+
+sub add_dispatch {
+    my $fd = shift;
+    my $cb = shift;
+    add_io_dispatch($fd, 'r', $cb);
+}
+
 =head2 remove_dispatch FD
 
 Remove a file descriptor previously registered via C<add_dispatch>
+
+C<remove_dispatch> has been deprecated in favor of
+C<remove_io_dispatch>.
+
+=cut
+
+*remove_dispatch = \&remove_io_dispatch;
+
+=head2 add_io_dispatch FD MODE CB
+
+Adds a file descriptor to C<BarnOwl>'s internal C<select()>
+loop. <MODE> can be 'r', 'w', or 'rw'. C<CALLBACK> will be invoked
+whenever C<FD> becomes ready, as specified by <MODE>.
+
+Only one callback can be registered per FD. If a new callback is
+registered, the old one is removed.
+
+=cut
+
+sub add_io_dispatch {
+    my $fd = shift;
+    my $modeStr = shift;
+    my $cb = shift;
+    my $mode = 0;
+
+    $mode |= 0x1 if ($modeStr =~ /r/i); # Read
+    $mode |= 0x2 if ($modeStr =~ /w/i); # Write
+    if ($mode) {
+        $mode |= 0x4;                  # Exceptional
+        BarnOwl::Internal::add_io_dispatch($fd, $mode, $cb);
+    } else {
+        die("Invalid I/O Dispatch mode: $modeStr");
+    }
+}
+
+=head2 remove_io_dispatch FD
+
+Remove a file descriptor previously registered via C<add_io_dispatch>
 
 =head2 create_style NAME OBJECT
 

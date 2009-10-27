@@ -317,18 +317,10 @@ wordwrap(in, cols)
 			owl_free(rv);
 
 void
-add_dispatch(fd, cb)
-	int fd
-	SV * cb
-	CODE:
-	owl_select_add_perl_dispatch(fd, SvREFCNT_inc(cb));
-
-void
-remove_dispatch(fd)
+remove_io_dispatch(fd)
 	int fd
 	CODE:
-	owl_select_remove_perl_dispatch(fd);
-
+	owl_select_remove_perl_io_dispatch(fd);
 
 AV*
 all_filters()
@@ -502,6 +494,14 @@ new_variable_bool(name, ival, summ, desc)
 				      summ,
 				      desc,
 				      ival);
+
+void
+add_io_dispatch(fd, mode, cb)
+	int fd
+	int mode
+	SV * cb
+	CODE:
+	owl_select_add_perl_io_dispatch(fd, mode, SvREFCNT_inc(cb));
 
 IV
 add_timer(after, interval, cb)

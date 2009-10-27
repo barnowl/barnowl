@@ -36,7 +36,7 @@ sub removeConnection {
     my $jidStr = shift;
     return 0 unless exists $self->{$jidStr};
 
-    BarnOwl::remove_dispatch($self->{$jidStr}->{Client}->{fileno}) if $self->{$jidStr}->{Client}->{fileno};
+    BarnOwl::remove_io_dispatch($self->{$jidStr}->{Client}->{fileno}) if $self->{$jidStr}->{Client}->{fileno};
     $self->{$jidStr}->{Client}->Disconnect()
       if $self->{$jidStr}->{Client};
     delete $self->{$jidStr};
@@ -54,7 +54,7 @@ sub scheduleReconnect {
         return $self->removeConnection($jidStr);
     }
 
-    BarnOwl::remove_dispatch($self->{$jidStr}->{Client}->{fileno}) if $self->{$jidStr}->{Client}->{fileno};
+    BarnOwl::remove_io_dispatch($self->{$jidStr}->{Client}->{fileno}) if $self->{$jidStr}->{Client}->{fileno};
     $self->{$jidStr}->{Client}->Disconnect()
       if $self->{$jidStr}->{Client};
 
