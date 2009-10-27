@@ -97,6 +97,29 @@ sub complete_filter {
         );
 }
 
+sub complete_filter_no_flags
+{
+    my $ctx = shift;
+    # Syntax: filter FILTERNAME EXPR
+
+    # FILTERNAME
+    return complete_filter_name() if $ctx->word == 1;
+
+    $ctx = $ctx->shift_words(2);
+    return complete_filter_expr($ctx);
+}
+
+sub complete_filter_append {
+    my $ctx = shift;
+    # Syntax: filterappend FILTERNAME EXPR
+
+    # FILTERNAME
+    return complete_filter_name() if $ctx->word == 1;
+    return qw(and or) if $ctx->word == 2;
+    $ctx = $ctx->shift_words(3);
+    return complete_filter_expr($ctx);
+}
+
 sub complete_view {
     my $ctx = shift;
     if ($ctx->word == 1) {
@@ -145,6 +168,9 @@ sub complete_startup {
 
 BarnOwl::Completion::register_completer(help    => \&complete_help);
 BarnOwl::Completion::register_completer(filter  => \&complete_filter);
+BarnOwl::Completion::register_completer(filteror        => \&complete_filter_no_flags);
+BarnOwl::Completion::register_completer(filterand       => \&complete_filter_no_flags);
+BarnOwl::Completion::register_completer(filterappend    => \&complete_filter_append);
 BarnOwl::Completion::register_completer(view    => \&complete_view);
 BarnOwl::Completion::register_completer(show    => \&complete_show);
 BarnOwl::Completion::register_completer(getvar  => \&complete_getvar);
