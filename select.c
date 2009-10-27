@@ -457,24 +457,15 @@ void owl_select(void)
   sigprocmask(SIG_SETMASK, &mask, NULL);
 
   if(ret > 0) {
-    /* Merge fd_sets and clear AIM FDs. */
-    for(i = 0; i <= max_fd; i++) {
-      /* Merge all interesting FDs into one set, since we have a
-         single dispatch per FD. */
+    /* AIM HACK: process all AIM events at once. */
+    for(i = 0; !aim_done && i <= max_fd; i++) {
       if (FD_ISSET(i, &r) || FD_ISSET(i, &w) || FD_ISSET(i, &e)) {
-        /* AIM HACK: no separate dispatch, just process here if
-           needed, and only once per run through. */
-        if (!aim_done && (FD_ISSET(i, &aim_rfds) || FD_ISSET(i, &aim_wfds))) {
+        if (FD_ISSET(i, &aim_rfds) || FD_ISSET(i, &aim_wfds)) {
           owl_process_aim();
           aim_done = 1;
         }
-        else {
-          FD_SET(i, &r);
-        }
       }
     }
-    /* NOTE: the same dispatch function is called for both exceptional
-       and read ready FDs. */
     owl_select_io_dispatch(&r, &w, &e, max_fd);
   }
 }
