@@ -105,6 +105,7 @@ sub get_completions {
 
 sub complete_command {
     my $cmd = shift;
+    $cmd = "" unless defined($cmd);
     return grep {$_ =~ m{^\Q$cmd\E}} @BarnOwl::all_commands;
 }
 
