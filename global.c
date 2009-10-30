@@ -536,13 +536,6 @@ void owl_global_resize(owl_global *g, int x, int y) {
   owl_editwin_redisplay(g->tw, 0);
   owl_function_full_redisplay();
 
-  /* TODO: this should handle other forms of popwins */
-  if (owl_popwin_is_active(owl_global_get_popwin(g)) 
-      && owl_global_get_viewwin(g)) {
-    owl_popwin_refresh(owl_global_get_popwin(g));
-    owl_viewwin_redisplay(owl_global_get_viewwin(g), 0);
-  }
-
   owl_function_debugmsg("New size is %i lines, %i cols.", size.ws_row, size.ws_col);
   owl_function_makemsg("");
   g->resizepending=0;

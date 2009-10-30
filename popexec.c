@@ -30,7 +30,6 @@ owl_popexec *owl_popexec_new(const char *command)
   owl_viewwin_init_text(v, owl_popwin_get_curswin(pw),
 			owl_popwin_get_lines(pw), owl_popwin_get_cols(pw),
 			"");
-  owl_popwin_refresh(pw);
   owl_viewwin_redisplay(v, 0);
   owl_global_set_needrefresh(&g);
   owl_viewwin_set_onclose_hook(v, owl_popexec_viewwin_onclose, pe);

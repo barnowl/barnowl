@@ -214,9 +214,6 @@ void owl_function_adminmsg(const char *header, const char *body)
 
   /* redisplay etc. */
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
-    owl_popwin_refresh(owl_global_get_popwin(&g));
-  }
   update_panels();
   owl_global_set_needrefresh(&g);
 }
@@ -1267,10 +1264,6 @@ void owl_function_full_redisplay(void)
 
   update_panels();
 
-  if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
-    owl_popwin_refresh(owl_global_get_popwin(&g));
-  }
-  
   sepbar("");
   owl_function_makemsg("");
 

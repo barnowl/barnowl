@@ -302,13 +302,6 @@ int owl_process_messages(owl_ps_action *d, void *p)
     /* this should be optimized to not run if the new messages won't be displayed */
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
     sepbar(NULL);
-    if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
-      owl_popwin_refresh(owl_global_get_popwin(&g));
-      /* TODO: this is a broken kludge */
-      if (owl_global_get_viewwin(&g)) {
-        owl_viewwin_redisplay(owl_global_get_viewwin(&g), 0);
-      }
-    }
     owl_global_set_needrefresh(&g);
   }
   return newmsgs;
@@ -639,18 +632,6 @@ int main(int argc, char **argv, char **env)
     recwin=owl_global_get_curs_recwin(&g);
     sepwin=owl_global_get_curs_sepwin(&g);
     typwin=owl_global_get_curs_typwin(&g);
-
-    /* if a popwin just came up, refresh it */
-    pw=owl_global_get_popwin(&g);
-    if (owl_popwin_is_active(pw) && owl_popwin_needs_first_refresh(pw)) {
-      owl_popwin_refresh(pw);
-      owl_popwin_no_needs_first_refresh(pw);
-      owl_global_set_needrefresh(&g);
-      /* TODO: this is a broken kludge */
-      if (owl_global_get_viewwin(&g)) {
-	owl_viewwin_redisplay(owl_global_get_viewwin(&g), 0);
-      }
-    }
 
     /* update the terminal if we need to */
     if (owl_global_is_needrefresh(&g)) {
