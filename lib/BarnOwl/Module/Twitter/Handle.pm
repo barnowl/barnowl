@@ -94,6 +94,34 @@ sub new {
     return $self;
 }
 
+=head2 twitter_command COMMAND ARGS...
+
+Call the specified method on $self->{twitter} with an extended
+timeout. This is intended for interactive commands, with the theory
+that if the user explicitly requested an action, it is slightly more
+acceptable to hang the UI for a second or two than to fail just
+because Twitter is being slightly slow. Polling commands should be
+called normally, with the default (short) timeout, to prevent
+background Twitter suckage from hosing the UI normally.
+
+=cut
+
+sub twitter_command {
+    my $self = shift;
+    my $cmd = shift;
+
+    eval { $self->{twitter}->{ua}->timeout(5); };
+    my $result = eval {
+        $self->{twitter}->$cmd(@_);
+    };
+    my $error = $@;
+    eval { $self->{twitter}->{ua}->timeout(1); };
+    if ($error) {
+        die($error);
+    }
+    return $result;
+}
+
 sub twitter_error {
     my $self = shift;
 
@@ -217,14 +245,10 @@ sub twitter {
         if(length($msg) > 140) {
             die("Twitter: Message over 140 characters long.\n");
         }
-        if(defined($reply_to)) {
-            $self->{twitter}->update({
-                status => $msg,
-                in_reply_to_status_id => $reply_to
-               });
-        } else {
-            $self->{twitter}->update($msg);
-        }
+        $self->twitter_command('update', {
+            status => $msg,
+            defined($reply_to) ? (in_reply_to_status_id => $reply_to) : ()
+           });
     }
 }
 
@@ -234,7 +258,7 @@ sub twitter_direct {
     my $who = shift;
     my $msg = shift;
     if(defined $self->{twitter}) {
-        $self->{twitter}->new_direct_message({
+        $self->twitter_command('new_direct_message', {
             user => $who,
             text => $msg
            });
@@ -271,7 +295,7 @@ sub twitter_follow {
 
     my $who = shift;
 
-    my $user = $self->{twitter}->create_friend($who);
+    my $user = $self->twitter_command('create_friend', $who);
     # returns a string on error
     if (defined $user && !ref $user) {
         BarnOwl::message($user);
@@ -285,7 +309,7 @@ sub twitter_unfollow {
 
     my $who = shift;
 
-    my $user = $self->{twitter}->destroy_friend($who);
+    my $user = $self->twitter_command('destroy_friend', $who);
     # returns a string on error
     if (defined $user && !ref $user) {
         BarnOwl::message($user);
