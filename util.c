@@ -119,7 +119,7 @@ void sepbar(const char *in)
     
   wattroff(sepwin, A_BOLD);
   wattroff(sepwin, A_REVERSE);
-  wnoutrefresh(sepwin);
+  update_panels();
 }
 
 char **atokenize(const char *buffer, const char *sep, int *i)

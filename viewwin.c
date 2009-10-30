@@ -88,7 +88,7 @@ void owl_viewwin_redisplay(owl_viewwin *v, int update)
     waddstr(v->curswin, "--End-- (Press 'q' to quit)");
   }
   wattroff(v->curswin, A_REVERSE);
-  wnoutrefresh(v->curswin);
+  update_panels();
 
   if (update==1) {
     doupdate();

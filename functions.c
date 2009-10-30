@@ -217,7 +217,7 @@ void owl_function_adminmsg(const char *header, const char *body)
   if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
     owl_popwin_refresh(owl_global_get_popwin(&g));
   }
-  wnoutrefresh(owl_global_get_curs_recwin(&g));
+  update_panels();
   owl_global_set_needrefresh(&g);
 }
 
@@ -1251,6 +1251,7 @@ void owl_function_unsubscribe(const char *class, const char *inst, const char *r
 
 void owl_function_set_cursor(WINDOW *win)
 {
+  /* Be careful that this window is actually empty, otherwise panels get confused */
   wnoutrefresh(win);
 }
 
@@ -1264,10 +1265,7 @@ void owl_function_full_redisplay(void)
   if (g.lines >= 2)
       redrawwin(owl_global_get_curs_msgwin(&g));
 
-  wnoutrefresh(owl_global_get_curs_recwin(&g));
-  wnoutrefresh(owl_global_get_curs_sepwin(&g));
-  wnoutrefresh(owl_global_get_curs_typwin(&g));
-  wnoutrefresh(owl_global_get_curs_msgwin(&g));
+  update_panels();
 
   if (owl_popwin_is_active(owl_global_get_popwin(&g))) {
     owl_popwin_refresh(owl_global_get_popwin(&g));
@@ -3403,7 +3401,7 @@ void owl_function_makemsg(const char *fmt, ...)
   vsnprintf(buff, 2048, fmt, ap);
   owl_function_debugmsg("makemsg: %s", buff);
   waddstr(owl_global_get_curs_msgwin(&g), buff);  
-  wnoutrefresh(owl_global_get_curs_msgwin(&g));
+  update_panels();
   owl_global_set_needrefresh(&g);
   va_end(ap);
 }

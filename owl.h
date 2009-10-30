@@ -393,7 +393,9 @@ typedef struct _owl_viewwin {
   
 typedef struct _owl_popwin {
   WINDOW *borderwin;
+  PANEL *borderpanel;
   WINDOW *popwin;
+  PANEL *poppanel;
   int lines;
   int cols;
   int active;
@@ -555,6 +557,7 @@ typedef struct _owl_global {
   owl_view current_view;
   owl_messagelist msglist;
   WINDOW *recwin, *sepwin, *msgwin, *typwin;
+  PANEL *recpan, *seppan, *msgpan, *typpan;
   int needrefresh;
   int rightshift;
   int resizepending;

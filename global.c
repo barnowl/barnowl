@@ -125,6 +125,23 @@ void owl_global_complete_setup(owl_global *g)
   owl_cmddict_setup(&(g->cmds));
 }
 
+/* If *pan does not exist, we create a new panel, otherwise we replace the
+   window in *pan with win.
+
+   libpanel PANEL objects cannot exist without owner a valid window. This
+   maintains the invariant for _owl_global_setup_windows. */
+void _owl_panel_set_window(PANEL **pan, WINDOW *win)
+{
+  WINDOW *oldwin;
+  if (*pan) {
+    oldwin = panel_window(*pan);
+    replace_panel(*pan, win);
+    delwin(oldwin);
+  } else {
+    *pan = new_panel(win);
+  }
+}
+
 void _owl_global_setup_windows(owl_global *g) {
   int cols, typwin_lines;
 
@@ -141,16 +158,20 @@ void _owl_global_setup_windows(owl_global *g) {
   owl_function_debugmsg("_owl_global_setup_windows: about to call newwin(%i, %i, 0, 0)\n", g->recwinlines, cols);
 
   /* create the new windows */
-  g->recwin=newwin(g->recwinlines, cols, 0, 0);
+  g->recwin = newwin(g->recwinlines, cols, 0, 0);
   if (g->recwin==NULL) {
     owl_function_debugmsg("_owl_global_setup_windows: newwin returned NULL\n");
     endwin();
     exit(50);
   }
+  _owl_panel_set_window(&g->recpan, g->recwin);
       
-  g->sepwin=newwin(1, cols, g->recwinlines, 0);
-  g->msgwin=newwin(1, cols, g->recwinlines+1, 0);
-  g->typwin=newwin(typwin_lines, cols, g->recwinlines+2, 0);
+  g->sepwin = newwin(1, cols, g->recwinlines, 0);
+  _owl_panel_set_window(&g->seppan, g->sepwin);
+  g->msgwin = newwin(1, cols, g->recwinlines+1, 0);
+  _owl_panel_set_window(&g->msgpan, g->msgwin);
+  g->typwin = newwin(typwin_lines, cols, g->recwinlines+2, 0);
+  _owl_panel_set_window(&g->typpan, g->typwin);
 
   owl_editwin_set_curswin(g->tw, g->typwin, typwin_lines, g->cols);
 
@@ -468,16 +489,9 @@ void owl_global_resize(owl_global *g, int x, int y) {
     
   if (!g->resizepending) return;
 
-  /* delete the current windows */
-  delwin(g->recwin);
-  delwin(g->sepwin);
-  delwin(g->msgwin);
-  delwin(g->typwin);
   if (!isendwin()) {
     endwin();
   }
-
-  refresh();
 
   /* get the new size */
   ioctl(STDIN_FILENO, TIOCGWINSZ, &size);

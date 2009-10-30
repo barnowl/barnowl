@@ -24,7 +24,9 @@ int owl_popwin_up(owl_popwin *pw)
   startcol = (gcols-pw->cols)/2;
 
   pw->borderwin=newwin(pw->lines, pw->cols, startline, startcol);
+  pw->borderpanel = new_panel(pw->borderwin);
   pw->popwin=newwin(pw->lines-2, pw->cols-2, startline+1, startcol+1);
+  pw->poppanel = new_panel(pw->popwin);
   pw->needsfirstrefresh=1;
   
   meta(pw->popwin,TRUE);
@@ -47,8 +49,7 @@ int owl_popwin_up(owl_popwin *pw)
     waddch(pw->borderwin, '+');
   }
     
-  wnoutrefresh(pw->popwin);
-  wnoutrefresh(pw->borderwin);
+  update_panels();
   owl_global_set_needrefresh(&g);
   pw->active=1;
   return(0);
@@ -56,6 +57,8 @@ int owl_popwin_up(owl_popwin *pw)
 
 int owl_popwin_close(owl_popwin *pw)
 {
+  del_panel(pw->poppanel);
+  del_panel(pw->borderpanel);
   delwin(pw->popwin);
   delwin(pw->borderwin);
   pw->active=0;
@@ -74,11 +77,7 @@ int owl_popwin_is_active(const owl_popwin *pw)
 /* this will refresh the border as well as the text area */
 int owl_popwin_refresh(const owl_popwin *pw)
 {
-  touchwin(pw->borderwin);
-  touchwin(pw->popwin);
-
-  wnoutrefresh(pw->borderwin);
-  wnoutrefresh(pw->popwin);
+  update_panels();
   owl_global_set_needrefresh(&g);
   return(0);
 }

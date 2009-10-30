@@ -566,7 +566,7 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
   wmove(e->curswin, y, x);
   e->cursorx = x;
 
-  wnoutrefresh(e->curswin);
+  update_panels();
   if (update == 1)
     doupdate();
 }

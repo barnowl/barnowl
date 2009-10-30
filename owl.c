@@ -598,7 +598,7 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: processing startup file");
   owl_function_source(NULL);
 
-  wrefresh(sepwin);
+  update_panels();
 
   /* Set the default style */
   owl_function_debugmsg("startup: setting startup and default style");
@@ -654,6 +654,8 @@ int main(int argc, char **argv, char **env)
 
     /* update the terminal if we need to */
     if (owl_global_is_needrefresh(&g)) {
+      /* ensure that panels are clean, so that set_cursor doesn't break things */
+      update_panels();
       /* leave the cursor in the appropriate window */
       if (owl_global_is_typwin_active(&g)) {
 	owl_function_set_cursor(typwin);

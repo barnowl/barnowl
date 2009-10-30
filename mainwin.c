@@ -42,7 +42,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
     }
     mw->curtruncated=0;
     mw->lastdisplayed=-1;
-    wnoutrefresh(recwin);
+    update_panels();
     owl_global_set_needrefresh(&g);
     return;
   }
@@ -140,7 +140,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
   }
   mw->lastdisplayed=i-1;
 
-  wnoutrefresh(recwin);
+  update_panels();
   owl_global_set_needrefresh(&g);
 }
 
