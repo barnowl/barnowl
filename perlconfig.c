@@ -263,7 +263,7 @@ char *owl_perlconfig_call_with_message(const char *subname, const owl_message *m
   XPUSHs(sv_2mortal(msgref));
   PUTBACK ;
   
-  count = call_pv(subname, G_SCALAR|G_EVAL|G_KEEPERR);
+  count = call_pv(subname, G_SCALAR|G_EVAL);
   
   SPAGAIN ;
 
@@ -316,7 +316,7 @@ char * owl_perlconfig_message_call_method(const owl_message *m, const char *meth
   }
   PUTBACK;
 
-  count = call_method(method, G_SCALAR|G_KEEPERR|G_EVAL);
+  count = call_method(method, G_SCALAR|G_EVAL);
 
   SPAGAIN;
 
@@ -565,7 +565,7 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
   XPUSHs(sv_2mortal(text));
   PUTBACK;
   
-  call_sv(cb, G_DISCARD|G_KEEPERR|G_EVAL);
+  call_sv(cb, G_DISCARD|G_EVAL);
 
   if(SvTRUE(ERRSV)) {
     owl_function_error("%s", SvPV_nolen(ERRSV));
@@ -606,7 +606,7 @@ void owl_perlconfig_io_dispatch(const owl_io_dispatch *d, void *data)
   PUSHMARK(SP);
   PUTBACK;
 
-  call_sv(cb, G_DISCARD|G_KEEPERR|G_EVAL);
+  call_sv(cb, G_DISCARD|G_EVAL);
 
   if(SvTRUE(ERRSV)) {
     owl_function_error("%s", SvPV_nolen(ERRSV));
@@ -632,7 +632,7 @@ void owl_perlconfig_perl_timer(owl_timer *t, void *data)
   XPUSHs(obj);
   PUTBACK;
 
-  call_method("do_callback", G_DISCARD|G_KEEPERR|G_EVAL);
+  call_method("do_callback", G_DISCARD|G_EVAL);
 
   SPAGAIN;
 
