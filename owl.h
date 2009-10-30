@@ -11,6 +11,7 @@
 
 #ifndef OWL_PERL
 #include <curses.h>
+#include <panel.h>
 #endif
 #include <sys/param.h>
 #include <EXTERN.h>
@@ -33,6 +34,7 @@
 /* Perl and curses don't play nice. */
 #ifdef OWL_PERL
 typedef void WINDOW;
+typedef void PANEL;
 /* logout is defined in FreeBSD. */
 #define logout logout_
 /* aim.h defines bool */
