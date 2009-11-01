@@ -281,6 +281,7 @@ int owl_process_message(owl_message *m) {
 int owl_process_messages(owl_ps_action *d, void *p)
 {
   int newmsgs=0;
+  int followlast = owl_global_should_followlast(&g);
   owl_message *m;
 
   /* Grab incoming messages. */
@@ -292,7 +293,7 @@ int owl_process_messages(owl_ps_action *d, void *p)
 
   if (newmsgs) {
     /* follow the last message if we're supposed to */
-    if (owl_global_should_followlast(&g))
+    if (followlast)
       owl_function_lastmsg_noredisplay();
 
     /* do the newmsgproc thing */
