@@ -22,7 +22,7 @@ void owl_message_init_fmtext_cache(void)
     }
 }
 
-owl_fmtext_cache *owl_message_next_fmtext(void) /*noproto*/
+static owl_fmtext_cache *owl_message_next_fmtext(void)
 {
     owl_fmtext_cache * f = fmtext_cache_next;
     if(fmtext_cache_next->message != NULL) {

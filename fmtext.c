@@ -25,7 +25,7 @@ void owl_fmtext_clear(owl_fmtext *f)
   f->default_bgcolor = OWL_COLOR_DEFAULT;
 }
 
-void _owl_fmtext_realloc(owl_fmtext *f, int newlen) /*noproto*/
+static void _owl_fmtext_realloc(owl_fmtext *f, int newlen)
 {
     if(newlen + 1 > f->bufflen) {
       f->textbuff = owl_realloc(f->textbuff, newlen + 1);
@@ -143,7 +143,7 @@ void owl_fmtext_colorizebg(owl_fmtext *f, int color)
 }
 
 /* Internal function. Parse attrbute character. */
-void _owl_fmtext_update_attributes(gunichar c, char *attr, short *fgcolor, short *bgcolor) /*noproto*/
+static void _owl_fmtext_update_attributes(gunichar c, char *attr, short *fgcolor, short *bgcolor)
 {
   if ((c & OWL_FMTEXT_UC_ATTR) == OWL_FMTEXT_UC_ATTR) {
     *attr = c & OWL_FMTEXT_UC_ATTR_MASK;
@@ -163,7 +163,7 @@ void _owl_fmtext_update_attributes(gunichar c, char *attr, short *fgcolor, short
 }
 
 /* Internal function. Scan for attribute characters. */
-void _owl_fmtext_scan_attributes(const owl_fmtext *f, int start, char *attr, short *fgcolor, short *bgcolor) /*noproto*/
+static void _owl_fmtext_scan_attributes(const owl_fmtext *f, int start, char *attr, short *fgcolor, short *bgcolor)
 {
   const char *p;
   p = strchr(f->textbuff, OWL_FMTEXT_UC_STARTBYTE_UTF8);
@@ -177,7 +177,7 @@ void _owl_fmtext_scan_attributes(const owl_fmtext *f, int start, char *attr, sho
  * 'stop', inclusive, to the end of 'f'. This function works with
  * bytes.
  */
-void _owl_fmtext_append_fmtext(owl_fmtext *f, const owl_fmtext *in, int start, int stop) /*noproto*/
+static void _owl_fmtext_append_fmtext(owl_fmtext *f, const owl_fmtext *in, int start, int stop)
 {
   char attrbuff[6];
   int newlen, a = 0, fg = 0, bg = 0;
@@ -240,7 +240,7 @@ char *owl_fmtext_print_plain(const owl_fmtext *f)
   return owl_strip_format_chars(f->textbuff);
 }
 
-void _owl_fmtext_wattrset(WINDOW *w, int attrs) /*noproto*/
+static void _owl_fmtext_wattrset(WINDOW *w, int attrs)
 {
   wattrset(w, A_NORMAL);
   if (attrs & OWL_FMTEXT_ATTR_BOLD) wattron(w, A_BOLD);
@@ -248,14 +248,14 @@ void _owl_fmtext_wattrset(WINDOW *w, int attrs) /*noproto*/
   if (attrs & OWL_FMTEXT_ATTR_UNDERLINE) wattron(w, A_UNDERLINE);
 }
 
-void _owl_fmtext_update_colorpair(short fg, short bg, short *pair) /*noproto*/
+static void _owl_fmtext_update_colorpair(short fg, short bg, short *pair)
 {
   if (owl_global_get_hascolors(&g)) {
     *pair = owl_fmtext_get_colorpair(fg, bg);
   }
 }
 
-void _owl_fmtext_wcolor_set(WINDOW *w, short pair) /*noproto*/
+static void _owl_fmtext_wcolor_set(WINDOW *w, short pair)
 {
   if (owl_global_get_hascolors(&g)) {
       wcolor_set(w,pair,NULL);
@@ -266,7 +266,7 @@ void _owl_fmtext_wcolor_set(WINDOW *w, short pair) /*noproto*/
 /* add the formatted text to the curses window 'w'.  The window 'w'
  * must already be initiatlized with curses
  */
-void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_search) /*noproto*/
+static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_search)
 {
   /* char *tmpbuff; */
   /* int position, trans1, trans2, trans3, len, lastsame; */

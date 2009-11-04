@@ -19,7 +19,7 @@ int owl_list_get_size(const owl_list *l)
 }
 
 
-void owl_list_grow(owl_list *l, int n) /*noproto*/
+static void owl_list_grow(owl_list *l, int n)
 {
   void *ptr;
 

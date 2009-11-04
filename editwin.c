@@ -785,7 +785,7 @@ int owl_at_end_of_buffer(owl_editwin *e) {
   return 0;
 }
 
-int owl_editwin_at_beginning_of_line(owl_editwin *e) /*noproto*/
+static int owl_editwin_at_beginning_of_line(owl_editwin *e)
 {
   oe_excursion x;
   int ret;

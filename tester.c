@@ -194,7 +194,8 @@ int owl_variable_regtest(void) {
   return(numfailed);
 }
 
-int owl_filter_test_string(const char * filt, const owl_message *m, int shouldmatch) /* noproto */ {
+static int owl_filter_test_string(const char *filt, const owl_message *m, int shouldmatch)
+{
   owl_filter *f;
   int ok;
   int failed = 0;

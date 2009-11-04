@@ -1306,7 +1306,7 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
 
 #define OWL_MAX_ZEPHYRGRAMS_TO_PROCESS 20
 
-int _owl_zephyr_process_events(void) /* noproto */
+static int _owl_zephyr_process_events(void)
 {
   int zpendcount=0;
 #ifdef HAVE_LIBZEPHYR

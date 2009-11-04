@@ -13,7 +13,7 @@
  * return its index, and the interned value in *val. Otherwise, return
  * the index it should be inserted at.
  */
-int owl_obarray_lookup(const owl_obarray *oa, const char * key, const char ** val) /*noproto*/
+static int owl_obarray_lookup(const owl_obarray *oa, const char *key, const char **val)
 {
   int first, last, mid;
   const char * str;

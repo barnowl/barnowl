@@ -191,7 +191,8 @@ int owl_aim_login(const char *screenname, const char *password)
   return(0);
 }
 
-void owl_aim_unset_ignorelogin(owl_timer *t, void *data) {      /* noproto */
+static void owl_aim_unset_ignorelogin(owl_timer *t, void *data)
+{
     owl_global_unset_ignore_aimlogin(&g);
 }
 
@@ -256,7 +257,7 @@ void owl_aim_login_error(const char *message)
 #define AIM_CHARSET_ISO_8859_1         0x0003
 #define AIM_CHARSET_UNICODE            0x0002
 
-int owl_aim_do_send(const char *to, const char *msg, int flags) /* noproto */
+static int owl_aim_do_send(const char *to, const char *msg, int flags)
 {
   int ret;
   char *encoded;
