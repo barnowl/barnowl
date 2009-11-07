@@ -1,5 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
+GIT_FLAGS=$(if $(wildcard .git),-DGIT_VERSION=$(subst barnowl-,,$(shell git describe --match='barnowl-*' HEAD)))
+
 bin_PROGRAMS = barnowl.bin
 check_PROGRAMS = tester perl_tester
 
@@ -27,7 +29,8 @@ perl_tester_LDADD = libfaim/libfaim.a
 TESTS=runtests.sh
 
 CPPFLAGS = -I$(top_srcdir)/ \
-           -I$(top_srcdir)/libfaim/
+           -I$(top_srcdir)/libfaim/ \
+           $(GIT_FLAGS)
 
 BASE_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
      commands.c global.c text.c fmtext.c editwin.c util.c logging.c \
