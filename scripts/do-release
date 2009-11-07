@@ -7,16 +7,24 @@ die() {
 
 force=
 no_tag=
+git=
 
 for arg; do
     case $arg in
         -f) force=1 ;;
         --no-tag) no_tag=1 ;;
+        --git) git=1 ;;
     esac
 done
 
-VERS=$(perl -ne 'print $1 if m{^AC_INIT\(\[[^\]]+\],\s*\[([^\]]+)\]}' configure.ac) \
-    || die "Unable to parse barnowl version"
+if [ "$git" ]; then
+    force=1
+    no_tag=1
+    VERS=$(git describe --match='barnowl-*' HEAD | sed s,^barnowl-,,)
+else
+    VERS=$(perl -ne 'print $1 if m{^AC_INIT\(\[[^\]]+\],\s*\[([^\]]+)\]}' configure.ac) \
+        || die "Unable to parse barnowl version"
+fi
 TAG=barnowl-$VERS
 TGZ="$TAG-src"
 
@@ -46,6 +54,7 @@ git archive --format=tar --prefix="$TGZ/" "$TAG" | tar -x -C "$TMPDIR"
 
 CODIR=$(pwd)
 cd "$TMPDIR/$TGZ"
+[ "$git" ] && perl -i -pe 's{^(AC_INIT\(\[[^\]]+\],\s*)\[([^\]]+)\]}{${1}['$VERS']}' configure.ac
 autoreconf -fvi
 cd "$TMPDIR"
 tar czvf "$TGZ.tgz" "$TGZ"
