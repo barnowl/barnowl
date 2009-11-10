@@ -221,7 +221,7 @@ sub poll_direct {
                 direction => 'in',
                 location  => decode_entities($tweet->{sender}{location}||""),
                 body      => decode_entities($tweet->{text}),
-                isprivate => 'true',
+                private => 'true',
                 service   => $self->{cfg}->{service},
                 account   => $self->{cfg}->{account_nickname},
                );
@@ -269,7 +269,7 @@ sub twitter_direct {
                 recipient => $who, 
                 direction => 'out',
                 body      => $msg,
-                isprivate => 'true',
+                private => 'true',
                 service   => $self->{cfg}->{service},
                );
             BarnOwl::queue_message($tweet);
