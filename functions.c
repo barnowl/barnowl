@@ -3558,8 +3558,10 @@ void owl_function_unmask_sigint(sigset_t *oldmask) {
 
 void _owl_function_mark_message(const owl_message *m)
 {
-  if (m)
+  if (m) {
     owl_global_set_markedmsgid(&g, owl_message_get_id(m));
+    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  }
 }
 
 void owl_function_mark_message(void)

@@ -11,16 +11,17 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
   owl_message *m;
   int i, p, q, lines, isfull, viewsize;
   int x, y, savey, recwinlines, start;
-  int topmsg, curmsg, fgcolor, bgcolor;
+  int topmsg, curmsg, markedmsgid, fgcolor, bgcolor;
   WINDOW *recwin;
   const owl_view *v;
   const owl_list *filtlist;
   const owl_filter *f;
 
-  recwin=owl_global_get_curs_recwin(&g);
-  topmsg=owl_global_get_topmsg(&g);
-  curmsg=owl_global_get_curmsg(&g);
-  v=owl_global_get_current_view(&g);
+  recwin = owl_global_get_curs_recwin(&g);
+  topmsg = owl_global_get_topmsg(&g);
+  curmsg = owl_global_get_curmsg(&g);
+  markedmsgid = owl_global_get_markedmsgid(&g);
+  v = owl_global_get_current_view(&g);
   owl_fmtext_reset_colorpairs();
 
   if (v==NULL) {
@@ -118,16 +119,22 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
 	} else {
 	  waddstr(recwin, "-");
 	}
-	if (!owl_message_is_delete(m)) {
-	  waddstr(recwin, ">");
-	} else {
+	if (owl_message_is_delete(m)) {
 	  waddstr(recwin, "D");
+	} else if (markedmsgid == owl_message_get_id(m)) {
+	  waddstr(recwin, "*");
+	} else {
+	  waddstr(recwin, ">");
 	}
 	wmove(recwin, y, x);
 	wattroff(recwin, A_BOLD);
       } else if (owl_message_is_delete(m)) {
 	wmove(recwin, savey, 0);
 	waddstr(recwin, " D");
+	wmove(recwin, y, x);
+      } else if (markedmsgid == owl_message_get_id(m)) {
+	wmove(recwin, savey, 0);
+	waddstr(recwin, " *");
 	wmove(recwin, y, x);
       }
     }
