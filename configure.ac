@@ -28,7 +28,7 @@ AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([res_search], [resolv])
 
 AC_ARG_WITH([zephyr],
-  [AS_HELP_STRING([--with-libzephyr],
+  [AS_HELP_STRING([--with-zephyr],
     [Enable Zephyr support])],
   [],
   [with_zephyr=check])
@@ -58,7 +58,7 @@ AS_IF([test "x$with_zephyr" != xno],
    ],
    [if test "x$with_zephyr" != xcheck; then
       AC_MSG_FAILURE(
-        [--with-libzephyr was given, but libzephyr does not seem to be available.])
+        [--with-zephyr was given, but libzephyr does not seem to be available.])
     fi
    ])])
 
