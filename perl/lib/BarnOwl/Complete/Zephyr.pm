@@ -41,6 +41,12 @@ sub complete_viewuser {
     return complete_user();
 }
 
+sub complete_unsub {
+    my $ctx = shift;
+    return unless $ctx->word == 1;
+    return complete_class();
+}
+
 sub on_message {
     my $m = shift;
     return unless $m->type eq 'zephyr';
@@ -57,6 +63,8 @@ BarnOwl::Completion::register_completer(viewclass => \&complete_viewclass);
 BarnOwl::Completion::register_completer(vc        => \&complete_viewclass);
 BarnOwl::Completion::register_completer(viewuser  => \&complete_viewuser);
 BarnOwl::Completion::register_completer(vu        => \&complete_viewuser);
+
+BarnOwl::Completion::register_completer(unsub     => \&complete_unsub);
 
 $BarnOwl::Hooks::newMessage->add("BarnOwl::Complete::Zephyr::on_message");
 
