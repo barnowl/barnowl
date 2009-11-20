@@ -250,6 +250,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("/",   "start-command search ", "start a search command");
   BIND_CMD("?",   "start-command search -r ", "start a reverse search command");
 
+  BIND_CMD("HOME",   "recv:setshift 0","move the display all the way left");
   BIND_CMD("LEFT",   "recv:shiftleft", "");
   BIND_CMD("M-[ D",  "recv:shiftleft", "");
   BIND_CMD("RIGHT",  "recv:shiftright","");
