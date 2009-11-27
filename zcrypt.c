@@ -11,9 +11,14 @@
 
 #include <unistd.h>
 #include <sys/types.h>
-#include <des.h>
 #include <zephyr/zephyr.h>
 #include <glib.h>
+
+#ifdef HAVE_KERBEROS_IV
+#include <kerberosIV/des.h>
+#else
+#include <openssl/des.h>
+#endif
 
 #define MAX_KEY 128
 
