@@ -525,8 +525,10 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
 
   do {
     werase(e->curswin);
-
-    if (e->topindex == -1 || e->index < e->topindex)
+    if (e->topindex == -1 || e->index < e->topindex
+        || (e->index == e->topindex
+            && e->topindex > 0
+            && e->buff[e->topindex-1] != '\n'))
       oe_reframe(e);
 
     line = 0;
