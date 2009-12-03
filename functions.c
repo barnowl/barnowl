@@ -3272,14 +3272,15 @@ void owl_function_addstartup(const char *buff)
   const char *filename;
 
   filename=owl_global_get_startupfile(&g);
+
+  /* delete earlier copies */
+  owl_util_file_deleteline(filename, buff, 1);
+
   file=fopen(filename, "a");
   if (!file) {
     owl_function_error("Error opening startupfile for new command");
     return;
   }
-
-  /* delete earlier copies */
-  owl_util_file_deleteline(filename, buff, 1);
 
   /* add this line */
   fprintf(file, "%s\n", buff);
