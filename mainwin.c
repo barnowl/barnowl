@@ -9,12 +9,12 @@ void owl_mainwin_init(owl_mainwin *mw)
 void owl_mainwin_redisplay(owl_mainwin *mw)
 {
   owl_message *m;
-  int i, p, q, lines, isfull, viewsize;
+  int i, lines, isfull, viewsize;
   int x, y, savey, recwinlines, start;
   int topmsg, curmsg, markedmsgid, fgcolor, bgcolor;
   WINDOW *recwin;
   const owl_view *v;
-  const owl_list *filtlist;
+  GList *fl;
   const owl_filter *f;
 
   recwin = owl_global_get_curs_recwin(&g);
@@ -72,10 +72,8 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
     /* if we match filters set the color */
     fgcolor=OWL_COLOR_DEFAULT;
     bgcolor=OWL_COLOR_DEFAULT;
-    filtlist=owl_global_get_filterlist(&g);
-    q=owl_list_get_size(filtlist);
-    for (p=0; p<q; p++) {
-      f=owl_list_get_element(filtlist, p);
+    for (fl = g.filterlist; fl; fl = g_list_next(fl)) {
+      f = fl->data;
       if ((owl_filter_get_fgcolor(f)!=OWL_COLOR_DEFAULT) ||
           (owl_filter_get_bgcolor(f)!=OWL_COLOR_DEFAULT)) {
         if (owl_filter_message_match(f, m)) {

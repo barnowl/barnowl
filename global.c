@@ -49,7 +49,8 @@ void owl_global_init(owl_global *g) {
   owl_keyhandler_init(&g->kh);
   owl_keys_setup_keymaps(&g->kh);
 
-  owl_list_create(&(g->filterlist));
+  owl_dict_create(&(g->filters));
+  g->filterlist = NULL;
   owl_list_create(&(g->puntlist));
   owl_list_create(&(g->messagequeue));
   owl_dict_create(&(g->styledict));
@@ -603,42 +604,38 @@ owl_history *owl_global_get_cmd_history(owl_global *g) {
 }
 
 /* filterlist */
-
-owl_list *owl_global_get_filterlist(owl_global *g) {
-  return(&(g->filterlist));
-}
+typedef struct _owl_global_filter_ent {         /* noproto */
+  owl_global *g;
+  owl_filter *f;
+} owl_global_filter_ent;
 
 owl_filter *owl_global_get_filter(const owl_global *g, const char *name) {
-  int i, j;
-  owl_filter *f;
+  owl_global_filter_ent *e = owl_dict_find_element(&(g->filters), name);
+  if (e) return e->f;
+  return NULL;
+}
 
-  j=owl_list_get_size(&(g->filterlist));
-  for (i=0; i<j; i++) {
-    f=owl_list_get_element(&(g->filterlist), i);
-    if (!strcmp(name, owl_filter_get_name(f))) {
-      return(f);
-    }
-  }
-  return(NULL);
+static void owl_global_free_filter_ent(void *data) {
+  owl_global_filter_ent *e = data;
+  e->g->filterlist = g_list_remove(e->g->filterlist, e->f);
+  owl_filter_delete(e->f);
+  owl_free(e);
 }
 
 void owl_global_add_filter(owl_global *g, owl_filter *f) {
-  owl_list_append_element(&(g->filterlist), f);
+  owl_global_filter_ent *e = owl_malloc(sizeof *e);
+  e->g = g;
+  e->f = f;
+
+  owl_dict_insert_element(&(g->filters), owl_filter_get_name(f),
+                          e, owl_global_free_filter_ent);
+  g->filterlist = g_list_append(g->filterlist, f);
 }
 
 void owl_global_remove_filter(owl_global *g, const char *name) {
-  int i, j;
-  owl_filter *f;
-
-  j=owl_list_get_size(&(g->filterlist));
-  for (i=0; i<j; i++) {
-    f=owl_list_get_element(&(g->filterlist), i);
-    if (!strcmp(name, owl_filter_get_name(f))) {
-      owl_filter_delete(f);
-      owl_list_remove_element(&(g->filterlist), i);
-      break;
-    }
-  }
+  owl_global_filter_ent *e = owl_dict_remove_element(&(g->filters), name);
+  if (e)
+    owl_global_free_filter_ent(e);
 }
 
 /* nextmsgid */

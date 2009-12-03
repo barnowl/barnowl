@@ -2248,20 +2248,16 @@ char *owl_function_create_negative_filter(const char *filtername)
 
 void owl_function_show_filters(void)
 {
-  const owl_list *l;
   const owl_filter *f;
-  int i, j;
+  GList *fl;
   owl_fmtext fm;
 
   owl_fmtext_init_null(&fm);
 
-  l=owl_global_get_filterlist(&g);
-  j=owl_list_get_size(l);
-
   owl_fmtext_append_bold(&fm, "Filters:\n");
 
-  for (i=0; i<j; i++) {
-    f=owl_list_get_element(l, i);
+  for (fl = g.filterlist; fl; fl = g_list_next(fl)) {
+    f = fl->data;
     owl_fmtext_append_normal(&fm, "   ");
     if (owl_global_get_hascolors(&g)) {
       owl_fmtext_append_normal_color(&fm, owl_filter_get_name(f), owl_filter_get_fgcolor(f), owl_filter_get_bgcolor(f));

@@ -538,7 +538,8 @@ typedef struct _owl_global {
   owl_history cmdhist;		/* command history */
   owl_history msghist;		/* outgoing message history */
   owl_keyhandler kh;
-  owl_list filterlist;
+  owl_dict filters;
+  GList *filterlist;
   owl_list puntlist;
   owl_vardict vars;
   owl_cmddict cmds;

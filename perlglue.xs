@@ -325,12 +325,14 @@ remove_io_dispatch(fd)
 AV*
 all_filters()
 	PREINIT:
-		const owl_list *fl;
+		owl_list fl;
 	CODE:
 	{
-		fl = owl_global_get_filterlist(&g);
-		RETVAL = owl_new_av(fl, (SV*(*)(const void*))owl_filter_to_sv);
+		owl_list_create(&fl);
+		owl_dict_get_keys(&g.filters, &fl);
+		RETVAL = owl_new_av(&fl, (SV*(*)(const void*))owl_new_sv);
 		sv_2mortal((SV*)RETVAL);
+		owl_list_free_all(&fl, owl_free);
 	}
 	OUTPUT:
 		RETVAL

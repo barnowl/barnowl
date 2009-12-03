@@ -175,9 +175,8 @@ static void owl_setup_default_filters(void)
   owl_function_debugmsg("startup: creating default filters");
 
   for (i = 0; filters[i].name != NULL; i++)
-    owl_list_append_element(owl_global_get_filterlist(&g),
-			    owl_filter_new_fromstring(filters[i].name,
-						      filters[i].desc));
+    owl_global_add_filter(&g, owl_filter_new_fromstring(filters[i].name,
+                                                        filters[i].desc));
 }
 
 /*
