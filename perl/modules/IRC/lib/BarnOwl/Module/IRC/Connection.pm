@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 package BarnOwl::Module::IRC::Connection;
+use BarnOwl::Timer;
 
 =head1 NAME
 
@@ -17,7 +18,7 @@ support
 use Net::IRC::Connection;
 
 use base qw(Class::Accessor Exporter);
-__PACKAGE__->mk_accessors(qw(conn alias channels connected motd names_tmp whois_tmp));
+__PACKAGE__->mk_accessors(qw(conn alias channels motd names_tmp whois_tmp));
 our @EXPORT_OK = qw(&is_private);
 
 use BarnOwl;
@@ -43,11 +44,9 @@ sub new {
     $self->alias($alias);
     $self->channels([]);
     $self->motd("");
-    $self->connected(0);
     $self->names_tmp(0);
     $self->whois_tmp("");
 
-    $self->conn->add_handler(376 => sub { shift; $self->on_connect(@_) });
     $self->conn->add_default_handler(sub { shift; $self->on_event(@_) });
     $self->conn->add_handler(['msg', 'notice', 'public', 'caction'],
             sub { shift; $self->on_msg(@_) });
@@ -150,12 +149,6 @@ sub on_motd {
 sub on_endofmotd {
     my ($self, $evt) = @_;
     $self->motd(join "\n", $self->motd, cdr($evt->args));
-    if(!$self->connected) {
-        BarnOwl::admin_message("IRC", "Connected to " .
-                               $self->server . " (" . $self->alias . ")");
-        $self->connected(1);
-        
-    }
     BarnOwl::admin_message("IRC",
             BarnOwl::Style::boldify('MOTD for ' . $self->alias) . "\n"
             . strip_irc_formatting($self->motd));
@@ -171,6 +164,7 @@ sub on_join {
         replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
         );
     BarnOwl::queue_message($msg);
+    push @{$self->channels}, $evt->to;
 }
 
 sub on_part {
@@ -183,6 +177,7 @@ sub on_part {
         replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
         );
     BarnOwl::queue_message($msg);
+    $self->channels([ grep {$_ ne $evt->to} @{$self->channels}]);
 }
 
 sub on_quit {
@@ -198,7 +193,7 @@ sub on_quit {
     BarnOwl::queue_message($msg);
 }
 
-sub on_disconnect {
+sub disconnect {
     my $self = shift;
     delete $BarnOwl::Module::IRC::ircnets{$self->alias};
     for my $k (keys %BarnOwl::Module::IRC::channels) {
@@ -210,8 +205,19 @@ sub on_disconnect {
         }
     }
     BarnOwl::remove_io_dispatch($self->{FD});
+    $self->motd("");
+}
+
+sub on_disconnect {
+    my ($self, $evt) = @_;
+    $self->disconnect;
     BarnOwl::admin_message('IRC',
                            "[" . $self->alias . "] Disconnected from server");
+    if ($evt->format and $evt->format eq "error") {
+        $self->schedule_reconnect;
+    } else {
+        $self->channels([]);
+    }
 }
 
 sub on_nickinuse {
@@ -219,9 +225,7 @@ sub on_nickinuse {
     BarnOwl::admin_message("IRC",
                            "[" . $self->alias . "] " .
                            [$evt->args]->[1] . ": Nick already in use");
-    unless($self->connected) {
-        $self->conn->disconnect;
-    }
+    $self->disconnect unless $self->motd;
 }
 
 sub on_topic {
@@ -303,6 +307,48 @@ sub on_event {
             "[" . $self->alias . "] Unhandled IRC event of type " . $evt->type . ":\n"
             . strip_irc_formatting(join("\n", $evt->args)))
         if BarnOwl::getvar('irc:spew') eq 'on';
+}
+
+sub schedule_reconnect {
+    my $self = shift;
+    my $interval = shift || 5;
+    delete $BarnOwl::Module::IRC::ircnets{$self->alias};
+    $BarnOwl::Module::IRC::reconnect{$self->alias} =
+        BarnOwl::Timer->new( {
+            after => $interval,
+            cb    => sub {
+                $self->reconnect( $interval );
+            },
+        } );
+}
+
+sub connected {
+    my $self = shift;
+    my $msg = shift;
+    BarnOwl::admin_message("IRC", $msg);
+    delete $BarnOwl::Module::IRC::reconnect{$self->alias};
+    $BarnOwl::Module::IRC::ircnets{$self->alias} = $self;
+    my $fd = $self->getSocket()->fileno();
+    BarnOwl::add_io_dispatch($fd, 'r', \&BarnOwl::Module::IRC::OwlProcess);
+    $self->{FD} = $fd;
+}
+
+sub reconnect {
+    my $self = shift;
+    my $backoff = shift;
+
+    $self->conn->connect;
+    if ($self->conn->connected) {
+        $self->connected("Reconnected to ".$self->alias);
+        my @channels = @{$self->channels};
+        $self->channels([]);
+        $self->conn->join($_) for @channels;
+        return;
+    }
+
+    $backoff *= 2;
+    $backoff = 60*5 if $backoff > 60*5;
+    $self->schedule_reconnect( $backoff );
 }
 
 ################################################################################

@@ -29,6 +29,7 @@ our $irc;
 # Hash alias -> BarnOwl::Module::IRC::Connection object
 our %ircnets;
 our %channels;
+our %reconnect;
 
 sub startup {
     BarnOwl::new_variable_string('irc:nick', {
@@ -377,11 +378,7 @@ sub cmd_connect {
        );
 
     if ($conn->conn->connected) {
-        BarnOwl::admin_message("IRC", "Connected to $alias as $nick");
-        $ircnets{$alias} = $conn;
-        my $fd = $conn->getSocket()->fileno();
-        BarnOwl::add_io_dispatch($fd, 'r', \&OwlProcess);
-        $conn->{FD} = $fd;
+        $conn->connected("Connected to $alias as $nick");
     } else {
         die("IRC::Connection->connect failed: $!");
     }
@@ -393,7 +390,6 @@ sub cmd_disconnect {
     my $cmd = shift;
     my $conn = shift;
     $conn->conn->disconnect;
-    delete $ircnets{$conn->alias};
     return;
 }
 
