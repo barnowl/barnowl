@@ -51,12 +51,12 @@ sub startup {
         'originally intended to display your real name, which people '  .
         'often use for pithy quotes and URLs.'
        });
-    
+
     BarnOwl::new_variable_bool('irc:spew', {
         default     => 0,
         summary     => 'Show unhandled IRC events',
         description => 'If set, display all unrecognized IRC events as ' .
-        'admin messages. Intended for debugging and development use only '
+        'admin messages. Intended for debugging and development use only.'
        });
     
     register_commands();
@@ -131,10 +131,8 @@ sub register_commands {
             summary => 'Connect to an IRC server',
             usage =>
 'irc-connect [-a ALIAS ] [-s] [-p PASSWORD] [-n NICK] SERVER [port]',
-            description =>
-
-              <<END_DESCR
-Connect to an IRC server. Supported options are
+            description => <<END_DESCR
+Connect to an IRC server. Supported options are:
 
  -a <alias>          Define an alias for this server
  -s                  Use SSL
@@ -172,7 +170,7 @@ END_DESCR
             usage   => 'irc-msg [-a ALIAS] DESTINATION MESSAGE',
 
             description => <<END_DESCR
-Send an IRC message
+Send an IRC message.
 END_DESCR
         }
     );
@@ -184,7 +182,6 @@ END_DESCR
             usage   => 'irc-mode [-a ALIAS] TARGET [+-]MODE OPTIONS',
 
             description => <<END_DESCR
-
 Change the mode of an IRC user or channel.
 END_DESCR
         }
@@ -197,7 +194,6 @@ END_DESCR
             usage   => 'irc-join [-a ALIAS] #channel [KEY]',
 
             description => <<END_DESCR
-
 Join an IRC channel.
 END_DESCR
         }
@@ -210,7 +206,6 @@ END_DESCR
             usage   => 'irc-part [-a ALIAS] #channel',
 
             description => <<END_DESCR
-
 Part from an IRC channel.
 END_DESCR
         }
@@ -223,7 +218,6 @@ END_DESCR
             usage   => 'irc-nick [-a ALIAS] NEW-NICK',
 
             description => <<END_DESCR
-
 Set your IRC nickname on an existing connect. To change it prior to
 connecting, adjust the `irc:nick' variable.
 END_DESCR
@@ -237,7 +231,6 @@ END_DESCR
             usage   => 'irc-names [-a ALIAS] #channel',
 
             description => <<END_DESCR
-
 `irc-names' displays the list of users in a given channel in a pop-up
 window.
 END_DESCR
@@ -251,7 +244,6 @@ END_DESCR
             usage   => 'irc-whois [-a ALIAS] NICK',
 
             description => <<END_DESCR
-
 Pops up information about a given IRC user.
 END_DESCR
         }
@@ -264,7 +256,6 @@ END_DESCR
             usage   => 'irc-motd [-a ALIAS]',
 
             description => <<END_DESCR
-
 Displays an IRC server's message of the day.
 END_DESCR
         }
@@ -277,7 +268,6 @@ END_DESCR
             usage   => 'irc-list',
 
             description => <<END_DESCR
-
 Show all the currently active IRC connections with their aliases and
 server names.
 END_DESCR
@@ -294,7 +284,6 @@ END_DESCR
             usage   => 'irc-topic [-a ALIAS] #channel [TOPIC]',
 
             description => <<END_DESCR
-
 Without extra arguments, fetches and displays a given channel's topic.
 
 With extra arguments, changes the target channel's topic string. This
@@ -310,7 +299,6 @@ END_DESCR
             usage   => 'irc-quote [-a ALIAS] TEXT',
 
             description => <<END_DESCR
-
 Send a raw command line to an IRC server.
 
 This can be used to perform some operation not yet supported by
