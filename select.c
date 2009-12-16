@@ -302,7 +302,6 @@ void owl_select_mask_signals(sigset_t *oldmask) {
 
   sigemptyset(&set);
   sigaddset(&set, SIGINT);
-  sigaddset(&set, SIGTSTP);
   sigprocmask(SIG_BLOCK, &set, oldmask);
 }
 
@@ -316,13 +315,6 @@ void owl_select_handle_intr(sigset_t *restore)
 
   in.ch = in.uch = owl_global_get_startup_tio(&g)->c_cc[VINTR];
   owl_process_input_char(in);
-}
-
-void owl_select_check_tstp(void) {
-  if(owl_global_is_sigstp(&g)) {
-    owl_function_makemsg("Use :suspend to suspend.");
-    owl_global_unset_got_sigstp(&g);
-  }
 }
 
 owl_ps_action *owl_select_add_pre_select_action(int (*cb)(owl_ps_action *, void *), void (*destroy)(owl_ps_action *), void *data)
@@ -397,7 +389,6 @@ void owl_select(void)
 
   owl_select_mask_signals(&mask);
 
-  owl_select_check_tstp();
   if(owl_global_is_interrupted(&g)) {
     owl_select_handle_intr(&mask);
     return;
@@ -446,7 +437,6 @@ void owl_select(void)
   ret = pselect(max_fd+1, &r, &w, &e, &timeout, &mask);
 
   if(ret < 0 && errno == EINTR) {
-    owl_select_check_tstp();
     if(owl_global_is_interrupted(&g)) {
       owl_select_handle_intr(NULL);
     }

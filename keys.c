@@ -20,7 +20,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   km_global = km = owl_keyhandler_create_and_add_keymap(kh, "global",
        "System-wide default key bindings", 
        owl_keys_default_invalid, NULL, NULL);
-  BIND_CMD("C-z",      "suspend",            "Suspend owl");
+  BIND_CMD("C-z",      "message Use :suspend to suspend.", "");
 
   /****************************************************************/
   /***************************** EDIT *****************************/

@@ -134,10 +134,10 @@ void owl_start_curses(void) {
   /* save initial terminal settings */
   tcgetattr(0, owl_global_get_startup_tio(&g));
 
-  /* turn ISTRIP off */
   tcgetattr(0, &tio);
   tio.c_iflag &= ~(ISTRIP|IEXTEN);
   tio.c_cc[VQUIT] = 0;
+  tio.c_cc[VSUSP] = 0;
   tcsetattr(0, TCSAFLUSH, &tio);
 
   /* screen init */
@@ -395,11 +395,6 @@ void sigint_handler(int sig, siginfo_t *si, void *data)
   owl_global_set_interrupted(&g);
 }
 
-void sigtstp_handler(int sig, siginfo_t *si, void *data)
-{
-  owl_global_set_got_sigstp(&g);
-}
-
 void owl_register_signal_handlers(void) {
   struct sigaction sigact;
 
@@ -416,9 +411,6 @@ void owl_register_signal_handlers(void) {
 
   sigact.sa_sigaction=sigint_handler;
   sigaction(SIGINT, &sigact, NULL);
-
-  sigact.sa_sigaction=sigtstp_handler;
-  sigaction(SIGTSTP, &sigact, NULL);
 }
 
 #if OWL_STDERR_REDIR

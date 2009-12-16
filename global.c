@@ -116,7 +116,6 @@ void owl_global_init(owl_global *g) {
   owl_list_create(&(g->psa_list));
   g->timerlist = NULL;
   g->interrupted = FALSE;
-  g->got_sigtstp = FALSE;
 }
 
 /* Called once perl has been initialized */
@@ -961,16 +960,4 @@ void owl_global_set_interrupted(owl_global *g) {
 
 void owl_global_unset_interrupted(owl_global *g) {
   g->interrupted = 0;
-}
-
-int owl_global_is_sigstp(const owl_global *g) {
-  return g->got_sigtstp;
-}
-
-void owl_global_set_got_sigstp(owl_global *g) {
-  g->got_sigtstp = 1;
-}
-
-void owl_global_unset_got_sigstp(owl_global *g) {
-  g->got_sigtstp = 0;
 }
