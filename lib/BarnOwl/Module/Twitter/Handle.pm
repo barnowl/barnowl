@@ -298,6 +298,16 @@ sub twitter_atreply {
     }
 }
 
+sub twitter_retweet {
+    my $self = shift;
+    my $msg = shift;
+
+    if($msg->service ne $self->{cfg}->{service}) {
+        die("Cannot retweet a message from a different service.\n");
+    }
+    $self->twitter_command(retweet => $msg->{status_id});
+}
+
 sub twitter_follow {
     my $self = shift;
 

@@ -255,6 +255,17 @@ BarnOwl::new_command( 'twitter-atreply' => sub { cmd_twitter_atreply(@_); },
     }
 );
 
+BarnOwl::new_command( 'twitter-retweet' => sub { cmd_twitter_retweet(@_) },
+    {
+    summary     => 'Retweet the current Twitter message',
+    usage       => 'twitter-retweet [ACCOUNT]',
+    description => <<END_DESCRIPTION
+Retweet the current Twitter message using ACCOUNT (defaults to the
+account that received the tweet).
+END_DESCRIPTION
+    }
+);
+
 BarnOwl::new_command( 'twitter-follow' => sub { cmd_twitter_follow(@_); },
     {
     summary     => 'Follow a user on Twitter',
@@ -303,6 +314,18 @@ sub cmd_twitter_atreply {
 
     BarnOwl::start_edit_win("Reply to \@" . $user . ($account->nickname ? (" on " . $account->nickname) : ""),
                             sub { $account->twitter_atreply($user, $id, shift) });
+}
+
+sub cmd_twitter_retweet {
+    my $cmd = shift;
+    my $account = shift;
+    my $m = BarnOwl::getcurmsg();
+    if(!$m || $m->type ne 'Twitter') {
+        die("$cmd must be used with a Twitter message selected.\n");
+    }
+
+    $account = $m->account unless defined($account);
+    find_account($account)->twitter_retweet($m);
 }
 
 sub cmd_twitter_follow {
