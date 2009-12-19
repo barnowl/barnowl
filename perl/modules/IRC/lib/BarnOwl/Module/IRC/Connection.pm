@@ -114,7 +114,7 @@ sub on_msg {
         $evt->type eq 'notice' ?
           (notice     => 'true') : (),
         is_private($recipient) ?
-          (isprivate  => 'true') : (channel => $recipient),
+          (private  => 'true') : (channel => $recipient),
         replycmd    => BarnOwl::quote('irc-msg', '-a', $self->alias,
           (is_private($recipient) ? $evt->nick : $recipient)),
         replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
