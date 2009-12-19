@@ -14,6 +14,14 @@ Contains everything needed to send and receive messages from a Twitter-like serv
 package BarnOwl::Module::Twitter::Handle;
 
 use Net::Twitter::Lite;
+BEGIN {
+    # Backwards compatibility with version of Net::Twitter::Lite that
+    # lack home_timeline.
+    if(!defined(*Net::Twitter::Lite::home_timeline{CODE})) {
+        *Net::Twitter::Lite::home_timeline =
+          \&Net::Twitter::Lite::friends_timeline;
+    }
+}
 use HTML::Entities;
 
 use BarnOwl;
@@ -68,7 +76,7 @@ sub new {
 
     $self->{twitter}  = Net::Twitter::Lite->new(%twitter_args);
 
-    my $timeline = eval { $self->{twitter}->friends_timeline({count => 1}) };
+    my $timeline = eval { $self->{twitter}->home_timeline({count => 1}) };
     warn "$@" if $@;
 
     if(!defined($timeline)) {
@@ -150,7 +158,7 @@ sub poll_twitter {
     $self->{last_poll} = time;
     return unless BarnOwl::getvar('twitter:poll') eq 'on';
 
-    my $timeline = eval { $self->{twitter}->friends_timeline( { since_id => $self->{last_id} } ) };
+    my $timeline = eval { $self->{twitter}->home_timeline( { since_id => $self->{last_id} } ) };
     warn "$@" if $@;
     unless(defined($timeline) && ref($timeline) eq 'ARRAY') {
         $self->twitter_error();
