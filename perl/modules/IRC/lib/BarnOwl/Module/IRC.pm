@@ -99,7 +99,6 @@ sub buddylist {
             next unless grep $_ eq $conn, @{$channels{$chan}};
             $list .= "  $chan\n";
         }
-        $list .= "\n";
     }
 
     return $list;

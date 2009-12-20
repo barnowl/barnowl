@@ -183,7 +183,9 @@ sub _mainloop_hook {
 }
 
 sub _get_blist {
-    return join("\n", $getBuddyList->run);
+    my @results = $getBuddyList->run;
+    s/^\s+|\s+$// for (@results);
+    return join("\n", @results);
 }
 
 sub _get_quickstart {

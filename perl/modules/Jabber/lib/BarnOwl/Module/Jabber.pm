@@ -209,7 +209,7 @@ sub getSingleBuddyList {
     my $blist = "";
     my $roster = $conn->getRosterFromJID($jid);
     if ($roster) {
-        $blist .= "\n" . BarnOwl::Style::boldify("Jabber roster for $jid\n");
+        $blist .= BarnOwl::Style::boldify("Jabber roster for $jid\n");
 
         my @gTexts = ();
         foreach my $group ( $roster->groups() ) {
