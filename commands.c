@@ -1339,14 +1339,14 @@ void owl_command_redisplay(void)
   owl_global_set_needrefresh(&g);
 }
 
-void owl_command_shift_right(void)
-{
-  owl_function_shift_right();
-}
-
 void owl_command_shift_left(void)
 {
   owl_function_shift_left();
+}
+
+void owl_command_shift_right(void)
+{
+  owl_function_shift_right();
 }
 
 void owl_command_unsuball(void)
