@@ -37,6 +37,8 @@ use BarnOwl::Timer;
 use BarnOwl::Editwin;
 use BarnOwl::Completion;
 
+use List::Util qw(max);
+
 =head1 NAME
 
 BarnOwl
@@ -420,6 +422,29 @@ sub register_builtin_commands {
                            usage => "timeformat <format>",
                        });
 
+    # Receive window scrolling
+    BarnOwl::new_command("recv:shiftleft",
+                        \&BarnOwl::recv_shift_left,
+                        {
+                            summary => "scrolls receive window to the left",
+                            usage => "recv:shiftleft [<amount>]",
+                            description => <<END_DESCR
+By default, scroll left by 10 columns. Passing no arguments or 0 activates this default behavior.
+Otherwise, scroll by the number of columns specified as the argument.
+END_DESCR
+                        });
+
+    BarnOwl::new_command("recv:shiftright",
+                        \&BarnOwl::recv_shift_right,
+                        {
+                            summary => "scrolls receive window to the right",
+                            usage => "recv:shiftright [<amount>]",
+                            description => <<END_DESCR
+By default, scroll right by 10 columns. Passing no arguments or 0 activates this default behavior.
+Otherwise, scroll by the number of columns specified as the argument.
+END_DESCR
+                        });
+
 }
 
 $BarnOwl::Hooks::startup->add("BarnOwl::register_builtin_commands");
@@ -482,6 +507,35 @@ sub time_format
     }
     $timeformat = $format;
     redisplay();
+}
+
+=head3 Receive window scrolling
+
+Permit scrolling the receive window left or right by arbitrary
+amounts (with a default of 10 characters).
+
+=cut
+
+sub recv_shift_left
+{
+    my $func = shift;
+    my $delta = shift;
+    $delta = 10 unless int($delta) > 0;
+    my $shift = BarnOwl::recv_getshift();
+    if($shift > 0) {
+        BarnOwl::recv_setshift(max(0, $shift-$delta));
+    } else {
+        return "Already full left";
+    }
+}
+
+sub recv_shift_right
+{
+    my $func = shift;
+    my $delta = shift;
+    $delta = 10 unless int($delta) > 0;
+    my $shift = BarnOwl::recv_getshift();
+    BarnOwl::recv_setshift($shift+$delta);
 }
 
 =head3 default_zephyr_signature
