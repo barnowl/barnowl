@@ -842,8 +842,8 @@ void owl_function_shift_left(void)
   int shift;
 
   shift=owl_global_get_rightshift(&g);
-  if (shift>=10) {
-    owl_global_set_rightshift(&g, shift-10);
+  if (shift > 0) {
+    owl_global_set_rightshift(&g, MAX(shift - 10, 0));
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
     owl_global_set_needrefresh(&g);
   } else {

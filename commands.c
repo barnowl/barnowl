@@ -314,6 +314,12 @@ const owl_cmd commands_to_init[]
 	      "toggle-oneline",
 	      ""),
 
+  OWLCMD_ARGS("recv:getshift", owl_command_get_shift, OWL_CTX_INTERACTIVE,
+	      "gets position of receive window scrolling", "", ""),
+
+  OWLCMD_INT("recv:setshift", owl_command_set_shift, OWL_CTX_INTERACTIVE,
+	      "scrolls receive window to specified position", "", ""),
+
   OWLCMD_VOID("recv:shiftleft", owl_command_shift_left, OWL_CTX_INTERACTIVE,
 	      "scrolls receive window to the left", "", ""),
 
@@ -1336,6 +1342,23 @@ void owl_command_resize(void)
 void owl_command_redisplay(void)
 {
   owl_function_full_redisplay();
+  owl_global_set_needrefresh(&g);
+}
+
+char *owl_command_get_shift(int argc, const char *const *argv, const char *buff)
+{
+  if(argc != 1)
+  {
+    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
+    return NULL;
+  }
+  return owl_sprintf("%d", owl_global_get_rightshift(&g));
+}
+
+void owl_command_set_shift(int shift)
+{
+  owl_global_set_rightshift(&g, shift);
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_global_set_needrefresh(&g);
 }
 
