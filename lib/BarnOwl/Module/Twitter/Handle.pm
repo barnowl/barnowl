@@ -77,7 +77,7 @@ sub new {
     $self->{twitter}  = Net::Twitter::Lite->new(%twitter_args);
 
     my $timeline = eval { $self->{twitter}->home_timeline({count => 1}) };
-    warn "$@" if $@;
+    warn "$@\n" if $@;
 
     if(!defined($timeline)) {
         $self->fail("Invalid credentials");
@@ -91,13 +91,13 @@ sub new {
     eval {
         $self->{last_direct} = $self->{twitter}->direct_messages()->[0]{id};
     };
-    warn "$@" if $@;
+    warn "$@\n" if $@;
     $self->{last_direct} = 1 unless defined($self->{last_direct});
 
     eval {
         $self->{twitter}->{ua}->timeout(1);
     };
-    warn "$@" if $@;
+    warn "$@\n" if $@;
 
     return $self;
 }
@@ -134,7 +134,7 @@ sub twitter_error {
     my $self = shift;
 
     my $ratelimit = eval { $self->{twitter}->rate_limit_status };
-    warn "$@" if $@;
+    warn "$@\n" if $@;
     unless(defined($ratelimit) && ref($ratelimit) eq 'HASH') {
         # Twitter's just sucking, sleep for 5 minutes
         $self->{last_direct_poll} = $self->{last_poll} = time + 60*5;
@@ -159,7 +159,7 @@ sub poll_twitter {
     return unless BarnOwl::getvar('twitter:poll') eq 'on';
 
     my $timeline = eval { $self->{twitter}->home_timeline( { since_id => $self->{last_id} } ) };
-    warn "$@" if $@;
+    warn "$@\n" if $@;
     unless(defined($timeline) && ref($timeline) eq 'ARRAY') {
         $self->twitter_error();
         return;
@@ -167,7 +167,7 @@ sub poll_twitter {
 
     if ($self->{cfg}->{show_mentions}) {
         my $mentions = eval { $self->{twitter}->mentions( { since_id => $self->{last_id} } ) };
-        warn "$@" if $@;
+        warn "$@\n" if $@;
         unless (defined($mentions) && ref($mentions) eq 'ARRAY') {
             $self->twitter_error();
             return;
@@ -212,7 +212,7 @@ sub poll_direct {
     return unless BarnOwl::getvar('twitter:poll') eq 'on';
 
     my $direct = eval { $self->{twitter}->direct_messages( { since_id => $self->{last_direct} } ) };
-    warn "$@" if $@;
+    warn "$@\n" if $@;
     unless(defined($direct) && ref($direct) eq 'ARRAY') {
         $self->twitter_error();
         return;
