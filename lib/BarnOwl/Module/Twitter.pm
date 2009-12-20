@@ -186,6 +186,18 @@ sub handle_message {
     }
 }
 
+sub poll_messages {
+    # If we are reloaded into a barnowl with the old
+    # BarnOwl::Module::Twitter loaded, it still has a main loop hook
+    # that will call this function every second. If we just delete it,
+    # it will get the old version, which will call poll on each of our
+    # handles every second. However, they no longer include the time
+    # check, and so we will poll a handle every second until
+    # ratelimited.
+
+    # So we include an empty function here.
+}
+
 sub find_account {
     my $name = shift;
     my $handle = first {$_->{cfg}->{account_nickname} eq $name} @twitter_handles;
