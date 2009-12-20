@@ -294,7 +294,7 @@ sub cmd_twitter {
             return;
         }
     }
-    BarnOwl::start_edit_win('What are you doing?' . (defined $account ? " ($account)" : ""), sub{twitter($account, shift)});
+    BarnOwl::start_edit_win("What's happening?" . (defined $account ? " ($account)" : ""), sub{twitter($account, shift)});
 }
 
 sub cmd_twitter_direct {
