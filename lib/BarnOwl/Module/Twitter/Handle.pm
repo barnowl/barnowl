@@ -108,7 +108,8 @@ sub sleep {
     my $self  = shift;
     my $delay = shift;
 
-    my $weak = weaken($self);
+    my $weak = $self;
+    weaken($weak);
 
     if($self->{cfg}->{poll_for_tweets}) {
         $self->{timer} = BarnOwl::Timer->new({
