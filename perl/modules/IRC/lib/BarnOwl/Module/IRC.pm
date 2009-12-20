@@ -166,7 +166,7 @@ END_DESCR
     );
 
     BarnOwl::new_command(
-        'irc-disconnect' => mk_irc_command( \&cmd_disconnect ),
+        'irc-disconnect' => \&cmd_disconnect,
         {
             summary => 'Disconnect from an IRC server',
             usage   => 'irc-disconnect [-a ALIAS]',
@@ -390,10 +390,27 @@ sub cmd_connect {
 }
 
 sub cmd_disconnect {
-    my $cmd = shift;
-    my $conn = shift;
-    $conn->conn->disconnect;
-    return;
+    # Such a hack
+    local *get_connection_by_alias = sub {
+        my $key = shift;
+        return $ircnets{$key} if exists $ircnets{$key};
+        return $reconnect{$key}{conn} if exists $reconnect{$key};
+        die("No such ircnet: $key\n");
+    };
+
+    mk_irc_command(
+        sub {
+            my $cmd = shift;
+            my $conn = shift;
+            if ($conn->conn->connected) {
+                $conn->conn->disconnect;
+            } elsif ($reconnect{$conn->alias}) {
+                BarnOwl::admin_message('IRC',
+                                       "[" . $conn->alias . "] Reconnect cancelled");
+                delete $reconnect{$conn->alias};
+            }
+        }
+    )->(@_);
 }
 
 sub cmd_msg {
