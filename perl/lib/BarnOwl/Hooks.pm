@@ -183,9 +183,9 @@ sub _mainloop_hook {
 }
 
 sub _get_blist {
-    my @results = $getBuddyList->run;
+    my @results = grep defined, $getBuddyList->run;
     s/^\s+|\s+$//sg for (@results);
-    return join("\n", @results);
+    return join("\n", grep {length($_)} @results);
 }
 
 sub _get_quickstart {
