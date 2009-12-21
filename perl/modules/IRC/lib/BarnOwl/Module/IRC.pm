@@ -93,7 +93,8 @@ sub buddylist {
     for my $net (sort keys %ircnets) {
         my $conn = $ircnets{$net};
         my ($nick, $server) = ($conn->nick, $conn->server);
-        $list .= BarnOwl::Style::boldify("IRC channels for $net ($nick\@$server)\n");
+        $list .= BarnOwl::Style::boldify("IRC channels for $net ($nick\@$server)");
+        $list .= "\n";
 
         for my $chan (keys %channels) {
             next unless grep $_ eq $conn, @{$channels{$chan}};
