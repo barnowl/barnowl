@@ -184,7 +184,7 @@ sub _mainloop_hook {
 
 sub _get_blist {
     my @results = $getBuddyList->run;
-    s/^\s+|\s+$// for (@results);
+    s/^\s+|\s+$//sg for (@results);
     return join("\n", @results);
 }
 
