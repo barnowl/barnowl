@@ -1036,7 +1036,7 @@ sub process_owl_jwrite {
 
 sub process_incoming_chat_message {
     my ( $sid, $j ) = @_;
-    if ($j->DefinedBody()) {
+    if ($j->DefinedBody() || BarnOwl::getvar('jabber:spew') eq 'on') {
         BarnOwl::queue_message( j2o( $j, { direction => 'in',
                                            sid => $sid } ) );
     }
@@ -1082,7 +1082,7 @@ sub process_incoming_normal_message {
     #	}
     #    }
     #
-    if(BarnOwl::getvar('jabber:spew') eq 'on') {
+    if ($j->DefinedBody() || BarnOwl::getvar('jabber:spew') eq 'on') {
         BarnOwl::queue_message( BarnOwl::Message->new(%jhash) );
     }
 }
