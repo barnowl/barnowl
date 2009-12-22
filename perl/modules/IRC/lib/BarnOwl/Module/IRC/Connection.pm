@@ -22,6 +22,7 @@ __PACKAGE__->mk_accessors(qw(conn alias channels motd names_tmp whois_tmp));
 our @EXPORT_OK = qw(&is_private);
 
 use BarnOwl;
+use Scalar::Util qw(weaken);
 
 BEGIN {
     no strict 'refs';
@@ -314,11 +315,14 @@ sub schedule_reconnect {
     my $self = shift;
     my $interval = shift || 5;
     delete $BarnOwl::Module::IRC::ircnets{$self->alias};
-    $BarnOwl::Module::IRC::reconnect{$self->alias} =
+    $BarnOwl::Module::IRC::reconnect{$self->alias} = $self;
+    my $weak = $self;
+    weaken($weak);
+    $self->{reconnect_timer} = 
         BarnOwl::Timer->new( {
             after => $interval,
             cb    => sub {
-                $self->reconnect( $interval );
+                $weak->reconnect( $interval ) if $weak;
             },
         } );
 }
@@ -328,6 +332,7 @@ sub connected {
     my $msg = shift;
     BarnOwl::admin_message("IRC", $msg);
     delete $BarnOwl::Module::IRC::reconnect{$self->alias};
+    delete $self->{reconnect_timer};
     $BarnOwl::Module::IRC::ircnets{$self->alias} = $self;
     my $fd = $self->getSocket()->fileno();
     BarnOwl::add_io_dispatch($fd, 'r', \&BarnOwl::Module::IRC::OwlProcess);
