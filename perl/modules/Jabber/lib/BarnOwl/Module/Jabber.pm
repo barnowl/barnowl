@@ -464,33 +464,7 @@ sub do_login {
                         password => $vars{jlogin_password}
                     }
                 );
-                my $roster = $conn->getRosterFromJID($jidStr);
-                $roster->fetch();
-                $client->PresenceSend( priority => 1 );
-		my $fullJid = $client->{SESSION}->{FULLJID} || $jidStr;
-		$conn->renameConnection($jidStr, $fullJid);
-                queue_admin_msg("Connected to jabber as $fullJid");
-                # The remove_io_dispatch() method is called from the
-                # ConnectionManager's removeConnection() method.
-                $client->{fileno} = $client->getSocket()->fileno();
-                #queue_admin_msg("Connected to jabber as $fullJid ($client->{fileno})");
-                BarnOwl::add_io_dispatch($client->{fileno}, 'r', sub { $client->OwlProcess($fullJid) });
-
-                # populate completion from roster.
-                for my $buddy ( $roster->jids('all') ) {
-                    my %jq  = $roster->query($buddy);
-                    my $name = $jq{name} || $buddy->GetUserID();
-                    $completion_jids{$name} = 1;
-                    $completion_jids{$buddy->GetJID()} = 1;
-                }
-                $vars{idletime} |= BarnOwl::getidletime();
-                unless (exists $vars{keepAliveTimer}) {
-                    $vars{keepAliveTimer} = BarnOwl::Timer->new({
-                        'after' => 5,
-                        'interval' => 5,
-                        'cb' => sub { BarnOwl::Module::Jabber::do_keep_alive_and_auto_away(@_) }
-                                                                });
-                }
+                $client->onConnect($conn, $jidStr);
             }
         }
     }

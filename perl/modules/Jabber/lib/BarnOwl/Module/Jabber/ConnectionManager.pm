@@ -84,20 +84,19 @@ sub tryReconnect {
         if $self->{$jidStr}->{ReconnectBackoff} > 60*5;
     $self->{$jidStr}->{ReconnectAt} = time + $self->{$jidStr}->{ReconnectBackoff};
 
-    my $status = $self->{$jidStr}->{Client}->Connect;
+    my $client = $self->{$jidStr}->{Client};
+    my $status = $client->Connect;
     return 0 unless $status;
 
-    my @result = $self->{$jidStr}->{Client}->AuthSend( %{ $self->{$jidStr}->{Auth} } );
+    my @result = $client->AuthSend( %{ $self->{$jidStr}->{Auth} } );
     if ( !@result || $result[0] ne 'ok' ) {
         $self->removeConnection($jidStr);
         BarnOwl::error( "Error in jabber reconnect: " . join( " ", @result ) );
         return 0;
     }
-
-    BarnOwl::admin_message(Jabber => "Reconnected to jabber as $jidStr");
-    $self->{$jidStr}{Status} = "available";
-
-    foreach my $muc ($self->{$jidStr}->{Client}->MUCs()) {
+    $self->{$jidStr}->{Status} = "available";
+    $client->onConnect($self, $jidStr);
+    foreach my $muc ($client->MUCs()) {
         $muc->Join($muc->{ARGS});
     }
 
