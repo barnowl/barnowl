@@ -135,8 +135,12 @@ sub do_keep_alive_and_auto_away {
     $vars{idletime} = $idletime;
 
     foreach my $jid ( $conn->getJIDs() ) {
+        next if $conn->jidActive($jid);
+        $conn->tryReconnect($jid);
+    }
 
-        next unless $conn->jidActive($jid) or $conn->tryReconnect($jid);
+    foreach my $jid ( $conn->getJIDs() ) {
+        next unless $conn->jidActive($jid);
 
         my $client = $conn->getConnectionFromJID($jid);
         unless($client) {
