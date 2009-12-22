@@ -94,6 +94,7 @@ sub tryReconnect {
         BarnOwl::error( "Error in jabber reconnect: " . join( " ", @result ) );
         return 0;
     }
+    $self->{$jidStr}->{Roster} = $client->Roster();
     $self->{$jidStr}->{Status} = "available";
     $client->onConnect($self, $jidStr);
     foreach my $muc ($client->MUCs()) {
