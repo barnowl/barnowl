@@ -28,6 +28,7 @@ use Scalar::Util qw(weaken);
 
 use BarnOwl;
 use BarnOwl::Message::Twitter;
+use POSIX qw(asctime);
 
 sub fail {
     my $self = shift;
@@ -177,8 +178,12 @@ sub twitter_error {
 
     if(exists($ratelimit->{remaining_hits})
        && $ratelimit->{remaining_hits} <= 0) {
-        $self->sleep($ratelimit->{reset_time_in_seconds} - time + 60);
-        die("Twitter: ratelimited until " . $ratelimit->{reset_time} . "\n");
+        my $timeout = $ratelimit->{reset_time_in_seconds};
+        $self->sleep($timeout - time + 60);
+        BarnOwl::error("Twitter" .
+                       ($self->{cfg}->{account_nickname} ?
+                        "[$self->{cfg}->{account_nickname}]" : "") .
+                        ": ratelimited until " . asctime(localtime($timeout)));
     } elsif(exists($ratelimit->{error})) {
         $self->sleep(60*20);
         die("Twitter: ". $ratelimit->{error} . "\n");
