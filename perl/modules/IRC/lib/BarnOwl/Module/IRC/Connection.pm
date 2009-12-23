@@ -327,12 +327,17 @@ sub schedule_reconnect {
         } );
 }
 
+sub cancel_reconnect {
+    my $self = shift;
+    delete $BarnOwl::Module::IRC::reconnect{$self->alias};
+    delete $self->{reconnect_timer};
+}
+
 sub connected {
     my $self = shift;
     my $msg = shift;
     BarnOwl::admin_message("IRC", $msg);
-    delete $BarnOwl::Module::IRC::reconnect{$self->alias};
-    delete $self->{reconnect_timer};
+    $self->cancel_reconnect;
     $BarnOwl::Module::IRC::ircnets{$self->alias} = $self;
     my $fd = $self->getSocket()->fileno();
     BarnOwl::add_io_dispatch($fd, 'r', \&BarnOwl::Module::IRC::OwlProcess);

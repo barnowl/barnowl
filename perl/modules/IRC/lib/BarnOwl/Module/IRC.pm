@@ -160,12 +160,19 @@ argument listed above, and die if no channel argument can be found.
 Pass the channel argument, but don't die if not present. Only relevant
 with C<CHANNEL_ARG>.
 
+=item C<ALLOW_DISCONNECTED>
+
+C<IRC-CONNECTION> may be a disconnected connection object that is
+currently pending a reconnect.
+
 =back
 
 =cut
 
 use constant CHANNEL_ARG        => 1;
 use constant CHANNEL_OPTIONAL   => 2;
+
+use constant ALLOW_DISCONNECTED => 4;
 
 sub register_commands {
     BarnOwl::new_command(
@@ -194,7 +201,7 @@ END_DESCR
     );
 
     BarnOwl::new_command(
-        'irc-disconnect' => mk_irc_command( \&cmd_disconnect ),
+        'irc-disconnect' => mk_irc_command( \&cmd_disconnect, ALLOW_DISCONNECTED ),
         {
             summary => 'Disconnect from an IRC server',
             usage   => 'irc-disconnect [-a ALIAS]',
@@ -420,8 +427,13 @@ sub cmd_connect {
 sub cmd_disconnect {
     my $cmd = shift;
     my $conn = shift;
-    $conn->conn->disconnect;
-    return;
+    if ($conn->conn->connected) {
+        $conn->conn->disconnect;
+    } elsif ($reconnect{$conn->alias}) {
+        BarnOwl::admin_message('IRC',
+                               "[" . $conn->alias . "] Reconnect cancelled");
+        $conn->cancel_reconnect;
+    }
 }
 
 sub cmd_msg {
@@ -588,7 +600,8 @@ sub mk_irc_command {
         $getopt->getoptions("alias=s" => \$alias);
 
         if(defined($alias)) {
-            $conn = get_connection_by_alias($alias);
+            $conn = get_connection_by_alias($alias,
+                                            $flags & ALLOW_DISCONNECTED);
         }
         if($flags & CHANNEL_ARG) {
             $channel = $ARGV[0];
@@ -611,7 +624,8 @@ sub mk_irc_command {
         }
         if(!$conn) {
             if($m && $m->type eq 'IRC') {
-                $conn = get_connection_by_alias($m->network);
+                $conn = get_connection_by_alias($m->network,
+                                               $flags & ALLOW_DISCONNECTED);
             }
         }
         if(!$conn && scalar keys %ircnets == 1) {
@@ -630,8 +644,11 @@ sub mk_irc_command {
 
 sub get_connection_by_alias {
     my $key = shift;
-    die("No such ircnet: $key\n") unless exists $ircnets{$key};
-    return $ircnets{$key};
+    my $allow_disconnected = shift;
+
+    return $ircnets{$key} if exists $ircnets{$key};
+    return $reconnect{$key} if $allow_disconnected && exists $reconnect{$key};
+    die("No such ircnet: $key\n")
 }
 
 1;
