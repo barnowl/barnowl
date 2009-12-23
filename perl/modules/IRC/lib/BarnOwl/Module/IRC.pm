@@ -136,8 +136,36 @@ sub skip_msg {
     return grep {$_ eq $type} split ' ', $skip;
 }
 
-use constant OPTIONAL_CHANNEL => 1;
-use constant REQUIRE_CHANNEL => 2;
+=head2 mk_irc_command SUB FLAGS
+
+Return a subroutine that can be bound as a an IRC command. The
+subroutine will be called with arguments (COMMAND-NAME,
+IRC-CONNECTION, [CHANNEL], ARGV...).
+
+C<IRC-CONNECTION> and C<CHANNEL> will be inferred from arguments to
+the command and the current message if appropriate.
+
+The bitwise C<or> of zero or more C<FLAGS> can be passed in as a
+second argument to alter the behavior of the returned commands:
+
+=over 4
+
+=item C<CHANNEL_ARG>
+
+This command accepts the name of a channel. Pass in the C<CHANNEL>
+argument listed above, and die if no channel argument can be found.
+
+=item C<CHANNEL_OPTIONAL>
+
+Pass the channel argument, but don't die if not present. Only relevant
+with C<CHANNEL_ARG>.
+
+=back
+
+=cut
+
+use constant CHANNEL_ARG        => 1;
+use constant CHANNEL_OPTIONAL   => 2;
 
 sub register_commands {
     BarnOwl::new_command(
@@ -191,7 +219,7 @@ END_DESCR
     );
 
     BarnOwl::new_command(
-        'irc-mode' => mk_irc_command( \&cmd_mode, OPTIONAL_CHANNEL ),
+        'irc-mode' => mk_irc_command( \&cmd_mode, CHANNEL_OPTIONAL|CHANNEL_ARG ),
         {
             summary => 'Change an IRC channel or user mode',
             usage   => 'irc-mode [-a ALIAS] TARGET [+-]MODE OPTIONS',
@@ -215,7 +243,7 @@ END_DESCR
     );
 
     BarnOwl::new_command(
-        'irc-part' => mk_irc_command( \&cmd_part, REQUIRE_CHANNEL ),
+        'irc-part' => mk_irc_command( \&cmd_part, CHANNEL_ARG ),
         {
             summary => 'Leave an IRC channel',
             usage   => 'irc-part [-a ALIAS] #channel',
@@ -240,7 +268,7 @@ END_DESCR
     );
 
     BarnOwl::new_command(
-        'irc-names' => mk_irc_command( \&cmd_names, REQUIRE_CHANNEL ),
+        'irc-names' => mk_irc_command( \&cmd_names, CHANNEL_ARG ),
         {
             summary => 'View the list of users in a channel',
             usage   => 'irc-names [-a ALIAS] #channel',
@@ -293,7 +321,7 @@ END_DESCR
     BarnOwl::new_command( 'irc-stats' => mk_irc_command( \&cmd_stats ) );
 
     BarnOwl::new_command(
-        'irc-topic' => mk_irc_command( \&cmd_topic, REQUIRE_CHANNEL ),
+        'irc-topic' => mk_irc_command( \&cmd_topic, CHANNEL_ARG ),
         {
             summary => 'View or change the topic of an IRC channel',
             usage   => 'irc-topic [-a ALIAS] #channel [TOPIC]',
@@ -546,7 +574,7 @@ sub cmd_quote {
 
 sub mk_irc_command {
     my $sub = shift;
-    my $use_channel = shift || 0;
+    my $flags = shift || 0;
     return sub {
         my $cmd = shift;
         my $conn;
@@ -562,7 +590,7 @@ sub mk_irc_command {
         if(defined($alias)) {
             $conn = get_connection_by_alias($alias);
         }
-        if($use_channel) {
+        if($flags & CHANNEL_ARG) {
             $channel = $ARGV[0];
             if(defined($channel) && $channel =~ /^#/) {
                 if($channels{$channel} && @{$channels{$channel}} == 1) {
@@ -576,7 +604,9 @@ sub mk_irc_command {
             }
         }
 
-        if(!$channel && $use_channel == REQUIRE_CHANNEL) {
+        if(!$channel &&
+           ($flags & CHANNEL_ARG) &&
+           !($flags & CHANNEL_OPTIONAL)) {
             die("Usage: $cmd <channel>\n");
         }
         if(!$conn) {
@@ -590,7 +620,7 @@ sub mk_irc_command {
         if(!$conn) {
             die("You must specify an IRC network using -a.\n");
         }
-        if($use_channel) {
+        if($flags & CHANNEL_ARG) {
             $sub->($cmd, $conn, $channel, @ARGV);
         } else {
             $sub->($cmd, $conn, @ARGV);
