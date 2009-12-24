@@ -32,6 +32,15 @@ if [ ! "$force" ] && [ "$VERS" != "$(head -1 ChangeLog)" ]; then
     die "No ChangeLog entry for version $VERS, aborting."
 fi
 
+head=$(git symbolic-ref HEAD)
+head=${head#refs/heads/}
+
+git rev-parse --verify -q $head >/dev/null 2>&1
+git rev-parse --verify -q origin/$head >/dev/null 2>&1
+if [ -n "$(git rev-list $head..origin/$head)" ]; then
+    die "$head is not up to date. Aborting."
+fi
+
 if ! [ "$no_tag" ]; then
     if git cat-file -t "$TAG" > /dev/null 2>&1; then
         die "Error: Object $TAG already exists."
