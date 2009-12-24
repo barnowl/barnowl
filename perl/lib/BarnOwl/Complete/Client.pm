@@ -166,6 +166,22 @@ sub complete_startup {
     return BarnOwl::Completion::get_completions($new_ctx);
 }
 
+sub complete_bindkey {
+    my $ctx = shift;
+    # bindkey KEYMAP KEYSEQ command COMMAND
+    #   0      1       2      3        4
+    if ($ctx->word == 1) {
+        return complete_keymap();
+    } elsif ($ctx->word == 2) {
+        return;
+    } elsif ($ctx->word == 3) {
+        return ('command');
+    } else {
+        my $new_ctx = $ctx->shift_words(4);
+        return BarnOwl::Completion::get_completions($new_ctx);
+    }
+}
+
 BarnOwl::Completion::register_completer(help    => \&complete_help);
 BarnOwl::Completion::register_completer(filter  => \&complete_filter);
 BarnOwl::Completion::register_completer(filteror        => \&complete_filter_no_flags);
@@ -177,5 +193,6 @@ BarnOwl::Completion::register_completer(getvar  => \&complete_getvar);
 BarnOwl::Completion::register_completer(set     => \&complete_set);
 BarnOwl::Completion::register_completer(unset   => \&complete_set);
 BarnOwl::Completion::register_completer(startup => \&complete_startup);
+BarnOwl::Completion::register_completer(bindkey => \&complete_bindkey);
 
 1;
