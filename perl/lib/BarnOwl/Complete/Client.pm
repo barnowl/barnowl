@@ -5,7 +5,7 @@ use warnings;
 
 package BarnOwl::Complete::Client;
 
-use BarnOwl::Completion::Util qw(complete_flags);
+use BarnOwl::Completion::Util qw(complete_flags complete_file);
 use BarnOwl::Complete::Filter qw(complete_filter_name complete_filter_expr);
 
 my @all_colors = qw(default
@@ -188,6 +188,12 @@ sub complete_print {
     return complete_variable();
 }
 
+sub complete_one_file_arg {
+    my $ctx = shift;
+    return unless $ctx->word == 1;
+    return complete_file($ctx->words->[1]);
+}
+
 BarnOwl::Completion::register_completer(help    => \&complete_help);
 BarnOwl::Completion::register_completer(filter  => \&complete_filter);
 BarnOwl::Completion::register_completer(filteror        => \&complete_filter_no_flags);
@@ -201,5 +207,11 @@ BarnOwl::Completion::register_completer(unset   => \&complete_set);
 BarnOwl::Completion::register_completer(startup => \&complete_startup);
 BarnOwl::Completion::register_completer(bindkey => \&complete_bindkey);
 BarnOwl::Completion::register_completer(print   => \&complete_print);
+
+BarnOwl::Completion::register_completer(source      => \&complete_one_file_arg);
+BarnOwl::Completion::register_completer('load-subs' => \&complete_one_file_arg);
+BarnOwl::Completion::register_completer(loadsubs    => \&complete_one_file_arg);
+BarnOwl::Completion::register_completer(loadloginsubs    => \&complete_one_file_arg);
+BarnOwl::Completion::register_completer(dump        => \&complete_one_file_arg);
 
 1;
