@@ -30,7 +30,7 @@ sub do_complete {
 
     my @words = get_completions($ctx);
     return unless @words;
-    my $prefix = common_prefix(@words);
+    my $prefix = common_prefix(map {completion_value($_)} @words);
 
     if($prefix) {
         insert_completion($ctx, $prefix, scalar @words == 1);
@@ -43,9 +43,39 @@ sub do_complete {
     }
 }
 
+=head1 COMPLETIONS
+
+A COMPLETION is either a simple string, or a reference to an array
+containing two or more values.
+
+In the former case, the string use used for both the text to display,
+as well as the result of the completion, and is assumed to be a full
+completion.
+
+An arrayref completion consists of
+
+    [$display_text, $replacement_value].
+
+$display_text will be printed in the case of ambiguous completions,
+$replacement_value will be used to substitute the value in.
+
+=cut
+
+sub completion_text {
+    my $c = shift;
+    return $c unless ref($c) eq 'ARRAY';
+    return $c->[0];
+}
+
+sub completion_value {
+    my $c = shift;
+    return $c unless ref($c) eq 'ARRAY';
+    return $c->[1];
+}
+
 sub insert_completion {
     my $ctx = shift;
-    my $completion = BarnOwl::quote(shift);
+    my $completion = BarnOwl::quote(completion_value(shift));
     my $unique = shift;
 
     if($unique) {
@@ -65,7 +95,7 @@ sub insert_completion {
 
 sub show_completions {
     my @words = @_;
-    my $all = BarnOwl::quote(@words);
+    my $all = BarnOwl::quote(map {completion_text($_)} @words);
     my $width = BarnOwl::getnumcols();
     if (length($all) > $width-1) {
         $all = substr($all, 0, $width-4) . "...";
@@ -97,7 +127,7 @@ sub get_completions {
         my $cmd = $ctx->words->[0];
         my $word = $ctx->words->[$ctx->word];
         if(exists($completers{$cmd})) {
-            return grep {$_ =~ m{^\Q$word\E}} $completers{$cmd}->($ctx);
+            return grep {completion_value($_) =~ m{^\Q$word\E}} $completers{$cmd}->($ctx);
         }
         return;
     }
