@@ -33,7 +33,8 @@ sub do_complete {
     my $prefix = common_prefix(map {completion_value($_)} @words);
 
     if($prefix) {
-        insert_completion($ctx, $prefix, scalar @words == 1);
+        insert_completion($ctx, $prefix,
+                          scalar @words == 1 && completion_done($words[0]));
     }
 
     if(scalar @words > 1) {
@@ -54,10 +55,12 @@ completion.
 
 An arrayref completion consists of
 
-    [$display_text, $replacement_value].
+    [$display_text, $replacement_value[, $completion_done] ].
 
 $display_text will be printed in the case of ambiguous completions,
-$replacement_value will be used to substitute the value in.
+$replacement_value will be used to substitute the value in. If there
+is only a single completion for a given word, a space will be appended
+after the completion iff $completion_done is true (or missing).
 
 =cut
 
@@ -73,12 +76,18 @@ sub completion_value {
     return $c->[1];
 }
 
+sub completion_done {
+    my $c = shift;
+    return 1 if ref($c) ne 'ARRAY' or @$c < 3;
+    return $c->[2];
+}
+
 sub insert_completion {
     my $ctx = shift;
     my $completion = BarnOwl::quote(completion_value(shift));
-    my $unique = shift;
+    my $done = shift;
 
-    if($unique) {
+    if($done) {
         $completion .= " ";
     }
 
