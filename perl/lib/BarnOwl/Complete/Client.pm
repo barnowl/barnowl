@@ -182,6 +182,12 @@ sub complete_bindkey {
     }
 }
 
+sub complete_print {
+    my $ctx = shift;
+    return unless $ctx->word == 1;
+    return complete_variable();
+}
+
 BarnOwl::Completion::register_completer(help    => \&complete_help);
 BarnOwl::Completion::register_completer(filter  => \&complete_filter);
 BarnOwl::Completion::register_completer(filteror        => \&complete_filter_no_flags);
@@ -194,5 +200,6 @@ BarnOwl::Completion::register_completer(set     => \&complete_set);
 BarnOwl::Completion::register_completer(unset   => \&complete_set);
 BarnOwl::Completion::register_completer(startup => \&complete_startup);
 BarnOwl::Completion::register_completer(bindkey => \&complete_bindkey);
+BarnOwl::Completion::register_completer(print   => \&complete_print);
 
 1;
