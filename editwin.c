@@ -651,6 +651,10 @@ static int owl_editwin_replace_internal(owl_editwin *e, int replace, const char 
     oe_fixup(&x->mark, start, end, change);
   }
 
+  /* recenter if needed */
+  if (start <= e->topindex)
+    owl_editwin_recenter(e);
+
   return change;
 }
 
