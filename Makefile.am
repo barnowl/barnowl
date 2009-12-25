@@ -1,6 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
-GIT_FLAGS=$(if $(wildcard .git),-DGIT_VERSION=$(subst barnowl-,,$(shell git describe --match='barnowl-*' HEAD)))
+GIT_DESCRIPTION := $(if $(wildcard .git),$(shell git describe --match='barnowl-*' HEAD 2>/dev/null))
+GIT_FLAGS := $(if $(GIT_DESCRIPTION),-DGIT_VERSION=$(GIT_DESCRIPTION:barnowl-%=%))
 
 bin_PROGRAMS = barnowl.bin
 check_PROGRAMS = tester perl_tester
