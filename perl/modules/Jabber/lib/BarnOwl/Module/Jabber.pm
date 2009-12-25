@@ -1228,7 +1228,30 @@ sub j2hash {
     $props{error_code} = $j->GetErrorCode() if ( $j->DefinedErrorCode() );
     $props{xml}        = $j->GetXML();
 
-    if ( $jtype eq 'chat' ) {
+    if ( $jtype eq 'groupchat' ) {
+        my $nick = $props{nick} = $from->GetResource();
+        my $room = $props{room} = $from->GetJID('base');
+        $completion_jids{$room} = 1;
+
+        $props{sender} = $nick || $room;
+        $props{recipient} = $room;
+
+        if ( $props{subject} && !$props{body} ) {
+            $props{body} =
+              '[' . $nick . " has set the topic to: " . $props{subject} . "]";
+        }
+    }
+    elsif ( $jtype eq 'headline' ) {
+        ;
+    }
+    elsif ( $jtype eq 'error' ) {
+        $props{body}     = "Error "
+          . $props{error_code}
+          . " sending to "
+          . $props{from} . "\n"
+          . $props{error};
+    }
+    else { # chat, or normal (default)
         $props{private} = 1;
 
         my $connection;
@@ -1255,31 +1278,6 @@ sub j2hash {
         else {
             $completion_jids{ $props{recipient} } = 1;
         }
-    }
-    elsif ( $jtype eq 'groupchat' ) {
-        my $nick = $props{nick} = $from->GetResource();
-        my $room = $props{room} = $from->GetJID('base');
-        $completion_jids{$room} = 1;
-
-        $props{sender} = $nick || $room;
-        $props{recipient} = $room;
-
-        if ( $props{subject} && !$props{body} ) {
-            $props{body} =
-              '[' . $nick . " has set the topic to: " . $props{subject} . "]";
-        }
-    }
-    elsif ( $jtype eq 'headline' ) {
-    }
-    elsif ( $jtype eq 'error' ) {
-        $props{body}     = "Error "
-          . $props{error_code}
-          . " sending to "
-          . $props{from} . "\n"
-          . $props{error};
-    }
-    else { # normal (default)
-        $props{private} = 1;
     }
 
     return %props;
