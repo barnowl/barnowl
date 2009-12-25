@@ -1269,9 +1269,6 @@ sub j2hash {
               '[' . $nick . " has set the topic to: " . $props{subject} . "]";
         }
     }
-    elsif ( $jtype eq 'normal' ) {
-        $props{private} = 1;
-    }
     elsif ( $jtype eq 'headline' ) {
     }
     elsif ( $jtype eq 'error' ) {
@@ -1280,6 +1277,9 @@ sub j2hash {
           . " sending to "
           . $props{from} . "\n"
           . $props{error};
+    }
+    else { # normal (default)
+        $props{private} = 1;
     }
 
     return %props;
