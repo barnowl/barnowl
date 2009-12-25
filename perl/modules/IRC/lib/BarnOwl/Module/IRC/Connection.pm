@@ -321,7 +321,6 @@ sub schedule_reconnect {
                 $self->reconnect( $interval );
             },
         } );
-    $BarnOwl::Module::IRC::reconnect{$self->alias}{conn} = $self;
 }
 
 sub connected {
