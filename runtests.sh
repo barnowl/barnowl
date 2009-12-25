@@ -1,2 +1,2 @@
 #!/bin/sh
-prove t/ --perl ./perl_tester
+HARNESS_PERL=./perl_tester exec prove t/

@@ -135,8 +135,12 @@ sub do_keep_alive_and_auto_away {
     $vars{idletime} = $idletime;
 
     foreach my $jid ( $conn->getJIDs() ) {
+        next if $conn->jidActive($jid);
+        $conn->tryReconnect($jid);
+    }
 
-        next unless $conn->jidActive($jid) or $conn->tryReconnect($jid);
+    foreach my $jid ( $conn->getJIDs() ) {
+        next unless $conn->jidActive($jid);
 
         my $client = $conn->getConnectionFromJID($jid);
         unless($client) {
@@ -209,7 +213,7 @@ sub getSingleBuddyList {
     my $blist = "";
     my $roster = $conn->getRosterFromJID($jid);
     if ($roster) {
-        $blist .= "\n" . BarnOwl::Style::boldify("Jabber roster for $jid\n");
+        $blist .= BarnOwl::Style::boldify("Jabber roster for $jid\n");
 
         my @gTexts = ();
         foreach my $group ( $roster->groups() ) {
@@ -464,33 +468,7 @@ sub do_login {
                         password => $vars{jlogin_password}
                     }
                 );
-                my $roster = $conn->getRosterFromJID($jidStr);
-                $roster->fetch();
-                $client->PresenceSend( priority => 1 );
-		my $fullJid = $client->{SESSION}->{FULLJID} || $jidStr;
-		$conn->renameConnection($jidStr, $fullJid);
-                queue_admin_msg("Connected to jabber as $fullJid");
-                # The remove_io_dispatch() method is called from the
-                # ConnectionManager's removeConnection() method.
-                $client->{fileno} = $client->getSocket()->fileno();
-                #queue_admin_msg("Connected to jabber as $fullJid ($client->{fileno})");
-                BarnOwl::add_io_dispatch($client->{fileno}, 'r', sub { $client->OwlProcess($fullJid) });
-
-                # populate completion from roster.
-                for my $buddy ( $roster->jids('all') ) {
-                    my %jq  = $roster->query($buddy);
-                    my $name = $jq{name} || $buddy->GetUserID();
-                    $completion_jids{$name} = 1;
-                    $completion_jids{$buddy->GetJID()} = 1;
-                }
-                $vars{idletime} |= BarnOwl::getidletime();
-                unless (exists $vars{keepAliveTimer}) {
-                    $vars{keepAliveTimer} = BarnOwl::Timer->new({
-                        'after' => 5,
-                        'interval' => 5,
-                        'cb' => sub { BarnOwl::Module::Jabber::do_keep_alive_and_auto_away(@_) }
-                                                                });
-                }
+                $client->onConnect($conn, $jidStr);
             }
         }
     }
@@ -1058,7 +1036,7 @@ sub process_owl_jwrite {
 
 sub process_incoming_chat_message {
     my ( $sid, $j ) = @_;
-    if ($j->DefinedBody()) {
+    if ($j->DefinedBody() || BarnOwl::getvar('jabber:spew') eq 'on') {
         BarnOwl::queue_message( j2o( $j, { direction => 'in',
                                            sid => $sid } ) );
     }
@@ -1104,7 +1082,7 @@ sub process_incoming_normal_message {
     #	}
     #    }
     #
-    if(BarnOwl::getvar('jabber:spew') eq 'on') {
+    if ($j->DefinedBody() || BarnOwl::getvar('jabber:spew') eq 'on') {
         BarnOwl::queue_message( BarnOwl::Message->new(%jhash) );
     }
 }

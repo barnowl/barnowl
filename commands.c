@@ -320,12 +320,6 @@ const owl_cmd commands_to_init[]
   OWLCMD_INT("recv:setshift", owl_command_set_shift, OWL_CTX_INTERACTIVE,
 	      "scrolls receive window to specified position", "", ""),
 
-  OWLCMD_VOID("recv:shiftleft", owl_command_shift_left, OWL_CTX_INTERACTIVE,
-	      "scrolls receive window to the left", "", ""),
-
-  OWLCMD_VOID("recv:shiftright", owl_command_shift_right, OWL_CTX_INTERACTIVE,
-	      "scrolls receive window to the left", "", ""),
-
   OWLCMD_VOID("recv:pagedown", owl_function_mainwin_pagedown, 
 	      OWL_CTX_INTERACTIVE,
 	      "scrolls down by a page", "", ""),
@@ -1360,16 +1354,6 @@ void owl_command_set_shift(int shift)
   owl_global_set_rightshift(&g, shift);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_global_set_needrefresh(&g);
-}
-
-void owl_command_shift_left(void)
-{
-  owl_function_shift_left();
-}
-
-void owl_command_shift_right(void)
-{
-  owl_function_shift_right();
 }
 
 void owl_command_unsuball(void)

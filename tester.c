@@ -222,7 +222,8 @@ int owl_filter_regtest(void) {
   owl_message m;
   owl_filter *f1, *f2, *f3, *f4, *f5;
 
-  owl_list_create(&(g.filterlist));
+  owl_dict_create(&g.filters);
+  g.filterlist = NULL;
   owl_message_init(&m);
   owl_message_set_type_zephyr(&m);
   owl_message_set_direction_in(&m);

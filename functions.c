@@ -3135,14 +3135,14 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
   }
 #endif
 
-  if(aim && zephyr) {
-      if(owl_perlconfig_is_function("BarnOwl::Hooks::_get_blist")) {
-          char * perlblist = owl_perlconfig_execute("BarnOwl::Hooks::_get_blist()");
-          if(perlblist) {
-              owl_fmtext_append_ztext(&fm, perlblist);
-              owl_free(perlblist);
-          }
+  if (aim && zephyr) {
+    if (owl_perlconfig_is_function("BarnOwl::Hooks::_get_blist")) {
+      char * perlblist = owl_perlconfig_execute("BarnOwl::Hooks::_get_blist()");
+      if (perlblist) {
+        owl_fmtext_append_ztext(&fm, perlblist);
+        owl_free(perlblist);
       }
+    }
   }
 
   if(!interrupted) {

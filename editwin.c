@@ -525,10 +525,8 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
 
   do {
     werase(e->curswin);
-    if (e->topindex == -1 || e->index < e->topindex
-        || (e->index == e->topindex
-            && e->topindex > 0
-            && e->buff[e->topindex-1] != '\n'))
+
+    if (e->topindex == -1 || e->index < e->topindex)
       oe_reframe(e);
 
     line = 0;
@@ -652,6 +650,10 @@ static int owl_editwin_replace_internal(owl_editwin *e, int replace, const char 
     oe_fixup(&x->index, start, end, change);
     oe_fixup(&x->mark, start, end, change);
   }
+
+  /* recenter if needed */
+  if (start <= e->topindex)
+    owl_editwin_recenter(e);
 
   return change;
 }

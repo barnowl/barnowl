@@ -1,3 +1,28 @@
+1.5
+ * Allow ^Z to be rebound. -nelhage@mit.edu
+ * Skip some IRC admin messages by default, controlled by irc:skip -alexmv@mit.edu
+ * Reconnect and re-join channels on IRC disconnect -alexmv@mit.edu
+ * Correct the --with-libzephyr help string to --with-zephyr. -andersk@mit.edu
+ * Improve performance narrowing to certain filters. -nelhage@mit.edu
+ * Add completion for :filter* -adehnert@mit.edu
+ * Fix filter* -adehnert@mit.edu
+ * Mark the current mark with an asterisk -davidben@mit.edu
+ * Complete class names for the 'unsub' command. -nelhage@mit.edu
+ * Make control characters human-readable -kcr@1ts.org
+ * Further complete the show command -davidben@mit.edu
+ * Fix a bug reflowing text in the editwin. -davidben@mit.edu
+ * Reconnect to MUCs when reconnecting to Jabber. -asedeno@mit.edu
+ * Fix spurious trailing newlines in zsigs. -andersk@mit.edu
+ * Fix the behavior of the zsig variable.  -kcr@1ts.org
+ * Drop owl_animate_hack. -asedeno@mit.edu
+ * Add IRC server and channel listing to buddylist -alexmv@mit.edu
+ * Make Jabber try to reconnect when disconnected, at exponential intervals -alexmv@mit.edu
+ * Better documentation for jabberlogout. -asedeno@mit.edu
+ * jabberlogout -a --> jabberlogout -A -asedeno@mit.edu
+ * Change the default jabber resource to 'barnowl' -asedeno@mit.edu
+ * Updated Jabber documentation for consistency. -zhangc@mit.edu
+ * Document :bindkey more clearly. -geofft@mit.edu
+
 1.4
  * Fix description of edit:history-next -davidben@mit.edu
  * Don’t loop infinitely on matching the empty string. -andersk@mit.edu
