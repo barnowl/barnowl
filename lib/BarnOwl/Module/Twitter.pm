@@ -25,11 +25,6 @@ use BarnOwl::Module::Twitter::Handle;
 
 our @twitter_handles = ();
 our $default_handle = undef;
-my $class    = $ENV{USER};
-my $instance = "status";
-my $opcode   = "twitter";
-my $use_reply_to = 0;
-my $next_service_to_poll = 0;
 
 my $desc = <<'END_DESC';
 BarnOwl::Module::Twitter will watch for authentic zephyrs to
@@ -42,7 +37,7 @@ END_DESC
 BarnOwl::new_variable_string(
     'twitter:class',
     {
-        default     => $class,
+        default     => $ENV{USER},
         summary     => 'Class to watch for Twitter messages',
         description => $desc
     }
@@ -50,7 +45,7 @@ BarnOwl::new_variable_string(
 BarnOwl::new_variable_string(
     'twitter:instance',
     {
-        default => $instance,
+        default => 'status',
         summary => 'Instance on twitter:class to watch for Twitter messages.',
         description => $desc
     }
@@ -58,7 +53,7 @@ BarnOwl::new_variable_string(
 BarnOwl::new_variable_string(
     'twitter:opcode',
     {
-        default => $opcode,
+        default => 'twitter',
         summary => 'Opcode for zephyrs that will be sent as twitter updates',
         description => $desc
     }
@@ -173,7 +168,7 @@ sub match {
 
 sub handle_message {
     my $m = shift;
-    ($class, $instance, $opcode) = map{BarnOwl::getvar("twitter:$_")} qw(class instance opcode);
+    my ($class, $instance, $opcode) = map{BarnOwl::getvar("twitter:$_")} qw(class instance opcode);
     if($m->type eq 'zephyr'
        && $m->sender eq BarnOwl::zephyr_getsender()
        && match($m->class, $class)
