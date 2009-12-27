@@ -338,6 +338,7 @@ sub cmd_twitter_retweet {
 
     $account = $m->account unless defined($account);
     find_account($account)->twitter_retweet($m);
+    return;
 }
 
 sub cmd_twitter_follow {
