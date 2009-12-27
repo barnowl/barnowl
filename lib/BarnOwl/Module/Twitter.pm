@@ -22,6 +22,7 @@ use List::Util qw(first);
 use BarnOwl;
 use BarnOwl::Hooks;
 use BarnOwl::Module::Twitter::Handle;
+use BarnOwl::Module::Twitter::Completion;
 
 our @twitter_handles = ();
 our $default_handle = undef;
