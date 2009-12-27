@@ -123,7 +123,7 @@ sub sleep {
     if($self->{cfg}->{poll_for_tweets}) {
         $self->{timer} = BarnOwl::Timer->new({
             after    => $delay,
-            interval => 60,
+            interval => 90,
             cb       => sub { $weak->poll_twitter if $weak }
            });
     }
@@ -131,7 +131,7 @@ sub sleep {
     if($self->{cfg}->{poll_for_dms}) {
         $self->{direct_timer} = BarnOwl::Timer->new({
             after    => $delay,
-            interval => 120,
+            interval => 180,
             cb       => sub { $weak->poll_direct if $weak }
            });
     }
