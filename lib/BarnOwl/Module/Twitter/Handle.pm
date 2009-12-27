@@ -169,7 +169,7 @@ sub twitter_error {
     my $self = shift;
 
     my $ratelimit = eval { $self->{twitter}->rate_limit_status };
-    warn "$@\n" if $@;
+    BarnOwl::debug($@) if $@;
     unless(defined($ratelimit) && ref($ratelimit) eq 'HASH') {
         # Twitter's probably just sucking, try again later.
         $self->sleep(5*60);
@@ -198,7 +198,7 @@ sub poll_twitter {
     BarnOwl::debug("Polling " . $self->{cfg}->{account_nickname});
 
     my $timeline = eval { $self->{twitter}->home_timeline( { since_id => $self->{last_id} } ) };
-    warn "$@\n" if $@;
+    BarnOwl::debug($@) if $@;
     unless(defined($timeline) && ref($timeline) eq 'ARRAY') {
         $self->twitter_error();
         return;
@@ -206,7 +206,7 @@ sub poll_twitter {
 
     if ($self->{cfg}->{show_mentions}) {
         my $mentions = eval { $self->{twitter}->mentions( { since_id => $self->{last_id} } ) };
-        warn "$@\n" if $@;
+        BarnOwl::debug($@) if $@;
         unless (defined($mentions) && ref($mentions) eq 'ARRAY') {
             $self->twitter_error();
             return;
@@ -251,7 +251,7 @@ sub poll_direct {
     BarnOwl::debug("Polling direct for " . $self->{cfg}->{account_nickname});
 
     my $direct = eval { $self->{twitter}->direct_messages( { since_id => $self->{last_direct} } ) };
-    warn "$@\n" if $@;
+    BarnOwl::debug($@) if $@;
     unless(defined($direct) && ref($direct) eq 'ARRAY') {
         $self->twitter_error();
         return;
