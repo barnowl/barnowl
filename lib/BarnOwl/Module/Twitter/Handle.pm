@@ -297,6 +297,7 @@ sub twitter {
             defined($reply_to) ? (in_reply_to_status_id => $reply_to) : ()
            });
     }
+    $self->poll_twitter;
 }
 
 sub twitter_direct {
@@ -345,6 +346,7 @@ sub twitter_retweet {
         die("Cannot retweet a message from a different service.\n");
     }
     $self->twitter_command(retweet => $msg->{status_id});
+    $self->poll_twitter;
 }
 
 sub twitter_follow {
