@@ -288,5 +288,85 @@ test_complete('login ', '',
               [qw[login logout none]],
               \&complete_filter_expr);
 
+# Test complete_files
+use BarnOwl::Completion::Util qw(complete_file);
+use File::Temp;
+use File::Path qw(mkpath);
+
+my $tmpdir = File::Temp::tempdir(CLEANUP => 1);
+
+# Make sure $tmpdir does not have a trailing /
+$tmpdir =~ s{/$}{};
+$ENV{HOME} = $tmpdir;
+
+sub touch {
+    my $path = shift;
+    system("touch", "$path");
+}
+
+mkpath("$tmpdir/.owl/",
+       "$tmpdir/.owl/modules/",
+       "$tmpdir/Public/",
+       "$tmpdir/Private/",
+       "$tmpdir/.ours",
+       "$tmpdir/www");
+touch("$tmpdir/.zephyr.subs");
+touch("$tmpdir/wheee");
+touch("$tmpdir/.owl/startup");
+
+sub completion_value {
+    my $c = shift;
+    return $c unless ref($c) eq 'ARRAY';
+    return $c->[1];
+}
+
+sub test_file {
+    my $spec  = shift;
+    my $pfx   = shift;
+    my $dirs  = shift;
+    my $files = shift;
+
+    my $expect = [ sort {$a->[1] cmp $b->[1]} 
+        ((map {["$_/", defined($pfx)?"$pfx/$_/":"$_/", 0]} @$dirs),
+         (map {["$_",  defined($pfx)?"$pfx/$_" :$_   , 1]} @$files))
+       ];
+
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my @got = complete_file($spec);
+
+    @got = grep {completion_value($_) =~ m{^\Q$spec\E}} @got;
+    @got = sort {completion_value($a) cmp completion_value($b)} @got;
+
+    use Data::Dumper;
+    is_deeply(\@got, $expect);
+}
+
+is_deeply([complete_file("~")], [["~/", "~/", 0]]);
+
+chdir($tmpdir);
+test_file("$tmpdir/", $tmpdir,
+          [qw(Public Private www)],
+          [qw(wheee)]);
+
+test_file("./", ".",
+          [qw(Public Private www)],
+          [qw(wheee)]);
+
+test_file("", undef, [qw(Public Private www)], [qw(wheee)]);
+
+test_file("./.owl/", "./.owl",
+          [qw(modules)],
+          [qw(startup)]);
+
+test_file("~/", "~",
+          [qw(Public Private www)],
+          [qw(wheee)]);
+
+test_file("P", undef, [qw(Public Private)], []);
+
+test_file("$tmpdir/.", $tmpdir,
+          [qw(. .. .owl .ours)],
+          [qw(.zephyr.subs)]);
 1;
 
