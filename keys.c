@@ -311,12 +311,6 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
 
   BIND_CMD("C-c",  "",                "no effect in this mode");
   BIND_CMD("C-g",  "",                "no effect in this mode");
-
-
-  /**********************/
-
-  owl_function_activate_keymap("recv");
-
 }
 
 

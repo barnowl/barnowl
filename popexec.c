@@ -26,6 +26,7 @@ owl_popexec *owl_popexec_new(const char *command)
   pe->vwin=v=owl_global_get_viewwin(&g);
 
   owl_popwin_up(pw);
+  owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless");
   owl_viewwin_init_text(v, owl_popwin_get_curswin(pw),
 			owl_popwin_get_lines(pw), owl_popwin_get_cols(pw),
 			"");

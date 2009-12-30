@@ -537,7 +537,10 @@ int main(int argc, char **argv, char **env)
 
   /* Initialize perl */
   owl_function_debugmsg("startup: processing config file");
-  owl_context_set_readconfig(owl_global_get_context(&g));
+
+  owl_global_pop_context(&g);
+  owl_global_push_context(&g, OWL_CTX_READCONFIG, NULL, NULL);
+
   perlerr=owl_perlconfig_initperl(opts.configfile, &argc, &argv, &env);
   if (perlerr) {
     endwin();
@@ -611,7 +614,9 @@ int main(int argc, char **argv, char **env)
       owl_function_error("No such style: %s", owl_global_get_default_style(&g));
 
   owl_function_debugmsg("startup: setting context interactive");
-  owl_context_set_interactive(owl_global_get_context(&g));
+
+  owl_global_pop_context(&g);
+  owl_global_push_context(&g, OWL_CTX_READCONFIG|OWL_CTX_RECV, NULL, "recv");
 
   owl_select_add_timer(180, 180, owl_zephyr_buddycheck_timer, NULL, NULL);
 

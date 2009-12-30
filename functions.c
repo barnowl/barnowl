@@ -300,6 +300,7 @@ void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin 
 
   owl_editwin_set_cbdata(owl_global_get_typwin(&g), data);
   owl_global_set_buffercallback(&g, callback);
+  owl_global_push_context(&g, OWL_CTX_EDITMULTI, e, "editmulti");
 }
 
 static void owl_function_write_setup(const char *line, const char *noun, void (*callback)(owl_editwin *))
@@ -1300,6 +1301,7 @@ void owl_function_popless_text(const char *text)
   v=owl_global_get_viewwin(&g);
 
   owl_popwin_up(pw);
+  owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless");
   owl_viewwin_init_text(v, owl_popwin_get_curswin(pw),
 			owl_popwin_get_lines(pw), owl_popwin_get_cols(pw),
 			text);
@@ -1317,6 +1319,7 @@ void owl_function_popless_fmtext(const owl_fmtext *fm)
   v=owl_global_get_viewwin(&g);
 
   owl_popwin_up(pw);
+  owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless");
   owl_viewwin_init_fmtext(v, owl_popwin_get_curswin(pw),
 		   owl_popwin_get_lines(pw), owl_popwin_get_cols(pw),
 		   fm);
@@ -1939,8 +1942,7 @@ void owl_function_start_command(const char *line)
   owl_editwin_insert_string(tw, line);
   owl_editwin_redisplay(tw, 0);
 
-  owl_context_set_editline(owl_global_get_context(&g), tw);
-  owl_function_activate_keymap("editline");
+  owl_global_push_context(&g, OWL_CTX_EDITLINE, tw, "editline");
 }
 
 void owl_function_start_question(const char *line)
@@ -1956,8 +1958,7 @@ void owl_function_start_question(const char *line)
 
   owl_editwin_redisplay(tw, 0);
 
-  owl_context_set_editresponse(owl_global_get_context(&g), tw);
-  owl_function_activate_keymap("editresponse");
+  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editline");
 }
 
 void owl_function_start_password(const char *line)
@@ -1974,8 +1975,7 @@ void owl_function_start_password(const char *line)
 
   owl_editwin_redisplay(tw, 0);
 
-  owl_context_set_editresponse(owl_global_get_context(&g), tw);
-  owl_function_activate_keymap("editresponse");
+  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse");
 }
 
 char *owl_function_exec(int argc, const char *const *argv, const char *buff, int type)
@@ -2829,13 +2829,6 @@ void owl_function_punt(const char *filter, int direction)
   /* If we're punting, add the filter to the global punt list */
   if (direction==0) {
     owl_list_append_element(fl, f);
-  }
-}
-
-void owl_function_activate_keymap(const char *keymap)
-{
-  if (!owl_keyhandler_activate(owl_global_get_keyhandler(&g), keymap)) {
-    owl_function_error("Unable to activate keymap '%s'", keymap);
   }
 }
 
