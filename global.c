@@ -28,8 +28,9 @@ void owl_global_init(owl_global *g) {
     g->thishost=owl_strdup(hent->h_name);
   }
 
-  owl_context_init(&g->ctx);
-  owl_context_set_startup(&g->ctx);
+  g->context_stack = NULL;
+  owl_global_push_context(g, OWL_CTX_STARTUP, NULL, NULL);
+
   g->curmsg=0;
   g->topmsg=0;
   g->markedmsgid=-1;
@@ -166,9 +167,45 @@ void _owl_global_setup_windows(owl_global *g) {
 }
 
 owl_context *owl_global_get_context(owl_global *g) {
-  return(&g->ctx);
+  if (!g->context_stack)
+    return NULL;
+  return g->context_stack->data;
 }
-			 
+
+static void owl_global_lookup_keymap(owl_global *g) {
+  owl_context *c = owl_global_get_context(g);
+  if (!c || !c->keymap)
+    return;
+
+  if (!owl_keyhandler_activate(owl_global_get_keyhandler(g), c->keymap)) {
+    owl_function_error("Unable to activate keymap '%s'", c->keymap);
+  }
+}
+
+void owl_global_push_context(owl_global *g, int mode, void *data, const char *keymap) {
+  owl_context *c;
+  if (!(mode & OWL_CTX_MODE_BITS))
+    mode |= OWL_CTX_INTERACTIVE;
+  c = owl_malloc(sizeof *c);
+  c->mode = mode;
+  c->data = data;
+  c->keymap = owl_strdup(keymap);
+  g->context_stack = g_list_prepend(g->context_stack, c);
+  owl_global_lookup_keymap(g);
+}
+
+void owl_global_pop_context(owl_global *g) {
+  owl_context *c;
+  if (!g->context_stack)
+    return;
+  c = owl_global_get_context(g);
+  g->context_stack = g_list_delete_link(g->context_stack,
+                                        g->context_stack);
+  owl_free(c->keymap);
+  owl_free(c);
+  owl_global_lookup_keymap(g);
+}
+
 int owl_global_get_lines(const owl_global *g) {
   return(g->lines);
 }

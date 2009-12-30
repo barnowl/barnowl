@@ -289,6 +289,7 @@ typedef owl_dict owl_cmddict;	/* dict of commands */
 typedef struct _owl_context {
   int   mode;
   void *data;		/* determined by mode */
+  char *keymap;
 } owl_context;
 
 typedef struct _owl_cmd {	/* command */
@@ -543,7 +544,7 @@ typedef struct _owl_global {
   owl_list puntlist;
   owl_vardict vars;
   owl_cmddict cmds;
-  owl_context ctx;
+  GList *context_stack;
   owl_errqueue errqueue;
   int lines, cols;
   int curmsg, topmsg;

@@ -17,6 +17,8 @@ int main(int argc, char **argv, char **env)
 {
   owl_errqueue_init(owl_global_get_errqueue(&g));
   owl_obarray_init(&(g.obarray));
+  g.context_stack = NULL;
+  owl_global_push_context(&g, OWL_CTX_STARTUP, NULL, NULL);
 
   numtests = 0;
   int numfailures=0;
