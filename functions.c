@@ -347,27 +347,7 @@ void owl_function_aimwrite_setup(const char *line)
 
 void owl_function_loopwrite_setup(void)
 {
-  owl_editwin *e;
-
-  /* create and setup the editwin */
-  e=owl_global_get_typwin(&g);
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE, owl_global_get_msg_history(&g));
-
-  if (!owl_global_get_lockout_ctrld(&g)) {
-    owl_function_makemsg("Type your message below.  End with ^D or a dot on a line by itself.  ^C will quit.");
-  } else {
-    owl_function_makemsg("Type your message below.  End with a dot on a line by itself.  ^C will quit.");
-  }
-
-  owl_editwin_clear(e);
-  owl_editwin_set_dotsend(e);
-  owl_editwin_set_locktext(e, "----> loopwrite\n");
-
-  /* make it active */
-  owl_global_set_typwin_active(&g);
-
-  owl_global_set_buffercommand(&g, "loopwrite");
-  owl_global_set_buffercallback(&g, &owl_callback_loopwrite);
+  owl_function_write_setup("loopwrite", "message", owl_callback_loopwrite);
 }
 
 void owl_callback_zwrite(owl_editwin *e) {
