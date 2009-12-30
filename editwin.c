@@ -250,7 +250,6 @@ void owl_editwin_set_locktext(owl_editwin *e, const char *text)
   e->buff[e->bufflen] = 0;
   e->lock=e->bufflen;
   oe_set_index(e, e->lock);
-  e->topindex = 0;
   owl_editwin_redisplay(e, 0);
 }
 
