@@ -324,7 +324,7 @@ sub cmd_twitter_atreply {
     my $id   = shift;
     my $account = find_account_default(shift);
 
-    $prefix = "@\$user ";
+    $prefix = "\@$user ";
     BarnOwl::start_edit_win("Reply to \@" . $user . ($account->nickname ? (" on " . $account->nickname) : ""),
                             sub { $account->twitter_atreply($user, $id, shift) });
 }
