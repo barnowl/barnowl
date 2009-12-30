@@ -250,6 +250,7 @@ void owl_editwin_set_locktext(owl_editwin *e, const char *text)
   e->buff[e->bufflen] = 0;
   e->lock=e->bufflen;
   oe_set_index(e, e->lock);
+  e->topindex = 0;
   owl_editwin_redisplay(e, 0);
 }
 
@@ -469,7 +470,7 @@ static int oe_find_display_line(owl_editwin *e, int *x, int index)
 
 static void oe_reframe(owl_editwin *e) {
   oe_excursion x;
-  int goal = e->winlines / 2;
+  int goal = 1 + e->winlines / 2;
   int index;
   int count = 0;
   int n, i;
