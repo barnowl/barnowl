@@ -1,4 +1,6 @@
 1.5
+ * Show the prompt in short editwins when scrolling back to the start. -nelhage@mit.edu
+ * Improve handling of some Jabber messages. -asedeno@mit.edu
  * Allow ^Z to be rebound. -nelhage@mit.edu
  * Skip some IRC admin messages by default, controlled by irc:skip -alexmv@mit.edu
  * Reconnect and re-join channels on IRC disconnect -alexmv@mit.edu
