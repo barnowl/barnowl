@@ -637,7 +637,7 @@ void owl_perlconfig_perl_timer(owl_timer *t, void *data)
   SPAGAIN;
 
   if (SvTRUE(ERRSV)) {
-    owl_function_error("Error in calback: '%s'", SvPV_nolen(ERRSV));
+    owl_function_error("Error in callback: '%s'", SvPV_nolen(ERRSV));
     sv_setsv (ERRSV, &PL_sv_undef);
   }
 
