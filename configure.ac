@@ -127,5 +127,5 @@ AC_SUBST(XSUBPPFLAGS)
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
-AC_CONFIG_FILES([Makefile libfaim/Makefile perl/modules/Makefile])
+AC_CONFIG_FILES([Makefile libfaim/Makefile perl/Makefile perl/modules/Makefile])
 AC_OUTPUT

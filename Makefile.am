@@ -78,4 +78,4 @@ install-exec-hook:
 	mv -f $(DESTDIR)$(bindir)/$(call do_transform,barnowl.bin) \
 	      $(DESTDIR)$(bindir)/$(call do_transform,barnowl)
 
-SUBDIRS = libfaim/ perl/modules/
+SUBDIRS = libfaim perl
