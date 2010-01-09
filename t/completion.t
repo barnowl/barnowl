@@ -345,6 +345,7 @@ sub test_file {
 
 is_deeply([complete_file("~")], [["~/", "~/", 0]]);
 
+END { chdir("/"); }
 chdir($tmpdir);
 test_file("$tmpdir/", $tmpdir,
           [qw(Public Private www)],
