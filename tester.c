@@ -73,6 +73,10 @@ int owl_util_regtest(void)
 
   FAIL_UNLESS("expand_tabs 3",
               !strcmp("                2 tabs", owl_text_expand_tabs("\t\t2 tabs")));
+  FAIL_UNLESS("expand_tabs 4",
+	      !strcmp("α       ααααααα!        ", owl_text_expand_tabs("α\tααααααα!\t")));
+  FAIL_UNLESS("expand_tabs 5",
+	      !strcmp("Ａ      ＡＡＡ!!        ", owl_text_expand_tabs("Ａ\tＡＡＡ!!\t")));
 
   FAIL_UNLESS("skiptokens 1",
               !strcmp("world", skiptokens("hello world", 1)));

@@ -130,33 +130,55 @@ char *owl_text_htmlstrip(const char *in)
 /* Caller must free return */
 char *owl_text_expand_tabs(const char *in)
 {
-  int ntabs = 0;
+  int len = 0;
   const char *p = in;
   char *ret, *out;
   int col;
 
+  col = 0;
   while(*p) {
-    if (*(p++) == '\t') ntabs++;
+    gunichar c = g_utf8_get_char(p);
+    char *q = g_utf8_next_char(p);
+    switch (c) {
+    case '\t':
+      do { len++; col++; } while (col % OWL_TAB_WIDTH);
+      p = q;
+      continue;
+    case '\n':
+      col = 0;
+      break;
+    default:
+      col += mk_wcwidth(c);
+      break;
+    }
+    len += q - p;
+    p = q;
   }
 
-  ret = owl_malloc(strlen(in) + 1 + OWL_TAB_WIDTH * ntabs);
+  ret = owl_malloc(len + 1);
 
   p = in;
   out = ret;
 
   col = 0;
   while(*p) {
-    switch(*p) {
+    gunichar c = g_utf8_get_char(p);
+    char *q = g_utf8_next_char(p);
+    switch (c) {
     case '\t':
       do {*(out++) = ' '; col++; } while (col % OWL_TAB_WIDTH);
-      break;
+      p = q;
+      continue;
     case '\n':
-      col = -1;
+      col = 0;
+      break;
     default:
-      col++;
-      *(out++) = *p;
+      col += mk_wcwidth(c);
+      break;
     }
-    p++;
+    memcpy(out, p, q - p);
+    out += q - p;
+    p = q;
   }
 
   *out = 0;
