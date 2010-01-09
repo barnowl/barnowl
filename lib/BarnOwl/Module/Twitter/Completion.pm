@@ -53,3 +53,5 @@ BarnOwl::Completion::register_completer('twitter-atreply' => \&complete_twitter_
 BarnOwl::Completion::register_completer('twitter-unfollow' => \&complete_twitter_user_account);
 
 $BarnOwl::Hooks::newMessage->add("BarnOwl::Module::Twitter::Completion::on_message");
+
+1;
