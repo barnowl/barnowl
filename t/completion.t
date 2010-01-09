@@ -309,7 +309,8 @@ mkpath("$tmpdir/.owl/",
        "$tmpdir/Public/",
        "$tmpdir/Private/",
        "$tmpdir/.ours",
-       "$tmpdir/www");
+       "$tmpdir/www",
+     {mode => 0700});
 touch("$tmpdir/.zephyr.subs");
 touch("$tmpdir/wheee");
 touch("$tmpdir/.owl/startup");
