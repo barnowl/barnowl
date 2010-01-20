@@ -178,7 +178,7 @@ start_question(line, callback)
 
 		owl_function_start_question(line);
 
-		owl_editwin_set_cbdata(owl_global_get_typwin(&g), SvREFCNT_inc(callback));
+		owl_editwin_set_cbdata(owl_global_get_typwin(&g), newSVsv(callback));
 		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
 	}
 
@@ -194,7 +194,7 @@ start_password(line, callback)
 
 		owl_function_start_password(line);
 
-		owl_editwin_set_cbdata(owl_global_get_typwin(&g), SvREFCNT_inc(callback));
+		owl_editwin_set_cbdata(owl_global_get_typwin(&g), newSVsv(callback));
 		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
 	}
 
@@ -207,7 +207,7 @@ start_edit_win(line, callback)
 		if(!SV_IS_CODEREF(callback))
 			croak("Callback must be a subref");
 
-		owl_function_start_edit_win(line, owl_perlconfig_edit_callback, SvREFCNT_inc(callback));
+		owl_function_start_edit_win(line, owl_perlconfig_edit_callback, newSVsv(callback));
 	}
 
 
@@ -278,7 +278,7 @@ create_style(name, object)
      CODE:
 	{
 		s = owl_malloc(sizeof(owl_style));
-		owl_style_create_perl(s, name, object);
+		owl_style_create_perl(s, name, sv_2mortal(newSVsv(object)));
 		owl_global_add_style(&g, s);
 	}
 
@@ -443,7 +443,7 @@ new_command(name, func, summary, usage, description)
 			croak("Command function must be a coderef!");
 		}
 		cmd.name = name;
-		cmd.cmd_perl = SvREFCNT_inc(func);
+		cmd.cmd_perl = newSVsv(func);
 		cmd.summary = summary;
 		cmd.usage = usage;
 		cmd.description = description;
@@ -503,7 +503,7 @@ add_io_dispatch(fd, mode, cb)
 	int mode
 	SV * cb
 	CODE:
-	owl_select_add_perl_io_dispatch(fd, mode, SvREFCNT_inc(cb));
+	owl_select_add_perl_io_dispatch(fd, mode, newSVsv(cb));
 
 IV
 add_timer(after, interval, cb)
