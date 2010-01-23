@@ -278,7 +278,7 @@ create_style(name, object)
      CODE:
 	{
 		s = owl_malloc(sizeof(owl_style));
-		owl_style_create_perl(s, name, sv_2mortal(newSVsv(object)));
+		owl_style_create_perl(s, name, newSVsv(object));
 		owl_global_add_style(&g, s);
 	}
 

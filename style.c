@@ -1,10 +1,11 @@
 #define OWL_PERL
 #include "owl.h"
 
+/* Assumes owenership of one existing ref on `obj`*/
 void owl_style_create_perl(owl_style *s, const char *name, SV *obj)
 {
   s->name=owl_strdup(name);
-  s->perlobj = SvREFCNT_inc(obj);
+  s->perlobj = obj;
 }
 
 int owl_style_matches_name(const owl_style *s, const char *name)
