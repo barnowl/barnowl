@@ -424,7 +424,6 @@ typedef struct _owl_filter {
   owl_filterelement * root;
   int fgcolor;
   int bgcolor;
-  int cachedmsgid;  /* cached msgid: should move into view eventually */
 } owl_filter;
 
 typedef struct _owl_view {
@@ -432,6 +431,7 @@ typedef struct _owl_view {
   owl_filter *filter;
   owl_messagelist ml;
   const owl_style *style;
+  int cachedmsgid;
 } owl_view;
 
 typedef struct _owl_history {
