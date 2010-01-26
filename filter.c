@@ -23,7 +23,6 @@ owl_filter *owl_filter_new(const char *name, int argc, const char *const *argv)
   f->name=owl_strdup(name);
   f->fgcolor=OWL_COLOR_DEFAULT;
   f->bgcolor=OWL_COLOR_DEFAULT;
-  f->cachedmsgid=-1;
 
   /* first take arguments that have to come first */
   /* set the color */
@@ -186,16 +185,6 @@ void owl_filter_set_bgcolor(owl_filter *f, int color)
 int owl_filter_get_bgcolor(const owl_filter *f)
 {
   return(f->bgcolor);
-}
-
-void owl_filter_set_cachedmsgid(owl_filter *f, int cachedmsgid)
-{
-  f->cachedmsgid=cachedmsgid;
-}
-
-int owl_filter_get_cachedmsgid(const owl_filter *f)
-{
-  return(f->cachedmsgid);
 }
 
 /* return 1 if the message matches the given filter, otherwise

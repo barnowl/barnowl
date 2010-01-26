@@ -125,16 +125,14 @@ int owl_view_get_nearest_to_saved(const owl_view *v)
 {
   int cachedid;
 
-  cachedid=owl_filter_get_cachedmsgid(v->filter);
+  cachedid = v->cachedmsgid;
   if (cachedid<0) return(0);
   return (owl_view_get_nearest_to_msgid(v, cachedid));
 }
 
-/* saves the current message position in the filter so it can 
- * be restored later if we switch back to this filter. */
 void owl_view_save_curmsgid(owl_view *v, int curid)
 {
-  owl_filter_set_cachedmsgid(v->filter, curid);
+  v->cachedmsgid = curid;
 }
 
 /* fmtext should already be initialized */
