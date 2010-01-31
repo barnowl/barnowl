@@ -373,6 +373,15 @@ sub cmd_count_chars {
     return $len;
 }
 
+eval {
+    $BarnOwl::Hooks::receiveMessage->add("BarnOwl::Module::Twitter::handle_message");
+};
+if($@) {
+    $BarnOwl::Hooks::receiveMessage->add(\&handle_message);
+}
+
+
+
 BarnOwl::filter(qw{twitter type ^twitter$});
 
 1;
