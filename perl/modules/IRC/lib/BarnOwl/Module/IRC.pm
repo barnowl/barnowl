@@ -452,29 +452,35 @@ sub cmd_msg {
 sub process_msg {
     my $conn = shift;
     my $to = shift;
-    my $body = shift;
-    # Strip whitespace. In the future -- send one message/line?
-    $body =~ tr/\n\r/  /;
-    if ($body =~ /^\/me (.*)/) {
-        $conn->conn->me($to, Encode::encode('utf-8', $1));
-        $body = '* '.$conn->nick.' '.$1;
-    } else {
-        $conn->conn->privmsg($to, Encode::encode('utf-8', $body));
+    my $fullbody = shift;
+    my @msgs;
+    # Require the user to send in paragraphs (double-newline between) to
+    # actually send multiple PRIVMSGs, in order to play nice with autofill.
+    $fullbody =~ s/\r//g;
+    @msgs = split "\n\n", $fullbody;
+    map { tr/\n/ / } @msgs;
+    for my $body (@msgs) {
+	if ($body =~ /^\/me (.*)/) {
+	    $conn->conn->me($to, Encode::encode('utf-8', $1));
+	    $body = '* '.$conn->nick.' '.$1;
+	} else {
+	    $conn->conn->privmsg($to, Encode::encode('utf-8', $body));
+	}
+	my $msg = BarnOwl::Message->new(
+	    type        => 'IRC',
+	    direction   => is_private($to) ? 'out' : 'in',
+	    server      => $conn->server,
+	    network     => $conn->alias,
+	    recipient   => $to,
+	    body        => $body,
+	    sender      => $conn->nick,
+	    is_private($to) ?
+	      (isprivate  => 'true') : (channel => $to),
+	    replycmd    => BarnOwl::quote('irc-msg',  '-a', $conn->alias, $to),
+	    replysendercmd => BarnOwl::quote('irc-msg', '-a', $conn->alias, $to),
+	);
+	BarnOwl::queue_message($msg);
     }
-    my $msg = BarnOwl::Message->new(
-        type        => 'IRC',
-        direction   => is_private($to) ? 'out' : 'in',
-        server      => $conn->server,
-        network     => $conn->alias,
-        recipient   => $to,
-        body        => $body,
-        sender      => $conn->nick,
-        is_private($to) ?
-          (isprivate  => 'true') : (channel => $to),
-        replycmd    => BarnOwl::quote('irc-msg',  '-a', $conn->alias, $to),
-        replysendercmd => BarnOwl::quote('irc-msg', '-a', $conn->alias, $to),
-       );
-    BarnOwl::queue_message($msg);
     return;
 }
 
