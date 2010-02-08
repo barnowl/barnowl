@@ -124,8 +124,6 @@ char *owl_zcrypt_decrypt_with_key(const char *in, const char *keystring)
     strncat(out, (const char *)output, 8);
   }
 
-  if (out[0] && out[strlen(out) - 1] != '\n')
-    strcat(out, "\n");
   return out;
 }
 
