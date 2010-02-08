@@ -62,7 +62,7 @@ char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *ins
 #define M_RANDOMIZE       4
 #define M_SETKEY          5
 
-static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule *schedule) {
+static void owl_zcrypt_string_to_schedule(const char *keystring, des_key_schedule *schedule) {
 #ifdef HAVE_KERBEROS_IV
   des_cblock key;
 #else
@@ -79,13 +79,8 @@ static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule *sch
  */
 char *owl_zcrypt_decrypt(const char *in, const char *class, const char *instance)
 {
-  const char *inptr, *endptr;
   char *fname, keystring[MAX_KEY];
   FILE *fkey;
-  des_key_schedule schedule;
-  char *out;
-  unsigned char input[8], output[8];
-  int i, c1, c2;
   
   fname=GetZephyrVarKeyFile("zcrypt", class, instance);
   if (!fname) return NULL;
@@ -97,7 +92,19 @@ char *owl_zcrypt_decrypt(const char *in, const char *class, const char *instance
   }
   fclose(fkey);
 
+  return owl_zcrypt_decrypt_with_key(in, keystring);
+}
+
+char *owl_zcrypt_decrypt_with_key(const char *in, const char *keystring)
+{
+  const char *inptr, *endptr;
+  char *out;
+  des_key_schedule schedule;
+  unsigned char input[8], output[8];
+  int i, c1, c2;
+
   out = owl_malloc(strlen(in) * 16 + 20);
+
   strcpy(out, "");
 
   output[0] = '\0';    /* In case no message at all                 */
@@ -126,12 +133,6 @@ char *owl_zcrypt_encrypt(const char *in, const char *class, const char *instance
 {
   char *fname, keystring[MAX_KEY];
   FILE *fkey;
-  des_key_schedule schedule;
-  char *out;
-  unsigned char input[8], output[8];
-  int size, length, i;
-  const char *inbuff = NULL, *inptr;
-  int num_blocks=0, last_block_size=0;
 
   fname=GetZephyrVarKeyFile("zcrypt", class, instance);
   if (!fname) return NULL;
@@ -142,6 +143,18 @@ char *owl_zcrypt_encrypt(const char *in, const char *class, const char *instance
     return NULL;
   }
   fclose(fkey);
+
+  return owl_zcrypt_encrypt_with_key(in, keystring);
+}
+
+char *owl_zcrypt_encrypt_with_key(const char *in, const char *keystring)
+{
+  des_key_schedule schedule;
+  char *out;
+  unsigned char input[8], output[8];
+  int size, length, i;
+  const char *inbuff = NULL, *inptr;
+  int num_blocks=0, last_block_size=0;
 
   owl_zcrypt_string_to_schedule(keystring, &schedule);
 
