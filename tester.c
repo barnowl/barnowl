@@ -12,6 +12,9 @@ int owl_variable_regtest(void);
 int owl_filter_regtest(void);
 int owl_obarray_regtest(void);
 int owl_editwin_regtest(void);
+#ifdef OWL_ENABLE_ZCRYPT
+int owl_zcrypt_regtest(void);
+#endif
 
 int main(int argc, char **argv, char **env)
 {
@@ -32,6 +35,9 @@ int main(int argc, char **argv, char **env)
   numfailures += owl_filter_regtest();
   numfailures += owl_obarray_regtest();
   numfailures += owl_editwin_regtest();
+#ifdef OWL_ENABLE_ZCRYPT
+  numfailures += owl_zcrypt_regtest();
+#endif
   if (numfailures) {
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
@@ -360,3 +366,24 @@ int owl_editwin_regtest(void) {
 
   return numfailed;
 }
+
+#ifdef OWL_ENABLE_ZCRYPT
+int owl_zcrypt_regtest(void)
+{
+  int numfailed = 0;
+  char *encrypted, *decrypted;
+
+  printf("# BEGIN testing owl_zcrypt\n");
+
+  encrypted = owl_zcrypt_encrypt_with_key("Hello, world!", "seekritkey");
+  FAIL_UNLESS("zcrypt encrypt", strcmp(encrypted, "TLJMKQSIGKSJRIJRSIIPIJFFULKRJSPK") == 0);
+  decrypted = owl_zcrypt_decrypt_with_key(encrypted, "seekritkey");
+  FAIL_UNLESS("zcrypt decrypt", strcmp(decrypted, "Hello, world!") == 0);
+  owl_free(decrypted);
+  owl_free(encrypted);
+
+  printf("# END testing owl_zcrypt (%d failures)\n", numfailed);
+
+  return numfailed;
+}
+#endif
