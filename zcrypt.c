@@ -62,7 +62,7 @@ char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *ins
 #define M_RANDOMIZE       4
 #define M_SETKEY          5
 
-static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule schedule) {
+static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule *schedule) {
 #ifdef HAVE_KERBEROS_IV
   des_cblock key;
 #else
@@ -70,7 +70,7 @@ static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule sche
 #endif
 
   des_string_to_key(keystring, key);
-  des_key_sched(key, schedule);
+  des_key_sched(key, *schedule);
 }
 
 /* The 'owl_zcrypt_decrypt' function was written by kretch for Owl.
@@ -102,7 +102,7 @@ int owl_zcrypt_decrypt(char *out, const char *in, const char *class, const char 
 
   output[0] = '\0';    /* In case no message at all                 */
 
-  owl_zcrypt_string_to_schedule(keystring, schedule);
+  owl_zcrypt_string_to_schedule(keystring, &schedule);
 
   inptr=in;
   endptr=in+strlen(in)-1;
@@ -141,7 +141,7 @@ int owl_zcrypt_encrypt(char *out, const char *in, const char *class, const char 
   }
   fclose(fkey);
 
-  owl_zcrypt_string_to_schedule(keystring, schedule);
+  owl_zcrypt_string_to_schedule(keystring, &schedule);
 
   inbuff=in;
   length=strlen(inbuff);
