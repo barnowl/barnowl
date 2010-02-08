@@ -840,14 +840,11 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
 #ifdef OWL_ENABLE_ZCRYPT
   /* if zcrypt is enabled try to decrypt the message */
   if (owl_global_is_zcrypt(&g) && !strcasecmp(n->z_opcode, "crypt")) {
-    char *out;
-    int ret;
-
-    out=owl_malloc(strlen(owl_message_get_body(m))*16+20);
-    ret=owl_zcrypt_decrypt(out, owl_message_get_body(m), owl_message_get_class(m), owl_message_get_instance(m));
-    if (ret == 0)
+    char *out = owl_zcrypt_decrypt(owl_message_get_body(m), owl_message_get_class(m), owl_message_get_instance(m));
+    if (out) {
       owl_message_set_body(m, out);
-    owl_free(out);
+      owl_free(out);
+    }
   }
 #endif  
 }

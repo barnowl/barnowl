@@ -75,29 +75,29 @@ static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule *sch
 
 /* The 'owl_zcrypt_decrypt' function was written by kretch for Owl.
  * Decrypt the message in 'in' on class 'class' and instance
- * 'instance' and leave the result in 'out'.  Out must be a buffer
- * allocated by the caller.
- *
- * return 0 on success, otherwise -1
+ * 'instance'.  Return must be freed by caller.
  */
-int owl_zcrypt_decrypt(char *out, const char *in, const char *class, const char *instance) {
+char *owl_zcrypt_decrypt(const char *in, const char *class, const char *instance)
+{
   const char *inptr, *endptr;
   char *fname, keystring[MAX_KEY];
   FILE *fkey;
   des_key_schedule schedule;
+  char *out;
   unsigned char input[8], output[8];
   int i, c1, c2;
   
   fname=GetZephyrVarKeyFile("zcrypt", class, instance);
-  if (!fname) return(-1);
+  if (!fname) return NULL;
   fkey=fopen(fname, "r");
-  if (!fkey) return(-1);
+  if (!fkey) return NULL;
   if (!fgets(keystring, MAX_KEY-1, fkey)) {
     fclose(fkey);
-    return -1;
+    return NULL;
   }
   fclose(fkey);
 
+  out = owl_malloc(strlen(in) * 16 + 20);
   strcpy(out, "");
 
   output[0] = '\0';    /* In case no message at all                 */
@@ -119,29 +119,41 @@ int owl_zcrypt_decrypt(char *out, const char *in, const char *class, const char 
 
   if (out[0] && out[strlen(out) - 1] != '\n')
     strcat(out, "\n");
-  return(0);
+  return out;
 }
 
-int owl_zcrypt_encrypt(char *out, const char *in, const char *class, const char *instance) {
+char *owl_zcrypt_encrypt(const char *in, const char *class, const char *instance)
+{
   char *fname, keystring[MAX_KEY];
   FILE *fkey;
   des_key_schedule schedule;
+  char *out;
   unsigned char input[8], output[8];
   int size, length, i;
   const char *inbuff = NULL, *inptr;
   int num_blocks=0, last_block_size=0;
 
   fname=GetZephyrVarKeyFile("zcrypt", class, instance);
-  if (!fname) return(-1);
+  if (!fname) return NULL;
   fkey=fopen(fname, "r");
-  if (!fkey) return(-1);
+  if (!fkey) return NULL;
   if (!fgets(keystring, MAX_KEY-1, fkey)) {
     fclose(fkey);
-    return -1;
+    return NULL;
   }
   fclose(fkey);
 
   owl_zcrypt_string_to_schedule(keystring, &schedule);
+
+  /* Allocate enough space for the crypted message. For each byte of
+   * the message, the encoded cyphertext will have two bytes. Block
+   * size is 8 bytes of input, or 16 bytes of output, so make sure we
+   * have at least one block worth of space allocated. If the message
+   * is empty, no blocks are sent, but we still allocate one
+   * block. The additional 16 bytes also provide space for the null
+   * terminator, as we will never use all of it for cyphertext.
+   */
+  out = owl_malloc((strlen(in) * 2) + 16);
 
   inbuff=in;
   length=strlen(inbuff);
@@ -181,7 +193,7 @@ int owl_zcrypt_encrypt(char *out, const char *in, const char *class, const char 
 
     if (size < 8) break;
   }
-  return(0);
+  return out;
 }
 
 
