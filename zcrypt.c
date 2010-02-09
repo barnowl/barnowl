@@ -112,8 +112,8 @@ char *owl_zcrypt_decrypt_with_key(const char *in, const char *keystring)
   owl_zcrypt_string_to_schedule(keystring, &schedule);
 
   inptr=in;
-  endptr=in+strlen(in)-1;
-  while (inptr<endptr) {
+  endptr = in + strlen(in);
+  while (inptr + 16 <= endptr) {
     for (i=0; i<8; i++) {
       c1=(inptr[0])-BASE_CODE;
       c2=(inptr[1])-BASE_CODE;
