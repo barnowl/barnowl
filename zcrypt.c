@@ -103,7 +103,10 @@ char *owl_zcrypt_decrypt_with_key(const char *in, const char *keystring)
   unsigned char input[8], output[8];
   int i, c1, c2;
 
-  out = owl_malloc(strlen(in) * 16 + 20);
+  /* We read in some number of full 16-byte blocks and write out the
+   * same number of 8-byte blocks, plus a null terminator.
+   */
+  out = owl_malloc((strlen(in) / 16) * 8 + 1);
 
   strcpy(out, "");
 
