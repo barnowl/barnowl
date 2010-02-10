@@ -284,7 +284,7 @@ sub register_owl_commands() {
         jwrite => \&cmd_jwrite,
         {
             summary => "Send a Jabber Message",
-            usage   => "jwrite <jid> [-t <thread>] [-s <subject>]"
+            usage   => "jwrite <jid> [-t <thread>] [-s <subject>] [-a <account>]"
         }
     );
     BarnOwl::new_command(
