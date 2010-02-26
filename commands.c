@@ -1864,6 +1864,7 @@ char *owl_command_zwrite(int argc, const char *const *argv, const char *buff)
     owl_zwrite_free(&z);
     return (NULL);
   }
+  owl_zwrite_free(&z);
 
   if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the zwrite command.");
@@ -1974,6 +1975,7 @@ char *owl_command_zcrypt(int argc, const char *const *argv, const char *buff)
     owl_zwrite_free(&z);
     return (NULL);
   }
+  owl_zwrite_free(&z);
 
   if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the zcrypt command.");
