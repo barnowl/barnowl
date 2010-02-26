@@ -1290,6 +1290,7 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
 
     owl_list_append_element(in, long_zuser(s));
   }
+  owl_free(s);
   fclose(f);
   return 0;
 #else
