@@ -538,6 +538,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
       fprintf(new, "%s\n", buf);
     else
       numremoved++;
+  owl_free(buf);
 
   fclose(new);
   fclose(old);
