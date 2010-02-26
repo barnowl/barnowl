@@ -272,7 +272,7 @@ static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_sear
   /* int position, trans1, trans2, trans3, len, lastsame; */
   char *s, *p;
   char attr;
-  short fg, bg, pair;
+  short fg, bg, pair = 0;
   
   if (w==NULL) {
     owl_function_debugmsg("Hit a null window in owl_fmtext_curs_waddstr.");
