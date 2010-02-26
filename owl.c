@@ -532,7 +532,9 @@ int main(int argc, char **argv, char **env)
   if (opts.tty) {
     owl_global_set_tty(&g, opts.tty);
   } else {
-    owl_global_set_tty(&g, owl_util_get_default_tty());
+    char *tty = owl_util_get_default_tty();
+    owl_global_set_tty(&g, tty);
+    owl_free(tty);
   }
 
   /* Initialize perl */
