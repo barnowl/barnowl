@@ -556,7 +556,6 @@ typedef struct _owl_global {
   int curmsg_vert_offset;
   owl_view current_view;
   owl_messagelist msglist;
-  WINDOW *recwin, *sepwin, *msgwin, *typwin;
   PANEL *recpan, *seppan, *msgpan, *typpan;
   int needrefresh;
   int rightshift;

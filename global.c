@@ -133,6 +133,13 @@ void owl_global_complete_setup(owl_global *g)
 void _owl_panel_set_window(PANEL **pan, WINDOW *win)
 {
   WINDOW *oldwin;
+
+  if (win == NULL) {
+    owl_function_debugmsg("_owl_panel_set_window: passed NULL win (failed to allocate?)\n");
+    endwin();
+    exit(50);
+  }
+
   if (*pan) {
     oldwin = panel_window(*pan);
     replace_panel(*pan, win);
@@ -158,33 +165,23 @@ void _owl_global_setup_windows(owl_global *g) {
   owl_function_debugmsg("_owl_global_setup_windows: about to call newwin(%i, %i, 0, 0)\n", g->recwinlines, cols);
 
   /* create the new windows */
-  g->recwin = newwin(g->recwinlines, cols, 0, 0);
-  if (g->recwin==NULL) {
-    owl_function_debugmsg("_owl_global_setup_windows: newwin returned NULL\n");
-    endwin();
-    exit(50);
-  }
-  _owl_panel_set_window(&g->recpan, g->recwin);
-      
-  g->sepwin = newwin(1, cols, g->recwinlines, 0);
-  _owl_panel_set_window(&g->seppan, g->sepwin);
-  g->msgwin = newwin(1, cols, g->recwinlines+1, 0);
-  _owl_panel_set_window(&g->msgpan, g->msgwin);
-  g->typwin = newwin(typwin_lines, cols, g->recwinlines+2, 0);
-  _owl_panel_set_window(&g->typpan, g->typwin);
+  _owl_panel_set_window(&g->recpan, newwin(g->recwinlines, cols, 0, 0));
+  _owl_panel_set_window(&g->seppan, newwin(1, cols, g->recwinlines, 0));
+  _owl_panel_set_window(&g->msgpan, newwin(1, cols, g->recwinlines+1, 0));
+  _owl_panel_set_window(&g->typpan, newwin(typwin_lines, cols, g->recwinlines+2, 0));
 
-  owl_editwin_set_curswin(g->tw, g->typwin, typwin_lines, g->cols);
+  owl_editwin_set_curswin(g->tw, owl_global_get_curs_typwin(g), typwin_lines, g->cols);
 
-  idlok(g->typwin, FALSE);
-  idlok(g->recwin, FALSE);
-  idlok(g->sepwin, FALSE);
-  idlok(g->msgwin, FALSE);
+  idlok(owl_global_get_curs_typwin(g), FALSE);
+  idlok(owl_global_get_curs_recwin(g), FALSE);
+  idlok(owl_global_get_curs_sepwin(g), FALSE);
+  idlok(owl_global_get_curs_msgwin(g), FALSE);
 
-  nodelay(g->typwin, 1);
-  keypad(g->typwin, TRUE);
-  wmove(g->typwin, 0, 0);
+  nodelay(owl_global_get_curs_typwin(g), 1);
+  keypad(owl_global_get_curs_typwin(g), TRUE);
+  wmove(owl_global_get_curs_typwin(g), 0, 0);
 
-  meta(g->typwin, TRUE);
+  meta(owl_global_get_curs_typwin(g), TRUE);
 }
 
 owl_context *owl_global_get_context(owl_global *g) {
@@ -305,19 +302,19 @@ owl_keyhandler *owl_global_get_keyhandler(owl_global *g) {
 /* curses windows */
 
 WINDOW *owl_global_get_curs_recwin(const owl_global *g) {
-  return(g->recwin);
+  return panel_window(g->recpan);
 }
 
 WINDOW *owl_global_get_curs_sepwin(const owl_global *g) {
-  return(g->sepwin);
+  return panel_window(g->seppan);
 }
 
 WINDOW *owl_global_get_curs_msgwin(const owl_global *g) {
-  return(g->msgwin);
+  return panel_window(g->msgpan);
 }
 
 WINDOW *owl_global_get_curs_typwin(const owl_global *g) {
-  return(g->typwin);
+  return panel_window(g->typpan);
 }
 
 /* typwin */
