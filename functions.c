@@ -1999,6 +1999,7 @@ char *owl_function_exec(int argc, const char *const *argv, const char *buff, int
     if (type==1) {
       owl_function_popless_text(out);
     } else if (type==0) {
+      owl_free(newbuff);
       return out;
     } else if (type==2) {
       owl_function_adminmsg(buff, out);
@@ -2007,6 +2008,7 @@ char *owl_function_exec(int argc, const char *const *argv, const char *buff, int
     }
     owl_free(out);
   }
+  owl_free(newbuff);
   return NULL;
 }
 
