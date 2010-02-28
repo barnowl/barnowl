@@ -154,7 +154,8 @@ int owl_cmd_create_alias(owl_cmd *cmd, const char *name, const char *aliased_to)
   return(0);
 }
 
-void owl_cmd_free(owl_cmd *cmd) {
+void owl_cmd_cleanup(owl_cmd *cmd)
+{
   if (cmd->name) owl_free(cmd->name);
   if (cmd->summary) owl_free(cmd->summary);
   if (cmd->usage) owl_free(cmd->usage);
@@ -165,7 +166,7 @@ void owl_cmd_free(owl_cmd *cmd) {
 
 void owl_cmd_delete(owl_cmd *cmd)
 {
-  owl_cmd_free(cmd);
+  owl_cmd_cleanup(cmd);
   owl_free(cmd);
 }
 
