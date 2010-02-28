@@ -134,7 +134,7 @@ void owl_buddylist_clear(owl_buddylist *bl)
   owl_list_create(&(bl->buddies));
 }
 
-void owl_buddylist_free(owl_buddylist *bl)
+void owl_buddylist_cleanup(owl_buddylist *bl)
 {
   owl_list_cleanup(&(bl->buddies), (void (*)(void *))owl_buddy_delete);
 }
