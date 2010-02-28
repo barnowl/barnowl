@@ -360,7 +360,7 @@ int owl_editwin_regtest(void) {
 							    "\n"
 							    "blah"));
 
-  owl_editwin_free(oe);
+  owl_editwin_delete(oe);
 
   printf("# END testing owl_editwin (%d failures)\n", numfailed);
 

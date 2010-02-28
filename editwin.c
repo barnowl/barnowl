@@ -70,7 +70,7 @@ owl_editwin *owl_editwin_allocate(void)
   return e;
 }
 
-void owl_editwin_free(owl_editwin *e)
+void owl_editwin_delete(owl_editwin *e)
 {
   owl_free(e->buff);
   owl_free(e->killbuf);
