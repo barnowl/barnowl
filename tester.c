@@ -112,10 +112,10 @@ int owl_dict_regtest(void) {
 
   printf("# BEGIN testing owl_dict\n");
   FAIL_UNLESS("create", 0==owl_dict_create(&d));
-  FAIL_UNLESS("insert b", 0==owl_dict_insert_element(&d, "b", bv, owl_dict_noop_free));
-  FAIL_UNLESS("insert d", 0==owl_dict_insert_element(&d, "d", dv, owl_dict_noop_free));
-  FAIL_UNLESS("insert a", 0==owl_dict_insert_element(&d, "a", av, owl_dict_noop_free));
-  FAIL_UNLESS("insert c", 0==owl_dict_insert_element(&d, "c", cv, owl_dict_noop_free));
+  FAIL_UNLESS("insert b", 0==owl_dict_insert_element(&d, "b", bv, owl_dict_noop_delete));
+  FAIL_UNLESS("insert d", 0==owl_dict_insert_element(&d, "d", dv, owl_dict_noop_delete));
+  FAIL_UNLESS("insert a", 0==owl_dict_insert_element(&d, "a", av, owl_dict_noop_delete));
+  FAIL_UNLESS("insert c", 0==owl_dict_insert_element(&d, "c", cv, owl_dict_noop_delete));
   FAIL_UNLESS("reinsert d (no replace)", -2==owl_dict_insert_element(&d, "d", dv, 0));
   FAIL_UNLESS("find a", av==owl_dict_find_element(&d, "a"));
   FAIL_UNLESS("find b", bv==owl_dict_find_element(&d, "b"));

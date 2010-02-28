@@ -291,7 +291,7 @@ int owl_filterelement_is_toodeep(const owl_filter *f, const owl_filterelement *f
   owl_dict filters;
   owl_dict_create(&filters);
 
-  owl_dict_insert_element(&filters, f->name, &fe_visiting, owl_dict_noop_free);
+  owl_dict_insert_element(&filters, f->name, &fe_visiting, owl_dict_noop_delete);
 
   rv = _owl_filterelement_is_toodeep(fe, &filters);
 
@@ -310,9 +310,9 @@ int _owl_filterelement_is_toodeep(const owl_filterelement *fe, owl_dict *seen)
       return 1;
     } else if (nval == NULL) {
       f = owl_global_get_filter(&g, fe->field);
-      owl_dict_insert_element(seen, fe->field, &fe_visiting, owl_dict_noop_free);
+      owl_dict_insert_element(seen, fe->field, &fe_visiting, owl_dict_noop_delete);
       if(f) rv = _owl_filterelement_is_toodeep(f->root, seen);
-      owl_dict_insert_element(seen, fe->field, &fe_visited, owl_dict_noop_free);
+      owl_dict_insert_element(seen, fe->field, &fe_visited, owl_dict_noop_delete);
     }
   } else {
     if(fe->left)

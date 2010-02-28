@@ -70,25 +70,27 @@ int owl_dict_get_keys(const owl_dict *d, owl_list *l) {
   return(0);
 }
 
-void owl_dict_noop_free(void *x) {
+void owl_dict_noop_delete(void *x)
+{
   return;
 }
 
 /* Returns 0 on success.  Will copy the key but make 
    a reference to the value.  Will clobber an existing 
-   entry with the same key iff free_on_replace!=NULL,
-   and will run free_on_replace on the old element.
+   entry with the same key iff delete_on_replace!=NULL,
+   and will run delete_on_replace on the old element.
    Will return -2 if replace=NULL and match was found.
 */
-int owl_dict_insert_element(owl_dict *d, const char *k, void *v, void (*free_on_replace)(void *old)) {
+int owl_dict_insert_element(owl_dict *d, const char *k, void *v, void (*delete_on_replace)(void *old))
+{
   int pos, found;
   char *dupk;
   found = _owl_dict_find_pos(d, k, &pos);
-  if (found && free_on_replace) {
-    free_on_replace(d->els[pos].v);
+  if (found && delete_on_replace) {
+    delete_on_replace(d->els[pos].v);
     d->els[pos].v = v;
     return(0);
-  } else if (found && !free_on_replace) {
+  } else if (found && !delete_on_replace) {
     return(-2);
   } else {
     if (d->size + 1 > d->avail) {
