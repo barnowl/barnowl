@@ -67,3 +67,9 @@ void owl_buddy_free(owl_buddy *b)
 {
   if (b->name) owl_free(b->name);
 }
+
+void owl_buddy_delete(owl_buddy *b)
+{
+  owl_buddy_free(b);
+  owl_free(b);
+}

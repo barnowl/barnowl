@@ -28,7 +28,7 @@ int owl_buddylist_remove_aim_buddy(owl_buddylist *bl, const char *name)
     b=owl_list_get_element(&(bl->buddies), i);
     if (!strcasecmp(name, owl_buddy_get_name(b)) && owl_buddy_is_proto_aim(b)) {
       owl_list_remove_element(&(bl->buddies), i);
-      owl_buddy_free(b);
+      owl_buddy_delete(b);
       return(0);
     }
   }
@@ -130,11 +130,11 @@ int owl_buddylist_is_aim_buddy_loggedin(const owl_buddylist *bl, const char *scr
 /* remove all buddies from the list */
 void owl_buddylist_clear(owl_buddylist *bl)
 {
-  owl_list_free_all(&(bl->buddies), (void(*)(void*))owl_buddy_free);
+  owl_list_free_all(&(bl->buddies), (void (*)(void *))owl_buddy_delete);
   owl_list_create(&(bl->buddies));
 }
 
 void owl_buddylist_free(owl_buddylist *bl)
 {
-  owl_list_free_all(&(bl->buddies), (void(*)(void*))owl_buddy_free);
+  owl_list_free_all(&(bl->buddies), (void (*)(void *))owl_buddy_delete);
 }
