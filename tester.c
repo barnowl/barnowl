@@ -199,7 +199,7 @@ int owl_variable_regtest(void) {
   owl_variable_set_bool_off(&vd, "boolvar");
   FAIL_UNLESS("update string val", !owl_variable_get_bool(&vd, "boolvar"));
 
-  owl_variable_dict_free(&vd);
+  owl_variable_dict_cleanup(&vd);
 
   /* if (numfailed) printf("*** WARNING: failures encountered with owl_variable\n"); */
   printf("# END testing owl_variable (%d failures)\n", numfailed);
