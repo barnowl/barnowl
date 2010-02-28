@@ -251,7 +251,7 @@ typedef struct _owl_variable {
 			  char *buf, int bufsize, const void *val); 
                                 /* converts val to a string 
 				 * and puts into buf */
-  void  (*free_fn)(struct _owl_variable *v);
+  void (*delete_fn)(struct _owl_variable *v);
 				/* frees val as needed */
 } owl_variable;
 
