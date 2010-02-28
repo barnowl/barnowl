@@ -16,7 +16,7 @@ int owl_keymap_init(owl_keymap *km, const char *name, const char *desc, void (*d
 }
 
 /* note that this will free the memory for the bindings! */
-void owl_keymap_free(owl_keymap *km)
+void owl_keymap_cleanup(owl_keymap *km)
 {
   owl_free(km->name);
   owl_free(km->desc);
