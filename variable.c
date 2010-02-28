@@ -528,7 +528,7 @@ int owl_variable_dict_setup(owl_vardict *vd) {
 
 void owl_variable_dict_add_variable(owl_vardict * vardict,
                                     owl_variable * var) {
-  owl_dict_insert_element(vardict, var->name, var, (void(*)(void*))owl_variable_free);
+  owl_dict_insert_element(vardict, var->name, var, (void (*)(void *))owl_variable_delete);
 }
 
 owl_variable * owl_variable_newvar(const char *name, const char *summary, const char * description) {
@@ -610,7 +610,7 @@ void owl_variable_dict_newvar_bool(owl_vardict * vd, const char *name, const cha
 }
 
 void owl_variable_dict_free(owl_vardict *d) {
-  owl_dict_free_all(d, (void(*)(void*))owl_variable_free);
+  owl_dict_free_all(d, (void (*)(void *))owl_variable_delete);
 }
 
 /* free the list with owl_variable_dict_namelist_free */
@@ -622,7 +622,8 @@ void owl_variable_dict_namelist_free(owl_list *l) {
   owl_list_free_all(l, owl_free);
 }
 
-void owl_variable_free(owl_variable *v) {
+void owl_variable_delete(owl_variable *v)
+{
   if (v->free_fn) v->free_fn(v);
   owl_free(v);
 }
