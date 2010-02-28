@@ -334,7 +334,7 @@ void owl_filterelement_free(owl_filterelement *fe)
     owl_filterelement_free(fe->right);
     owl_free(fe->right);
   }
-  owl_regex_free(&(fe->re));
+  owl_regex_cleanup(&(fe->re));
 }
 
 void owl_filterelement_print(const owl_filterelement *fe, GString *buf)

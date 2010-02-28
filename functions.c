@@ -2884,7 +2884,7 @@ void owl_function_search_start(const char *string, int direction)
 
   if (string && owl_regex_create_quoted(&re, string) == 0) {
     owl_global_set_search_re(&g, &re);
-    owl_regex_free(&re);
+    owl_regex_cleanup(&re);
   } else {
     owl_global_set_search_re(&g, NULL);
   }

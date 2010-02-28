@@ -743,7 +743,7 @@ int owl_global_is_search_active(const owl_global *g) {
 
 void owl_global_set_search_re(owl_global *g, const owl_regex *re) {
   if (owl_regex_is_set(&g->search_re)) {
-    owl_regex_free(&g->search_re);
+    owl_regex_cleanup(&g->search_re);
     owl_regex_init(&g->search_re);
   }
   if (re != NULL)

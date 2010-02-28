@@ -83,7 +83,7 @@ void owl_regex_copy(const owl_regex *a, owl_regex *b)
   owl_regex_create(b, a->string);
 }
 
-void owl_regex_free(owl_regex *re)
+void owl_regex_cleanup(owl_regex *re)
 {
     if (re->string) {
         owl_free(re->string);
