@@ -129,8 +129,7 @@ char **atokenize(const char *buffer, const char *sep, int *i)
   char *workbuff, *foo;
   int done=0, first=1, count=0;
 
-  workbuff=owl_malloc(strlen(buffer)+1);
-  memcpy(workbuff, buffer, strlen(buffer)+1);
+  workbuff = owl_strdup(buffer);
 
   args=NULL;
   while (!done) {
