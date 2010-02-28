@@ -42,7 +42,7 @@ const owl_cmd *owl_cmddict_find(const owl_cmddict *d, const char *name) {
 }
 
 void owl_cmddict_namelist_free(owl_list *l) {
-  owl_list_free_all(l, owl_free);
+  owl_list_cleanup(l, owl_free);
 }
 
 /* creates a new command alias */

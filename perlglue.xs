@@ -332,7 +332,7 @@ all_filters()
 		owl_dict_get_keys(&g.filters, &fl);
 		RETVAL = owl_new_av(&fl, (SV*(*)(const void*))owl_new_sv);
 		sv_2mortal((SV*)RETVAL);
-		owl_list_free_all(&fl, owl_free);
+		owl_list_cleanup(&fl, owl_free);
 	}
 	OUTPUT:
 		RETVAL
@@ -351,7 +351,7 @@ all_styles()
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		owl_list_free_all(&l, owl_free);
+		owl_list_cleanup(&l, owl_free);
 
 
 AV*
@@ -368,7 +368,7 @@ all_variables()
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		owl_list_free_all(&l, owl_free);
+		owl_list_cleanup(&l, owl_free);
 
 
 AV*
@@ -387,7 +387,7 @@ all_keymaps()
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		owl_list_free_all(&l, owl_free);
+		owl_list_cleanup(&l, owl_free);
 
 void
 redisplay()

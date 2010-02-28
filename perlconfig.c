@@ -68,7 +68,7 @@ HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const void *))
     element = owl_dict_find_element(d, key);
     (void)hv_store(ret, key, strlen(key), to_sv(element), 0);
   }
-  owl_list_free_all(&l, owl_free);
+  owl_list_cleanup(&l, owl_free);
 
   return ret;
 }

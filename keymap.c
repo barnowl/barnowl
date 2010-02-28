@@ -20,7 +20,7 @@ void owl_keymap_free(owl_keymap *km)
 {
   owl_free(km->name);
   owl_free(km->desc);
-  owl_list_free_all(&km->bindings, (void(*)(void*))owl_keybinding_free_all);
+  owl_list_cleanup(&km->bindings, (void (*)(void *))owl_keybinding_free_all);
 }
 
 void owl_keymap_set_submap(owl_keymap *km, const owl_keymap *submap)
@@ -174,7 +174,7 @@ void owl_keyhandler_get_keymap_names(const owl_keyhandler *kh, owl_list *l)
 
 void owl_keyhandler_keymap_namelist_free(owl_list *l)
 {
-  owl_list_free_all(l, owl_free);
+  owl_list_cleanup(l, owl_free);
 }
 
 

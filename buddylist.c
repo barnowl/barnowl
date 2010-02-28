@@ -130,11 +130,11 @@ int owl_buddylist_is_aim_buddy_loggedin(const owl_buddylist *bl, const char *scr
 /* remove all buddies from the list */
 void owl_buddylist_clear(owl_buddylist *bl)
 {
-  owl_list_free_all(&(bl->buddies), (void (*)(void *))owl_buddy_delete);
+  owl_list_cleanup(&(bl->buddies), (void (*)(void *))owl_buddy_delete);
   owl_list_create(&(bl->buddies));
 }
 
 void owl_buddylist_free(owl_buddylist *bl)
 {
-  owl_list_free_all(&(bl->buddies), (void (*)(void *))owl_buddy_delete);
+  owl_list_cleanup(&(bl->buddies), (void (*)(void *))owl_buddy_delete);
 }

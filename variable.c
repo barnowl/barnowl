@@ -620,7 +620,7 @@ void owl_variable_dict_get_names(const owl_vardict *d, owl_list *l) {
 }
 
 void owl_variable_dict_namelist_free(owl_list *l) {
-  owl_list_free_all(l, owl_free);
+  owl_list_cleanup(l, owl_free);
 }
 
 void owl_variable_delete(owl_variable *v)

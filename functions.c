@@ -87,7 +87,7 @@ void owl_function_show_styles(void) {
   owl_fmtext_append_list(&fm, &l, "\n", owl_function_style_describe);
   owl_fmtext_append_normal(&fm, "\n");
   owl_function_popless_fmtext(&fm);
-  owl_list_free_all(&l, owl_free);
+  owl_list_cleanup(&l, owl_free);
   owl_fmtext_cleanup(&fm);
 }
 
@@ -3081,7 +3081,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
           }
         }
       }
-      owl_list_free_all(&anyone, owl_free);
+      owl_list_cleanup(&anyone, owl_free);
     }
   }
 #endif
@@ -3458,7 +3458,7 @@ void owl_function_zephyr_buddy_check(int notify)
     }
   }
 
-  owl_list_free_all(&anyone, owl_free);
+  owl_list_cleanup(&anyone, owl_free);
 #endif
 }
 

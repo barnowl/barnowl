@@ -134,7 +134,7 @@ int owl_dict_regtest(void) {
   FAIL_UNLESS("get_keys result val",0==strcmp("b",owl_list_get_element(&l,1)));
   FAIL_UNLESS("get_keys result val",0==strcmp("c",owl_list_get_element(&l,2)));
 
-  owl_list_free_all(&l, owl_free);
+  owl_list_cleanup(&l, owl_free);
   owl_dict_free_all(&d, NULL);
 
   /*  if (numfailed) printf("*** WARNING: failures encountered with owl_dict\n"); */

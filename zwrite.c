@@ -351,7 +351,7 @@ int owl_zwrite_is_personal(const owl_zwrite *z)
 
 void owl_zwrite_free(owl_zwrite *z)
 {
-  owl_list_free_all(&(z->recips), &owl_free);
+  owl_list_cleanup(&(z->recips), &owl_free);
   if (z->zwriteline) owl_free(z->zwriteline);
   if (z->class) owl_free(z->class);
   if (z->inst) owl_free(z->inst);

@@ -76,7 +76,7 @@ int owl_list_remove_element(owl_list *l, int n)
   return(0);
 }
 
-void owl_list_free_all(owl_list *l, void (*elefree)(void *))
+void owl_list_cleanup(owl_list *l, void (*elefree)(void *))
 {
   int i;
 
