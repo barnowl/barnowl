@@ -74,11 +74,20 @@ test_tokenize('Hello, W', 'orld',
 test_tokenize('Hello, World', '',
               [qw(Hello, World)], 1, 5, 7, 12);
 
+test_tokenize(" \t Hello, World", '',
+              [qw(Hello, World)], 1, 5, 10, 15);
+
 test_tokenize('', '',
-              [qw()], 0, 0, 0, 0);
+              [''], 0, 0, 0, 0);
+
+test_tokenize('   ', '',
+              [''], 0, 0, 3, 3);
 
 test_tokenize('Hello', 'World',
               [qw(HelloWorld)], 0, 5, 0, 10);
+
+test_tokenize(' Hello', 'World',
+              [qw(HelloWorld)], 0, 5, 1, 11);
 
 test_tokenize('lorem ipsum dolor ', 'sit amet',
               [qw(lorem ipsum dolor sit amet)],
