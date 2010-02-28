@@ -890,7 +890,7 @@ void owl_global_add_style(owl_global *g, owl_style *s)
                 owl_style_get_name(s)))
     g->current_view.style = s;
   owl_dict_insert_element(&(g->styledict), owl_style_get_name(s),
-                          s, (void(*)(void*))owl_style_free);
+                          s, (void (*)(void *))owl_style_delete);
 }
 
 void owl_global_set_haveaim(owl_global *g)

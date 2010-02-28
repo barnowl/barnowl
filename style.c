@@ -91,3 +91,9 @@ void owl_style_free(owl_style *s)
   if (s->name) owl_free(s->name);
   SvREFCNT_dec(s->perlobj);
 }
+
+void owl_style_delete(owl_style *s)
+{
+  owl_style_free(s);
+  owl_free(s);
+}
