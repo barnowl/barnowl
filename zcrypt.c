@@ -85,6 +85,7 @@ char *owl_zcrypt_decrypt(const char *in, const char *class, const char *instance
   fname=GetZephyrVarKeyFile("zcrypt", class, instance);
   if (!fname) return NULL;
   fkey=fopen(fname, "r");
+  owl_free(fname);
   if (!fkey) return NULL;
   if (!fgets(keystring, MAX_KEY-1, fkey)) {
     fclose(fkey);
@@ -138,6 +139,7 @@ char *owl_zcrypt_encrypt(const char *in, const char *class, const char *instance
   fname=GetZephyrVarKeyFile("zcrypt", class, instance);
   if (!fname) return NULL;
   fkey=fopen(fname, "r");
+  owl_free(fname);
   if (!fkey) return NULL;
   if (!fgets(keystring, MAX_KEY-1, fkey)) {
     fclose(fkey);
