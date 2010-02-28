@@ -130,7 +130,8 @@ void *owl_dict_remove_element(owl_dict *d, const char *k) {
 }
 
 /* elefree should free the value as well */
-void owl_dict_free_all(owl_dict *d, void (*elefree)(void *)) {
+void owl_dict_cleanup(owl_dict *d, void (*elefree)(void *))
+{
   int i;
 
   for (i=0; i<d->size; i++) {
@@ -141,6 +142,6 @@ void owl_dict_free_all(owl_dict *d, void (*elefree)(void *)) {
 }
 
 void owl_dict_free_simple(owl_dict *d) {
-  owl_dict_free_all(d, NULL);
+  owl_dict_cleanup(d, NULL);
 }
 

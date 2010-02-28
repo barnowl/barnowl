@@ -611,7 +611,7 @@ void owl_variable_dict_newvar_bool(owl_vardict * vd, const char *name, const cha
 
 void owl_variable_dict_cleanup(owl_vardict *d)
 {
-  owl_dict_free_all(d, (void (*)(void *))owl_variable_delete);
+  owl_dict_cleanup(d, (void (*)(void *))owl_variable_delete);
 }
 
 /* free the list with owl_variable_dict_namelist_cleanup */
