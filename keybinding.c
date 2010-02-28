@@ -52,7 +52,7 @@ int owl_keybinding_init(owl_keybinding *kb, const char *keyseq, const char *comm
 }
 
 /* Releases data associated with a keybinding */
-void owl_keybinding_free(owl_keybinding *kb)
+void owl_keybinding_cleanup(owl_keybinding *kb)
 {
   if (kb->keys) owl_free(kb->keys);
   if (kb->desc) owl_free(kb->desc);
@@ -62,7 +62,7 @@ void owl_keybinding_free(owl_keybinding *kb)
 /* Releases data associated with a keybinding, and the kb itself */
 void owl_keybinding_free_all(owl_keybinding *kb)
 {
-  owl_keybinding_free(kb);
+  owl_keybinding_cleanup(kb);
   owl_free(kb);
 }
 
