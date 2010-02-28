@@ -392,9 +392,7 @@ typedef struct _owl_viewwin {
 } owl_viewwin;
   
 typedef struct _owl_popwin {
-  WINDOW *borderwin;
   PANEL *borderpanel;
-  WINDOW *popwin;
   PANEL *poppanel;
   int lines;
   int cols;

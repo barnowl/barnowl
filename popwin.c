@@ -12,6 +12,7 @@ int owl_popwin_init(owl_popwin *pw)
 int owl_popwin_up(owl_popwin *pw)
 {
   int glines, gcols, startcol, startline;
+  WINDOW *popwin, *borderwin;
 
   /* calculate the size of the popwin */
   glines=owl_global_get_lines(&g);
@@ -23,30 +24,30 @@ int owl_popwin_up(owl_popwin *pw)
   pw->cols = owl_util_min(gcols,90)*15/16 + owl_util_max(gcols-90,0)/2;
   startcol = (gcols-pw->cols)/2;
 
-  pw->borderwin=newwin(pw->lines, pw->cols, startline, startcol);
-  pw->borderpanel = new_panel(pw->borderwin);
-  pw->popwin=newwin(pw->lines-2, pw->cols-2, startline+1, startcol+1);
-  pw->poppanel = new_panel(pw->popwin);
+  borderwin = newwin(pw->lines, pw->cols, startline, startcol);
+  pw->borderpanel = new_panel(borderwin);
+  popwin = newwin(pw->lines-2, pw->cols-2, startline+1, startcol+1);
+  pw->poppanel = new_panel(popwin);
   pw->needsfirstrefresh=1;
   
-  meta(pw->popwin,TRUE);
-  nodelay(pw->popwin, 1);
-  keypad(pw->popwin, TRUE);
+  meta(popwin,TRUE);
+  nodelay(popwin, 1);
+  keypad(popwin, TRUE);
 
-  werase(pw->popwin);
-  werase(pw->borderwin);
+  werase(popwin);
+  werase(borderwin);
   if (owl_global_is_fancylines(&g)) {
-    box(pw->borderwin, 0, 0);
+    box(borderwin, 0, 0);
   } else {
-    box(pw->borderwin, '|', '-');
-    wmove(pw->borderwin, 0, 0);
-    waddch(pw->borderwin, '+');
-    wmove(pw->borderwin, pw->lines-1, 0);
-    waddch(pw->borderwin, '+');
-    wmove(pw->borderwin, pw->lines-1, pw->cols-1);
-    waddch(pw->borderwin, '+');
-    wmove(pw->borderwin, 0, pw->cols-1);
-    waddch(pw->borderwin, '+');
+    box(borderwin, '|', '-');
+    wmove(borderwin, 0, 0);
+    waddch(borderwin, '+');
+    wmove(borderwin, pw->lines-1, 0);
+    waddch(borderwin, '+');
+    wmove(borderwin, pw->lines-1, pw->cols-1);
+    waddch(borderwin, '+');
+    wmove(borderwin, 0, pw->cols-1);
+    waddch(borderwin, '+');
   }
     
   update_panels();
@@ -57,10 +58,16 @@ int owl_popwin_up(owl_popwin *pw)
 
 int owl_popwin_close(owl_popwin *pw)
 {
+  WINDOW *popwin, *borderwin;
+
+  popwin = panel_window(pw->poppanel);
+  borderwin = panel_window(pw->borderpanel);
+
   del_panel(pw->poppanel);
   del_panel(pw->borderpanel);
-  delwin(pw->popwin);
-  delwin(pw->borderwin);
+  delwin(popwin);
+  delwin(borderwin);
+
   pw->active=0;
   owl_global_set_needrefresh(&g);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
@@ -84,7 +91,7 @@ int owl_popwin_refresh(const owl_popwin *pw)
 
 WINDOW *owl_popwin_get_curswin(const owl_popwin *pw)
 {
-  return(pw->popwin);
+  return panel_window(pw->poppanel);
 }
 
 int owl_popwin_get_lines(const owl_popwin *pw)
