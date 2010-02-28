@@ -113,7 +113,7 @@ static owl_filterelement * owl_filter_parse_primitive_expression(int argc, const
   }
   return fe;
 err:
-  owl_filterelement_free(fe);
+  owl_filterelement_cleanup(fe);
   owl_free(fe);
   return NULL;
 }
@@ -151,7 +151,7 @@ owl_filterelement * owl_filter_parse_expression(int argc, const char *const *arg
   return op1;
 err:
   if(op1) {
-    owl_filterelement_free(op1);
+    owl_filterelement_cleanup(op1);
     owl_free(op1);
   }
   return NULL;
@@ -261,7 +261,7 @@ void owl_filter_delete(owl_filter *f)
   if (f == NULL)
     return;
   if (f->root) {
-    owl_filterelement_free(f->root);
+    owl_filterelement_cleanup(f->root);
     owl_free(f->root);
   }
   if (f->name)

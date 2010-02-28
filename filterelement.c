@@ -323,15 +323,15 @@ int _owl_filterelement_is_toodeep(const owl_filterelement *fe, owl_dict *seen)
   return rv;
 }
 
-void owl_filterelement_free(owl_filterelement *fe)
+void owl_filterelement_cleanup(owl_filterelement *fe)
 {
   if (fe->field) owl_free(fe->field);
   if (fe->left) {
-    owl_filterelement_free(fe->left);
+    owl_filterelement_cleanup(fe->left);
     owl_free(fe->left);
   }
   if (fe->right) {
-    owl_filterelement_free(fe->right);
+    owl_filterelement_cleanup(fe->right);
     owl_free(fe->right);
   }
   owl_regex_cleanup(&(fe->re));
