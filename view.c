@@ -156,7 +156,7 @@ const char *owl_view_get_filtname(const owl_view *v)
   return(owl_filter_get_name(v->filter));
 }
 
-void owl_view_free(owl_view *v)
+void owl_view_cleanup(owl_view *v)
 {
   owl_list_cleanup(&v->ml.list, NULL);
   if (v->name) owl_free(v->name);
