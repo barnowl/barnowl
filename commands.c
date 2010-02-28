@@ -1920,8 +1920,7 @@ char *owl_command_aimwrite(int argc, const char *const *argv, const char *buff)
       if (strlen(newbuff) >= 1)
 	newbuff[strlen(newbuff) - 1] = '\0'; /* remove last space */
 
-      recip=owl_malloc(strlen(argv[0])+5);
-      sprintf(recip, "%s ", argv[1]);
+      recip=owl_strdup(argv[1]);
       owl_aim_send_im(recip, newbuff);
       m=owl_function_make_outgoing_aim(newbuff, recip);
       if (m) { 
