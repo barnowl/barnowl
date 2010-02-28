@@ -2785,6 +2785,6 @@ void owl_command_popless_quit(owl_viewwin *vw)
 {
   owl_popwin_close(owl_global_get_popwin(&g));
   owl_global_pop_context(&g);
-  owl_viewwin_free(vw);
+  owl_viewwin_cleanup(vw);
   owl_global_set_needrefresh(&g);
 }

@@ -148,7 +148,7 @@ void owl_viewwin_bottom(owl_viewwin *v)
   v->topline = v->textlines - v->winlines + BOTTOM_OFFSET;
 }
 
-void owl_viewwin_free(owl_viewwin *v)
+void owl_viewwin_cleanup(owl_viewwin *v)
 {
   if (v->onclose_hook) {
     v->onclose_hook(v, v->onclose_hook_data);
