@@ -966,3 +966,9 @@ void owl_message_free(owl_message *m)
  
   owl_message_invalidate_format(m);
 }
+
+void owl_message_delete(owl_message *m)
+{
+  owl_message_free(m);
+  owl_free(m);
+}

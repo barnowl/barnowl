@@ -194,20 +194,20 @@ int owl_process_message(owl_message *m) {
   const owl_filter *f;
   /* if this message it on the puntlist, nuke it and continue */
   if (owl_global_message_is_puntable(&g, m)) {
-    owl_message_free(m);
+    owl_message_delete(m);
     return 0;
   }
 
   /*  login or logout that should be ignored? */
   if (owl_global_is_ignorelogins(&g)
       && owl_message_is_loginout(m)) {
-    owl_message_free(m);
+    owl_message_delete(m);
     return 0;
   }
 
   if (!owl_global_is_displayoutgoing(&g)
       && owl_message_is_direction_out(m)) {
-    owl_message_free(m);
+    owl_message_delete(m);
     return 0;
   }
 

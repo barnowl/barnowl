@@ -531,7 +531,7 @@ void owl_function_loopwrite(const char *msg)
   if (owl_global_is_displayoutgoing(&g)) {
     owl_global_messagequeue_addmsg(&g, mout);
   } else {
-    owl_message_free(mout);
+    owl_message_delete(mout);
   }
 
   owl_message_create_loopback(min, msg);
