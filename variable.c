@@ -968,6 +968,7 @@ int owl_variable_enum_get_tostring(const owl_variable *v, char* buf, int bufsize
     return(-1);
   }
   snprintf(buf, bufsize, "%s", enums[i]);
+  atokenize_free(enums, nenums);
   return 0;
 }
 
