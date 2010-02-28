@@ -943,7 +943,7 @@ void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const c
   }
 }
 
-void owl_message_free(owl_message *m)
+void owl_message_cleanup(owl_message *m)
 {
   int i, j;
   owl_pair *p;
@@ -969,6 +969,6 @@ void owl_message_free(owl_message *m)
 
 void owl_message_delete(owl_message *m)
 {
-  owl_message_free(m);
+  owl_message_cleanup(m);
   owl_free(m);
 }
