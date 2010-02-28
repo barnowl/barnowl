@@ -172,7 +172,7 @@ void owl_keyhandler_get_keymap_names(const owl_keyhandler *kh, owl_list *l)
   owl_dict_get_keys(&kh->keymaps, l);
 }
 
-void owl_keyhandler_keymap_namelist_free(owl_list *l)
+void owl_keyhandler_keymap_namelist_cleanup(owl_list *l)
 {
   owl_list_cleanup(l, owl_free);
 }

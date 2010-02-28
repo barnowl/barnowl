@@ -2837,7 +2837,7 @@ void owl_function_show_keymaps(void)
   owl_fmtext_append_normal(&fm, "\n");
   
   owl_function_popless_fmtext(&fm);
-  owl_keyhandler_keymap_namelist_free(&l);
+  owl_keyhandler_keymap_namelist_cleanup(&l);
   owl_fmtext_cleanup(&fm);
 }
 
