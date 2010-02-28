@@ -140,5 +140,5 @@ void owl_help(void)
 
   owl_function_popless_fmtext(&fm);
 
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }

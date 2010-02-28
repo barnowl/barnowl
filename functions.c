@@ -56,7 +56,7 @@ void owl_function_show_commands(void)
   owl_fmtext_append_normal(&fm, "\n");
   owl_function_popless_fmtext(&fm);
   owl_cmddict_namelist_free(&l);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 void owl_function_show_view(const char *viewname)
@@ -74,7 +74,7 @@ void owl_function_show_view(const char *viewname)
   owl_fmtext_init_null(&fm);
   owl_view_to_fmtext(v, &fm);
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 void owl_function_show_styles(void) {
@@ -88,7 +88,7 @@ void owl_function_show_styles(void) {
   owl_fmtext_append_normal(&fm, "\n");
   owl_function_popless_fmtext(&fm);
   owl_list_free_all(&l, owl_free);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 char *owl_function_style_describe(const char *name) {
@@ -1324,7 +1324,7 @@ void owl_function_popless_file(const char *filename)
   owl_free(s);
 
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
   fclose(file);
 }
 
@@ -1481,8 +1481,8 @@ void owl_function_info(void)
   owl_fmtext_append_fmtext(&fm, &attrfm);
   
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
-  owl_fmtext_free(&attrfm);
+  owl_fmtext_cleanup(&fm);
+  owl_fmtext_cleanup(&attrfm);
 }
 
 /* print the current message in a popup window.
@@ -1510,7 +1510,7 @@ void owl_function_curmsg_to_popwin(void)
   owl_style_get_formattext(s, &fm, m);
 
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 void owl_function_page_curmsg(int step)
@@ -1655,7 +1655,7 @@ void owl_function_show_variables(void)
   }
   owl_variable_dict_namelist_free(&varnames);
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 void owl_function_show_variable(const char *name)
@@ -1665,7 +1665,7 @@ void owl_function_show_variable(const char *name)
   owl_fmtext_init_null(&fm);
   owl_variable_get_help(owl_global_get_vardict(&g), name, &fm);
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);  
+  owl_fmtext_cleanup(&fm);
 }
 
 /* note: this applies to global message list, not to view.
@@ -1799,7 +1799,7 @@ void owl_function_status(void)
   }
 
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 void owl_function_show_term(void)
@@ -1820,7 +1820,7 @@ void owl_function_show_term(void)
   }
 
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 /* if type = 0 then normal reply.
@@ -1902,7 +1902,7 @@ void owl_function_zlocate(int argc, const char *const *argv, int auth)
   }
 
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 void owl_function_start_command(const char *line)
@@ -2227,7 +2227,7 @@ void owl_function_show_filters(void)
     owl_fmtext_append_normal(&fm, "\n");
   }
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 void owl_function_show_filter(const char *name)
@@ -2271,7 +2271,7 @@ void owl_function_show_zpunts(void)
     owl_free(tmp);
   }
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 /* Create a filter for a class, instance if one doesn't exist.  If
@@ -2713,7 +2713,7 @@ void owl_function_show_colors(void)
   }
   
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 /* add the given class, inst, recip to the punt list for filtering.
@@ -2838,7 +2838,7 @@ void owl_function_show_keymaps(void)
   
   owl_function_popless_fmtext(&fm);
   owl_keyhandler_keymap_namelist_free(&l);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 char *owl_function_keymap_summary(const char *name)
@@ -2863,7 +2863,7 @@ void owl_function_show_keymap(const char *name)
     owl_fmtext_append_normal(&fm, "No such keymap...\n");
   }  
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 void owl_function_help_for_command(const char *cmdname)
@@ -2873,7 +2873,7 @@ void owl_function_help_for_command(const char *cmdname)
   owl_fmtext_init_null(&fm);
   owl_cmd_get_help(owl_global_get_cmddict(&g), cmdname, &fm);
   owl_function_popless_fmtext(&fm);  
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 void owl_function_search_start(const char *string, int direction)
@@ -2980,7 +2980,7 @@ char *owl_function_ztext_stylestrip(const char *zt)
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_ztext(&fm, zt);
   plaintext = owl_fmtext_print_plain(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
   return(plaintext);
 }
 
@@ -3099,7 +3099,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
   if(!interrupted) {
     owl_function_popless_fmtext(&fm);
   }
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 /* Dump messages in the current view to the file 'filename'. */
@@ -3480,7 +3480,7 @@ void owl_function_aimsearch_results(const char *email, owl_list *namelist)
   }
 
   owl_function_popless_fmtext(&fm);
-  owl_fmtext_free(&fm);
+  owl_fmtext_cleanup(&fm);
 }
 
 int owl_function_get_color_count(void)

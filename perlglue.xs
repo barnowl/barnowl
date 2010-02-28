@@ -242,7 +242,7 @@ popless_ztext(text)
 		owl_fmtext_init_null(&fm);
 		owl_fmtext_append_ztext(&fm, text);
 		owl_function_popless_fmtext(&fm);
-		owl_fmtext_free(&fm);
+		owl_fmtext_cleanup(&fm);
 	}
 
 void

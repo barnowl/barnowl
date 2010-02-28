@@ -519,8 +519,8 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
 
   owl_fmtext_curs_waddstr(&b, win);
 
-  owl_fmtext_free(&a);
-  owl_fmtext_free(&b);
+  owl_fmtext_cleanup(&a);
+  owl_fmtext_cleanup(&b);
 }
 
 int owl_message_is_personal(const owl_message *m)

@@ -94,8 +94,8 @@ void owl_viewwin_redisplay(owl_viewwin *v, int update)
     doupdate();
   }
 
-  owl_fmtext_free(&fm1);
-  owl_fmtext_free(&fm2);
+  owl_fmtext_cleanup(&fm1);
+  owl_fmtext_cleanup(&fm2);
 }
 
 void owl_viewwin_pagedown(owl_viewwin *v)
@@ -155,5 +155,5 @@ void owl_viewwin_free(owl_viewwin *v)
     v->onclose_hook = NULL;
     v->onclose_hook_data = NULL;
   }
-  owl_fmtext_free(&(v->fmtext));
+  owl_fmtext_cleanup(&(v->fmtext));
 }

@@ -794,7 +794,7 @@ void owl_fmtext_append_list(owl_fmtext *f, const owl_list *l, const char *join_w
 }
 
 /* Free all memory allocated by the object */
-void owl_fmtext_free(owl_fmtext *f)
+void owl_fmtext_cleanup(owl_fmtext *f)
 {
   if (f->textbuff) owl_free(f->textbuff);
 }
