@@ -141,7 +141,3 @@ void owl_dict_cleanup(owl_dict *d, void (*elefree)(void *))
   if (d->els) owl_free(d->els);
 }
 
-void owl_dict_free_simple(owl_dict *d) {
-  owl_dict_cleanup(d, NULL);
-}
-

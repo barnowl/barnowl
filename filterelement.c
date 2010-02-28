@@ -295,7 +295,7 @@ int owl_filterelement_is_toodeep(const owl_filter *f, const owl_filterelement *f
 
   rv = _owl_filterelement_is_toodeep(fe, &filters);
 
-  owl_dict_free_simple(&filters);
+  owl_dict_cleanup(&filters, NULL);
   return rv;
 }
 
