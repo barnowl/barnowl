@@ -53,6 +53,7 @@ sub new {
     my $point = length ($before_point);
     my ($words, $word, $word_point,
         $word_start, $word_end) = tokenize($line, $point);
+    push @$words, '' if scalar @$words <= $word;
 
     my $self = {
         line  => $line,
@@ -123,11 +124,13 @@ sub tokenize {
     my $word = '';
     my $wstart = 0;
     my $skipped = 0;
+    my $have_word = 0;
 
     pos($line) = 0;
     while(pos($line) < length($line)) {
         if($line =~ m{\G ($boring+) }gcx) {
             $word .= $1;
+            $have_word = 1;
         } elsif ($line =~ m{\G ($quote)}gcx) {
             my $chr = $1;
             $skipped++ if pos($line) > $point;
@@ -138,20 +141,25 @@ sub tokenize {
                 $word .= substr($line, pos($line));
                 pos($line) = length($line);
             }
+            $have_word = 1;
         }
 
         if ($line =~ m{\G ($space+|$)}gcx) {
             my $wend = pos($line) - length($1);
-            push @words, $word;
-            $cword++ unless $wend >= $point;
-            if(($wend >= $point) && !defined($word_point)) {
-                $word_point = length($word) - ($wend - $point) + $skipped;
-                $cword_start = $wstart;
-                $cword_end   = $wend;
+            if ($have_word) {
+                push @words, $word;
+                $cword++ unless $wend >= $point;
+                if(($wend >= $point) && !defined($word_point)) {
+                    $word_point = length($word) - ($wend - $point) + $skipped;
+                    $cword_start = $wstart;
+                    $cword_end   = $wend;
+                }
             }
+            # Always reset, so we get $wstart right
             $word = '';
             $wstart = pos($line);
             $skipped = 0;
+            $have_word = 0;
         }
     }
 
@@ -160,7 +168,6 @@ sub tokenize {
     unless(defined($word_point)) {
         $word_point = 0;
         $cword_start = $cword_end = $point;
-        push @words, '' if $point > 0;
     }
 
     return (\@words, $cword, $word_point, $cword_start, $cword_end);
