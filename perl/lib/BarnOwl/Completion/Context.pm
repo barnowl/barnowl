@@ -40,7 +40,7 @@ package BarnOwl::Completion::Context;
 
 use base qw(Class::Accessor::Fast);
 use Carp qw(croak);
-use BarnOwl::Parse qw(tokenize);
+use BarnOwl::Parse qw(tokenize_with_point);
 
 __PACKAGE__->mk_ro_accessors(qw(line point words word word_point
                                 word_start word_end));
@@ -53,7 +53,7 @@ sub new {
     my $line  = $before_point . $after_point;
     my $point = length ($before_point);
     my ($words, $word, $word_point,
-        $word_start, $word_end) = tokenize($line, $point);
+        $word_start, $word_end) = tokenize_with_point($line, $point);
     push @$words, '' if scalar @$words <= $word;
 
     my $self = {

@@ -4,7 +4,7 @@ use strict;
 package BarnOwl::Parse;
 
 use base qw(Exporter);
-our @EXPORT_OK = qw(tokenize);
+our @EXPORT_OK = qw(tokenize tokenize_with_point);
 
 # TODO: have the main function return whether or not it was a valid parse, with
 # possible error messages or something.  (Still give a parse of some sort on
@@ -32,7 +32,7 @@ my $boring = qr{[^'" \t]};
 my $quote  = qr{['"]};
 my $space  = qr{[ \t]};
 
-sub tokenize {
+sub tokenize_with_point {
     my $line = shift;
     my $point = shift;
 
@@ -92,4 +92,12 @@ sub tokenize {
     }
 
     return (\@words, $cword, $word_point, $cword_start, $cword_end);
+}
+
+sub tokenize {
+    my $line = shift;
+
+    my ($words, $word, $word_point,
+        $word_start, $word_end) = tokenize_with_point($line, 0);
+    return $words;
 }
