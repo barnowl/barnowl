@@ -74,7 +74,7 @@ int owl_messagelist_expunge(owl_messagelist *ml)
   for (i=0; i<j; i++) {
     m=owl_list_get_element(&(ml->list), i);
     if (owl_message_is_delete(m)) {
-      owl_message_free(m);
+      owl_message_delete(m);
     } else {
       owl_list_append_element(&newlist, m);
     }

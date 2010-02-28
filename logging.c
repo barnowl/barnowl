@@ -183,10 +183,10 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   m = owl_malloc(sizeof(owl_message));
   owl_message_create_from_zwrite(m, zw, text);
   if (!owl_log_shouldlog_message(m)) {
-    owl_message_free(m);
+    owl_message_delete(m);
     return;
   }
-  owl_message_free(m);
+  owl_message_delete(m);
 
   /* chop off a local realm */
   tobuff = short_zuser(owl_list_get_element(&(zw->recips), 0));
