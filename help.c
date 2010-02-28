@@ -134,7 +134,7 @@ void owl_help(void)
       owl_variable_describe(owl_global_get_vardict(&g), varname, &fm);
     }
   }
-  owl_variable_dict_namelist_free(&varnames);
+  owl_variable_dict_namelist_cleanup(&varnames);
 
   owl_fmtext_append_normal(&fm, "\n");
 

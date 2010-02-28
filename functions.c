@@ -1629,7 +1629,7 @@ void owl_function_printallvars(void)
     }
   }
   g_string_append(str, "\n");
-  owl_variable_dict_namelist_free(&varnames);
+  owl_variable_dict_namelist_cleanup(&varnames);
 
   owl_function_popless_text(str->str);
   g_string_free(str, TRUE);
@@ -1653,7 +1653,7 @@ void owl_function_show_variables(void)
       owl_variable_describe(owl_global_get_vardict(&g), varname, &fm);
     }
   }
-  owl_variable_dict_namelist_free(&varnames);
+  owl_variable_dict_namelist_cleanup(&varnames);
   owl_function_popless_fmtext(&fm);
   owl_fmtext_cleanup(&fm);
 }
