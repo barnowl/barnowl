@@ -1615,7 +1615,7 @@ static int faimtest_parse_searchreply(aim_session_t *sess, aim_frame_t *fr, ...)
     owl_list_append_element(&list, (void *)&SNs[i*(MAXSNLEN+1)]);
   }
   owl_function_aimsearch_results(address, &list);
-  owl_list_free_simple(&list);
+  owl_list_cleanup(&list, NULL);
   return(1);
 }
 

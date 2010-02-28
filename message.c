@@ -962,7 +962,7 @@ void owl_message_free(owl_message *m)
     owl_free(p);
   }
 
-  owl_list_free_simple(&(m->attributes));
+  owl_list_cleanup(&(m->attributes), NULL);
  
   owl_message_invalidate_format(m);
 }

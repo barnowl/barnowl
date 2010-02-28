@@ -37,7 +37,7 @@ void owl_view_recalculate(owl_view *v)
   ml=&(v->ml);
 
   /* nuke the old list */
-  owl_list_free_simple(&ml->list);
+  owl_list_cleanup(&ml->list, NULL);
   owl_messagelist_create(&(v->ml));
 
   /* find all the messages we want */
@@ -158,6 +158,6 @@ const char *owl_view_get_filtname(const owl_view *v)
 
 void owl_view_free(owl_view *v)
 {
-  owl_list_free_simple(&v->ml.list);
+  owl_list_cleanup(&v->ml.list, NULL);
   if (v->name) owl_free(v->name);
 }

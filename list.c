@@ -80,13 +80,10 @@ void owl_list_cleanup(owl_list *l, void (*elefree)(void *))
 {
   int i;
 
-  for (i=0; i<l->size; i++) {
-    (elefree)(l->list[i]);
+  if (elefree) {
+    for (i = 0; i < l->size; i++) {
+      (elefree)(l->list[i]);
+    }
   }
   owl_free(l->list);
-}
-
-void owl_list_free_simple(owl_list *l)
-{
-  if (l->list) owl_free(l->list);
 }

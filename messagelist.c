@@ -81,7 +81,7 @@ int owl_messagelist_expunge(owl_messagelist *ml)
   }
 
   /* free the old list */
-  owl_list_free_simple(&(ml->list));
+  owl_list_cleanup(&(ml->list), NULL);
 
   /* copy the new list to the old list */
   memcpy(&(ml->list), &newlist, sizeof(owl_list));
