@@ -238,7 +238,7 @@ char *owl_util_makepath(const char *in)
   return(out);
 }
 
-void atokenize_free(char **tok, int nels)
+void atokenize_delete(char **tok, int nels)
 {
   int i;
   for (i=0; i<nels; i++) {

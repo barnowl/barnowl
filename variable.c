@@ -928,7 +928,7 @@ int owl_variable_enum_validate(const owl_variable *v, const void *newval) {
   if (newval == NULL) return(0);
   enums = atokenize(v->validsettings, ",", &nenums);
   if (enums == NULL) return(0);
-  atokenize_free(enums, nenums);
+  atokenize_delete(enums, nenums);
   val = *(const int*)newval;
   if (val < 0 || val >= nenums) {
     return(0);
@@ -947,7 +947,7 @@ int owl_variable_enum_set_fromstring(owl_variable *v, const char *newval) {
       val = i;
     }
   }
-  atokenize_free(enums, nenums);
+  atokenize_delete(enums, nenums);
   if (val == -1) return(-1);
   return (v->set_fn(v, &val));
 }
@@ -964,11 +964,11 @@ int owl_variable_enum_get_tostring(const owl_variable *v, char* buf, int bufsize
   i = *(const int*)val;
   if (i<0 || i>=nenums) {
     snprintf(buf, bufsize, "<invalid:%d>",i);
-    atokenize_free(enums, nenums);
+    atokenize_delete(enums, nenums);
     return(-1);
   }
   snprintf(buf, bufsize, "%s", enums[i]);
-  atokenize_free(enums, nenums);
+  atokenize_delete(enums, nenums);
   return 0;
 }
 

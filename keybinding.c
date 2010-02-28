@@ -28,21 +28,21 @@ int owl_keybinding_init(owl_keybinding *kb, const char *keyseq, const char *comm
   ktokens = atokenize(keyseq, " ", &nktokens);
   if (!ktokens) return(-1);
   if (nktokens > OWL_KEYMAP_MAXSTACK) {
-    atokenize_free(ktokens, nktokens);
+    atokenize_delete(ktokens, nktokens);
     return(-1);
   }
   kb->keys = owl_malloc(nktokens*sizeof(int));
   for (i=0; i<nktokens; i++) {
     kb->keys[i] = owl_keypress_fromstring(ktokens[i]);
     if (kb->keys[i] == ERR) { 
-      atokenize_free(ktokens, nktokens);
+      atokenize_delete(ktokens, nktokens);
       owl_free(kb->keys);
       return(-1);
     }
   }
   kb->len = nktokens;
 
-  atokenize_free(ktokens, nktokens);
+  atokenize_delete(ktokens, nktokens);
 
   if (command) kb->command = owl_strdup(command);
   kb->function_fn = function_fn;

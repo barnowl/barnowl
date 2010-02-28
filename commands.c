@@ -1631,7 +1631,7 @@ char *owl_command_multi(int argc, const char *const *argv, const char *buff)
     lastrv = owl_function_command(commands[i]);
   }
   owl_free(newbuff);
-  atokenize_free(commands, ncommands);
+  atokenize_delete(commands, ncommands);
   return lastrv;
 }
 
