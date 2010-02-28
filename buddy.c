@@ -63,13 +63,13 @@ int owl_buddy_get_idle_time(const owl_buddy *b)
   return(0);
 }
 
-void owl_buddy_free(owl_buddy *b)
+void owl_buddy_cleanup(owl_buddy *b)
 {
   if (b->name) owl_free(b->name);
 }
 
 void owl_buddy_delete(owl_buddy *b)
 {
-  owl_buddy_free(b);
+  owl_buddy_cleanup(b);
   owl_free(b);
 }
