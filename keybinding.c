@@ -60,7 +60,7 @@ void owl_keybinding_cleanup(owl_keybinding *kb)
 }
 
 /* Releases data associated with a keybinding, and the kb itself */
-void owl_keybinding_free_all(owl_keybinding *kb)
+void owl_keybinding_delete(owl_keybinding *kb)
 {
   owl_keybinding_cleanup(kb);
   owl_free(kb);

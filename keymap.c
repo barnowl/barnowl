@@ -20,7 +20,7 @@ void owl_keymap_free(owl_keymap *km)
 {
   owl_free(km->name);
   owl_free(km->desc);
-  owl_list_cleanup(&km->bindings, (void (*)(void *))owl_keybinding_free_all);
+  owl_list_cleanup(&km->bindings, (void (*)(void *))owl_keybinding_delete);
 }
 
 void owl_keymap_set_submap(owl_keymap *km, const owl_keymap *submap)
@@ -46,7 +46,7 @@ int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *co
     curkb = owl_list_get_element(&km->bindings, i);
     if (owl_keybinding_equal(curkb, kb)) {
       owl_list_remove_element(&km->bindings, i);
-      owl_keybinding_free_all(curkb);
+      owl_keybinding_delete(curkb);
     }
   }
   return owl_list_append_element(&km->bindings, kb);  
