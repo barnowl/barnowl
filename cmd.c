@@ -32,7 +32,7 @@ int owl_cmddict_add_from_list(owl_cmddict *cd, const owl_cmd *cmds) {
   return ret;
 }
 
-/* free the list with owl_cmddict_namelist_free */
+/* free the list with owl_cmddict_namelist_cleanup */
 void owl_cmddict_get_names(const owl_cmddict *d, owl_list *l) {
   owl_dict_get_keys(d, l);
 }
@@ -41,7 +41,8 @@ const owl_cmd *owl_cmddict_find(const owl_cmddict *d, const char *name) {
   return owl_dict_find_element(d, name);
 }
 
-void owl_cmddict_namelist_free(owl_list *l) {
+void owl_cmddict_namelist_cleanup(owl_list *l)
+{
   owl_list_cleanup(l, owl_free);
 }
 

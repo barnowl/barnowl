@@ -55,7 +55,7 @@ void owl_function_show_commands(void)
   owl_fmtext_append_list(&fm, &l, "\n", owl_function_cmd_describe);
   owl_fmtext_append_normal(&fm, "\n");
   owl_function_popless_fmtext(&fm);
-  owl_cmddict_namelist_free(&l);
+  owl_cmddict_namelist_cleanup(&l);
   owl_fmtext_cleanup(&fm);
 }
 
