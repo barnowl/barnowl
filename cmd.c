@@ -160,7 +160,7 @@ void owl_cmd_free(owl_cmd *cmd) {
   if (cmd->usage) owl_free(cmd->usage);
   if (cmd->description) owl_free(cmd->description);
   if (cmd->cmd_aliased_to) owl_free(cmd->cmd_aliased_to);
-  if (cmd->cmd_perl) owl_perlconfig_cmd_free(cmd);
+  if (cmd->cmd_perl) owl_perlconfig_cmd_cleanup(cmd);
 }
 
 void owl_cmd_delete(owl_cmd *cmd)

@@ -536,7 +536,7 @@ char *owl_perlconfig_perlcmd(const owl_cmd *cmd, int argc, const char *const *ar
   return ret;
 }
 
-void owl_perlconfig_cmd_free(owl_cmd *cmd)
+void owl_perlconfig_cmd_cleanup(owl_cmd *cmd)
 {
   SvREFCNT_dec(cmd->cmd_perl);
 }
