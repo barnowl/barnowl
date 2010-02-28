@@ -750,7 +750,7 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   owl_message_set_direction_in(m);
   
   /* first save the full notice */
-  memcpy(&(m->notice), n, sizeof(ZNotice_t));
+  m->notice = *n;
 
   /* a little gross, we'll replace \r's with ' ' for now */
   owl_zephyr_hackaway_cr(&(m->notice));

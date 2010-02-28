@@ -465,7 +465,7 @@ int owl_variable_dict_setup(owl_vardict *vd) {
   if (owl_dict_create(vd)) return(-1);
   for (var = variables_to_init; var->name != NULL; var++) {
     cur = owl_malloc(sizeof(owl_variable));
-    memcpy(cur, var, sizeof(owl_variable));
+    *cur = *var;
     switch (cur->type) {
     case OWL_VARIABLE_OTHER:
       cur->set_fn(cur, cur->pval_default);
