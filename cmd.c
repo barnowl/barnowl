@@ -93,14 +93,14 @@ char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const c
   } 
   
   if (argc < 1) {
-    owl_parsefree(argv, argc);
+    owl_parse_delete(argv, argc);
     owl_free(tmpbuff);
     return NULL;
   }
 
   retval = _owl_cmddict_execute(cd, ctx, strs(argv), argc, cmdbuff);
 
-  owl_parsefree(argv, argc);
+  owl_parse_delete(argv, argc);
   owl_free(tmpbuff);
   sepbar(NULL);
   return retval;

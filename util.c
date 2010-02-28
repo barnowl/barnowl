@@ -248,7 +248,7 @@ void atokenize_delete(char **tok, int nels)
 }
 
 
-void owl_parsefree(char **argv, int argc)
+void owl_parse_delete(char **argv, int argc)
 {
   int i;
 
@@ -337,7 +337,7 @@ char **owl_parseline(const char *line, int *argc)
 
   /* check for unbalanced quotes */
   if (quote!='\0') {
-    owl_parsefree(argv, *argc);
+    owl_parse_delete(argv, *argc);
     *argc=-1;
     return(NULL);
   }
