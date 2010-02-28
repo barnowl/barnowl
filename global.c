@@ -655,7 +655,8 @@ owl_filter *owl_global_get_filter(const owl_global *g, const char *name) {
   return NULL;
 }
 
-static void owl_global_free_filter_ent(void *data) {
+static void owl_global_delete_filter_ent(void *data)
+{
   owl_global_filter_ent *e = data;
   e->g->filterlist = g_list_remove(e->g->filterlist, e->f);
   owl_filter_delete(e->f);
@@ -668,14 +669,14 @@ void owl_global_add_filter(owl_global *g, owl_filter *f) {
   e->f = f;
 
   owl_dict_insert_element(&(g->filters), owl_filter_get_name(f),
-                          e, owl_global_free_filter_ent);
+                          e, owl_global_delete_filter_ent);
   g->filterlist = g_list_append(g->filterlist, f);
 }
 
 void owl_global_remove_filter(owl_global *g, const char *name) {
   owl_global_filter_ent *e = owl_dict_remove_element(&(g->filters), name);
   if (e)
-    owl_global_free_filter_ent(e);
+    owl_global_delete_filter_ent(e);
 }
 
 /* nextmsgid */
