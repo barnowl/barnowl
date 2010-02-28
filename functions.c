@@ -234,7 +234,7 @@ owl_message *owl_function_make_outgoing_zephyr(const char *body, const char *zwr
   m=owl_malloc(sizeof(owl_message));
   
   owl_message_create_from_zwrite(m, &zw, body);
-  owl_zwrite_free(&zw);
+  owl_zwrite_cleanup(&zw);
 
   return(m);
 }
@@ -325,7 +325,7 @@ void owl_function_zwrite_setup(const char *line)
   ret=owl_zwrite_create_from_line(&z, line);
   if (ret) {
     owl_function_error("Error in zwrite arguments");
-    owl_zwrite_free(&z);
+    owl_zwrite_cleanup(&z);
     return;
   }
 
@@ -333,7 +333,7 @@ void owl_function_zwrite_setup(const char *line)
   if (owl_global_is_txping(&g)) {
     owl_zwrite_send_ping(&z);
   }
-  owl_zwrite_free(&z);
+  owl_zwrite_cleanup(&z);
 
   owl_function_write_setup(line, "zephyr", &owl_callback_zwrite);
 }
@@ -390,7 +390,7 @@ void owl_function_zwrite(const char *line, const char *msg)
   }
 
   /* free the zwrite */
-  owl_zwrite_free(&z);
+  owl_zwrite_cleanup(&z);
 }
 
 /* send, log and display an outgoing zcrypt zephyr.  If 'msg' is NULL
@@ -416,7 +416,7 @@ void owl_function_zcrypt(const char *line, const char *msg)
   if (!cryptmsg) {
     owl_function_error("Error in zcrypt, possibly no key found.  Message not sent.");
     owl_function_beep();
-    owl_zwrite_free(&z);
+    owl_zwrite_cleanup(&z);
     return;
   }
 #else
@@ -443,7 +443,7 @@ void owl_function_zcrypt(const char *line, const char *msg)
 
   /* free the zwrite */
   owl_free(cryptmsg);
-  owl_zwrite_free(&z);
+  owl_zwrite_cleanup(&z);
 }
 
 void owl_callback_aimwrite(owl_editwin *e) {

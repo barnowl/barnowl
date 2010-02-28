@@ -814,7 +814,7 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
 
       owl_log_outgoing_zephyr_error(&zw, buff);
 
-      owl_zwrite_free(&zw);
+      owl_zwrite_cleanup(&zw);
       owl_free(tmp);
     }
   } else {

@@ -270,7 +270,7 @@ int owl_zwrite_create_and_send_from_line(const char *cmd, const char *msg)
   }
   owl_zwrite_populate_zsig(&z);
   owl_zwrite_send_message(&z);
-  owl_zwrite_free(&z);
+  owl_zwrite_cleanup(&z);
   return(0);
 }
 
@@ -349,7 +349,7 @@ int owl_zwrite_is_personal(const owl_zwrite *z)
   return(0);
 }
 
-void owl_zwrite_free(owl_zwrite *z)
+void owl_zwrite_cleanup(owl_zwrite *z)
 {
   owl_list_cleanup(&(z->recips), &owl_free);
   if (z->zwriteline) owl_free(z->zwriteline);

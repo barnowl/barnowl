@@ -1861,10 +1861,10 @@ char *owl_command_zwrite(int argc, const char *const *argv, const char *buff)
   owl_zwrite_create_from_line(&z, buff);
   if (owl_zwrite_is_message_set(&z)) {
     owl_function_zwrite(buff, NULL);
-    owl_zwrite_free(&z);
+    owl_zwrite_cleanup(&z);
     return (NULL);
   }
-  owl_zwrite_free(&z);
+  owl_zwrite_cleanup(&z);
 
   if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the zwrite command.");
@@ -1972,10 +1972,10 @@ char *owl_command_zcrypt(int argc, const char *const *argv, const char *buff)
   owl_zwrite_create_from_line(&z, buff);
   if (owl_zwrite_is_message_set(&z)) {
     owl_function_zcrypt(buff, NULL);
-    owl_zwrite_free(&z);
+    owl_zwrite_cleanup(&z);
     return (NULL);
   }
-  owl_zwrite_free(&z);
+  owl_zwrite_cleanup(&z);
 
   if (argc < 2) {
     owl_function_makemsg("Not enough arguments to the zcrypt command.");
