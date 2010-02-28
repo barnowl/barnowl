@@ -93,6 +93,7 @@ void owl_fmtext_appendf_normal(owl_fmtext *f, const char *fmt, ...)
   if (!buff)
     return;
   owl_fmtext_append_attr(f, buff, OWL_FMTEXT_ATTR_NONE, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
+  owl_free(buff);
 }
 
 /* Append normal text 'text' to 'f' with color 'color' */
