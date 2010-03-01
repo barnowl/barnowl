@@ -592,7 +592,7 @@ char *owl_message_get_cc_without_recipient(const owl_message *m)
     return NULL;
 
   recip = short_zuser(owl_message_get_recipient(m));
-  out = owl_malloc(strlen(cc));
+  out = owl_malloc(strlen(cc) + 2);
   end = out;
 
   user = strtok(cc, " ");
