@@ -1,3 +1,14 @@
+1.5.1
+ * Fix numerous memory leaks. -andersk@mit.edu
+ * owl_message_get_cc_without_recipient: Don’t overflow the output buffer. -andersk@mit.edu
+        (Fixes CVE-2010-0793)
+ * owl_command_aimwrite: Fix a buffer overflow on aimwrite -m. -andersk@mit.edu
+ * zcrypt: Don’t read off the end of misaligned input messages. -andersk@mit.edu
+ * Fix zcrypt when compiling without krb4 -oremanj@MIT.EDU
+ * Fix a crash narrowing to certain messages. -andersk@mit.edu
+ * Fix a subtle bug in the perl bindings. -nelhage@mit.edu
+ * Squelch an 'uninitialized' warning in recv:shift-left. -nelhage@mit.edu
+
 1.5
  * Show the prompt in short editwins when scrolling back to the start. -nelhage@mit.edu
  * Improve handling of some Jabber messages. -asedeno@mit.edu
