@@ -2565,8 +2565,10 @@ char *owl_command_aimlogin(int argc, const char *const *argv, const char *buff)
 
   /* if we get two arguments, ask for the password */
   if (argc==2) {
-    owl_global_set_buffercommand(&g, argv[1]);
-    owl_global_set_buffercallback(&g, &owl_callback_aimlogin);
+    owl_editwin_set_cbdata(owl_global_get_typwin(&g),
+                           owl_strdup(argv[1]), owl_free);
+    owl_editwin_set_callback(owl_global_get_typwin(&g),
+                             owl_callback_aimlogin);
     owl_function_start_password("AIM Password: ");
     return(NULL);
   } else {

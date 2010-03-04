@@ -295,7 +295,7 @@ void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin 
   owl_global_set_typwin_active(&g);
 
   owl_editwin_set_cbdata(owl_global_get_typwin(&g), data, cleanup);
-  owl_global_set_buffercallback(&g, callback);
+  owl_editwin_set_callback(owl_global_get_typwin(&g), callback);
   owl_global_push_context(&g, OWL_CTX_EDITMULTI, e, "editmulti");
 }
 
@@ -311,8 +311,9 @@ static void owl_function_write_setup(const char *line, const char *noun, void (*
 			 "End with a dot on a line by itself.  ^C will quit.",
 			 noun);
 
-  owl_function_start_edit_win(line, callback, NULL, NULL);
-  owl_global_set_buffercommand(&g, line);
+  owl_function_start_edit_win(line, callback,
+                              owl_strdup(line),
+                              owl_free);
 }
 
 void owl_function_zwrite_setup(const char *line)
@@ -348,7 +349,8 @@ void owl_function_loopwrite_setup(void)
 }
 
 void owl_callback_zwrite(owl_editwin *e) {
-  owl_function_zwrite(owl_editwin_get_command(e),
+  char *command = owl_editwin_get_cbdata(e);
+  owl_function_zwrite(command,
                       owl_editwin_get_text(e));
 }
 
@@ -446,7 +448,8 @@ void owl_function_zcrypt(const char *line, const char *msg)
 }
 
 void owl_callback_aimwrite(owl_editwin *e) {
-  owl_function_aimwrite(owl_editwin_get_command(e),
+  char *command = owl_editwin_get_cbdata(e);
+  owl_function_aimwrite(command,
                         owl_editwin_get_text(e));
 }
 
@@ -881,7 +884,8 @@ void owl_function_loadloginsubs(const char *file)
 }
 
 void owl_callback_aimlogin(owl_editwin *e) {
-  owl_function_aimlogin(owl_editwin_get_command(e),
+  char *user = owl_editwin_get_cbdata(e);
+  owl_function_aimlogin(user,
                         owl_editwin_get_text(e));
 }
 

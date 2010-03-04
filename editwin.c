@@ -34,7 +34,6 @@ struct _owl_editwin { /*noproto*/
   int echochar;
   oe_excursion *excursions;
 
-  char *command;
   void (*callback)(struct _owl_editwin*);
   void (*destroy_cbdata)(void *);
   void *cbdata;
@@ -76,7 +75,6 @@ void owl_editwin_delete(owl_editwin *e)
 {
   owl_free(e->buff);
   owl_free(e->killbuf);
-  owl_free(e->command);
   /* just in case someone forgot to clean up */
   while (e->excursions) {
     oe_release_excursion(e, e->excursions);
@@ -180,18 +178,6 @@ owl_history *owl_editwin_get_history(owl_editwin *e)
 void owl_editwin_set_dotsend(owl_editwin *e)
 {
   e->dotsend=1;
-}
-
-void owl_editwin_set_command(owl_editwin *e, const char *command)
-{
-  if(e->command) owl_free(e->command);
-  e->command = owl_strdup(command);
-}
-
-const char *owl_editwin_get_command(owl_editwin *e)
-{
-  if(e->command) return e->command;
-  return "";
 }
 
 void owl_editwin_set_callback(owl_editwin *e, void (*cb)(owl_editwin*))
