@@ -2699,6 +2699,7 @@ void owl_command_edit_cancel(owl_editwin *e)
   owl_global_pop_context(&g);
 
   owl_global_set_typwin_inactive(&g);
+  owl_editwin_delete(e);
 }
 
 void owl_command_edit_history_prev(owl_editwin *e)
@@ -2758,6 +2759,7 @@ void owl_command_editline_done(owl_editwin *e)
   cmd = owl_strdup(owl_editwin_get_text(e));
 
   owl_global_set_typwin_inactive(&g);
+  owl_editwin_delete(e);
   owl_global_pop_context(&g);
 
   rv = owl_function_command(cmd);
@@ -2771,6 +2773,7 @@ void owl_command_editline_done(owl_editwin *e)
   }
 }
 
+
 void owl_command_edit_done(owl_editwin *e)
 {
   owl_history *hist=owl_editwin_get_history(e);
@@ -2780,11 +2783,12 @@ void owl_command_edit_done(owl_editwin *e)
     owl_history_reset(hist);
   }
 
-  owl_function_run_buffercommand();
-
   owl_global_set_typwin_inactive(&g);
   owl_global_pop_context(&g);
   owl_global_set_needrefresh(&g);
+
+  owl_editwin_do_callback(e);
+  owl_editwin_delete(e);
 }
 
 void owl_command_edit_done_or_delete(owl_editwin *e)

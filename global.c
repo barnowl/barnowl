@@ -388,7 +388,6 @@ void owl_global_set_typwin_inactive(owl_global *g) {
 
   g->typwinactive=0;
 
-  owl_editwin_delete(g->tw);
   werase(owl_global_get_curs_typwin(g));
   g->tw = NULL;
 }
