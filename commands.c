@@ -905,11 +905,7 @@ const owl_cmd commands_to_init[]
 		  "insert the current text from the kill buffer",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("editline:done", owl_command_editline_done, 
-		  OWL_CTX_EDITLINE,
-		  "completes the command (eg, executes command being composed)",
-		  "", ""),
-
+  OWLCMD_ALIAS   ("editline:done", "edit:done"),
   OWLCMD_ALIAS   ("editresponse:done", "edit:done"),
 
   OWLCMD_VOID_CTX("edit:move-up-line", owl_editwin_key_up, 
@@ -2748,31 +2744,6 @@ char *owl_command_edit_insert_text(owl_editwin *e, int argc, const char *const *
   owl_global_set_needrefresh(&g);  
   return NULL;
 }
-
-void owl_command_editline_done(owl_editwin *e)
-{
-  owl_history *hist=owl_editwin_get_history(e);
-  char *rv, *cmd;
-
-  owl_history_store(hist, owl_editwin_get_text(e));
-  owl_history_reset(hist);
-  cmd = owl_strdup(owl_editwin_get_text(e));
-
-  owl_global_set_typwin_inactive(&g);
-  owl_editwin_delete(e);
-  owl_global_pop_context(&g);
-
-  rv = owl_function_command(cmd);
-  owl_free(cmd);
-
-  owl_global_set_needrefresh(&g);
-
-  if (rv) {
-    owl_function_makemsg("%s", rv);
-    owl_free(rv);
-  }
-}
-
 
 void owl_command_edit_done(owl_editwin *e)
 {

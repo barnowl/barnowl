@@ -1899,6 +1899,18 @@ void owl_function_zlocate(int argc, const char *const *argv, int auth)
   owl_fmtext_cleanup(&fm);
 }
 
+void owl_callback_command(owl_editwin *e)
+{
+  char *rv;
+  const char *line = owl_editwin_get_text(e);
+
+  rv = owl_function_command(line);
+   if (rv) {
+    owl_function_makemsg("%s", rv);
+    owl_free(rv);
+  }
+}
+
 void owl_function_start_command(const char *line)
 {
   owl_editwin *tw;
@@ -1913,6 +1925,7 @@ void owl_function_start_command(const char *line)
   owl_editwin_redisplay(tw);
 
   owl_global_push_context(&g, OWL_CTX_EDITLINE, tw, "editline");
+  owl_editwin_set_callback(tw, owl_callback_command);
 }
 
 void owl_function_start_question(const char *line)
