@@ -1935,7 +1935,7 @@ void owl_function_start_question(const char *line)
 
   owl_editwin_redisplay(tw);
 
-  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editline");
+  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse");
 }
 
 void owl_function_start_password(const char *line)
