@@ -2448,8 +2448,6 @@ char *owl_function_typefilt(const char *type)
   }
 
   /* create the new-internal filter */
-  f=owl_malloc(sizeof(owl_filter));
-
   esctype = owl_text_quote(type, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
 
   argbuff = owl_sprintf("type ^%s$", esctype);
