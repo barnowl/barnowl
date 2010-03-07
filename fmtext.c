@@ -851,7 +851,7 @@ void owl_fmtext_reset_colorpairs(void)
 short owl_fmtext_get_colorpair(int fg, int bg)
 {
   owl_colorpair_mgr *cpmgr;
-  short pair, default_bg;
+  short pair;
 
   /* Sanity (Bounds) Check */
   if (fg > COLORS || fg < OWL_COLOR_DEFAULT) fg = OWL_COLOR_DEFAULT;
@@ -859,11 +859,9 @@ short owl_fmtext_get_colorpair(int fg, int bg)
 	    
 #ifdef HAVE_USE_DEFAULT_COLORS
   if (fg == OWL_COLOR_DEFAULT) fg = -1;
-  default_bg = OWL_COLOR_DEFAULT;
 #else
   if (fg == OWL_COLOR_DEFAULT) fg = 0;
   if (bg == OWL_COLOR_DEFAULT) bg = 0;
-  default_bg = COLOR_BLACK;
 #endif
 
   /* looking for a pair we already set up for this draw. */
