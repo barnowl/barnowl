@@ -280,10 +280,24 @@ sub poll_direct {
     }
 }
 
+sub _stripnl {
+    my $msg = shift;
+
+    # strip non-newline whitespace around newlines
+    $msg =~ s/[^\n\S]*(\n+)[^\n\S]*/$1/sg;
+    # change single newlines to a single space; leave multiple newlines
+    $msg =~ s/([^\n])\n([^\n])/$1 $2/sg;
+    # strip leading and trailing whitespace
+    $msg =~ s/\s+$//s;
+    $msg =~ s/^\s+//s;
+
+    return $msg;
+}
+
 sub twitter {
     my $self = shift;
 
-    my $msg = shift;
+    my $msg = _stripnl(shift);
     my $reply_to = shift;
 
     if($msg =~ m{\Ad\s+([^\s])+(.*)}sm) {
@@ -304,7 +318,8 @@ sub twitter_direct {
     my $self = shift;
 
     my $who = shift;
-    my $msg = shift;
+    my $msg = _stripnl(shift);
+
     if(defined $self->{twitter}) {
         $self->twitter_command('new_direct_message', {
             user => $who,
