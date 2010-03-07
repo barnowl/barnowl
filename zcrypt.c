@@ -31,13 +31,6 @@
 
 #define MAX_KEY 128
 
-#ifndef TRUE
-#define TRUE -1
-#endif
-#ifndef FALSE
-#define FALSE 0
-#endif
-
 #define ZWRITE_OPT_NOAUTH     (1<<0)
 #define ZWRITE_OPT_SIGNATURE  (1<<1)
 #define ZWRITE_OPT_IGNOREVARS (1<<2)
