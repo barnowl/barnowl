@@ -182,9 +182,19 @@ userclue:  right now userclue is just used to decide if you sub to
 Conventions and Design Criteria
 -------------------------------
 
-	There are no hard rules for memory allocation.  In general I
-	have the caller allocate memory for objects themselves and any
-	memory the object creates gets freed with object_free().
+	Functions for creating and destroying objects should be named
+	according to the following conventions:
+
+	owl_*_init: Takes a pointer to a caller-allocated struct, and
+		creates an object there.
+	owl_*_cleanup: Takes a pointer, and destroys the object there,
+		expecting the caller to free the struct.
+
+	owl_*_new: Allocates a struct, creates an object there, and
+		returns a pointer.
+	owl_*_delete: Takes a pointer, destroys the object, and frees
+		the struct.
+
 	Functions should document if the caller needs to free
 	something, and this should be the exception to the rule.
 
