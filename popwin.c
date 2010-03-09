@@ -81,14 +81,6 @@ int owl_popwin_is_active(const owl_popwin *pw)
   return(0);
 }
 
-/* this will refresh the border as well as the text area */
-int owl_popwin_refresh(const owl_popwin *pw)
-{
-  update_panels();
-  owl_global_set_needrefresh(&g);
-  return(0);
-}
-
 WINDOW *owl_popwin_get_curswin(const owl_popwin *pw)
 {
   return panel_window(pw->poppanel);

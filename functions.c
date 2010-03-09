@@ -1283,7 +1283,6 @@ void owl_function_popless_text(const char *text)
   owl_viewwin_init_text(v, owl_popwin_get_curswin(pw),
 			owl_popwin_get_lines(pw), owl_popwin_get_cols(pw),
 			text);
-  owl_popwin_refresh(pw);
   owl_viewwin_redisplay(v);
   owl_global_set_needrefresh(&g);
 }
@@ -1301,7 +1300,6 @@ void owl_function_popless_fmtext(const owl_fmtext *fm)
   owl_viewwin_init_fmtext(v, owl_popwin_get_curswin(pw),
 		   owl_popwin_get_lines(pw), owl_popwin_get_cols(pw),
 		   fm);
-  owl_popwin_refresh(pw);
   owl_viewwin_redisplay(v);
   owl_global_set_needrefresh(&g);
 }
