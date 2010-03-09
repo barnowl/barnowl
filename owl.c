@@ -624,7 +624,7 @@ int main(int argc, char **argv, char **env)
 
     /* update the terminal if we need to */
     if (owl_global_is_needrefresh(&g)) {
-      /* ensure that panels are clean, so that set_cursor doesn't break things */
+      /* push all changed windows to screen */
       update_panels();
       /* leave the cursor in the appropriate window */
       if (!owl_popwin_is_active(owl_global_get_popwin(&g))

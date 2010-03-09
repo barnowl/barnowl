@@ -564,8 +564,6 @@ void owl_editwin_redisplay(owl_editwin *e)
 
   wmove(e->curswin, y, x);
   e->cursorx = x;
-
-  update_panels();
 }
 
 static inline void oe_fixup(int *target, int start, int end, int change) {

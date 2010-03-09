@@ -48,7 +48,6 @@ int owl_popwin_up(owl_popwin *pw)
     waddch(borderwin, '+');
   }
     
-  update_panels();
   owl_global_set_needrefresh(&g);
   pw->active=1;
   return(0);

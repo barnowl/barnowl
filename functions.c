@@ -214,7 +214,6 @@ void owl_function_adminmsg(const char *header, const char *body)
 
   /* redisplay etc. */
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  update_panels();
   owl_global_set_needrefresh(&g);
 }
 
@@ -1261,8 +1260,6 @@ void owl_function_full_redisplay(void)
       redrawwin(owl_global_get_curs_typwin(&g));
   if (g.lines >= 2)
       redrawwin(owl_global_get_curs_msgwin(&g));
-
-  update_panels();
 
   sepbar("");
   owl_function_makemsg("");
@@ -3390,7 +3387,6 @@ void owl_function_makemsg(const char *fmt, ...)
   vsnprintf(buff, 2048, fmt, ap);
   owl_function_debugmsg("makemsg: %s", buff);
   waddstr(owl_global_get_curs_msgwin(&g), buff);  
-  update_panels();
   owl_global_set_needrefresh(&g);
   va_end(ap);
 }

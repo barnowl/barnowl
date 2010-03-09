@@ -87,7 +87,6 @@ void owl_viewwin_redisplay(owl_viewwin *v)
     waddstr(v->curswin, "--End-- (Press 'q' to quit)");
   }
   wattroff(v->curswin, A_REVERSE);
-  update_panels();
 
   owl_fmtext_cleanup(&fm1);
   owl_fmtext_cleanup(&fm2);
