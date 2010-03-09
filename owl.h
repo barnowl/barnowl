@@ -397,7 +397,6 @@ typedef struct _owl_popwin {
   int lines;
   int cols;
   int active;
-  int needsfirstrefresh;
 } owl_popwin;
 
 typedef struct _owl_messagelist {

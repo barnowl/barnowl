@@ -3,7 +3,6 @@
 int owl_popwin_init(owl_popwin *pw)
 {
   pw->active=0;
-  pw->needsfirstrefresh=0;
   pw->lines=0;
   pw->cols=0;
   return(0);
@@ -28,7 +27,6 @@ int owl_popwin_up(owl_popwin *pw)
   pw->borderpanel = new_panel(borderwin);
   popwin = newwin(pw->lines-2, pw->cols-2, startline+1, startcol+1);
   pw->poppanel = new_panel(popwin);
-  pw->needsfirstrefresh=1;
   
   meta(popwin,TRUE);
   nodelay(popwin, 1);
@@ -94,15 +92,4 @@ int owl_popwin_get_lines(const owl_popwin *pw)
 int owl_popwin_get_cols(const owl_popwin *pw)
 {
   return(pw->cols-2);
-}
-
-int owl_popwin_needs_first_refresh(const owl_popwin *pw)
-{
-  if (pw->needsfirstrefresh) return(1);
-  return(0);
-}
-
-void owl_popwin_no_needs_first_refresh(owl_popwin *pw)
-{
-  pw->needsfirstrefresh=0;
 }
