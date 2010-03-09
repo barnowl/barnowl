@@ -250,7 +250,7 @@ void owl_editwin_set_locktext(owl_editwin *e, const char *text)
   e->buff[e->bufflen] = 0;
   e->lock=e->bufflen;
   oe_set_index(e, e->lock);
-  owl_editwin_redisplay(e, 0);
+  owl_editwin_redisplay(e);
 }
 
 int owl_editwin_get_style(owl_editwin *e)
@@ -517,8 +517,7 @@ static void oe_mvaddnec(owl_editwin *e, int y, int x, int count)
 }
 
 /* regenerate the text on the curses window */
-/* if update == 1 then do a doupdate(), otherwise do not */
-void owl_editwin_redisplay(owl_editwin *e, int update)
+void owl_editwin_redisplay(owl_editwin *e)
 {
   int x = -1, y = -1, t;
   int line, index, lineindex, times = 0;
@@ -567,8 +566,6 @@ void owl_editwin_redisplay(owl_editwin *e, int update)
   e->cursorx = x;
 
   update_panels();
-  if (update == 1)
-    doupdate();
 }
 
 static inline void oe_fixup(int *target, int start, int end, int change) {
@@ -1237,7 +1234,7 @@ void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
     owl_command_edit_done(e);
     return;
   }
-  owl_editwin_redisplay(e, 0);
+  owl_editwin_redisplay(e);
 }
 
 static int oe_region_width(owl_editwin *e, int start, int end, int offset)

@@ -1918,7 +1918,7 @@ void owl_function_start_command(const char *line)
   owl_global_set_needrefresh(&g);
 
   owl_editwin_insert_string(tw, line);
-  owl_editwin_redisplay(tw, 0);
+  owl_editwin_redisplay(tw);
 
   owl_global_push_context(&g, OWL_CTX_EDITLINE, tw, "editline");
 }
@@ -1934,7 +1934,7 @@ void owl_function_start_question(const char *line)
   owl_editwin_set_locktext(tw, line);
   owl_global_set_needrefresh(&g);
 
-  owl_editwin_redisplay(tw, 0);
+  owl_editwin_redisplay(tw);
 
   owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editline");
 }
@@ -1951,7 +1951,7 @@ void owl_function_start_password(const char *line)
   owl_editwin_set_locktext(tw, line);
   owl_global_set_needrefresh(&g);
 
-  owl_editwin_redisplay(tw, 0);
+  owl_editwin_redisplay(tw);
 
   owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse");
 }

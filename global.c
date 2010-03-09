@@ -530,7 +530,7 @@ void owl_global_resize(owl_global *g, int x, int y) {
   g->needrefresh=1;
   owl_mainwin_redisplay(&(g->mw));
   sepbar(NULL);
-  owl_editwin_redisplay(g->tw, 0);
+  owl_editwin_redisplay(g->tw);
   owl_function_full_redisplay();
 
   owl_function_debugmsg("New size is %i lines, %i cols.", size.ws_row, size.ws_col);
