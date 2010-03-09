@@ -1248,6 +1248,10 @@ void owl_function_unsubscribe(const char *class, const char *inst, const char *r
 void owl_function_set_cursor(WINDOW *win)
 {
   /* Be careful that this window is actually empty, otherwise panels get confused */
+  if (is_wintouched(win)) {
+    owl_function_debugmsg("Warning: owl_function_set_cursor called on dirty window");
+    update_panels();
+  }
   wnoutrefresh(win);
 }
 
