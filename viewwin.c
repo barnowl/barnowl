@@ -63,8 +63,7 @@ void owl_viewwin_set_onclose_hook(owl_viewwin *v, void (*onclose_hook) (owl_view
 }
 
 /* regenerate text on the curses window. */
-/* if update == 1 then do a doupdate() */
-void owl_viewwin_redisplay(owl_viewwin *v, int update)
+void owl_viewwin_redisplay(owl_viewwin *v)
 {
   owl_fmtext fm1, fm2;
   
@@ -89,10 +88,6 @@ void owl_viewwin_redisplay(owl_viewwin *v, int update)
   }
   wattroff(v->curswin, A_REVERSE);
   update_panels();
-
-  if (update==1) {
-    doupdate();
-  }
 
   owl_fmtext_cleanup(&fm1);
   owl_fmtext_cleanup(&fm2);
