@@ -573,9 +573,12 @@ void owl_perlconfig_edit_callback(owl_editwin *e)
 
   FREETMPS;
   LEAVE;
+}
 
-  SvREFCNT_dec(cb);
-  owl_editwin_set_cbdata(e, NULL);
+void owl_perlconfig_dec_refcnt(void *data)
+{
+  SV *v = data;
+  SvREFCNT_dec(v);
 }
 
 void owl_perlconfig_mainloop(owl_timer *t, void *data)

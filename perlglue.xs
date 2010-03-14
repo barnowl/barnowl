@@ -178,7 +178,9 @@ start_question(line, callback)
 
 		owl_function_start_question(line);
 
-		owl_editwin_set_cbdata(owl_global_get_typwin(&g), newSVsv(callback));
+		owl_editwin_set_cbdata(owl_global_get_typwin(&g),
+				       newSVsv(callback),
+				       owl_perlconfig_dec_refcnt);
 		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
 	}
 
@@ -194,7 +196,9 @@ start_password(line, callback)
 
 		owl_function_start_password(line);
 
-		owl_editwin_set_cbdata(owl_global_get_typwin(&g), newSVsv(callback));
+		owl_editwin_set_cbdata(owl_global_get_typwin(&g),
+				       newSVsv(callback),
+				       owl_perlconfig_dec_refcnt);
 		owl_editwin_set_callback(owl_global_get_typwin(&g), owl_perlconfig_edit_callback);
 	}
 
@@ -207,7 +211,10 @@ start_edit_win(line, callback)
 		if(!SV_IS_CODEREF(callback))
 			croak("Callback must be a subref");
 
-		owl_function_start_edit_win(line, owl_perlconfig_edit_callback, newSVsv(callback));
+		owl_function_start_edit_win(line,
+					    owl_perlconfig_edit_callback,
+					    newSVsv(callback),
+					    owl_perlconfig_dec_refcnt);
 	}
 
 

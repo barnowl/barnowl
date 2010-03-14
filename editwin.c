@@ -36,6 +36,7 @@ struct _owl_editwin { /*noproto*/
 
   char *command;
   void (*callback)(struct _owl_editwin*);
+  void (*destroy_cbdata)(void *);
   void *cbdata;
 };
 
@@ -57,6 +58,7 @@ static int owl_editwin_replace_internal(owl_editwin *e, int replace, const char 
 static const char *oe_copy_buf(owl_editwin *e, const char *buf, int len);
 static int oe_copy_region(owl_editwin *e);
 static char *oe_chunk(owl_editwin *e, int start, int end);
+static void oe_destroy_cbdata(owl_editwin *e);
 
 #define INCR 4096
 
@@ -144,13 +146,6 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->dotsend=0;
   e->echochar='\0';
 
-  /* We get initialized multiple times, but we need to hold on to
-     the callbacks, so we can't NULL them here. */
-  /*
-    e->command = NULL;
-    e->callback = NULL;
-    e->cbdata = NULL;
-  */
   if (win) werase(win);
 }
 
@@ -209,9 +204,18 @@ void (*owl_editwin_get_callback(owl_editwin *e))(owl_editwin*)
   return e->callback;
 }
 
-void owl_editwin_set_cbdata(owl_editwin *e, void *data)
+static void oe_destroy_cbdata(owl_editwin *e) {
+  if (e->destroy_cbdata)
+    e->destroy_cbdata(e->cbdata);
+  e->cbdata = NULL;
+  e->destroy_cbdata = NULL;
+}
+
+void owl_editwin_set_cbdata(owl_editwin *e, void *data, void (*destroy)(void *))
 {
+  oe_destroy_cbdata(e);
   e->cbdata = data;
+  e->destroy_cbdata = destroy;
 }
 
 void *owl_editwin_get_cbdata(owl_editwin *e) {
@@ -281,6 +285,8 @@ void owl_editwin_fullclear(owl_editwin *e)
 {
   owl_free(e->buff);
   owl_editwin_init(e, e->curswin, e->winlines, e->wincols, e->style, e->hist);
+  e->callback = NULL;
+  oe_destroy_cbdata(e);
 }
 
 /* clear all text except for locktext and put the cursor at the
