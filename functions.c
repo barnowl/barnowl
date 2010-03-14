@@ -282,20 +282,16 @@ void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin 
   char *s;
 
   /* create and setup the editwin */
+  owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_MULTILINE,
+                               owl_global_get_msg_history(&g));
   e = owl_global_get_typwin(&g);
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_MULTILINE,
-			owl_global_get_msg_history(&g));
-  owl_editwin_clear(e);
   owl_editwin_set_dotsend(e);
   s = owl_sprintf("----> %s\n", line);
   owl_editwin_set_locktext(e, s);
   owl_free(s);
 
-  /* make it active */
-  owl_global_set_typwin_active(&g);
-
-  owl_editwin_set_cbdata(owl_global_get_typwin(&g), data, cleanup);
-  owl_editwin_set_callback(owl_global_get_typwin(&g), callback);
+  owl_editwin_set_cbdata(e, data, cleanup);
+  owl_editwin_set_callback(e, callback);
   owl_global_push_context(&g, OWL_CTX_EDITMULTI, e, "editmulti");
 }
 
@@ -1912,10 +1908,8 @@ void owl_function_start_command(const char *line)
 {
   owl_editwin *tw;
 
+  owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
   tw=owl_global_get_typwin(&g);
-  owl_global_set_typwin_active(&g);
-  owl_editwin_new_style(tw, OWL_EDITWIN_STYLE_ONELINE, 
-			owl_global_get_cmd_history(&g));
 
   owl_editwin_set_locktext(tw, "command: ");
   owl_global_set_needrefresh(&g);
@@ -1930,9 +1924,8 @@ void owl_function_start_question(const char *line)
 {
   owl_editwin *tw;
 
+  owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
   tw=owl_global_get_typwin(&g);
-  owl_global_set_typwin_active(&g);
-  owl_editwin_new_style(tw, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
 
   owl_editwin_set_locktext(tw, line);
   owl_global_set_needrefresh(&g);
@@ -1946,9 +1939,8 @@ void owl_function_start_password(const char *line)
 {
   owl_editwin *tw;
 
-  tw=owl_global_get_typwin(&g);
-  owl_global_set_typwin_active(&g);
-  owl_editwin_new_style(tw, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
+  owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
+  tw = owl_global_get_typwin(&g);
   owl_editwin_set_echochar(tw, '*');
 
   owl_editwin_set_locktext(tw, line);

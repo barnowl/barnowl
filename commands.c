@@ -2565,11 +2565,11 @@ char *owl_command_aimlogin(int argc, const char *const *argv, const char *buff)
 
   /* if we get two arguments, ask for the password */
   if (argc==2) {
+    owl_function_start_password("AIM Password: ");
     owl_editwin_set_cbdata(owl_global_get_typwin(&g),
                            owl_strdup(argv[1]), owl_free);
     owl_editwin_set_callback(owl_global_get_typwin(&g),
                              owl_callback_aimlogin);
-    owl_function_start_password("AIM Password: ");
     return(NULL);
   } else {
     owl_function_aimlogin(argv[1], argv[2]);
@@ -2698,12 +2698,10 @@ void owl_command_edit_cancel(owl_editwin *e)
     owl_history_reset(hist);
   }
 
-  owl_editwin_fullclear(e);
   owl_global_set_needrefresh(&g);
-  owl_global_set_typwin_inactive(&g);
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_ONELINE, NULL);
-
   owl_global_pop_context(&g);
+
+  owl_global_set_typwin_inactive(&g);
 }
 
 void owl_command_edit_history_prev(owl_editwin *e)
@@ -2760,10 +2758,11 @@ void owl_command_editline_done(owl_editwin *e)
 
   owl_history_store(hist, owl_editwin_get_text(e));
   owl_history_reset(hist);
+  cmd = owl_strdup(owl_editwin_get_text(e));
+
   owl_global_set_typwin_inactive(&g);
   owl_global_pop_context(&g);
-  cmd = owl_strdup(owl_editwin_get_text(e));
-  owl_editwin_fullclear(e);
+
   rv = owl_function_command(cmd);
   owl_free(cmd);
 
@@ -2782,7 +2781,7 @@ void owl_command_editresponse_done(owl_editwin *e)
 
   owl_global_set_typwin_inactive(&g);
   owl_global_pop_context(&g);
-  owl_editwin_fullclear(e);
+
   owl_global_set_needrefresh(&g);
 }
 
@@ -2795,8 +2794,7 @@ void owl_command_edit_done(owl_editwin *e)
   owl_history_reset(hist);
 
   owl_function_run_buffercommand();
-  owl_editwin_new_style(e, OWL_EDITWIN_STYLE_ONELINE, NULL);
-  owl_editwin_fullclear(e);
+
   owl_global_set_typwin_inactive(&g);
   owl_global_pop_context(&g);
   owl_global_set_needrefresh(&g);

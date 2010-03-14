@@ -63,7 +63,7 @@ static void oe_destroy_cbdata(owl_editwin *e);
 
 #define WHITESPACE " \n\t"
 
-owl_editwin *owl_editwin_allocate(void)
+static owl_editwin *owl_editwin_allocate(void)
 {
   owl_editwin *e;
   e = owl_malloc(sizeof(owl_editwin));
@@ -79,6 +79,7 @@ void owl_editwin_delete(owl_editwin *e)
   while (e->excursions) {
     oe_release_excursion(e, e->excursions);
   }
+  oe_destroy_cbdata(e);
 
   owl_free(e);
 }
@@ -115,10 +116,12 @@ void owl_editwin_set_mark(owl_editwin *e)
   /* owl_function_makemsg("Mark set."); */
 }
 
-/* initialize the editwin e.
- * 'win' is an already initialzed curses window that will be used by editwin
- */
-void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, int style, owl_history *hist)
+static void _owl_editwin_init(owl_editwin *e,
+                              WINDOW *win,
+                              int winlines,
+                              int wincols,
+                              int style,
+                              owl_history *hist)
 {
   e->buff=owl_malloc(INCR);
   e->buff[0]='\0';
@@ -145,6 +148,14 @@ void owl_editwin_init(owl_editwin *e, WINDOW *win, int winlines, int wincols, in
   e->echochar='\0';
 
   if (win) werase(win);
+}
+
+owl_editwin *owl_editwin_new(WINDOW *win, int winlines, int wincols, int style, owl_history *hist)
+{
+  owl_editwin *e = owl_editwin_allocate();
+
+  _owl_editwin_init(e, win, winlines, wincols, style, hist);
+  return e;
 }
 
 void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincols)
@@ -248,33 +259,6 @@ int owl_editwin_get_style(owl_editwin *e)
   return(e->style);
 }
 
-void owl_editwin_new_style(owl_editwin *e, int newstyle, owl_history *h)
-{
-  e->hist = h;
-
-  if (e->style==newstyle) return;
-
-  if (newstyle==OWL_EDITWIN_STYLE_MULTILINE) {
-    e->style=newstyle;
-  } else if (newstyle==OWL_EDITWIN_STYLE_ONELINE) {
-    e->style=newstyle;
-
-    /* nuke everything after the first line */
-    owl_editwin_move_to_top(e);
-    owl_editwin_move_to_end_of_line(e);
-    owl_editwin_replace(e, oe_count_glyphs(e->buff + e->index),  "");
-  }
-}
-
-/* completly reinitialize the buffer */
-void owl_editwin_fullclear(owl_editwin *e)
-{
-  owl_free(e->buff);
-  owl_editwin_init(e, e->curswin, e->winlines, e->wincols, e->style, e->hist);
-  e->callback = NULL;
-  oe_destroy_cbdata(e);
-}
-
 /* clear all text except for locktext and put the cursor at the
  * beginning
  */
@@ -293,7 +277,7 @@ void owl_editwin_clear(owl_editwin *e)
   }
 
   owl_free(e->buff);
-  owl_editwin_init(e, e->curswin, e->winlines, e->wincols, e->style, e->hist);
+  _owl_editwin_init(e, e->curswin, e->winlines, e->wincols, e->style, e->hist);
 
   if (lock > 0) {
     owl_editwin_set_locktext(e, locktext);

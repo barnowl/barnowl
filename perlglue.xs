@@ -548,24 +548,45 @@ int
 replace(count, string)
 	int count;
 	const char *string;
+	PREINIT:
+		owl_editwin *e;
 	CODE:
-		RETVAL = owl_editwin_replace(owl_global_get_typwin(&g), count, string);
+		e = owl_global_get_typwin(&g);
+		if (e) {
+			RETVAL = owl_editwin_replace(e, count, string);
+		} else {
+			RETVAL = 0;
+		}
 	OUTPUT:
 		RETVAL
 
 int
 point_move(delta)
 	int delta;
+	PREINIT:
+		owl_editwin *e;
 	CODE:
-		RETVAL = owl_editwin_point_move(owl_global_get_typwin(&g), delta);
+		e = owl_global_get_typwin(&g);
+		if (e) {
+			RETVAL = owl_editwin_point_move(e, delta);
+		} else {
+			RETVAL = 0;
+		}
 	OUTPUT:
 		RETVAL
 
 int
 replace_region(string)
 	const char *string;
+	PREINIT:
+		owl_editwin *e;
 	CODE:
-		RETVAL = owl_editwin_replace_region(owl_global_get_typwin(&g), string);
+		e = owl_global_get_typwin(&g);
+		if (e) {
+			RETVAL = owl_editwin_replace_region(e, string);
+		} else {
+			RETVAL = 0;
+		}
 	OUTPUT:
 		RETVAL
 
@@ -573,8 +594,14 @@ const utf8 *
 get_region()
 	PREINIT:
 		char *region;
+		owl_editwin *e;
 	CODE:
-		region = owl_editwin_get_region(owl_global_get_typwin(&g));
+		e = owl_global_get_typwin(&g);
+		if (e) {
+			region = owl_editwin_get_region(owl_global_get_typwin(&g));
+		} else {
+			region = NULL;
+		}
 		RETVAL = region;
 	OUTPUT:
 		RETVAL
@@ -587,9 +614,14 @@ save_excursion(sub)
 	PROTOTYPE: &
 	PREINIT:
 		int count;
+		owl_editwin *e;
 		owl_editwin_excursion *x;
 	CODE:
 	{
+		e = owl_global_get_typwin(&g);
+		if(!e)
+			croak("The edit window is not currently active!");
+
 		x = owl_editwin_begin_excursion(owl_global_get_typwin(&g));
 		PUSHMARK(SP);
 		count = call_sv(sub, G_SCALAR|G_EVAL|G_NOARGS);
@@ -611,21 +643,42 @@ save_excursion(sub)
 
 int
 current_column()
+	PREINIT:
+		owl_editwin *e;
 	CODE:
-		RETVAL = owl_editwin_current_column(owl_global_get_typwin(&g));
+		e = owl_global_get_typwin(&g);
+		if (e) {
+			RETVAL = owl_editwin_current_column(e);
+		} else {
+			RETVAL = 0;
+		}
 	OUTPUT:
 		RETVAL
 
 int
 point()
+	PREINIT:
+		owl_editwin *e;
 	CODE:
-		RETVAL = owl_editwin_get_point(owl_global_get_typwin(&g));
+		e = owl_global_get_typwin(&g);
+		if (e) {
+			RETVAL = owl_editwin_get_point(e);
+		} else {
+			RETVAL = 0;
+		}
 	OUTPUT:
 		RETVAL
 
 int
 mark()
+	PREINIT:
+		owl_editwin *e;
 	CODE:
-		RETVAL = owl_editwin_get_mark(owl_global_get_typwin(&g));
+		e = owl_global_get_typwin(&g);
+		if (e) {
+			RETVAL = owl_editwin_get_mark(e);
+		} else {
+			RETVAL = 0;
+		}
 	OUTPUT:
 		RETVAL

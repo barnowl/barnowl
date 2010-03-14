@@ -44,8 +44,7 @@ void owl_global_init(owl_global *g) {
 
   g->rightshift=0;
 
-  g->tw = owl_editwin_allocate();
-  owl_editwin_init(g->tw, NULL, owl_global_get_typwin_lines(g), g->cols, OWL_EDITWIN_STYLE_ONELINE, NULL);
+  g->tw = NULL;
 
   owl_keyhandler_init(&g->kh);
   owl_keys_setup_keymaps(&g->kh);
@@ -170,7 +169,8 @@ void _owl_global_setup_windows(owl_global *g) {
   _owl_panel_set_window(&g->msgpan, newwin(1, cols, g->recwinlines+1, 0));
   _owl_panel_set_window(&g->typpan, newwin(typwin_lines, cols, g->recwinlines+2, 0));
 
-  owl_editwin_set_curswin(g->tw, owl_global_get_curs_typwin(g), typwin_lines, g->cols);
+  if (g->tw)
+      owl_editwin_set_curswin(g->tw, owl_global_get_curs_typwin(g), typwin_lines, g->cols);
 
   idlok(owl_global_get_curs_typwin(g), FALSE);
   idlok(owl_global_get_curs_recwin(g), FALSE);
@@ -367,11 +367,17 @@ int owl_global_is_typwin_active(const owl_global *g) {
   return(0);
 }
 
-void owl_global_set_typwin_active(owl_global *g) {
-  int d = owl_global_get_typewindelta(g);
+void owl_global_set_typwin_active(owl_global *g, int style, owl_history *hist) {
+  int d;
+  d = owl_global_get_typewindelta(g);
   if (d > 0)
       owl_function_resize_typwin(owl_global_get_typwin_lines(g) + d);
 
+  g->tw = owl_editwin_new(owl_global_get_curs_typwin(g),
+                          owl_global_get_typwin_lines(g),
+                          g->cols,
+                          style,
+                          hist);
   g->typwinactive=1;
 }
 
@@ -381,6 +387,10 @@ void owl_global_set_typwin_inactive(owl_global *g) {
       owl_function_resize_typwin(owl_global_get_typwin_lines(g) - d);
 
   g->typwinactive=0;
+
+  owl_editwin_delete(g->tw);
+  werase(owl_global_get_curs_typwin(g));
+  g->tw = NULL;
 }
 
 /* resize */
@@ -512,7 +522,8 @@ void owl_global_resize(owl_global *g, int x, int y) {
   g->needrefresh=1;
   owl_mainwin_redisplay(&(g->mw));
   sepbar(NULL);
-  owl_editwin_redisplay(g->tw);
+  if (g->tw)
+      owl_editwin_redisplay(g->tw);
   owl_function_full_redisplay();
 
   owl_function_debugmsg("New size is %i lines, %i cols.", size.ws_row, size.ws_col);
