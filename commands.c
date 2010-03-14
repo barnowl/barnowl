@@ -910,10 +910,7 @@ const owl_cmd commands_to_init[]
 		  "completes the command (eg, executes command being composed)",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("editresponse:done", owl_command_editresponse_done, 
-		  OWL_CTX_EDITRESPONSE,
-		  "completes the response to a question",
-		  "", ""),
+  OWLCMD_ALIAS   ("editresponse:done", "edit:done"),
 
   OWLCMD_VOID_CTX("edit:move-up-line", owl_editwin_key_up, 
 		  OWL_CTX_EDITMULTI,
@@ -926,8 +923,8 @@ const owl_cmd commands_to_init[]
 		  "", ""),
 
   OWLCMD_VOID_CTX("edit:done", owl_command_edit_done, 
-		  OWL_CTX_EDITMULTI,
-		  "completes the command (eg, sends message being composed)",
+		  OWL_CTX_EDIT,
+		  "Finishes entering text in the editwin.",
 		  "", ""),
 
   OWLCMD_VOID_CTX("edit:done-or-delete", owl_command_edit_done_or_delete, 
@@ -2774,24 +2771,14 @@ void owl_command_editline_done(owl_editwin *e)
   }
 }
 
-
-void owl_command_editresponse_done(owl_editwin *e)
-{
-  owl_function_run_buffercommand();
-
-  owl_global_set_typwin_inactive(&g);
-  owl_global_pop_context(&g);
-
-  owl_global_set_needrefresh(&g);
-}
-
-
 void owl_command_edit_done(owl_editwin *e)
 {
   owl_history *hist=owl_editwin_get_history(e);
 
-  owl_history_store(hist, owl_editwin_get_text(e));
-  owl_history_reset(hist);
+  if (hist) {
+    owl_history_store(hist, owl_editwin_get_text(e));
+    owl_history_reset(hist);
+  }
 
   owl_function_run_buffercommand();
 

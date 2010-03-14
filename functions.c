@@ -1939,7 +1939,7 @@ void owl_function_start_password(const char *line)
 {
   owl_editwin *tw;
 
-  owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
+  owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_ONELINE, NULL);
   tw = owl_global_get_typwin(&g);
   owl_editwin_set_echochar(tw, '*');
 
