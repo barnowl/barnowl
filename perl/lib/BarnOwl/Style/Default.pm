@@ -178,7 +178,7 @@ sub humanize
 =head3 humanize_short STRING
 
 As above, but always be conservative, and replace with a '?' instead
-of something mmore elaborate.
+of something more elaborate.
 
 =cut
 
