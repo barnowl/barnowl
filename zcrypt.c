@@ -67,7 +67,7 @@ int do_decrypt(char *keystring);
 #define CIPHER_DES        0
 #define CIPHER_AES        1
 
-static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule schedule) {
+static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule *schedule) {
 #ifdef HAVE_KERBEROS_IV
   des_cblock key;
 #else
@@ -75,7 +75,7 @@ static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule sche
 #endif
 
   des_string_to_key(keystring, key);
-  des_key_sched(key, schedule);
+  des_key_sched(key, *schedule);
 }
 
 int main(int argc, char *argv[])
@@ -661,7 +661,7 @@ int do_encrypt_des(char *keyfile, char *in, int length, FILE *outfile)
     return FALSE;
   }
 
-  owl_zcrypt_string_to_schedule(keystring, schedule);
+  owl_zcrypt_string_to_schedule(keystring, &schedule);
   free(keystring);
 
   inptr = in;
@@ -765,7 +765,7 @@ int do_decrypt(char *keystring)
 
   output[0] = '\0';    /* In case no message at all                 */
 
-  owl_zcrypt_string_to_schedule(keystring, schedule);
+  owl_zcrypt_string_to_schedule(keystring, &schedule);
 
   while (read_ascii_block(input))
   {
