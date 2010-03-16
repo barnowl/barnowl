@@ -5,6 +5,18 @@ die() {
     exit 1
 }
 
+usage() {
+    cat >&2 <<EOF
+Usage: %0 [options]
+Generate a barnowl release tarball.
+
+OPTIONS:
+  -f            Don't require a changelog entry for the new release.
+  --no-tag      Don't create and sign a git tag for the new release
+  --git         Do a beta release for the current git revision.
+EOF
+}
+
 force=
 no_tag=
 git=
@@ -14,6 +26,7 @@ for arg; do
         -f) force=1 ;;
         --no-tag) no_tag=1 ;;
         --git) git=1 ;;
+        -h|--help) usage ;;
     esac
 done
 

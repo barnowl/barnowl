@@ -1,6 +1,11 @@
 #!/bin/sh
 version=$1; shift
 
+if [ -z "$version" ] || [ "$#" = 0 ];  then
+    echo "Usage: $0 VERSION REV-LIST-ARGS" > &2
+    exit 1;
+fi
+
 (
     echo $version;
     git log --no-merges --format=' * %s -%ae' "$@"

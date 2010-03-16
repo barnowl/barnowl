@@ -2,13 +2,6 @@
 
 #########################################################
 # Build script to build BarnOwl for the locker.
-
-# Usage: locker-build [-n] [-o OUTPUT-TGZ] SOURCE-TARBALL
-# -n is a dry-run, and drops to a shell in the build directory
-# -o does the install into a temporary directory and tars it into the
-#    specified tarball instead.
-# SOURCE-TARBALL is a source tarball, created by do-release
-
 die() {
     echo "$@" 2>&1;
     if [ -n "$TMPDIR" ]; then
@@ -21,7 +14,14 @@ die() {
 }
 
 usage () {
-    echo "Usage: $0 [-n] [-o OUTPUT-TGZ] SOURCE-TARBALL"
+    cat >&2 <<EOF
+Usage: $0 [-n] [-o OUTPUT-TGZ] SOURCE-TARBALL
+ -n is a dry-run, and drops to a shell in the build directory
+ -o does the install into a temporary directory and tars it into the
+    specified tarball instead.
+
+SOURCE-TARBALL is a source tarball, created by do-release.
+EOF
     exit 2;
 }
 
