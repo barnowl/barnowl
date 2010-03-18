@@ -8,7 +8,7 @@ check_PROGRAMS = tester perl_tester
 
 barnowl_bin_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h config.h \
-     owl.c \
+     owl.c filterproc.c \
      $(GEN_C) $(GEN_H)
 
 barnowl_bin_LDADD = libfaim/libfaim.a
@@ -37,7 +37,7 @@ BASE_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
      commands.c global.c text.c fmtext.c editwin.c util.c logging.c \
      perlconfig.c keys.c functions.c zwrite.c viewwin.c help.c filter.c \
      regex.c history.c view.c dict.c variable.c filterelement.c pair.c \
-     keypress.c keymap.c keybinding.c cmd.c context.c zcrypt.c \
+     keypress.c keymap.c keybinding.c cmd.c context.c \
      aim.c buddy.c buddylist.c style.c errqueue.c \
      zbuddylist.c popexec.c obarray.c select.c wcwidth.c \
      glib_compat.c
