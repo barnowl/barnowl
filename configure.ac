@@ -112,6 +112,8 @@ fi
 
 AC_DEFINE_UNQUOTED([DATADIR],["${prefix}/share/${PACKAGE}"],
                    [Package data directory])
+AC_DEFINE_UNQUOTED([BINDIR],["${prefix}/bin"],
+                   [Binary directory])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 

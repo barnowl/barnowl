@@ -403,6 +403,7 @@ void owl_function_zcrypt(const char *line, const char *msg)
   char *cryptmsg;
   owl_message *m;
   const char *argv[7];
+  char *zcrypt;
   int rv, status;
 
   /* create the zwrite and send the message */
@@ -414,13 +415,16 @@ void owl_function_zcrypt(const char *line, const char *msg)
 
   mymsg=owl_zwrite_get_message(&z);
 
+  zcrypt = owl_sprintf("%s/zcrypt", owl_get_bindir());
   argv[0] = "zcrypt";
   argv[1] = "-E";
   argv[2] = "-c"; argv[3] = owl_zwrite_get_class(&z);
   argv[4] = "-i"; argv[5] = owl_zwrite_get_instance(&z);
   argv[6] = NULL;
 
-  rv = call_filter("zcrypt", argv, mymsg, &cryptmsg, &status);
+  rv = call_filter(zcrypt, argv, mymsg, &cryptmsg, &status);
+
+  owl_free(zcrypt);
 
   if (rv || status) {
     if(cryptmsg) owl_free(cryptmsg);

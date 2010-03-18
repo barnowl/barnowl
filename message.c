@@ -850,8 +850,12 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
     char *out;
     int rv;
     int status;
+    char *zcrypt;
 
-    rv = call_filter("zcrypt", argv, owl_message_get_body(m), &out, &status);
+    zcrypt = owl_sprintf("%s/zcrypt", owl_get_bindir());
+
+    rv = call_filter(zcrypt, argv, owl_message_get_body(m), &out, &status);
+    owl_free(zcrypt);
 
     if(!rv && !status) {
       int len = strlen(out);
