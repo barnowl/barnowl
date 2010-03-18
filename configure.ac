@@ -64,8 +64,9 @@ AS_IF([test "x$with_zephyr" != xno],
    ])])
 
 AC_CHECK_FUNCS([use_default_colors resizeterm])
-AC_CHECK_FUNCS([des_string_to_key des_key_sched des_ecb_encrypt])
-AC_CHECK_FUNCS([DES_string_to_key DES_ecb_encrypt DES_key_sched])
+AC_CHECK_FUNCS([des_string_to_key DES_string_to_key], [HAVE_DES_STRING_TO_KEY=1])
+AC_CHECK_FUNCS([des_ecb_encrypt DES_ecb_encrypt], [HAVE_DES_ECB_ENCRYPT=1])
+AC_CHECK_FUNCS([des_key_sched DES_key_sched], [HAVE_DES_KEY_SCHED=1])
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -119,6 +120,10 @@ AX_CFLAGS_STRICT_PROTOTYPES
 
 AX_C_CHECK_FLAG([-Wno-pointer-sign],[],[],
   [LIBFAIM_CFLAGS="$LIBFAIM_CFLAGS -Wno-pointer-sign"])
+
+AM_CONDITIONAL([ENABLE_ZCRYPT], [test "$HAVE_DES_STRING_TO_KEY" && dnl
+                                 test "$HAVE_DES_KEY_SCHED" && dnl
+                                 test "$HAVE_DES_ECB_ENCRYPT"])
 
 AC_SUBST([LIBFAIM_CFLAGS])
 

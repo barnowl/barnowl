@@ -4,6 +4,12 @@ GIT_DESCRIPTION := $(if $(wildcard .git),$(shell git describe --match='barnowl-*
 GIT_FLAGS := $(if $(GIT_DESCRIPTION),-DGIT_VERSION=$(GIT_DESCRIPTION:barnowl-%=%))
 
 bin_PROGRAMS = barnowl.bin
+if ENABLE_ZCRYPT
+bin_PROGRAMS += zcrypt
+endif
+
+zcrypt_SOURCES = zcrypt.c filterproc.c
+
 check_PROGRAMS = tester perl_tester
 
 barnowl_bin_SOURCES = $(BASE_SRCS) \
