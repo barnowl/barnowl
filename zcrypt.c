@@ -51,19 +51,19 @@ typedef struct
   char *message;
 } ZWRITEOPTIONS;
 
-char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance);
-int ParseCryptSpec(char *spec, char **keyfile);
+char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *instance);
+int ParseCryptSpec(const char *spec, const char **keyfile);
 char *BuildArgString(char **argv, int start, int end);
-char *read_keystring(char *keyfile);
+char *read_keystring(const char *keyfile);
 
-int do_encrypt(int zephyr, char *class, char *instance,
-               ZWRITEOPTIONS *zoptions, char* keyfile, int cipher);
-int do_encrypt_des(char *keyfile, char *in, int len, FILE *out);
-int do_encrypt_aes(char *keyfile, char *in, int len, FILE *out);
+int do_encrypt(int zephyr, const char *class, const char *instance,
+               ZWRITEOPTIONS *zoptions, const char* keyfile, int cipher);
+int do_encrypt_des(const char *keyfile, const char *in, int len, FILE *out);
+int do_encrypt_aes(const char *keyfile, const char *in, int len, FILE *out);
 
-int do_decrypt(char *keyfile, int cipher);
-int do_decrypt_aes(char *keyfile);
-int do_decrypt_des(char *keyfile);
+int do_decrypt(const char *keyfile, int cipher);
+int do_decrypt_aes(const char *keyfile);
+int do_decrypt_des(const char *keyfile);
 
 
 #define M_NONE            0
@@ -80,8 +80,8 @@ enum cipher_algo {
 };
 
 typedef struct {
-  int (*encrypt)(char *keyfile, char *in, int len, FILE *out);
-  int (*decrypt)(char *keyfile);
+  int (*encrypt)(const char *keyfile, const char *in, int len, FILE *out);
+  int (*decrypt)(const char *keyfile);
 } cipher_pair;
 
 cipher_pair ciphers[NCIPHER] = {
@@ -103,7 +103,7 @@ static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule *sch
 int main(int argc, char *argv[])
 {
   char *cryptspec = NULL;
-  char *keyfile;
+  const char *keyfile;
   int cipher;
   int error = FALSE;
   int zephyr = FALSE;
@@ -332,7 +332,7 @@ int main(int argc, char *argv[])
   return error;
 }
 
-int ParseCryptSpec(char *spec, char **keyfile) {
+int ParseCryptSpec(const char *spec, const char **keyfile) {
   int cipher = CIPHER_DES;
   char *cipher_name = strdup(spec);
   char *colon = strchr(cipher_name, ':');
@@ -401,7 +401,7 @@ char *BuildArgString(char **argv, int start, int end)
 #define MAX_BUFF 258
 #define MAX_SEARCH 3
 /* Find the class/instance in the .crypt-table */
-char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance)
+char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *instance)
 {
   char *keyfile = NULL;
   char *varname[MAX_SEARCH];
@@ -490,12 +490,12 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance)
 static pid_t zephyrpipe_pid = 0;
 
 /* Open a pipe to zwrite */
-FILE *GetZephyrPipe(char *class, char *instance, ZWRITEOPTIONS *zoptions)
+FILE *GetZephyrPipe(const char *class, const char *instance, const ZWRITEOPTIONS *zoptions)
 {
   int fildes[2];
   pid_t pid;
   FILE *result;
-  char *argv[20];
+  const char *argv[20];
   int argc = 0;
 
   if (pipe(fildes) < 0)
@@ -546,7 +546,7 @@ FILE *GetZephyrPipe(char *class, char *instance, ZWRITEOPTIONS *zoptions)
       close(fildes[0]);
     }
     close(fildes[0]);
-    execvp(argv[0], argv);
+    execvp(argv[0], (char **)argv);
     fprintf(stderr, "Exec error: could not run zwrite\n");
     exit(0);
   }
@@ -641,7 +641,7 @@ char *GetInputBuffer(ZWRITEOPTIONS *zoptions, int *length) {
   return buf;
 }
 
-char *read_keystring(char *keyfile) {
+char *read_keystring(const char *keyfile) {
   char *keystring;
   FILE *fkey = fopen(keyfile, "r");
   if(!fkey) {
@@ -660,8 +660,8 @@ char *read_keystring(char *keyfile) {
 
 /* Encrypt stdin, with prompt if isatty, and send to stdout, or to zwrite
    if zephyr is set. */
-int do_encrypt(int zephyr, char *class, char *instance,
-               ZWRITEOPTIONS *zoptions, char* keyfile, int cipher)
+int do_encrypt(int zephyr, const char *class, const char *instance,
+               ZWRITEOPTIONS *zoptions, const char *keyfile, int cipher)
 {
   FILE *outfile = stdout;
   char *inbuff = NULL;
@@ -695,11 +695,11 @@ int do_encrypt(int zephyr, char *class, char *instance,
   return out;
 }
 
-int do_encrypt_des(char *keyfile, char *in, int length, FILE *outfile)
+int do_encrypt_des(const char *keyfile, const char *in, int length, FILE *outfile)
 {
   des_key_schedule schedule;
   unsigned char input[8], output[8];
-  char *inptr;
+  const char *inptr;
   int num_blocks, last_block_size;
   char *keystring;
   int size;
@@ -755,7 +755,7 @@ int do_encrypt_des(char *keyfile, char *in, int length, FILE *outfile)
   return TRUE;
 }
 
-int do_encrypt_aes(char *keyfile, char *in, int length, FILE *outfile)
+int do_encrypt_aes(const char *keyfile, const char *in, int length, FILE *outfile)
 {
   char *out;
   int err, status;
@@ -831,12 +831,12 @@ int read_ascii_block(unsigned char *input)
 }
 
 /* Decrypt stdin */
-int do_decrypt(char *keyfile, int cipher)
+int do_decrypt(const char *keyfile, int cipher)
 {
   return ciphers[cipher].decrypt(keyfile);
 }
 
-int do_decrypt_aes(char *keyfile) {
+int do_decrypt_aes(const char *keyfile) {
   char *in, *out;
   int length;
   const char *argv[] = {
@@ -864,7 +864,7 @@ int do_decrypt_aes(char *keyfile) {
   return TRUE;
 }
 
-int do_decrypt_des(char *keyfile) {
+int do_decrypt_des(const char *keyfile) {
   des_key_schedule schedule;
   unsigned char input[8], output[8];
   char *keystring;
