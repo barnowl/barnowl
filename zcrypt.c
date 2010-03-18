@@ -15,6 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <ctype.h>
 
 #ifdef HAVE_KERBEROS_IV
 #include <kerberosIV/des.h>
@@ -22,8 +23,11 @@
 #include <openssl/des.h>
 #endif
 
-#define MAX_KEY 128
-#define MAX_LINE 128
+#include "filterproc.h"
+
+#define MAX_KEY      128
+#define MAX_LINE     128
+#define MAX_RESULT   4096
 
 #ifndef TRUE
 #define TRUE -1
@@ -51,10 +55,16 @@ char *GetZephyrVarKeyFile(char *whoami, char *class, char *instance);
 int ParseCryptSpec(char *spec, char **keyfile);
 char *BuildArgString(char **argv, int start, int end);
 char *read_keystring(char *keyfile);
+
 int do_encrypt(int zephyr, char *class, char *instance,
                ZWRITEOPTIONS *zoptions, char* keyfile, int cipher);
 int do_encrypt_des(char *keyfile, char *in, int len, FILE *out);
-int do_decrypt(char *keystring);
+int do_encrypt_aes(char *keyfile, char *in, int len, FILE *out);
+
+int do_decrypt(char *keyfile, int cipher);
+int do_decrypt_aes(char *keyfile);
+int do_decrypt_des(char *keyfile);
+
 
 #define M_NONE            0
 #define M_ZEPHYR_ENCRYPT  1
@@ -297,21 +307,47 @@ int main(int argc, char *argv[])
   else
   {
     if (mode == M_ZEPHYR_ENCRYPT || mode == M_ENCRYPT)
-      do_encrypt((mode == M_ZEPHYR_ENCRYPT), class, instance,
-                 &zoptions, keyfile, cipher);
+      error = !do_encrypt((mode == M_ZEPHYR_ENCRYPT), class, instance,
+                          &zoptions, keyfile, cipher);
     else
-      do_decrypt(keyfile);
+      error = !do_decrypt(keyfile, cipher);
   }
 
   /* Always print the **END** message if -D is specified. */
   if (mode == M_DECRYPT)
     printf("**END**\n");
-  return 0;
+
+  return error;
 }
 
 int ParseCryptSpec(char *spec, char **keyfile) {
+  int cipher = CIPHER_DES;
+  char *cipher_name = strdup(spec);
+  char *colon = strchr(cipher_name, ':');
+
   *keyfile = spec;
-  return CIPHER_DES;
+
+  if (colon) {
+    char *rest = strchr(spec, ':') + 1;
+    while(isspace(*rest)) rest++;
+
+    *colon-- = '\0';
+    while (colon >= cipher_name && isspace(*colon)) {
+      *colon = '\0';
+    }
+
+    if(strcmp(cipher_name, "AES") == 0) {
+      cipher = CIPHER_AES;
+      *keyfile = rest;
+    } else if(strcmp(cipher_name, "DES") == 0) {
+      cipher = CIPHER_DES;
+      *keyfile = rest;
+    }
+  }
+
+  free(cipher_name);
+
+  return cipher;
 }
 
 /* Build a space-separated string from argv from elements between start  *
@@ -521,8 +557,6 @@ void CloseZephyrPipe(FILE *pipe)
   zephyrpipe_pid = 0;
 }
 
-#define MAX_RESULT 2048
-
 #define BASE_CODE 70
 #define LAST_CODE (BASE_CODE + 15)
 #define OUTPUT_BLOCK_SIZE 16
@@ -537,9 +571,40 @@ void block_to_ascii(unsigned char *output, FILE *outfile)
   }
 }
 
-char *GetInputBuffer(ZWRITEOPTIONS *zoptions, int *length) {
+char *slurp_stdin(int ignoredot, int *length) {
   char *buf;
   char *inptr;
+
+  if ((inptr = buf = (char *)malloc(MAX_RESULT)) == NULL)
+  {
+    fprintf(stderr, "Memory allocation error\n");
+    return NULL;
+  }
+  while (inptr - buf < MAX_RESULT - MAX_LINE - 20)
+  {
+    if (fgets(inptr, MAX_LINE, stdin) == NULL)
+      break;
+
+    if (inptr[0])
+    {
+      if (inptr[0] == '.' && inptr[1] == '\n' && !ignoredot)
+      {
+        inptr[0] = '\0';
+        break;
+      }
+      else
+        inptr += strlen(inptr);
+    }
+    else
+      break;
+  }
+  *length = inptr - buf;
+
+  return buf;
+}
+
+char *GetInputBuffer(ZWRITEOPTIONS *zoptions, int *length) {
+  char *buf;
 
   if (zoptions->flags & ZCRYPT_OPT_MESSAGE)
   {
@@ -559,29 +624,7 @@ char *GetInputBuffer(ZWRITEOPTIONS *zoptions, int *length) {
       zoptions->flags |= ZCRYPT_OPT_IGNOREDOT;
     }
 
-    if ((inptr = buf = (char *)malloc(MAX_RESULT)) == NULL)
-    {
-      fprintf(stderr, "Memory allocation error\n");
-      return NULL;
-    }
-    while (inptr - buf < MAX_RESULT - MAX_LINE - 20)
-    {
-      if (!fgets(inptr, MAX_LINE, stdin)) break;
-      if (inptr[0])
-      {
-        if (inptr[0] == '.' && inptr[1] == '\n' &&
-            !(zoptions->flags & ZCRYPT_OPT_IGNOREDOT))
-        {
-          inptr[0] = '\0';
-          break;
-        }
-        else
-          inptr += strlen(inptr);
-      }
-      else
-        break;
-    }
-    *length = inptr - buf;
+    buf = slurp_stdin(zoptions->flags & ZCRYPT_OPT_IGNOREDOT, length);
   }
   return buf;
 }
@@ -636,7 +679,7 @@ int do_encrypt(int zephyr, char *class, char *instance,
     out = do_encrypt_des(keyfile, inbuff, buflen, outfile);
     break;
   case CIPHER_AES:
-    out = FALSE;
+    out = do_encrypt_aes(keyfile, inbuff, buflen, outfile);
     break;
   }
 
@@ -707,6 +750,31 @@ int do_encrypt_des(char *keyfile, char *in, int length, FILE *outfile)
   return TRUE;
 }
 
+int do_encrypt_aes(char *keyfile, char *in, int length, FILE *outfile)
+{
+  char *out;
+  int err, status;
+  const char *argv[] = {
+    "gpg",
+    "--symmetric",
+    "--batch",
+    "--quiet",
+    "--no-use-agent",
+    "--armor",
+    "--cipher-algo", "AES",
+    "--passphrase-file", keyfile,
+    NULL
+  };
+  err = call_filter("gpg", argv, in, &out, &status);
+  if(err || status) {
+    if(out) g_free(out);
+    return FALSE;
+  }
+  fwrite(out, strlen(out), 1, outfile);
+  g_free(out);
+  return TRUE;
+}
+
 /* Read a half-byte from stdin, skipping invalid characters.  Returns -1
    if at EOF or file error */
 int read_ascii_nybble(void)
@@ -758,14 +826,59 @@ int read_ascii_block(unsigned char *input)
 }
 
 /* Decrypt stdin */
-int do_decrypt(char *keystring)
+int do_decrypt(char *keyfile, int cipher)
 {
+  switch(cipher) {
+  case CIPHER_DES:
+    return do_decrypt_des(keyfile);
+  case CIPHER_AES:
+    return do_decrypt_aes(keyfile);
+  default:
+    return FALSE;
+  }
+}
+
+int do_decrypt_aes(char *keyfile) {
+  char *in, *out;
+  int length;
+  const char *argv[] = {
+    "gpg",
+    "--decrypt",
+    "--batch",
+    "--no-use-agent",
+    "--quiet",
+    "--passphrase-file", keyfile,
+    NULL
+  };
+  int err, status;
+
+  in = slurp_stdin(TRUE, &length);
+  if(!in) return FALSE;
+
+  err = call_filter("gpg", argv, in, &out, &status);
+  if(err || status) {
+    if(out) g_free(out);
+    return FALSE;
+  }
+  fwrite(out, strlen(out), 1, stdout);
+  g_free(out);
+
+  return TRUE;
+}
+
+int do_decrypt_des(char *keyfile) {
   des_key_schedule schedule;
   unsigned char input[8], output[8];
+  char *keystring;
 
   output[0] = '\0';    /* In case no message at all                 */
 
+  keystring = read_keystring(keyfile);
+  if(!keystring) return FALSE;
+
   owl_zcrypt_string_to_schedule(keystring, &schedule);
+
+  free(keystring);
 
   while (read_ascii_block(input))
   {
