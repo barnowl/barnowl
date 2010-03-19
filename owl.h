@@ -558,7 +558,6 @@ typedef struct _owl_global {
   int rightshift;
   int resizepending;
   int recwinlines;
-  int typwinactive;
   char *thishost;
   char *homedir;
   char *confdir;

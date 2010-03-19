@@ -56,7 +56,6 @@ void owl_global_init(owl_global *g) {
   owl_dict_create(&(g->styledict));
   g->curmsg_vert_offset=0;
   g->resizepending=0;
-  g->typwinactive=0;
   g->direction=OWL_DIRECTION_DOWNWARDS;
   g->zaway=0;
   if (has_colors()) {
@@ -365,11 +364,6 @@ int owl_global_get_rightshift(const owl_global *g) {
 
 /* typwin */
 
-int owl_global_is_typwin_active(const owl_global *g) {
-  if (g->typwinactive==1) return(1);
-  return(0);
-}
-
 owl_editwin *owl_global_set_typwin_active(owl_global *g, int style, owl_history *hist) {
   int d;
   d = owl_global_get_typewindelta(g);
@@ -381,7 +375,6 @@ owl_editwin *owl_global_set_typwin_active(owl_global *g, int style, owl_history 
                           g->cols,
                           style,
                           hist);
-  g->typwinactive=1;
   return g->tw;
 }
 
@@ -389,8 +382,6 @@ void owl_global_set_typwin_inactive(owl_global *g) {
   int d = owl_global_get_typewindelta(g);
   if (d > 0 && owl_editwin_get_style(g->tw) == OWL_EDITWIN_STYLE_MULTILINE)
       owl_function_resize_typwin(owl_global_get_typwin_lines(g) - d);
-
-  g->typwinactive=0;
 
   werase(owl_global_get_curs_typwin(g));
   g->tw = NULL;

@@ -628,7 +628,7 @@ int main(int argc, char **argv, char **env)
       update_panels();
       /* leave the cursor in the appropriate window */
       if (!owl_popwin_is_active(owl_global_get_popwin(&g))
-	  && owl_global_is_typwin_active(&g)) {
+	  && owl_global_get_typwin(&g)) {
 	owl_function_set_cursor(typwin);
       } else {
 	owl_function_set_cursor(sepwin);
