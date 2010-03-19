@@ -370,7 +370,7 @@ int owl_global_is_typwin_active(const owl_global *g) {
   return(0);
 }
 
-void owl_global_set_typwin_active(owl_global *g, int style, owl_history *hist) {
+owl_editwin *owl_global_set_typwin_active(owl_global *g, int style, owl_history *hist) {
   int d;
   d = owl_global_get_typewindelta(g);
   if (d > 0 && style == OWL_EDITWIN_STYLE_MULTILINE)
@@ -382,6 +382,7 @@ void owl_global_set_typwin_active(owl_global *g, int style, owl_history *hist) {
                           style,
                           hist);
   g->typwinactive=1;
+  return g->tw;
 }
 
 void owl_global_set_typwin_inactive(owl_global *g) {
