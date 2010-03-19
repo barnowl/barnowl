@@ -1926,7 +1926,7 @@ void owl_function_start_command(const char *line)
   owl_editwin_set_callback(tw, owl_callback_command);
 }
 
-void owl_function_start_question(const char *line)
+owl_editwin *owl_function_start_question(const char *line)
 {
   owl_editwin *tw;
 
@@ -1938,9 +1938,10 @@ void owl_function_start_question(const char *line)
   owl_editwin_redisplay(tw);
 
   owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse");
+  return tw;
 }
 
-void owl_function_start_password(const char *line)
+owl_editwin *owl_function_start_password(const char *line)
 {
   owl_editwin *tw;
 
@@ -1954,6 +1955,7 @@ void owl_function_start_password(const char *line)
   owl_editwin_redisplay(tw);
 
   owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse");
+  return tw;
 }
 
 char *owl_function_exec(int argc, const char *const *argv, const char *buff, int type)
