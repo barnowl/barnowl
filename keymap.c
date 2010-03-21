@@ -50,7 +50,32 @@ int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *co
     }
   }
   return owl_list_append_element(&km->bindings, kb);  
+
 }
+
+/* removes the binding associated with the keymap */
+int owl_keymap_remove_binding(owl_keymap *km, const char *keyseq)
+{
+  owl_keybinding *kb, *curkb;
+  int i;
+
+  if ((kb = owl_malloc(sizeof(owl_keybinding))) == NULL) return(-1);
+  if (0 != owl_keybinding_make_keys(kb, keyseq)) {
+    owl_free(kb);
+    return(-1);
+  }
+
+  for (i = owl_list_get_size(&km->bindings)-1; i >= 0; i--) {
+    curkb = owl_list_get_element(&km->bindings, i);
+    if (owl_keybinding_equal(curkb, kb)) {
+      owl_list_remove_element(&km->bindings, i);
+      owl_keybinding_delete(curkb);
+      return(0);
+    }
+  }
+  return(-2);
+}
+
 
 /* returns a summary line describing this keymap.  the caller must free. */
 char *owl_keymap_summary(const owl_keymap *km)

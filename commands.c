@@ -90,7 +90,16 @@ const owl_cmd commands_to_init[]
 	      "Binds a key sequence to a command within a keymap.\n"
 	      "Use 'show keymaps' to see the existing keymaps.\n"
 	      "Key sequences may be things like M-C-t or NPAGE.\n\n"
-	      "Ex.: bindkey recv C-b command zwrite -c barnowl"),
+	      "Ex.: bindkey recv C-b command zwrite -c barnowl"
+              "SEE ALSO: bindkey"),
+
+  OWLCMD_ARGS("unbindkey", owl_command_unbindkey, OWL_CTX_ANY,
+	      "removes a binding in a keymap",
+	      "bindkey <keymap> <keyseq>",
+	      "Removes a binding of a key sequence within a keymap.\n"
+	      "Use 'show keymaps' to see the existing keymaps.\n"
+	      "Ex.: unbindkey recv H"
+              "SEE ALSO: bindkey"),
 
   OWLCMD_ARGS("zwrite", owl_command_zwrite, OWL_CTX_INTERACTIVE,
 	      "send a zephyr",
@@ -1671,6 +1680,34 @@ char *owl_command_bindkey(int argc, const char *const *argv, const char *buff)
   }
   return NULL;
 }
+
+
+char *owl_command_unbindkey(int argc, const char *const *argv)
+{
+  owl_keymap *km;
+  int ret;
+
+  if (argc < 3) {
+    owl_function_makemsg("Usage: bindkey <keymap> <binding>");
+    return NULL;
+  }
+  km = owl_keyhandler_get_keymap(owl_global_get_keyhandler(&g), argv[1]);
+  if (!km) {
+    owl_function_makemsg("No such keymap '%s'", argv[1]);
+    return NULL;
+  }
+  ret = owl_keymap_remove_binding(km, argv[2]);
+  if (ret == -1) {
+    owl_function_makemsg("Unable to unbind '%s' in keymap '%s'.",
+			 argv[2], argv[1]);
+    return NULL;
+  } else if (ret == -2) {
+    owl_function_makemsg("No such binding '%s' in keymap '%s'.",
+                         argv[2], argv[1]);
+  }
+  return NULL;
+}
+
 
 void owl_command_quit(void)
 {
