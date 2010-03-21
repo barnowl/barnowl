@@ -13,9 +13,6 @@
 /* sets up a new keybinding for a command */
 int owl_keybinding_init(owl_keybinding *kb, const char *keyseq, const char *command, void (*function_fn)(void), const char *desc)
 {
-  char **ktokens;
-  int    nktokens, i;
-  
   owl_function_debugmsg("owl_keybinding_init: creating binding for <%s> with desc: <%s>", keyseq, desc);
   if (command && !function_fn) {
     kb->type = OWL_KEYBINDING_COMMAND;
@@ -25,6 +22,22 @@ int owl_keybinding_init(owl_keybinding *kb, const char *keyseq, const char *comm
     return(-1);
   }
 
+  if (owl_keybinding_make_keys(kb, keyseq) != 0) {
+    return(-1);
+  }
+
+  if (command) kb->command = owl_strdup(command);
+  kb->function_fn = function_fn;
+  if (desc) kb->desc = owl_strdup(desc);
+  else kb->desc = NULL;
+  return(0);
+}
+
+int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq)
+{
+  char **ktokens;
+  int    nktokens, i;
+
   ktokens = atokenize(keyseq, " ", &nktokens);
   if (!ktokens) return(-1);
   if (nktokens > OWL_KEYMAP_MAXSTACK) {
@@ -32,7 +45,7 @@ int owl_keybinding_init(owl_keybinding *kb, const char *keyseq, const char *comm
     return(-1);
   }
   kb->keys = owl_malloc(nktokens*sizeof(int));
-  for (i=0; i<nktokens; i++) {
+  for (i = 0; i < nktokens; i++) {
     kb->keys[i] = owl_keypress_fromstring(ktokens[i]);
     if (kb->keys[i] == ERR) { 
       atokenize_delete(ktokens, nktokens);
@@ -41,13 +54,7 @@ int owl_keybinding_init(owl_keybinding *kb, const char *keyseq, const char *comm
     }
   }
   kb->len = nktokens;
-
   atokenize_delete(ktokens, nktokens);
-
-  if (command) kb->command = owl_strdup(command);
-  kb->function_fn = function_fn;
-  if (desc) kb->desc = owl_strdup(desc);
-  else kb->desc = NULL;
   return(0);
 }
 
