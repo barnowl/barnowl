@@ -603,6 +603,8 @@ typedef struct _owl_global {
   siginfo_t err_signal_info;
   owl_zbuddylist zbuddies;
   owl_timer zephyr_buddycheck_timer;
+  GList *zaldlist;
+  int pseudologin_notify;
   struct termios startup_tio;
   owl_obarray obarray;
   owl_list io_dispatch_list;

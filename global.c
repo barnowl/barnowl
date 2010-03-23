@@ -109,6 +109,9 @@ void owl_global_init(owl_global *g) {
 
   owl_zbuddylist_create(&(g->zbuddies));
 
+  g->zaldlist = NULL;
+  g->pseudologin_notify = 0;
+
   owl_obarray_init(&(g->obarray));
 
   owl_message_init_fmtext_cache();
@@ -960,6 +963,21 @@ int owl_global_get_errsignal_and_clear(owl_global *g, siginfo_t *siginfo)
 owl_zbuddylist *owl_global_get_zephyr_buddylist(owl_global *g)
 {
   return(&(g->zbuddies));
+}
+
+GList **owl_global_get_zaldlist(owl_global *g)
+{
+  return &(g->zaldlist);
+}
+
+int owl_global_get_pseudologin_notify(owl_global *g)
+{
+  return g->pseudologin_notify;
+}
+
+void owl_global_set_pseudologin_notify(owl_global *g, int notify)
+{
+  g->pseudologin_notify = notify;
 }
 
 struct termios *owl_global_get_startup_tio(owl_global *g)

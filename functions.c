@@ -3409,54 +3409,37 @@ void owl_function_zephyr_buddy_check(int notify)
 #ifdef HAVE_LIBZEPHYR
   int i, j;
   owl_list anyone;
-  owl_message *m;
   owl_zbuddylist *zbl;
+  GList **zaldlist;
+  GList *zaldptr;
+  ZAsyncLocateData_t *zald;
   const char *user;
-  ZLocations_t location[200];
-  int numlocs, ret;
 
   if (!owl_global_is_havezephyr(&g)) return;
+  owl_global_set_pseudologin_notify(&g, notify);
+  zbl = owl_global_get_zephyr_buddylist(&g);
+  zaldlist = owl_global_get_zaldlist(&g);
 
-  zbl=owl_global_get_zephyr_buddylist(&g);
+  /* Clear the existing ZALDs first. */
+  zaldptr = g_list_first(*zaldlist);
+  while (zaldptr) {
+    ZFreeALD(zaldptr->data);
+    owl_free(zaldptr->data);
+    zaldptr = g_list_next(zaldptr);
+  }
+  g_list_free(*zaldlist);
+  *zaldlist = NULL;
 
   owl_list_create(&anyone);
-  ret=owl_zephyr_get_anyone_list(&anyone, NULL);
-
-  j=owl_list_get_size(&anyone);
-  for (i=0; i<j; i++) {
-    user=owl_list_get_element(&anyone, i);
-    ret=ZLocateUser(zstr(user), &numlocs, ZAUTH);
-    if (ret!=ZERR_NONE) {
-      owl_function_error("Error getting location for %s", user);
-      continue;
-    }
-    numlocs=200;
-    ret=ZGetLocations(location, &numlocs);
-    if (ret==0) {
-      if ((numlocs>0) && !owl_zbuddylist_contains_user(zbl, user)) {
-	/* Send a PSEUDO LOGIN! */
-	if (notify) {
-	  m=owl_malloc(sizeof(owl_message));
-	  owl_message_create_pseudo_zlogin(m, 0, user, location[0].host, location[0].time, location[0].tty);
-	  owl_global_messagequeue_addmsg(&g, m);
-	}
-	owl_zbuddylist_adduser(zbl, user);
-	owl_function_debugmsg("owl_function_zephyr_buddy_check: login for %s ", user);
-      } else if ((numlocs==0) && owl_zbuddylist_contains_user(zbl, user)) {
-	/* I don't think this ever happens (if there are 0 locations we should get an error from
-	 * ZGetLocations)
-	 */
-	owl_function_error("owl_function_zephyr_buddy_check: exceptional case logout for %s ",user);
-      }
-    } else if ((ret==ZERR_NOLOCATIONS) && owl_zbuddylist_contains_user(zbl, user)) {
-      /* Send a PSEUDO LOGOUT! */
-      if (notify) {
-	m=owl_malloc(sizeof(owl_message));
-	owl_message_create_pseudo_zlogin(m, 1, user, "", "", "");
-	owl_global_messagequeue_addmsg(&g, m);
-      }
-      owl_zbuddylist_deluser(zbl, user);
-      owl_function_debugmsg("owl_function_zephyr_buddy_check: logout for %s ",user);
+  owl_zephyr_get_anyone_list(&anyone, NULL);
+  j = owl_list_get_size(&anyone);
+  for (i = 0; i < j; i++) {
+    user = owl_list_get_element(&anyone, i);
+    zald = owl_malloc(sizeof(ZAsyncLocateData_t));
+    if (ZRequestLocations(zstr(user), zald, UNACKED, ZAUTH) == ZERR_NONE) {
+      *zaldlist = g_list_append(*zaldlist, zald);
+    } else {
+      owl_free(zald);
     }
   }
 

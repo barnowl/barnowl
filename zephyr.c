@@ -1298,6 +1298,71 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
 #endif
 }
 
+#ifdef HAVE_LIBZEPHYR
+void owl_zephyr_process_pseudologin(ZNotice_t *n)
+{
+  owl_message *m;
+  owl_zbuddylist *zbl;
+  GList **zaldlist;
+  GList *zaldptr;
+  ZAsyncLocateData_t *zald = NULL;
+  ZLocations_t location;
+  int numlocs, ret, notify;
+
+  /* Find a ZALD to match this notice. */
+  zaldlist = owl_global_get_zaldlist(&g);
+  zaldptr = g_list_first(*zaldlist);
+  while (zaldptr) {
+    if (ZCompareALDPred(n, zaldptr->data)) {
+      zald = zaldptr->data;
+      *zaldlist = g_list_remove(*zaldlist, zaldptr->data);
+      break;
+    }
+    zaldptr = g_list_next(zaldptr);
+  }
+  if (zald) {
+    /* Deal with notice. */
+    notify = owl_global_get_pseudologin_notify(&g);
+    zbl = owl_global_get_zephyr_buddylist(&g);
+    ret = ZParseLocations(n, zald, &numlocs, NULL);
+    if (ret == ZERR_NONE) {
+      if (numlocs > 0 && !owl_zbuddylist_contains_user(zbl, zald->user)) {
+        if (notify) {
+          numlocs = 1;
+          ret = ZGetLocations(&location, &numlocs);
+          if (ret == ZERR_NONE) {
+            /* Send a PSEUDO LOGIN! */
+            m = owl_malloc(sizeof(owl_message));
+            owl_message_create_pseudo_zlogin(m, 0, zald->user,
+                                             location.host,
+                                             location.time,
+                                             location.tty);
+            owl_global_messagequeue_addmsg(&g, m);
+          }
+          owl_zbuddylist_adduser(zbl, zald->user);
+          owl_function_debugmsg("owl_function_zephyr_buddy_check: login for %s ", zald->user);
+        }
+      } else if (numlocs == 0 && owl_zbuddylist_contains_user(zbl, zald->user)) {
+        /* Send a PSEUDO LOGOUT! */
+        if (notify) {
+          m = owl_malloc(sizeof(owl_message));
+          owl_message_create_pseudo_zlogin(m, 1, zald->user, "", "", "");
+          owl_global_messagequeue_addmsg(&g, m);
+        }
+        owl_zbuddylist_deluser(zbl, zald->user);
+        owl_function_debugmsg("owl_function_zephyr_buddy_check: logout for %s ", zald->user);
+      }
+    }
+    ZFreeALD(zald);
+    owl_free(zald);
+  }
+}
+#else
+void owl_zephyr_process_pseudologin(void *n)
+{
+}
+#endif
+
 /*
  * Process zephyrgrams from libzephyr's queue. To prevent starvation,
  * process a maximum of OWL_MAX_ZEPHYRGRAMS_TO_PROCESS.
@@ -1328,6 +1393,13 @@ static int _owl_zephyr_process_events(void)
 
       /* if it's a ping and we're not viewing pings then skip it */
       if (!owl_global_is_rxping(&g) && !strcasecmp(notice.z_opcode, "ping")) {
+        ZFreeNotice(&notice);
+        continue;
+      }
+
+      /* if it is a LOCATE message, it's for pseudologins. */
+      if (strcmp(notice.z_opcode, LOCATE_LOCATE) == 0) {
+        owl_zephyr_process_pseudologin(&notice);
         ZFreeNotice(&notice);
         continue;
       }
