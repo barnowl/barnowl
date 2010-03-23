@@ -95,6 +95,7 @@ void owl_popexec_inputhandler(const owl_io_dispatch *d, void *data)
   /* the viewwin has closed */
   if (!pe->pid && !pe->winactive) {
     owl_select_remove_io_dispatch(d);
+    pe->dispatch = NULL;
     return;
   }
 
@@ -113,6 +114,7 @@ void owl_popexec_inputhandler(const owl_io_dispatch *d, void *data)
       owl_global_set_needrefresh(&g);
     }
     owl_select_remove_io_dispatch(d);
+    pe->dispatch = NULL;
     return;
   }
 
@@ -156,8 +158,9 @@ void owl_popexec_viewwin_onclose(owl_viewwin *vwin, void *data)
   int status, rv;
 
   pe->winactive = 0;
-  if (pe->dispatch->fd > 0) {
+  if (pe->dispatch) {
     owl_select_remove_io_dispatch(pe->dispatch);
+    pe->dispatch = NULL;
   }
   if (pe->pid) {
     /* TODO: we should handle the case where SIGTERM isn't good enough */
