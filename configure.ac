@@ -96,6 +96,7 @@ dnl Add LDFLAGS for embedded perl
 FOO=`perl -MExtUtils::Embed -e ldopts`
 AC_MSG_NOTICE([Adding perl LIBS ${FOO}])
 LIBS=${LIBS}\ ${FOO}
+AC_CHECK_LIB([perl], [perl_alloc],, AC_MSG_ERROR([No libperl found]))
 
 dnl Add CFLAGS and LDFLAGS for glib-2.0
 PKG_CHECK_MODULES(GLIB,glib-2.0)
