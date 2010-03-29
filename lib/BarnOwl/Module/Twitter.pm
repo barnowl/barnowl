@@ -15,7 +15,6 @@ package BarnOwl::Module::Twitter;
 
 our $VERSION = 0.2;
 
-use Net::Twitter;
 use JSON;
 use List::Util qw(first);
 
