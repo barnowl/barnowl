@@ -167,7 +167,7 @@ sub humanize
   my $colorize = (BarnOwl::getvar('colorztext') eq 'on')
     ? '@color(cyan)' : '';
 
-  my $chars = $oneline ? qr/[[:cntrl:]]/ : qr/[^[:print:]]|[\r\cK\f]/;
+  my $chars = $oneline ? qr/[[:cntrl:]]/ : qr/[^[:print:]\n]|[\r\cK\f]/;
 
   $s =~ s/($chars)/
     "\@b($colorize" . _humanize_char($1) . ')'/eg;
