@@ -44,7 +44,6 @@ static void oe_save_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_release_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_restore_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_restore_mark_only(owl_editwin *e, oe_excursion *x);
-static int oe_count_glyphs(const char *s);
 static int oe_char_width(gunichar c, int column);
 static int oe_region_width(owl_editwin *e, int start, int end, int width);
 static int oe_find_display_line(owl_editwin *e, int *x, int index);
@@ -82,18 +81,6 @@ void owl_editwin_delete(owl_editwin *e)
   oe_destroy_cbdata(e);
 
   owl_free(e);
-}
-
-static int oe_count_glyphs(const char *s)
-{
-  int count = 0;
-  const char *p;
-
-  for(p = s; *p != 0; p = g_utf8_find_next_char(p, NULL))
-    if (!g_unichar_ismark(g_utf8_get_char(p)))
-      count++;
-
-  return count;
 }
 
 static inline void oe_set_index(owl_editwin *e, int index)
