@@ -127,6 +127,10 @@ AC_SUBST(XSUBPPFLAGS)
 
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+AC_CHECK_PROG([HAVE_ZIP], [zip], [yes], [no])
+if test "x${HAVE_ZIP}" = "xno"; then
+   AC_MSG_ERROR([cannot find a 'zip' binary.])
+fi
 
 AC_CONFIG_FILES([Makefile libfaim/Makefile perl/Makefile perl/modules/Makefile])
 AC_OUTPUT
