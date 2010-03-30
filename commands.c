@@ -1675,7 +1675,7 @@ char *owl_command_bindkey(int argc, const char *const *argv, const char *buff)
 }
 
 
-char *owl_command_unbindkey(int argc, const char *const *argv)
+char *owl_command_unbindkey(int argc, const char *const *argv, const char *buf)
 {
   owl_keymap *km;
   int ret;
