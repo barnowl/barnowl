@@ -245,6 +245,8 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("!",   "view -r",          "invert the current view filter");
   BIND_CMD("M-n", "smartnarrow",      "narrow to a view based on the current message");
   BIND_CMD("M-N", "smartnarrow -i",   "narrow to a view based on the current message, and consider instance pair");
+  BIND_CMD("M-m", "smartnarrow -r",   "like M-n but with 'narrow-related' temporarily flipped.");
+  BIND_CMD("M-M", "smartnarrow -ri",  "like M-N but with 'narrow-related' temporarily flipped.");
   BIND_CMD("M-p", "view personal", "");
   
   BIND_CMD("/",   "start-command search ", "start a search command");

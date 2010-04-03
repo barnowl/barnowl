@@ -1,3 +1,4 @@
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -591,7 +592,7 @@ const owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("smartnarrow", owl_command_smartnarrow, OWL_CTX_INTERACTIVE,
 	      "view only messages similar to the current message",
-	      "smartnarrow [-i | --instance]",
+	      "smartnarrow [-i | --instance]  [-r | --relatde]",
 	      "If the curmsg is a personal message narrow\n"
 	      "   to the conversation with that user.\n"
 	      "If the curmsg is a <MESSAGE, foo, *>\n"
@@ -599,7 +600,9 @@ const owl_cmd commands_to_init[]
 	      "If the curmsg is a class message, narrow\n"
 	      "    to the class.\n"
 	      "If the curmsg is a class message and '-i' is specified\n"
-	      "    then narrow to the class and instance.\n"),
+	      "    then narrow to the class and instance.\n"
+	      "If '-r' or '--related' is specified, behave as though the\n"
+              "    'narrow-related' variable was inverted."),
 
   OWLCMD_ARGS("smartfilter", owl_command_smartfilter, OWL_CTX_INTERACTIVE,
 	      "returns the name of a filter based on the current message",
@@ -1237,10 +1240,10 @@ char *owl_command_next(int argc, const char *const *argv, const char *buff)
       filter = owl_strdup(argv[2]);
       argc-=2; argv+=2; 
     } else if (argc>=2 && !strcmp(argv[1], "--smart-filter")) {
-      filter = owl_function_smartfilter(0);
+      filter = owl_function_smartfilter(0, 0);
       argc-=2; argv+=2; 
     } else if (argc>=2 && !strcmp(argv[1], "--smart-filter-instance")) {
-      filter = owl_function_smartfilter(1);
+      filter = owl_function_smartfilter(1, 0);
       argc-=2; argv+=2; 
     } else {
       owl_function_makemsg("Invalid arguments to command 'next'.");
@@ -1267,10 +1270,10 @@ char *owl_command_prev(int argc, const char *const *argv, const char *buff)
       filter = owl_strdup(argv[2]);
       argc-=2; argv+=2; 
     } else if (argc>=2 && !strcmp(argv[1], "--smart-filter")) {
-      filter = owl_function_smartfilter(0);
+      filter = owl_function_smartfilter(0, 0);
       argc-=2; argv+=2; 
     } else if (argc>=2 && !strcmp(argv[1], "--smart-filter-instance")) {
-      filter = owl_function_smartfilter(1);
+      filter = owl_function_smartfilter(1, 0);
       argc-=2; argv+=2;  
    } else {
       owl_function_makemsg("Invalid arguments to command 'prev'.");
@@ -1286,17 +1289,44 @@ char *owl_command_smartnarrow(int argc, const char *const *argv, const char *buf
 {
   char *filtname = NULL;
 
-  if (argc == 1) {
-    filtname = owl_function_smartfilter(0);
-  } else if (argc == 2 && (!strcmp(argv[1], "-i") || !strcmp(argv[1], "--instance"))) {
-    filtname = owl_function_smartfilter(1);
-  } else {
-    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);    
+  char opt;
+  int instance = 0, related = 0, i;
+  char **tmp_argv = owl_malloc(sizeof(char *) * argc);
+
+  for (i = 0; i < argc; i++)
+    tmp_argv[i] = owl_strdup(argv[i]);
+
+  static struct option options[] = {
+    {"instance", 0, 0, 'i'},
+    {"related",  0, 0, 'r'},
+    {NULL,       0, 0, 0}};
+  while ((opt = getopt_long(argc, tmp_argv, "ir", options, NULL)) != -1) {
+    switch (opt) {
+      case 'i':
+        instance = 1;
+        break;
+      case 'r':
+        related = 1;
+        break;
+      default:
+        owl_function_makemsg("Wrong number of arguments for %s (%c)", argv[0], opt);
+        goto done;
+    }
   }
+
+  for (i = 0; i < argc; i++)
+    owl_free(tmp_argv[i]);
+  owl_free(tmp_argv);
+
+  filtname = owl_function_smartfilter(instance, related);
+
   if (filtname) {
     owl_function_change_currentview_filter(filtname);
     owl_free(filtname);
   }
+
+done:
+  optind = 0; /* reset getopt */
   return NULL;
 }
 
@@ -1305,9 +1335,9 @@ char *owl_command_smartfilter(int argc, const char *const *argv, const char *buf
   char *filtname = NULL;
 
   if (argc == 1) {
-    filtname = owl_function_smartfilter(0);
+    filtname = owl_function_smartfilter(0, 0);
   } else if (argc == 2 && (!strcmp(argv[1], "-i") || !strcmp(argv[1], "--instance"))) {
-    filtname = owl_function_smartfilter(1);
+    filtname = owl_function_smartfilter(1, 0);
   } else {
     owl_function_makemsg("Wrong number of arguments for %s", argv[0]);    
   }

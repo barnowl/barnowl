@@ -2510,14 +2510,14 @@ void owl_function_delete_curview_msgs(int flag)
  * If the curmsg is a personal AIM message returna  filter
  *    name to the AIM conversation with that user 
  */
-char *owl_function_smartfilter(int type)
+char *owl_function_smartfilter(int type, int invert_related)
 {
   const owl_view *v;
   const owl_message *m;
   char *zperson, *filtname=NULL;
   const char *argv[2];
-  int related = owl_global_is_narrow_related(&g);
-  
+  int related = owl_global_is_narrow_related(&g) ^ invert_related;
+
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
 
