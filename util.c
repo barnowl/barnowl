@@ -608,6 +608,14 @@ const char * owl_get_datadir(void)
   return DATADIR;
 }
 
+const char * owl_get_bindir(void)
+{
+  const char * bindir = getenv("BARNOWL_BIN_DIR");
+  if(bindir != NULL)
+    return bindir;
+  return BINDIR;
+}
+
 /* Strips format characters from a valid utf-8 string. Returns the
    empty string if 'in' does not validate. */
 char * owl_strip_format_chars(const char *in)

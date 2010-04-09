@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <signal.h>
 #include "owl.h"
+#include "filterproc.h"
 
 char *owl_function_command(const char *cmdbuff)
 {
@@ -398,6 +399,9 @@ void owl_function_zcrypt(const char *line, const char *msg)
   const char *mymsg;
   char *cryptmsg;
   owl_message *m;
+  const char *argv[7];
+  char *zcrypt;
+  int rv, status;
 
   /* create the zwrite and send the message */
   owl_zwrite_create_from_line(&z, line);
@@ -407,17 +411,25 @@ void owl_function_zcrypt(const char *line, const char *msg)
   }
 
   mymsg=owl_zwrite_get_message(&z);
-#ifdef OWL_ENABLE_ZCRYPT
-  cryptmsg = owl_zcrypt_encrypt(mymsg, owl_zwrite_get_class(&z), owl_zwrite_get_instance(&z));
-  if (!cryptmsg) {
+
+  zcrypt = owl_sprintf("%s/zcrypt", owl_get_bindir());
+  argv[0] = "zcrypt";
+  argv[1] = "-E";
+  argv[2] = "-c"; argv[3] = owl_zwrite_get_class(&z);
+  argv[4] = "-i"; argv[5] = owl_zwrite_get_instance(&z);
+  argv[6] = NULL;
+
+  rv = call_filter(zcrypt, argv, mymsg, &cryptmsg, &status);
+
+  owl_free(zcrypt);
+
+  if (rv || status) {
+    if(cryptmsg) owl_free(cryptmsg);
     owl_function_error("Error in zcrypt, possibly no key found.  Message not sent.");
     owl_function_beep();
     owl_zwrite_cleanup(&z);
     return;
   }
-#else
-  cryptmsg=owl_strdup(mymsg);
-#endif
 
   owl_zwrite_set_message(&z, cryptmsg);
   owl_zwrite_set_opcode(&z, "crypt");

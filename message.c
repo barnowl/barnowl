@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include "owl.h"
+#include "filterproc.h"
 
 static owl_fmtext_cache fmtext_cache[OWL_FMTEXT_CACHE_SIZE];
 static owl_fmtext_cache * fmtext_cache_next = fmtext_cache;
@@ -837,16 +838,36 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   }
   owl_free(tmp);
 
-#ifdef OWL_ENABLE_ZCRYPT
   /* if zcrypt is enabled try to decrypt the message */
   if (owl_global_is_zcrypt(&g) && !strcasecmp(n->z_opcode, "crypt")) {
-    char *out = owl_zcrypt_decrypt(owl_message_get_body(m), owl_message_get_class(m), owl_message_get_instance(m));
-    if (out) {
+    const char *argv[] = {
+      "zcrypt",
+      "-D",
+      "-c", owl_message_get_class(m),
+      "-i", owl_message_get_instance(m),
+      NULL
+    };
+    char *out;
+    int rv;
+    int status;
+    char *zcrypt;
+
+    zcrypt = owl_sprintf("%s/zcrypt", owl_get_bindir());
+
+    rv = call_filter(zcrypt, argv, owl_message_get_body(m), &out, &status);
+    owl_free(zcrypt);
+
+    if(!rv && !status) {
+      int len = strlen(out);
+      if(len >= 8 && !strcmp(out + len - 8, "**END**\n")) {
+        out[len - 8] = 0;
+      }
       owl_message_set_body(m, out);
+      owl_free(out);
+    } else if(out) {
       owl_free(out);
     }
   }
-#endif  
 }
 #else
 void owl_message_create_from_znotice(owl_message *m, const void *n)

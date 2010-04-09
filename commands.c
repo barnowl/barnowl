@@ -2021,7 +2021,6 @@ char *owl_command_loopwrite(int argc, const char *const *argv, const char *buff)
 
 char *owl_command_zcrypt(int argc, const char *const *argv, const char *buff)
 {
-#ifdef OWL_ENABLE_ZCRYPT
   owl_zwrite z;
 
   if (!owl_global_is_havezephyr(&g)) {
@@ -2043,10 +2042,6 @@ char *owl_command_zcrypt(int argc, const char *const *argv, const char *buff)
     owl_function_zwrite_setup(buff);
   }
   return(NULL);
-#else
-  owl_function_makemsg("This Owl does not support zcrypt");
-  return NULL;
-#endif
 }
 
 char *owl_command_reply(int argc, const char *const *argv, const char *buff)
