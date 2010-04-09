@@ -542,6 +542,12 @@ int owl_editwin_replace_region(owl_editwin *e, const char *s)
 {
   oe_excursion x;
   int ret;
+
+  if (e->mark == -1) {
+    owl_function_error("The mark is unset, there is no region to replace.");
+    return 0;
+  }
+
   oe_save_excursion(e, &x);
 
   if(e->index > e->mark) {
