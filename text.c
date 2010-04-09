@@ -270,7 +270,7 @@ const char *owl_getquoting(const char *line)
   if (line[0]=='\0') return("'");
   if (strchr(line, '\'')) return("\"");
   if (strchr(line, '"')) return("'");
-  if (strchr(line, ' ')) return("'");
+  if (strcspn(line, "\n\t ") != strlen(line)) return("'");
   return("");
 }
 

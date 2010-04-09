@@ -362,7 +362,7 @@ sub quote {
     for my $str (@_) {
         if ($str eq '') {
             push @quoted, "''";
-        } elsif ($str !~ /['" ]/) {
+        } elsif ($str !~ /['" \n\t]/) {
             push @quoted, "$str";
         } elsif ($str !~ /'/) {
             push @quoted, "'$str'";
