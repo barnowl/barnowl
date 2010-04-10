@@ -71,6 +71,7 @@ AC_CHECK_FUNCS([des_key_sched DES_key_sched], [HAVE_DES_KEY_SCHED=1])
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
+AC_HEADER_STDBOOL
 AC_CHECK_HEADERS(strings.h sys/ioctl.h sys/filio.h unistd.h)
 
 dnl Add CFLAGS for embeded perl
