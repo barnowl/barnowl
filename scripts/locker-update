@@ -49,5 +49,6 @@ for i in *; do
             $E ln -sf "../../common/bin/barnowl" "$i/bin/barnowl"
             $E ln -sf "$NEWVERSION" "$i/bin/barnowl.real"
         fi
+        $E ln -sf "zcrypt${NEWVERSION#barnowl}" "$i/bin/zcrypt"
     fi
 done;
