@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
     }
   }
 
-  if (error)
+  if (error || !cryptspec)
   {
     fprintf(stderr, "Usage: %s [-Z|-D|-E|-R|-S] [-F Keyfile] [-c class] [-i instance]\n", argv[0]);
     fprintf(stderr, "       [-advqtluon] [-s signature] [-f arg] [-m message]\n");
