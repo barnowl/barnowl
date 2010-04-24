@@ -47,7 +47,9 @@ for i in *; do
 
         # Sanity -- make sure the 'barnowl' symlink is correct.
         $E ln -sf "../../common/bin/barnowl$B" "$i/bin/barnowl$B"
-        $E ln -sf "$NEWVERSION" "$i/bin/barnowl.real$B"
+        [ -e "$i/bin/$NEWVERSION" ]         && $E ln -sf "$NEWVERSION"         "$i/bin/barnowl.real$B"
+        [ -e "$i/bin/$NEWVERSION.zephyr3" ] && $E ln -sf "$NEWVERSION.zephyr3" "$i/bin/barnowl.real$B.zephyr3"
+        [ -e "$i/bin/$NEWVERSION.zephyr4" ] && $E ln -sf "$NEWVERSION.zephyr4" "$i/bin/barnowl.real$B.zephyr4"
 
         $E ln -sf "zcrypt${NEWVERSION#barnowl}" "$i/bin/zcrypt"
     fi
