@@ -632,6 +632,8 @@ const owl_cmd commands_to_init[]
 	      "view to it.\n\n"
 	      "SEE ALSO: filter, view, viewclass\n"),
   OWLCMD_ALIAS("vu", "viewuser"),
+  OWLCMD_ALIAS("viewperson", "viewuser"),
+  OWLCMD_ALIAS("vp", "viewuser"),
 
   OWLCMD_ARGS("show", owl_command_show, OWL_CTX_INTERACTIVE,
 	      "show information",
