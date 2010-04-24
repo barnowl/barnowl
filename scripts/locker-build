@@ -85,11 +85,27 @@ $TAR -C "$TMPDIR" -xzf "$SRC_TGZ" || die "Unable to untar"
     BARNOWL="/afs/sipb.mit.edu/project/barnowl/arch/$ATHENA_SYS"
     export PKG_CONFIG_PATH="$BARNOWL/lib/pkgconfig"
 
+    SUFFIX=
+    case $ATHENA_SYS in
+        *_deb50)
+            # Both Debian Lenny and Ubuntu Karmic use the _deb50
+            # sysname, but they have different zephyr versions (soname
+            # 3 and 4, respectively). So for that sysname, we include
+            # the zephyr soname into the build name, and the wrapper
+            # script picks the right one.
+            if /sbin/ldconfig -p | grep -qF "libzephyr.so.4"; then
+                SUFFIX=.zephyr4
+            else
+                SUFFIX=.zephyr3
+            fi
+            ;;
+    esac
+
     CFLAGS="-I$BARNOWL/include" \
         LDFLAGS="-L$BARNOWL/lib $opt_rpath$BARNOWL/lib" \
         ./configure --exec-prefix="/mit/barnowl/arch/$ATHENA_SYS" \
         --prefix="/mit/barnowl/builds/barnowl-$VERS" --mandir=/mit/barnowl/man \
-        --program-suffix="-$VERS" \
+        --program-suffix="-$VERS$SUFFIX" \
         --with-zephyr --without-stack-protector \
         || die "configure failed"
 
