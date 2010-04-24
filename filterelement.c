@@ -21,6 +21,8 @@ static const char * owl_filterelement_get_field(const owl_message *m, const char
     match=owl_message_get_type(m);
   } else if (!strcasecmp(field, "hostname")) {
     match=owl_message_get_hostname(m);
+  } else if (!strcasecmp(field, "deleted")) {
+    match=owl_message_is_delete(m) ? "true" : "false";
   } else if (!strcasecmp(field, "direction")) {
     if (owl_message_is_direction_out(m)) {
       match="out";

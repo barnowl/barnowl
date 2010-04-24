@@ -39,6 +39,7 @@ my %filter_cmds = (
     login     => sub { qw(login logout none); },
     filter    => \&complete_filter_name,
     perl      => undef,
+    deleted   => sub { qw(true false); },
 );
 
 # Returns:
