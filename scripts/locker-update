@@ -64,8 +64,9 @@ for i in *; do
         update_symlink "$i/bin" "$NEWVERSION.zephyr3" "barnowl.real$B.zephyr3"
         update_symlink "$i/bin" "$NEWVERSION.zephyr4" "barnowl.real$B.zephyr4"
 
-        update_symlink "$i/bin" "zcrypt${NEWVERSION#barnowl}"         "zcrypt"
-        update_symlink "$i/bin" "zcrypt${NEWVERSION#barnowl}.zephyr3" "zcrypt.zephyr3"
-        update_symlink "$i/bin" "zcrypt${NEWVERSION#barnowl}.zephyr4" "zcrypt.zephyr4"
+        $E ln -sf "../../common/bin/zcrypt" "$i/bin/zcrypt"
+        update_symlink "$i/bin" "zcrypt${NEWVERSION#barnowl}"         "zcrypt.real"
+        update_symlink "$i/bin" "zcrypt${NEWVERSION#barnowl}.zephyr3" "zcrypt.real.zephyr3"
+        update_symlink "$i/bin" "zcrypt${NEWVERSION#barnowl}.zephyr4" "zcrypt.real.zephyr4"
     fi
 done;
