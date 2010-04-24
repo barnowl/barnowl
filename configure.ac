@@ -117,11 +117,6 @@ if test "x${prefix}" = "xNONE"; then
    prefix="${ac_default_prefix}"
 fi
 
-AC_DEFINE_UNQUOTED([DATADIR],["${prefix}/share/${PACKAGE}"],
-                   [Package data directory])
-AC_DEFINE_UNQUOTED([BINDIR],["${prefix}/bin"],
-                   [Binary directory])
-
 dnl Checks for typedefs, structures, and compiler characteristics.
 
 AX_CFLAGS_WARN_ALL

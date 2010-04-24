@@ -37,6 +37,8 @@ TESTS=runtests.sh
 
 CPPFLAGS = -I$(top_srcdir)/ \
            -I$(top_srcdir)/libfaim/ \
+           -DDATADIR='"$(datadir)"' \
+           -DBINDIR='"$(bindir)"' \
            $(GIT_FLAGS)
 
 BASE_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
