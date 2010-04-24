@@ -37,7 +37,7 @@ TESTS=runtests.sh
 
 CPPFLAGS = -I$(top_srcdir)/ \
            -I$(top_srcdir)/libfaim/ \
-           -DDATADIR='"$(datadir)"' \
+           -DDATADIR='"$(pkgdatadir)"' \
            -DBINDIR='"$(bindir)"' \
            $(GIT_FLAGS)
 
