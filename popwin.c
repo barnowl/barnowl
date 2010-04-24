@@ -72,8 +72,7 @@ int owl_popwin_close(owl_popwin *pw)
 
 int owl_popwin_is_active(const owl_popwin *pw)
 {
-  if (pw->active==1) return(1);
-  return(0);
+  return pw->active;
 }
 
 WINDOW *owl_popwin_get_curswin(const owl_popwin *pw)
