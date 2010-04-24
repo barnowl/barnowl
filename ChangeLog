@@ -1,3 +1,43 @@
+1.6
+ * Support filtering on whether a message has been deleted. -nelhage@mit.edu
+ * Properly quote strings containing newlines or tabs. -nelhage@mit.edu
+ * Check for an unset mark in owl_editwin_replace_region. -nelhage@mit.edu
+ * Add the "narrow-related" variable. -geofft@mit.edu
+ * Fix a display bug under perl 5.12. -nelhage@mit.edu
+ * Only use typewindelta when opening multiline editwins. -nelhage@ksplice.com
+ * Add some checks to ./configure. -nelhage@mit.edu
+ * Fix a use-after-free in popexec.c -nelhage@mit.edu
+ * Make pseudologins asynchronous -asedeno@mit.edu
+ * Fix some bugs in editwin handling and clean up code. -nelhage@ksplice.com
+ * Add new command unbindkey for removing keybindings -leonidg@mit.edu
+ * zcrypt: Implement AES encryption support using GPG. -nelhage@mit.edu
+ * Add usage messages to everything in scripts/ -nelhage@mit.edu
+ * Split zcrypt into an external, standalong binary. -nelhage@mit.edu
+ * Fix minor documentation typo -alexmv@mit.edu
+ * Document the init/cleanup vs. new/delete naming conventions. -andersk@mit.edu
+ * Clean up code naming conventions to help avoid memory leaks.. -andersk@mit.edu
+ * Add edit:help command for zsh-style in-edit help -davidben@mit.edu
+ * Use libpanel to simplify and improve display layer. -davidben@mit.edu
+ * Jabber: Mention [-a <account>] in :help jwrite. -andersk@mit.edu
+ * Fix zcrypt when compiling without krb4 -oremanj@MIT.EDU
+ * Send multiple PRIVMSGs for IRC messages entered as multiple paragraphs -oremanj@mit.edu
+ * Require automake ≥ 1.7.0, and don’t warn about portability to non-GNU make. -andersk@mit.edu
+ * Makefile.am: Use only direct children in SUBDIRS, to appease automake 1.7. -andersk@mit.edu
+ * IRC: irc-disconnect on a pending reconnect should cancel it. -nelhage@mit.edu
+ * Complete several commands that accept a filename. -nelhage@mit.edu
+ * Complete the 'print' and 'bindkey' commands. -nelhage@mit.edu
+
+1.5.1
+ * Fix numerous memory leaks. -andersk@mit.edu
+ * owl_message_get_cc_without_recipient: Don’t overflow the output buffer. -andersk@mit.edu
+        (Fixes CVE-2010-0793)
+ * owl_command_aimwrite: Fix a buffer overflow on aimwrite -m. -andersk@mit.edu
+ * zcrypt: Don’t read off the end of misaligned input messages. -andersk@mit.edu
+ * Fix zcrypt when compiling without krb4 -oremanj@MIT.EDU
+ * Fix a crash narrowing to certain messages. -andersk@mit.edu
+ * Fix a subtle bug in the perl bindings. -nelhage@mit.edu
+ * Squelch an 'uninitialized' warning in recv:shift-left. -nelhage@mit.edu
+
 1.5
  * Show the prompt in short editwins when scrolling back to the start. -nelhage@mit.edu
  * Improve handling of some Jabber messages. -asedeno@mit.edu
