@@ -35,6 +35,19 @@ test -n "$beta" && B=-beta
 
 cd /mit/barnowl/arch/
 
+update_symlink() {
+  local dir="$1"
+  local target="$2"
+  local link="$3"
+  if [ -e "$dir/$target" ]; then
+    # update the symlink
+    $E ln -sf "$target" "$dir/$link"
+  else
+    # delete the symlink
+    $E rm -f "$dir/$link"
+  fi
+}
+
 for i in *; do
     if [ -L "$i" ]; then
         echo "# Skipping $i as a symbolic link..."
@@ -47,9 +60,9 @@ for i in *; do
 
         # Sanity -- make sure the 'barnowl' symlink is correct.
         $E ln -sf "../../common/bin/barnowl$B" "$i/bin/barnowl$B"
-        [ -e "$i/bin/$NEWVERSION" ]         && $E ln -sf "$NEWVERSION"         "$i/bin/barnowl.real$B"
-        [ -e "$i/bin/$NEWVERSION.zephyr3" ] && $E ln -sf "$NEWVERSION.zephyr3" "$i/bin/barnowl.real$B.zephyr3"
-        [ -e "$i/bin/$NEWVERSION.zephyr4" ] && $E ln -sf "$NEWVERSION.zephyr4" "$i/bin/barnowl.real$B.zephyr4"
+        update_symlink "$i/bin" "$NEWVERSION"         "barnowl.real$B"
+        update_symlink "$i/bin" "$NEWVERSION.zephyr3" "barnowl.real$B.zephyr3"
+        update_symlink "$i/bin" "$NEWVERSION.zephyr4" "barnowl.real$B.zephyr4"
 
         $E ln -sf "zcrypt${NEWVERSION#barnowl}" "$i/bin/zcrypt"
     fi
