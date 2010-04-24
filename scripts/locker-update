@@ -30,6 +30,9 @@ test -z "$NEWVERSION" && usage
 E=
 test -n "$dryrun" && E=echo
 
+B=
+test -n "$beta" && B=-beta
+
 cd /mit/barnowl/arch/
 
 for i in *; do
@@ -41,14 +44,11 @@ for i in *; do
         echo "# New version $NEWVERSION not built for arch $i...";
     else
         echo "# $i"
-        if test -n "$beta"; then
-            $E ln -sf "../../common/bin/barnowl-beta" "$i/bin/barnowl-beta"
-            $E ln -sf "$NEWVERSION" "$i/bin/barnowl.real-beta"
-        else
-                # Sanity -- make sure the 'barnowl' symlink is correct.
-            $E ln -sf "../../common/bin/barnowl" "$i/bin/barnowl"
-            $E ln -sf "$NEWVERSION" "$i/bin/barnowl.real"
-        fi
+
+        # Sanity -- make sure the 'barnowl' symlink is correct.
+        $E ln -sf "../../common/bin/barnowl$B" "$i/bin/barnowl$B"
+        $E ln -sf "$NEWVERSION" "$i/bin/barnowl.real$B"
+
         $E ln -sf "zcrypt${NEWVERSION#barnowl}" "$i/bin/zcrypt"
     fi
 done;
