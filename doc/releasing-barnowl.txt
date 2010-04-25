@@ -1,0 +1,79 @@
+DOING A BARNOWL RELEASE
+
+[ ] Send mail to barnowl-dev indicating that a release is happening
+    soon, and soliciting any improvements that developers want
+    included in the release.
+
+[ ] Wait a while (a week or so, or more if necessary) for any pending
+    patches to get in.
+
+[ ] Prepare the -rc commit
+
+ [ ] Run ./scripts/add-changelog NEW-VERSION PREV-TAG..HEAD
+
+ [ ] Edit ChangeLog to combine and filter entries
+
+ [ ] Edit configure.ac to bump the version to 1.Nrc1
+
+[ ] Commit with message 'BarnOwl 1.Nrc1'; don't push until after
+    builds all succeed
+
+[ ] Run scripts/do-release with -f (so it won't complain about missing
+    changelog), makes a tarball
+
+[ ] Make all the builds
+ 
+ [ ] On build@nelhage.com, run barnowl-build-all TARBALL to build for
+     everything with chroots, doesn't do athena 9 builds. Builds into
+     locker parellel to all other versions.
+
+ [ ] Do two athena9 builds: solaris and linux, usually use multics (or
+     sun.dialup) for the solaris build, oliver for linux athena9
+
+  [ ] Remember to add gnu; add barnowl
+
+  [ ] eval `barnowl-perl-config` to include the perl modules in the
+      barnowl locker
+
+  [ ] Run scripts/locker-build TARBALL (barnowl-build-all loops over
+      all of them in schroots). It overrides existing one.
+
+[ ] Sanity-check the builds
+
+ [ ] Do cursory testing on debathena platforms and both athena9s.
+
+ [ ] chroots on nelhage.com also useful
+
+[ ] Update symlinks with locker-update script;
+
+      locker-update [-b] [-n] VERSION
+
+    e.g. locker-update -b -n barnowl-1.6rc1
+ 
+ [ ] -b for the beta
+
+ [ ] -n first for dry-run
+
+[ ] Push the RC commit
+
+[ ] Copy tarball into /mit/barnowl/web_scripts/dist
+
+[ ] Send mail (rcs to barnowl-dev@, release to barnowl-users@)
+
+[ ] Make an actual release about a week after the RC
+
+
+LOCKER LAYOUT
+
+* builds/barnowl-VERSION contains the arch-independent files by
+  version
+
+* arch/SYSNAME/bin/barnowl-VERSION is the actual binary
+
+* arch/SYSNAME/bin/barnowl is a symlink to ../../common/bin/barnowl
+  (wrapper script runs barnowl.real). .../barnowl.real is a symlink to
+  the latest version.
+
+* zcrypt is also installed with a versioned name, but currently
+  barnowl-N will not run zcrypt-N, so we can't change that interface
+  at all.
