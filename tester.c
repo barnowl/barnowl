@@ -328,8 +328,7 @@ int owl_editwin_regtest(void) {
   printf("# BEGIN testing owl_editwin\n");
 
   owl_editwin *oe;
-  oe = owl_editwin_allocate();
-  owl_editwin_init(oe, NULL, 80, 80, OWL_EDITWIN_STYLE_MULTILINE, NULL);
+  oe = owl_editwin_new(NULL, 80, 80, OWL_EDITWIN_STYLE_MULTILINE, NULL);
 
   /* TODO: make the strings a little more lenient w.r.t trailing whitespace */
 
@@ -343,8 +342,10 @@ int owl_editwin_regtest(void) {
 							    "\n"
 							    "blah"));
 
+  owl_editwin_delete(oe); oe = NULL;
+  oe = owl_editwin_new(NULL, 80, 80, OWL_EDITWIN_STYLE_MULTILINE, NULL);
+
   /* check that lines ending with ". " correctly fill */
-  owl_editwin_fullclear(oe);
   owl_editwin_insert_string(oe, "blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah. \n\nblah");
   owl_editwin_move_to_top(oe);
   owl_editwin_fill_paragraph(oe);
@@ -354,7 +355,7 @@ int owl_editwin_regtest(void) {
 							    "\n"
 							    "blah"));
 
-  owl_editwin_delete(oe);
+  owl_editwin_delete(oe); oe = NULL;
 
   printf("# END testing owl_editwin (%d failures)\n", numfailed);
 
