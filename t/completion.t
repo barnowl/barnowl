@@ -302,6 +302,10 @@ test_complete('login ', '',
               [qw[login logout none]],
               \&complete_filter_expr);
 
+test_complete('deleted ', '',
+              [qw[true false]],
+              \&complete_filter_expr);
+
 # Test complete_files
 use BarnOwl::Completion::Util qw(complete_file);
 use File::Temp;
