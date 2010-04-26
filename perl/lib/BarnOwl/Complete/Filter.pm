@@ -25,7 +25,8 @@ sub complete_filter_expr {
 
 ### Private
 
-my %filter_cmds = (
+# Exported for the tester
+our %filter_cmds = (
     sender    => \&BarnOwl::Complete::Zephyr::complete_user,
     recipient => \&BarnOwl::Complete::Zephyr::complete_user,
     class     => \&BarnOwl::Complete::Zephyr::complete_class,

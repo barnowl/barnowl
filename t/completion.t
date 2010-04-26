@@ -265,12 +265,17 @@ test_complete('cmd foo -- bar ','',
 
 
 # Test the filter expression completer
+
+sub toplevel_filter_expect {
+    return [sort(keys %BarnOwl::Complete::Filter::filter_cmds, qw[( not true false])];
+}
+
 test_complete('', '',
-              [qw[( body class direction false filter hostname instance login not opcode perl realm recipient sender true type]],
+              toplevel_filter_expect(),
               \&complete_filter_expr);
 
 test_complete('not ', '',
-              [qw[( body class direction false filter hostname instance login not opcode perl realm recipient sender true type]],
+              toplevel_filter_expect(),
               \&complete_filter_expr);
 
 test_complete('true ', '',
