@@ -869,9 +869,22 @@ int do_decrypt_aes(const char *keyfile) {
 int do_decrypt_des(const char *keyfile) {
   des_key_schedule schedule;
   unsigned char input[8], output[8];
+  char tmp[9];
   char *keystring;
 
-  output[0] = '\0';    /* In case no message at all                 */
+  /*
+    DES decrypts 8 bytes at a time. We copy those over into the 9-byte
+    'tmp', which has the final byte zeroed, to ensure that we always
+    have a NULL-terminated string we can call printf/strlen on.
+
+    We don't pass 'tmp' to des_ecb_encrypt directly, because it's
+    prototyped as taking 'unsigned char[8]', and this avoids a stupid
+    cast.
+
+    We zero 'tmp' entirely, not just the final byte, in case there are
+    no input blocks.
+  */
+  memset(tmp, 0, sizeof tmp);
 
   keystring = read_keystring(keyfile);
   if(!keystring) return FALSE;
@@ -883,10 +896,11 @@ int do_decrypt_des(const char *keyfile) {
   while (read_ascii_block(input))
   {
     des_ecb_encrypt(&input, &output, schedule, FALSE);
-    printf("%s", output);
+    memcpy(tmp, output, 8);
+    printf("%s", tmp);
   }
 
-  if (!output[0] || output[strlen((const char*)output) - 1] != '\n')
+  if (!tmp[0] || tmp[strlen(tmp) - 1] != '\n')
       printf("\n");
   return TRUE;
 }
