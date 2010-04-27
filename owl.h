@@ -567,7 +567,7 @@ typedef struct _owl_global {
   PANEL *recpan, *seppan, *msgpan, *typpan;
   int needrefresh;
   int rightshift;
-  int resizepending;
+  volatile sig_atomic_t resizepending;
   int recwinlines;
   char *thishost;
   char *homedir;
@@ -609,8 +609,8 @@ typedef struct _owl_global {
   int havezephyr;
   int haveaim;
   int ignoreaimlogin;
-  int got_err_signal;	    /* 1 if we got an unexpected signal */
-  siginfo_t err_signal_info;
+  volatile sig_atomic_t got_err_signal; /* 1 if we got an unexpected signal */
+  volatile siginfo_t err_signal_info;
   owl_zbuddylist zbuddies;
   owl_timer zephyr_buddycheck_timer;
   GList *zaldlist;
@@ -622,7 +622,7 @@ typedef struct _owl_global {
   GList *timerlist;
   owl_timer *aim_nop_timer;
   int load_initial_subs;
-  int interrupted;
+  volatile sig_atomic_t interrupted;
 } owl_global;
 
 /* globals */

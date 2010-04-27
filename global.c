@@ -936,7 +936,9 @@ void owl_global_set_errsignal(owl_global *g, int signum, siginfo_t *siginfo)
   if (siginfo) {
     g->err_signal_info = *siginfo;
   } else {
-    memset(&(g->err_signal_info), 0, sizeof(siginfo_t));
+    siginfo_t si;
+    memset(&si, 0, sizeof(si));
+    g->err_signal_info = si;
   }
 }
 
