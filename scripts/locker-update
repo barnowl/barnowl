@@ -53,7 +53,8 @@ for i in *; do
         echo "# Skipping $i as a symbolic link..."
     elif [ "$i" = "common" ]; then
         echo "# Skipping 'common'..."
-    elif ! [ -e "$i/bin/$NEWVERSION" ]; then
+    elif ! [ -e "$i/bin/$NEWVERSION" ] && \
+	! [ "$(shopt -s nullglob; echo $i/bin/$NEWVERSION.zephyr?)" ] ; then
         echo "# New version $NEWVERSION not built for arch $i...";
     else
         echo "# $i"
