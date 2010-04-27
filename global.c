@@ -471,6 +471,7 @@ void owl_global_resize(owl_global *g, int x, int y) {
   struct winsize size;
     
   if (!g->resizepending) return;
+  g->resizepending = 0;
 
   if (!isendwin()) {
     endwin();
@@ -525,7 +526,6 @@ void owl_global_resize(owl_global *g, int x, int y) {
 
   owl_function_debugmsg("New size is %i lines, %i cols.", size.ws_row, size.ws_col);
   owl_function_makemsg("");
-  g->resizepending=0;
 }
 
 /* debug */
