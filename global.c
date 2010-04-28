@@ -500,7 +500,7 @@ void owl_global_resize(owl_global *g, int x, int y) {
   }
 
 #ifdef HAVE_RESIZETERM
-  resizeterm(size.ws_row, size.ws_col);
+  resizeterm(g->lines, g->cols);
 #endif
 
   /* re-initialize the windows */
@@ -524,7 +524,7 @@ void owl_global_resize(owl_global *g, int x, int y) {
 
   owl_function_full_redisplay();
 
-  owl_function_debugmsg("New size is %i lines, %i cols.", size.ws_row, size.ws_col);
+  owl_function_debugmsg("New size is %i lines, %i cols.", g->lines, g->cols);
   owl_function_makemsg("");
 }
 
