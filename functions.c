@@ -1574,7 +1574,7 @@ void owl_function_page_curmsg(int step)
 void owl_function_resize_typwin(int newsize)
 {
   owl_global_set_typwin_lines(&g, newsize);
-  owl_function_resize();
+  owl_global_set_relayout_pending(&g);
 }
 
 void owl_function_mainwin_pagedown(void)
