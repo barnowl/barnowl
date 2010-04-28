@@ -508,6 +508,13 @@ void owl_global_resize(owl_global *g, int x, int y) {
   resizeterm(g->lines, g->cols);
 #endif
 
+  owl_function_debugmsg("New size is %i lines, %i cols.", g->lines, g->cols);
+  owl_global_relayout(g);
+}
+
+void owl_global_relayout(owl_global *g) {
+  owl_function_debugmsg("Relayouting...");
+
   /* re-initialize the windows */
   _owl_global_setup_windows(g);
 
@@ -529,7 +536,6 @@ void owl_global_resize(owl_global *g, int x, int y) {
 
   owl_function_full_redisplay();
 
-  owl_function_debugmsg("New size is %i lines, %i cols.", g->lines, g->cols);
   owl_function_makemsg("");
 }
 
