@@ -67,8 +67,6 @@ int owl_popwin_close(owl_popwin *pw)
 
   pw->active=0;
   owl_global_set_needrefresh(&g);
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_function_full_redisplay();
   return(0);
 }
 
