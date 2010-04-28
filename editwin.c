@@ -46,7 +46,7 @@ static void oe_restore_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_restore_mark_only(owl_editwin *e, oe_excursion *x);
 static int oe_char_width(gunichar c, int column);
 static int oe_region_width(owl_editwin *e, int start, int end, int width);
-static int oe_find_display_line(owl_editwin *e, int *x, int index);
+static int oe_find_display_line(owl_editwin *e, int *x, int index, int *hard);
 static void oe_insert_char(owl_editwin *e, gunichar c);
 static int owl_editwin_limit_maxcols(int v, int maxv);
 static int owl_editwin_check_dotsend(owl_editwin *e);
@@ -387,7 +387,7 @@ static int oe_char_width(gunichar c, int column)
   return cw;
 }
 
-static int oe_find_display_line(owl_editwin *e, int *x, int index)
+static int oe_find_display_line(owl_editwin *e, int *x, int index, int *hard)
 {
   int width = 0, cw;
   gunichar c;
@@ -407,6 +407,7 @@ static int oe_find_display_line(owl_editwin *e, int *x, int index)
     if (width + cw > e->wincols - 1) {
       if (x != NULL && *x == width)
 	*x = -1;
+      if (hard != NULL) *hard = 0;
       break;
     }
     width += cw;
@@ -414,6 +415,7 @@ static int oe_find_display_line(owl_editwin *e, int *x, int index)
     if (c == '\n') {
       if (width < e->wincols)
 	++index; /* skip the newline */
+      if (hard != NULL) *hard = 1;
       break;
     }
 
@@ -422,6 +424,7 @@ static int oe_find_display_line(owl_editwin *e, int *x, int index)
     if (p == NULL) { /* we ran off the end */
       if (x != NULL && e->index > index)
 	*x = width + 1;
+      if (hard != NULL) *hard = 1;
       break;
     }
     index = p - e->buff;
@@ -451,7 +454,7 @@ static void oe_reframe(owl_editwin *e) {
       break;
     last = e->index;
     for (n = 0, i = e->index; i < index; n++)
-      i = oe_find_display_line(e, NULL, i);
+      i = oe_find_display_line(e, NULL, i, NULL);
     count += n == 0 ? 1 : n;
     if (count < goal)
       owl_editwin_point_move(e, -1);
@@ -460,7 +463,7 @@ static void oe_reframe(owl_editwin *e) {
   e->topindex = e->index;
   /* if we overshot, backtrack */
   for (n = 0; n < (count - goal); n++)
-    e->topindex = oe_find_display_line(e, NULL, e->topindex);
+    e->topindex = oe_find_display_line(e, NULL, e->topindex, NULL);
 
   oe_restore_excursion(e, &x);
 }
@@ -482,7 +485,7 @@ static void oe_mvaddnec(owl_editwin *e, int y, int x, int count)
 /* regenerate the text on the curses window */
 void owl_editwin_redisplay(owl_editwin *e)
 {
-  int x = -1, y = -1, t;
+  int x = -1, y = -1, t, hard;
   int line, index, lineindex, times = 0;
 
   do {
@@ -496,7 +499,7 @@ void owl_editwin_redisplay(owl_editwin *e)
     while(line < e->winlines) {
       lineindex = index;
       t = -1;
-      index = oe_find_display_line(e, &t, lineindex);
+      index = oe_find_display_line(e, &t, lineindex, &hard);
       if (x == -1 && t != -1)
 	x = t, y = line;
       if (index - lineindex) {
@@ -517,6 +520,8 @@ void owl_editwin_redisplay(owl_editwin *e)
 	  } else
 	    oe_mvaddnec(e, line, 0, oe_region_width(e, lineindex, index, 0));
 	}
+        if (!hard)
+          waddch(e->curswin, '\\');
       }
       line++;
     }
