@@ -287,7 +287,7 @@ static owl_variable variables_to_init[] = {
 		 "if it is narrower than the maximum, or if this\n"
 		 "is set to 0.\n" ),
 
-  OWLVAR_INT(    "edit:maxwrapcols" /* %OwlVarStub:edit_maxwrapcols */, 0,
+  OWLVAR_INT(    "edit:maxwrapcols" /* %OwlVarStub:edit_maxwrapcols */, 70,
 	         "maximum number of columns for line-wrapping",
 		 "This specifies the maximum number of columns for\n"
 		 "auto-line-wrapping.  If set to 0, ther will be no maximum\n"
@@ -296,7 +296,7 @@ static owl_variable variables_to_init[] = {
 		 "if it is narrower than the maximum, or if this\n"
 		 "is set to 0.\n\n"
 		 "It is recommended that outgoing messages be no wider\n"
-		 "than 60 columns, as a courtesy to recipients.\n"),
+		 "than 70 columns, as a courtesy to recipients.\n"),
 
   OWLVAR_INT( "aim_ignorelogin_timer" /* %OwlVarStub */, 15,
 	      "number of seconds after AIM login to ignore login messages",
