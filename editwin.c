@@ -515,7 +515,7 @@ void owl_editwin_redisplay(owl_editwin *e)
 			oe_region_width(e, e->lock, index,
 					oe_region_width(e, lineindex, e->lock, 0)));
 	  } else
-	    oe_mvaddnec(e, line, 0, oe_region_width(e, line, index, 0));
+	    oe_mvaddnec(e, line, 0, oe_region_width(e, lineindex, index, 0));
 	}
       }
       line++;
