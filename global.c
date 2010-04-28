@@ -137,7 +137,7 @@ void _owl_panel_set_window(PANEL **pan, WINDOW *win)
   WINDOW *oldwin;
 
   if (win == NULL) {
-    owl_function_debugmsg("_owl_panel_set_window: passed NULL win (failed to allocate?)\n");
+    owl_function_debugmsg("_owl_panel_set_window: passed NULL win (failed to allocate?)");
     endwin();
     exit(50);
   }
@@ -163,8 +163,6 @@ void _owl_global_setup_windows(owl_global *g) {
     /* gotta deal with this */
     g->recwinlines=0;
   }
-
-  owl_function_debugmsg("_owl_global_setup_windows: about to call newwin(%i, %i, 0, 0)\n", g->recwinlines, cols);
 
   /* create the new windows */
   _owl_panel_set_window(&g->recpan, newwin(g->recwinlines, cols, 0, 0));
