@@ -534,7 +534,7 @@ sub recv_shift_right
 {
     my $func = shift;
     my $delta = shift;
-    $delta = 10 unless int($delta) > 0;
+    $delta = 10 unless defined($delta) && int($delta) > 0;
     my $shift = BarnOwl::recv_getshift();
     BarnOwl::recv_setshift($shift+$delta);
 }
