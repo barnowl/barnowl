@@ -56,6 +56,7 @@ void owl_global_init(owl_global *g) {
   owl_dict_create(&(g->styledict));
   g->curmsg_vert_offset=0;
   g->resizepending=0;
+  g->relayoutpending = 0;
   g->direction=OWL_DIRECTION_DOWNWARDS;
   g->zaway=0;
   if (has_colors()) {
@@ -393,6 +394,10 @@ void owl_global_set_resize_pending(owl_global *g) {
   g->resizepending=1;
 }
 
+void owl_global_set_relayout_pending(owl_global *g) {
+  g->relayoutpending = 1;
+}
+
 const char *owl_global_get_homedir(const owl_global *g) {
   if (g->homedir) return(g->homedir);
   return("/");
@@ -503,10 +508,13 @@ void owl_global_resize(owl_global *g, int x, int y) {
   resizeterm(g->lines, g->cols);
 
   owl_function_debugmsg("New size is %i lines, %i cols.", g->lines, g->cols);
-  owl_global_relayout(g);
+  owl_global_set_relayout_pending(g);
 }
 
 void owl_global_relayout(owl_global *g) {
+  if (!g->relayoutpending) return;
+  g->relayoutpending = 0;
+
   owl_function_debugmsg("Relayouting...");
 
   /* re-initialize the windows */

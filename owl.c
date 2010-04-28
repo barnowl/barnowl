@@ -617,8 +617,10 @@ int main(int argc, char **argv, char **env)
 
     /* if a resize has been scheduled, deal with it */
     owl_global_resize(&g, 0, 0);
+    /* also handle relayouts */
+    owl_global_relayout(&g);
 
-    /* these are here in case a resize changes the windows */
+    /* these are here in case a relayout changes the windows */
     sepwin=owl_global_get_curs_sepwin(&g);
     typwin=owl_global_get_curs_typwin(&g);
 
