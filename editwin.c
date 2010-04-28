@@ -404,7 +404,7 @@ static int oe_find_display_line(owl_editwin *e, int *x, int index)
     /* figure out how wide it is */
     cw = oe_char_width(c, width);
 
-    if (width + cw > e->wincols) {
+    if (width + cw > e->wincols - 1) {
       if (x != NULL && *x == width)
 	*x = -1;
       break;
