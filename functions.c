@@ -1263,13 +1263,10 @@ void owl_function_set_cursor(WINDOW *win)
 
 void owl_function_full_redisplay(void)
 {
-  redrawwin(owl_global_get_curs_recwin(&g));
-  redrawwin(owl_global_get_curs_sepwin(&g));
-  /* Work around curses segfualts with windows off the screen */
-  if (g.lines >= owl_global_get_typwin_lines(&g)+2)
-      redrawwin(owl_global_get_curs_typwin(&g));
-  if (g.lines >= 2)
-      redrawwin(owl_global_get_curs_msgwin(&g));
+  touchwin(owl_global_get_curs_recwin(&g));
+  touchwin(owl_global_get_curs_sepwin(&g));
+  touchwin(owl_global_get_curs_typwin(&g));
+  touchwin(owl_global_get_curs_msgwin(&g));
 
   sepbar("");
   owl_function_makemsg("");
