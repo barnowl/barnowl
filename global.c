@@ -492,10 +492,6 @@ void owl_global_resize(owl_global *g, int x, int y) {
   if (!g->resizepending) return;
   g->resizepending = 0;
 
-  if (!isendwin()) {
-    endwin();
-  }
-
   _owl_global_get_size(&g->lines, &g->cols);
   if (x != 0) {
     g->lines = x;
@@ -504,9 +500,7 @@ void owl_global_resize(owl_global *g, int x, int y) {
     g->cols = y;
   }
 
-#ifdef HAVE_RESIZETERM
   resizeterm(g->lines, g->cols);
-#endif
 
   owl_function_debugmsg("New size is %i lines, %i cols.", g->lines, g->cols);
   owl_global_relayout(g);
