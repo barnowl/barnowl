@@ -66,6 +66,10 @@ void owl_viewwin_set_onclose_hook(owl_viewwin *v, void (*onclose_hook) (owl_view
 void owl_viewwin_redisplay(owl_viewwin *v)
 {
   owl_fmtext fm1, fm2;
+
+  /* avoid segfault when screen too small to create curswin */
+  if (v->curswin == NULL)
+    return;
   
   werase(v->curswin);
   wmove(v->curswin, 0, 0);
