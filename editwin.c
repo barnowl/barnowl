@@ -48,7 +48,7 @@ static int oe_char_width(gunichar c, int column);
 static int oe_region_width(owl_editwin *e, int start, int end, int width);
 static int oe_find_display_line(owl_editwin *e, int *x, int index, int *hard);
 static void oe_insert_char(owl_editwin *e, gunichar c);
-static int owl_editwin_limit_maxcols(int v, int maxv);
+static int owl_editwin_limit_maxcols(int width, int cols);
 static int owl_editwin_check_dotsend(owl_editwin *e);
 static int owl_editwin_is_char_in(owl_editwin *e, const char *set);
 static gunichar owl_editwin_get_char_at_point(owl_editwin *e);
@@ -217,14 +217,11 @@ void owl_editwin_do_callback(owl_editwin *e) {
   }
 }
 
-static int owl_editwin_limit_maxcols(int v, int maxv)
+static int owl_editwin_limit_maxcols(int width, int cols)
 {
-  /* maxv > 5 ? MAX(v, vax) : v */
-  if (maxv > 5 && v > maxv) {
-    return(maxv);
-  } else {
-    return(v);
-  }
+  if (cols == 0)
+    return width;
+  return cols;
 }
 
 /* set text to be 'locked in' at the beginning of the buffer, any
@@ -1100,6 +1097,10 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
   gunichar ch;
   int sentence;
 
+  if (e->fillcol < 0)
+    /* auto-fill disabled */
+    return;
+
   oe_save_excursion(e, &x);
 
   /* Mark the end of the paragraph */
@@ -1236,7 +1237,8 @@ static void oe_insert_char(owl_editwin *e, gunichar c)
       return;
     }
 
-    if (e->cursorx != -1 && e->cursorx + oe_char_width(c, e->cursorx) > e->wrapcol) {
+    if (e->wrapcol > 0 && e->cursorx != -1 &&
+        e->cursorx + oe_char_width(c, e->cursorx) > e->wrapcol) {
       /* XXX this is actually wrong:
        * + If the line has been been wrapped, we can be past the wrap column but
        *   e->cursorx be much smaller.
