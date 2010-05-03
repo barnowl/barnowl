@@ -61,7 +61,9 @@ sub subcontext {
 
 sub personal_context {
     my $self = shift;
-    if ($self->is_incoming) {
+    if($self->subject) {
+        return "subject: " . $self->subject;
+    } elsif ($self->is_incoming) {
         return "to " . $self->to;
     } else {
         return "from " . $self->from;
