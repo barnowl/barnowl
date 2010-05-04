@@ -124,12 +124,12 @@ static void _owl_editwin_init(owl_editwin *e,
   e->cursorx = -1;
   e->topindex = 0;
   e->excursions = NULL;
-  owl_editwin_set_curswin(e, win, winlines, wincols);
   e->style=style;
   if ((style!=OWL_EDITWIN_STYLE_MULTILINE) &&
       (style!=OWL_EDITWIN_STYLE_ONELINE)) {
     e->style=OWL_EDITWIN_STYLE_MULTILINE;
   }
+  owl_editwin_set_curswin(e, win, winlines, wincols);
   e->lock=0;
   e->dotsend=0;
   e->echochar='\0';
@@ -151,7 +151,10 @@ void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincol
   e->winlines=winlines;
   e->wincols=wincols;
   e->fillcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxfillcols(&g));
-  e->wrapcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxwrapcols(&g));
+  if (e->style == OWL_EDITWIN_STYLE_MULTILINE)
+    e->wrapcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxwrapcols(&g));
+  else
+    e->wrapcol = 0;
 }
 
 /* echo the character 'ch' for each normal character keystroke,
@@ -1231,7 +1234,8 @@ static void oe_insert_char(owl_editwin *e, gunichar c)
       return;
     }
 
-    if (e->cursorx != -1 && e->cursorx + oe_char_width(c, e->cursorx) > e->wrapcol) {
+    if (e->wrapcol > 0 && e->cursorx != -1 &&
+        e->cursorx + oe_char_width(c, e->cursorx) > e->wrapcol) {
       /* XXX this is actually wrong:
        * + If the line has been been wrapped, we can be past the wrap column but
        *   e->cursorx be much smaller.
