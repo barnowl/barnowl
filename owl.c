@@ -609,8 +609,6 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: processing startup file");
   owl_function_source(NULL);
 
-  update_panels();
-
   /* Set the default style */
   owl_function_debugmsg("startup: setting startup and default style");
   if (0 != strcmp(owl_global_get_default_style(&g), "__unspecified__")) {
