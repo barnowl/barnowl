@@ -27,10 +27,6 @@ int owl_popwin_up(owl_popwin *pw)
   pw->borderpanel = new_panel(borderwin);
   popwin = newwin(pw->lines-2, pw->cols-2, startline+1, startcol+1);
   pw->poppanel = new_panel(popwin);
-  
-  meta(popwin,TRUE);
-  nodelay(popwin, 1);
-  keypad(popwin, TRUE);
 
   werase(popwin);
   werase(borderwin);

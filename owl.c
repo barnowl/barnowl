@@ -310,12 +310,9 @@ int owl_process_messages(owl_ps_action *d, void *p)
 void owl_process_input(const owl_io_dispatch *d, void *data)
 {
   owl_input j;
-  WINDOW *typwin;
-
-  typwin = owl_global_get_curs_typwin(&g);
 
   while (1) {
-    j.ch = wgetch(typwin);
+    j.ch = wgetch(g.input_pad);
     if (j.ch == ERR) return;
 
     j.uch = '\0';
@@ -338,7 +335,7 @@ void owl_process_input(const owl_io_dispatch *d, void *data)
       else bytes = 1;
       
       for (i = 1; i < bytes; i++) {
-        int tmp =  wgetch(typwin);
+        int tmp = wgetch(g.input_pad);
         /* If what we got was not a byte, or not a continuation byte */
         if (tmp > 0xff || !(tmp & 0x80 && ~tmp & 0x40)) {
           /* ill-formed UTF-8 code unit subsequence, put back the

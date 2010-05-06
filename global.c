@@ -119,6 +119,12 @@ void owl_global_init(owl_global *g) {
   owl_list_create(&(g->psa_list));
   g->timerlist = NULL;
   g->interrupted = FALSE;
+
+  /* set up a pad for input */
+  g->input_pad = newpad(1, 1);
+  nodelay(g->input_pad, 1);
+  keypad(g->input_pad, 1);
+  meta(g->input_pad, 1);
 }
 
 /* Called once perl has been initialized */
@@ -178,11 +184,7 @@ void _owl_global_setup_windows(owl_global *g) {
   idlok(owl_global_get_curs_sepwin(g), FALSE);
   idlok(owl_global_get_curs_msgwin(g), FALSE);
 
-  nodelay(owl_global_get_curs_typwin(g), 1);
-  keypad(owl_global_get_curs_typwin(g), TRUE);
   wmove(owl_global_get_curs_typwin(g), 0, 0);
-
-  meta(owl_global_get_curs_typwin(g), TRUE);
 }
 
 owl_context *owl_global_get_context(owl_global *g) {
