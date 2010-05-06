@@ -272,6 +272,11 @@ void owl_select_mask_signals(sigset_t *oldmask) {
   sigset_t set;
 
   sigemptyset(&set);
+  sigaddset(&set, SIGWINCH);
+  sigaddset(&set, SIGALRM);
+  sigaddset(&set, SIGPIPE);
+  sigaddset(&set, SIGTERM);
+  sigaddset(&set, SIGHUP);
   sigaddset(&set, SIGINT);
   sigprocmask(SIG_BLOCK, &set, oldmask);
 }
