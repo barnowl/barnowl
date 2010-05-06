@@ -465,10 +465,35 @@ void owl_zephyr_buddycheck_timer(owl_timer *t, void *data)
   }
 }
 
+static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
+{
+  /* if a resize has been scheduled, deal with it */
+  owl_global_resize(&g, 0, 0);
+
+  /* update the terminal if we need to */
+  if (owl_global_is_needrefresh(&g)) {
+    /* these are here in case a resize changes the windows */
+    WINDOW *sepwin = owl_global_get_curs_sepwin(&g);
+    WINDOW *typwin = owl_global_get_curs_typwin(&g);
+
+    /* push all changed windows to screen */
+    update_panels();
+    /* leave the cursor in the appropriate window */
+    if (!owl_popwin_is_active(owl_global_get_popwin(&g))
+	&& owl_global_get_typwin(&g)) {
+      owl_function_set_cursor(typwin);
+    } else {
+      owl_function_set_cursor(sepwin);
+    }
+    doupdate();
+    owl_global_set_noneedrefresh(&g);
+  }
+  return 0;
+}
+
 
 int main(int argc, char **argv, char **env)
 {
-  WINDOW *sepwin, *typwin;
   int argcsave;
   const char *const *argvsave;
   char *perlout, *perlerr;
@@ -609,34 +634,12 @@ int main(int argc, char **argv, char **env)
   /* If we ever deprecate the mainloop hook, remove this. */
   owl_select_add_timer(0, 1, owl_perlconfig_mainloop, NULL, NULL);
 
+  owl_select_add_pre_select_action(owl_refresh_pre_select_action, NULL, NULL);
   owl_select_add_pre_select_action(owl_process_messages, NULL, NULL);
 
   owl_function_debugmsg("startup: entering main loop");
   /* main loop */
   while (1) {
-
-    /* if a resize has been scheduled, deal with it */
-    owl_global_resize(&g, 0, 0);
-
-    /* these are here in case a resize changes the windows */
-    sepwin=owl_global_get_curs_sepwin(&g);
-    typwin=owl_global_get_curs_typwin(&g);
-
-    /* update the terminal if we need to */
-    if (owl_global_is_needrefresh(&g)) {
-      /* push all changed windows to screen */
-      update_panels();
-      /* leave the cursor in the appropriate window */
-      if (!owl_popwin_is_active(owl_global_get_popwin(&g))
-	  && owl_global_get_typwin(&g)) {
-	owl_function_set_cursor(typwin);
-      } else {
-	owl_function_set_cursor(sepwin);
-      }
-      doupdate();
-      owl_global_set_noneedrefresh(&g);
-    }
-
     /* select on FDs we know about. */
     owl_select();
 
