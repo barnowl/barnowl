@@ -1,4 +1,8 @@
 1.6
+ * Add :vp and :viewperson aliases for :viewuser. -kevinr@free-dissociation.com
+ * Fix some bugs related to resize. -davidben@mit.edu
+ * Don't auto-wrap text in command lines. -nelhage@mit.edu
+ * Wrap input at 70 columns by default. -andersk@mit.edu
  * Support filtering on whether a message has been deleted. -nelhage@mit.edu
  * Properly quote strings containing newlines or tabs. -nelhage@mit.edu
  * Check for an unset mark in owl_editwin_replace_region. -nelhage@mit.edu
