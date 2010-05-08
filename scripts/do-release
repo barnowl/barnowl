@@ -93,5 +93,5 @@ echo "Remember to bump OWL_VERSION_STRING for future development."
 COMMIT=$(git rev-parse "$TAG")
 NOW=$(date +"%B %d, %Y")
 cat <<EOF
- * '''$NOW''': BarnOwl $VERS Released. [wiki:Download] it here. or see the [/browser/ChangeLog?rev=$COMMIT ChangeLog]
+ * '''$NOW''': BarnOwl $VERS Released. [wiki:Download] it here. or see the [wiki:release-notes/$VERS Release Notes] or [/browser/ChangeLog?rev=barnowl-$VERS ChangeLog].
 EOF
