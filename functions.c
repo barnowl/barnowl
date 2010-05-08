@@ -2391,7 +2391,7 @@ char *owl_function_zuserfilt(const char *user)
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
-    return(owl_strdup(filtname));
+    return filtname;
   }
 
   /* create the new-internal filter */
