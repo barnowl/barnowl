@@ -79,87 +79,97 @@ sub fail {
 }
 
 my $conffile = BarnOwl::get_config_dir() . "/twitter";
-open(my $fh, "<", "$conffile") || fail("Unable to read $conffile");
-my $raw_cfg = do {local $/; <$fh>};
-close($fh);
-eval {
-    $raw_cfg = from_json($raw_cfg);
-};
-if($@) {
-    fail("Unable to parse $conffile: $@");
+
+if (open(my $fh, "<", "$conffile")) {
+    read_config($fh);
+    close($fh);
 }
 
-$raw_cfg = [$raw_cfg] unless UNIVERSAL::isa $raw_cfg, "ARRAY";
+sub read_config {
+    my $fh = shift;
 
-# Perform some sanity checking on the configuration.
-{
-    my %nicks;
-    my $default = 0;
+    my $raw_cfg = do {local $/; <$fh>};
+    close($fh);
+    eval {
+        $raw_cfg = from_json($raw_cfg);
+    };
+    if($@) {
+        fail("Unable to parse $conffile: $@");
+    }
+
+    $raw_cfg = [$raw_cfg] unless UNIVERSAL::isa $raw_cfg, "ARRAY";
+
+    # Perform some sanity checking on the configuration.
+  {
+      my %nicks;
+      my $default = 0;
+
+      for my $cfg (@$raw_cfg) {
+          if(! exists $cfg->{user}) {
+              fail("Account has no username set.");
+          }
+          my $user = $cfg->{user};
+          if(! exists $cfg->{password}) {
+              fail("Account $user has no password set.");
+          }
+          if(@$raw_cfg > 1&&
+             !exists($cfg->{account_nickname}) ) {
+              fail("Account $user has no account_nickname set.");
+          }
+          if($cfg->{account_nickname}) {
+              if($nicks{$cfg->{account_nickname}}++) {
+                  fail("Nickname " . $cfg->{account_nickname} . " specified more than once.");
+              }
+          }
+          if($cfg->{default} || $cfg->{default_sender}) {
+              if($default++) {
+                  fail("Multiple accounts marked as 'default'.");
+              }
+          }
+      }
+  }
+
+    # If there is only a single account, make publish_tweets default to
+    # true.
+    if (scalar @$raw_cfg == 1 && !exists($raw_cfg->[0]{publish_tweets})) {
+        $raw_cfg->[0]{publish_tweets} = 1;
+    }
 
     for my $cfg (@$raw_cfg) {
-        if(! exists $cfg->{user}) {
-            fail("Account has no username set.");
+        my $twitter_args = { username   => $cfg->{user},
+                             password   => $cfg->{password},
+                             source     => 'barnowl', 
+                         };
+        if (defined $cfg->{service}) {
+            my $service = $cfg->{service};
+            $twitter_args->{apiurl} = $service;
+            my $apihost = $service;
+            $apihost =~ s/^\s*http:\/\///;
+            $apihost =~ s/\/.*$//;
+            $apihost .= ':80' unless $apihost =~ /:\d+$/;
+            $twitter_args->{apihost} = $cfg->{apihost} || $apihost;
+            my $apirealm = "Laconica API";
+            $twitter_args->{apirealm} = $cfg->{apirealm} || $apirealm;
+        } else {
+            $cfg->{service} = 'http://twitter.com';
         }
-        my $user = $cfg->{user};
-        if(! exists $cfg->{password}) {
-            fail("Account $user has no password set.");
-        }
-        if(@$raw_cfg > 1&&
-           !exists($cfg->{account_nickname}) ) {
-            fail("Account $user has no account_nickname set.");
-        }
-        if($cfg->{account_nickname}) {
-            if($nicks{$cfg->{account_nickname}}++) {
-                fail("Nickname " . $cfg->{account_nickname} . " specified more than once.");
-            }
-        }
-        if($cfg->{default} || $cfg->{default_sender}) {
-            if($default++) {
-                fail("Multiple accounts marked as 'default'.");
-            }
-        }
-    }
-}
 
-# If there is only a single account, make publish_tweets default to
-# true.
-if (scalar @$raw_cfg == 1 && !exists($raw_cfg->[0]{publish_tweets})) {
-    $raw_cfg->[0]{publish_tweets} = 1;
-}
-
-for my $cfg (@$raw_cfg) {
-    my $twitter_args = { username   => $cfg->{user},
-                        password   => $cfg->{password},
-                        source     => 'barnowl', 
-                    };
-    if (defined $cfg->{service}) {
-        my $service = $cfg->{service};
-        $twitter_args->{apiurl} = $service;
-        my $apihost = $service;
-        $apihost =~ s/^\s*http:\/\///;
-        $apihost =~ s/\/.*$//;
-        $apihost .= ':80' unless $apihost =~ /:\d+$/;
-        $twitter_args->{apihost} = $cfg->{apihost} || $apihost;
-        my $apirealm = "Laconica API";
-        $twitter_args->{apirealm} = $cfg->{apirealm} || $apirealm;
-    } else {
-        $cfg->{service} = 'http://twitter.com';
+        my $twitter_handle;
+        eval {
+            $twitter_handle = BarnOwl::Module::Twitter::Handle->new($cfg, %$twitter_args);
+        };
+        if ($@) {
+            BarnOwl::error($@);
+            next;
+        }
+        push @twitter_handles, $twitter_handle;
     }
 
-    my $twitter_handle;
-    eval {
-         $twitter_handle = BarnOwl::Module::Twitter::Handle->new($cfg, %$twitter_args);
-    };
-    if ($@) {
-        BarnOwl::error($@);
-        next;
+    $default_handle = first {$_->{cfg}->{default}} @twitter_handles;
+    if (!$default_handle && @twitter_handles) {
+        $default_handle = $twitter_handles[0];
     }
-    push @twitter_handles, $twitter_handle;
-}
 
-$default_handle = first {$_->{cfg}->{default}} @twitter_handles;
-if (!$default_handle && @twitter_handles) {
-    $default_handle = $twitter_handles[0];
 }
 
 sub match {
