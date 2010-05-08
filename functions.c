@@ -2505,6 +2505,34 @@ void owl_function_delete_curview_msgs(int flag)
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));  
 }
 
+static char *owl_function_smartfilter_cc(const owl_message *m) {
+  const char *ccs;
+  char *filtname;
+  char *text;
+  owl_filter *f;
+
+  ccs = owl_message_get_attribute_value(m, "zephyr_ccs");
+
+  filtname = owl_sprintf("conversation-%s", ccs);
+  owl_text_tr(filtname, ' ', '-');
+
+  if (owl_global_get_filter(&g, filtname)) {
+    return filtname;
+  }
+
+  text = owl_sprintf("type ^zephyr$ and filter personal and "
+                     "zephyr_ccs ^%s%s%s$",
+                     owl_getquoting(ccs), ccs, owl_getquoting(ccs));
+
+  f = owl_filter_new_fromstring(filtname, text);
+
+  owl_global_add_filter(&g, f);
+
+  owl_free(text);
+
+  return filtname;
+}
+
 /* Create a filter based on the current message.  Returns the name of
  * a filter or null.  The caller must free this name.
  *
@@ -2558,6 +2586,10 @@ char *owl_function_smartfilter(int type, int invert_related)
   /* narrow personal and login messages to the sender or recip as appropriate */
   if (owl_message_is_type_zephyr(m)) {
     if (owl_message_is_personal(m) || owl_message_is_loginout(m)) {
+      if (owl_message_get_attribute_value(m, "zephyr_ccs") != NULL) {
+        return owl_function_smartfilter_cc(m);
+      }
+
       if (owl_message_is_direction_in(m)) {
         zperson=short_zuser(owl_message_get_sender(m));
       } else {
