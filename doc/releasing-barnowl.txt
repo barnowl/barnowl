@@ -1,108 +1,68 @@
-DOING A BARNOWL RELEASE
+-*- mode: org *-
+* DOING A BARNOWL RELEASE
+  - [ ] Send mail to barnowl-dev indicating that a release is
+        happening soon, and soliciting any improvements that
+        developers want included in the release.
+  - [ ] Wait a while (a week or so, or more if necessary) for any
+        pending patches to get in.
+  - [ ] Prepare the -rc commit
+   - [ ] Run ./scripts/add-changelog NEW-VERSION PREV-TAG..HEAD
+   - [ ] Edit ChangeLog to combine and filter entries
+   - [ ] Edit configure.ac to bump the version to 1.Nrc1
+  - [ ] Commit with message 'BarnOwl 1.Nrc1'; don't push until after
+        builds all succeed
+  - [ ] Run scripts/do-release with -f (so it won't complain about
+        missing changelog), makes a tarball
+  - [ ] Do a locker build (See DOING A LOCKER BUILD)
+  - [ ] Update configure.ac on master to bump the version to 1.(N+1)dev
+  - [ ] Push git git:
+   - [ ] The RC commit
+   - [ ] The configure.ac change on master
+   - [ ] A release-1.N branch pointing at the RC commit
+  - [ ] Copy tarball into /mit/barnowl/web_scripts/dist
+  - [ ] Send mail announcing the RC to barnowl-dev@mit.edu
+  - [ ] Wait 1-2 weeks, collect any bug reports
+  - [ ] Fix any reported bugs on master
+  - [ ] Cherry-pick/backport appropriate fixes from master onto
+        release-1.N
+  - [ ] If there have been many or large bugfixes, repeat the process
+        for barnowl 1.Nrc2
 
-[ ] Send mail to barnowl-dev indicating that a release is happening
-    soon, and soliciting any improvements that developers want
-    included in the release.
+* DOING THE ACTUAL RELEASE
+  - [ ] Update the changelog and configure.ac for barnowl 1.N
+  - [ ] run ./scripts/do-release
+  - [ ] Do the locker build
+  - [ ] Push the release tag
+  - [ ] Write up release notes
+        (I usually use the previous release's email as a template)
+  - [ ] Update the website
+   - [ ] Add the line that `do-release` printed to the changelog on the home page
+   - [ ] Add your release notes as /release-notes/1.N
+  - [ ] Send the release notes to barnowl-users@mit.edu
 
-[ ] Wait a while (a week or so, or more if necessary) for any pending
-    patches to get in.
+* DOING A LOCKER BUILD
+  - [ ] Copy the tarball to build@nelhage.com
+  - [ ] ssh to build@nelhage.com and kinit
+  - [ ] On build@nelhage.com, run barnowl-build-all TARBALL.
+        This script does builds for all Debathena platforms using chroots
+        on nelhage.com, and ssh's to Athena 9 machines to do the two
+        Athena 9 builds.
+  - [ ] Sanity-check the builds
+   - [ ] Do cursory testing on debathena platforms and both athena9s.
+   - [ ] chroots on nelhage.com also useful
+  - [ ] Update symlinks with locker-update script;
+        - locker-update [-b] [-n] VERSION
+        - e.g. locker-update -b -n barnowl-1.6rc1
+   - [ ] Use -b to update the barnowl-beta name
+   - [ ] Use -n first for dry-run
 
-[ ] Prepare the -rc commit
-
- [ ] Run ./scripts/add-changelog NEW-VERSION PREV-TAG..HEAD
-
- [ ] Edit ChangeLog to combine and filter entries
-
- [ ] Edit configure.ac to bump the version to 1.Nrc1
-
-[ ] Commit with message 'BarnOwl 1.Nrc1'; don't push until after
-    builds all succeed
-
-[ ] Run scripts/do-release with -f (so it won't complain about missing
-    changelog), makes a tarball
-
-[ ] Do a locker build (See DOING A LOCKER BUILD)
-
-[ ] Update configure.ac on master to bump the version to 1.(N+1)dev
-
-[ ] Push git git:
- [ ] The RC commit
- [ ] The configure.ac change on master
- [ ] A release-1.N branch pointing at the RC commit
-
-[ ] Copy tarball into /mit/barnowl/web_scripts/dist
-
-[ ] Send mail announcing the RC to barnowl-dev@mit.edu
-
-[ ] Wait 1-2 weeks, collect any bug reports
-
-[ ] Fix any reported bugs on master
-
-[ ] Cherry-pick/backport appropriate fixes from master onto
-    release-1.N
-
-[ ] If there have been many or large bugfixes, repeat the process for
-    barnowl 1.Nrc2
-
-DOING THE ACTUAL RELEASE
-
-[ ] Update the changelog and configure.ac for barnowl 1.N
-
-[ ] run ./scripts/do-release
-
-[ ] Do the locker build
-
-[ ] Push the release tag
-
-[ ] Write up release notes
-    (I usually use the previous release's email as a template)
-
-[ ] Update the website
-
- [ ] Add the line that `do-release` printed to the changelog on the home page
-
- [ ] Add your release notes as /release-notes/1.N
-
-[ ] Send the release notes to barnowl-users@mit.edu
-
-
-DOING A LOCKER BUILD
-
-[ ] Copy the tarball to build@nelhage.com
-
-[ ] ssh to build@nelhage.com and kinit
-
-[ ] On build@nelhage.com, run barnowl-build-all TARBALL.
-    This script does builds for all Debathena platforms using chroots
-    on nelhage.com, and ssh's to Athena 9 machines to do the two
-    Athena 9 builds.
-
-[ ] Sanity-check the builds
-
- [ ] Do cursory testing on debathena platforms and both athena9s.
-
- [ ] chroots on nelhage.com also useful
-
-[ ] Update symlinks with locker-update script;
-      locker-update [-b] [-n] VERSION
-    e.g. locker-update -b -n barnowl-1.6rc1
-
- [ ] Use -b to update the barnowl-beta name
-
- [ ] Use -n first for dry-run
-
-
-LOCKER LAYOUT
-
-* builds/barnowl-VERSION contains the arch-independent files by
-  version
-
-* arch/SYSNAME/bin/barnowl-VERSION is the actual binary
-
-* arch/SYSNAME/bin/barnowl is a symlink to ../../common/bin/barnowl
-  (wrapper script runs barnowl.real). .../barnowl.real is a symlink to
-  the latest version.
-
-* zcrypt is also installed with a versioned name, but currently
-  barnowl-N will not run zcrypt-N, so we can't change that interface
-  at all.
+* LOCKER LAYOUT
+  - builds/barnowl-VERSION contains the arch-independent files by
+    version
+  - arch/SYSNAME/bin/barnowl-VERSION is the actual binary
+  - arch/SYSNAME/bin/barnowl is a symlink to ../../common/bin/barnowl
+    (wrapper script runs barnowl.real). .../barnowl.real is a symlink
+    to the latest version.
+  - zcrypt is also installed with a versioned name, but currently
+    barnowl-N will not run zcrypt-N, so we can't change that interface
+    at all.
