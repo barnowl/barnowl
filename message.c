@@ -583,39 +583,30 @@ char *owl_message_get_cc(const owl_message *m)
 }
 
 /* caller must free return value */
-char *owl_message_get_cc_without_recipient(const owl_message *m)
+GList *owl_message_get_cc_without_recipient(const owl_message *m)
 {
-  char *cc, *out, *end, *shortuser, *recip;
+  char *cc, *shortuser, *recip;
   const char *user;
+  GList *out = NULL;
 
   cc = owl_message_get_cc(m);
   if (cc == NULL)
     return NULL;
 
   recip = short_zuser(owl_message_get_recipient(m));
-  out = owl_malloc(strlen(cc) + 2);
-  end = out;
 
   user = strtok(cc, " ");
   while (user != NULL) {
     shortuser = short_zuser(user);
     if (strcasecmp(shortuser, recip) != 0) {
-      strcpy(end, user);
-      end[strlen(user)] = ' ';
-      end += strlen(user) + 1;
+      out = g_list_prepend(out, owl_strdup(user));
     }
     owl_free(shortuser);
     user = strtok(NULL, " ");
   }
-  end[0] = '\0';
 
   owl_free(recip);
   owl_free(cc);
-
-  if (strlen(out) == 0) {
-    owl_free(out);
-    out = NULL;
-  }
 
   return(out);
 }
