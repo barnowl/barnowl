@@ -91,8 +91,9 @@ const owl_cmd commands_to_init[]
 	      "Binds a key sequence to a command within a keymap.\n"
 	      "Use 'show keymaps' to see the existing keymaps.\n"
 	      "Key sequences may be things like M-C-t or NPAGE.\n\n"
-	      "Ex.: bindkey recv C-b command zwrite -c barnowl\n\n"
-              "SEE ALSO: unbindkey"),
+	      "Ex.: bindkey recv C-b command zwrite -c barnowl\n"
+              "Ex.: bindkey recv m command start-command zwrite -c my-class -i \n\n"
+              "SEE ALSO: unbindkey, start-command"),
 
   OWLCMD_ARGS("unbindkey", owl_command_unbindkey, OWL_CTX_ANY,
 	      "removes a binding in a keymap",
