@@ -1302,6 +1302,8 @@ char *owl_command_smartnarrow(int argc, const char *const *argv, const char *buf
     {"instance", 0, 0, 'i'},
     {"related",  0, 0, 'r'},
     {NULL,       0, 0, 0}};
+
+  optind = 0;
   while ((opt = getopt_long(argc, tmp_argv, "ir", options, NULL)) != -1) {
     switch (opt) {
       case 'i':
@@ -1326,7 +1328,6 @@ char *owl_command_smartnarrow(int argc, const char *const *argv, const char *buf
 done:
   owl_free(tmp_argv);
 
-  optind = 0; /* reset getopt */
   return NULL;
 }
 
