@@ -1296,7 +1296,7 @@ char *owl_command_smartnarrow(int argc, const char *const *argv, const char *buf
   char **tmp_argv = owl_malloc(sizeof(char *) * argc);
 
   for (i = 0; i < argc; i++)
-    tmp_argv[i] = owl_strdup(argv[i]);
+    tmp_argv[i] = argv[i];
 
   static struct option options[] = {
     {"instance", 0, 0, 'i'},
@@ -1316,10 +1316,6 @@ char *owl_command_smartnarrow(int argc, const char *const *argv, const char *buf
     }
   }
 
-  for (i = 0; i < argc; i++)
-    owl_free(tmp_argv[i]);
-  owl_free(tmp_argv);
-
   filtname = owl_function_smartfilter(instance, related);
 
   if (filtname) {
@@ -1328,6 +1324,8 @@ char *owl_command_smartnarrow(int argc, const char *const *argv, const char *buf
   }
 
 done:
+  owl_free(tmp_argv);
+
   optind = 0; /* reset getopt */
   return NULL;
 }
