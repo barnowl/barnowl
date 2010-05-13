@@ -2330,7 +2330,7 @@ char *owl_function_classinstfilt(const char *c, const char *i, int related)
   
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
-    return(filtname);
+    goto done;
   }
 
   /* create the new filter */
@@ -2360,6 +2360,7 @@ char *owl_function_classinstfilt(const char *c, const char *i, int related)
   owl_global_add_filter(&g, f);
 
   owl_free(argbuff);
+done:
   owl_free(class);
   if (instance) {
     owl_free(instance);
