@@ -1293,18 +1293,18 @@ char *owl_command_smartnarrow(int argc, const char *const *argv, const char *buf
 
   char opt;
   int instance = 0, related = 0, i;
-  char **tmp_argv = owl_malloc(sizeof(char *) * argc);
+  const char **tmp_argv = owl_malloc(sizeof(char *) * argc);
 
   for (i = 0; i < argc; i++)
     tmp_argv[i] = argv[i];
 
-  static struct option options[] = {
+  static const struct option options[] = {
     {"instance", 0, 0, 'i'},
     {"related",  0, 0, 'r'},
     {NULL,       0, 0, 0}};
 
   optind = 0;
-  while ((opt = getopt_long(argc, tmp_argv, "ir", options, NULL)) != -1) {
+  while ((opt = getopt_long(argc, (char **)tmp_argv, "ir", options, NULL)) != -1) {
     switch (opt) {
       case 'i':
         instance = 1;
