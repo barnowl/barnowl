@@ -454,14 +454,6 @@ void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
 
 #endif /* OWL_STDERR_REDIR */
 
-void owl_zephyr_buddycheck_timer(owl_timer *t, void *data)
-{
-  if (owl_global_is_pseudologins(&g)) {
-    owl_function_debugmsg("Doing zephyr buddy check");
-    owl_function_zephyr_buddy_check(1);
-  }
-}
-
 static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
 {
   /* if a resize has been scheduled, deal with it */
@@ -625,8 +617,6 @@ int main(int argc, char **argv, char **env)
 
   owl_global_pop_context(&g);
   owl_global_push_context(&g, OWL_CTX_READCONFIG|OWL_CTX_RECV, NULL, "recv");
-
-  owl_select_add_timer(180, 180, owl_zephyr_buddycheck_timer, NULL, NULL);
 
   /* If we ever deprecate the mainloop hook, remove this. */
   owl_select_add_timer(0, 1, owl_perlconfig_mainloop, NULL, NULL);

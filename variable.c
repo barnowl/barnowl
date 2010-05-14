@@ -427,9 +427,18 @@ int owl_variable_aaway_set(owl_variable *v, const void *newval)
 
 int owl_variable_pseudologins_set(owl_variable *v, const void *newval)
 {
+  static owl_timer *timer = NULL;
   if (newval) {
     if (*(const int*)newval == 1) {
       owl_function_zephyr_buddy_check(0);
+      if (timer == NULL) {
+        timer = owl_select_add_timer(180, 180, owl_zephyr_buddycheck_timer, NULL, NULL);
+      }
+    } else {
+      if (timer != NULL) {
+        owl_select_remove_timer(timer);
+        timer = NULL;
+      }
     }
   }
   return owl_variable_bool_set_default(v, newval);

@@ -1363,6 +1363,16 @@ void owl_zephyr_process_pseudologin(void *n)
 }
 #endif
 
+void owl_zephyr_buddycheck_timer(owl_timer *t, void *data)
+{
+  if (owl_global_is_pseudologins(&g)) {
+    owl_function_debugmsg("Doing zephyr buddy check");
+    owl_function_zephyr_buddy_check(1);
+  } else {
+    owl_function_debugmsg("Warning: owl_zephyr_buddycheck_timer call pointless; timer should have been disabled");
+  }
+}
+
 /*
  * Process zephyrgrams from libzephyr's queue. To prevent starvation,
  * process a maximum of OWL_MAX_ZEPHYRGRAMS_TO_PROCESS.
