@@ -618,9 +618,6 @@ int main(int argc, char **argv, char **env)
   owl_global_pop_context(&g);
   owl_global_push_context(&g, OWL_CTX_READCONFIG|OWL_CTX_RECV, NULL, "recv");
 
-  /* If we ever deprecate the mainloop hook, remove this. */
-  owl_select_add_timer(0, 1, owl_perlconfig_mainloop, NULL, NULL);
-
   owl_select_add_pre_select_action(owl_refresh_pre_select_action, NULL, NULL);
   owl_select_add_pre_select_action(owl_process_messages, NULL, NULL);
 

@@ -581,19 +581,6 @@ void owl_perlconfig_dec_refcnt(void *data)
   SvREFCNT_dec(v);
 }
 
-void owl_perlconfig_mainloop(owl_timer *t, void *data)
-{
-  dSP;
-  if (!owl_perlconfig_is_function("BarnOwl::Hooks::_mainloop_hook"))
-    return;
-  PUSHMARK(SP) ;
-  call_pv("BarnOwl::Hooks::_mainloop_hook", G_DISCARD|G_EVAL);
-  if(SvTRUE(ERRSV)) {
-    owl_function_error("%s", SvPV_nolen(ERRSV));
-  }
-  return;
-}
-
 void owl_perlconfig_io_dispatch(const owl_io_dispatch *d, void *data)
 {
   SV *cb = data;
