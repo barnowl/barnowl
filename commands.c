@@ -1607,32 +1607,32 @@ char *owl_command_print(int argc, const char *const *argv, const char *buff)
 
 char *owl_command_exec(int argc, const char *const *argv, const char *buff)
 {
-  return owl_function_exec(argc, argv, buff, 0);
+  return owl_function_exec(argc, argv, buff, OWL_OUTPUT_RETURN);
 }
 
 char *owl_command_pexec(int argc, const char *const *argv, const char *buff)
 {
-  return owl_function_exec(argc, argv, buff, 1);
+  return owl_function_exec(argc, argv, buff, OWL_OUTPUT_POPUP);
 }
 
 char *owl_command_aexec(int argc, const char *const *argv, const char *buff)
 {
-  return owl_function_exec(argc, argv, buff, 2);
+  return owl_function_exec(argc, argv, buff, OWL_OUTPUT_ADMINMSG);
 }
 
 char *owl_command_perl(int argc, const char *const *argv, const char *buff)
 {
-  return owl_function_perl(argc, argv, buff, 0);
+  return owl_function_perl(argc, argv, buff, OWL_OUTPUT_RETURN);
 }
 
 char *owl_command_pperl(int argc, const char *const *argv, const char *buff)
 {
-  return owl_function_perl(argc, argv, buff, 1);
+  return owl_function_perl(argc, argv, buff, OWL_OUTPUT_POPUP);
 }
 
 char *owl_command_aperl(int argc, const char *const *argv, const char *buff)
 {
-  return owl_function_perl(argc, argv, buff, 2);
+  return owl_function_perl(argc, argv, buff, OWL_OUTPUT_ADMINMSG);
 }
 
 char *owl_command_multi(int argc, const char *const *argv, const char *buff)

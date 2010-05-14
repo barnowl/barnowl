@@ -1991,19 +1991,19 @@ char *owl_function_exec(int argc, const char *const *argv, const char *buff, int
   buff = skiptokens(buff, 1);
   newbuff = owl_sprintf("%s%s", buff, redirect);
 
-  if (type == 1) {
+  if (type == OWL_OUTPUT_POPUP) {
     owl_popexec_new(newbuff);
   } else {
     p = popen(newbuff, "r");
     out = owl_slurp(p);
     pclose(p);
     
-    if (type==1) {
+    if (type == OWL_OUTPUT_POPUP) {
       owl_function_popless_text(out);
-    } else if (type==0) {
+    } else if (type == OWL_OUTPUT_RETURN) {
       owl_free(newbuff);
       return out;
-    } else if (type==2) {
+    } else if (type == OWL_OUTPUT_ADMINMSG) {
       owl_function_adminmsg(buff, out);
     } else {
       owl_function_popless_text(out);
@@ -2033,11 +2033,11 @@ char *owl_function_perl(int argc, const char *const *argv, const char *buff, int
 
   perlout = owl_perlconfig_execute(buff);
   if (perlout) { 
-    if (type==1) {
+    if (type == OWL_OUTPUT_POPUP) {
       owl_function_popless_text(perlout);
-    } else if (type==2) {
+    } else if (type == OWL_OUTPUT_ADMINMSG) {
       owl_function_adminmsg(buff, perlout);
-    } else if (type==0) {
+    } else if (type == OWL_OUTPUT_RETURN) {
       return perlout;
     } else {
       owl_function_popless_text(perlout);
