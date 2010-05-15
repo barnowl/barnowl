@@ -52,7 +52,7 @@ void owl_global_init(owl_global *g) {
   owl_dict_create(&(g->filters));
   g->filterlist = NULL;
   owl_list_create(&(g->puntlist));
-  owl_list_create(&(g->messagequeue));
+  g->messagequeue = g_queue_new();
   owl_dict_create(&(g->styledict));
   g->curmsg_vert_offset=0;
   g->resizepending=0;
@@ -861,7 +861,7 @@ void owl_global_set_bossconn(owl_global *g, aim_conn_t *conn)
 
 void owl_global_messagequeue_addmsg(owl_global *g, owl_message *m)
 {
-  owl_list_append_element(&(g->messagequeue), m);
+  g_queue_push_tail(g->messagequeue, m);
 }
 
 /* pop off the first message and return it.  Return NULL if the queue
@@ -872,16 +872,15 @@ owl_message *owl_global_messagequeue_popmsg(owl_global *g)
 {
   owl_message *out;
 
-  if (owl_list_get_size(&(g->messagequeue))==0) return(NULL);
-  out=owl_list_get_element(&(g->messagequeue), 0);
-  owl_list_remove_element(&(g->messagequeue), 0);
-  return(out);
+  if (g_queue_is_empty(g->messagequeue))
+    return NULL;
+  out = g_queue_pop_head(g->messagequeue);
+  return out;
 }
 
 int owl_global_messagequeue_pending(owl_global *g)
 {
-  if (owl_list_get_size(&(g->messagequeue))==0) return(0);
-  return(1);
+  return !g_queue_is_empty(g->messagequeue);
 }
 
 owl_buddylist *owl_global_get_buddylist(owl_global *g)

@@ -605,7 +605,7 @@ typedef struct _owl_global {
   char *aim_screenname;     /* currently logged in AIM screen name */
   char *aim_screenname_for_filters;     /* currently logged in AIM screen name */
   owl_buddylist buddylist;  /* list of logged in AIM buddies */
-  owl_list messagequeue;    /* for queueing up aim and other messages */
+  GQueue *messagequeue;     /* for queueing up aim and other messages */
   owl_dict styledict;       /* global dictionary of available styles */
   char *response;           /* response to the last question asked */
   int havezephyr;
