@@ -15,10 +15,12 @@ int owl_editwin_regtest(void);
 
 int main(int argc, char **argv, char **env)
 {
-  owl_errqueue_init(owl_global_get_errqueue(&g));
-  owl_obarray_init(&(g.obarray));
-  g.context_stack = NULL;
-  owl_global_push_context(&g, OWL_CTX_STARTUP, NULL, NULL);
+  /* initialize a fake ncurses, detached from std{in,out} */
+  FILE *rnull = fopen("/dev/null", "r");
+  FILE *wnull = fopen("/dev/null", "w");
+  newterm("xterm", wnull, rnull);
+  /* initialize global structures */
+  owl_global_init(&g);
 
   numtests = 0;
   int numfailures=0;
@@ -36,6 +38,12 @@ int main(int argc, char **argv, char **env)
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
   printf("1..%d\n", numtests);
+
+  /* probably not necessary, but tear down the screen */
+  endwin();
+  fclose(rnull);
+  fclose(wnull);
+
   return(numfailures);
 }
 
