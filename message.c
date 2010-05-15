@@ -60,11 +60,13 @@ void owl_message_set_attribute(owl_message *m, const char *attrname, const char 
   int i, j;
   owl_pair *p = NULL, *pair = NULL;
 
+  attrname = g_intern_string(attrname);
+
   /* look for an existing pair with this key, */
   j=owl_list_get_size(&(m->attributes));
   for (i=0; i<j; i++) {
     p=owl_list_get_element(&(m->attributes), i);
-    if (!strcmp(owl_pair_get_key(p), attrname)) {
+    if (owl_pair_get_key(p) == attrname) {
       owl_free(owl_pair_get_value(p));
       pair = p;
       break;
@@ -73,7 +75,7 @@ void owl_message_set_attribute(owl_message *m, const char *attrname, const char 
 
   if(pair ==  NULL) {
     pair = owl_malloc(sizeof(owl_pair));
-    owl_pair_create(pair, g_intern_string(attrname), NULL);
+    owl_pair_create(pair, attrname, NULL);
     owl_list_append_element(&(m->attributes), pair);
   }
   owl_pair_set_value(pair, owl_validate_or_convert(attrvalue));
@@ -86,11 +88,18 @@ const char *owl_message_get_attribute_value(const owl_message *m, const char *at
 {
   int i, j;
   owl_pair *p;
+  GQuark quark;
+
+  quark = g_quark_try_string(attrname);
+  if (quark == 0)
+    /* don't bother inserting into string table */
+    return NULL;
+  attrname = g_quark_to_string(quark);
 
   j=owl_list_get_size(&(m->attributes));
   for (i=0; i<j; i++) {
     p=owl_list_get_element(&(m->attributes), i);
-    if (!strcmp(owl_pair_get_key(p), attrname)) {
+    if (owl_pair_get_key(p) == attrname) {
       return(owl_pair_get_value(p));
     }
   }
