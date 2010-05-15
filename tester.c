@@ -32,7 +32,6 @@ int main(int argc, char **argv, char **env)
   numfailures += owl_dict_regtest();
   numfailures += owl_variable_regtest();
   numfailures += owl_filter_regtest();
-  numfailures += owl_obarray_regtest();
   numfailures += owl_editwin_regtest();
   if (numfailures) {
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
@@ -298,35 +297,6 @@ int owl_filter_regtest(void) {
   owl_filter_delete(f5);
 
   return 0;
-}
-
-
-int owl_obarray_regtest(void) {
-  int numfailed = 0;
-  const char *p,*p2;
-
-  owl_obarray oa;
-  owl_obarray_init(&oa);
-
-  printf("# BEGIN testing owl_obarray\n");
-
-  p = owl_obarray_insert(&oa, "test");
-  FAIL_UNLESS("returned string is equal", p && !strcmp(p, "test"));
-  p2 = owl_obarray_insert(&oa, "test");
-  FAIL_UNLESS("returned string is equal", p2 && !strcmp(p2, "test"));
-  FAIL_UNLESS("returned the same string", p2 && p == p2);
-
-  p = owl_obarray_insert(&oa, "test2");
-  FAIL_UNLESS("returned string is equal", p && !strcmp(p, "test2"));
-  p2 = owl_obarray_find(&oa, "test2");
-  FAIL_UNLESS("returned the same string", p2 && !strcmp(p2, "test2"));
-
-  p = owl_obarray_find(&oa, "nothere");
-  FAIL_UNLESS("Didn't find a string that isn't there", p == NULL);
-
-  printf("# END testing owl_obarray (%d failures)\n", numfailed);
-
-  return numfailed;
 }
 
 int owl_editwin_regtest(void) {

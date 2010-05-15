@@ -112,8 +112,6 @@ void owl_global_init(owl_global *g) {
   g->zaldlist = NULL;
   g->pseudologin_notify = 0;
 
-  owl_obarray_init(&(g->obarray));
-
   owl_message_init_fmtext_cache();
   owl_list_create(&(g->io_dispatch_list));
   owl_list_create(&(g->psa_list));
@@ -1009,11 +1007,6 @@ void owl_global_set_pseudologin_notify(owl_global *g, int notify)
 struct termios *owl_global_get_startup_tio(owl_global *g)
 {
   return(&(g->startup_tio));
-}
-
-const char * owl_global_intern(owl_global *g, const char * string)
-{
-  return owl_obarray_insert(&(g->obarray), string);
 }
 
 owl_list *owl_global_get_io_dispatch_list(owl_global *g)

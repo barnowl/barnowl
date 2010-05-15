@@ -521,10 +521,6 @@ typedef struct _owl_colorpair_mgr {
   short **pairs;
 } owl_colorpair_mgr;
 
-typedef struct _owl_obarray {
-  owl_list strings;
-} owl_obarray;
-
 typedef struct _owl_io_dispatch {
   int fd;                                     /* FD to watch for dispatch. */
   int mode;
@@ -622,7 +618,6 @@ typedef struct _owl_global {
   GList *zaldlist;
   int pseudologin_notify;
   struct termios startup_tio;
-  owl_obarray obarray;
   owl_list io_dispatch_list;
   owl_list psa_list;
   GList *timerlist;

@@ -73,7 +73,7 @@ void owl_message_set_attribute(owl_message *m, const char *attrname, const char 
 
   if(pair ==  NULL) {
     pair = owl_malloc(sizeof(owl_pair));
-    owl_pair_create(pair, owl_global_intern(&g, attrname), NULL);
+    owl_pair_create(pair, g_intern_string(attrname), NULL);
     owl_list_append_element(&(m->attributes), pair);
   }
   owl_pair_set_value(pair, owl_validate_or_convert(attrvalue));
@@ -495,7 +495,7 @@ void *owl_message_get_notice(const owl_message *m)
 
 void owl_message_set_hostname(owl_message *m, const char *hostname)
 {
-  m->hostname=owl_global_intern(&g, hostname);
+  m->hostname = g_intern_string(hostname);
 }
 
 const char *owl_message_get_hostname(const owl_message *m)
