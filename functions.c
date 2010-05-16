@@ -1998,15 +1998,11 @@ char *owl_function_exec(int argc, const char *const *argv, const char *buff, int
     out = owl_slurp(p);
     pclose(p);
     
-    if (type == OWL_OUTPUT_POPUP) {
-      owl_function_popless_text(out);
-    } else if (type == OWL_OUTPUT_RETURN) {
+    if (type == OWL_OUTPUT_RETURN) {
       owl_free(newbuff);
       return out;
     } else if (type == OWL_OUTPUT_ADMINMSG) {
       owl_function_adminmsg(buff, out);
-    } else {
-      owl_function_popless_text(out);
     }
     owl_free(out);
   }
@@ -2039,8 +2035,6 @@ char *owl_function_perl(int argc, const char *const *argv, const char *buff, int
       owl_function_adminmsg(buff, perlout);
     } else if (type == OWL_OUTPUT_RETURN) {
       return perlout;
-    } else {
-      owl_function_popless_text(perlout);
     }
     owl_free(perlout);
   }
