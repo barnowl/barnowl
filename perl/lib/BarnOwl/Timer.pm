@@ -20,6 +20,14 @@ sub new {
     return $self;
 }
 
+sub stop {
+    my $self = shift;
+    if(defined($self->{timer})) {
+        BarnOwl::Internal::remove_timer($self->{timer});
+        undef $self->{timer};
+    }
+}
+
 sub do_callback {
     my $self = shift;
     $self->{cb}->($self);
@@ -27,9 +35,7 @@ sub do_callback {
 
 sub DESTROY {
     my $self = shift;
-    if(defined($self->{timer})) {
-        BarnOwl::Internal::remove_timer($self->{timer});
-    }
+    $self->stop;
 }
 
 
