@@ -257,6 +257,7 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
   subsfile = owl_zephyr_dotfile(".zephyr.subs", filename);
 
   if (stat(subsfile, &statbuff) != 0) {
+    owl_free(subsfile);
     if (error_on_nofile == 1)
       return -1;
     return 0;
@@ -372,8 +373,10 @@ int owl_zephyr_loadloginsubs(const char *filename)
   subs = owl_malloc(numSubs * sizeof(ZSubscription_t));
   subsfile = owl_zephyr_dotfile(".anyone", filename);
 
-  if (stat(subsfile, &statbuff) == -1)
+  if (stat(subsfile, &statbuff) == -1) {
+    owl_free(subsfile);
     return 0;
+  }
 
   ZResetAuthentication();
   count = 0;
