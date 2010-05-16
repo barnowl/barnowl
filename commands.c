@@ -105,7 +105,7 @@ const owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("zwrite", owl_command_zwrite, OWL_CTX_INTERACTIVE,
 	      "send a zephyr",
-	      "zwrite [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcde] [<user> ...] [-m <message...>]",
+	      "zwrite [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcode] [<user> ...] [-m <message...>]",
 	      "Zwrite send a zephyr to the one or more users specified.\n\n"
 	      "The following options are available:\n\n"
 	      "-m    Specifies a message to send without prompting.\n"
@@ -137,7 +137,7 @@ const owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("zcrypt", owl_command_zcrypt, OWL_CTX_INTERACTIVE,
 	      "send an encrypted zephyr",
-	      "zcrypt [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcde] [-m <message...>]\n",
+	      "zcrypt [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcode] [-m <message...>]\n",
 	      "Behaves like zwrite but uses encryption.  Not for use with\n"
 	      "personal messages\n"),
   
@@ -147,7 +147,7 @@ const owl_cmd commands_to_init[]
 	      "If -e is specified, the zwrite command line is presented to\n"
 	      "allow editing.\n\n"
 	      "If 'sender' is specified, reply to the sender.\n\n"
-	      "If 'all' or no args are specified, reply publically to the\n"
+	      "If 'all' or no args are specified, reply publicly to the\n"
 	      "same class/instance for non-personal messages and to the\n"
 	      "sender for personal messages.\n\n"
 	      "If 'zaway' is specified, replies with a zaway message.\n\n"),
@@ -265,7 +265,7 @@ const owl_cmd commands_to_init[]
 	      "suppress a given zephyr triplet",
 	      "zpunt <class> <instance> [recipient]\n"
 	      "zpunt <instance>",
-	      "The zpunt command will supress message to the specified\n"
+	      "The zpunt command will suppress messages to the specified\n"
 	      "zephyr triplet.  In the second usage messages are suppressed\n"
 	      "for class MESSAGE and the named instance.\n\n"
 	      "SEE ALSO:  zunpunt, show zpunts\n"),
@@ -282,7 +282,7 @@ const owl_cmd commands_to_init[]
 	      "suppress an arbitrary filter",
 	      "punt <filter-text>",
 	      "punt <filter-text (multiple words)>\n"
-	      "The punt command will supress message to the specified\n"
+	      "The punt command will suppress messages to the specified\n"
 	      "filter\n\n"
 	      "SEE ALSO:  unpunt, zpunt, show zpunts\n"),
 
@@ -585,7 +585,7 @@ const owl_cmd commands_to_init[]
 	      "by the\n 'view_home' variable.  The style can be set by listing the\n"
               "name style after the -s argument.\n"
 	      "\n"
-	      "The other usages listed above are abbreivated forms that simply set\n"
+	      "The other usages listed above are abbreviated forms that simply set\n"
 	      "the filter of the current view. The -d option allows you to write a\n"
               "filter expression that will be dynamically created by owl and then\n"
               "applied as the view's filter\n"
@@ -593,7 +593,7 @@ const owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("smartnarrow", owl_command_smartnarrow, OWL_CTX_INTERACTIVE,
 	      "view only messages similar to the current message",
-	      "smartnarrow [-i | --instance]  [-r | --relatde]",
+	      "smartnarrow [-i | --instance]  [-r | --related]",
 	      "If the curmsg is a personal message narrow\n"
 	      "   to the conversation with that user.\n"
 	      "If the curmsg is a <MESSAGE, foo, *>\n"
@@ -613,7 +613,7 @@ const owl_cmd commands_to_init[]
 	      "If the curmsg is a <MESSAGE, foo, *>\n"
 	      "   message, the filter is to that instance.\n"
 	      "If the curmsg is a class message, the filter is that class.\n"
-	      "If the curmsg is a class message and '-i' is specied\n"
+	      "If the curmsg is a class message and '-i' is specified\n"
 	      "    the filter is to that class and instance.\n"),
 
   OWLCMD_ARGS("viewclass", owl_command_viewclass, OWL_CTX_INTERACTIVE,
@@ -673,7 +673,7 @@ const owl_cmd commands_to_init[]
 	      "Show styles will list the names of all styles available\n"
 	      "for formatting messages.\n\n"
 	      "Show variables will list the names of all variables.\n\n"
-	      "Show errors will show a list of errors ecountered by Owl.\n\n"
+	      "Show errors will show a list of errors encountered by Owl.\n\n"
 	      "SEE ALSO: filter, view, alias, bindkey, help\n"),
   
   OWLCMD_ARGS("delete", owl_command_delete, OWL_CTX_INTERACTIVE,
@@ -742,7 +742,7 @@ const owl_cmd commands_to_init[]
   OWLCMD_ARGS("setsearch", owl_command_setsearch, OWL_CTX_INTERACTIVE,
 	      "set the search highlight string without searching",
 	      "setsearch <string>",
-	      "The setsearch command highlights all occurences of its\n"
+	      "The setsearch command highlights all occurrences of its\n"
           "argument and makes it the default argument for future\n"
           "search commands, but does not move the cursor.  With\n"
           "no argument, it makes search highlighting inactive."),

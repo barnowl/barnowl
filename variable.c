@@ -109,7 +109,7 @@ static owl_variable variables_to_init[] = {
 	       "the name of the class to which the message was sent.\n" ),
 
   OWLVAR_ENUM( "loggingdirection" /* %OwlVarStub */, OWL_LOGGING_DIRECTION_BOTH,
-	       "specifices which kind of messages should be logged",
+	       "specifies which kind of messages should be logged",
 	       "Can be one of 'both', 'in', or 'out'.  If 'in' is\n"
 	       "selected, only incoming messages are logged, if 'out'\n"
 	       "is selected only outgoing messages are logged.  If 'both'\n"
@@ -137,7 +137,7 @@ static owl_variable variables_to_init[] = {
 		    "When this is enabled, Owl will periodically check the zephyr\n"
 		    "location of users in your .anyone file.  If a user is present\n"
 		    "but sent no login message, or a user is not present that sent no\n"
-		    "logout message, a pseudo login or logout message wil be created\n",
+		    "logout message, a pseudo login or logout message will be created\n",
 		    NULL, owl_variable_pseudologins_set, NULL),
 
   OWLVAR_BOOL( "ignorelogins" /* %OwlVarStub */, 0,
@@ -150,7 +150,7 @@ static owl_variable variables_to_init[] = {
 		 "name of a filter controlling which messages to log",
 
 		 "If non empty, any messages matching the given filter will be logged.\n"
-		 "This is a completely separate mechanisim from the other logging\n"
+		 "This is a completely separate mechanism from the other logging\n"
 		 "variables like logging, classlogging, loglogins, loggingdirection,\n"
 		 "etc.  If you want this variable to control all logging, make sure\n"
 		 "all other logging variables are in their default state.\n"),
@@ -197,7 +197,7 @@ static owl_variable variables_to_init[] = {
 
   OWLVAR_PATH( "newmsgproc" /* %OwlVarStub:newmsgproc */, NULL,
 	       "name of a program to run when new messages are present",
-	       "The named program will be run when owl recevies new.\n"
+	       "The named program will be run when owl receives new\n"
 	       "messages.  It will not be run again until the first\n"
 	       "instance exits"),
 
@@ -212,7 +212,7 @@ static owl_variable variables_to_init[] = {
 		 "zsig perl function",
 		 "Called every time you start a zephyrgram without an\n"
 		 "explicit zsig.  The default setting implements the policy\n"
-		 "descripted in the documentation for the 'zsig' variable.\n"),
+		 "described in the documentation for the 'zsig' variable.\n"),
 
   OWLVAR_STRING( "zsig" /* %OwlVarStub */, "",
 	         "zephyr signature",
@@ -296,7 +296,7 @@ static owl_variable variables_to_init[] = {
   OWLVAR_INT( "aim_ignorelogin_timer" /* %OwlVarStub */, 15,
 	      "number of seconds after AIM login to ignore login messages",
 	      "This specifies the number of seconds to wait after an\n"
-	      "AIM login before allowing the recipt of AIM login notifications.\n"
+	      "AIM login before allowing the receipt of AIM login notifications.\n"
 	      "By default this is set to 15.  If you would like to view login\n"
 	      "notifications of buddies as soon as you login, set it to 0 instead."),
 
