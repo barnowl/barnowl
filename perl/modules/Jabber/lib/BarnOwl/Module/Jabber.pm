@@ -679,7 +679,7 @@ sub jmuc_join {
                                                History  => {
                                                    MaxChars => 0
                                                   });
-    $completion_jids{$muc} = 1;
+    $completion_jids{$muc->GetJID('base')} = 1;
     return;
 }
 
