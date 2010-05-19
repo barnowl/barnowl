@@ -11,7 +11,7 @@ extern XS(boot_BarnOwl);
 extern XS(boot_DynaLoader);
 /* extern XS(boot_DBI); */
 
-static void owl_perl_xs_init(pTHX)
+void owl_perl_xs_init(pTHX) /* noproto */
 {
   const char *file = __FILE__;
   dXSUB_SYS;
@@ -361,6 +361,8 @@ char *owl_perlconfig_initperl(const char * file, int *Pargc, char ***Pargv, char
   p=perl_alloc();
   owl_global_set_perlinterp(&g, p);
   perl_construct(p);
+
+  PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
 
   owl_global_set_no_have_config(&g);
 

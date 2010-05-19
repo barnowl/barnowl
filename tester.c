@@ -1,6 +1,13 @@
+#define OWL_PERL
+#define WINDOW FAKE_WINDOW
 #include "owl.h"
+#undef WINDOW
+
 #include <unistd.h>
 #include <stdlib.h>
+
+#undef instr
+#include <curses.h>
 
 owl_global g;
 
@@ -13,6 +20,8 @@ int owl_variable_regtest(void);
 int owl_filter_regtest(void);
 int owl_obarray_regtest(void);
 int owl_editwin_regtest(void);
+
+extern void owl_perl_xs_init(pTHX);
 
 int main(int argc, char **argv, char **env)
 {
@@ -34,9 +43,44 @@ int main(int argc, char **argv, char **env)
   }
   owl_global_complete_setup(&g);
 
-  status = owl_regtest();
+  if (argc > 1) {
+    char *code;
+    FILE *f;
+
+    if (strcmp(argv[1], "-le") == 0 && argc > 2) {
+      /*
+       * 'prove' runs its harness perl with '-le CODE' to get some
+       * information out.
+       */
+      moreswitches("l");
+      code = argv[2];
+    } else {
+      f = fopen(argv[1], "r");
+      if (!f) {
+        perror(argv[1]);
+        status = 1;
+        goto out;
+      }
+      code = owl_slurp(f);
+      sv_setpv(get_sv("0", false), argv[1]);
+    }
+
+    ENTER;
+    SAVETMPS;
+
+    eval_pv(code, true);
+
+    status = 0;
+
+    FREETMPS;
+    LEAVE;
+  } else {
+    status = owl_regtest();
+  }
 
  out:
+  perl_destruct(owl_global_get_perlinterp(&g));
+  perl_free(owl_global_get_perlinterp(&g));
   /* probably not necessary, but tear down the screen */
   endwin();
   fclose(rnull);
