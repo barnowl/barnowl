@@ -6,6 +6,7 @@ owl_global g;
 
 int numtests;
 
+int owl_regtest(void);
 int owl_util_regtest(void);
 int owl_dict_regtest(void);
 int owl_variable_regtest(void);
@@ -18,10 +19,32 @@ int main(int argc, char **argv, char **env)
   /* initialize a fake ncurses, detached from std{in,out} */
   FILE *rnull = fopen("/dev/null", "r");
   FILE *wnull = fopen("/dev/null", "w");
+  char *perlerr;
+  int status = 0;
   newterm("xterm", wnull, rnull);
   /* initialize global structures */
   owl_global_init(&g);
 
+  perlerr = owl_perlconfig_initperl(NULL, &argc, &argv, &env);
+  if (perlerr) {
+    endwin();
+    fprintf(stderr, "Internal perl error: %s\n", perlerr);
+    status = 1;
+    goto out;
+  }
+  owl_global_complete_setup(&g);
+
+  status = owl_regtest();
+
+ out:
+  /* probably not necessary, but tear down the screen */
+  endwin();
+  fclose(rnull);
+  fclose(wnull);
+  return status;
+}
+
+int owl_regtest(void) {
   numtests = 0;
   int numfailures=0;
   /*
@@ -38,11 +61,6 @@ int main(int argc, char **argv, char **env)
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
   printf("1..%d\n", numtests);
-
-  /* probably not necessary, but tear down the screen */
-  endwin();
-  fclose(rnull);
-  fclose(wnull);
 
   return(numfailures);
 }
