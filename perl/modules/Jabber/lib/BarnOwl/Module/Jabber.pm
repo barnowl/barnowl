@@ -307,7 +307,8 @@ sub register_owl_commands() {
             summary     => "Jabber MUC related commands.",
             description => "jmuc sends Jabber commands related to MUC.\n\n"
               . "The following commands are available\n\n"
-              . "join <muc>  Join a MUC.\n\n"
+              . "join <muc>[/<nick>]\n"
+              . "            Join a MUC (with a given nickname, or otherwise your JID).\n\n"
               . "part <muc>  Part a MUC.\n"
               . "            The MUC is taken from the current message if not supplied.\n\n"
               . "invite <jid> [<muc>]\n"
