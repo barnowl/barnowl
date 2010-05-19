@@ -76,9 +76,17 @@ sub smartfilter {
         return smartfilter_user($user, $inst);
     } elsif ($self->jtype eq 'groupchat') {
         my $room = $self->room;
-        $filter = "jabber-room-$room";
-        BarnOwl::command(qw[filter], $filter,
-                         qw[type ^jabber$ and room], "^\Q$room\E\$");
+        if ($inst) {
+            my $subject = $self->subject;
+            $filter = "jabber-room-$room-subject-$subject";
+            BarnOwl::command(qw[filter], $filter,
+                             qw[type ^jabber$ and room], "^\Q$room\E\$",
+                             qw[and subject], "^\Q$subject\E\$");
+        } else {
+            $filter = "jabber-room-$room";
+            BarnOwl::command(qw[filter], $filter,
+                             qw[type ^jabber$ and room], "^\Q$room\E\$");
+        }
         return $filter;
     } elsif ($self->login ne 'none') {
         return smartfilter_user($self->from, $inst);
