@@ -1224,6 +1224,15 @@ sub j2hash {
         my $room = $props{room} = $from->GetJID('base');
         $completion_jids{$room} = 1;
 
+        my $muc;
+        if ($dir eq 'in') {
+            my $connection = $conn->getConnectionFromSid($props{sid});
+            $muc = $connection->FindMUC(jid => $from);
+        } else {
+            my $connection = $conn->getConnectionFromJID($props{from});
+            $muc = $connection->FindMUC(jid => $to);
+        }
+        $props{from} = $muc->GetFullJID($from) || $nick || $room;
         $props{sender} = $nick || $room;
         $props{recipient} = $room;
 
