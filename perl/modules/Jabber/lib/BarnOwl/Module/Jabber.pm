@@ -284,7 +284,7 @@ sub register_owl_commands() {
         jwrite => \&cmd_jwrite,
         {
             summary => "Send a Jabber Message",
-            usage   => "jwrite <jid> [-t <thread>] [-s <subject>] [-a <account>]"
+            usage   => "jwrite <jid> [-t <thread>] [-s <subject>] [-a <account>] [-m <message>]"
         }
     );
     BarnOwl::new_command(
@@ -538,6 +538,7 @@ sub cmd_jwrite {
     my $jwrite_sid     = "";
     my $jwrite_thread  = "";
     my $jwrite_subject = "";
+    my $jwrite_body;
     my ($to, $from);
     my $jwrite_type    = "chat";
 
@@ -549,7 +550,8 @@ sub cmd_jwrite {
         'thread=s'  => \$jwrite_thread,
         'subject=s' => \$jwrite_subject,
         'account=s' => \$from,
-        'id=s'     =>  \$jwrite_sid,
+        'id=s'      => \$jwrite_sid,
+        'message=s' => \$jwrite_body,
     ) or die("Usage: jwrite <jid> [-t <thread>] [-s <subject>] [-a <account>]\n");
     $jwrite_type = 'groupchat' if $gc;
 
@@ -587,6 +589,11 @@ sub cmd_jwrite {
         thread  => $jwrite_thread,
         type    => $jwrite_type
     };
+
+    if (defined($jwrite_body)) {
+        process_owl_jwrite($jwrite_body);
+        return;
+    }
 
     if(scalar @candidates > 1) {
         BarnOwl::message(
