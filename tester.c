@@ -42,6 +42,11 @@ int main(int argc, char **argv, char **env)
     goto out;
   }
   owl_global_complete_setup(&g);
+  owl_global_setup_default_filters(&g);
+
+  owl_view_create(owl_global_get_current_view(&g), "main",
+                  owl_global_get_filter(&g, "all"),
+                  owl_global_get_style_by_name(&g, "default"));
 
   if (argc > 1) {
     char *code;

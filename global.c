@@ -1042,3 +1042,35 @@ void owl_global_set_interrupted(owl_global *g) {
 void owl_global_unset_interrupted(owl_global *g) {
   g->interrupted = 0;
 }
+
+void owl_global_setup_default_filters(owl_global *g)
+{
+  int i;
+  static const struct {
+    const char *name;
+    const char *desc;
+  } filters[] = {
+    { "personal",
+      "private ^true$ and ( not type ^zephyr$ or "
+      "( class ^message and ( instance ^personal$ or instance ^urgent$ ) ) )" },
+    { "trash",
+      "class ^mail$ or opcode ^ping$ or type ^admin$ or ( not login ^none$ )" },
+    { "wordwrap", "not ( type ^admin$ or type ^zephyr$ )" },
+    { "ping", "opcode ^ping$" },
+    { "auto", "opcode ^auto$" },
+    { "login", "not login ^none$" },
+    { "reply-lockout", "class ^noc or class ^mail$" },
+    { "out", "direction ^out$" },
+    { "aim", "type ^aim$" },
+    { "zephyr", "type ^zephyr$" },
+    { "none", "false" },
+    { "all", "true" },
+    { NULL, NULL }
+  };
+
+  owl_function_debugmsg("startup: creating default filters");
+
+  for (i = 0; filters[i].name != NULL; i++)
+    owl_global_add_filter(g, owl_filter_new_fromstring(filters[i].name,
+                                                       filters[i].desc));
+}
