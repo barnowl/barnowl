@@ -30,6 +30,9 @@ use BarnOwl;
 use BarnOwl::Message::Twitter;
 use POSIX qw(asctime);
 
+use constant BARNOWL_CONSUMER_KEY    => "9Py27vCQl6uB5V7ijmp31A";
+use constant BARNOWL_CONSUMER_SECRET => "GLhheSim8P5cVuk9FTM99KTEgWLW0LGl7gf54QWfg";
+
 sub fail {
     my $self = shift;
     my $msg = shift;
@@ -77,12 +80,33 @@ sub new {
 
     my %twitter_args = @_;
 
-    $self->{twitter}  = Net::Twitter::Lite->new(%twitter_args);
+    my ($username, $password, $xauth);
+
+    if (*Net::Twitter::Lite::xauth{CODE}) {
+        $xauth = 1;
+        $username = delete $twitter_args{username};
+        $password = delete $twitter_args{password};
+        $twitter_args{consumer_key}    = BARNOWL_CONSUMER_KEY;
+        $twitter_args{consumer_secret} = BARNOWL_CONSUMER_SECRET;
+    } else {
+        BarnOwl::error("Please upgrade your version of Net::Twitter::Lite to support xAuth.");
+    }
+
+    $self->{twitter}  = Net::Twitter::Lite->new(%twitter_args,);
+
+    if ($xauth){
+        eval {
+            $self->{twitter}->xauth($username, $password);
+        };
+        if($@) {
+            $self->fail("Invalid credentials: $@");
+        }
+    }
 
     my $timeline = eval { $self->{twitter}->home_timeline({count => 1}) };
     warn "$@\n" if $@;
 
-    if(!defined($timeline)) {
+    if(!defined($timeline) && !$xauth) {
         $self->fail("Invalid credentials");
     }
 
