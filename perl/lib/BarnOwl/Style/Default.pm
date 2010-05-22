@@ -33,6 +33,11 @@ sub should_bold {
     return $m->is_personal && $m->direction eq "in";
 }
 
+sub maybe {
+    my $x = shift;
+    return defined($x) ? $x : "";
+}
+
 sub description {"Default style";}
 
 BarnOwl::create_style("default", "BarnOwl::Style::Default");
@@ -98,7 +103,7 @@ sub chat_header {
         if(defined $m->subcontext) {
             $header .= ' / ' . $self->humanize($m->subcontext, 1);
         }
-        $header .= ' / @b{' . $m->pretty_sender . '}';
+        $header .= ' / @b{' . maybe($m->pretty_sender) . '}';
     }
 
     if($m->opcode) {
