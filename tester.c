@@ -52,8 +52,8 @@ int main(int argc, char **argv, char **env)
   owl_function_firstmsg();
 
   if (argc > 1) {
-    char *code;
-    FILE *f;
+    ENTER;
+    SAVETMPS;
 
     if (strcmp(argv[1], "-le") == 0 && argc > 2) {
       /*
@@ -61,22 +61,13 @@ int main(int argc, char **argv, char **env)
        * information out.
        */
       moreswitches("l");
-      code = argv[2];
+      eval_pv(argv[2], true);
     } else {
-      f = fopen(argv[1], "r");
-      if (!f) {
-        perror(argv[1]);
-        status = 1;
-        goto out;
-      }
-      code = owl_slurp(f);
       sv_setpv(get_sv("0", false), argv[1]);
+      sv_setpv(get_sv("main::test_prog", TRUE), argv[1]);
+
+      eval_pv("do $main::test_prog; die($@) if($@)", true);
     }
-
-    ENTER;
-    SAVETMPS;
-
-    eval_pv(code, true);
 
     status = 0;
 
