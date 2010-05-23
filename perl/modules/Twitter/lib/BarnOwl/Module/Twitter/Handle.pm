@@ -371,9 +371,9 @@ sub twitter_atreply {
     my $id  = shift;
     my $msg = shift;
     if(defined($id)) {
-        $self->twitter("@".$to." ".$msg, $id);
+        $self->twitter($msg, $id);
     } else {
-        $self->twitter("@".$to." ".$msg);
+        $self->twitter($msg);
     }
 }
 
