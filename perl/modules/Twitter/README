@@ -1,0 +1,119 @@
+NAME
+  Twitter.par - Twitter support for BarnOwl
+
+DESCRIPTION
+  The Twitter module implements Twitter support for BarnOwl. It also
+  supports automatic mirroring of some subset of Zephyrs you send to
+  Twitter.
+
+SYNOPSIS
+  (1) Configure your Twitter credentials in ~/.owl/twitter in the
+  following format:
+----------8<----------cut here----------8<----------
+{
+ "user":"nelhage",
+ "password":"sekrit"
+}
+----------8<----------end cut ----------8<----------
+  (2) Copy Twitter.par into ~/.owl/modules/
+  (3) Run ":reload-module Twitter" inside BarnOwl
+  (4) Start receiving tweets in BarnOwl!
+      You can send tweets with the ":twitter" command.
+
+MIRRORING ZEPHYRS TO TWITTER
+  If you set the twitter:class, twitter:instance, and twitter:opcode
+  BarnOwl variables, BarnOwl will resend zephyrs matching those fields
+  as tweets coming from you.
+
+  By default, these default to -c $YOUR_USERNAME -i status -O twitter.
+  Setting twitter:opcode to "" will cause "normal" (i.e. no opcode)
+  messages to that class/instance to be mirrored. A value of '*' works
+  as a "match-anything" wildcard for any of the fields.
+
+POLLING
+  Twitter.par polls for normal messages once a minute, and direct
+  messages every other minute. To disable polling, you can unset the
+  'twitter:poll' variable in BarnOwl.
+
+IDENTI.CA SUPPORT
+  Twitter.par supports other Twitter-compatible microblogging services,
+  like identi.ca. To enable this, set the 'service' parameter in your
+  config hash to the API URL of your service. You may also need to set
+  'apihost' and 'apirealm'. See Net::Twitter or your blogging service's
+  documentation for more information.
+
+MULTIPLE ACCOUNTS
+
+  Twitter.par also supports using multiple Twitter and
+  Twitter-compatible microblogging accounts from the same instance.
+  To enable this, add additional hashes to your ~/.owl/twitter file as
+  a JSON list, e.g.
+----------8<----------cut here----------8<----------
+[
+  {
+   "account_nickname": "twitter",
+   "user": "nelhage",
+   "password": "sekrit",
+   "default": true,
+   "publish_tweets": true
+  },
+  {
+   "account_nickname": "identica",
+   "service": "http://identi.ca/api",
+   "user": "nelhage",
+   "password": "sekriter",
+   "publish_tweets": true
+  }
+  {
+   "account_nickname": "sipb",
+   "user": "sipb",
+   "password":"m0ars3krit",
+   "poll_for_tweets": false,
+   "poll_for_dms": false,
+  }
+]
+----------8<----------end cut ----------8<----------
+
+Outgoing tweets sent via ":twitter" without an explicit sender, or
+mirrored from zephyr, go to every account with "publish_tweets" set.
+
+Outgoing direct messages and @-replies without an explicit sender come
+from whichever account has "default" set. If no account has "default",
+the first account is assumed to have "default" set. It is an error to
+have more than one account with "default" set to true.
+
+There are several account-specific parameters that control the
+behavior of Twitter.par when using multiple accounts:
+
+* account_nickname (string, required if multiple accounts are in use)
+    Specify a short name by which you can refer to the account, eg.
+    "identica" (eg. :twitter-direct nelhage identica would send a
+    direct message to @nelhage on identi.ca from your account
+    nicknamed "identica").
+
+* default (boolean, default false)
+    If true, @-replies or direct messages you send without specifying
+    an account will be sent using this account.  If no account has
+    this parameter, such messages will be sent using the first account
+    listed.
+
+* poll_for_tweets (boolean, default true)
+    If true, tweets sent by users this account follows will be
+    displayed in your BarnOwl message list.
+
+* poll_for_dms (boolean, default true)
+    If true, direct messages sent to this account will be displayed in
+    your BarnOwl message list.
+
+* publish_tweets (boolean, default false)
+    If true, tweets you send without specifying an account (either
+    with the :twitter command or mirrored from a zephyr class) will be
+    published to this account.
+
+    If only one account is specified, it defaults to publish_tweets =
+    true.
+
+* show_mentions (boolean, default true)
+    If true, BarnOwl will show all tweets that mention this account's
+    username, regardless of whether or not this account is following
+    the sender. Has no effect if poll_for_tweets is false.

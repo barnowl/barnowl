@@ -1,0 +1,7 @@
+*~
+blib/
+inc/
+META.yml
+Makefile
+Twitter.par
+pm_to_blib
