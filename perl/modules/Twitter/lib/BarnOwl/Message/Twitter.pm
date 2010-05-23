@@ -54,10 +54,4 @@ sub smartfilter {
     return $filter;
 }
 
-=head1 SEE ALSO
-
-Foo, Bar, Baz
-
-=cut
-
 1;
