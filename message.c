@@ -592,39 +592,30 @@ char *owl_message_get_cc(const owl_message *m)
 }
 
 /* caller must free return value */
-char *owl_message_get_cc_without_recipient(const owl_message *m)
+GList *owl_message_get_cc_without_recipient(const owl_message *m)
 {
-  char *cc, *out, *end, *shortuser, *recip;
+  char *cc, *shortuser, *recip;
   const char *user;
+  GList *out = NULL;
 
   cc = owl_message_get_cc(m);
   if (cc == NULL)
     return NULL;
 
   recip = short_zuser(owl_message_get_recipient(m));
-  out = owl_malloc(strlen(cc) + 2);
-  end = out;
 
   user = strtok(cc, " ");
   while (user != NULL) {
     shortuser = short_zuser(user);
     if (strcasecmp(shortuser, recip) != 0) {
-      strcpy(end, user);
-      end[strlen(user)] = ' ';
-      end += strlen(user) + 1;
+      out = g_list_prepend(out, owl_strdup(user));
     }
     owl_free(shortuser);
     user = strtok(NULL, " ");
   }
-  end[0] = '\0';
 
   owl_free(recip);
   owl_free(cc);
-
-  if (strlen(out) == 0) {
-    owl_free(out);
-    out = NULL;
-  }
 
   return(out);
 }
@@ -740,6 +731,41 @@ void owl_message_create_loopback(owl_message *m, const char *text)
   owl_message_set_sender(m, "loopsender");
   owl_message_set_recipient(m, "looprecip");
   owl_message_set_isprivate(m);
+}
+
+void owl_message_save_ccs(owl_message *m) {
+  GList *cc;
+  char *tmp;
+
+  cc = owl_message_get_cc_without_recipient(m);
+
+  if (cc != NULL) {
+    GString *recips = g_string_new("");
+    cc = g_list_prepend(cc, short_zuser(owl_message_get_sender(m)));
+    cc = g_list_prepend(cc, short_zuser(owl_message_get_recipient(m)));
+    cc = g_list_sort(cc, (GCompareFunc)strcasecmp);
+
+    while(cc != NULL) {
+      /* Collapse any identical entries */
+      while (cc->next && strcasecmp(cc->data, cc->next->data) == 0) {
+        owl_free(cc->data);
+        cc = g_list_delete_link(cc, cc);
+      }
+
+      tmp = short_zuser(cc->data);
+      g_string_append(recips, tmp);
+
+      owl_free(tmp);
+      owl_free(cc->data);
+      cc = g_list_delete_link(cc, cc);
+
+      if (cc)
+        g_string_append_c(recips, ' ');
+    }
+
+    owl_message_set_attribute(m, "zephyr_ccs", recips->str);
+    g_string_free(recips, true);
+  }
 }
 
 #ifdef HAVE_LIBZEPHYR
@@ -877,6 +903,8 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
       owl_free(out);
     }
   }
+
+  owl_message_save_ccs(m);
 }
 #else
 void owl_message_create_from_znotice(owl_message *m, const void *n)
@@ -971,6 +999,8 @@ void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const c
   if (owl_zwrite_is_personal(z)) {
     owl_message_set_isprivate(m);
   }
+
+  owl_message_save_ccs(m);
 }
 
 void owl_message_cleanup(owl_message *m)

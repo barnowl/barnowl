@@ -127,6 +127,7 @@ void owl_log_outgoing(const owl_message *m)
 {
   char filename[MAXPATHLEN], *logpath;
   char *to, *temp;
+  GList *cc;
 
   /* expand ~ in path names */
   logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
@@ -134,17 +135,16 @@ void owl_log_outgoing(const owl_message *m)
   /* Figure out what path to log to */
   if (owl_message_is_type_zephyr(m)) {
     /* If this has CC's, do all but the "recipient" which we'll do below */
-    to = owl_message_get_cc_without_recipient(m);
-    if (to != NULL) {
-      temp = strtok(to, " ");
-      while (temp != NULL) {
-          temp = short_zuser(temp);
-          snprintf(filename, MAXPATHLEN, "%s/%s", logpath, temp);
-          owl_log_append(m, filename);
-          temp = strtok(NULL, " ");
-      }
-      owl_free(to);
+    cc = owl_message_get_cc_without_recipient(m);
+    while (cc != NULL) {
+      temp = short_zuser(cc->data);
+      snprintf(filename, MAXPATHLEN, "%s/%s", logpath, temp);
+      owl_log_append(m, filename);
+
+      owl_free(cc->data);
+      cc = g_list_delete_link(cc, cc);
     }
+
     to = short_zuser(owl_message_get_recipient(m));
   } else if (owl_message_is_type_jabber(m)) {
     to = owl_sprintf("jabber:%s", owl_message_get_recipient(m));
@@ -324,19 +324,18 @@ void owl_log_incoming(const owl_message *m)
     /* We want to log to all of the CC'd people who were not us, or
      * the sender, as well.
      */
-    char *cc, *temp;
+    char *temp;
+    GList *cc;
     cc = owl_message_get_cc_without_recipient(m);
-    if (cc != NULL) {
-      temp = strtok(cc, " ");
-      while (temp != NULL) {
-        temp = short_zuser(temp);
-        if (strcasecmp(temp, frombuff) != 0) {
-          snprintf(filename, MAXPATHLEN, "%s/%s", logpath, temp);
-          owl_log_append(m, filename);
-        }
-        temp = strtok(NULL, " ");
+    while (cc != NULL) {
+      temp = short_zuser(cc->data);
+      if (strcasecmp(temp, frombuff) != 0) {
+        snprintf(filename, MAXPATHLEN, "%s/%s", logpath, temp);
+        owl_log_append(m, filename);
       }
-      owl_free(cc);
+
+      owl_free(cc->data);
+      cc = g_list_delete_link(cc, cc);
     }
   }
 
