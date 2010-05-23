@@ -299,6 +299,17 @@ Displays the number of characters entered in the edit window so far.
 END_DESCRIPTION
    });
 
+$BarnOwl::Hooks::getQuickstart->add( sub { twitter_quickstart(@_); } );
+
+sub twitter_quickstart {
+    return <<'EOF'
+@b[Twitter]:
+Add your Twitter account to ~/.owl/twitter, like:
+  {"user":"nelhage", "password":"sekrit"}
+Run :reload-module Twitter, then use :twitter to tweet.
+EOF
+}
+
 
 sub cmd_twitter {
     my $cmd = shift;
