@@ -4,7 +4,7 @@
 # binary.
 
 SRCDIR=`dirname "${0}"`
-EXE="$SRCDIR/barnowl.bin"
+EXE="$0.bin"
 
 if ! test -x "$EXE"; then
     echo "Cannot find barnowl.bin" >&2

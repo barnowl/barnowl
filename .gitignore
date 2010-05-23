@@ -34,5 +34,4 @@ perlglue.c
 perlwrap.c
 pm_to_blib
 stamp-h1
-tester
 varstubs.c
