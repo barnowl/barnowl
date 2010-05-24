@@ -29,7 +29,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   km_editwin = km = owl_keyhandler_create_and_add_keymap(kh, "edit",
        "Text editing and command window", 
        owl_keys_editwin_default, NULL, owl_keys_editwin_postalways);
-  owl_keymap_set_submap(km_editwin, km_global);
+  owl_keymap_set_parent(km_editwin, km_global);
   /*
   BIND_CMD("F1",          "help",            "");
   BIND_CMD("HELP",        "help",            "");
@@ -98,7 +98,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   km_ew_multi = km = owl_keyhandler_create_and_add_keymap(kh, "editmulti",
        "Multi-line text editing", 
        owl_keys_editwin_default, NULL, owl_keys_editwin_postalways);
-  owl_keymap_set_submap(km_ew_multi, km_editwin);
+  owl_keymap_set_parent(km_ew_multi, km_editwin);
 
   BIND_CMD("UP",      "edit:move-up-line", "");
   BIND_CMD("M-[ A",   "edit:move-up-line", "");
@@ -128,7 +128,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   km_ew_onel = km = owl_keyhandler_create_and_add_keymap(kh, "editline",
        "Single-line text editing", 
        owl_keys_editwin_default, NULL, owl_keys_editwin_postalways);
-  owl_keymap_set_submap(km_ew_onel, km_editwin);
+  owl_keymap_set_parent(km_ew_onel, km_editwin);
 
   BIND_CMD("C-u",         "edit:delete-all", "Clears the entire line");
 
@@ -153,7 +153,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   km_ew_onel = km = owl_keyhandler_create_and_add_keymap(kh, "editresponse",
        "Single-line response to question", 
        owl_keys_editwin_default, NULL, owl_keys_editwin_postalways);
-  owl_keymap_set_submap(km_ew_onel, km_editwin);
+  owl_keymap_set_parent(km_ew_onel, km_editwin);
 
   BIND_CMD("C-u",         "edit:delete-all", "Clears the entire line");
 
@@ -168,7 +168,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   km_viewwin = km = owl_keyhandler_create_and_add_keymap(kh, "popless",
        "Pop-up window (eg, help)", 
        owl_keys_default_invalid, NULL, owl_keys_popless_postalways);
-  owl_keymap_set_submap(km_viewwin, km_global);
+  owl_keymap_set_parent(km_viewwin, km_global);
 
   BIND_CMD("SPACE",       "popless:scroll-down-page", "");
   BIND_CMD("NPAGE",       "popless:scroll-down-page", "");
@@ -221,7 +221,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   km_mainwin = km = owl_keyhandler_create_and_add_keymap(kh, "recv",
 	"Main window / message list",
         owl_keys_default_invalid, owl_keys_recwin_prealways, NULL);
-  owl_keymap_set_submap(km_mainwin, km_global);
+  owl_keymap_set_parent(km_mainwin, km_global);
   BIND_CMD("C-x C-c", "start-command quit", "");
   BIND_CMD("F1",      "help",           "");
   BIND_CMD("h",       "help",           "");

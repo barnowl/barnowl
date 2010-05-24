@@ -85,7 +85,7 @@ keymap:      Contains both keymap and keyhandler.  A keymap is contains a
 	     bindings in keymaps.  It also handles ESC as a prefix for
 	     Meta.  At any one time, there is exactly one active
 	     keymap which determines where keybindings are looked for
-	     (along with its submaps).
+	     (along with its parents).
 
 list:	     Simple list abstraction.  (Uses realloc to resize the list.)
 

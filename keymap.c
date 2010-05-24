@@ -2,7 +2,7 @@
 #include "owl.h"
 
 static void _owl_keymap_format_bindings(const owl_keymap *km, owl_fmtext *fm);
-static void _owl_keymap_format_with_submaps(const owl_keymap *km, owl_fmtext *fm);
+static void _owl_keymap_format_with_parents(const owl_keymap *km, owl_fmtext *fm);
 
 /* returns 0 on success */
 int owl_keymap_init(owl_keymap *km, const char *name, const char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
@@ -11,7 +11,7 @@ int owl_keymap_init(owl_keymap *km, const char *name, const char *desc, void (*d
   if ((km->name = owl_strdup(name)) == NULL) return(-1);
   if ((km->desc = owl_strdup(desc)) == NULL) return(-1);
   if (0 != owl_list_create(&km->bindings)) return(-1);
-  km->submap = NULL;
+  km->parent = NULL;
   km->default_fn = default_fn;
   km->prealways_fn = prealways_fn;
   km->postalways_fn = postalways_fn;
@@ -26,9 +26,9 @@ void owl_keymap_cleanup(owl_keymap *km)
   owl_list_cleanup(&km->bindings, (void (*)(void *))owl_keybinding_delete);
 }
 
-void owl_keymap_set_submap(owl_keymap *km, const owl_keymap *submap)
+void owl_keymap_set_parent(owl_keymap *km, const owl_keymap *parent)
 {
-  km->submap = submap;
+  km->parent = parent;
 }
 
 /* creates and adds a key binding */
@@ -98,9 +98,9 @@ void owl_keymap_get_details(const owl_keymap *km, owl_fmtext *fm, int recurse)
     owl_fmtext_append_normal(fm, km->desc);
     owl_fmtext_append_normal(fm, "\n");
   }
-  if (km->submap) {
-    owl_fmtext_append_normal(fm, OWL_TABSTR "Has submap: ");
-    owl_fmtext_append_normal(fm, km->submap->name);
+  if (km->parent) {
+    owl_fmtext_append_normal(fm, OWL_TABSTR "Has parent: ");
+    owl_fmtext_append_normal(fm, km->parent->name);
     owl_fmtext_append_normal(fm, "\n");
   }
     owl_fmtext_append_normal(fm, "\n");
@@ -119,17 +119,17 @@ void owl_keymap_get_details(const owl_keymap *km, owl_fmtext *fm, int recurse)
 
   owl_fmtext_append_bold(fm, "\nKey bindings:\n\n");  
   if (recurse) {
-    _owl_keymap_format_with_submaps(km, fm);
+    _owl_keymap_format_with_parents(km, fm);
   } else {
     _owl_keymap_format_bindings(km, fm);
   }
 }
 
-static void _owl_keymap_format_with_submaps(const owl_keymap *km, owl_fmtext *fm)
+static void _owl_keymap_format_with_parents(const owl_keymap *km, owl_fmtext *fm)
 {
   while (km) {
     _owl_keymap_format_bindings(km, fm);
-    km = km->submap;
+    km = km->parent;
     if (km) {
       owl_fmtext_append_bold(fm, "\nInherited from ");
       owl_fmtext_append_bold(fm, km->name);
@@ -272,17 +272,17 @@ int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
     return(-1);
   }
 
-  /* deal with the always_fn for the map and submaps */
-  for (km=kh->active; km; km=km->submap) {
+  /* deal with the always_fn for the map and parents */
+  for (km=kh->active; km; km=km->parent) {
     if (km->prealways_fn) {
       km->prealways_fn(j);
     }
   }
 
   /* search for a match.  goes through active keymap and then
-   * through submaps... TODO:  clean this up so we can pull
+   * through parents... TODO:  clean this up so we can pull
    * keyhandler and keymap apart.  */
-  for (km=kh->active; km; km=km->submap) {
+  for (km=kh->active; km; km=km->parent) {
     for (i=owl_list_get_size(&km->bindings)-1; i>=0; i--) {
       kb = owl_list_get_element(&km->bindings, i);
       match = owl_keybinding_match(kb, kh);
