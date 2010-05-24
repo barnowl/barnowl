@@ -1,6 +1,9 @@
 #include <string.h>
 #include "owl.h"
 
+static void _owl_keymap_format_bindings(const owl_keymap *km, owl_fmtext *fm);
+static void _owl_keymap_format_with_submaps(const owl_keymap *km, owl_fmtext *fm);
+
 /* returns 0 on success */
 int owl_keymap_init(owl_keymap *km, const char *name, const char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
 {
@@ -85,11 +88,8 @@ char *owl_keymap_summary(const owl_keymap *km)
 }
 
 /* Appends details about the keymap to fm */
-void owl_keymap_get_details(const owl_keymap *km, owl_fmtext *fm)
+void owl_keymap_get_details(const owl_keymap *km, owl_fmtext *fm, int recurse)
 {
-  int i, nbindings; 
-  const owl_keybinding *kb;
-  
   owl_fmtext_append_bold(fm, "KEYMAP - ");
   owl_fmtext_append_bold(fm, km->name);
   owl_fmtext_append_normal(fm, "\n");
@@ -118,6 +118,31 @@ void owl_keymap_get_details(const owl_keymap *km, owl_fmtext *fm)
   }
 
   owl_fmtext_append_bold(fm, "\nKey bindings:\n\n");  
+  if (recurse) {
+    _owl_keymap_format_with_submaps(km, fm);
+  } else {
+    _owl_keymap_format_bindings(km, fm);
+  }
+}
+
+static void _owl_keymap_format_with_submaps(const owl_keymap *km, owl_fmtext *fm)
+{
+  while (km) {
+    _owl_keymap_format_bindings(km, fm);
+    km = km->submap;
+    if (km) {
+      owl_fmtext_append_bold(fm, "\nInherited from ");
+      owl_fmtext_append_bold(fm, km->name);
+      owl_fmtext_append_bold(fm, ":\n\n");
+    }
+  }
+}
+
+static void _owl_keymap_format_bindings(const owl_keymap *km, owl_fmtext *fm)
+{
+  int i, nbindings;
+  const owl_keybinding *kb;
+  
   nbindings = owl_list_get_size(&km->bindings);
   for (i=0; i<nbindings; i++) {
     char buff[100];

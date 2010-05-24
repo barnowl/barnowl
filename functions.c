@@ -2878,7 +2878,7 @@ void owl_function_show_keymaps(void)
     kmname = owl_list_get_element(&l, i);
     km = owl_keyhandler_get_keymap(kh, kmname);
     owl_fmtext_append_bold(&fm, "\n\n----------------------------------------------------------------------------------------------------\n\n");
-    owl_keymap_get_details(km, &fm);    
+    owl_keymap_get_details(km, &fm, 0);
   }
   owl_fmtext_append_normal(&fm, "\n");
   
@@ -2904,7 +2904,7 @@ void owl_function_show_keymap(const char *name)
   owl_fmtext_init_null(&fm);
   km = owl_keyhandler_get_keymap(owl_global_get_keyhandler(&g), name);
   if (km) {
-    owl_keymap_get_details(km, &fm);
+    owl_keymap_get_details(km, &fm, 1);
   } else {
     owl_fmtext_append_normal(&fm, "No such keymap...\n");
   }  
