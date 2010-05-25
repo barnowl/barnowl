@@ -1,3 +1,11 @@
+1.6.1
+ * Jabber: Explain how to set your nick when joining a MUC. -andersk@mit.edu
+ * Jabber: Make smartnarrow -i filter on subject. -andersk@mit.edu
+ * Jabber: Fix completion of MUC names. -nelhage@mit.edu
+ * Improve help for bindkey and unbindkey -leonidg@mit.edu
+ * Fix a segfault in smartnarrow. -nelhage@mit.edu
+ * Fix a race in handling of resize events. -andersk@mit.edu
+
 1.6
  * Add :vp and :viewperson aliases for :viewuser. -kevinr@free-dissociation.com
  * Fix some bugs related to resize. -davidben@mit.edu
