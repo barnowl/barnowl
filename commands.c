@@ -2183,10 +2183,6 @@ char *owl_command_view(int argc, const char *const *argv, const char *buff)
       owl_function_change_currentview_filter(owl_global_get_view_home(&g));
       argc--;
       argv++;
-    } else if (!strcmp(argv[0], "-r")) {
-      const char *foo;
-      foo=owl_function_create_negative_filter(owl_view_get_filtname(owl_global_get_current_view(&g)));
-      owl_function_change_currentview_filter(foo);
     } else if (!strcmp(argv[0], "-s")) {
       if (argc<2) {
 	owl_function_makemsg("Too few argments to the view command");
