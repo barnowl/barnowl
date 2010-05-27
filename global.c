@@ -510,9 +510,6 @@ void owl_global_resize(owl_global *g, int x, int y) {
 }
 
 void owl_global_relayout(owl_global *g) {
-  owl_popwin *pw;
-  owl_viewwin *vw;
-
   if (!g->relayoutpending) return;
   g->relayoutpending = 0;
 
@@ -527,22 +524,6 @@ void owl_global_relayout(owl_global *g) {
   /* recalculate the topmsg to make sure the current message is on
    * screen */
   owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
-
-  /* recreate the popwin */
-  pw = owl_global_get_popwin(g);
-  if (owl_popwin_is_active(pw)) {
-    /*
-     * This is somewhat hacky; we probably want a proper windowing layer. We
-     * destroy the popwin and recreate it. Then the viewwin is redirected to
-     * the new window.
-     */
-    vw = owl_global_get_viewwin(g);
-    owl_popwin_close(pw);
-    owl_popwin_up(pw);
-    owl_viewwin_set_curswin(vw, owl_popwin_get_curswin(pw),
-	owl_popwin_get_lines(pw), owl_popwin_get_cols(pw));
-    owl_viewwin_redisplay(vw);
-  }
 
   /* refresh stuff */
   g->needrefresh=1;

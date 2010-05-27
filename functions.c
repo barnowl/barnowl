@@ -1284,11 +1284,7 @@ void owl_function_popless_text(const char *text)
 
   owl_popwin_up(pw);
   owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless");
-  owl_viewwin_init_text(v, owl_popwin_get_curswin(pw),
-			owl_popwin_get_lines(pw), owl_popwin_get_cols(pw),
-			text);
-  owl_viewwin_redisplay(v);
-  owl_global_set_needrefresh(&g);
+  owl_viewwin_init_text(v, owl_popwin_get_content(pw), text);
 }
 
 void owl_function_popless_fmtext(const owl_fmtext *fm)
@@ -1301,11 +1297,7 @@ void owl_function_popless_fmtext(const owl_fmtext *fm)
 
   owl_popwin_up(pw);
   owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless");
-  owl_viewwin_init_fmtext(v, owl_popwin_get_curswin(pw),
-		   owl_popwin_get_lines(pw), owl_popwin_get_cols(pw),
-		   fm);
-  owl_viewwin_redisplay(v);
-  owl_global_set_needrefresh(&g);
+  owl_viewwin_init_fmtext(v, owl_popwin_get_content(pw), fm);
 }
 
 void owl_function_popless_file(const char *filename)

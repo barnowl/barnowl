@@ -10,26 +10,50 @@ int owl_popwin_init(owl_popwin *pw)
 
 int owl_popwin_up(owl_popwin *pw)
 {
-  int glines, gcols, startcol, startline;
-  WINDOW *popwin, *borderwin;
+  /* make them zero-size for now */
+  pw->border = owl_window_new(0, 0, 0, 0, 0);
+  pw->content = owl_window_new(pw->border, 0, 0, 0, 0);
 
-  /* calculate the size of the popwin */
-  glines=owl_global_get_lines(&g);
-  gcols=owl_global_get_cols(&g);
+  owl_window_set_redraw_cb(pw->border, owl_popwin_draw_border, pw, 0);
+  owl_window_set_resize_cb(pw->border, owl_popwin_resize_content, pw, 0);
+  /* HACK */
+  owl_window_set_resize_cb(owl_window_get_screen(), owl_popwin_reposition, pw, 0);
 
-  pw->lines = owl_util_min(glines,24)*3/4 + owl_util_max(glines-24,0)/2;
-  startline = (glines-pw->lines)/2;
+  /* calculate position, THEN map the windows maybe setting a resize hook
+   * should just cause it to get called? */
+  owl_popwin_reposition(owl_window_get_screen(), pw);
+  owl_window_map(pw->border, 1);
 
-  pw->cols = owl_util_min(gcols,90)*15/16 + owl_util_max(gcols-90,0)/2;
-  startcol = (gcols-pw->cols)/2;
+  pw->active=1;
+  return(0);
+}
 
-  borderwin = newwin(pw->lines, pw->cols, startline, startcol);
-  pw->borderpanel = new_panel(borderwin);
-  popwin = newwin(pw->lines-2, pw->cols-2, startline+1, startcol+1);
-  pw->poppanel = new_panel(popwin);
+void owl_popwin_reposition(owl_window *screen, void *user_data)
+{
+  owl_popwin *pw = user_data;
+  int lines, cols, startline, startcol;
+  int glines, gcols;
 
-  werase(popwin);
-  werase(borderwin);
+  owl_window_get_position(screen, &glines, &gcols, 0, 0);
+
+  lines = owl_util_min(glines,24)*3/4 + owl_util_max(glines-24,0)/2;
+  startline = (glines-lines)/2;
+  cols = owl_util_min(gcols,90)*15/16 + owl_util_max(gcols-90,0)/2;
+  startcol = (gcols-cols)/2;
+
+  owl_window_set_position(pw->border, lines, cols, startline, startcol);
+}
+
+void owl_popwin_resize_content(owl_window *w, void *user_data)
+{
+  owl_popwin *pw = user_data;
+  owl_window_get_position(w, &pw->lines, &pw->cols, 0, 0);
+  owl_window_set_position(pw->content, pw->lines-2, pw->cols-2, 1, 1);
+}
+
+void owl_popwin_draw_border(owl_window *w, WINDOW *borderwin, void *user_data)
+{
+  owl_popwin *pw = user_data;
   if (owl_global_is_fancylines(&g)) {
     box(borderwin, 0, 0);
   } else {
@@ -43,26 +67,15 @@ int owl_popwin_up(owl_popwin *pw)
     wmove(borderwin, 0, pw->cols-1);
     waddch(borderwin, '+');
   }
-    
-  owl_global_set_needrefresh(&g);
-  pw->active=1;
-  return(0);
 }
 
 int owl_popwin_close(owl_popwin *pw)
 {
-  WINDOW *popwin, *borderwin;
-
-  popwin = panel_window(pw->poppanel);
-  borderwin = panel_window(pw->borderpanel);
-
-  del_panel(pw->poppanel);
-  del_panel(pw->borderpanel);
-  delwin(popwin);
-  delwin(borderwin);
-
+  owl_window_delete(pw->border);
+  pw->border = 0;
+  pw->content = 0;
   pw->active=0;
-  owl_global_set_needrefresh(&g);
+  owl_window_set_resize_cb(owl_window_get_screen(), 0, 0, 0);
   return(0);
 }
 
@@ -71,9 +84,9 @@ int owl_popwin_is_active(const owl_popwin *pw)
   return pw->active;
 }
 
-WINDOW *owl_popwin_get_curswin(const owl_popwin *pw)
+owl_window *owl_popwin_get_content(const owl_popwin *pw)
 {
-  return panel_window(pw->poppanel);
+  return pw->content;
 }
 
 int owl_popwin_get_lines(const owl_popwin *pw)
