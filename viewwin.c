@@ -167,6 +167,7 @@ void owl_viewwin_bottom(owl_viewwin *v)
 
 void owl_viewwin_cleanup(owl_viewwin *v)
 {
+  owl_viewwin_set_window(v, NULL);
   if (v->onclose_hook) {
     v->onclose_hook(v, v->onclose_hook_data);
     v->onclose_hook = NULL;
