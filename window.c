@@ -387,6 +387,35 @@ void owl_window_get_position(owl_window *w, int *nlines, int *ncols, int *begin_
   if (begin_x) *begin_x = w->begin_x;
 }
 
+void owl_window_move(owl_window *w, int begin_y, int begin_x)
+{
+  /* can't move the screen */
+  if (w->is_screen) return;
+
+  w->begin_y = begin_y;
+  w->begin_x = begin_x;
+  if (w->mapped) {
+    /* Window is mapped, we must try to have a window at the end */
+    if (w->win) {
+      /* We actually do have a window; let's move it */
+      if (w->pan) {
+        if (move_panel(w->pan, begin_y, begin_x) == OK)
+          return;
+      } else {
+        if (mvderwin(w->win, begin_y, begin_x) == OK) {
+          /* now both we and the parent are dirty */
+          owl_window_dirty(w->parent);
+          owl_window_dirty(w);
+          return;
+        }
+      }
+    }
+    /* We don't have a window or failed to move it. Fine. Brute force. */
+    _owl_window_unmap_internal(w);
+    _owl_window_map_internal(w);
+  }
+}
+
 void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, int begin_x)
 {
   /* can't move the screen */
@@ -420,35 +449,6 @@ void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, 
 void owl_window_resize(owl_window *w, int nlines, int ncols)
 {
   owl_window_set_position(w, nlines, ncols, w->begin_y, w->begin_x);
-}
-
-void owl_window_move(owl_window *w, int begin_y, int begin_x)
-{
-  /* can't move the screen */
-  if (w->is_screen) return;
-
-  w->begin_y = begin_y;
-  w->begin_x = begin_x;
-  if (w->mapped) {
-    /* Window is mapped, we must try to have a window at the end */
-    if (w->win) {
-      /* We actually do have a window; let's move it */
-      if (w->pan) {
-        if (move_panel(w->pan, begin_y, begin_x) == OK)
-          return;
-      } else {
-        if (mvderwin(w->win, begin_y, begin_x) == OK) {
-          /* now both we and the parent are dirty */
-          owl_window_dirty(w->parent);
-          owl_window_dirty(w);
-          return;
-        }
-      }
-    }
-    /* We don't have a window or failed to move it. Fine. Brute force. */
-    _owl_window_unmap_internal(w);
-    _owl_window_map_internal(w);
-  }
 }
 
 /** Stacking order **/
