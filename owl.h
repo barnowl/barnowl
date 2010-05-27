@@ -389,6 +389,8 @@ typedef struct _owl_style {
   SV *perlobj;
 } owl_style;
 
+typedef struct _owl_window owl_window;
+
 typedef struct _owl_mainwin {
   int curtruncated;
   int lasttruncated;
