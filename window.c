@@ -349,6 +349,7 @@ static void _owl_window_redraw(owl_window *w)
   if (!w->dirty) return;
   if (w->win && w->redraw_cb) {
     w->redraw_cb(w, w->win, w->redraw_cbdata);
+    wsyncup(w->win);
   }
   w->dirty = 0;
 }
