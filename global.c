@@ -474,7 +474,7 @@ int owl_global_have_config(owl_global *g) {
  * Compute the size of the terminal. Try a ioctl, fallback to other stuff on
  * fail.
  */
-static void _owl_global_get_size(int *lines, int *cols) {
+void owl_global_get_terminal_size(int *lines, int *cols) {
   struct winsize size;
   /* get the new size */
   ioctl(STDIN_FILENO, TIOCGWINSZ, &size);
@@ -491,20 +491,14 @@ static void _owl_global_get_size(int *lines, int *cols) {
   }
 }
 
-void owl_global_resize(owl_global *g, int x, int y) {
+void owl_global_resize(owl_global *g, int lines, int cols) {
   /* resize the screen.  If x or y is 0 use the terminal size */
   if (!g->resizepending) return;
   g->resizepending = 0;
 
-  _owl_global_get_size(&g->lines, &g->cols);
-  if (x != 0) {
-    g->lines = x;
-  }
-  if (y != 0) {
-    g->cols = y;
-  }
-
-  owl_window_resize(owl_window_get_screen(), g->lines, g->cols);
+  g->lines = lines;
+  g->cols = cols;
+  owl_window_recompute_position(owl_window_get_screen());
 
   owl_function_debugmsg("New size is %i lines, %i cols.", g->lines, g->cols);
   owl_global_set_relayout_pending(g);

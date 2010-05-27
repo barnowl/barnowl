@@ -53,6 +53,16 @@ static WINDOW *_dummy_window(void)
   return dummy;
 }
 
+static void _screen_calculate_size(owl_window *screen, void *user_data)
+{
+  owl_global *g = user_data;
+  int lines, cols;
+  owl_global_get_terminal_size(&lines, &cols);
+  if (!g->lines) g->lines = lines;
+  if (!g->cols) g->cols = cols;
+  owl_window_resize(screen, g->lines, g->cols);
+}
+
 owl_window *owl_window_get_screen(void)
 {
   static owl_window *screen = NULL;
@@ -61,6 +71,7 @@ owl_window *owl_window_get_screen(void)
      * invisible is if we're tore down curses (i.e. screen resize) */
     screen = _owl_window_new(NULL, g.lines, g.cols, 0, 0);
     screen->is_screen = 1;
+    owl_window_set_size_cb(screen, _screen_calculate_size, &g, 0);
     owl_window_map(screen, 0);
   }
   return screen;
