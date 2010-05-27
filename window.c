@@ -371,6 +371,12 @@ void owl_window_redraw_scheduled(void)
   _owl_window_redraw_subtree(owl_window_get_screen());
 }
 
+void owl_window_erase_cb(owl_window *w, WINDOW *win, void *user_data)
+{
+  werase(win);
+  owl_window_dirty_children(w);
+}
+
 /** Window position **/
 
 void owl_window_get_position(owl_window *w, int *nlines, int *ncols, int *begin_y, int *begin_x)
@@ -449,7 +455,7 @@ void owl_window_move(owl_window *w, int begin_y, int begin_x)
 
 void owl_window_top(owl_window *w) {
   if (!w->pan) {
-    owl_function_debugmsg("Warning: owl_window_move_top only makes sense on top-level window");
+    owl_function_debugmsg("Warning: owl_window_top only makes sense on top-level window");
     return;
   }
   top_panel(w->pan);
