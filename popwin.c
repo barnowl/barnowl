@@ -53,18 +53,19 @@ void owl_popwin_resize_content(owl_window *w, void *user_data)
 
 void owl_popwin_draw_border(owl_window *w, WINDOW *borderwin, void *user_data)
 {
-  owl_popwin *pw = user_data;
+  int lines, cols;
+  owl_window_get_position(w, &lines, &cols, 0, 0);
   if (owl_global_is_fancylines(&g)) {
     box(borderwin, 0, 0);
   } else {
     box(borderwin, '|', '-');
     wmove(borderwin, 0, 0);
     waddch(borderwin, '+');
-    wmove(borderwin, pw->lines-1, 0);
+    wmove(borderwin, lines-1, 0);
     waddch(borderwin, '+');
-    wmove(borderwin, pw->lines-1, pw->cols-1);
+    wmove(borderwin, lines-1, cols-1);
     waddch(borderwin, '+');
-    wmove(borderwin, 0, pw->cols-1);
+    wmove(borderwin, 0, cols-1);
     waddch(borderwin, '+');
   }
 }
