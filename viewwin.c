@@ -53,13 +53,10 @@ void owl_viewwin_set_window(owl_viewwin *v, owl_window *w)
 {
   if (v->window) {
     owl_window_set_redraw_cb(v->window, 0, 0, 0);
-    owl_window_set_resize_cb(v->window, 0, 0, 0);
   }
   v->window = w;
   if (w) {
-    owl_window_get_position(w, &v->winlines, &v->wincols, 0, 0);
     owl_window_set_redraw_cb(w, owl_viewwin_redisplay, v, 0);
-    owl_window_set_resize_cb(w, owl_viewwin_resize_hook, v, 0);
   }
 }
 
@@ -68,17 +65,14 @@ void owl_viewwin_set_onclose_hook(owl_viewwin *v, void (*onclose_hook) (owl_view
   v->onclose_hook_data = onclose_hook_data;
 }
 
-void owl_viewwin_resize_hook(owl_window *w, void *user_data)
-{
-  owl_viewwin *v = user_data;
-  owl_window_get_position(w, &v->winlines, &v->wincols, 0, 0);
-}
-
 /* regenerate text on the curses window. */
 void owl_viewwin_redisplay(owl_window *w, WINDOW *curswin, void *user_data)
 {
   owl_fmtext fm1, fm2;
   owl_viewwin *v = user_data;
+  int winlines, wincols;
+
+  owl_window_get_position(w, &winlines, &wincols, 0, 0);
   
   werase(curswin);
   wmove(curswin, 0, 0);
@@ -86,15 +80,15 @@ void owl_viewwin_redisplay(owl_window *w, WINDOW *curswin, void *user_data)
   owl_fmtext_init_null(&fm1);
   owl_fmtext_init_null(&fm2);
   
-  owl_fmtext_truncate_lines(&(v->fmtext), v->topline, v->winlines-BOTTOM_OFFSET, &fm1);
-  owl_fmtext_truncate_cols(&fm1, v->rightshift, v->wincols-1+v->rightshift, &fm2);
+  owl_fmtext_truncate_lines(&(v->fmtext), v->topline, winlines-BOTTOM_OFFSET, &fm1);
+  owl_fmtext_truncate_cols(&fm1, v->rightshift, wincols-1+v->rightshift, &fm2);
 
   owl_fmtext_curs_waddstr_without_search(&fm2, curswin);
 
   /* print the message at the bottom */
-  wmove(curswin, v->winlines-1, 0);
+  wmove(curswin, winlines-1, 0);
   wattrset(curswin, A_REVERSE);
-  if (v->textlines - v->topline > v->winlines-BOTTOM_OFFSET) {
+  if (v->textlines - v->topline > winlines-BOTTOM_OFFSET) {
     waddstr(curswin, "--More-- (Space to see more, 'q' to quit)");
   } else {
     waddstr(curswin, "--End-- (Press 'q' to quit)");
@@ -107,25 +101,31 @@ void owl_viewwin_redisplay(owl_window *w, WINDOW *curswin, void *user_data)
 
 void owl_viewwin_pagedown(owl_viewwin *v)
 {
-  v->topline+=v->winlines - BOTTOM_OFFSET;
-  if ( (v->topline+v->winlines-BOTTOM_OFFSET) > v->textlines) {
-    v->topline = v->textlines - v->winlines + BOTTOM_OFFSET;
+  int winlines;
+  owl_window_get_position(v->window, &winlines, 0, 0, 0);
+  v->topline+=winlines - BOTTOM_OFFSET;
+  if ( (v->topline+winlines-BOTTOM_OFFSET) > v->textlines) {
+    v->topline = v->textlines - winlines + BOTTOM_OFFSET;
   }
   owl_window_dirty(v->window);
 }
 
 void owl_viewwin_linedown(owl_viewwin *v)
 {
+  int winlines;
+  owl_window_get_position(v->window, &winlines, 0, 0, 0);
   v->topline++;
-  if ( (v->topline+v->winlines-BOTTOM_OFFSET) > v->textlines) {
-    v->topline = v->textlines - v->winlines + BOTTOM_OFFSET;
+  if ( (v->topline+winlines-BOTTOM_OFFSET) > v->textlines) {
+    v->topline = v->textlines - winlines + BOTTOM_OFFSET;
   }
   owl_window_dirty(v->window);
 }
 
 void owl_viewwin_pageup(owl_viewwin *v)
 {
-  v->topline-=v->winlines;
+  int winlines;
+  owl_window_get_position(v->window, &winlines, 0, 0, 0);
+  v->topline-=winlines;
   if (v->topline<0) v->topline=0;
   owl_window_dirty(v->window);
 }
@@ -159,7 +159,9 @@ void owl_viewwin_top(owl_viewwin *v)
 
 void owl_viewwin_bottom(owl_viewwin *v)
 {
-  v->topline = v->textlines - v->winlines + BOTTOM_OFFSET;
+  int winlines;
+  owl_window_get_position(v->window, &winlines, 0, 0, 0);
+  v->topline = v->textlines - winlines + BOTTOM_OFFSET;
   owl_window_dirty(v->window);
 }
 

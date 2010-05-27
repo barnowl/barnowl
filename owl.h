@@ -402,7 +402,6 @@ typedef struct _owl_viewwin {
   int textlines;
   int topline;
   int rightshift;
-  int winlines, wincols;
   owl_window *window;
   void (*onclose_hook) (struct _owl_viewwin *vwin, void *data);
   void *onclose_hook_data;
