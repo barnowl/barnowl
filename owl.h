@@ -411,8 +411,6 @@ typedef struct _owl_viewwin {
 typedef struct _owl_popwin {
   owl_window *border;
   owl_window *content;
-  int lines;
-  int cols;
   int active;
 } owl_popwin;
 

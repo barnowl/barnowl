@@ -3,8 +3,6 @@
 int owl_popwin_init(owl_popwin *pw)
 {
   pw->active=0;
-  pw->lines=0;
-  pw->cols=0;
   return(0);
 }
 
@@ -46,9 +44,10 @@ void owl_popwin_reposition(owl_window *screen, void *user_data)
 
 void owl_popwin_resize_content(owl_window *w, void *user_data)
 {
+  int lines, cols;
   owl_popwin *pw = user_data;
-  owl_window_get_position(w, &pw->lines, &pw->cols, 0, 0);
-  owl_window_set_position(pw->content, pw->lines-2, pw->cols-2, 1, 1);
+  owl_window_get_position(w, &lines, &cols, 0, 0);
+  owl_window_set_position(pw->content, lines-2, cols-2, 1, 1);
 }
 
 void owl_popwin_draw_border(owl_window *w, WINDOW *borderwin, void *user_data)
@@ -88,14 +87,4 @@ int owl_popwin_is_active(const owl_popwin *pw)
 owl_window *owl_popwin_get_content(const owl_popwin *pw)
 {
   return pw->content;
-}
-
-int owl_popwin_get_lines(const owl_popwin *pw)
-{
-  return(pw->lines-2);
-}
-
-int owl_popwin_get_cols(const owl_popwin *pw)
-{
-  return(pw->cols-2);
 }
