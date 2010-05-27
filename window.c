@@ -227,7 +227,7 @@ static void _owl_window_create_curses(owl_window *w)
 {
   if (w->is_screen) {
     resizeterm(w->nlines, w->ncols);
-    w->win = _dummy_window();
+    w->win = stdscr;
   } else if (w->pan) {
     w->win = newwin(w->nlines, w->ncols, w->begin_y, w->begin_x);
     replace_panel(w->pan, w->win);
