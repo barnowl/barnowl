@@ -16,11 +16,16 @@ sub context {'twitter'}
 sub subcontext {undef}
 sub service { return (shift->{"service"} || "http://twitter.com"); }
 sub account { return shift->{"account"}; }
+sub retweeted_by { shift->{retweeted_by}; }
 sub long_sender {
     my $self = shift;
     $self->service =~ m#^\s*(.*?://.*?)/.*$#;
     my $service = $1 || $self->service;
-    return $service . '/' . $self->sender
+    my $long = $service . '/' . $self->sender;
+    if ($self->retweeted_by) {
+        $long = "(retweeted by " . $self->retweeted_by . ") $long";
+    }
+    return $long;
 }
 
 sub replycmd {

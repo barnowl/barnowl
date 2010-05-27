@@ -247,17 +247,21 @@ sub poll_twitter {
             if ( $tweet->{id} <= $self->{last_id} ) {
                 next;
             }
+            my $orig = $tweet->{retweeted_status};
+            $orig = $tweet unless defined($orig);
+
             my $msg = BarnOwl::Message->new(
                 type      => 'Twitter',
-                sender    => $tweet->{user}{screen_name},
+                sender    => $orig->{user}{screen_name},
                 recipient => $self->{cfg}->{user} || $self->{user},
                 direction => 'in',
-                source    => decode_entities($tweet->{source}),
-                location  => decode_entities($tweet->{user}{location}||""),
-                body      => decode_entities($tweet->{text}),
+                source    => decode_entities($orig->{source}),
+                location  => decode_entities($orig->{user}{location}||""),
+                body      => decode_entities($orig->{text}),
                 status_id => $tweet->{id},
                 service   => $self->{cfg}->{service},
                 account   => $self->{cfg}->{account_nickname},
+                $tweet->{retweeted_status} ? (retweeted_by => $tweet->{user}{screen_name}) : ()
                );
             BarnOwl::queue_message($msg);
         }
