@@ -19,15 +19,15 @@ struct _owl_window { /*noproto*/
   int begin_y, begin_x;
   /* hooks */
   void (*redraw_cb)(owl_window *, WINDOW *, void *);
-  void *redraw_cbdata;
+  void  *redraw_cbdata;
   void (*redraw_cbdata_destroy)(void *);
 
   void (*size_cb)(owl_window *, void *);
-  void *size_cbdata;
+  void  *size_cbdata;
   void (*size_cbdata_destroy)(void *);
 
   void (*destroy_cb)(owl_window *, void *);
-  void *destroy_cbdata;
+  void  *destroy_cbdata;
   void (*destroy_cbdata_destroy)(void *);
 };
 
