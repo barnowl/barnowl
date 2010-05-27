@@ -389,8 +389,8 @@ void owl_window_get_position(owl_window *w, int *nlines, int *ncols, int *begin_
 
 void owl_window_move(owl_window *w, int begin_y, int begin_x)
 {
-  /* can't move the screen */
-  if (w->is_screen) return;
+  if (w->is_screen) return; /* can't move the screen */
+  if (w->begin_y == begin_y && w->begin_x == begin_x) return;
 
   w->begin_y = begin_y;
   w->begin_x = begin_x;
