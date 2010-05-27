@@ -216,6 +216,11 @@ void owl_window_children_foreach_onearg(owl_window *parent, void (*func)(owl_win
   }
 }
 
+owl_window *owl_window_get_parent(owl_window *w)
+{
+  return w->parent;
+}
+
 /** Internal window management **/
 
 static void _owl_window_create_curses(owl_window *w)
