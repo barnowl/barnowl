@@ -22,9 +22,9 @@ struct _owl_window { /*noproto*/
   void *redraw_cbdata;
   void (*redraw_cbdata_destroy)(void *);
 
-  void (*resize_cb)(owl_window *, void *);
-  void *resize_cbdata;
-  void (*resize_cbdata_destroy)(void *);
+  void (*size_cb)(owl_window *, void *);
+  void *size_cbdata;
+  void (*size_cbdata_destroy)(void *);
 
   void (*destroy_cb)(owl_window *, void *);
   void *destroy_cbdata;
@@ -68,11 +68,11 @@ owl_window *owl_window_get_screen(void)
 
 /** Creation and Destruction **/
 
-owl_window *owl_window_new(owl_window *parent, int nlines, int ncols, int begin_y, int begin_x)
+owl_window *owl_window_new(owl_window *parent)
 {
   if (!parent)
     parent = owl_window_get_screen();
-  return _owl_window_new(parent, nlines, ncols, begin_y, begin_x);
+  return _owl_window_new(parent, 0, 0, 0, 0);
 }
 
 static owl_window *_owl_window_new(owl_window *parent, int nlines, int ncols, int begin_y, int begin_x)
@@ -107,7 +107,7 @@ void owl_window_delete(owl_window *w)
 
   /* clear all cbs */
   owl_window_set_redraw_cb(w, 0, 0, 0);
-  owl_window_set_resize_cb(w, 0, 0, 0);
+  owl_window_set_size_cb(w, 0, 0, 0);
   owl_window_set_destroy_cb(w, 0, 0, 0);
 
   /* destroy curses structures */
@@ -139,17 +139,19 @@ void owl_window_set_redraw_cb(owl_window *w, void (*cb)(owl_window*, WINDOW*, vo
   owl_window_dirty(w);
 }
 
-void owl_window_set_resize_cb(owl_window *w, void (*cb)(owl_window*, void*), void *cbdata, void (*cbdata_destroy)(void*))
+void owl_window_set_size_cb(owl_window *w, void (*cb)(owl_window*, void*), void *cbdata, void (*cbdata_destroy)(void*))
 {
-  if (w->resize_cbdata_destroy) {
-    w->resize_cbdata_destroy(w->resize_cbdata);
-    w->resize_cbdata = 0;
-    w->resize_cbdata_destroy = 0;
+  if (w->size_cbdata_destroy) {
+    w->size_cbdata_destroy(w->size_cbdata);
+    w->size_cbdata = 0;
+    w->size_cbdata_destroy = 0;
   }
 
-  w->resize_cb = cb;
-  w->resize_cbdata = cbdata;
-  w->resize_cbdata_destroy = cbdata_destroy;
+  w->size_cb = cb;
+  w->size_cbdata = cbdata;
+  w->size_cbdata_destroy = cbdata_destroy;
+
+  owl_window_recompute_position(w);
 }
 
 void owl_window_set_destroy_cb(owl_window *w, void (*cb)(owl_window*, void*), void *cbdata, void (*cbdata_destroy)(void*))
@@ -438,9 +440,8 @@ void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, 
     /* resizing in ncurses is hard: give up do a unmap/map */
     _owl_window_unmap_internal(w);
   }
-  /* call the resize hooks BEFORE remapping, so that everything can resize */
-  if (w->resize_cb)
-    w->resize_cb(w, w->resize_cbdata);
+  /* recalculate children sizes BEFORE remapping, so that everything can resize */
+  owl_window_children_foreach_onearg(w, owl_window_recompute_position);
   if (w->mapped) {
     _owl_window_map_internal(w);
   }
@@ -450,6 +451,15 @@ void owl_window_resize(owl_window *w, int nlines, int ncols)
 {
   owl_window_set_position(w, nlines, ncols, w->begin_y, w->begin_x);
 }
+
+void owl_window_recompute_position(owl_window *w)
+{
+  if (w->size_cb) {
+    /* TODO: size_cb probably wants to actually take four int*s */
+    w->size_cb(w, w->size_cbdata);
+  }
+}
+
 
 /** Stacking order **/
 
