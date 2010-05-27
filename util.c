@@ -119,6 +119,7 @@ void sepbar(const char *in)
     
   wattroff(sepwin, A_BOLD);
   wattroff(sepwin, A_REVERSE);
+  owl_global_set_needrefresh(&g);
 }
 
 char **atokenize(const char *buffer, const char *sep, int *i)

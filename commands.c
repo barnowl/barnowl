@@ -1370,7 +1370,6 @@ void owl_command_resize(void)
 void owl_command_redisplay(void)
 {
   owl_function_full_redisplay();
-  owl_global_set_needrefresh(&g);
 }
 
 char *owl_command_get_shift(int argc, const char *const *argv, const char *buff)
@@ -1387,7 +1386,6 @@ void owl_command_set_shift(int shift)
 {
   owl_global_set_rightshift(&g, shift);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_global_set_needrefresh(&g);
 }
 
 void owl_command_unsuball(void)
@@ -2712,7 +2710,6 @@ void owl_command_edit_cancel(owl_editwin *e)
     owl_history_reset(hist);
   }
 
-  owl_global_set_needrefresh(&g);
   owl_global_pop_context(&g);
 
   owl_global_set_typwin_inactive(&g);
@@ -2734,7 +2731,6 @@ void owl_command_edit_history_prev(owl_editwin *e)
     owl_editwin_clear(e);
     owl_editwin_insert_string(e, ptr);
     owl_editwin_redisplay(e);
-    owl_global_set_needrefresh(&g);
   } else {
     owl_function_beep();
   }
@@ -2751,7 +2747,6 @@ void owl_command_edit_history_next(owl_editwin *e)
     owl_editwin_clear(e);
     owl_editwin_insert_string(e, ptr);
     owl_editwin_redisplay(e);
-    owl_global_set_needrefresh(&g);
   } else {
     owl_function_beep();
   }
@@ -2762,7 +2757,6 @@ char *owl_command_edit_insert_text(owl_editwin *e, int argc, const char *const *
   buff = skiptokens(buff, 1);
   owl_editwin_insert_string(e, buff);
   owl_editwin_redisplay(e);
-  owl_global_set_needrefresh(&g);  
   return NULL;
 }
 
@@ -2777,7 +2771,6 @@ void owl_command_edit_done(owl_editwin *e)
 
   owl_global_set_typwin_inactive(&g);
   owl_global_pop_context(&g);
-  owl_global_set_needrefresh(&g);
 
   owl_editwin_do_callback(e);
   owl_editwin_delete(e);
@@ -2802,5 +2795,4 @@ void owl_command_popless_quit(owl_viewwin *vw)
   owl_viewwin_cleanup(vw);
   owl_popwin_close(owl_global_get_popwin(&g));
   owl_global_pop_context(&g);
-  owl_global_set_needrefresh(&g);
 }

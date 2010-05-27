@@ -302,7 +302,6 @@ int owl_process_messages(owl_ps_action *d, void *p)
     /* this should be optimized to not run if the new messages won't be displayed */
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
     sepbar(NULL);
-    owl_global_set_needrefresh(&g);
   }
   return newmsgs;
 }

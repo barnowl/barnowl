@@ -215,7 +215,6 @@ void owl_function_adminmsg(const char *header, const char *body)
 
   /* redisplay etc. */
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_global_set_needrefresh(&g);
 }
 
 /* Create an outgoing zephyr message and return a pointer to it.  Does
@@ -808,7 +807,6 @@ void owl_function_shift_right(void)
 {
   owl_global_set_rightshift(&g, owl_global_get_rightshift(&g)+10);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_global_set_needrefresh(&g);
 }
 
 void owl_function_shift_left(void)
@@ -819,7 +817,6 @@ void owl_function_shift_left(void)
   if (shift > 0) {
     owl_global_set_rightshift(&g, MAX(shift - 10, 0));
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-    owl_global_set_needrefresh(&g);
   } else {
     owl_function_beep();
     owl_function_makemsg("Already full left");
@@ -1222,7 +1219,6 @@ void owl_function_beep(void)
 {
   if (owl_global_is_bell(&g)) {
     beep();
-    owl_global_set_needrefresh(&g); /* do we really need this? */
   }
 }
 
@@ -1557,7 +1553,6 @@ void owl_function_page_curmsg(int step)
   
   /* redisplay */
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_global_set_needrefresh(&g);
 }
 
 void owl_function_resize_typwin(int newsize)
@@ -1677,7 +1672,6 @@ void owl_function_delete_by_id(int id, int flag)
       owl_message_unmark_delete(m);
     }
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-    owl_global_set_needrefresh(&g);
   } else {
     owl_function_error("No message with id %d: unable to mark for (un)delete",id);
   }
@@ -1713,7 +1707,6 @@ void owl_function_delete_automsgs(void)
   }
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_function_makemsg("%i messages marked for deletion", count);
-  owl_global_set_needrefresh(&g);
 }
 
 void owl_function_status(void)
@@ -1918,7 +1911,6 @@ void owl_function_start_command(const char *line)
   tw = owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
 
   owl_editwin_set_locktext(tw, "command: ");
-  owl_global_set_needrefresh(&g);
 
   owl_editwin_insert_string(tw, line);
   owl_editwin_redisplay(tw);
@@ -1934,9 +1926,6 @@ owl_editwin *owl_function_start_question(const char *line)
   tw = owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
 
   owl_editwin_set_locktext(tw, line);
-  owl_global_set_needrefresh(&g);
-
-  owl_editwin_redisplay(tw);
 
   owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse");
   return tw;
@@ -1951,7 +1940,6 @@ owl_editwin *owl_function_start_password(const char *line)
   owl_editwin_set_echochar(tw, '*');
 
   owl_editwin_set_locktext(tw, line);
-  owl_global_set_needrefresh(&g);
 
   owl_editwin_redisplay(tw);
 
@@ -2118,7 +2106,6 @@ void owl_function_create_filter(int argc, const char *const *argv)
       return;
     }
     owl_filter_set_fgcolor(f, owl_util_string_to_color(argv[3]));
-    owl_global_set_needrefresh(&g);
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
     return;
   }
@@ -2133,7 +2120,6 @@ void owl_function_create_filter(int argc, const char *const *argv)
       return;
     }
     owl_filter_set_bgcolor(f, owl_util_string_to_color(argv[3]));
-    owl_global_set_needrefresh(&g);
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
     return;
   }
@@ -2162,7 +2148,6 @@ void owl_function_create_filter(int argc, const char *const *argv)
   if (inuse) {
     owl_function_change_currentview_filter(argv[1]);
   }
-  owl_global_set_needrefresh(&g);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
 
@@ -2706,7 +2691,6 @@ int owl_function_color_filter(const char *filtname, const char *fgcolor, const c
   }
   owl_filter_set_fgcolor(f, owl_util_string_to_color(fgcolor));
   
-  owl_global_set_needrefresh(&g);
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   return(0);
 }

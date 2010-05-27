@@ -384,6 +384,7 @@ void owl_global_set_typwin_inactive(owl_global *g) {
 
   werase(owl_global_get_curs_typwin(g));
   g->tw = NULL;
+  owl_global_set_needrefresh(g);
 }
 
 /* resize */
