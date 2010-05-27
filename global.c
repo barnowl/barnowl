@@ -177,11 +177,6 @@ void _owl_global_setup_windows(owl_global *g) {
   if (g->tw)
       owl_editwin_set_curswin(g->tw, owl_global_get_curs_typwin(g), typwin_lines, g->cols);
 
-  idlok(owl_global_get_curs_typwin(g), FALSE);
-  idlok(owl_global_get_curs_recwin(g), FALSE);
-  idlok(owl_global_get_curs_sepwin(g), FALSE);
-  idlok(owl_global_get_curs_msgwin(g), FALSE);
-
   wmove(owl_global_get_curs_typwin(g), 0, 0);
 }
 
