@@ -513,8 +513,6 @@ static int faimtest_parse_login(aim_session_t *sess, aim_frame_t *fr, ...)
   key = va_arg(ap, const char *);
   va_end(ap);
 
-  owl_function_debugmsg("faimtest_parse_login: %s %s %s", priv->screenname, priv->password, key);
-
   aim_send_login(sess, fr->conn, priv->screenname, priv->password, &info, key);
   
   return(1);
