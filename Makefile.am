@@ -48,10 +48,10 @@ CODELIST_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
      regex.c history.c view.c dict.c variable.c filterelement.c pair.c \
      keypress.c keymap.c keybinding.c cmd.c context.c \
      aim.c buddy.c buddylist.c style.c errqueue.c \
-     zbuddylist.c popexec.c select.c wcwidth.c window.c \
+     zbuddylist.c popexec.c select.c wcwidth.c \
      glib_compat.c
 
-NORMAL_SRCS = filterproc.c
+NORMAL_SRCS = filterproc.c window.c
 
 BASE_SRCS = $(CODELIST_SRCS) $(NORMAL_SRCS)
 

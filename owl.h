@@ -60,6 +60,8 @@ typedef void AV;
 typedef void HV;
 #endif
 
+#include "window.h"
+
 #ifdef  GIT_VERSION
 #define stringify(x)       __stringify(x)
 #define __stringify(x)     #x
@@ -388,8 +390,6 @@ typedef struct _owl_style {
   char *name;
   SV *perlobj;
 } owl_style;
-
-typedef struct _owl_window owl_window;
 
 typedef struct _owl_mainwin {
   int curtruncated;
