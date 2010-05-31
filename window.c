@@ -300,7 +300,7 @@ int owl_window_is_mapped(owl_window *w)
   return w->mapped;
 }
 
-int owl_window_is_visible(owl_window *w)
+int owl_window_is_realized(owl_window *w)
 {
   return w->win != NULL;
 }
