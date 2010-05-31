@@ -107,7 +107,7 @@ AX_PROG_PERL_MODULES([PAR],,
                      [AC_MSG_WARN([PAR.pm not found. Loadable modules will be disabled.])])
 
 dnl Add CFLAGS and LDFLAGS for glib-2.0
-PKG_CHECK_MODULES(GLIB,glib-2.0)
+PKG_CHECK_MODULES(GLIB,[glib-2.0 gobject-2.0])
 
 AC_MSG_NOTICE([Adding glib-2.0 CFLAGS ${GLIB_CFLAGS}])
 CFLAGS="${GLIB_CFLAGS} ${CFLAGS}"
