@@ -182,6 +182,8 @@ void owl_window_set_destroy_cb(owl_window *w, void (*cb)(owl_window*, void*), vo
 
 static void _owl_window_unlink(owl_window *w)
 {
+  /* make sure the window is unmapped first */
+  _owl_window_unmap_internal(w);
   /* unlink parent/child information */
   if (w->parent) {
     if (w->prev)
