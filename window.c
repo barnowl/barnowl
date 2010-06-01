@@ -318,6 +318,7 @@ static void _owl_window_unrealize(owl_window *w)
   /* unmap all the children */
   owl_window_children_foreach(w, (GFunc)_owl_window_unrealize, 0);
   _owl_window_destroy_curses(w);
+  w->dirty = w->dirty_subtree = 0;
   /* subwins leave a mess in the parent; dirty it */
   if (w->parent)
     owl_window_dirty(w->parent);
