@@ -72,7 +72,7 @@ owl_window *owl_window_get_screen(void)
     screen = _owl_window_new(NULL, g.lines, g.cols, 0, 0);
     screen->is_screen = 1;
     owl_window_set_size_cb(screen, _screen_calculate_size, &g, 0);
-    owl_window_show(screen, 0);
+    owl_window_show(screen);
   }
   return screen;
 }
@@ -270,19 +270,18 @@ static void _owl_window_destroy_curses(owl_window *w)
   }
 }
 
-static void _map_recurse_curry(owl_window *w)
-{
-  owl_window_show(w, 1);
-}
-
-void owl_window_show(owl_window *w, int recurse)
+void owl_window_show(owl_window *w)
 {
   w->shown = 1;
   _owl_window_realize(w);
   if (w->pan)
     show_panel(w->pan);
-  if (recurse)
-    owl_window_children_foreach_onearg(w, _map_recurse_curry);
+}
+
+void owl_window_show_all(owl_window *w)
+{
+  owl_window_show(w);
+  owl_window_children_foreach_onearg(w, owl_window_show);
 }
 
 void owl_window_hide(owl_window *w)

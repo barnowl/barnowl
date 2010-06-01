@@ -13,7 +13,7 @@ int owl_popwin_up(owl_popwin *pw)
   owl_window_set_redraw_cb(pw->border, owl_popwin_draw_border, pw, 0);
   owl_window_set_size_cb(pw->border, owl_popwin_size_border, 0, 0);
   owl_window_set_size_cb(pw->content, owl_popwin_size_content, 0, 0);
-  owl_window_show(pw->border, 1);
+  owl_window_show_all(pw->border);
 
   pw->active=1;
   return(0);
