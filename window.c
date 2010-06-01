@@ -192,19 +192,18 @@ static void _owl_window_unlink(owl_window *w)
       w->next->prev = w->prev;
     if (w->parent->child == w)
       w->parent->child = w->next;
+    w->parent = NULL;
   }
-  w->parent = NULL;
 }
 
 static void _owl_window_link(owl_window *w, owl_window *parent)
 {
   if (w->parent == parent)
     return;
-  if (w->parent)
-    _owl_window_unlink(w);
 
-  w->parent = parent;
+  owl_window_unlink(w);
   if (parent) {
+    w->parent = parent;
     w->next = parent->child;
     parent->child = w;
   }
