@@ -11,8 +11,8 @@ int owl_popwin_up(owl_popwin *pw)
   pw->border = owl_window_new(NULL);
   pw->content = owl_window_new(pw->border);
   g_signal_connect(pw->border, "redraw", G_CALLBACK(owl_popwin_draw_border), 0);
-  pw->screen_resize_id = g_signal_connect_object(owl_window_get_screen(), "resized", G_CALLBACK(owl_popwin_size_border), pw->border, 0);
-  g_signal_connect_object(pw->border, "resized", G_CALLBACK(owl_popwin_size_content), pw->content, 0);
+  owl_signal_connect_object(owl_window_get_screen(), "resized", G_CALLBACK(owl_popwin_size_border), pw->border, 0);
+  owl_signal_connect_object(pw->border, "resized", G_CALLBACK(owl_popwin_size_content), pw->content, 0);
 
   /* bootstrap sizing */
   owl_popwin_size_border(owl_window_get_screen(), pw->border);
@@ -71,12 +71,6 @@ int owl_popwin_close(owl_popwin *pw)
   owl_window_unlink(pw->border);
   g_object_unref(pw->border);
   g_object_unref(pw->content);
-
-  /* See comment on g_signal_connect_object; it only prevents the closure from
-   * being invoked. The signal handler itself still gets leaked. The other
-   * signal is okay, since we delete both at the same time. */
-  if (g_signal_handler_is_connected(owl_window_get_screen(), pw->screen_resize_id))
-      g_signal_handler_disconnect(owl_window_get_screen(), pw->screen_resize_id);
 
   pw->border = 0;
   pw->content = 0;

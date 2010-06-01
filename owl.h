@@ -409,7 +409,6 @@ typedef struct _owl_viewwin {
 } owl_viewwin;
   
 typedef struct _owl_popwin {
-  gulong screen_resize_id;
   owl_window *border;
   owl_window *content;
   int active;

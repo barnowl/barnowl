@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <glib-object.h>
+
 void sepbar(const char *in)
 {
   WINDOW *sepwin;
@@ -786,3 +788,73 @@ char *owl_slurp(FILE *fp)
 
   return buf;
 }
+
+typedef struct { /*noproto*/
+  GObject  *sender;
+  gulong    signal_id;
+} SignalData;
+
+static void _closure_invalidated(gpointer data, GClosure *closure);
+
+/*
+ * GObject's g_signal_connect_object has a documented bug. This function is
+ * identical except it does not leak the signal handler.
+ */
+gulong owl_signal_connect_object(gpointer sender, const gchar *detailed_signal, GCallback c_handler, gpointer receiver, GConnectFlags connect_flags)
+{
+  g_return_val_if_fail (G_TYPE_CHECK_INSTANCE (sender), 0);
+  g_return_val_if_fail (detailed_signal != NULL, 0);
+  g_return_val_if_fail (c_handler != NULL, 0);
+
+  if (receiver) {
+    SignalData *sdata;
+    GClosure *closure;
+    gulong signal_id;
+
+    g_return_val_if_fail (G_IS_OBJECT (receiver), 0);
+
+    closure = ((connect_flags & G_CONNECT_SWAPPED) ? g_cclosure_new_object_swap : g_cclosure_new_object) (c_handler, receiver);
+    signal_id = g_signal_connect_closure (sender, detailed_signal, closure, connect_flags & G_CONNECT_AFTER);
+
+    /* Register the missing hooks */
+    sdata = g_slice_new0(SignalData);
+    sdata->sender = sender;
+    sdata->signal_id = signal_id;
+
+    g_closure_add_invalidate_notifier(closure, sdata, _closure_invalidated);
+
+    return signal_id;
+  } else {
+    return g_signal_connect_data(sender, detailed_signal, c_handler, NULL, NULL, connect_flags);
+  }
+}
+
+/*
+ * There are three ways the signal could come to an end:
+ * 
+ * 1. The user explicitly disconnects it with the returned signal_id.
+ *    - In that case, the disconnection unref's the closure, causing it
+ *      to first be invalidated. The handler's already disconnected, so
+ *      we have no work to do.
+ * 2. The sender gets destroyed.
+ *    - GObject will disconnect each signal which then goes into the above
+ *      case. Our handler does no work.
+ * 3. The receiver gets destroyed.
+ *    - The GClosure was created by g_cclosure_new_object_{,swap} which gets
+ *      invalidated when the receiver is destroyed. We then follow through case 1
+ *      again, but *this* time, the handler has not been disconnected. We then
+ *      clean up ourselves.
+ *
+ * We can't actually hook into this process earlier with weakrefs as GObject
+ * will, on object dispose, first disconnect signals, then invalidate closures,
+ * and notify weakrefs last.
+ */
+static void _closure_invalidated(gpointer data, GClosure *closure)
+{
+  SignalData *sdata = data;
+  if (g_signal_handler_is_connected(sdata->sender, sdata->signal_id)) {
+    g_signal_handler_disconnect(sdata->sender, sdata->signal_id);
+  }
+  g_slice_free(SignalData, sdata);
+}
+
