@@ -18,15 +18,15 @@ struct _owl_window { /*noproto*/
   PANEL *pan;
   int nlines, ncols;
   int begin_y, begin_x;
-  /* hooks */
-  void (*redraw_cb)(owl_window *, WINDOW *, void *);
-  void  *redraw_cbdata;
-  void (*redraw_cbdata_destroy)(void *);
-
-  void (*size_cb)(owl_window *, void *);
-  void  *size_cbdata;
-  void (*size_cbdata_destroy)(void *);
 };
+
+enum {
+  REDRAW,
+  RESIZED,
+  LAST_SIGNAL
+};
+
+static guint window_signals[LAST_SIGNAL] = { 0 };
 
 static void owl_window_dispose(GObject *gobject);
 static void owl_window_finalize(GObject *gobject);
@@ -41,14 +41,45 @@ static void _owl_window_destroy_curses(owl_window *w);
 static void _owl_window_realize(owl_window *w);
 static void _owl_window_unrealize(owl_window *w);
 
+static void _owl_window_redraw_cleanup(owl_window *w, WINDOW *win);
+
 G_DEFINE_TYPE (OwlWindow, owl_window, G_TYPE_OBJECT)
 
 static void owl_window_class_init (OwlWindowClass *klass)
 {
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-  object_class->dispose = owl_window_dispose;
-  object_class->finalize = owl_window_finalize;
+  /* Set up the vtabl */
+  gobject_class->dispose = owl_window_dispose;
+  gobject_class->finalize = owl_window_finalize;
+
+  klass->redraw = _owl_window_redraw_cleanup;
+  klass->resized = NULL;
+
+  /* Create the signals, remember IDs */
+  window_signals[REDRAW] =
+    g_signal_new("redraw",
+                 G_TYPE_FROM_CLASS(gobject_class),
+                 G_SIGNAL_RUN_CLEANUP,
+                 G_STRUCT_OFFSET(OwlWindowClass, redraw),
+                 NULL, NULL,
+                 g_cclosure_marshal_VOID__POINTER,
+                 G_TYPE_NONE,
+                 1,
+                 G_TYPE_POINTER, NULL);
+
+  /* TODO: maybe type should be VOID__INT_INT_INT_INT; will need to generate a
+   * marshaller */
+  window_signals[RESIZED] =
+    g_signal_new("resized",
+                 G_TYPE_FROM_CLASS(gobject_class),
+                 G_SIGNAL_RUN_FIRST,
+                 G_STRUCT_OFFSET(OwlWindowClass, resized),
+                 NULL, NULL,
+                 g_cclosure_marshal_VOID__VOID,
+                 G_TYPE_NONE,
+                 0,
+                 NULL);
 }
 
 static void owl_window_dispose (GObject *object)
@@ -63,10 +94,6 @@ static void owl_window_dispose (GObject *object)
     owl_window *child = w->child;
     owl_window_unlink (child);
   }
-
-  /* Clear all cbs */
-  owl_window_set_redraw_cb (w, 0, 0, 0);
-  owl_window_set_size_cb (w, 0, 0, 0);
 
   /* Remove from hierarchy */
   owl_window_unlink (w);
@@ -101,16 +128,6 @@ static WINDOW *_dummy_window(void)
   return dummy;
 }
 
-static void _screen_calculate_size(owl_window *screen, void *user_data)
-{
-  owl_global *g = user_data;
-  int lines, cols;
-  owl_global_get_terminal_size(&lines, &cols);
-  if (!g->lines) g->lines = lines;
-  if (!g->cols) g->cols = cols;
-  owl_window_resize(screen, g->lines, g->cols);
-}
-
 owl_window *owl_window_get_screen(void)
 {
   static owl_window *screen = NULL;
@@ -119,7 +136,6 @@ owl_window *owl_window_get_screen(void)
      * invisible is if we're tore down curses (i.e. screen resize) */
     screen = _owl_window_new(NULL, g.lines, g.cols, 0, 0);
     screen->is_screen = 1;
-    owl_window_set_size_cb(screen, _screen_calculate_size, &g, 0);
     owl_window_show(screen);
   }
   return screen;
@@ -153,39 +169,6 @@ static owl_window *_owl_window_new(owl_window *parent, int nlines, int ncols, in
   }
 
   return w;
-}
-
-/** Callbacks **/
-
-void owl_window_set_redraw_cb(owl_window *w, void (*cb)(owl_window*, WINDOW*, void*), void *cbdata, void (*cbdata_destroy)(void*))
-{
-  if (w->redraw_cbdata_destroy) {
-    w->redraw_cbdata_destroy(w->redraw_cbdata);
-    w->redraw_cbdata = 0;
-    w->redraw_cbdata_destroy = 0;
-  }
-
-  w->redraw_cb = cb;
-  w->redraw_cbdata = cbdata;
-  w->redraw_cbdata_destroy = cbdata_destroy;
-
-  /* mark the window as dirty, to take new cb in account */
-  owl_window_dirty(w);
-}
-
-void owl_window_set_size_cb(owl_window *w, void (*cb)(owl_window*, void*), void *cbdata, void (*cbdata_destroy)(void*))
-{
-  if (w->size_cbdata_destroy) {
-    w->size_cbdata_destroy(w->size_cbdata);
-    w->size_cbdata = 0;
-    w->size_cbdata_destroy = 0;
-  }
-
-  w->size_cb = cb;
-  w->size_cbdata = cbdata;
-  w->size_cbdata_destroy = cbdata_destroy;
-
-  owl_window_recompute_position(w);
 }
 
 /** Hierarchy **/
@@ -367,9 +350,8 @@ void owl_window_dirty_children(owl_window *w)
 static void _owl_window_redraw(owl_window *w)
 {
   if (!w->dirty) return;
-  if (w->win && w->redraw_cb) {
-    w->redraw_cb(w, w->win, w->redraw_cbdata);
-    wsyncup(w->win);
+  if (w->win) {
+    g_signal_emit(w, window_signals[REDRAW], 0, w->win);
   }
   w->dirty = 0;
 }
@@ -389,6 +371,11 @@ NOTE: This function shouldn't be called outside the event loop
 void owl_window_redraw_scheduled(void)
 {
   _owl_window_redraw_subtree(owl_window_get_screen());
+}
+
+static void _owl_window_redraw_cleanup(owl_window *w, WINDOW *win)
+{
+  wsyncup(win);
 }
 
 void owl_window_erase_cb(owl_window *w, WINDOW *win, void *user_data)
@@ -458,8 +445,7 @@ void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, 
     /* resizing in ncurses is hard: give up do a unrealize/realize */
     _owl_window_unrealize(w);
   }
-  /* recalculate children sizes BEFORE remapping, so that everything can resize */
-  owl_window_children_foreach(w, (GFunc)owl_window_recompute_position, 0);
+  g_signal_emit(w, window_signals[RESIZED], 0);
   if (w->shown) {
     _owl_window_realize(w);
   }
@@ -469,15 +455,6 @@ void owl_window_resize(owl_window *w, int nlines, int ncols)
 {
   owl_window_set_position(w, nlines, ncols, w->begin_y, w->begin_x);
 }
-
-void owl_window_recompute_position(owl_window *w)
-{
-  if (w->size_cb) {
-    /* TODO: size_cb probably wants to actually take four int*s */
-    w->size_cb(w, w->size_cbdata);
-  }
-}
-
 
 /** Stacking order **/
 

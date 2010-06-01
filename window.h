@@ -20,6 +20,9 @@ typedef OwlWindow owl_window; /* meh */
 struct _OwlWindowClass
 {
   GObjectClass parent_class;
+  /* default implementations for signals */
+  void (*redraw)(owl_window *, WINDOW *);
+  void (*resized)(owl_window *);
 };
 
 GType owl_window_get_type(void);
@@ -28,9 +31,6 @@ owl_window *owl_window_get_screen(void);
 
 owl_window *owl_window_new(owl_window *parent);
 void owl_window_unlink(owl_window *w);
-
-void owl_window_set_redraw_cb(owl_window *w, void (*cb)(owl_window*, WINDOW*, void*), void *cbdata, void (*cbdata_destroy)(void*));
-void owl_window_set_size_cb(owl_window *w, void (*cb)(owl_window*, void*), void *cbdata, void (*cbdata_destroy)(void*));
 
 void owl_window_children_foreach(owl_window *parent, GFunc func, gpointer user_data);
 owl_window *owl_window_get_parent(owl_window *w);

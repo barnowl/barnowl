@@ -403,11 +403,13 @@ typedef struct _owl_viewwin {
   int topline;
   int rightshift;
   owl_window *window;
+  gulong sig_redraw_id;
   void (*onclose_hook) (struct _owl_viewwin *vwin, void *data);
   void *onclose_hook_data;
 } owl_viewwin;
   
 typedef struct _owl_popwin {
+  gulong screen_resize_id;
   owl_window *border;
   owl_window *content;
   int active;

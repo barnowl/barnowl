@@ -52,11 +52,11 @@ void owl_viewwin_init_fmtext(owl_viewwin *v, owl_window *win, const owl_fmtext *
 void owl_viewwin_set_window(owl_viewwin *v, owl_window *w)
 {
   if (v->window) {
-    owl_window_set_redraw_cb(v->window, 0, 0, 0);
+    g_signal_handler_disconnect(v->window, v->sig_redraw_id);
   }
   v->window = w;
   if (w) {
-    owl_window_set_redraw_cb(w, owl_viewwin_redisplay, v, 0);
+    v->sig_redraw_id = g_signal_connect(w, "redraw", G_CALLBACK(owl_viewwin_redisplay), v);
   }
 }
 

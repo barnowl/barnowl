@@ -10,20 +10,24 @@ int owl_popwin_up(owl_popwin *pw)
 {
   pw->border = owl_window_new(NULL);
   pw->content = owl_window_new(pw->border);
-  owl_window_set_redraw_cb(pw->border, owl_popwin_draw_border, pw, 0);
-  owl_window_set_size_cb(pw->border, owl_popwin_size_border, 0, 0);
-  owl_window_set_size_cb(pw->content, owl_popwin_size_content, 0, 0);
+  g_signal_connect(pw->border, "redraw", G_CALLBACK(owl_popwin_draw_border), 0);
+  pw->screen_resize_id = g_signal_connect_object(owl_window_get_screen(), "resized", G_CALLBACK(owl_popwin_size_border), pw->border, 0);
+  g_signal_connect_object(pw->border, "resized", G_CALLBACK(owl_popwin_size_content), pw->content, 0);
+
+  /* bootstrap sizing */
+  owl_popwin_size_border(owl_window_get_screen(), pw->border);
+
   owl_window_show_all(pw->border);
 
   pw->active=1;
   return(0);
 }
 
-void owl_popwin_size_border(owl_window *border, void *user_data)
+void owl_popwin_size_border(owl_window *parent, void *user_data)
 {
   int lines, cols, startline, startcol;
   int glines, gcols;
-  owl_window *parent = owl_window_get_parent(border);
+  owl_window *border = user_data;
 
   owl_window_get_position(parent, &glines, &gcols, 0, 0);
 
@@ -35,10 +39,10 @@ void owl_popwin_size_border(owl_window *border, void *user_data)
   owl_window_set_position(border, lines, cols, startline, startcol);
 }
 
-void owl_popwin_size_content(owl_window *content, void *user_data)
+void owl_popwin_size_content(owl_window *parent, void *user_data)
 {
   int lines, cols;
-  owl_window *parent = owl_window_get_parent(content);
+  owl_window *content = user_data;
   owl_window_get_position(parent, &lines, &cols, 0, 0);
   owl_window_set_position(content, lines-2, cols-2, 1, 1);
 }
@@ -67,6 +71,13 @@ int owl_popwin_close(owl_popwin *pw)
   owl_window_unlink(pw->border);
   g_object_unref(pw->border);
   g_object_unref(pw->content);
+
+  /* See comment on g_signal_connect_object; it only prevents the closure from
+   * being invoked. The signal handler itself still gets leaked. The other
+   * signal is okay, since we delete both at the same time. */
+  if (g_signal_handler_is_connected(owl_window_get_screen(), pw->screen_resize_id))
+      g_signal_handler_disconnect(owl_window_get_screen(), pw->screen_resize_id);
+
   pw->border = 0;
   pw->content = 0;
   pw->active=0;

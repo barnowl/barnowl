@@ -491,9 +491,10 @@ void owl_global_resize(owl_global *g, int lines, int cols) {
   if (!g->resizepending) return;
   g->resizepending = 0;
 
-  g->lines = lines;
-  g->cols = cols;
-  owl_window_recompute_position(owl_window_get_screen());
+  owl_global_get_terminal_size(&lines, &cols);
+  if (lines) g->lines = lines;
+  if (cols)  g->cols  = cols;
+  owl_window_resize(owl_window_get_screen(), g->lines, g->cols);
 
   owl_function_debugmsg("New size is %i lines, %i cols.", g->lines, g->cols);
   owl_global_set_relayout_pending(g);
