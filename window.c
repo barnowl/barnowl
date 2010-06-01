@@ -232,11 +232,6 @@ void owl_window_children_foreach(owl_window *parent, GFunc func, gpointer user_d
   }
 }
 
-void owl_window_children_foreach_onearg(owl_window *parent, void (*func)(owl_window*))
-{
-  owl_window_children_foreach(parent, (GFunc)func, NULL);
-}
-
 owl_window *owl_window_get_parent(owl_window *w)
 {
   return w->parent;
@@ -288,7 +283,7 @@ void owl_window_show(owl_window *w)
 void owl_window_show_all(owl_window *w)
 {
   owl_window_show(w);
-  owl_window_children_foreach_onearg(w, owl_window_show);
+  owl_window_children_foreach(w, (GFunc)owl_window_show, 0);
 }
 
 void owl_window_hide(owl_window *w)
@@ -330,7 +325,7 @@ static void _owl_window_realize(owl_window *w)
   /* schedule a repaint */
   owl_window_dirty(w);
   /* map the children */
-  owl_window_children_foreach_onearg(w, _owl_window_realize);
+  owl_window_children_foreach(w, (GFunc)_owl_window_realize, 0);
 }
 
 static void _owl_window_unrealize(owl_window *w)
@@ -338,7 +333,7 @@ static void _owl_window_unrealize(owl_window *w)
   if (w->win == NULL)
     return;
   /* unmap all the children */
-  owl_window_children_foreach_onearg(w, _owl_window_unrealize);
+  owl_window_children_foreach(w, (GFunc)_owl_window_unrealize, 0);
   _owl_window_destroy_curses(w);
   /* subwins leave a mess in the parent; dirty it */
   if (w->parent)
@@ -366,7 +361,7 @@ void owl_window_dirty(owl_window *w)
 
 void owl_window_dirty_children(owl_window *w)
 {
-  owl_window_children_foreach_onearg(w, owl_window_dirty);
+  owl_window_children_foreach(w, (GFunc)owl_window_dirty, 0);
 }
 
 static void _owl_window_redraw(owl_window *w)
@@ -384,7 +379,7 @@ static void _owl_window_redraw_subtree(owl_window *w)
   if (!w->dirty_subtree)
     return;
   _owl_window_redraw(w);
-  owl_window_children_foreach_onearg(w, _owl_window_redraw_subtree);
+  owl_window_children_foreach(w, (GFunc)_owl_window_redraw_subtree, 0);
 }
 
 /*
@@ -464,7 +459,7 @@ void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, 
     _owl_window_unrealize(w);
   }
   /* recalculate children sizes BEFORE remapping, so that everything can resize */
-  owl_window_children_foreach_onearg(w, owl_window_recompute_position);
+  owl_window_children_foreach(w, (GFunc)owl_window_recompute_position, 0);
   if (w->shown) {
     _owl_window_realize(w);
   }

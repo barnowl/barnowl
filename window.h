@@ -33,7 +33,6 @@ void owl_window_set_redraw_cb(owl_window *w, void (*cb)(owl_window*, WINDOW*, vo
 void owl_window_set_size_cb(owl_window *w, void (*cb)(owl_window*, void*), void *cbdata, void (*cbdata_destroy)(void*));
 
 void owl_window_children_foreach(owl_window *parent, GFunc func, gpointer user_data);
-void owl_window_children_foreach_onearg(owl_window *parent, void (*func)(owl_window*));
 owl_window *owl_window_get_parent(owl_window *w);
 
 void owl_window_show(owl_window *w);
