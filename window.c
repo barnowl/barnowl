@@ -344,6 +344,8 @@ void owl_window_dirty(owl_window *w)
   /* don't put the screen on this list; pointless */
   if (w->is_screen)
     return;
+  if (!owl_window_is_realized(w))
+    return;
   if (!w->dirty) {
     w->dirty = 1;
     while (w && !w->dirty_subtree) {
