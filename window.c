@@ -39,8 +39,8 @@ static void _owl_window_link(owl_window *w, owl_window *parent);
 static void _owl_window_create_curses(owl_window *w);
 static void _owl_window_destroy_curses(owl_window *w);
 
-static void _owl_window_map_internal(owl_window *w);
-static void _owl_window_unmap_internal(owl_window *w);
+static void _owl_window_realize(owl_window *w);
+static void _owl_window_unrealize(owl_window *w);
 
 /** singletons **/
 
@@ -183,7 +183,7 @@ void owl_window_set_destroy_cb(owl_window *w, void (*cb)(owl_window*, void*), vo
 static void _owl_window_unlink(owl_window *w)
 {
   /* make sure the window is unmapped first */
-  _owl_window_unmap_internal(w);
+  _owl_window_unrealize(w);
   /* unlink parent/child information */
   if (w->parent) {
     if (w->prev)
@@ -277,7 +277,7 @@ static void _map_recurse_curry(owl_window *w)
 void owl_window_map(owl_window *w, int recurse)
 {
   w->mapped = 1;
-  _owl_window_map_internal(w);
+  _owl_window_realize(w);
   if (w->pan)
     show_panel(w->pan);
   if (recurse)
@@ -292,7 +292,7 @@ void owl_window_unmap(owl_window *w)
   w->mapped = 0;
   if (w->pan)
     hide_panel(w->pan);
-  _owl_window_unmap_internal(w);
+  _owl_window_unrealize(w);
 }
 
 int owl_window_is_mapped(owl_window *w)
@@ -310,7 +310,7 @@ int owl_window_is_toplevel(owl_window *w)
   return w->pan != NULL;
 }
 
-static void _owl_window_map_internal(owl_window *w)
+static void _owl_window_realize(owl_window *w)
 {
   /* check if we can create a window */
   if ((w->parent && w->parent->win == NULL)
@@ -322,15 +322,15 @@ static void _owl_window_map_internal(owl_window *w)
   owl_window_dirty(w);
   /* map the children, unless we failed */
   if (w->win)
-    owl_window_children_foreach_onearg(w, _owl_window_map_internal);
+    owl_window_children_foreach_onearg(w, _owl_window_realize);
 }
 
-static void _owl_window_unmap_internal(owl_window *w)
+static void _owl_window_unrealize(owl_window *w)
 {
   if (w->win == NULL)
     return;
   /* unmap all the children */
-  owl_window_children_foreach_onearg(w, _owl_window_unmap_internal);
+  owl_window_children_foreach_onearg(w, _owl_window_unrealize);
   _owl_window_destroy_curses(w);
   /* subwins leave a mess in the parent; dirty it */
   if (w->parent)
@@ -428,8 +428,8 @@ void owl_window_move(owl_window *w, int begin_y, int begin_x)
       }
     }
     /* We don't have a window or failed to move it. Fine. Brute force. */
-    _owl_window_unmap_internal(w);
-    _owl_window_map_internal(w);
+    _owl_window_unrealize(w);
+    _owl_window_realize(w);
   }
 }
 
@@ -452,13 +452,13 @@ void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, 
   w->ncols = ncols;
   /* window is mapped, we must try to have a window at the end */
   if (w->mapped) {
-    /* resizing in ncurses is hard: give up do a unmap/map */
-    _owl_window_unmap_internal(w);
+    /* resizing in ncurses is hard: give up do a unrealize/realize */
+    _owl_window_unrealize(w);
   }
   /* recalculate children sizes BEFORE remapping, so that everything can resize */
   owl_window_children_foreach_onearg(w, owl_window_recompute_position);
   if (w->mapped) {
-    _owl_window_map_internal(w);
+    _owl_window_realize(w);
   }
 }
 
