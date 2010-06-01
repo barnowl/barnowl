@@ -43,6 +43,8 @@ static void _owl_window_unrealize(owl_window *w);
 
 static void _owl_window_redraw_cleanup(owl_window *w, WINDOW *win);
 
+static owl_window *cursor_owner;
+
 G_DEFINE_TYPE (OwlWindow, owl_window, G_TYPE_OBJECT)
 
 static void owl_window_class_init (OwlWindowClass *klass)
@@ -326,6 +328,12 @@ static void _owl_window_unrealize(owl_window *w)
 
 /** Painting and book-keeping **/
 
+void owl_window_set_cursor(owl_window *w)
+{
+  cursor_owner = w;
+  g_object_add_weak_pointer(G_OBJECT(w), (gpointer*) &cursor_owner);
+}
+
 void owl_window_dirty(owl_window *w)
 {
   /* don't put the screen on this list; pointless */
@@ -373,6 +381,8 @@ void owl_window_redraw_scheduled(void)
 {
   _owl_window_redraw_subtree(owl_window_get_screen());
   update_panels();
+  if (cursor_owner && cursor_owner->win)
+    wnoutrefresh(cursor_owner->win);
 }
 
 static void _owl_window_redraw_cleanup(owl_window *w, WINDOW *win)
