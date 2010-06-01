@@ -65,4 +65,5 @@ void owl_mainpanel_cleanup(owl_mainpanel *mp)
   g_object_unref(mp->sepwin);
   g_object_unref(mp->msgwin);
   g_object_unref(mp->typwin);
+  mp->panel = mp->recwin = mp->sepwin = mp->msgwin = mp->typwin = NULL;
 }
