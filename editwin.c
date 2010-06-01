@@ -42,7 +42,7 @@ struct _owl_editwin { /*noproto*/
 };
 
 static void oe_set_curswin(owl_editwin *e, owl_window *w, int winlines, int wincols);
-static void oe_redisplay(owl_window *win, WINDOW *curswin, void *user_data);
+static void oe_redraw(owl_window *win, WINDOW *curswin, void *user_data);
 static void oe_reframe(owl_editwin *e);
 static void oe_save_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_release_excursion(owl_editwin *e, oe_excursion *x);
@@ -170,7 +170,7 @@ static void oe_set_curswin(owl_editwin *e, owl_window *w, int winlines, int winc
   else
     e->wrapcol = 0;
   if (e->win) {
-    e->repaint_id = g_signal_connect(w, "redraw", G_CALLBACK(oe_redisplay), e);
+    e->repaint_id = g_signal_connect(w, "redraw", G_CALLBACK(oe_redraw), e);
     e->resized_id = g_signal_connect(w, "resized", G_CALLBACK(oe_window_resized), e);
     owl_window_dirty(e->win);
   }
@@ -500,7 +500,7 @@ static void oe_mvaddnec(owl_editwin *e, WINDOW *curswin, int y, int x, int count
 }
 
 /* regenerate the text on the curses window */
-static void oe_redisplay(owl_window *win, WINDOW *curswin, void *user_data)
+static void oe_redraw(owl_window *win, WINDOW *curswin, void *user_data)
 {
   int x = -1, y = -1, t, hard;
   int line, index, lineindex, times = 0;

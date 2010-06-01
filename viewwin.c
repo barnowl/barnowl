@@ -3,6 +3,8 @@
 
 #define BOTTOM_OFFSET 1
 
+static void owl_viewwin_redraw(owl_window *w, WINDOW *curswin, void *user_data);
+
 /* initialize the viewwin e.  'win' is an already initialzed curses
  * window that will be used by viewwin
  */
@@ -58,7 +60,7 @@ void owl_viewwin_set_window(owl_viewwin *v, owl_window *w)
   v->window = w;
   if (w) {
     g_object_ref(v->window);
-    v->sig_redraw_id = g_signal_connect(w, "redraw", G_CALLBACK(owl_viewwin_redisplay), v);
+    v->sig_redraw_id = g_signal_connect(w, "redraw", G_CALLBACK(owl_viewwin_redraw), v);
   }
 }
 
@@ -68,7 +70,7 @@ void owl_viewwin_set_onclose_hook(owl_viewwin *v, void (*onclose_hook) (owl_view
 }
 
 /* regenerate text on the curses window. */
-void owl_viewwin_redisplay(owl_window *w, WINDOW *curswin, void *user_data)
+static void owl_viewwin_redraw(owl_window *w, WINDOW *curswin, void *user_data)
 {
   owl_fmtext fm1, fm2;
   owl_viewwin *v = user_data;
