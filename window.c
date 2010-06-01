@@ -247,6 +247,8 @@ static void _owl_window_create_curses(owl_window *w)
     w->win = newwin(w->nlines, w->ncols, w->begin_y, w->begin_x);
     replace_panel(w->pan, w->win);
   } else {
+    if (w->parent == NULL || w->parent->win == NULL)
+      return;
     w->win = derwin(w->parent->win, w->nlines, w->ncols, w->begin_y, w->begin_x);
   }
 }
@@ -318,11 +320,12 @@ static void _owl_window_realize(owl_window *w)
       || w->win != NULL)
     return;
   _owl_window_create_curses(w);
+  if (w->win == NULL)
+    return;
   /* schedule a repaint */
   owl_window_dirty(w);
-  /* map the children, unless we failed */
-  if (w->win)
-    owl_window_children_foreach_onearg(w, _owl_window_realize);
+  /* map the children */
+  owl_window_children_foreach_onearg(w, _owl_window_realize);
 }
 
 static void _owl_window_unrealize(owl_window *w)
