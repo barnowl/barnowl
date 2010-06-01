@@ -78,6 +78,7 @@ void owl_global_init(owl_global *g) {
   owl_history_set_norepeats(&(g->cmdhist));
   g->nextmsgid=0;
 
+  owl_mainpanel_init(&(g->mainpanel));
   _owl_global_setup_windows(g);
 
   /* Fill in some variables which don't have constant defaults */
@@ -156,23 +157,18 @@ void _owl_panel_set_window(PANEL **pan, WINDOW *win)
 }
 
 void _owl_global_setup_windows(owl_global *g) {
-  int cols, typwin_lines;
+  int cols, typwin_lines, recwinlines;
 
   cols=g->cols;
   typwin_lines=owl_global_get_typwin_lines(g);
 
-  /* set the new window sizes */
-  g->recwinlines=g->lines-(typwin_lines+2);
-  if (g->recwinlines<0) {
-    /* gotta deal with this */
-    g->recwinlines=0;
-  }
+  recwinlines = owl_global_get_recwin_lines(g);
 
   /* create the new windows */
-  _owl_panel_set_window(&g->recpan, newwin(g->recwinlines, cols, 0, 0));
-  _owl_panel_set_window(&g->seppan, newwin(1, cols, g->recwinlines, 0));
-  _owl_panel_set_window(&g->msgpan, newwin(1, cols, g->recwinlines+1, 0));
-  _owl_panel_set_window(&g->typpan, newwin(typwin_lines, cols, g->recwinlines+2, 0));
+  _owl_panel_set_window(&g->recpan, newwin(recwinlines, cols, 0, 0));
+  _owl_panel_set_window(&g->seppan, newwin(1, cols, recwinlines, 0));
+  _owl_panel_set_window(&g->msgpan, newwin(1, cols, recwinlines+1, 0));
+  _owl_panel_set_window(&g->typpan, newwin(typwin_lines, cols, recwinlines+2, 0));
 
   if (g->tw)
       owl_editwin_set_curswin(g->tw, owl_global_get_curs_typwin(g), typwin_lines, g->cols);
@@ -229,7 +225,7 @@ int owl_global_get_cols(const owl_global *g) {
 }
 
 int owl_global_get_recwin_lines(const owl_global *g) {
-  return(g->recwinlines);
+  return g->mainpanel.recwinlines;
 }
 
 /* curmsg */

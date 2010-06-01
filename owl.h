@@ -462,6 +462,15 @@ typedef struct _owl_history {
 typedef struct _owl_editwin owl_editwin;
 typedef struct _owl_editwin_excursion owl_editwin_excursion;
 
+typedef struct _owl_mainpanel {
+  owl_window *panel;
+  owl_window *typwin;
+  owl_window *sepwin;
+  owl_window *msgwin;
+  owl_window *recwin;
+  int recwinlines;
+} owl_mainpanel;
+
 typedef struct _owl_keybinding {
   int  *keys;			/* keypress stack */
   int   len;                    /* length of stack */
@@ -565,12 +574,12 @@ typedef struct _owl_global {
   owl_view current_view;
   owl_messagelist msglist;
   WINDOW *input_pad;
+  owl_mainpanel mainpanel;
   PANEL *recpan, *seppan, *msgpan, *typpan;
   int needrefresh;
   int rightshift;
   volatile sig_atomic_t resizepending;
   int relayoutpending;
-  int recwinlines;
   char *thishost;
   char *homedir;
   char *confdir;
