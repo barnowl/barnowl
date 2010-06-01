@@ -1261,7 +1261,6 @@ void owl_function_full_redisplay(void)
 {
   touchwin(owl_global_get_curs_recwin(&g));
   touchwin(owl_global_get_curs_sepwin(&g));
-  touchwin(owl_global_get_curs_typwin(&g));
   touchwin(owl_global_get_curs_msgwin(&g));
 
   sepbar("");
@@ -1558,7 +1557,7 @@ void owl_function_page_curmsg(int step)
 void owl_function_resize_typwin(int newsize)
 {
   owl_global_set_typwin_lines(&g, newsize);
-  owl_global_set_relayout_pending(&g);
+  owl_mainpanel_layout_contents(&g.mainpanel);
 }
 
 void owl_function_mainwin_pagedown(void)
@@ -1913,7 +1912,6 @@ void owl_function_start_command(const char *line)
   owl_editwin_set_locktext(tw, "command: ");
 
   owl_editwin_insert_string(tw, line);
-  owl_editwin_redisplay(tw);
 
   owl_global_push_context(&g, OWL_CTX_EDITLINE, tw, "editline");
   owl_editwin_set_callback(tw, owl_callback_command);
@@ -1940,8 +1938,6 @@ owl_editwin *owl_function_start_password(const char *line)
   owl_editwin_set_echochar(tw, '*');
 
   owl_editwin_set_locktext(tw, line);
-
-  owl_editwin_redisplay(tw);
 
   owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse");
   return tw;

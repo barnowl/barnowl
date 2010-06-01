@@ -467,12 +467,11 @@ static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
 
     /* these are here in case a relayout changes the windows */
     WINDOW *sepwin = owl_global_get_curs_sepwin(&g);
-    owl_window *typwin = owl_global_get_curs_typwin(&g);
 
-    /* leave the cursor in the appropriate window */
+    /* move the cursor to unmanaged window if necessary */
     if (!owl_popwin_is_active(owl_global_get_popwin(&g))
 	&& owl_global_get_typwin(&g)) {
-      owl_function_set_cursor(typwin);
+      /* owl_function_set_cursor(typwin); */
     } else {
       owl_function_set_cursor(sepwin);
     }

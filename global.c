@@ -157,10 +157,9 @@ void _owl_panel_set_window(PANEL **pan, WINDOW *win)
 }
 
 void _owl_global_setup_windows(owl_global *g) {
-  int cols, typwin_lines, recwinlines;
+  int cols, recwinlines;
 
   cols=g->cols;
-  typwin_lines=owl_global_get_typwin_lines(g);
 
   recwinlines = owl_global_get_recwin_lines(g);
 
@@ -168,12 +167,6 @@ void _owl_global_setup_windows(owl_global *g) {
   _owl_panel_set_window(&g->recpan, newwin(recwinlines, cols, 0, 0));
   _owl_panel_set_window(&g->seppan, newwin(1, cols, recwinlines, 0));
   _owl_panel_set_window(&g->msgpan, newwin(1, cols, recwinlines+1, 0));
-  _owl_panel_set_window(&g->typpan, newwin(typwin_lines, cols, recwinlines+2, 0));
-
-  if (g->tw)
-      owl_editwin_set_curswin(g->tw, owl_global_get_curs_typwin(g), typwin_lines, g->cols);
-
-  wmove(owl_global_get_curs_typwin(g), 0, 0);
 }
 
 owl_context *owl_global_get_context(owl_global *g) {
@@ -305,8 +298,8 @@ WINDOW *owl_global_get_curs_msgwin(const owl_global *g) {
   return panel_window(g->msgpan);
 }
 
-WINDOW *owl_global_get_curs_typwin(const owl_global *g) {
-  return panel_window(g->typpan);
+owl_window *owl_global_get_curs_typwin(const owl_global *g) {
+  return g->mainpanel.typwin;
 }
 
 /* typwin */
@@ -360,11 +353,17 @@ owl_editwin *owl_global_set_typwin_active(owl_global *g, int style, owl_history 
   if (d > 0 && style == OWL_EDITWIN_STYLE_MULTILINE)
       owl_function_resize_typwin(owl_global_get_typwin_lines(g) + d);
 
+  if (g->typwin_erase_id) {
+    g_signal_handler_disconnect(owl_global_get_curs_typwin(g), g->typwin_erase_id);
+    g->typwin_erase_id = 0;
+  }
+
   g->tw = owl_editwin_new(owl_global_get_curs_typwin(g),
                           owl_global_get_typwin_lines(g),
                           g->cols,
                           style,
                           hist);
+  owl_window_set_cursor(owl_global_get_curs_typwin(g));
   return g->tw;
 }
 
@@ -373,9 +372,14 @@ void owl_global_set_typwin_inactive(owl_global *g) {
   if (d > 0 && owl_editwin_get_style(g->tw) == OWL_EDITWIN_STYLE_MULTILINE)
       owl_function_resize_typwin(owl_global_get_typwin_lines(g) - d);
 
-  werase(owl_global_get_curs_typwin(g));
+  if (!g->typwin_erase_id) {
+    g->typwin_erase_id =
+      g_signal_connect(owl_global_get_curs_typwin(g), "redraw", G_CALLBACK(owl_window_erase_cb), NULL);
+  }
+  owl_window_dirty(owl_global_get_curs_typwin(g));
+  /* owl_window_set_cursor(owl_global_get_curs_sepwin(g)); */
+
   g->tw = NULL;
-  owl_global_set_needrefresh(g);
 }
 
 /* resize */
@@ -493,7 +497,6 @@ void owl_global_resize(owl_global *g, int lines, int cols) {
   owl_window_resize(owl_window_get_screen(), g->lines, g->cols);
 
   owl_function_debugmsg("New size is %i lines, %i cols.", g->lines, g->cols);
-  owl_global_set_relayout_pending(g);
 }
 
 void owl_global_relayout(owl_global *g) {
@@ -516,10 +519,6 @@ void owl_global_relayout(owl_global *g) {
   g->needrefresh=1;
   owl_mainwin_redisplay(&(g->mw));
   sepbar(NULL);
-  if (g->tw)
-      owl_editwin_redisplay(g->tw);
-  else
-    werase(owl_global_get_curs_typwin(g));
 
   owl_function_full_redisplay();
 

@@ -2730,7 +2730,6 @@ void owl_command_edit_history_prev(owl_editwin *e)
   if (ptr) {
     owl_editwin_clear(e);
     owl_editwin_insert_string(e, ptr);
-    owl_editwin_redisplay(e);
   } else {
     owl_function_beep();
   }
@@ -2746,7 +2745,6 @@ void owl_command_edit_history_next(owl_editwin *e)
   if (ptr) {
     owl_editwin_clear(e);
     owl_editwin_insert_string(e, ptr);
-    owl_editwin_redisplay(e);
   } else {
     owl_function_beep();
   }
@@ -2756,7 +2754,6 @@ char *owl_command_edit_insert_text(owl_editwin *e, int argc, const char *const *
 {
   buff = skiptokens(buff, 1);
   owl_editwin_insert_string(e, buff);
-  owl_editwin_redisplay(e);
   return NULL;
 }
 

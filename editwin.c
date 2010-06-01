@@ -27,7 +27,9 @@ struct _owl_editwin { /*noproto*/
   int topindex;
   int cursorx;
   int winlines, wincols, fillcol, wrapcol;
-  WINDOW *curswin;
+  owl_window *win;
+  gulong repaint_id;
+  gulong resized_id;
   int style;
   int lock;
   int dotsend;
@@ -39,6 +41,8 @@ struct _owl_editwin { /*noproto*/
   void *cbdata;
 };
 
+static void oe_set_curswin(owl_editwin *e, owl_window *w, int winlines, int wincols);
+static void oe_redisplay(owl_window *win, WINDOW *curswin, void *user_data);
 static void oe_reframe(owl_editwin *e);
 static void oe_save_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_release_excursion(owl_editwin *e, oe_excursion *x);
@@ -57,6 +61,8 @@ static const char *oe_copy_buf(owl_editwin *e, const char *buf, int len);
 static int oe_copy_region(owl_editwin *e);
 static char *oe_chunk(owl_editwin *e, int start, int end);
 static void oe_destroy_cbdata(owl_editwin *e);
+static void oe_dirty(owl_editwin *e);
+static void oe_window_resized(owl_window *w, owl_editwin *e);
 
 #define INCR 4096
 
@@ -72,6 +78,10 @@ static owl_editwin *owl_editwin_allocate(void)
 
 void owl_editwin_delete(owl_editwin *e)
 {
+  if (e->win) {
+    g_signal_handler_disconnect(e->win, e->repaint_id);
+    g_signal_handler_disconnect(e->win, e->resized_id);
+  }
   owl_free(e->buff);
   owl_free(e->killbuf);
   /* just in case someone forgot to clean up */
@@ -90,6 +100,7 @@ static inline void oe_set_index(owl_editwin *e, int index)
     e->cursorx = -1;
   }
   e->index = index;
+  oe_dirty(e);
 }
 
 static inline void oe_set_mark(owl_editwin *e, int mark)
@@ -104,7 +115,6 @@ void owl_editwin_set_mark(owl_editwin *e)
 }
 
 static void _owl_editwin_init(owl_editwin *e,
-                              WINDOW *win,
                               int winlines,
                               int wincols,
                               int style,
@@ -129,25 +139,29 @@ static void _owl_editwin_init(owl_editwin *e,
       (style!=OWL_EDITWIN_STYLE_ONELINE)) {
     e->style=OWL_EDITWIN_STYLE_MULTILINE;
   }
-  owl_editwin_set_curswin(e, win, winlines, wincols);
   e->lock=0;
   e->dotsend=0;
   e->echochar='\0';
-
-  if (win) werase(win);
 }
 
-owl_editwin *owl_editwin_new(WINDOW *win, int winlines, int wincols, int style, owl_history *hist)
+owl_editwin *owl_editwin_new(owl_window *win, int winlines, int wincols, int style, owl_history *hist)
 {
   owl_editwin *e = owl_editwin_allocate();
 
-  _owl_editwin_init(e, win, winlines, wincols, style, hist);
+  _owl_editwin_init(e, winlines, wincols, style, hist);
+  oe_set_curswin(e, win, winlines, wincols);
   return e;
 }
 
-void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincols)
+static void oe_window_resized(owl_window *w, owl_editwin *e)
 {
-  e->curswin=w;
+  /* update the sizes */
+  owl_window_get_position(w, &e->winlines, &e->wincols, NULL, NULL);
+}
+
+static void oe_set_curswin(owl_editwin *e, owl_window *w, int winlines, int wincols)
+{
+  e->win=w;
   e->winlines=winlines;
   e->wincols=wincols;
   e->fillcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxfillcols(&g));
@@ -155,6 +169,11 @@ void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincol
     e->wrapcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxwrapcols(&g));
   else
     e->wrapcol = 0;
+  if (e->win) {
+    e->repaint_id = g_signal_connect(w, "redraw", G_CALLBACK(oe_redisplay), e);
+    e->resized_id = g_signal_connect(w, "resized", G_CALLBACK(oe_window_resized), e);
+    owl_window_dirty(e->win);
+  }
 }
 
 /* echo the character 'ch' for each normal character keystroke,
@@ -164,11 +183,7 @@ void owl_editwin_set_curswin(owl_editwin *e, WINDOW *w, int winlines, int wincol
 void owl_editwin_set_echochar(owl_editwin *e, int ch)
 {
   e->echochar=ch;
-}
-
-WINDOW *owl_editwin_get_curswin(owl_editwin *e)
-{
-  return(e->curswin);
+  oe_dirty(e);
 }
 
 owl_history *owl_editwin_get_history(owl_editwin *e)
@@ -238,7 +253,7 @@ void owl_editwin_set_locktext(owl_editwin *e, const char *text)
   e->buff[e->bufflen] = 0;
   e->lock=e->bufflen;
   oe_set_index(e, e->lock);
-  owl_editwin_redisplay(e);
+  oe_dirty(e);
 }
 
 int owl_editwin_get_style(owl_editwin *e)
@@ -264,7 +279,7 @@ void owl_editwin_clear(owl_editwin *e)
   }
 
   owl_free(e->buff);
-  _owl_editwin_init(e, e->curswin, e->winlines, e->wincols, e->style, e->hist);
+  _owl_editwin_init(e, e->winlines, e->wincols, e->style, e->hist);
 
   if (lock > 0) {
     owl_editwin_set_locktext(e, locktext);
@@ -285,6 +300,7 @@ void owl_editwin_clear(owl_editwin *e)
 void owl_editwin_recenter(owl_editwin *e)
 {
   e->topindex = -1;
+  oe_dirty(e);
 }
 
 static void oe_save_excursion(owl_editwin *e, oe_excursion *x)
@@ -466,30 +482,32 @@ static void oe_reframe(owl_editwin *e) {
     e->topindex = oe_find_display_line(e, NULL, e->topindex, NULL);
 
   oe_restore_excursion(e, &x);
+  oe_dirty(e);
 }
 
-static void oe_addnec(owl_editwin *e, int count)
+static void oe_addnec(owl_editwin *e, WINDOW *curswin, int count)
 {
   int i;
 
   for (i = 0; i < count; i++)
-    waddch(e->curswin, e->echochar);
+    waddch(curswin, e->echochar);
 }
 
-static void oe_mvaddnec(owl_editwin *e, int y, int x, int count)
+static void oe_mvaddnec(owl_editwin *e, WINDOW *curswin, int y, int x, int count)
 {
-  wmove(e->curswin, y, x);
-  oe_addnec(e, count);
+  wmove(curswin, y, x);
+  oe_addnec(e, curswin, count);
 }
 
 /* regenerate the text on the curses window */
-void owl_editwin_redisplay(owl_editwin *e)
+static void oe_redisplay(owl_window *win, WINDOW *curswin, void *user_data)
 {
   int x = -1, y = -1, t, hard;
   int line, index, lineindex, times = 0;
+  owl_editwin *e = user_data;
 
   do {
-    werase(e->curswin);
+    werase(curswin);
 
     if (e->topindex == -1 || e->index < e->topindex)
       oe_reframe(e);
@@ -504,24 +522,24 @@ void owl_editwin_redisplay(owl_editwin *e)
 	x = t, y = line;
       if (index - lineindex) {
 	if (!e->echochar)
-	  mvwaddnstr(e->curswin, line, 0,
+	  mvwaddnstr(curswin, line, 0,
 		     e->buff + lineindex,
 		     index - lineindex);
 	else {
 	  if(lineindex < e->lock) {
-	    mvwaddnstr(e->curswin, line, 0,
+	    mvwaddnstr(curswin, line, 0,
 		       e->buff + lineindex,
 		       MIN(index - lineindex,
 			   e->lock - lineindex));
 	    if (e->lock < index)
-	      oe_addnec(e,
+	      oe_addnec(e, curswin,
 			oe_region_width(e, e->lock, index,
 					oe_region_width(e, lineindex, e->lock, 0)));
 	  } else
-	    oe_mvaddnec(e, line, 0, oe_region_width(e, lineindex, index, 0));
+	    oe_mvaddnec(e, curswin, line, 0, oe_region_width(e, lineindex, index, 0));
 	}
         if (!hard)
-          waddch(e->curswin, '\\');
+          waddch(curswin, '\\');
       }
       line++;
     }
@@ -530,9 +548,8 @@ void owl_editwin_redisplay(owl_editwin *e)
     times++;
   } while(x == -1 && times < 3);
 
-  wmove(e->curswin, y, x);
+  wmove(curswin, y, x);
   e->cursorx = x;
-  owl_global_set_needrefresh(&g);
 }
 
 static inline void oe_fixup(int *target, int start, int end, int change) {
@@ -624,6 +641,8 @@ static int owl_editwin_replace_internal(owl_editwin *e, int replace, const char 
   /* recenter if needed */
   if (start <= e->topindex)
     owl_editwin_recenter(e);
+
+  oe_dirty(e);
 
   return change;
 }
@@ -857,6 +876,7 @@ int owl_editwin_line_move(owl_editwin *e, int delta)
     distance += owl_editwin_point_move(e, goal_column - ll);
 
   e->goal_column = goal_column;
+  oe_dirty(e);
 
   return distance;
 }
@@ -1211,7 +1231,6 @@ void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
     owl_command_edit_done(e);
     return;
   }
-  owl_editwin_redisplay(e);
 }
 
 static int oe_region_width(owl_editwin *e, int start, int end, int offset)
@@ -1344,6 +1363,11 @@ int owl_editwin_get_point(owl_editwin *e)
 int owl_editwin_get_mark(owl_editwin *e)
 {
   return e->mark;
+}
+
+static void oe_dirty(owl_editwin *e)
+{
+  if (e->win) owl_window_dirty(e->win);
 }
 
 

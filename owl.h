@@ -575,7 +575,8 @@ typedef struct _owl_global {
   owl_messagelist msglist;
   WINDOW *input_pad;
   owl_mainpanel mainpanel;
-  PANEL *recpan, *seppan, *msgpan, *typpan;
+  gulong typwin_erase_id;
+  PANEL *recpan, *seppan, *msgpan;
   int needrefresh;
   int rightshift;
   volatile sig_atomic_t resizepending;
