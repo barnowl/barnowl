@@ -33,7 +33,6 @@ struct _owl_window { /*noproto*/
 
 static owl_window *_owl_window_new(owl_window *parent, int nlines, int ncols, int begin_y, int begin_x);
 
-static void _owl_window_unlink(owl_window *w);
 static void _owl_window_link(owl_window *w, owl_window *parent);
 
 static void _owl_window_create_curses(owl_window *w);
@@ -180,7 +179,7 @@ void owl_window_set_destroy_cb(owl_window *w, void (*cb)(owl_window*, void*), vo
 
 /** Hierarchy **/
 
-static void _owl_window_unlink(owl_window *w)
+void owl_window_unlink(owl_window *w)
 {
   /* make sure the window is unmapped first */
   _owl_window_unrealize(w);
