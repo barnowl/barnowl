@@ -462,14 +462,13 @@ static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
 
   /* update the terminal if we need to */
   if (owl_global_is_needrefresh(&g)) {
+    /* Redraw the screen */
     owl_window_redraw_scheduled();
 
     /* these are here in case a relayout changes the windows */
     WINDOW *sepwin = owl_global_get_curs_sepwin(&g);
-    WINDOW *typwin = owl_global_get_curs_typwin(&g);
+    owl_window *typwin = owl_global_get_curs_typwin(&g);
 
-    /* push all changed windows to screen */
-    update_panels();
     /* leave the cursor in the appropriate window */
     if (!owl_popwin_is_active(owl_global_get_popwin(&g))
 	&& owl_global_get_typwin(&g)) {

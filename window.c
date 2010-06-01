@@ -372,6 +372,7 @@ NOTE: This function shouldn't be called outside the event loop
 void owl_window_redraw_scheduled(void)
 {
   _owl_window_redraw_subtree(owl_window_get_screen());
+  update_panels();
 }
 
 static void _owl_window_redraw_cleanup(owl_window *w, WINDOW *win)
