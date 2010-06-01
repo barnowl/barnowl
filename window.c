@@ -26,10 +26,6 @@ struct _owl_window { /*noproto*/
   void (*size_cb)(owl_window *, void *);
   void  *size_cbdata;
   void (*size_cbdata_destroy)(void *);
-
-  void (*destroy_cb)(owl_window *, void *);
-  void  *destroy_cbdata;
-  void (*destroy_cbdata_destroy)(void *);
 };
 
 static void owl_window_dispose(GObject *gobject);
@@ -71,7 +67,6 @@ static void owl_window_dispose (GObject *object)
   /* Clear all cbs */
   owl_window_set_redraw_cb (w, 0, 0, 0);
   owl_window_set_size_cb (w, 0, 0, 0);
-  owl_window_set_destroy_cb (w, 0, 0, 0);
 
   /* Remove from hierarchy */
   owl_window_unlink (w);
@@ -191,19 +186,6 @@ void owl_window_set_size_cb(owl_window *w, void (*cb)(owl_window*, void*), void 
   w->size_cbdata_destroy = cbdata_destroy;
 
   owl_window_recompute_position(w);
-}
-
-void owl_window_set_destroy_cb(owl_window *w, void (*cb)(owl_window*, void*), void *cbdata, void (*cbdata_destroy)(void*))
-{
-  if (w->destroy_cbdata_destroy) {
-    w->destroy_cbdata_destroy(w->destroy_cbdata);
-    w->destroy_cbdata = 0;
-    w->destroy_cbdata_destroy = 0;
-  }
-
-  w->destroy_cb = cb;
-  w->destroy_cbdata = cbdata;
-  w->destroy_cbdata_destroy = cbdata_destroy;
 }
 
 /** Hierarchy **/
