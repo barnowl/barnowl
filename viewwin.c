@@ -53,9 +53,11 @@ void owl_viewwin_set_window(owl_viewwin *v, owl_window *w)
 {
   if (v->window) {
     g_signal_handler_disconnect(v->window, v->sig_redraw_id);
+    g_object_unref(v->window);
   }
   v->window = w;
   if (w) {
+    g_object_ref(v->window);
     v->sig_redraw_id = g_signal_connect(w, "redraw", G_CALLBACK(owl_viewwin_redisplay), v);
   }
 }
