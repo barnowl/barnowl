@@ -1,7 +1,6 @@
 #include "owl.h"
 
 static void owl_mainpanel_size(owl_window *parent, void *user_data);
-static void owl_mainpanel_layout_contents(owl_window *parent, void *user_data);
 
 void owl_mainpanel_init(owl_mainpanel *mp)
 {
@@ -14,7 +13,7 @@ void owl_mainpanel_init(owl_mainpanel *mp)
 
   /* Set up sizing hooks */
   owl_signal_connect_object(owl_window_get_screen(), "resized", G_CALLBACK(owl_mainpanel_size), mp->panel, 0);
-  g_signal_connect(mp->panel, "resized", G_CALLBACK(owl_mainpanel_layout_contents), mp);
+  g_signal_connect_swapped(mp->panel, "resized", G_CALLBACK(owl_mainpanel_layout_contents), mp);
 
   /* Bootstrap the sizes and go */
   owl_mainpanel_size(owl_window_get_screen(), mp->panel);
@@ -31,12 +30,14 @@ static void owl_mainpanel_size(owl_window *parent, void *user_data)
   owl_window_set_position(panel, lines, cols, 0, 0);
 }
 
-static void owl_mainpanel_layout_contents(owl_window *panel, void *user_data)
+void owl_mainpanel_layout_contents(owl_mainpanel *mp)
 {
   int lines, cols, typwin_lines;
-  owl_mainpanel *mp = user_data;
 
-  owl_window_get_position(panel, &lines, &cols, NULL, NULL);
+  /* skip if we haven't been initialized */
+  if (!mp->panel) return;
+
+  owl_window_get_position(mp->panel, &lines, &cols, NULL, NULL);
   typwin_lines = owl_global_get_typwin_lines(&g);
 
   /* set the new window sizes */
@@ -51,6 +52,9 @@ static void owl_mainpanel_layout_contents(owl_window *panel, void *user_data)
   owl_window_set_position(mp->sepwin, 1, cols, mp->recwinlines, 0);
   owl_window_set_position(mp->msgwin, 1, cols, mp->recwinlines+1, 0);
   owl_window_set_position(mp->typwin, typwin_lines, cols, mp->recwinlines+2, 0);
+
+  /* TEMPORARY */
+  owl_global_set_relayout_pending(&g);
 }
 
 void owl_mainpanel_cleanup(owl_mainpanel *mp)
