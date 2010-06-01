@@ -10,7 +10,7 @@ struct _owl_window { /*noproto*/
   /* flags */
   int dirty : 1;
   int dirty_subtree : 1;
-  int mapped : 1;
+  int shown : 1;
   int is_screen : 1;
   /* window information */
   WINDOW *win;
@@ -67,12 +67,12 @@ owl_window *owl_window_get_screen(void)
 {
   static owl_window *screen = NULL;
   if (!screen) {
-    /* The screen is magical. It's 'mapped', but the only mean of it going
+    /* The screen is magical. It's 'shown', but the only mean of it going
      * invisible is if we're tore down curses (i.e. screen resize) */
     screen = _owl_window_new(NULL, g.lines, g.cols, 0, 0);
     screen->is_screen = 1;
     owl_window_set_size_cb(screen, _screen_calculate_size, &g, 0);
-    owl_window_map(screen, 0);
+    owl_window_show(screen, 0);
   }
   return screen;
 }
@@ -272,12 +272,12 @@ static void _owl_window_destroy_curses(owl_window *w)
 
 static void _map_recurse_curry(owl_window *w)
 {
-  owl_window_map(w, 1);
+  owl_window_show(w, 1);
 }
 
-void owl_window_map(owl_window *w, int recurse)
+void owl_window_show(owl_window *w, int recurse)
 {
-  w->mapped = 1;
+  w->shown = 1;
   _owl_window_realize(w);
   if (w->pan)
     show_panel(w->pan);
@@ -285,20 +285,20 @@ void owl_window_map(owl_window *w, int recurse)
     owl_window_children_foreach_onearg(w, _map_recurse_curry);
 }
 
-void owl_window_unmap(owl_window *w)
+void owl_window_hide(owl_window *w)
 {
   /* you can't unmap the screen */
   if (w->is_screen)
     return;
-  w->mapped = 0;
+  w->shown = 0;
   if (w->pan)
     hide_panel(w->pan);
   _owl_window_unrealize(w);
 }
 
-int owl_window_is_mapped(owl_window *w)
+int owl_window_is_shown(owl_window *w)
 {
-  return w->mapped;
+  return w->shown;
 }
 
 int owl_window_is_realized(owl_window *w)
@@ -315,7 +315,7 @@ static void _owl_window_realize(owl_window *w)
 {
   /* check if we can create a window */
   if ((w->parent && w->parent->win == NULL)
-      || !w->mapped
+      || !w->shown
       || w->win != NULL)
     return;
   _owl_window_create_curses(w);
@@ -413,8 +413,8 @@ void owl_window_move(owl_window *w, int begin_y, int begin_x)
 
   w->begin_y = begin_y;
   w->begin_x = begin_x;
-  if (w->mapped) {
-    /* Window is mapped, we must try to have a window at the end */
+  if (w->shown) {
+    /* Window is shown, we must try to have a window at the end */
     if (w->win) {
       /* We actually do have a window; let's move it */
       if (w->pan) {
@@ -452,14 +452,14 @@ void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, 
   w->begin_x = begin_x;
   w->nlines = nlines;
   w->ncols = ncols;
-  /* window is mapped, we must try to have a window at the end */
-  if (w->mapped) {
+  /* window is shown, we must try to have a window at the end */
+  if (w->shown) {
     /* resizing in ncurses is hard: give up do a unrealize/realize */
     _owl_window_unrealize(w);
   }
   /* recalculate children sizes BEFORE remapping, so that everything can resize */
   owl_window_children_foreach_onearg(w, owl_window_recompute_position);
-  if (w->mapped) {
+  if (w->shown) {
     _owl_window_realize(w);
   }
 }

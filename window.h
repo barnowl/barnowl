@@ -18,9 +18,9 @@ void owl_window_children_foreach(owl_window *parent, GFunc func, gpointer user_d
 void owl_window_children_foreach_onearg(owl_window *parent, void (*func)(owl_window*));
 owl_window *owl_window_get_parent(owl_window *w);
 
-void owl_window_map(owl_window *w, int recurse);
-void owl_window_unmap(owl_window *w);
-int owl_window_is_mapped(owl_window *w);
+void owl_window_show(owl_window *w, int recurse);
+void owl_window_hide(owl_window *w);
+int owl_window_is_shown(owl_window *w);
 int owl_window_is_realized(owl_window *w);
 int owl_window_is_toplevel(owl_window *w);
 
