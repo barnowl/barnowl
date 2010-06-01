@@ -2,13 +2,31 @@
 #define __BARNOWL_WINDOW_H__
 
 #include <glib.h>
+#include <glib-object.h>
 
-typedef struct _owl_window owl_window;
+G_BEGIN_DECLS
+
+#define OWL_TYPE_WINDOW                  (owl_window_get_type ())
+#define OWL_WINDOW(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), OWL_TYPE_WINDOW, OwlWindow))
+#define OWL_IS_WINDOW(obj)               (G_TYPE_CHECK_INSTANCE_TYPE ((obj), OWL_TYPE_WINDOW))
+#define OWL_WINDOW_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass), OWL_TYPE_WINDOW, OwlWindowClass))
+#define OWL_IS_WINDOW_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass), OWL_TYPE_WINDOW))
+#define OWL_WINDOW_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj), OWL_TYPE_WINDOW, OwlWindowClass))
+
+typedef struct _owl_window OwlWindow;
+typedef struct _OwlWindowClass OwlWindowClass;
+typedef OwlWindow owl_window; /* meh */
+
+struct _OwlWindowClass
+{
+  GObjectClass parent_class;
+};
+
+GType owl_window_get_type(void);
 
 owl_window *owl_window_get_screen(void);
 
 owl_window *owl_window_new(owl_window *parent);
-void owl_window_delete(owl_window *w);
 void owl_window_unlink(owl_window *w);
 
 void owl_window_set_redraw_cb(owl_window *w, void (*cb)(owl_window*, WINDOW*, void*), void *cbdata, void (*cbdata_destroy)(void*));
@@ -41,5 +59,7 @@ owl_window *owl_window_above(owl_window *w);
 owl_window *owl_window_below(owl_window *w);
 
 void owl_window_erase_cb(owl_window *w, WINDOW *win, void *user_data);
+
+G_END_DECLS
 
 #endif /* __BARNOWL_WINDOW_H__ */

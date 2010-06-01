@@ -3,6 +3,7 @@
 #include <assert.h>
 
 struct _owl_window { /*noproto*/
+  GObject object;
   /* hierarchy information */
   owl_window *parent;
   owl_window *child;
@@ -31,6 +32,9 @@ struct _owl_window { /*noproto*/
   void (*destroy_cbdata_destroy)(void *);
 };
 
+static void owl_window_dispose(GObject *gobject);
+static void owl_window_finalize(GObject *gobject);
+
 static owl_window *_owl_window_new(owl_window *parent, int nlines, int ncols, int begin_y, int begin_x);
 
 static void _owl_window_link(owl_window *w, owl_window *parent);
@@ -40,6 +44,56 @@ static void _owl_window_destroy_curses(owl_window *w);
 
 static void _owl_window_realize(owl_window *w);
 static void _owl_window_unrealize(owl_window *w);
+
+G_DEFINE_TYPE (OwlWindow, owl_window, G_TYPE_OBJECT)
+
+static void owl_window_class_init (OwlWindowClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class->dispose = owl_window_dispose;
+  object_class->finalize = owl_window_finalize;
+}
+
+static void owl_window_dispose (GObject *object)
+{
+  owl_window *w = OWL_WINDOW (object);
+
+  /* Unmap the window */
+  owl_window_hide (w);
+
+  /* Unlink and unref all children */
+  while (w->child) {
+    owl_window *child = w->child;
+    owl_window_unlink (child);
+  }
+
+  /* Clear all cbs */
+  owl_window_set_redraw_cb (w, 0, 0, 0);
+  owl_window_set_size_cb (w, 0, 0, 0);
+  owl_window_set_destroy_cb (w, 0, 0, 0);
+
+  /* Remove from hierarchy */
+  owl_window_unlink (w);
+
+  G_OBJECT_CLASS (owl_window_parent_class)->dispose (object);
+}
+
+static void owl_window_finalize (GObject *object)
+{
+  owl_window *w = OWL_WINDOW(object);
+
+  if (w->pan) {
+    del_panel(w->pan);
+    w->pan = NULL;
+  }
+
+  G_OBJECT_CLASS (owl_window_parent_class)->finalize (object);
+}
+
+static void owl_window_init (owl_window *w)
+{
+}
 
 /** singletons **/
 
@@ -89,8 +143,8 @@ static owl_window *_owl_window_new(owl_window *parent, int nlines, int ncols, in
 {
   owl_window *w;
 
-  w = owl_malloc(sizeof(owl_window));
-  memset(w, 0, sizeof(*w));
+  w = g_object_new (OWL_TYPE_WINDOW, NULL);
+  if (w == NULL) g_error("Failed to create owl_window instance");
 
   w->nlines = nlines;
   w->ncols = ncols;
@@ -104,31 +158,6 @@ static owl_window *_owl_window_new(owl_window *parent, int nlines, int ncols, in
   }
 
   return w;
-}
-
-void owl_window_delete(owl_window *w)
-{
-  /* destroy all children */
-  owl_window_children_foreach_onearg(w, owl_window_delete);
-
-  /* notify everyone of your imminent demise */
-  if (w->destroy_cb)
-    w->destroy_cb(w, w->destroy_cbdata);
-
-  /* clear all cbs */
-  owl_window_set_redraw_cb(w, 0, 0, 0);
-  owl_window_set_size_cb(w, 0, 0, 0);
-  owl_window_set_destroy_cb(w, 0, 0, 0);
-
-  /* destroy curses structures */
-  owl_window_unmap(w);
-  if (w->pan) {
-    del_panel(w->pan);
-  }
-
-  /* remove from hierarchy */
-  _owl_window_unlink(w);
-  owl_free(w);
 }
 
 /** Callbacks **/
@@ -192,6 +221,7 @@ void owl_window_unlink(owl_window *w)
     if (w->parent->child == w)
       w->parent->child = w->next;
     w->parent = NULL;
+    g_object_unref (w);
   }
 }
 
@@ -205,6 +235,7 @@ static void _owl_window_link(owl_window *w, owl_window *parent)
     w->parent = parent;
     w->next = parent->child;
     parent->child = w;
+    g_object_ref (w);
   }
 }
 
@@ -221,12 +252,7 @@ void owl_window_children_foreach(owl_window *parent, GFunc func, gpointer user_d
 
 void owl_window_children_foreach_onearg(owl_window *parent, void (*func)(owl_window*))
 {
-  owl_window *w;
-  for (w = parent->child;
-       w != NULL;
-       w = w->next) {
-    func(w);
-  }
+  owl_window_children_foreach(parent, (GFunc)func, NULL);
 }
 
 owl_window *owl_window_get_parent(owl_window *w)

@@ -65,7 +65,8 @@ void owl_popwin_draw_border(owl_window *w, WINDOW *borderwin, void *user_data)
 int owl_popwin_close(owl_popwin *pw)
 {
   owl_window_unlink(pw->border);
-  owl_window_delete(pw->border);
+  g_object_unref(pw->border);
+  g_object_unref(pw->content);
   pw->border = 0;
   pw->content = 0;
   pw->active=0;
