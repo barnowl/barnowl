@@ -1261,10 +1261,8 @@ void owl_function_full_redisplay(void)
 {
   touchwin(owl_global_get_curs_recwin(&g));
   touchwin(owl_global_get_curs_sepwin(&g));
-  touchwin(owl_global_get_curs_msgwin(&g));
 
   sepbar("");
-  owl_function_makemsg("");
 
   owl_global_set_needrefresh(&g);
 }
@@ -3400,18 +3398,16 @@ void owl_function_showerrs(void)
 void owl_function_makemsg(const char *fmt, ...)
 {
   va_list ap;
-  char buff[2048];
+  char *str;
 
   if (!owl_global_get_curs_msgwin(&g)) return;
 
   va_start(ap, fmt);
-  werase(owl_global_get_curs_msgwin(&g));
-  
-  vsnprintf(buff, 2048, fmt, ap);
-  owl_function_debugmsg("makemsg: %s", buff);
-  waddstr(owl_global_get_curs_msgwin(&g), buff);  
-  owl_global_set_needrefresh(&g);
+  str = g_strdup_vprintf(fmt, ap);
   va_end(ap);
+
+  owl_function_debugmsg("makemsg: %s", str);
+  owl_msgwin_set_text(&g.msgwin, str);
 }
 
 /* get locations for everyone in .anyone.  If 'notify' is '1' then

@@ -94,6 +94,7 @@ void owl_global_init(owl_global *g) {
   owl_messagelist_create(&(g->msglist));
   owl_mainwin_init(&(g->mw));
   owl_popwin_init(&(g->pw));
+  owl_msgwin_init(&(g->msgwin), g->mainpanel.msgwin);
 
   g->aim_screenname=NULL;
   g->aim_screenname_for_filters=NULL;
@@ -166,7 +167,6 @@ void _owl_global_setup_windows(owl_global *g) {
   /* create the new windows */
   _owl_panel_set_window(&g->recpan, newwin(recwinlines, cols, 0, 0));
   _owl_panel_set_window(&g->seppan, newwin(1, cols, recwinlines, 0));
-  _owl_panel_set_window(&g->msgpan, newwin(1, cols, recwinlines+1, 0));
 }
 
 owl_context *owl_global_get_context(owl_global *g) {
@@ -294,8 +294,8 @@ WINDOW *owl_global_get_curs_sepwin(const owl_global *g) {
   return panel_window(g->seppan);
 }
 
-WINDOW *owl_global_get_curs_msgwin(const owl_global *g) {
-  return panel_window(g->msgpan);
+owl_window *owl_global_get_curs_msgwin(const owl_global *g) {
+  return g->msgwin.window;
 }
 
 owl_window *owl_global_get_curs_typwin(const owl_global *g) {
@@ -516,13 +516,10 @@ void owl_global_relayout(owl_global *g) {
   owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
 
   /* refresh stuff */
-  g->needrefresh=1;
   owl_mainwin_redisplay(&(g->mw));
   sepbar(NULL);
 
   owl_function_full_redisplay();
-
-  owl_function_makemsg("");
 }
 
 /* debug */

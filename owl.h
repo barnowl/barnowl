@@ -413,6 +413,12 @@ typedef struct _owl_popwin {
   owl_window *content;
   int active;
 } owl_popwin;
+  
+typedef struct _owl_msgwin {
+  char *msg;
+  owl_window *window;
+  gulong redraw_id;
+} owl_msgwin;
 
 typedef struct _owl_messagelist {
   owl_list list;
@@ -557,6 +563,7 @@ typedef struct _owl_popexec {
 typedef struct _owl_global {
   owl_mainwin mw;
   owl_popwin pw;
+  owl_msgwin msgwin;
   owl_history cmdhist;		/* command history */
   owl_history msghist;		/* outgoing message history */
   owl_keyhandler kh;
@@ -576,7 +583,7 @@ typedef struct _owl_global {
   WINDOW *input_pad;
   owl_mainpanel mainpanel;
   gulong typwin_erase_id;
-  PANEL *recpan, *seppan, *msgpan;
+  PANEL *recpan, *seppan;
   int needrefresh;
   int rightshift;
   volatile sig_atomic_t resizepending;
