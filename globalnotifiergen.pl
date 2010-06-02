@@ -52,6 +52,7 @@ print <<EOT;
 /* signals */
 enum {
   VIEW_CHANGED,
+  MESSAGE_RECEIVED,
   LAST_SIGNAL
 };
 
@@ -162,6 +163,17 @@ static void owl_global_notifier_class_init(OwlGlobalNotifierClass *klass)
                  0,
                  NULL);
 
+  notifier_signals[MESSAGE_RECEIVED] =
+    g_signal_new("message-received",
+                 G_TYPE_FROM_CLASS(gobject_class),
+                 G_SIGNAL_RUN_FIRST,
+                 0,
+                 NULL, NULL,
+                 g_cclosure_marshal_VOID__POINTER,
+                 G_TYPE_NONE,
+                 1,
+                 G_TYPE_POINTER, NULL);
+
   /* Register properties */
   
   pspec = g_param_spec_int("rightshift",
@@ -230,5 +242,10 @@ OwlGlobalNotifier *owl_global_notifier_new(owl_global *g)
 void owl_global_notifier_emit_view_changed(OwlGlobalNotifier *gn)
 {
   g_signal_emit(gn, notifier_signals[VIEW_CHANGED], 0);
+}
+
+void owl_global_notifier_emit_message_received(OwlGlobalNotifier *gn, owl_message *msg)
+{
+  g_signal_emit(gn, notifier_signals[MESSAGE_RECEIVED], 0, msg);
 }
 EOT
