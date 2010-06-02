@@ -45,6 +45,7 @@ void owl_mainpanel_layout_contents(owl_mainpanel *mp)
   if (mp->recwinlines<0) {
     /* gotta deal with this */
     mp->recwinlines=0;
+    typwin_lines = lines - 2;
   }
 
   /* resize all the windows */
