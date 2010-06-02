@@ -97,6 +97,7 @@ void owl_global_init(owl_global *g) {
   owl_mainwin_init(&(g->mw));
   owl_popwin_init(&(g->pw));
   owl_msgwin_init(&(g->msgwin), g->mainpanel.msgwin);
+  g_signal_connect(g->mainpanel.sepwin, "redraw", G_CALLBACK(sepbar_redraw), NULL);
 
   g->aim_screenname=NULL;
   g->aim_screenname_for_filters=NULL;
@@ -292,8 +293,8 @@ WINDOW *owl_global_get_curs_recwin(const owl_global *g) {
   return panel_window(g->recpan);
 }
 
-WINDOW *owl_global_get_curs_sepwin(const owl_global *g) {
-  return panel_window(g->seppan);
+owl_window *owl_global_get_curs_sepwin(const owl_global *g) {
+  return g->mainpanel.sepwin;
 }
 
 owl_window *owl_global_get_curs_msgwin(const owl_global *g) {
@@ -366,7 +367,6 @@ owl_editwin *owl_global_set_typwin_active(owl_global *g, int style, owl_history 
                           g->cols,
                           style,
                           hist);
-  owl_window_set_cursor(owl_global_get_curs_typwin(g));
   return g->tw;
 }
 
@@ -380,7 +380,6 @@ void owl_global_set_typwin_inactive(owl_global *g) {
       g_signal_connect(owl_global_get_curs_typwin(g), "redraw", G_CALLBACK(owl_window_erase_cb), NULL);
   }
   owl_window_dirty(owl_global_get_curs_typwin(g));
-  /* owl_window_set_cursor(owl_global_get_curs_sepwin(g)); */
 
   g->tw = NULL;
 }
@@ -520,7 +519,7 @@ void owl_global_relayout(owl_global *g) {
 
   /* refresh stuff */
   owl_mainwin_redisplay(&(g->mw));
-  sepbar(NULL);
+  sepbar_dirty();
 
   owl_function_full_redisplay();
 }

@@ -301,7 +301,7 @@ int owl_process_messages(owl_ps_action *d, void *p)
     /* redisplay if necessary */
     /* this should be optimized to not run if the new messages won't be displayed */
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-    sepbar(NULL);
+    sepbar_dirty();
   }
   return newmsgs;
 }
@@ -463,18 +463,17 @@ static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
   /* update the terminal if we need to */
   if (owl_global_is_needrefresh(&g)) {
     /* Redraw the screen */
-    owl_window_redraw_scheduled();
 
-    /* these are here in case a relayout changes the windows */
-    WINDOW *sepwin = owl_global_get_curs_sepwin(&g);
-
-    /* move the cursor to unmanaged window if necessary */
+    /* HACK: move the cursor to unmanaged window if necessary; these should be
+     * associated with the context or something. */
     if (!owl_popwin_is_active(owl_global_get_popwin(&g))
 	&& owl_global_get_typwin(&g)) {
-      /* owl_function_set_cursor(typwin); */
+      owl_window_set_cursor(owl_global_get_curs_typwin(&g));
     } else {
-      owl_function_set_cursor(sepwin);
+      owl_window_set_cursor(owl_global_get_curs_sepwin(&g));
     }
+
+    owl_window_redraw_scheduled();
     doupdate();
     owl_global_set_noneedrefresh(&g);
   }
@@ -593,7 +592,6 @@ int main(int argc, char **argv, char **env)
     "Please report any bugs or suggestions to bug-barnowl@mit.edu    (   )  \n"
     "-----------------------------------------------------------------m-m---\n"
   );
-  sepbar(NULL);
 
   /* process the startup file */
   owl_function_debugmsg("startup: processing startup file");

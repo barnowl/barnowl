@@ -1247,22 +1247,11 @@ void owl_function_unsubscribe(const char *class, const char *inst, const char *r
   }
 }
 
-void owl_function_set_cursor(WINDOW *win)
-{
-  /* Be careful that this window is actually empty, otherwise panels get confused */
-  if (is_wintouched(win)) {
-    owl_function_debugmsg("Warning: owl_function_set_cursor called on dirty window");
-    update_panels();
-  }
-  wnoutrefresh(win);
-}
-
 void owl_function_full_redisplay(void)
 {
   touchwin(owl_global_get_curs_recwin(&g));
-  touchwin(owl_global_get_curs_sepwin(&g));
 
-  sepbar("");
+  sepbar_dirty();
 
   owl_global_set_needrefresh(&g);
 }

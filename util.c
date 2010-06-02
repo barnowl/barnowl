@@ -9,15 +9,18 @@
 
 #include <glib-object.h>
 
-void sepbar(const char *in)
+void sepbar_dirty(void)
 {
-  WINDOW *sepwin;
+  owl_window_dirty(owl_global_get_curs_sepwin(&g));
+}
+
+void sepbar_redraw(owl_window *w, WINDOW *sepwin, void *user_data)
+{
   const owl_messagelist *ml;
   const owl_view *v;
   int x, y, i;
   const char *foo, *appendtosepbar;
 
-  sepwin=owl_global_get_curs_sepwin(&g);
   ml=owl_global_get_msglist(&g);
   v=owl_global_get_current_view(&g);
 
@@ -100,12 +103,6 @@ void sepbar(const char *in)
     wattron(sepwin, A_REVERSE);
     wattroff(sepwin, A_BOLD);
   }
-  
-  if (in) {
-    getyx(sepwin, y, x);
-    wmove(sepwin, y, x+2);
-    waddstr(sepwin, in);
-  }
 
   appendtosepbar = owl_global_get_appendtosepbar(&g);
   if (appendtosepbar && *appendtosepbar) {
@@ -121,7 +118,6 @@ void sepbar(const char *in)
     
   wattroff(sepwin, A_BOLD);
   wattroff(sepwin, A_REVERSE);
-  owl_global_set_needrefresh(&g);
 }
 
 char **atokenize(const char *buffer, const char *sep, int *i)
