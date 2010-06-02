@@ -38,6 +38,8 @@ GType owl_global_notifier_get_type (void);
 
 OwlGlobalNotifier* owl_global_notifier_new(owl_global *g);
 
+void owl_global_notifier_emit_view_changed(OwlGlobalNotifier *gn);
+
 G_END_DECLS
 
 #endif /* __BARNOWL_GLOBAL_NOTIFIER_H__ */

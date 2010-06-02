@@ -49,6 +49,14 @@ for my $var (@vars) {
 print <<EOT;
 };
 
+/* signals */
+enum {
+  VIEW_CHANGED,
+  LAST_SIGNAL
+};
+
+static guint notifier_signals[LAST_SIGNAL] = { 0 };
+
 G_DEFINE_TYPE(OwlGlobalNotifier, owl_global_notifier, G_TYPE_OBJECT)
 
 static void owl_global_notifier_set_property(GObject *object,
@@ -141,6 +149,19 @@ static void owl_global_notifier_class_init(OwlGlobalNotifierClass *klass)
   gobject_class->get_property = owl_global_notifier_get_property;
   gobject_class->set_property = owl_global_notifier_set_property;
 
+  /* Create signals */
+
+  notifier_signals[VIEW_CHANGED] =
+    g_signal_new("view-changed",
+                 G_TYPE_FROM_CLASS(gobject_class),
+                 G_SIGNAL_RUN_FIRST,
+                 0,
+                 NULL, NULL,
+                 g_cclosure_marshal_VOID__VOID,
+                 G_TYPE_NONE,
+                 0,
+                 NULL);
+
   /* Register properties */
   
   pspec = g_param_spec_int("rightshift",
@@ -204,5 +225,10 @@ OwlGlobalNotifier *owl_global_notifier_new(owl_global *g)
   gn = g_object_new(OWL_TYPE_GLOBAL_NOTIFIER, NULL);
   gn->g = g;
   return gn;
+}
+
+void owl_global_notifier_emit_view_changed(OwlGlobalNotifier *gn)
+{
+  g_signal_emit(gn, notifier_signals[VIEW_CHANGED], 0);
 }
 EOT
