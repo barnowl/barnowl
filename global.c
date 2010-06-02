@@ -338,7 +338,7 @@ owl_cmddict *owl_global_get_cmddict(owl_global *g) {
 /* rightshift */
 
 void owl_global_set_rightshift(owl_global *g, int i) {
-  g->rightshift=i;
+  g_object_set(g->gn, "rightshift", i, NULL);
 }
 
 int owl_global_get_rightshift(const owl_global *g) {

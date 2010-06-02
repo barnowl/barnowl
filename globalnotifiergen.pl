@@ -59,7 +59,7 @@ static void owl_global_notifier_set_property(GObject *object,
   switch (property_id) {
     /* normal properties */
     case PROP_RIGHTSHIFT:
-      owl_global_set_rightshift(notifier->g, g_value_get_int(value));
+      notifier->g->rightshift = g_value_get_int(value);
       break;
     /* generated from variable listings */
 EOT
