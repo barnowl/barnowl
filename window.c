@@ -332,6 +332,7 @@ void owl_window_set_cursor(owl_window *w)
 {
   cursor_owner = w;
   g_object_add_weak_pointer(G_OBJECT(w), (gpointer*) &cursor_owner);
+  owl_global_set_needrefresh(&g);
 }
 
 void owl_window_dirty(owl_window *w)
