@@ -37,6 +37,7 @@ enum {
   PROP_NONE,
   /* normal properties */
   PROP_RIGHTSHIFT,
+  PROP_CURMSG_VERT_OFFSET,
   /* generated from variable listings */
 EOT
 
@@ -60,6 +61,9 @@ static void owl_global_notifier_set_property(GObject *object,
     /* normal properties */
     case PROP_RIGHTSHIFT:
       notifier->g->rightshift = g_value_get_int(value);
+      break;
+    case PROP_CURMSG_VERT_OFFSET:
+      notifier->g->curmsg_vert_offset = g_value_get_int(value);
       break;
     /* generated from variable listings */
 EOT
@@ -102,6 +106,9 @@ static void owl_global_notifier_get_property(GObject *object,
     /* normal properties */
     case PROP_RIGHTSHIFT:
       g_value_set_int(value, owl_global_get_rightshift(notifier->g));
+      break;
+    case PROP_CURMSG_VERT_OFFSET:
+      g_value_set_int(value, owl_global_get_curmsg_vert_offset(notifier->g));
       break;
     /* generated from variable listings */
 EOT

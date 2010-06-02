@@ -589,7 +589,7 @@ int owl_global_get_curmsg_vert_offset(const owl_global *g) {
 }
 
 void owl_global_set_curmsg_vert_offset(owl_global *g, int i) {
-  g->curmsg_vert_offset=i;
+  g_object_set(g->gn, "curmsg-vert-offset", i, NULL);
 }
 
 /* startup args */
