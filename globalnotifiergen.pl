@@ -17,6 +17,7 @@ foreach $file (@ARGV) {
 
         my $detailname = $altvarname;
         $detailname =~ s/[^a-zA-Z0-9]/-/g;
+        $detailname =~ s/^[^a-zA-Z]+//;
 
         push @vars, {type => $vartype,
                      name => $varname,

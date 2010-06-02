@@ -7,6 +7,7 @@
 #include <sys/ioctl.h>
 #include <time.h>
 #include "owl.h"
+#include "globalnotifier.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 256
@@ -16,6 +17,7 @@ void owl_global_init(owl_global *g) {
   struct hostent *hent;
   char hostname[MAXHOSTNAMELEN];
   char *cd;
+  g->gn = owl_global_notifier_new(g);
 
   g->malloced=0;
   g->freed=0;

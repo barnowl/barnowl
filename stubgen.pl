@@ -13,6 +13,7 @@ foreach $file (@ARGV) {
     $altvarname = $3 if ($3);
     my $detailname = $altvarname;
     $detailname =~ s/[^a-zA-Z0-9]/-/g;
+    $detailname =~ s/^[^a-zA-Z]+//;
     if ($vartype =~ /^BOOL/) {
         print <<EOT;
 void owl_global_set_${altvarname}_on(owl_global *g) {
