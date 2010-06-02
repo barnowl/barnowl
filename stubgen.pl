@@ -17,10 +17,12 @@ foreach $file (@ARGV) {
     if ($vartype =~ /^BOOL/) {
         print <<EOT;
 void owl_global_set_${altvarname}_on(owl_global *g) {
-  g_object_set(G_OBJECT(g->gn), "$detailname", TRUE, NULL);
+  owl_variable_set_bool_on(&g->vars, "$altvarname");
+  g_object_notify(G_OBJECT(g->gn), "$detailname");
 }
 void owl_global_set_${altvarname}_off(owl_global *g) {
-  g_object_set(G_OBJECT(g->gn), "$detailname", FALSE, NULL);
+  owl_variable_set_bool_off(&g->vars, "$altvarname");
+  g_object_notify(G_OBJECT(g->gn), "$detailname");
 }
 int owl_global_is_$altvarname(const owl_global *g) {
   return owl_variable_get_bool(&g->vars, "$varname");
@@ -29,7 +31,8 @@ EOT
     } elsif ($vartype =~ /^PATH/ or $vartype =~ /^STRING/) {
         print <<EOT;
 void owl_global_set_${altvarname}(owl_global *g, const char *text) {
-  g_object_set(G_OBJECT(g->gn), "$detailname", text, NULL);
+  owl_variable_set_string(&g->vars, "$altvarname", text);
+  g_object_notify(G_OBJECT(g->gn), "$detailname");
 }
 const char *owl_global_get_$altvarname(const owl_global *g) {
   return owl_variable_get_string(&g->vars, "$varname");
@@ -38,7 +41,8 @@ EOT
     } elsif ($vartype =~ /^INT/ or $vartype =~ /^ENUM/) {
         print <<EOT;
 void owl_global_set_${altvarname}(owl_global *g, int n) {
-  g_object_set(G_OBJECT(g->gn), "$detailname", n, NULL);
+  owl_variable_set_int(&g->vars, "$altvarname", n);
+  g_object_notify(G_OBJECT(g->gn), "$detailname");
 }
 int owl_global_get_$altvarname(const owl_global *g) {
   return owl_variable_get_int(&g->vars, "$varname");

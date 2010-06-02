@@ -61,10 +61,10 @@ static void owl_global_notifier_set_property(GObject *object,
   switch (property_id) {
     /* normal properties */
     case PROP_RIGHTSHIFT:
-      notifier->g->rightshift = g_value_get_int(value);
+      owl_global_set_rightshift(notifier->g, g_value_get_int(value));
       break;
     case PROP_CURMSG_VERT_OFFSET:
-      notifier->g->curmsg_vert_offset = g_value_get_int(value);
+      owl_global_set_curmsg_vert_offset(notifier->g, g_value_get_int(value));
       break;
     /* generated from variable listings */
 EOT

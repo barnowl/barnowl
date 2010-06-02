@@ -340,7 +340,8 @@ owl_cmddict *owl_global_get_cmddict(owl_global *g) {
 /* rightshift */
 
 void owl_global_set_rightshift(owl_global *g, int i) {
-  g_object_set(g->gn, "rightshift", i, NULL);
+  g->rightshift = i;
+  g_object_notify(G_OBJECT(g->gn), "rightshift");
 }
 
 int owl_global_get_rightshift(const owl_global *g) {
@@ -591,7 +592,8 @@ int owl_global_get_curmsg_vert_offset(const owl_global *g) {
 }
 
 void owl_global_set_curmsg_vert_offset(owl_global *g, int i) {
-  g_object_set(g->gn, "curmsg-vert-offset", i, NULL);
+  g->curmsg_vert_offset = i;
+  g_object_notify(G_OBJECT(g->gn), "curmsg-vert-offset");
 }
 
 /* startup args */
