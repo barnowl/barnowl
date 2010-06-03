@@ -42,6 +42,7 @@ static void _owl_window_realize(owl_window *w);
 static void _owl_window_unrealize(owl_window *w);
 
 static owl_window *cursor_owner;
+static owl_window *default_cursor;
 
 G_DEFINE_TYPE (OwlWindow, owl_window, G_TYPE_OBJECT)
 
@@ -333,8 +334,28 @@ void owl_window_set_cursor(owl_window *w)
   if (cursor_owner)
     g_object_remove_weak_pointer(G_OBJECT(cursor_owner), (gpointer*) &cursor_owner);
   cursor_owner = w;
-  g_object_add_weak_pointer(G_OBJECT(w), (gpointer*) &cursor_owner);
+  if (w)
+    g_object_add_weak_pointer(G_OBJECT(w), (gpointer*) &cursor_owner);
   owl_global_set_needrefresh(&g);
+}
+
+void owl_window_set_default_cursor(owl_window *w)
+{
+  if (default_cursor)
+    g_object_remove_weak_pointer(G_OBJECT(default_cursor), (gpointer*) &default_cursor);
+  default_cursor = w;
+  if (w)
+    g_object_add_weak_pointer(G_OBJECT(w), (gpointer*) &default_cursor);
+  owl_global_set_needrefresh(&g);
+}
+
+static owl_window *_get_cursor(void)
+{
+  if (cursor_owner && owl_window_is_realized(cursor_owner))
+    return cursor_owner;
+  if (default_cursor && owl_window_is_realized(default_cursor))
+    return default_cursor;
+  return owl_window_get_screen();
 }
 
 void owl_window_dirty(owl_window *w)
@@ -388,15 +409,18 @@ NOTE: This function shouldn't be called outside the event loop
 */
 void owl_window_redraw_scheduled(void)
 {
+  owl_window *cursor;
+
   _owl_window_redraw_subtree(owl_window_get_screen());
   update_panels();
-  if (cursor_owner && cursor_owner->win) {
+  cursor = _get_cursor();
+  if (cursor && cursor->win) {
     /* untouch it to avoid drawing; window should be clean now, but we must
      * clean up in case there was junk left over on a subwin (cleaning up after
      * subwin drawing isn't sufficient because a wsyncup messes up subwin
      * ancestors */
-    untouchwin(cursor_owner->win);
-    wnoutrefresh(cursor_owner->win);
+    untouchwin(cursor->win);
+    wnoutrefresh(cursor->win);
   }
 }
 

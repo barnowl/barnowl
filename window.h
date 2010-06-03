@@ -43,6 +43,7 @@ int owl_window_is_realized(owl_window *w);
 int owl_window_is_toplevel(owl_window *w);
 
 void owl_window_set_cursor(owl_window *w);
+void owl_window_set_default_cursor(owl_window *w);
 
 void owl_window_dirty(owl_window *w);
 void owl_window_dirty_children(owl_window *w);
@@ -52,7 +53,6 @@ void owl_window_get_position(owl_window *w, int *nlines, int *ncols, int *begin_
 void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, int begin_x);
 void owl_window_move(owl_window *w, int begin_y, int begin_x);
 void owl_window_resize(owl_window *w, int nlines, int ncols);
-void owl_window_recompute_position(owl_window *w);
 
 void owl_window_top(owl_window *w);
 owl_window *owl_window_above(owl_window *w);
