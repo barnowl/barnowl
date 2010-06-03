@@ -1249,11 +1249,7 @@ void owl_function_unsubscribe(const char *class, const char *inst, const char *r
 
 void owl_function_full_redisplay(void)
 {
-  touchwin(owl_global_get_curs_recwin(&g));
-
-  sepbar_dirty();
-
-  owl_global_set_needrefresh(&g);
+  /* FIXME: this maybe should do something; dirty every window? */
 }
 
 void owl_function_popless_text(const char *text)

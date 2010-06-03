@@ -395,6 +395,7 @@ typedef struct _owl_mainwin {
   int curtruncated;
   int lasttruncated;
   int lastdisplayed;
+  owl_window *window;
 } owl_mainwin;
 
 typedef struct _owl_viewwin {
@@ -586,7 +587,6 @@ typedef struct _owl_global {
   WINDOW *input_pad;
   owl_mainpanel mainpanel;
   gulong typwin_erase_id;
-  PANEL *recpan, *seppan;
   int needrefresh;
   int rightshift;
   volatile sig_atomic_t resizepending;

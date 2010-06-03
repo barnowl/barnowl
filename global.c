@@ -81,7 +81,6 @@ void owl_global_init(owl_global *g) {
   g->nextmsgid=0;
 
   owl_mainpanel_init(&(g->mainpanel));
-  _owl_global_setup_windows(g);
 
   /* Fill in some variables which don't have constant defaults */
   /* TODO: come back later and check passwd file first */
@@ -94,7 +93,7 @@ void owl_global_init(owl_global *g) {
   owl_free(cd);
 
   owl_messagelist_create(&(g->msglist));
-  owl_mainwin_init(&(g->mw));
+  owl_mainwin_init(&(g->mw), g->mainpanel.recwin);
   owl_popwin_init(&(g->pw));
   owl_msgwin_init(&(g->msgwin), g->mainpanel.msgwin);
   g_signal_connect(g->mainpanel.sepwin, "redraw", G_CALLBACK(sepbar_redraw), NULL);
@@ -158,18 +157,6 @@ void _owl_panel_set_window(PANEL **pan, WINDOW *win)
   } else {
     *pan = new_panel(win);
   }
-}
-
-void _owl_global_setup_windows(owl_global *g) {
-  int cols, recwinlines;
-
-  cols=g->cols;
-
-  recwinlines = owl_global_get_recwin_lines(g);
-
-  /* create the new windows */
-  _owl_panel_set_window(&g->recpan, newwin(recwinlines, cols, 0, 0));
-  _owl_panel_set_window(&g->seppan, newwin(1, cols, recwinlines, 0));
 }
 
 owl_context *owl_global_get_context(owl_global *g) {
@@ -288,10 +275,6 @@ owl_keyhandler *owl_global_get_keyhandler(owl_global *g) {
 }
 
 /* curses windows */
-
-WINDOW *owl_global_get_curs_recwin(const owl_global *g) {
-  return panel_window(g->recpan);
-}
 
 owl_window *owl_global_get_curs_sepwin(const owl_global *g) {
   return g->mainpanel.sepwin;
@@ -506,9 +489,6 @@ void owl_global_relayout(owl_global *g) {
   g->relayoutpending = 0;
 
   owl_function_debugmsg("Relayouting...");
-
-  /* re-initialize the windows */
-  _owl_global_setup_windows(g);
 
   /* in case any styles rely on the current width */
   owl_messagelist_invalidate_formats(owl_global_get_msglist(g));

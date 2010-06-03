@@ -1,23 +1,31 @@
 #include "owl.h"
 
-void owl_mainwin_init(owl_mainwin *mw)
+static void owl_mainwin_redraw(owl_window *w, WINDOW *recwin, void *user_data);
+
+void owl_mainwin_init(owl_mainwin *mw, owl_window *window)
 {
   mw->curtruncated=0;
   mw->lastdisplayed=-1;
+  mw->window = g_object_ref(window);
+  g_signal_connect(window, "redraw", G_CALLBACK(owl_mainwin_redraw), mw);
 }
 
 void owl_mainwin_redisplay(owl_mainwin *mw)
+{
+  owl_window_dirty(mw->window);
+}
+
+static void owl_mainwin_redraw(owl_window *w, WINDOW *recwin, void *user_data)
 {
   owl_message *m;
   int i, lines, isfull, viewsize;
   int x, y, savey, recwinlines, start;
   int topmsg, curmsg, markedmsgid, fgcolor, bgcolor;
-  WINDOW *recwin;
   const owl_view *v;
   GList *fl;
   const owl_filter *f;
+  owl_mainwin *mw = user_data;
 
-  recwin = owl_global_get_curs_recwin(&g);
   topmsg = owl_global_get_topmsg(&g);
   curmsg = owl_global_get_curmsg(&g);
   markedmsgid = owl_global_get_markedmsgid(&g);
@@ -87,7 +95,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
     if (y+lines > recwinlines) mw->lasttruncated=1;
     if (y+lines > recwinlines-1) {
       isfull=1;
-      owl_message_curs_waddstr(m, owl_global_get_curs_recwin(&g),
+      owl_message_curs_waddstr(m, recwin,
 			       start,
 			       start+recwinlines-y,
 			       owl_global_get_rightshift(&g),
@@ -95,7 +103,7 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
 			       fgcolor, bgcolor);
     } else {
       /* otherwise print the whole thing */
-      owl_message_curs_waddstr(m, owl_global_get_curs_recwin(&g),
+      owl_message_curs_waddstr(m, recwin,
 			       start,
 			       start+lines,
 			       owl_global_get_rightshift(&g),
@@ -138,8 +146,6 @@ void owl_mainwin_redisplay(owl_mainwin *mw)
     wattroff(recwin, A_BOLD);
   }
   mw->lastdisplayed=i-1;
-
-  owl_global_set_needrefresh(&g);
 }
 
 
