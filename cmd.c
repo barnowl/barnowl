@@ -88,7 +88,6 @@ char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const c
   argv=owl_parseline(tmpbuff, &argc);
   if (argc < 0) {
     owl_free(tmpbuff);
-    sepbar_dirty();
     owl_function_makemsg("Unbalanced quotes");
     return NULL;
   } 
