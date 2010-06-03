@@ -13,6 +13,8 @@
 #define MAXHOSTNAMELEN 256
 #endif
 
+static void _owl_global_init_windows(owl_global *g);
+
 void owl_global_init(owl_global *g) {
   struct hostent *hent;
   char hostname[MAXHOSTNAMELEN];
@@ -79,8 +81,6 @@ void owl_global_init(owl_global *g) {
   owl_history_set_norepeats(&(g->cmdhist));
   g->nextmsgid=0;
 
-  owl_mainpanel_init(&(g->mainpanel));
-
   /* Fill in some variables which don't have constant defaults */
   /* TODO: come back later and check passwd file first */
   g->homedir=owl_strdup(getenv("HOME"));
@@ -92,10 +92,8 @@ void owl_global_init(owl_global *g) {
   owl_free(cd);
 
   owl_messagelist_create(&(g->msglist));
-  owl_mainwin_init(&(g->mw), g->mainpanel.recwin);
-  owl_popwin_init(&(g->pw));
-  owl_msgwin_init(&(g->msgwin), g->mainpanel.msgwin);
-  owl_sepbar_init(g->mainpanel.sepwin);
+
+  _owl_global_init_windows(g);
 
   g->aim_screenname=NULL;
   g->aim_screenname_for_filters=NULL;
@@ -120,6 +118,18 @@ void owl_global_init(owl_global *g) {
   owl_list_create(&(g->psa_list));
   g->timerlist = NULL;
   g->interrupted = FALSE;
+}
+
+static void _owl_global_init_windows(owl_global *g)
+{
+  /* Create the main window */
+  owl_mainpanel_init(&(g->mainpanel));
+
+  /* Create the widgets */
+  owl_mainwin_init(&(g->mw), g->mainpanel.recwin);
+  owl_popwin_init(&(g->pw));
+  owl_msgwin_init(&(g->msgwin), g->mainpanel.msgwin);
+  owl_sepbar_init(g->mainpanel.sepwin);
 
   /* set up a pad for input */
   g->input_pad = newpad(1, 1);
