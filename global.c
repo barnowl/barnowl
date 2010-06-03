@@ -218,6 +218,7 @@ int owl_global_get_curmsg(const owl_global *g) {
 
 void owl_global_set_curmsg(owl_global *g, int i) {
   g->curmsg=i;
+  g_object_notify(G_OBJECT(g->gn), "curmsg");
   /* we will reset the vertical offset from here */
   /* we might want to move this out to the functions later */
   owl_global_set_curmsg_vert_offset(g, 0);

@@ -38,6 +38,7 @@ enum {
   PROP_NONE,
   /* normal properties */
   PROP_RIGHTSHIFT,
+  PROP_CURMSG,
   PROP_CURMSG_VERT_OFFSET,
   /* generated from variable listings */
 EOT
@@ -71,6 +72,9 @@ static void owl_global_notifier_set_property(GObject *object,
     /* normal properties */
     case PROP_RIGHTSHIFT:
       owl_global_set_rightshift(notifier->g, g_value_get_int(value));
+      break;
+    case PROP_CURMSG:
+      owl_global_set_curmsg(notifier->g, g_value_get_int(value));
       break;
     case PROP_CURMSG_VERT_OFFSET:
       owl_global_set_curmsg_vert_offset(notifier->g, g_value_get_int(value));
@@ -116,6 +120,9 @@ static void owl_global_notifier_get_property(GObject *object,
     /* normal properties */
     case PROP_RIGHTSHIFT:
       g_value_set_int(value, owl_global_get_rightshift(notifier->g));
+      break;
+    case PROP_CURMSG:
+      g_value_set_int(value, owl_global_get_curmsg(notifier->g));
       break;
     case PROP_CURMSG_VERT_OFFSET:
       g_value_set_int(value, owl_global_get_curmsg_vert_offset(notifier->g));
@@ -185,6 +192,26 @@ static void owl_global_notifier_class_init(OwlGlobalNotifierClass *klass)
                            G_PARAM_READABLE|G_PARAM_WRITABLE
                           |G_PARAM_STATIC_NAME|G_PARAM_STATIC_NICK|G_PARAM_STATIC_BLURB);
   g_object_class_install_property(gobject_class, PROP_RIGHTSHIFT, pspec);
+  
+  pspec = g_param_spec_int("curmsg",
+                           "curmsg",
+                           "The current message",
+                           0,
+                           INT_MAX,
+                           0,
+                           G_PARAM_READABLE|G_PARAM_WRITABLE
+                          |G_PARAM_STATIC_NAME|G_PARAM_STATIC_NICK|G_PARAM_STATIC_BLURB);
+  g_object_class_install_property(gobject_class, PROP_CURMSG, pspec);
+  
+  pspec = g_param_spec_int("curmsg-vert-offset",
+                           "curmsg_vert_offset",
+                           "How offset the current message is",
+                           0,
+                           INT_MAX,
+                           0,
+                           G_PARAM_READABLE|G_PARAM_WRITABLE
+                          |G_PARAM_STATIC_NAME|G_PARAM_STATIC_NICK|G_PARAM_STATIC_BLURB);
+  g_object_class_install_property(gobject_class, PROP_CURMSG_VERT_OFFSET, pspec);
 
 EOT
 for my $var (@vars) {
