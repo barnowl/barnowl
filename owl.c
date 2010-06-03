@@ -457,8 +457,6 @@ static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
 {
   /* if a resize has been scheduled, deal with it */
   owl_global_resize(&g, 0, 0);
-  /* also handle relayouts */
-  owl_global_relayout(&g);
 
   /* update the terminal if we need to */
   if (owl_global_is_needrefresh(&g)) {

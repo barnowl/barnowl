@@ -1,13 +1,31 @@
 #include "owl.h"
 
 static void owl_mainwin_redraw(owl_window *w, WINDOW *recwin, void *user_data);
+static void owl_mainwin_resized(owl_window *w, void *user_data);
 
 void owl_mainwin_init(owl_mainwin *mw, owl_window *window)
 {
   mw->curtruncated=0;
   mw->lastdisplayed=-1;
   mw->window = g_object_ref(window);
+  /* for now, just assume this object lasts forever */
   g_signal_connect(window, "redraw", G_CALLBACK(owl_mainwin_redraw), mw);
+  g_signal_connect(window, "resized", G_CALLBACK(owl_mainwin_resized), mw);
+}
+
+static void owl_mainwin_resized(owl_window *w, void *user_data)
+{
+  owl_mainwin *mw = user_data;
+
+  /* in case any styles rely on the current width */
+  owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
+
+  /* recalculate the topmsg to make sure the current message is on
+   * screen */
+  owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
+
+  /* Schedule a redraw */
+  owl_window_dirty(mw->window);
 }
 
 void owl_mainwin_redisplay(owl_mainwin *mw)

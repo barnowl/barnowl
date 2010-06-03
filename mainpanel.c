@@ -53,9 +53,6 @@ void owl_mainpanel_layout_contents(owl_mainpanel *mp)
   owl_window_set_position(mp->sepwin, 1, cols, mp->recwinlines, 0);
   owl_window_set_position(mp->msgwin, 1, cols, mp->recwinlines+1, 0);
   owl_window_set_position(mp->typwin, typwin_lines, cols, mp->recwinlines+2, 0);
-
-  /* TEMPORARY */
-  owl_global_set_relayout_pending(&g);
 }
 
 void owl_mainpanel_cleanup(owl_mainpanel *mp)

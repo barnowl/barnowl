@@ -590,7 +590,6 @@ typedef struct _owl_global {
   int needrefresh;
   int rightshift;
   volatile sig_atomic_t resizepending;
-  int relayoutpending;
   char *thishost;
   char *homedir;
   char *confdir;
