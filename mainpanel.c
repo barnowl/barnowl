@@ -1,7 +1,5 @@
 #include "owl.h"
 
-static void owl_mainpanel_size(owl_window *parent, void *user_data);
-
 void owl_mainpanel_init(owl_mainpanel *mp)
 {
   /* Create windows */
@@ -12,22 +10,12 @@ void owl_mainpanel_init(owl_mainpanel *mp)
   mp->typwin = owl_window_new(mp->panel);
 
   /* Set up sizing hooks */
-  owl_signal_connect_object(owl_window_get_screen(), "resized", G_CALLBACK(owl_mainpanel_size), mp->panel, 0);
+  owl_signal_connect_object(owl_window_get_screen(), "resized", G_CALLBACK(owl_window_fill_parent_cb), mp->panel, 0);
   g_signal_connect_swapped(mp->panel, "resized", G_CALLBACK(owl_mainpanel_layout_contents), mp);
 
   /* Bootstrap the sizes and go */
-  owl_mainpanel_size(owl_window_get_screen(), mp->panel);
+  owl_window_fill_parent_cb(owl_window_get_screen(), mp->panel);
   owl_window_show_all(mp->panel);
-}
-
-static void owl_mainpanel_size(owl_window *parent, void *user_data)
-{
-  int lines, cols;
-  owl_window *panel = user_data;
-
-  /* Make this panel full-screen */
-  owl_window_get_position(parent, &lines, &cols, NULL, NULL);
-  owl_window_set_position(panel, lines, cols, 0, 0);
 }
 
 void owl_mainpanel_layout_contents(owl_mainpanel *mp)

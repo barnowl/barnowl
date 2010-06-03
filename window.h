@@ -57,6 +57,7 @@ void owl_window_resize(owl_window *w, int nlines, int ncols);
 /* Standard callback functions in windowcb.c */
 
 void owl_window_erase_cb(owl_window *w, WINDOW *win, void *user_data);
+void owl_window_fill_parent_cb(owl_window *parent, void *user_data);
 
 G_END_DECLS
 
