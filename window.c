@@ -474,6 +474,7 @@ void owl_window_move(owl_window *w, int begin_y, int begin_x)
 
 void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, int begin_x)
 {
+  int resized;
   /* can't move the screen */
   if (w->is_screen) {
     begin_y = begin_x = 0;
@@ -483,13 +484,15 @@ void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, 
       && w->begin_y == begin_y && w->begin_x == begin_x) {
     return;
   }
+  resized = w->nlines != nlines || w->ncols != ncols;
 
   _owl_window_unrealize(w);
   w->begin_y = begin_y;
   w->begin_x = begin_x;
   w->nlines = nlines;
   w->ncols = ncols;
-  g_signal_emit(w, window_signals[RESIZED], 0);
+  if (resized)
+    g_signal_emit(w, window_signals[RESIZED], 0);
   if (w->shown) {
     /* ncurses is screwy: give up and recreate windows at the right place */
     _owl_window_realize(w);
