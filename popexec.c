@@ -26,7 +26,7 @@ owl_popexec *owl_popexec_new(const char *command)
   pe->vwin=v=owl_global_get_viewwin(&g);
 
   owl_popwin_up(pw);
-  owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless");
+  owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless", NULL);
   owl_viewwin_init_text(v, owl_popwin_get_content(pw), "");
   owl_viewwin_set_onclose_hook(v, owl_popexec_viewwin_onclose, pe);
   pe->refcount++;

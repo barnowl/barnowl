@@ -463,16 +463,6 @@ static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
   /* update the terminal if we need to */
   if (owl_global_is_needrefresh(&g)) {
     /* Redraw the screen */
-
-    /* HACK: move the cursor to unmanaged window if necessary; these should be
-     * associated with the context or something. */
-    if (!owl_popwin_is_active(owl_global_get_popwin(&g))
-	&& owl_global_get_typwin(&g)) {
-      owl_window_set_cursor(owl_global_get_curs_typwin(&g));
-    } else {
-      owl_window_set_cursor(NULL);
-    }
-
     owl_window_redraw_scheduled();
     doupdate();
     owl_global_set_noneedrefresh(&g);
@@ -548,7 +538,7 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: processing config file");
 
   owl_global_pop_context(&g);
-  owl_global_push_context(&g, OWL_CTX_READCONFIG, NULL, NULL);
+  owl_global_push_context(&g, OWL_CTX_READCONFIG, NULL, NULL, NULL);
 
   perlerr=owl_perlconfig_initperl(opts.configfile, &argc, &argv, &env);
   if (perlerr) {
@@ -615,7 +605,7 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: setting context interactive");
 
   owl_global_pop_context(&g);
-  owl_global_push_context(&g, OWL_CTX_READCONFIG|OWL_CTX_RECV, NULL, "recv");
+  owl_global_push_context(&g, OWL_CTX_READCONFIG|OWL_CTX_RECV, NULL, "recv", NULL);
 
   owl_select_add_pre_select_action(owl_refresh_pre_select_action, NULL, NULL);
   owl_select_add_pre_select_action(owl_process_messages, NULL, NULL);

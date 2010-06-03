@@ -291,7 +291,7 @@ void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin 
 
   owl_editwin_set_cbdata(e, data, cleanup);
   owl_editwin_set_callback(e, callback);
-  owl_global_push_context(&g, OWL_CTX_EDITMULTI, e, "editmulti");
+  owl_global_push_context(&g, OWL_CTX_EDITMULTI, e, "editmulti", owl_global_get_curs_typwin(&g));
 }
 
 static void owl_function_write_setup(const char *line, const char *noun, void (*callback)(owl_editwin *))
@@ -1259,7 +1259,7 @@ void owl_function_popless_text(const char *text)
   v=owl_global_get_viewwin(&g);
 
   owl_popwin_up(pw);
-  owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless");
+  owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless", NULL);
   owl_viewwin_init_text(v, owl_popwin_get_content(pw), text);
 }
 
@@ -1272,7 +1272,7 @@ void owl_function_popless_fmtext(const owl_fmtext *fm)
   v=owl_global_get_viewwin(&g);
 
   owl_popwin_up(pw);
-  owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless");
+  owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless", NULL);
   owl_viewwin_init_fmtext(v, owl_popwin_get_content(pw), fm);
 }
 
@@ -1894,7 +1894,7 @@ void owl_function_start_command(const char *line)
 
   owl_editwin_insert_string(tw, line);
 
-  owl_global_push_context(&g, OWL_CTX_EDITLINE, tw, "editline");
+  owl_global_push_context(&g, OWL_CTX_EDITLINE, tw, "editline", owl_global_get_curs_typwin(&g));
   owl_editwin_set_callback(tw, owl_callback_command);
 }
 
@@ -1906,7 +1906,7 @@ owl_editwin *owl_function_start_question(const char *line)
 
   owl_editwin_set_locktext(tw, line);
 
-  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse");
+  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse", owl_global_get_curs_typwin(&g));
   return tw;
 }
 
@@ -1920,7 +1920,7 @@ owl_editwin *owl_function_start_password(const char *line)
 
   owl_editwin_set_locktext(tw, line);
 
-  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse");
+  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse", owl_global_get_curs_typwin(&g));
   return tw;
 }
 

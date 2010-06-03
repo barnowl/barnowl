@@ -309,6 +309,7 @@ typedef struct _owl_context {
   int   mode;
   void *data;		/* determined by mode */
   char *keymap;
+  owl_window *cursor;
 } owl_context;
 
 typedef struct _owl_cmd {	/* command */
