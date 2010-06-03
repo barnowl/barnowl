@@ -506,37 +506,3 @@ void owl_window_resize(owl_window *w, int nlines, int ncols)
 {
   owl_window_set_position(w, nlines, ncols, w->begin_y, w->begin_x);
 }
-
-/** Stacking order **/
-
-void owl_window_top(owl_window *w) {
-  if (!w->pan) {
-    owl_function_debugmsg("Warning: owl_window_top only makes sense on top-level window");
-    return;
-  }
-  top_panel(w->pan);
-}
-
-owl_window *owl_window_above(owl_window *w) {
-  PANEL *pan;
-
-  if (!w->pan) {
-    owl_function_debugmsg("Warning: owl_window_above only makes sense on top-level window");
-    return NULL;
-  }
-  pan = panel_above(w->pan);
-  /* cast because panel_userptr pointlessly returns a const void * */
-  return pan ? (void*) panel_userptr(pan) : NULL;
-}
-
-owl_window *owl_window_below(owl_window *w) {
-  PANEL *pan;
-
-  if (!w->pan) {
-    owl_function_debugmsg("Warning: owl_window_above only makes sense on top-level window");
-    return NULL;
-  }
-  pan = panel_below(w->pan);
-  /* cast because panel_userptr pointlessly returns a const void * */
-  return pan ? (void*) panel_userptr(pan) : NULL;
-}
