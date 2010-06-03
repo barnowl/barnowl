@@ -449,15 +449,15 @@ void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, 
     return;
   }
 
-  w->begin_y = begin_y;
-  w->begin_x = begin_x;
-  w->nlines = nlines;
-  w->ncols = ncols;
   /* window is shown, we must try to have a window at the end */
   if (w->shown) {
     /* resizing in ncurses is hard: give up do a unrealize/realize */
     _owl_window_unrealize(w);
   }
+  w->begin_y = begin_y;
+  w->begin_x = begin_x;
+  w->nlines = nlines;
+  w->ncols = ncols;
   g_signal_emit(w, window_signals[RESIZED], 0);
   if (w->shown) {
     _owl_window_realize(w);
