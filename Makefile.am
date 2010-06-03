@@ -51,7 +51,7 @@ CODELIST_SRCS=list.c message.c mainwin.c popwin.c zephyr.c messagelist.c \
      zbuddylist.c popexec.c select.c wcwidth.c \
      glib_compat.c mainpanel.c msgwin.c sepbar.c
 
-NORMAL_SRCS = filterproc.c window.c
+NORMAL_SRCS = filterproc.c window.c windowcb.c
 
 BASE_SRCS = $(CODELIST_SRCS) $(NORMAL_SRCS)
 

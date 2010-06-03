@@ -427,12 +427,6 @@ void owl_window_redraw_scheduled(void)
   }
 }
 
-void owl_window_erase_cb(owl_window *w, WINDOW *win, void *user_data)
-{
-  werase(win);
-  owl_window_dirty_children(w);
-}
-
 /** Window position **/
 
 void owl_window_get_position(owl_window *w, int *nlines, int *ncols, int *begin_y, int *begin_x)
