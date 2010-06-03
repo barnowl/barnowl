@@ -40,6 +40,7 @@ OwlGlobalNotifier* owl_global_notifier_new(owl_global *g);
 
 void owl_global_notifier_emit_view_changed(OwlGlobalNotifier *gn);
 void owl_global_notifier_emit_message_received(OwlGlobalNotifier *gn, owl_message *msg);
+void owl_global_notifier_emit_command_executed(OwlGlobalNotifier *gn);
 
 G_END_DECLS
 

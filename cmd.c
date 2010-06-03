@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "owl.h"
+#include "globalnotifier.h"
 
 extern const owl_cmd commands_to_init[];
 
@@ -72,6 +73,8 @@ char *_owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const 
   if (!strcmp(argv[0], "")) {
   } else if (NULL != (cmd = owl_dict_find_element(cd, argv[0]))) {
     retval = owl_cmd_execute(cmd, cd, ctx, argc, argv, buff);
+    /* This really should be attached to the cmd or cmddict... */
+    owl_global_notifier_emit_command_executed(g.gn);
   } else {
     owl_function_makemsg("Unknown command '%s'.", buff);
   }
@@ -102,7 +105,6 @@ char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const c
 
   owl_parse_delete(argv, argc);
   owl_free(tmpbuff);
-  sepbar_dirty();
   return retval;
 }
 

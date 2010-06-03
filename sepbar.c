@@ -6,12 +6,8 @@ void owl_sepbar_init(owl_window *w)
 {
   g_signal_connect(w, "redraw", G_CALLBACK(sepbar_redraw), NULL);
   owl_dirty_window_on_signal(w, g.gn, "message-received");
+  owl_dirty_window_on_signal(w, g.gn, "command-executed");
   owl_window_dirty(w);
-}
-
-void sepbar_dirty(void)
-{
-  owl_window_dirty(owl_global_get_curs_sepwin(&g));
 }
 
 static void sepbar_redraw(owl_window *w, WINDOW *sepwin, void *user_data)
