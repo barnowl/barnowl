@@ -11,6 +11,7 @@ void owl_mainwin_init(owl_mainwin *mw, owl_window *window)
   /* for now, just assume this object lasts forever */
   g_signal_connect(window, "redraw", G_CALLBACK(owl_mainwin_redraw), mw);
   g_signal_connect(window, "resized", G_CALLBACK(owl_mainwin_resized), mw);
+  owl_window_dirty(window);
 
   /* connect a ton of dependencies */
   owl_dirty_window_on_signal(window, g.gn, "notify::rightshift");

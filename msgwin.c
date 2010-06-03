@@ -9,6 +9,7 @@ void owl_msgwin_init(owl_msgwin *msgwin, owl_window *window)
   msgwin->msg = NULL;
   msgwin->window = g_object_ref(window);
   msgwin->redraw_id = g_signal_connect(window, "redraw", G_CALLBACK(owl_msgwin_redraw), msgwin);
+  owl_window_dirty(window);
 }
 
 static void owl_msgwin_redraw(owl_window *w, WINDOW *curswin, void *msgwin_)
