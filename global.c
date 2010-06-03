@@ -467,7 +467,7 @@ void owl_global_get_terminal_size(int *lines, int *cols) {
 }
 
 void owl_global_resize(owl_global *g, int lines, int cols) {
-  /* resize the screen.  If x or y is 0 use the terminal size */
+  /* resize the screen.  If lines or cols is 0 use the terminal size */
   if (!g->resizepending) return;
   g->resizepending = 0;
 
