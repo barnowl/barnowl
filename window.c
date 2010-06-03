@@ -302,6 +302,8 @@ static void _owl_window_realize(owl_window *w)
       || !w->shown
       || w->win != NULL)
     return;
+  if (w->nlines <= 0 || w->ncols <= 0)
+    return;
   _owl_window_create_curses(w);
   if (w->win == NULL)
     return;
