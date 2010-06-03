@@ -3383,8 +3383,6 @@ void owl_function_makemsg(const char *fmt, ...)
   va_list ap;
   char *str;
 
-  if (!owl_global_get_curs_msgwin(&g)) return;
-
   va_start(ap, fmt);
   str = g_strdup_vprintf(fmt, ap);
   va_end(ap);

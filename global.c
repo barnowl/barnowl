@@ -280,10 +280,6 @@ owl_window *owl_global_get_curs_sepwin(const owl_global *g) {
   return g->mainpanel.sepwin;
 }
 
-owl_window *owl_global_get_curs_msgwin(const owl_global *g) {
-  return g->msgwin.window;
-}
-
 owl_window *owl_global_get_curs_typwin(const owl_global *g) {
   return g->mainpanel.typwin;
 }
