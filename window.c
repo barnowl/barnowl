@@ -228,13 +228,16 @@ static void _owl_window_create_curses(owl_window *w)
   if (w->is_screen) {
     resizeterm(w->nlines, w->ncols);
     w->win = stdscr;
-  } else if (w->pan) {
-    w->win = newwin(w->nlines, w->ncols, w->begin_y, w->begin_x);
-    replace_panel(w->pan, w->win);
   } else {
+    /* Explicitly disallow realizing an unlinked non-root */
     if (w->parent == NULL || w->parent->win == NULL)
       return;
-    w->win = derwin(w->parent->win, w->nlines, w->ncols, w->begin_y, w->begin_x);
+    if (w->pan) {
+      w->win = newwin(w->nlines, w->ncols, w->begin_y, w->begin_x);
+      replace_panel(w->pan, w->win);
+    } else {
+      w->win = derwin(w->parent->win, w->nlines, w->ncols, w->begin_y, w->begin_x);
+    }
   }
 }
 
