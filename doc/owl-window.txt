@@ -133,3 +133,44 @@ things. That's kinda weird anyway.
 (We may want to replace it with a normal callback at some
 point. Mostly using the GObject signals to play with them, and because
 we'd likely get some form of automatic binding generation.)
+
+----------------------
+Known issues and notes
+----------------------
+
+- owl_window does not export the underlying WINDOW*. This is
+  intentional. To safely resize windows, owl_window reserves the right
+  to destroy/recreate the window whenever it feels like. We can add
+  "window-realized"/"window-unrealized" signals if people really want
+  though.
+
+- This is currently using GObject. This buys us a lot of niceness, but
+  it is adding a new library with full-blown (and somewhat
+  overengineered) object system. It's very useful for prototyping, but
+  if people want, it can be replaced. I think it's actually
+  worthwhile, as most of the overengineering is explicitly designed
+  for language bindings, something we could be better at.
+
+- There is this really sketchy "three types in one" thing going on
+  with the screen, panels, and subwins. I'd like to refactor that into
+  some sort of subtyping, but that would ideally involve even more use
+  of GObject.
+
+- owl_mainwin is not very well ported and the windows do not have a
+  very consistent implementation. This is a known problem that will be
+  addressed in the next iteration. The current ports were done partly
+  as experiments for conventions and mostly to get something working
+  as soon as possible. Among things that should change is for the
+  widgets to all use new/delete/pointers instead of
+  init/cleanup/embed-in-struct.
+
+- There is a generated GObject that emits signals for all variables
+  and random other properties. It's currently not used much. It may be
+  useful later, or not. I think there is some value in having change
+  notifications for all our variables, although the initial port of
+  the mainwin and sepbar turned out not to use it.
+
+- The editwin and a few others are strange and keep track of signal
+  ids. This is somewhat a side effect of us not using GObject
+  everywhere; the signals can automatically disconnect in the right
+  contexts if we do.
