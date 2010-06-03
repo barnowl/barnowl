@@ -330,6 +330,8 @@ static void _owl_window_unrealize(owl_window *w)
 
 void owl_window_set_cursor(owl_window *w)
 {
+  if (cursor_owner)
+    g_object_remove_weak_pointer(G_OBJECT(cursor_owner), (gpointer*) &cursor_owner);
   cursor_owner = w;
   g_object_add_weak_pointer(G_OBJECT(w), (gpointer*) &cursor_owner);
   owl_global_set_needrefresh(&g);
