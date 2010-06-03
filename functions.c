@@ -1245,9 +1245,16 @@ void owl_function_unsubscribe(const char *class, const char *inst, const char *r
   }
 }
 
+static void _dirty_everything(owl_window *w) {
+  if (!owl_window_is_realized(w))
+    return;
+  owl_window_dirty(w);
+  owl_window_children_foreach(w, (GFunc)_dirty_everything, NULL);
+}
+
 void owl_function_full_redisplay(void)
 {
-  /* FIXME: this maybe should do something; dirty every window? */
+  _dirty_everything(owl_window_get_screen());
 }
 
 void owl_function_popless_text(const char *text)
