@@ -674,6 +674,11 @@ char *owl_slurp(FILE *fp)
   return buf;
 }
 
+gulong owl_dirty_window_on_signal(owl_window *w, gpointer sender, const gchar *detailed_signal)
+{
+  return owl_signal_connect_object(sender, detailed_signal, G_CALLBACK(owl_window_dirty), w, G_CONNECT_SWAPPED);
+}
+
 typedef struct { /*noproto*/
   GObject  *sender;
   gulong    signal_id;

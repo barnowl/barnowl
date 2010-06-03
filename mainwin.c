@@ -13,7 +13,7 @@ void owl_mainwin_init(owl_mainwin *mw, owl_window *window)
   g_signal_connect(window, "resized", G_CALLBACK(owl_mainwin_resized), mw);
 
   /* connect a ton of dependencies */
-  owl_signal_connect_object(g.gn, "notify::rightshift", G_CALLBACK(owl_window_dirty), window, G_CONNECT_SWAPPED);
+  owl_dirty_window_on_signal(window, g.gn, "notify::rightshift");
 }
 
 static void owl_mainwin_resized(owl_window *w, void *user_data)
