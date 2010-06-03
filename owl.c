@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <locale.h>
 #include "owl.h"
+#include "globalnotifier.h"
 
 
 #if OWL_STDERR_REDIR
@@ -269,6 +270,8 @@ int owl_process_message(owl_message *m) {
   owl_perlconfig_newmsg(m, NULL);
   /* log the message if we need to */
   owl_log_message(m);
+  /* emit a signal for listeners */
+  owl_global_notifier_emit_message_received(g.gn, m);
 
   return 1;
 }
@@ -301,7 +304,6 @@ int owl_process_messages(owl_ps_action *d, void *p)
     /* redisplay if necessary */
     /* this should be optimized to not run if the new messages won't be displayed */
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-    sepbar_dirty();
   }
   return newmsgs;
 }
