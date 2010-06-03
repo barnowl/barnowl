@@ -41,8 +41,6 @@ static void _owl_window_destroy_curses(owl_window *w);
 static void _owl_window_realize(owl_window *w);
 static void _owl_window_unrealize(owl_window *w);
 
-static void _owl_window_redraw_cleanup(owl_window *w, WINDOW *win);
-
 static owl_window *cursor_owner;
 
 G_DEFINE_TYPE (OwlWindow, owl_window, G_TYPE_OBJECT)
@@ -55,7 +53,7 @@ static void owl_window_class_init (OwlWindowClass *klass)
   gobject_class->dispose = owl_window_dispose;
   gobject_class->finalize = owl_window_finalize;
 
-  klass->redraw = _owl_window_redraw_cleanup;
+  klass->redraw = NULL;
   klass->resized = NULL;
 
   /* Create the signals, remember IDs */
@@ -361,7 +359,13 @@ static void _owl_window_redraw(owl_window *w)
 {
   if (!w->dirty) return;
   if (w->win) {
+    if (!owl_window_is_toplevel(w)) {
+      /* If a subwin, we might have gotten random touched lines from wsyncup or
+       * past drawing. That information is useless, so we discard it all */
+      untouchwin(w->win);
+    }
     g_signal_emit(w, window_signals[REDRAW], 0, w->win);
+    wsyncup(w->win);
   }
   w->dirty = 0;
 }
@@ -382,13 +386,14 @@ void owl_window_redraw_scheduled(void)
 {
   _owl_window_redraw_subtree(owl_window_get_screen());
   update_panels();
-  if (cursor_owner && cursor_owner->win)
+  if (cursor_owner && cursor_owner->win) {
+    /* untouch it to avoid drawing; window should be clean now, but we must
+     * clean up in case there was junk left over on a subwin (cleaning up after
+     * subwin drawing isn't sufficient because a wsyncup messes up subwin
+     * ancestors */
+    untouchwin(cursor_owner->win);
     wnoutrefresh(cursor_owner->win);
-}
-
-static void _owl_window_redraw_cleanup(owl_window *w, WINDOW *win)
-{
-  wsyncup(win);
+  }
 }
 
 void owl_window_erase_cb(owl_window *w, WINDOW *win, void *user_data)
