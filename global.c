@@ -95,7 +95,7 @@ void owl_global_init(owl_global *g) {
   owl_mainwin_init(&(g->mw), g->mainpanel.recwin);
   owl_popwin_init(&(g->pw));
   owl_msgwin_init(&(g->msgwin), g->mainpanel.msgwin);
-  g_signal_connect(g->mainpanel.sepwin, "redraw", G_CALLBACK(sepbar_redraw), NULL);
+  owl_sepbar_init(g->mainpanel.sepwin);
 
   g->aim_screenname=NULL;
   g->aim_screenname_for_filters=NULL;
