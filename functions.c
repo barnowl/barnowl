@@ -806,7 +806,6 @@ void owl_function_lastmsg(void)
 void owl_function_shift_right(void)
 {
   owl_global_set_rightshift(&g, owl_global_get_rightshift(&g)+10);
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
 
 void owl_function_shift_left(void)
@@ -816,7 +815,6 @@ void owl_function_shift_left(void)
   shift=owl_global_get_rightshift(&g);
   if (shift > 0) {
     owl_global_set_rightshift(&g, MAX(shift - 10, 0));
-    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   } else {
     owl_function_beep();
     owl_function_makemsg("Already full left");
