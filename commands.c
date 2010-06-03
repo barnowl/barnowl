@@ -1385,7 +1385,6 @@ char *owl_command_get_shift(int argc, const char *const *argv, const char *buff)
 void owl_command_set_shift(int shift)
 {
   owl_global_set_rightshift(&g, shift);
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
 
 void owl_command_unsuball(void)
