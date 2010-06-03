@@ -414,6 +414,11 @@ void owl_window_get_position(owl_window *w, int *nlines, int *ncols, int *begin_
 
 void owl_window_move(owl_window *w, int begin_y, int begin_x)
 {
+  owl_window_set_position(w, w->nlines, w->ncols, begin_y, begin_x);
+#if 0
+  /* This routine tries to move a window efficiently, but begy and begx are
+   * then wrong. Currently, this only effects the wnoutrefresh to move cursor.
+   * TODO: fix that and reinstate this code if it's worth the trouble */
   if (w->is_screen) return; /* can't move the screen */
   if (w->begin_y == begin_y && w->begin_x == begin_x) return;
 
@@ -439,6 +444,7 @@ void owl_window_move(owl_window *w, int begin_y, int begin_x)
     _owl_window_unrealize(w);
     _owl_window_realize(w);
   }
+#endif
 }
 
 void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, int begin_x)
@@ -448,23 +454,19 @@ void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, 
     begin_y = begin_x = 0;
   }
 
-  if (w->nlines == nlines && w->ncols == ncols) {
-    /* moving is easier */
-    owl_window_move(w, begin_y, begin_x);
+  if (w->nlines == nlines && w->ncols == ncols
+      && w->begin_y == begin_y && w->begin_x == begin_x) {
     return;
   }
 
-  /* window is shown, we must try to have a window at the end */
-  if (w->shown) {
-    /* resizing in ncurses is hard: give up do a unrealize/realize */
-    _owl_window_unrealize(w);
-  }
+  _owl_window_unrealize(w);
   w->begin_y = begin_y;
   w->begin_x = begin_x;
   w->nlines = nlines;
   w->ncols = ncols;
   g_signal_emit(w, window_signals[RESIZED], 0);
   if (w->shown) {
+    /* ncurses is screwy: give up and recreate windows at the right place */
     _owl_window_realize(w);
   }
 }
