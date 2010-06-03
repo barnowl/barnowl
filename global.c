@@ -466,14 +466,12 @@ void owl_global_get_terminal_size(int *lines, int *cols) {
   }
 }
 
-void owl_global_resize(owl_global *g, int lines, int cols) {
+void owl_global_check_resize(owl_global *g) {
   /* resize the screen.  If lines or cols is 0 use the terminal size */
   if (!g->resizepending) return;
   g->resizepending = 0;
 
-  owl_global_get_terminal_size(&lines, &cols);
-  if (lines) g->lines = lines;
-  if (cols)  g->cols  = cols;
+  owl_global_get_terminal_size(&g->lines, &g->cols);
   owl_window_resize(owl_window_get_screen(), g->lines, g->cols);
 
   owl_function_debugmsg("New size is %i lines, %i cols.", g->lines, g->cols);

@@ -456,7 +456,7 @@ void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
 static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
 {
   /* if a resize has been scheduled, deal with it */
-  owl_global_resize(&g, 0, 0);
+  owl_global_check_resize(&g);
 
   /* update the terminal if we need to */
   if (owl_global_is_needrefresh(&g)) {
