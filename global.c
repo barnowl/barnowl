@@ -131,6 +131,8 @@ static void _owl_global_init_windows(owl_global *g)
   owl_msgwin_init(&(g->msgwin), g->mainpanel.msgwin);
   owl_sepbar_init(g->mainpanel.sepwin);
 
+  owl_window_set_default_cursor(g->mainpanel.sepwin);
+
   /* set up a pad for input */
   g->input_pad = newpad(1, 1);
   nodelay(g->input_pad, 1);
@@ -285,10 +287,6 @@ owl_keyhandler *owl_global_get_keyhandler(owl_global *g) {
 }
 
 /* curses windows */
-
-owl_window *owl_global_get_curs_sepwin(const owl_global *g) {
-  return g->mainpanel.sepwin;
-}
 
 owl_window *owl_global_get_curs_typwin(const owl_global *g) {
   return g->mainpanel.typwin;

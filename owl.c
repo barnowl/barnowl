@@ -470,7 +470,7 @@ static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
 	&& owl_global_get_typwin(&g)) {
       owl_window_set_cursor(owl_global_get_curs_typwin(&g));
     } else {
-      owl_window_set_cursor(owl_global_get_curs_sepwin(&g));
+      owl_window_set_cursor(NULL);
     }
 
     owl_window_redraw_scheduled();
