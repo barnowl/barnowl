@@ -421,6 +421,7 @@ static void _owl_window_redraw_subtree(owl_window *w)
     return;
   _owl_window_redraw(w);
   owl_window_children_foreach(w, (GFunc)_owl_window_redraw_subtree, 0);
+  w->dirty_subtree = 0;
 }
 
 /*
