@@ -174,3 +174,8 @@ Known issues and notes
   ids. This is somewhat a side effect of us not using GObject
   everywhere; the signals can automatically disconnect in the right
   contexts if we do.
+
+- The sepbar depends on a value computed while the mainwin is drawn,
+  so we currently ensure the windows are created in the right order
+  for the repaints to occur correctly. This is rather poor and should
+  be refactored later.

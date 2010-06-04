@@ -4,8 +4,10 @@ void owl_mainpanel_init(owl_mainpanel *mp)
 {
   /* Create windows */
   mp->panel = owl_window_new(NULL);
-  mp->recwin = owl_window_new(mp->panel);
+  /* HACK for now: the sepwin must be drawn /after/ the recwin for
+   * lastdisplayed to work */
   mp->sepwin = owl_window_new(mp->panel);
+  mp->recwin = owl_window_new(mp->panel);
   mp->msgwin = owl_window_new(mp->panel);
   mp->typwin = owl_window_new(mp->panel);
 
