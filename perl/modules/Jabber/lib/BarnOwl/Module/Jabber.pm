@@ -1240,7 +1240,7 @@ sub j2hash {
             my $connection = $conn->getConnectionFromJID($props{from});
             $muc = $connection->FindMUC(jid => $to);
         }
-        $props{from} = $muc->GetFullJID($from) || $nick || $room;
+        $props{from} = $muc->GetFullJID($from) || $props{from};
         $props{sender} = $nick || $room;
         $props{recipient} = $room;
 

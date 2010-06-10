@@ -19,6 +19,7 @@ sub jtype { shift->{jtype} };
 sub from { shift->{from} };
 sub to { shift->{to} };
 sub room { shift->{room} };
+sub nick { shift->{nick} };
 sub subject { shift->{subject} };
 sub status { shift->{status} }
 
@@ -40,6 +41,13 @@ sub login_extra {
 
 sub long_sender {
     my $self = shift;
+    if ($self->jtype eq 'groupchat' && $self->nick) {
+        my $from_jid = Net::Jabber::JID->new($self->from);
+        if ($from_jid->GetJID('base') eq $self->room &&
+            $from_jid->GetResource() eq $self->nick) {
+            return $self->nick;
+        }
+    }
     return $self->from;
 }
 
