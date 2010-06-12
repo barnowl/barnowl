@@ -17,9 +17,6 @@ void owl_global_init(owl_global *g) {
   char hostname[MAXHOSTNAMELEN];
   char *cd;
 
-  g->malloced=0;
-  g->freed=0;
-
   gethostname(hostname, MAXHOSTNAMELEN);
   hent=gethostbyname(hostname);
   if (!hent) {

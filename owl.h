@@ -594,7 +594,6 @@ typedef struct _owl_global {
   int colorpairs;
   owl_colorpair_mgr cpmgr;
   pid_t newmsgproc_pid;
-  int malloced, freed;
   owl_regex search_re;
   aim_session_t aimsess;
   aim_conn_t bosconn;
