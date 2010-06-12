@@ -140,6 +140,11 @@ static void _owl_global_init_windows(owl_global *g)
   meta(g->input_pad, 1);
 }
 
+void owl_global_sepbar_dirty(owl_global *g)
+{
+  owl_window_dirty(g->mainpanel.sepwin);
+}
+
 /* Called once perl has been initialized */
 void owl_global_complete_setup(owl_global *g)
 {

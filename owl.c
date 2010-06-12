@@ -270,8 +270,8 @@ int owl_process_message(owl_message *m) {
   owl_perlconfig_newmsg(m, NULL);
   /* log the message if we need to */
   owl_log_message(m);
-  /* emit a signal for listeners */
-  owl_global_notifier_emit_message_received(g.gn, m);
+  /* redraw the sepbar; TODO: don't violate layering */
+  owl_global_sepbar_dirty(&g);
 
   return 1;
 }
