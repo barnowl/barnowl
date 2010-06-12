@@ -7,7 +7,6 @@
 #include <sys/ioctl.h>
 #include <time.h>
 #include "owl.h"
-#include "globalnotifier.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 256
@@ -19,7 +18,6 @@ void owl_global_init(owl_global *g) {
   struct hostent *hent;
   char hostname[MAXHOSTNAMELEN];
   char *cd;
-  g->gn = owl_global_notifier_new(g);
 
   g->malloced=0;
   g->freed=0;
@@ -240,7 +238,6 @@ int owl_global_get_curmsg(const owl_global *g) {
 
 void owl_global_set_curmsg(owl_global *g, int i) {
   g->curmsg=i;
-  g_object_notify(G_OBJECT(g->gn), "curmsg");
   /* we will reset the vertical offset from here */
   /* we might want to move this out to the functions later */
   owl_global_set_curmsg_vert_offset(g, 0);
@@ -339,8 +336,6 @@ owl_cmddict *owl_global_get_cmddict(owl_global *g) {
 
 void owl_global_set_rightshift(owl_global *g, int i) {
   g->rightshift = i;
-  g_object_notify(G_OBJECT(g->gn), "rightshift");
-
   owl_mainwin_redisplay(owl_global_get_mainwin(g));
 }
 
@@ -562,7 +557,6 @@ int owl_global_get_curmsg_vert_offset(const owl_global *g) {
 
 void owl_global_set_curmsg_vert_offset(owl_global *g, int i) {
   g->curmsg_vert_offset = i;
-  g_object_notify(G_OBJECT(g->gn), "curmsg-vert-offset");
 }
 
 /* startup args */

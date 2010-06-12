@@ -3,7 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "owl.h"
-#include "globalnotifier.h"
 
 extern const owl_cmd commands_to_init[];
 

@@ -55,7 +55,7 @@ NORMAL_SRCS = filterproc.c window.c windowcb.c
 
 BASE_SRCS = $(CODELIST_SRCS) $(NORMAL_SRCS)
 
-GEN_C = varstubs.c perlglue.c globalnotifier.c
+GEN_C = varstubs.c perlglue.c
 GEN_H = owl_prototypes.h
 
 BUILT_SOURCES = $(GEN_C) $(GEN_H)
@@ -73,9 +73,6 @@ perlglue.c: perlglue.xs $(TYPEMAP)
 	$(AM_V_GEN)perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes perlglue.xs > perlglue.c
 
 varstubs.c: stubgen.pl variable.c
-	$(AM_V_GEN)perl $< $(sort $(filter-out $<,$+)) > $@
-
-globalnotifier.c: globalnotifiergen.pl variable.c
 	$(AM_V_GEN)perl $< $(sort $(filter-out $<,$+)) > $@
 
 owl_prototypes.h.new: codelist.pl varstubs.c $(CODELIST_SRCS)

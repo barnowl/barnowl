@@ -20,7 +20,6 @@
 #include <sys/stat.h>
 #include <locale.h>
 #include "owl.h"
-#include "globalnotifier.h"
 
 
 #if OWL_STDERR_REDIR

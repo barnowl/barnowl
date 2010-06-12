@@ -565,7 +565,6 @@ typedef struct _owl_popexec {
 typedef struct _OwlGlobalNotifier OwlGlobalNotifier;
 
 typedef struct _owl_global {
-  OwlGlobalNotifier *gn;
   owl_mainwin mw;
   owl_popwin pw;
   owl_msgwin msgwin;
