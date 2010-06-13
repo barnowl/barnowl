@@ -25,11 +25,19 @@ extern void owl_perl_xs_init(pTHX);
 
 int main(int argc, char **argv, char **env)
 {
-  /* initialize a fake ncurses, detached from std{in,out} */
-  FILE *rnull = fopen("/dev/null", "r");
-  FILE *wnull = fopen("/dev/null", "w");
+  FILE *rnull;
+  FILE *wnull;
   char *perlerr;
   int status = 0;
+
+  if (argc <= 1) {
+    fprintf(stderr, "Usage: %s --builtin|TEST.t|-le CODE\n", argv[0]);
+    return 1;
+  }
+
+  /* initialize a fake ncurses, detached from std{in,out} */
+  wnull = fopen("/dev/null", "w");
+  rnull = fopen("/dev/null", "r");
   newterm("xterm", wnull, rnull);
   /* initialize global structures */
   owl_global_init(&g);
@@ -51,31 +59,29 @@ int main(int argc, char **argv, char **env)
 
   owl_function_firstmsg();
 
-  if (argc > 1) {
-    ENTER;
-    SAVETMPS;
+  ENTER;
+  SAVETMPS;
 
-    if (strcmp(argv[1], "-le") == 0 && argc > 2) {
-      /*
-       * 'prove' runs its harness perl with '-le CODE' to get some
-       * information out.
-       */
-      moreswitches("l");
-      eval_pv(argv[2], true);
-    } else {
-      sv_setpv(get_sv("0", false), argv[1]);
-      sv_setpv(get_sv("main::test_prog", TRUE), argv[1]);
-
-      eval_pv("do $main::test_prog; die($@) if($@)", true);
-    }
-
-    status = 0;
-
-    FREETMPS;
-    LEAVE;
-  } else {
+  if (strcmp(argv[1], "--builtin") == 0) {
     status = owl_regtest();
+  } else if (strcmp(argv[1], "-le") == 0 && argc > 2) {
+    /*
+     * 'prove' runs its harness perl with '-le CODE' to get some
+     * information out.
+     */
+    moreswitches("l");
+    eval_pv(argv[2], true);
+  } else {
+    sv_setpv(get_sv("0", false), argv[1]);
+    sv_setpv(get_sv("main::test_prog", TRUE), argv[1]);
+
+    eval_pv("do $main::test_prog; die($@) if($@)", true);
   }
+
+  status = 0;
+
+  FREETMPS;
+  LEAVE;
 
  out:
   perl_destruct(owl_global_get_perlinterp(&g));
