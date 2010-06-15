@@ -233,9 +233,24 @@ int owl_window_num_children(owl_window *parent)
   return num;
 }
 
-owl_window *owl_window_get_parent(owl_window *w)
+owl_window *owl_window_parent(owl_window *w)
 {
   return w->parent;
+}
+
+owl_window *owl_window_first_child(owl_window *w)
+{
+  return w->child;
+}
+
+owl_window *owl_window_next_sibling(owl_window *w)
+{
+  return w->next;
+}
+
+owl_window *owl_window_previous_sibling(owl_window *w)
+{
+  return w->prev;
 }
 
 /** Internal window management **/

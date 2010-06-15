@@ -35,7 +35,11 @@ void owl_window_unlink(owl_window *w);
 void owl_window_children_foreach(owl_window *parent, GFunc func, gpointer user_data);
 gboolean owl_window_has_children(owl_window *parent);
 int owl_window_num_children(owl_window *parent);
-owl_window *owl_window_get_parent(owl_window *w);
+
+owl_window *owl_window_parent(owl_window *parent);
+owl_window *owl_window_first_child(owl_window *parent);
+owl_window *owl_window_next_sibling(owl_window *w);
+owl_window *owl_window_previous_sibling(owl_window *w);
 
 void owl_window_show(owl_window *w);
 void owl_window_show_all(owl_window *w);
