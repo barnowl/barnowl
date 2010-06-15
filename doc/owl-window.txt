@@ -173,3 +173,19 @@ Known issues and notes
   so we currently ensure the windows are created in the right order
   for the repaints to occur correctly. This is rather poor and should
   be refactored later.
+
+- The code fairly routinely does casts to add extra throw-away
+  parameters to functions. Most notably, casting functions of type
+
+      void do_something(void *obj)
+
+  to something of type
+
+      void do_something(void *obj, void *user_data)
+
+  (the latter is a GFunc) with the expectation that the user_data
+  argument is discarded. While calling with this cast is undefined by
+  the standard and depends on calling convention, glib uses it
+  internally /everywhere/ and much of glib and gobject API heavily
+  depends on it. As BarnOwl already depends on glib, we implicitly
+  assume this cast works.
