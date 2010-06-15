@@ -216,23 +216,6 @@ void owl_window_children_foreach(owl_window *parent, GFunc func, gpointer user_d
   }
 }
 
-gboolean owl_window_has_children(owl_window *parent)
-{
-  return parent->child != NULL;
-}
-
-int owl_window_num_children(owl_window *parent)
-{
-  owl_window *w;
-  int num = 0;
-  for (w = parent->child;
-       w != NULL;
-       w = w->next) {
-    num++;
-  }
-  return num;
-}
-
 owl_window *owl_window_parent(owl_window *w)
 {
   return w->parent;
