@@ -1,11 +1,19 @@
+#define OWL_PERL
+#define WINDOW FAKE_WINDOW
 #include "owl.h"
+#undef WINDOW
+
 #include <unistd.h>
 #include <stdlib.h>
+
+#undef instr
+#include <curses.h>
 
 owl_global g;
 
 int numtests;
 
+int owl_regtest(void);
 int owl_util_regtest(void);
 int owl_dict_regtest(void);
 int owl_variable_regtest(void);
@@ -13,15 +21,79 @@ int owl_filter_regtest(void);
 int owl_obarray_regtest(void);
 int owl_editwin_regtest(void);
 
+extern void owl_perl_xs_init(pTHX);
+
 int main(int argc, char **argv, char **env)
 {
+  FILE *rnull;
+  FILE *wnull;
+  char *perlerr;
+  int status = 0;
+
+  if (argc <= 1) {
+    fprintf(stderr, "Usage: %s --builtin|TEST.t|-le CODE\n", argv[0]);
+    return 1;
+  }
+
   /* initialize a fake ncurses, detached from std{in,out} */
-  FILE *rnull = fopen("/dev/null", "r");
-  FILE *wnull = fopen("/dev/null", "w");
+  wnull = fopen("/dev/null", "w");
+  rnull = fopen("/dev/null", "r");
   newterm("xterm", wnull, rnull);
   /* initialize global structures */
   owl_global_init(&g);
 
+  perlerr = owl_perlconfig_initperl(NULL, &argc, &argv, &env);
+  if (perlerr) {
+    endwin();
+    fprintf(stderr, "Internal perl error: %s\n", perlerr);
+    status = 1;
+    goto out;
+  }
+
+  owl_global_complete_setup(&g);
+  owl_global_setup_default_filters(&g);
+
+  owl_view_create(owl_global_get_current_view(&g), "main",
+                  owl_global_get_filter(&g, "all"),
+                  owl_global_get_style_by_name(&g, "default"));
+
+  owl_function_firstmsg();
+
+  ENTER;
+  SAVETMPS;
+
+  if (strcmp(argv[1], "--builtin") == 0) {
+    status = owl_regtest();
+  } else if (strcmp(argv[1], "-le") == 0 && argc > 2) {
+    /*
+     * 'prove' runs its harness perl with '-le CODE' to get some
+     * information out.
+     */
+    moreswitches("l");
+    eval_pv(argv[2], true);
+  } else {
+    sv_setpv(get_sv("0", false), argv[1]);
+    sv_setpv(get_sv("main::test_prog", TRUE), argv[1]);
+
+    eval_pv("do $main::test_prog; die($@) if($@)", true);
+  }
+
+  status = 0;
+
+  FREETMPS;
+  LEAVE;
+
+ out:
+  perl_destruct(owl_global_get_perlinterp(&g));
+  perl_free(owl_global_get_perlinterp(&g));
+  /* probably not necessary, but tear down the screen */
+  endwin();
+  fclose(rnull);
+  fclose(wnull);
+  return status;
+}
+
+int owl_regtest(void) {
   numtests = 0;
   int numfailures=0;
   /*
@@ -37,11 +109,6 @@ int main(int argc, char **argv, char **env)
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
   printf("1..%d\n", numtests);
-
-  /* probably not necessary, but tear down the screen */
-  endwin();
-  fclose(rnull);
-  fclose(wnull);
 
   return(numfailures);
 }

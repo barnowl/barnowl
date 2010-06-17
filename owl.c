@@ -148,36 +148,6 @@ void owl_start_curses(void) {
   owl_start_color();
 }
 
-static void owl_setup_default_filters(void)
-{
-  int i;
-  static const struct {
-    const char *name;
-    const char *desc;
-  } filters[] = {
-    { "personal",
-      "isprivate ^true$ and ( not type ^zephyr$ or ( class ^message  ) )" },
-    { "trash",
-      "class ^mail$ or opcode ^ping$ or type ^admin$ or ( not login ^none$ )" },
-    { "wordwrap", "not ( type ^admin$ or type ^zephyr$ )" },
-    { "ping", "opcode ^ping$" },
-    { "auto", "opcode ^auto$" },
-    { "login", "not login ^none$" },
-    { "reply-lockout", "class ^noc or class ^mail$" },
-    { "out", "direction ^out$" },
-    { "aim", "type ^aim$" },
-    { "zephyr", "type ^zephyr$" },
-    { "none", "false" },
-    { "all", "true" },
-    { NULL, NULL }
-  };
-
-  owl_function_debugmsg("startup: creating default filters");
-
-  for (i = 0; filters[i].name != NULL; i++)
-    owl_global_add_filter(&g, owl_filter_new_fromstring(filters[i].name,
-                                                        filters[i].desc));
-}
 
 /*
  * Process a new message passed to us on the message queue from some
@@ -562,7 +532,7 @@ int main(int argc, char **argv, char **env)
 
   owl_global_complete_setup(&g);
 
-  owl_setup_default_filters();
+  owl_global_setup_default_filters(&g);
 
   /* set the current view */
   owl_function_debugmsg("startup: setting the current view");

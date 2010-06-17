@@ -11,7 +11,7 @@ endif
 
 zcrypt_SOURCES = zcrypt.c filterproc.c
 
-check_PROGRAMS = tester perl_tester
+check_PROGRAMS = tester.bin
 
 barnowl_bin_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h config.h \
@@ -20,19 +20,12 @@ barnowl_bin_SOURCES = $(BASE_SRCS) \
 
 barnowl_bin_LDADD = libfaim/libfaim.a
 
-tester_SOURCES = $(BASE_SRCS) \
+tester_bin_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h config.h \
      $(GEN_C) $(GEN_H) \
      tester.c
 
-tester_LDADD = libfaim/libfaim.a
-
-perl_tester_SOURCES = $(BASE_SRCS) \
-     owl.h owl_perl.h config.h \
-     $(GEN_C) $(GEN_H) \
-     perl_tester.c
-
-perl_tester_LDADD = libfaim/libfaim.a
+tester_bin_LDADD = libfaim/libfaim.a
 
 TESTS=runtests.sh
 
