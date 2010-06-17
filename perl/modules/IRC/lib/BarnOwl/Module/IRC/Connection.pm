@@ -259,11 +259,20 @@ sub on_namreply {
     $self->names_tmp([@{$self->names_tmp}, split(' ', [$evt->args]->[3])]);
 }
 
+sub cmp_user {
+    my ($lhs, $rhs) = @_;
+    my ($sigil_l) = ($lhs =~ m{^([+@]?)});
+    my ($sigil_r) = ($rhs =~ m{^([+@]?)});
+    my %rank = ('@' => 1, '+' => 2, '' => 3);
+    return ($rank{$sigil_l} <=> $rank{$sigil_r}) ||
+            $lhs cmp $rhs;
+}
+
 sub on_endofnames {
     my ($self, $evt) = @_;
     return unless $self->names_tmp;
     my $names = BarnOwl::Style::boldify("Members of " . [$evt->args]->[1] . ":\n");
-    for my $name (@{$self->names_tmp}) {
+    for my $name (sort {cmp_user($a, $b)} @{$self->names_tmp}) {
         $names .= "  $name\n";
     }
     BarnOwl::popless_ztext($names);
