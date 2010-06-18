@@ -87,8 +87,8 @@ typedef struct {
 } cipher_pair;
 
 cipher_pair ciphers[NCIPHER] = {
-  [CIPHER_DES] { do_encrypt_des, do_decrypt_des},
-  [CIPHER_AES] { do_encrypt_aes, do_decrypt_aes},
+  [CIPHER_DES] = { do_encrypt_des, do_decrypt_des},
+  [CIPHER_AES] = { do_encrypt_aes, do_decrypt_aes},
 };
 
 static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule *schedule) {
@@ -112,8 +112,6 @@ int main(int argc, char *argv[])
   char *class = NULL, *instance = NULL;
   int mode = M_NONE;
 
-  extern int optind, opterr;
-  extern char *optarg;
   char c;
 
   int messageflag = FALSE;
