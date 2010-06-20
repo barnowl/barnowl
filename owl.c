@@ -481,8 +481,6 @@ int main(int argc, char **argv, char **env)
 
   setlocale(LC_ALL, "");
 
-  g_type_init ();
-
   memset(&opts, 0, sizeof opts);
   opts.load_initial_subs = 1;
   owl_parse_options(argc, argv, &opts);
