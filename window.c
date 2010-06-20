@@ -383,9 +383,6 @@ static owl_window *_get_cursor(void)
 
 void owl_window_dirty(owl_window *w)
 {
-  /* don't put the screen on this list; pointless */
-  if (w->is_screen)
-    return;
   if (!owl_window_is_realized(w))
     return;
   if (!w->dirty) {
@@ -406,7 +403,7 @@ void owl_window_dirty_children(owl_window *w)
 static void _owl_window_redraw(owl_window *w)
 {
   if (!w->dirty) return;
-  if (w->win) {
+  if (w->win && !w->is_screen) {
     if (owl_window_is_subwin(w)) {
       /* If a subwin, we might have gotten random touched lines from wsyncup or
        * past drawing. That information is useless, so we discard it all */
