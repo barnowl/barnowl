@@ -359,7 +359,7 @@ void owl_window_set_cursor(owl_window *w)
   cursor_owner = w;
   if (w)
     g_object_add_weak_pointer(G_OBJECT(w), (gpointer*) &cursor_owner);
-  owl_global_set_needrefresh(&g);
+  owl_window_dirty(owl_window_get_screen());
 }
 
 void owl_window_set_default_cursor(owl_window *w)
@@ -369,7 +369,7 @@ void owl_window_set_default_cursor(owl_window *w)
   default_cursor = w;
   if (w)
     g_object_add_weak_pointer(G_OBJECT(w), (gpointer*) &default_cursor);
-  owl_global_set_needrefresh(&g);
+  owl_window_dirty(owl_window_get_screen());
 }
 
 static owl_window *_get_cursor(void)
@@ -391,7 +391,6 @@ void owl_window_dirty(owl_window *w)
       w->dirty_subtree = 1;
       w = w->parent;
     }
-    owl_global_set_needrefresh(&g);
   }
 }
 
@@ -431,8 +430,11 @@ NOTE: This function shouldn't be called outside the event loop
 void owl_window_redraw_scheduled(void)
 {
   owl_window *cursor;
+  owl_window *screen = owl_window_get_screen();
 
-  _owl_window_redraw_subtree(owl_window_get_screen());
+  if (!screen->dirty_subtree)
+    return;
+  _owl_window_redraw_subtree(screen);
   update_panels();
   cursor = _get_cursor();
   if (cursor && cursor->win) {
@@ -443,6 +445,7 @@ void owl_window_redraw_scheduled(void)
     untouchwin(cursor->win);
     wnoutrefresh(cursor->win);
   }
+  doupdate();
 }
 
 /** Window position **/

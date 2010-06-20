@@ -72,7 +72,6 @@ static void owl_mainwin_redraw(owl_window *w, WINDOW *recwin, void *user_data)
     }
     mw->curtruncated=0;
     mw->lastdisplayed=-1;
-    owl_global_set_needrefresh(&g);
     return;
   }
 

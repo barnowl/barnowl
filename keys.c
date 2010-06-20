@@ -337,7 +337,6 @@ void owl_keys_editwin_postalways(owl_input j) {
   if (NULL != (e=owl_global_get_typwin(&g))) {
     owl_editwin_post_process_char(e, j);
   }
-  owl_global_set_needrefresh(&g);
 }
 
 void owl_keys_popless_postalways(owl_input j) {

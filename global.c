@@ -30,19 +30,21 @@ void owl_global_init(owl_global *g) {
     g->thishost=owl_strdup(hent->h_name);
   }
 
+  g->lines=LINES;
+  g->cols=COLS;
+  /* We shouldn't need this if we initialize lines and cols before the first
+   * owl_window_get_screen, but to be safe, we synchronize. */
+  owl_window_resize(owl_window_get_screen(), g->lines, g->cols);
+
   g->context_stack = NULL;
   owl_global_push_context(g, OWL_CTX_STARTUP, NULL, NULL, NULL);
 
   g->curmsg=0;
   g->topmsg=0;
   g->markedmsgid=-1;
-  g->needrefresh=1;
   g->startupargs=NULL;
 
   owl_variable_dict_setup(&(g->vars));
-
-  g->lines=LINES;
-  g->cols=COLS;
 
   g->rightshift=0;
 
@@ -303,21 +305,6 @@ owl_window *owl_global_get_curs_typwin(const owl_global *g) {
 
 owl_editwin *owl_global_get_typwin(const owl_global *g) {
   return(g->tw);
-}
-
-/* refresh */
-
-int owl_global_is_needrefresh(const owl_global *g) {
-  if (g->needrefresh==1) return(1);
-  return(0);
-}
-
-void owl_global_set_needrefresh(owl_global *g) {
-  g->needrefresh=1;
-}
-
-void owl_global_set_noneedrefresh(owl_global *g) {
-  g->needrefresh=0;
 }
 
 /* variable dictionary */
