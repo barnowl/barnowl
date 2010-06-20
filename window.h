@@ -45,6 +45,7 @@ void owl_window_hide(owl_window *w);
 int owl_window_is_shown(owl_window *w);
 int owl_window_is_realized(owl_window *w);
 int owl_window_is_toplevel(owl_window *w);
+int owl_window_is_subwin(owl_window *w);
 
 void owl_window_set_cursor(owl_window *w);
 void owl_window_set_default_cursor(owl_window *w);

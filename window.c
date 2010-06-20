@@ -314,6 +314,11 @@ int owl_window_is_toplevel(owl_window *w)
   return w->pan != NULL;
 }
 
+int owl_window_is_subwin(owl_window *w)
+{
+  return w->pan == NULL && !w->is_screen;
+}
+
 static void _owl_window_realize(owl_window *w)
 {
   /* check if we can create a window */
@@ -402,7 +407,7 @@ static void _owl_window_redraw(owl_window *w)
 {
   if (!w->dirty) return;
   if (w->win) {
-    if (!owl_window_is_toplevel(w)) {
+    if (owl_window_is_subwin(w)) {
       /* If a subwin, we might have gotten random touched lines from wsyncup or
        * past drawing. That information is useless, so we discard it all */
       untouchwin(w->win);
