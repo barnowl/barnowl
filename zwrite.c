@@ -4,6 +4,16 @@
 #include <unistd.h>
 #include "owl.h"
 
+owl_zwrite *owl_zwrite_new(const char *line)
+{
+  owl_zwrite *z = owl_malloc(sizeof *z);
+  if (owl_zwrite_create_from_line(z, line) < 0) {
+    owl_zwrite_delete(z);
+    return NULL;
+  }
+  return z;
+}
+
 int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
 {
   int argc, badargs, myargc, i, len;
@@ -14,6 +24,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
   badargs=0;
   
   /* start with null entries */
+  z->cmd=NULL;
   z->realm=NULL;
   z->class=NULL;
   z->inst=NULL;
@@ -34,6 +45,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
   }
   myargc=argc;
   if (myargc && *(myargv[0])!='-') {
+    z->cmd=owl_strdup(myargv[0]);
     myargc--;
     myargv++;
   }
@@ -347,6 +359,12 @@ int owl_zwrite_is_personal(const owl_zwrite *z)
     if (foo[0]!='@') return(1);
   }
   return(0);
+}
+
+void owl_zwrite_delete(owl_zwrite *z)
+{
+  owl_zwrite_cleanup(z);
+  owl_free(z);
 }
 
 void owl_zwrite_cleanup(owl_zwrite *z)

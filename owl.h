@@ -343,6 +343,7 @@ typedef struct _owl_cmd {	/* command */
 
 
 typedef struct _owl_zwrite {
+  char *cmd;
   char *zwriteline;
   char *class;
   char *inst;

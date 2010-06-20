@@ -222,19 +222,13 @@ void owl_function_adminmsg(const char *header, const char *body)
  * not put it on the global queue, use owl_global_messagequeue_addmsg() for
  * that.
  */
-owl_message *owl_function_make_outgoing_zephyr(const char *body, const char *zwriteline, const char *zsig)
+owl_message *owl_function_make_outgoing_zephyr(const owl_zwrite *z)
 {
   owl_message *m;
-  owl_zwrite zw;
-
-  owl_zwrite_create_from_line(&zw, zwriteline);
-  owl_zwrite_set_zsig(&zw, zsig);
 
   /* create the message */
   m=owl_malloc(sizeof(owl_message));
-  
-  owl_message_create_from_zwrite(m, &zw, body);
-  owl_zwrite_cleanup(&zw);
+  owl_message_create_from_zwrite(m, z, owl_zwrite_get_message(z));
 
   return(m);
 }
@@ -295,7 +289,7 @@ void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin 
   owl_global_push_context(&g, OWL_CTX_EDITMULTI, e, "editmulti");
 }
 
-static void owl_function_write_setup(const char *line, const char *noun, void (*callback)(owl_editwin *))
+static void owl_function_write_setup(const char *noun)
 {
 
   if (!owl_global_get_lockout_ctrld(&g))
@@ -306,78 +300,69 @@ static void owl_function_write_setup(const char *line, const char *noun, void (*
     owl_function_makemsg("Type your %s below.  "
 			 "End with a dot on a line by itself.  ^C will quit.",
 			 noun);
-
-  owl_function_start_edit_win(line, callback,
-                              owl_strdup(line),
-                              owl_free);
 }
 
-void owl_function_zwrite_setup(const char *line)
+void owl_function_zwrite_setup(owl_zwrite *z)
 {
-  owl_zwrite z;
-  int ret;
-
-  /* check the arguments */
-  ret=owl_zwrite_create_from_line(&z, line);
-  if (ret) {
-    owl_function_error("Error in zwrite arguments");
-    owl_zwrite_cleanup(&z);
-    return;
-  }
-
   /* send a ping if necessary */
   if (owl_global_is_txping(&g)) {
-    owl_zwrite_send_ping(&z);
+    owl_zwrite_send_ping(z);
   }
-  owl_zwrite_cleanup(&z);
 
-  owl_function_write_setup(line, "zephyr", &owl_callback_zwrite);
+
+  owl_function_write_setup("zephyr");
+  owl_function_start_edit_win(z->zwriteline,
+                              &owl_callback_zwrite,
+                              z, (void(*)(void*))owl_zwrite_delete);
 }
 
 void owl_function_aimwrite_setup(const char *line)
 {
-  owl_function_write_setup(line, "message", &owl_callback_aimwrite);
+  owl_function_write_setup("message");
+  owl_function_start_edit_win(line,
+                              &owl_callback_aimwrite,
+                              owl_strdup(line),
+                              owl_free);
+
 }
 
 void owl_function_loopwrite_setup(void)
 {
-  owl_function_write_setup("loopwrite", "message", owl_callback_loopwrite);
+  owl_function_write_setup("message");
+  owl_function_start_edit_win("loopwrite",
+                              &owl_callback_loopwrite,
+                              "loopwrite", NULL);
 }
 
 void owl_callback_zwrite(owl_editwin *e) {
-  char *command = owl_editwin_get_cbdata(e);
-  owl_function_zwrite(command,
-                      owl_editwin_get_text(e));
+  owl_zwrite *z = owl_editwin_get_cbdata(e);
+  owl_function_zwrite(z, owl_editwin_get_text(e));
 }
 
 /* send, log and display an outgoing zephyr.  If 'msg' is NULL
  * the message is expected to be set from the zwrite line itself
  */
-void owl_function_zwrite(const char *line, const char *msg)
+void owl_function_zwrite(owl_zwrite *z, const char *msg)
 {
-  owl_zwrite z;
-  const char *mymsg;
   owl_message *m;
 
-  if(!strncmp(line, "zcrypt", strlen("zcrypt"))) {
-    owl_function_zcrypt(line, msg);
+  if(strcmp(z->cmd, "zcrypt") == 0) {
+    owl_function_zcrypt(z, msg);
     return;
   }
 
   /* create the zwrite and send the message */
-  owl_zwrite_create_from_line(&z, line);
-  owl_zwrite_populate_zsig(&z);
+  owl_zwrite_populate_zsig(z);
   if (msg) {
-    owl_zwrite_set_message(&z, msg);
+    owl_zwrite_set_message(z, msg);
   }
-  owl_zwrite_send_message(&z);
+  owl_zwrite_send_message(z);
   owl_function_makemsg("Waiting for ack...");
 
   /* If it's personal */
-  if (owl_zwrite_is_personal(&z)) {
+  if (owl_zwrite_is_personal(z)) {
     /* create the outgoing message */
-    mymsg=owl_zwrite_get_message(&z);
-    m=owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
+    m=owl_function_make_outgoing_zephyr(z);
 
     if (m) {
       owl_global_messagequeue_addmsg(&g, m);
@@ -385,18 +370,13 @@ void owl_function_zwrite(const char *line, const char *msg)
       owl_function_error("Could not create outgoing zephyr message");
     }
   }
-
-  /* free the zwrite */
-  owl_zwrite_cleanup(&z);
 }
 
 /* send, log and display an outgoing zcrypt zephyr.  If 'msg' is NULL
  * the message is expected to be set from the zwrite line itself
  */
-void owl_function_zcrypt(const char *line, const char *msg)
+void owl_function_zcrypt(owl_zwrite *z, const char *msg)
 {
-  owl_zwrite z;
-  const char *mymsg;
   char *cryptmsg;
   owl_message *m;
   const char *argv[7];
@@ -404,22 +384,20 @@ void owl_function_zcrypt(const char *line, const char *msg)
   int rv, status;
 
   /* create the zwrite and send the message */
-  owl_zwrite_create_from_line(&z, line);
-  owl_zwrite_populate_zsig(&z);
+  owl_zwrite_populate_zsig(z);
   if (msg) {
-    owl_zwrite_set_message(&z, msg);
+    owl_zwrite_set_message(z, msg);
   }
 
-  mymsg=owl_zwrite_get_message(&z);
 
   zcrypt = owl_sprintf("%s/zcrypt", owl_get_bindir());
   argv[0] = "zcrypt";
   argv[1] = "-E";
-  argv[2] = "-c"; argv[3] = owl_zwrite_get_class(&z);
-  argv[4] = "-i"; argv[5] = owl_zwrite_get_instance(&z);
+  argv[2] = "-c"; argv[3] = owl_zwrite_get_class(z);
+  argv[4] = "-i"; argv[5] = owl_zwrite_get_instance(z);
   argv[6] = NULL;
 
-  rv = call_filter(zcrypt, argv, mymsg, &cryptmsg, &status);
+  rv = call_filter(zcrypt, argv, owl_zwrite_get_message(z), &cryptmsg, &status);
 
   owl_free(zcrypt);
 
@@ -427,21 +405,19 @@ void owl_function_zcrypt(const char *line, const char *msg)
     if(cryptmsg) owl_free(cryptmsg);
     owl_function_error("Error in zcrypt, possibly no key found.  Message not sent.");
     owl_function_beep();
-    owl_zwrite_cleanup(&z);
     return;
   }
 
-  owl_zwrite_set_message(&z, cryptmsg);
-  owl_zwrite_set_opcode(&z, "crypt");
+  owl_zwrite_set_message(z, cryptmsg);
+  owl_zwrite_set_opcode(z, "crypt");
     
-  owl_zwrite_send_message(&z);
+  owl_zwrite_send_message(z);
   owl_function_makemsg("Waiting for ack...");
 
   /* If it's personal */
-  if (owl_zwrite_is_personal(&z)) {
+  if (owl_zwrite_is_personal(z)) {
     /* create the outgoing message */
-    mymsg=owl_zwrite_get_message(&z);
-    m=owl_function_make_outgoing_zephyr(mymsg, line, owl_zwrite_get_zsig(&z));
+    m=owl_function_make_outgoing_zephyr(z);
     if (m) {
       owl_global_messagequeue_addmsg(&g, m);
     } else {
@@ -451,7 +427,6 @@ void owl_function_zcrypt(const char *line, const char *msg)
 
   /* free the zwrite */
   owl_free(cryptmsg);
-  owl_zwrite_cleanup(&z);
 }
 
 void owl_callback_aimwrite(owl_editwin *e) {

@@ -135,7 +135,7 @@ const owl_cmd commands_to_init[]
 	      "loopwrite",
 	      "Send a local message.\n"),
 
-  OWLCMD_ARGS("zcrypt", owl_command_zcrypt, OWL_CTX_INTERACTIVE,
+  OWLCMD_ARGS("zcrypt", owl_command_zwrite, OWL_CTX_INTERACTIVE,
 	      "send an encrypted zephyr",
 	      "zcrypt [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcode] [-m <message...>]\n",
 	      "Behaves like zwrite but uses encryption.  Not for use with\n"
@@ -1913,25 +1913,30 @@ void owl_command_status(void)
 
 char *owl_command_zwrite(int argc, const char *const *argv, const char *buff)
 {
-  owl_zwrite z;
+  owl_zwrite *z;
 
   if (!owl_global_is_havezephyr(&g)) {
     owl_function_makemsg("Zephyr is not available");
     return(NULL);
   }
   /* check for a zwrite -m */
-  owl_zwrite_create_from_line(&z, buff);
-  if (owl_zwrite_is_message_set(&z)) {
-    owl_function_zwrite(buff, NULL);
-    owl_zwrite_cleanup(&z);
-    return (NULL);
+  z = owl_zwrite_new(buff);
+  if (!z) {
+    owl_function_error("Error in zwrite arguments");
+    return NULL;
   }
-  owl_zwrite_cleanup(&z);
+
+  if (owl_zwrite_is_message_set(z)) {
+    owl_function_zwrite(z, NULL);
+    owl_zwrite_delete(z);
+    return NULL;
+  }
 
   if (argc < 2) {
+    owl_zwrite_delete(z);
     owl_function_makemsg("Not enough arguments to the zwrite command.");
   } else {
-    owl_function_zwrite_setup(buff);
+    owl_function_zwrite_setup(z);
   }
   return(NULL);
 }
@@ -2018,31 +2023,6 @@ char *owl_command_aimwrite(int argc, const char *const *argv, const char *buff)
 char *owl_command_loopwrite(int argc, const char *const *argv, const char *buff)
 {
   owl_function_loopwrite_setup();
-  return(NULL);
-}
-
-char *owl_command_zcrypt(int argc, const char *const *argv, const char *buff)
-{
-  owl_zwrite z;
-
-  if (!owl_global_is_havezephyr(&g)) {
-    owl_function_makemsg("Zephyr is not available");
-    return(NULL);
-  }
-  /* check for a zcrypt -m */
-  owl_zwrite_create_from_line(&z, buff);
-  if (owl_zwrite_is_message_set(&z)) {
-    owl_function_zcrypt(buff, NULL);
-    owl_zwrite_cleanup(&z);
-    return (NULL);
-  }
-  owl_zwrite_cleanup(&z);
-
-  if (argc < 2) {
-    owl_function_makemsg("Not enough arguments to the zcrypt command.");
-  } else {
-    owl_function_zwrite_setup(buff);
-  }
   return(NULL);
 }
 
