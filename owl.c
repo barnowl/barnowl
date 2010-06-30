@@ -136,8 +136,8 @@ void owl_start_curses(void) {
 
   tcgetattr(0, &tio);
   tio.c_iflag &= ~(ISTRIP|IEXTEN);
-  tio.c_cc[VQUIT] = 0;
-  tio.c_cc[VSUSP] = 0;
+  tio.c_cc[VQUIT] = fpathconf(STDIN, _PC_VDISABLE);
+  tio.c_cc[VSUSP] = fpathconf(STDIN, _PC_VDISABLE);
   tcsetattr(0, TCSAFLUSH, &tio);
 
   /* screen init */
