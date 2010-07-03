@@ -18,6 +18,8 @@ barnowl_bin_SOURCES = $(BASE_SRCS) \
      owl.c \
      $(GEN_C) $(GEN_H)
 
+man_MANS = doc/barnowl.1
+
 barnowl_bin_LDADD = libfaim/libfaim.a
 
 tester_bin_SOURCES = $(BASE_SRCS) \
