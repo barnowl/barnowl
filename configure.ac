@@ -137,6 +137,8 @@ AM_CONDITIONAL([ENABLE_ZCRYPT], [test "$HAVE_DES_STRING_TO_KEY" && dnl
                                  test "$HAVE_DES_KEY_SCHED" && dnl
                                  test "$HAVE_DES_ECB_ENCRYPT"])
 
+CFLAGS="$CFLAGS -D_XOPEN_SOURCE"
+
 AC_SUBST([LIBFAIM_CFLAGS])
 
 AC_SUBST(XSUBPPDIR)
