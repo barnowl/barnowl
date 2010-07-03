@@ -18,6 +18,7 @@ barnowl_bin_SOURCES = $(BASE_SRCS) \
      $(GEN_C) $(GEN_H)
 
 man_MANS = doc/barnowl.1
+doc_DATA = doc/intro.txt doc/advanced.txt
 
 barnowl_bin_LDADD = libfaim/libfaim.a
 
