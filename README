@@ -2,9 +2,6 @@ BarnOwl - owl, with more ponies
 
 Based on owl 2.1.11, by James Kretchmar (http://www.ktools.org)
 
-This project is a work in progress.
-We guarantee no stability of form or function.
-
 Notes:
 -----
 This project's perl/lib/ contains the lib directories from the
