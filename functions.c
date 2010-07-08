@@ -416,7 +416,8 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
 
   /* If it's personal */
   if (owl_zwrite_is_personal(z)) {
-    /* create the outgoing message */
+    /* Create the outgoing message. Restore the un-crypted message for display. */
+    owl_zwrite_set_message(z, msg);
     m=owl_function_make_outgoing_zephyr(z);
     if (m) {
       owl_global_messagequeue_addmsg(&g, m);
