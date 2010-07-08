@@ -382,13 +382,14 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
   const char *argv[7];
   char *zcrypt;
   int rv, status;
+  char *old_msg;
 
   /* create the zwrite and send the message */
   owl_zwrite_populate_zsig(z);
   if (msg) {
     owl_zwrite_set_message(z, msg);
   }
-
+  old_msg = owl_strdup(owl_zwrite_get_message(z));
 
   zcrypt = owl_sprintf("%s/zcrypt", owl_get_bindir());
   argv[0] = "zcrypt";
@@ -403,6 +404,7 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
 
   if (rv || status) {
     if(cryptmsg) owl_free(cryptmsg);
+    owl_free(old_msg);
     owl_function_error("Error in zcrypt, possibly no key found.  Message not sent.");
     owl_function_beep();
     return;
@@ -417,7 +419,7 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
   /* If it's personal */
   if (owl_zwrite_is_personal(z)) {
     /* Create the outgoing message. Restore the un-crypted message for display. */
-    owl_zwrite_set_message(z, msg);
+    owl_zwrite_set_message(z, old_msg);
     m=owl_function_make_outgoing_zephyr(z);
     if (m) {
       owl_global_messagequeue_addmsg(&g, m);
