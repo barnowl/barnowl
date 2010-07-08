@@ -1040,8 +1040,7 @@ void owl_global_setup_default_filters(owl_global *g)
     const char *desc;
   } filters[] = {
     { "personal",
-      "private ^true$ and ( not type ^zephyr$ or "
-      "( class ^message and ( instance ^personal$ or instance ^urgent$ ) ) )" },
+      "isprivate ^true$ and ( not type ^zephyr$ or ( class ^message  ) )" },
     { "trash",
       "class ^mail$ or opcode ^ping$ or type ^admin$ or ( not login ^none$ )" },
     { "wordwrap", "not ( type ^admin$ or type ^zephyr$ )" },
