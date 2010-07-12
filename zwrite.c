@@ -198,6 +198,13 @@ void owl_zwrite_send_ping(const owl_zwrite *z)
 
 }
 
+/* Set the message with no post-processing*/
+void owl_zwrite_set_message_raw(owl_zwrite *z, const char *msg)
+{
+  if (z->message) owl_free(z->message);
+  z->message = owl_validate_utf8(msg);
+}
+
 void owl_zwrite_set_message(owl_zwrite *z, const char *msg)
 {
   int i, j;

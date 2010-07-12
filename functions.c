@@ -410,16 +410,16 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
     return;
   }
 
-  owl_zwrite_set_message(z, cryptmsg);
+  owl_zwrite_set_message_raw(z, cryptmsg);
   owl_zwrite_set_opcode(z, "crypt");
-    
+
   owl_zwrite_send_message(z);
   owl_function_makemsg("Waiting for ack...");
 
   /* If it's personal */
   if (owl_zwrite_is_personal(z)) {
     /* Create the outgoing message. Restore the un-crypted message for display. */
-    owl_zwrite_set_message(z, old_msg);
+    owl_zwrite_set_message_raw(z, old_msg);
     m=owl_function_make_outgoing_zephyr(z);
     if (m) {
       owl_global_messagequeue_addmsg(&g, m);
