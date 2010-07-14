@@ -23,19 +23,19 @@ static void owl_msgwin_redraw(owl_window *w, WINDOW *curswin, void *msgwin_)
 
 void owl_msgwin_set_text(owl_msgwin *msgwin, const char *msg)
 {
-  owl_msgwin_set_text_nocopy(msgwin, msg ? g_strdup(msg) : NULL);
+  owl_msgwin_set_text_nocopy(msgwin, owl_strdup(msg));
 }
 
 void owl_msgwin_set_text_nocopy(owl_msgwin *msgwin, char *msg)
 {
-  g_free(msgwin->msg);
+  owl_free(msgwin->msg);
   msgwin->msg = msg;
   owl_window_dirty(msgwin->window);
 }
 
 void owl_msgwin_cleanup(owl_msgwin *msgwin)
 {
-  g_free(msgwin->msg);
+  owl_free(msgwin->msg);
   msgwin->msg = NULL;
   if (msgwin->window) {
     g_signal_handler_disconnect(msgwin->window, msgwin->redraw_id);
