@@ -41,7 +41,7 @@ struct _owl_editwin { /*noproto*/
   void *cbdata;
 };
 
-static void oe_set_curswin(owl_editwin *e, owl_window *w, int winlines, int wincols);
+static void oe_set_window(owl_editwin *e, owl_window *w, int winlines, int wincols);
 static void oe_redraw(owl_window *win, WINDOW *curswin, void *user_data);
 static void oe_reframe(owl_editwin *e);
 static void oe_save_excursion(owl_editwin *e, oe_excursion *x);
@@ -149,7 +149,7 @@ owl_editwin *owl_editwin_new(owl_window *win, int winlines, int wincols, int sty
   owl_editwin *e = owl_editwin_allocate();
 
   _owl_editwin_init(e, winlines, wincols, style, hist);
-  oe_set_curswin(e, win, winlines, wincols);
+  oe_set_window(e, win, winlines, wincols);
   return e;
 }
 
@@ -159,7 +159,7 @@ static void oe_window_resized(owl_window *w, owl_editwin *e)
   owl_window_get_position(w, &e->winlines, &e->wincols, NULL, NULL);
 }
 
-static void oe_set_curswin(owl_editwin *e, owl_window *w, int winlines, int wincols)
+static void oe_set_window(owl_editwin *e, owl_window *w, int winlines, int wincols)
 {
   e->win=w;
   e->winlines=winlines;
