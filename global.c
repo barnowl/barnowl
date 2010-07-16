@@ -1080,9 +1080,16 @@ FILE *owl_global_get_debug_file_handle(owl_global *g) {
   const char *filename = owl_global_get_debug_file(g);
   if (g->debug_file == NULL ||
       (open_file && strcmp(filename, open_file) != 0)) {
+    int fd;
+
     if (g->debug_file)
       fclose(g->debug_file);
-    g->debug_file = fopen(filename, "a");
+
+    g->debug_file = NULL;
+
+    fd = open(filename, O_CREAT|O_WRONLY|O_EXCL, 0600);
+    if (fd >= 0)
+      g->debug_file = fdopen(fd, "a");
 
     owl_free(open_file);
     open_file = owl_strdup(filename);
