@@ -178,8 +178,15 @@ int owl_zephyr_shutdown(void)
 int owl_zephyr_zpending(void)
 {
 #ifdef HAVE_LIBZEPHYR
-  if(owl_global_is_havezephyr(&g))
-    return(ZPending());
+  Code_t code;
+  if(owl_global_is_havezephyr(&g)) {
+    if((code = ZPending()) < 0) {
+      owl_function_debugmsg("Error (%s) in ZPending()\n",
+                            error_message(code));
+      return 0;
+    }
+    return code;
+  }
 #endif
   return 0;
 }
@@ -1387,11 +1394,16 @@ static int _owl_zephyr_process_events(void)
   int zpendcount=0;
 #ifdef HAVE_LIBZEPHYR
   ZNotice_t notice;
+  Code_t code;
   owl_message *m=NULL;
 
   while(owl_zephyr_zpending() && zpendcount < OWL_MAX_ZEPHYRGRAMS_TO_PROCESS) {
     if (owl_zephyr_zpending()) {
-      ZReceiveNotice(&notice, NULL);
+      if ((code = ZReceiveNotice(&notice, NULL)) != ZERR_NONE) {
+        owl_function_debugmsg("Error: %s while calling ZReceiveNotice\n",
+                              error_message(code));
+        continue;
+      }
       zpendcount++;
 
       /* is this an ack from a zephyr we sent? */
