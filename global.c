@@ -1080,6 +1080,7 @@ FILE *owl_global_get_debug_file_handle(owl_global *g) {
   const char *filename = owl_global_get_debug_file(g);
   if (g->debug_file == NULL ||
       (open_file && strcmp(filename, open_file) != 0)) {
+    char *path;
     int fd;
 
     if (g->debug_file)
@@ -1087,7 +1088,10 @@ FILE *owl_global_get_debug_file_handle(owl_global *g) {
 
     g->debug_file = NULL;
 
-    fd = open(filename, O_CREAT|O_WRONLY|O_EXCL, 0600);
+    path = owl_sprintf("%s.%d", filename, getpid());
+    fd = open(path, O_CREAT|O_WRONLY|O_EXCL, 0600);
+    owl_free(path);
+
     if (fd >= 0)
       g->debug_file = fdopen(fd, "a");
 
