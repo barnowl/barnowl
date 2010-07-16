@@ -629,6 +629,7 @@ typedef struct _owl_global {
   owl_timer *aim_nop_timer;
   int load_initial_subs;
   volatile sig_atomic_t interrupted;
+  FILE *debug_file;
 } owl_global;
 
 /* globals */

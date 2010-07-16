@@ -475,8 +475,6 @@ int main(int argc, char **argv, char **env)
   owl_parse_options(argc, argv, &opts);
   g.load_initial_subs = opts.load_initial_subs;
 
-  owl_function_debugmsg("startup: Finished parsing arguments");
-
   owl_register_signal_handlers();
   owl_start_curses();
 

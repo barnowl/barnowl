@@ -1203,7 +1203,7 @@ void owl_function_debugmsg(const char *fmt, ...)
   if (!owl_global_is_debug_fast(&g))
     return;
 
-  file = fopen(owl_global_get_debug_file(&g), "a");
+  file = owl_global_get_debug_file_handle(&g);
   if (!file) /* XXX should report this */
     return;
 
@@ -1213,7 +1213,7 @@ void owl_function_debugmsg(const char *fmt, ...)
 	  (int) getpid(), ctime(&now), now - owl_global_get_starttime(&g));
   vfprintf(file, fmt, ap);
   putc('\n', file);
-  fclose(file);
+  fflush(file);
 
   va_end(ap);
 }

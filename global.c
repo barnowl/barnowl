@@ -1074,3 +1074,18 @@ void owl_global_setup_default_filters(owl_global *g)
     owl_global_add_filter(g, owl_filter_new_fromstring(filters[i].name,
                                                        filters[i].desc));
 }
+
+FILE *owl_global_get_debug_file_handle(owl_global *g) {
+  static char *open_file = NULL;
+  const char *filename = owl_global_get_debug_file(g);
+  if (g->debug_file == NULL ||
+      (open_file && strcmp(filename, open_file) != 0)) {
+    if (g->debug_file)
+      fclose(g->debug_file);
+    g->debug_file = fopen(filename, "a");
+
+    owl_free(open_file);
+    open_file = owl_strdup(filename);
+  }
+  return g->debug_file;
+}
