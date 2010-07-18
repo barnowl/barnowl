@@ -7,119 +7,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-void sepbar(const char *in)
-{
-  WINDOW *sepwin;
-  const owl_messagelist *ml;
-  const owl_view *v;
-  int x, y, i;
-  const char *foo, *appendtosepbar;
-
-  sepwin=owl_global_get_curs_sepwin(&g);
-  ml=owl_global_get_msglist(&g);
-  v=owl_global_get_current_view(&g);
-
-  werase(sepwin);
-  wattron(sepwin, A_REVERSE);
-  if (owl_global_is_fancylines(&g)) {
-    whline(sepwin, ACS_HLINE, owl_global_get_cols(&g));
-  } else {
-    whline(sepwin, '-', owl_global_get_cols(&g));
-  }
-
-  if (owl_global_is_sepbar_disable(&g)) {
-    getyx(sepwin, y, x);
-    wmove(sepwin, y, owl_global_get_cols(&g)-1);
-    return;
-  }
-
-  wmove(sepwin, 0, 2);
-
-  if (owl_messagelist_get_size(ml) == 0)
-    waddstr(sepwin, " (-/-) ");
-  else
-    wprintw(sepwin, " (%i/%i/%i) ", owl_global_get_curmsg(&g) + 1,
-            owl_view_get_size(v),
-            owl_messagelist_get_size(ml));
-
-  foo=owl_view_get_filtname(v);
-  if (strcmp(foo, owl_global_get_view_home(&g)))
-      wattroff(sepwin, A_REVERSE);
-  wprintw(sepwin, " %s ", owl_view_get_filtname(v));
-  if (strcmp(foo, owl_global_get_view_home(&g)))
-      wattron(sepwin, A_REVERSE);
-
-  if (owl_mainwin_is_curmsg_truncated(owl_global_get_mainwin(&g))) {
-    getyx(sepwin, y, x);
-    wmove(sepwin, y, x+2);
-    wattron(sepwin, A_BOLD);
-    waddstr(sepwin, " <truncated> ");
-    wattroff(sepwin, A_BOLD);
-  }
-
-  i=owl_mainwin_get_last_msg(owl_global_get_mainwin(&g));
-  if ((i != -1) &&
-      (i < owl_view_get_size(v)-1)) {
-    getyx(sepwin, y, x);
-    wmove(sepwin, y, x+2);
-    wattron(sepwin, A_BOLD);
-    waddstr(sepwin, " <more> ");
-    wattroff(sepwin, A_BOLD);
-  }
-
-  if (owl_global_get_rightshift(&g)>0) {
-    getyx(sepwin, y, x);
-    wmove(sepwin, y, x+2);
-    wprintw(sepwin, " right: %i ", owl_global_get_rightshift(&g));
-  }
-
-  if (owl_global_is_zaway(&g) || owl_global_is_aaway(&g)) {
-    getyx(sepwin, y, x);
-    wmove(sepwin, y, x+2);
-    wattron(sepwin, A_BOLD);
-    wattroff(sepwin, A_REVERSE);
-    if (owl_global_is_zaway(&g) && owl_global_is_aaway(&g)) {
-      waddstr(sepwin, " AWAY ");
-    } else if (owl_global_is_zaway(&g)) {
-      waddstr(sepwin, " Z-AWAY ");
-    } else if (owl_global_is_aaway(&g)) {
-      waddstr(sepwin, " A-AWAY ");
-    }
-    wattron(sepwin, A_REVERSE);
-    wattroff(sepwin, A_BOLD);
-  }
-
-  if (owl_global_get_curmsg_vert_offset(&g)) {
-    getyx(sepwin, y, x);
-    wmove(sepwin, y, x+2);
-    wattron(sepwin, A_BOLD);
-    wattroff(sepwin, A_REVERSE);
-    waddstr(sepwin, " SCROLL ");
-    wattron(sepwin, A_REVERSE);
-    wattroff(sepwin, A_BOLD);
-  }
-  
-  if (in) {
-    getyx(sepwin, y, x);
-    wmove(sepwin, y, x+2);
-    waddstr(sepwin, in);
-  }
-
-  appendtosepbar = owl_global_get_appendtosepbar(&g);
-  if (appendtosepbar && *appendtosepbar) {
-    getyx(sepwin, y, x);
-    wmove(sepwin, y, x+2);
-    waddstr(sepwin, " ");
-    waddstr(sepwin, owl_global_get_appendtosepbar(&g));
-    waddstr(sepwin, " ");
-  }
-
-  getyx(sepwin, y, x);
-  wmove(sepwin, y, owl_global_get_cols(&g)-1);
-    
-  wattroff(sepwin, A_BOLD);
-  wattroff(sepwin, A_REVERSE);
-}
+#include <glib-object.h>
 
 char **atokenize(const char *buffer, const char *sep, int *i)
 {
@@ -785,3 +673,78 @@ char *owl_slurp(FILE *fp)
 
   return buf;
 }
+
+gulong owl_dirty_window_on_signal(owl_window *w, gpointer sender, const gchar *detailed_signal)
+{
+  return owl_signal_connect_object(sender, detailed_signal, G_CALLBACK(owl_window_dirty), w, G_CONNECT_SWAPPED);
+}
+
+typedef struct { /*noproto*/
+  GObject  *sender;
+  gulong    signal_id;
+} SignalData;
+
+static void _closure_invalidated(gpointer data, GClosure *closure);
+
+/*
+ * GObject's g_signal_connect_object has a documented bug. This function is
+ * identical except it does not leak the signal handler.
+ */
+gulong owl_signal_connect_object(gpointer sender, const gchar *detailed_signal, GCallback c_handler, gpointer receiver, GConnectFlags connect_flags)
+{
+  g_return_val_if_fail (G_TYPE_CHECK_INSTANCE (sender), 0);
+  g_return_val_if_fail (detailed_signal != NULL, 0);
+  g_return_val_if_fail (c_handler != NULL, 0);
+
+  if (receiver) {
+    SignalData *sdata;
+    GClosure *closure;
+    gulong signal_id;
+
+    g_return_val_if_fail (G_IS_OBJECT (receiver), 0);
+
+    closure = ((connect_flags & G_CONNECT_SWAPPED) ? g_cclosure_new_object_swap : g_cclosure_new_object) (c_handler, receiver);
+    signal_id = g_signal_connect_closure (sender, detailed_signal, closure, connect_flags & G_CONNECT_AFTER);
+
+    /* Register the missing hooks */
+    sdata = g_slice_new0(SignalData);
+    sdata->sender = sender;
+    sdata->signal_id = signal_id;
+
+    g_closure_add_invalidate_notifier(closure, sdata, _closure_invalidated);
+
+    return signal_id;
+  } else {
+    return g_signal_connect_data(sender, detailed_signal, c_handler, NULL, NULL, connect_flags);
+  }
+}
+
+/*
+ * There are three ways the signal could come to an end:
+ * 
+ * 1. The user explicitly disconnects it with the returned signal_id.
+ *    - In that case, the disconnection unref's the closure, causing it
+ *      to first be invalidated. The handler's already disconnected, so
+ *      we have no work to do.
+ * 2. The sender gets destroyed.
+ *    - GObject will disconnect each signal which then goes into the above
+ *      case. Our handler does no work.
+ * 3. The receiver gets destroyed.
+ *    - The GClosure was created by g_cclosure_new_object_{,swap} which gets
+ *      invalidated when the receiver is destroyed. We then follow through case 1
+ *      again, but *this* time, the handler has not been disconnected. We then
+ *      clean up ourselves.
+ *
+ * We can't actually hook into this process earlier with weakrefs as GObject
+ * will, on object dispose, first disconnect signals, then invalidate closures,
+ * and notify weakrefs last.
+ */
+static void _closure_invalidated(gpointer data, GClosure *closure)
+{
+  SignalData *sdata = data;
+  if (g_signal_handler_is_connected(sdata->sender, sdata->signal_id)) {
+    g_signal_handler_disconnect(sdata->sender, sdata->signal_id);
+  }
+  g_slice_free(SignalData, sdata);
+}
+

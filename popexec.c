@@ -26,12 +26,8 @@ owl_popexec *owl_popexec_new(const char *command)
   pe->vwin=v=owl_global_get_viewwin(&g);
 
   owl_popwin_up(pw);
-  owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless");
-  owl_viewwin_init_text(v, owl_popwin_get_curswin(pw),
-			owl_popwin_get_lines(pw), owl_popwin_get_cols(pw),
-			"");
-  owl_viewwin_redisplay(v);
-  owl_global_set_needrefresh(&g);
+  owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless", NULL);
+  owl_viewwin_init_text(v, owl_popwin_get_content(pw), "");
   owl_viewwin_set_onclose_hook(v, owl_popexec_viewwin_onclose, pe);
   pe->refcount++;
 
@@ -110,8 +106,6 @@ void owl_popexec_inputhandler(const owl_io_dispatch *d, void *data)
     pe->pid = 0;
     if (pe->winactive) { 
       owl_viewwin_append_text(pe->vwin, "\n");
-      owl_viewwin_redisplay(pe->vwin);
-      owl_global_set_needrefresh(&g);
     }
     owl_select_remove_io_dispatch(d);
     pe->dispatch = NULL;
@@ -138,8 +132,6 @@ void owl_popexec_inputhandler(const owl_io_dispatch *d, void *data)
   owl_function_debugmsg("got data:  <%s>", buf);
   if (pe->winactive) {
     owl_viewwin_append_text(pe->vwin, buf);
-    owl_viewwin_redisplay(pe->vwin);
-    owl_global_set_needrefresh(&g);
   }
   owl_free(buf);
   

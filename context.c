@@ -8,6 +8,7 @@ int owl_context_init(owl_context *ctx)
 {
   ctx->mode = OWL_CTX_STARTUP;
   ctx->data = NULL;
+  ctx->cursor = NULL;
   return 0;
 }
 

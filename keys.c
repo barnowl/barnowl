@@ -337,17 +337,9 @@ void owl_keys_editwin_postalways(owl_input j) {
   if (NULL != (e=owl_global_get_typwin(&g))) {
     owl_editwin_post_process_char(e, j);
   }
-  owl_global_set_needrefresh(&g);
 }
 
 void owl_keys_popless_postalways(owl_input j) {
-  owl_viewwin *v = owl_global_get_viewwin(&g);
-  const owl_popwin *pw = owl_global_get_popwin(&g);
-
-  if (pw && owl_popwin_is_active(pw) && v) {
-    owl_viewwin_redisplay(v);
-    owl_global_set_needrefresh(&g);
-  }  
 }
 
 void owl_keys_default_invalid(owl_input j) {

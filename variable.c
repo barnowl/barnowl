@@ -399,7 +399,7 @@ int owl_variable_typewinsize_set(owl_variable *v, const void *newval)
 {
   int rv;
   rv = owl_variable_int_set_default(v, newval);
-  if (0 == rv) owl_global_set_relayout_pending(&g);
+  if (0 == rv) owl_mainpanel_layout_contents(&g.mainpanel);
   return(rv);
 }
 

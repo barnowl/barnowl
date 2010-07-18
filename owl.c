@@ -239,6 +239,8 @@ int owl_process_message(owl_message *m) {
   owl_perlconfig_newmsg(m, NULL);
   /* log the message if we need to */
   owl_log_message(m);
+  /* redraw the sepbar; TODO: don't violate layering */
+  owl_global_sepbar_dirty(&g);
 
   return 1;
 }
@@ -271,8 +273,6 @@ int owl_process_messages(owl_ps_action *d, void *p)
     /* redisplay if necessary */
     /* this should be optimized to not run if the new messages won't be displayed */
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-    sepbar(NULL);
-    owl_global_set_needrefresh(&g);
   }
   return newmsgs;
 }
@@ -427,28 +427,9 @@ void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
 static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
 {
   /* if a resize has been scheduled, deal with it */
-  owl_global_resize(&g, 0, 0);
-  /* also handle relayouts */
-  owl_global_relayout(&g);
-
+  owl_global_check_resize(&g);
   /* update the terminal if we need to */
-  if (owl_global_is_needrefresh(&g)) {
-    /* these are here in case a relayout changes the windows */
-    WINDOW *sepwin = owl_global_get_curs_sepwin(&g);
-    WINDOW *typwin = owl_global_get_curs_typwin(&g);
-
-    /* push all changed windows to screen */
-    update_panels();
-    /* leave the cursor in the appropriate window */
-    if (!owl_popwin_is_active(owl_global_get_popwin(&g))
-	&& owl_global_get_typwin(&g)) {
-      owl_function_set_cursor(typwin);
-    } else {
-      owl_function_set_cursor(sepwin);
-    }
-    doupdate();
-    owl_global_set_noneedrefresh(&g);
-  }
+  owl_window_redraw_scheduled();
   return 0;
 }
 
@@ -518,7 +499,7 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: processing config file");
 
   owl_global_pop_context(&g);
-  owl_global_push_context(&g, OWL_CTX_READCONFIG, NULL, NULL);
+  owl_global_push_context(&g, OWL_CTX_READCONFIG, NULL, NULL, NULL);
 
   perlerr=owl_perlconfig_initperl(opts.configfile, &argc, &argv, &env);
   if (perlerr) {
@@ -562,7 +543,6 @@ int main(int argc, char **argv, char **env)
     "Please report any bugs or suggestions to bug-barnowl@mit.edu    (   )  \n"
     "-----------------------------------------------------------------m-m---\n"
   );
-  sepbar(NULL);
 
   /* process the startup file */
   owl_function_debugmsg("startup: processing startup file");
@@ -586,7 +566,7 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: setting context interactive");
 
   owl_global_pop_context(&g);
-  owl_global_push_context(&g, OWL_CTX_READCONFIG|OWL_CTX_RECV, NULL, "recv");
+  owl_global_push_context(&g, OWL_CTX_READCONFIG|OWL_CTX_RECV, NULL, "recv", NULL);
 
   owl_select_add_pre_select_action(owl_refresh_pre_select_action, NULL, NULL);
   owl_select_add_pre_select_action(owl_process_messages, NULL, NULL);

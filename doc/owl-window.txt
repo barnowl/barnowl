@@ -1,0 +1,191 @@
+				==========
+				owl_window
+				==========
+
+owl_window is intended to be a wrapper over ncurses WINDOW and PANEL
+objects to abstract away much of the nastiness that is ncurses. It
+provides redraw scheduling, and sane window moving and resizing.
+
+-------------------
+Hierarchy and types
+-------------------
+
+owl_window creates a hierarchy of window objects. The hierarchy
+currently uses ncurses' built-in window hierarchy system with
+subwins. This was easier to implement but has some caveats, detailed
+later.
+
+At the top level, we have the screen window which represents the
+actual screen. The screen window is not usually interacted with
+directly, but rather it is a handle to interface with the terminal as
+if it were a normal window.
+
+Underneath the screen, we have top-level windows, or panels. Panels
+are normal WINDOWs (newwin) connected to a PANEL (from
+libpanel). Panels may overlap freely and maintain a stacking
+order. (For now, this stacking order is not exposed except for a
+mechanism to move a panel to the top. This is not difficult to
+otherwise correct otherwise.)
+
+Under each panel is a tree of subwins. These are backed by ncurses
+subwins. Because ncurses subwins simply share their parent windows'
+buffer, we cannot provide as many nice guarantees about
+ordering. Sibling subwins may not overlap, and parents must
+(sometimes) take children position into account. More on this
+later. This model is sufficient for BarnOwl's current purposes. Should
+we need to, this may later be reworked. (Specifically, we'd want to
+back everything by pads and build a compositing window manager.)
+
+Each of these three types is temporarily stuffed into one type. We can
+later do subtyping of sorts, but that will require more heavy use of
+GObject.
+
+As an example, here is the graph used by BarnOwl's current interface:
+
+      	       	       	+==========+
+     	      	      	|| screen ||
+      	       	       	+==========+
+                          /      \
+                +-----------+   +--------+
+                | mainpanel |   | popwin |
+                +-----------+   +--------+
+               /   /    |    \          \
+         recwin sepwin msgwin typwin   viewwin
+
+
+A window may be unlinked from its parent with a call to
+owl_window_unlink. From then on, the object is still accessible, but
+it will not do anything. If desired, we may add the ability to relink
+a window in future. This behavior allows us to safely hold references
+to windows, even after they have been "destroyed".
+
+----------
+Visibility
+----------
+
+Each window maintains state for whether or not the user has requested
+it be visible. A user calls owl_window_show to flip the 'shown' bit on
+a window and owl_window_show_all to do so recursively. Likewise,
+owl_window_hide disables this bit. If a window and all its parents are
+shown, then the user has requested this window be visible.
+
+We say a window is realized if it has a corresponding on-screen
+window. A window will only be realized if it is requested to be
+shown. Furthermore, the window's parent must also be realized (unless
+it is the screen). If a window is failed to be created for any reason
+(most notably if its dimensions are zero), owl_window will cope and
+consider it unrealized.
+
+This realized/unrealized state fixes two nuisances with the old code:
+
+     First, owl_window can safely manage all NULL windows. Interacting
+     code needn't check to avoid segfaults; the owl_window is never
+     NULL, and code requesting the WINDOW will never be called when
+     NULL.
+
+     Second, we have a consistent handle to a logical window, despite
+     changes in the physical window. This is important for resizing
+     windows. It is difficult to safely resize windows in ncurses. It
+     is usually far easier to destroy everything and recreate it.
+
+Note that this means owl_window will intentionally never expose the
+underlying WINDOW except during appropriate events.
+
+--------
+Resizing
+--------
+
+Windows may be moved and resized with owl_window_move,
+owl_window_resize, and owl_window_set_position. Internally, resizing
+is very simple. We unrealize the window, set new position, and then
+realize it at the new location. When a window changes size, it emits a
+"resized" signal which windows may react to. It may actually possible
+to optimize moves, but this has a slight nuisance with incorrect
+begy/begx values which cursors currently rely on.
+
+It is intended that top-level windows connect to this signal to change
+themselves, while windows containing subwins connect to their own
+signals to relayout their subwins. This is because top-level windows
+may be sized independently, while sibling subwins should not
+overlap. The signals are implemented currently with GObject signals.
+
+---------
+Redrawing
+---------
+
+Currently, users of widgets in BarnOwl must remember to call
+owl_foo_redisplay when a widget needs to be redrawn. This is quite
+annoying and an implementation detail that functions like
+owl_editwin_insert_string should take care of. To allow widget
+implementations to redraw themselves without calling an expensive
+redisplay many times, owl_window_dirty flags a window as "dirty". The
+framework will promise to redraw that window before the next doupdate,
+while repeated owl_window_dirty calls remain cheap.
+
+Windows currently redraw with a "redraw" GObject signal. This and the
+resize signal, is somewhat awkward for the editwin which attaches to
+and releases windows, as we must remember signal ids. However, if we
+make widget objects (owl_editwin, owl_mainwin, etc.) also GObjects,
+these signals will automatically detach. We may also consider a
+different mechanism than continuously attaching/detaching
+things. That's kinda weird anyway.
+
+(We may want to replace it with a normal callback at some
+point. Mostly using the GObject signals to play with them, and because
+we'd likely get some form of automatic binding generation.)
+
+----------------------
+Known issues and notes
+----------------------
+
+- owl_window does not export the underlying WINDOW*. This is
+  intentional. To safely resize windows, owl_window reserves the right
+  to destroy/recreate the window whenever it feels like. We can add
+  "window-realized"/"window-unrealized" signals if people really want
+  though.
+
+- This is currently using GObject. This buys us a lot of niceness, but
+  it is adding a new library with full-blown (and somewhat
+  overengineered) object system. It's very useful for prototyping, but
+  if people want, it can be replaced. I think it's actually
+  worthwhile, as most of the overengineering is explicitly designed
+  for language bindings, something we could be better at.
+
+- There is this really sketchy "three types in one" thing going on
+  with the screen, panels, and subwins. I'd like to refactor that into
+  some sort of subtyping, but that would ideally involve even more use
+  of GObject.
+
+- owl_mainwin is not very well ported and the windows do not have a
+  very consistent implementation. This is a known problem that will be
+  addressed in the next iteration. The current ports were done partly
+  as experiments for conventions and mostly to get something working
+  as soon as possible. Among things that should change is for the
+  widgets to all use new/delete/pointers instead of
+  init/cleanup/embed-in-struct.
+
+- The editwin and a few others are strange and keep track of signal
+  ids. This is somewhat a side effect of us not using GObject
+  everywhere; the signals can automatically disconnect in the right
+  contexts if we do.
+
+- The sepbar depends on a value computed while the mainwin is drawn,
+  so we currently ensure the windows are created in the right order
+  for the repaints to occur correctly. This is rather poor and should
+  be refactored later.
+
+- The code fairly routinely does casts to add extra throw-away
+  parameters to functions. Most notably, casting functions of type
+
+      void do_something(void *obj)
+
+  to something of type
+
+      void do_something(void *obj, void *user_data)
+
+  (the latter is a GFunc) with the expectation that the user_data
+  argument is discarded. While calling with this cast is undefined by
+  the standard and depends on calling convention, glib uses it
+  internally /everywhere/ and much of glib and gobject API heavily
+  depends on it. As BarnOwl already depends on glib, we implicitly
+  assume this cast works.

@@ -60,6 +60,8 @@ typedef void AV;
 typedef void HV;
 #endif
 
+#include "window.h"
+
 #ifdef  GIT_VERSION
 #define stringify(x)       __stringify(x)
 #define __stringify(x)     #x
@@ -307,6 +309,7 @@ typedef struct _owl_context {
   int   mode;
   void *data;		/* determined by mode */
   char *keymap;
+  owl_window *cursor;
 } owl_context;
 
 typedef struct _owl_cmd {	/* command */
@@ -394,6 +397,7 @@ typedef struct _owl_mainwin {
   int curtruncated;
   int lasttruncated;
   int lastdisplayed;
+  owl_window *window;
 } owl_mainwin;
 
 typedef struct _owl_viewwin {
@@ -401,19 +405,23 @@ typedef struct _owl_viewwin {
   int textlines;
   int topline;
   int rightshift;
-  int winlines, wincols;
-  WINDOW *curswin;
+  owl_window *window;
+  gulong sig_redraw_id;
   void (*onclose_hook) (struct _owl_viewwin *vwin, void *data);
   void *onclose_hook_data;
 } owl_viewwin;
   
 typedef struct _owl_popwin {
-  PANEL *borderpanel;
-  PANEL *poppanel;
-  int lines;
-  int cols;
+  owl_window *border;
+  owl_window *content;
   int active;
 } owl_popwin;
+  
+typedef struct _owl_msgwin {
+  char *msg;
+  owl_window *window;
+  gulong redraw_id;
+} owl_msgwin;
 
 typedef struct _owl_messagelist {
   owl_list list;
@@ -462,6 +470,15 @@ typedef struct _owl_history {
 
 typedef struct _owl_editwin owl_editwin;
 typedef struct _owl_editwin_excursion owl_editwin_excursion;
+
+typedef struct _owl_mainpanel {
+  owl_window *panel;
+  owl_window *typwin;
+  owl_window *sepwin;
+  owl_window *msgwin;
+  owl_window *recwin;
+  int recwinlines;
+} owl_mainpanel;
 
 typedef struct _owl_keybinding {
   int  *keys;			/* keypress stack */
@@ -546,9 +563,12 @@ typedef struct _owl_popexec {
   const owl_io_dispatch *dispatch;
 } owl_popexec;
 
+typedef struct _OwlGlobalNotifier OwlGlobalNotifier;
+
 typedef struct _owl_global {
   owl_mainwin mw;
   owl_popwin pw;
+  owl_msgwin msgwin;
   owl_history cmdhist;		/* command history */
   owl_history msghist;		/* outgoing message history */
   owl_keyhandler kh;
@@ -566,12 +586,10 @@ typedef struct _owl_global {
   owl_view current_view;
   owl_messagelist msglist;
   WINDOW *input_pad;
-  PANEL *recpan, *seppan, *msgpan, *typpan;
-  int needrefresh;
+  owl_mainpanel mainpanel;
+  gulong typwin_erase_id;
   int rightshift;
   volatile sig_atomic_t resizepending;
-  int relayoutpending;
-  int recwinlines;
   char *thishost;
   char *homedir;
   char *confdir;

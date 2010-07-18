@@ -73,6 +73,8 @@ char *_owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const 
   if (!strcmp(argv[0], "")) {
   } else if (NULL != (cmd = owl_dict_find_element(cd, argv[0]))) {
     retval = owl_cmd_execute(cmd, cd, ctx, argc, argv, buff);
+    /* redraw the sepbar; TODO: don't violate layering */
+    owl_global_sepbar_dirty(&g);
   } else {
     owl_function_makemsg("Unknown command '%s'.", buff);
   }
@@ -89,7 +91,6 @@ char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const c
   argv=owl_parseline(tmpbuff, &argc);
   if (argc < 0) {
     owl_free(tmpbuff);
-    sepbar(NULL);
     owl_function_makemsg("Unbalanced quotes");
     return NULL;
   } 
@@ -104,7 +105,6 @@ char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const c
 
   owl_parse_delete(argv, argc);
   owl_free(tmpbuff);
-  sepbar(NULL);
   return retval;
 }
 
