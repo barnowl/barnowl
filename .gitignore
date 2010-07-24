@@ -14,6 +14,7 @@ TAGS
 aclocal.m4
 autom4te.cache
 barnowl.bin
+tester.bin
 zcrypt
 blib
 config.cache
@@ -29,7 +30,6 @@ jabber.log
 missing
 owl_prototypes.h
 owl_prototypes.h.new
-perl_tester
 perlglue.c
 perlwrap.c
 pm_to_blib
