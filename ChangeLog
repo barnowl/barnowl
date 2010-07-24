@@ -1,3 +1,16 @@
+1.6.2
+ * Use a uniquified debug file location. -nelhage@mit.edu
+ * Open the debug file using O_EXCL and an explicit mode. -nelhage@mit.edu
+ * Don't send AIM passwords to the debug log. -geofft@mit.edu
+ * Remove some dead AIM code that sends local files to the server. -geofft@mit.edu
+ * Handle errors from ZPending and ZReceiveNotice (CVE-2010-2725). -nelhage@mit.edu
+ * Include the public repository URL in the README -alexmv@mit.edu
+ * Install the documentation in 'make install'. -nelhage@mit.edu
+ * Add a configure flag to enable/disable building with krb4. -wthrowe@mit.edu
+ * Fix an infinite loop on 'view -r args'. -nelhage@mit.edu
+ * Free paths to Zephyr dot-files when non-existant -davidben@mit.edu
+ * Jabber: Accept a -m argument to jwrite to set the message. -nelhage@mit.edu
+
 1.6.1
  * Jabber: Explain how to set your nick when joining a MUC. -andersk@mit.edu
  * Jabber: Make smartnarrow -i filter on subject. -andersk@mit.edu
