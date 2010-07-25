@@ -369,10 +369,10 @@ int owl_filter_regtest(void) {
 int owl_editwin_regtest(void) {
   int numfailed = 0;
   const char *p;
+  owl_editwin *oe;
 
   printf("# BEGIN testing owl_editwin\n");
 
-  owl_editwin *oe;
   oe = owl_editwin_new(NULL, 80, 80, OWL_EDITWIN_STYLE_MULTILINE, NULL);
 
   /* TODO: make the strings a little more lenient w.r.t trailing whitespace */
