@@ -520,6 +520,11 @@ const char *owl_fmtext_get_text(const owl_fmtext *f)
   return(f->textbuff);
 }
 
+int owl_fmtext_num_bytes(const owl_fmtext *f)
+{
+  return(f->textlen);
+}
+
 /* set the charater at 'index' to be 'char'.  If index is out of
  * bounds don't do anything. If c or char at index is not ASCII, don't
  * do anything because it's not UTF-8 safe. */

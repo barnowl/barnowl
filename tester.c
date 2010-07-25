@@ -20,6 +20,7 @@ int owl_variable_regtest(void);
 int owl_filter_regtest(void);
 int owl_obarray_regtest(void);
 int owl_editwin_regtest(void);
+int owl_fmtext_regtest(void);
 
 extern void owl_perl_xs_init(pTHX);
 
@@ -105,6 +106,7 @@ int owl_regtest(void) {
   numfailures += owl_variable_regtest();
   numfailures += owl_filter_regtest();
   numfailures += owl_editwin_regtest();
+  numfailures += owl_fmtext_regtest();
   if (numfailures) {
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
@@ -403,6 +405,74 @@ int owl_editwin_regtest(void) {
   owl_editwin_delete(oe); oe = NULL;
 
   printf("# END testing owl_editwin (%d failures)\n", numfailed);
+
+  return numfailed;
+}
+
+int owl_fmtext_regtest(void) {
+  int numfailed = 0;
+  owl_fmtext fm1;
+  owl_fmtext fm2;
+  char *str;
+
+  printf("# BEGIN testing owl_fmtext\n");
+
+  owl_fmtext_init_null(&fm1);
+  owl_fmtext_init_null(&fm2);
+
+  /* Verify text gets correctly appended. */
+  owl_fmtext_append_normal(&fm1, "1234567898");
+  owl_fmtext_append_fmtext(&fm2, &fm1);
+  FAIL_UNLESS("string lengths correct",
+              owl_fmtext_num_bytes(&fm2) == strlen(owl_fmtext_get_text(&fm2)));
+
+  /* Test owl_fmtext_num_lines. */
+  owl_fmtext_clear(&fm1);
+  FAIL_UNLESS("empty line correct", owl_fmtext_num_lines(&fm1) == 0);
+  owl_fmtext_append_normal(&fm1, "12345\n67898");
+  FAIL_UNLESS("trailing chars correct", owl_fmtext_num_lines(&fm1) == 2);
+  owl_fmtext_append_normal(&fm1, "\n");
+  FAIL_UNLESS("trailing newline correct", owl_fmtext_num_lines(&fm1) == 2);
+  owl_fmtext_append_bold(&fm1, "");
+  FAIL_UNLESS("trailing attributes correct", owl_fmtext_num_lines(&fm1) == 2);
+
+  /* Test owl_fmtext_truncate_lines */
+  owl_fmtext_clear(&fm1);
+  owl_fmtext_append_normal(&fm1, "0\n1\n2\n3\n4\n");
+
+  owl_fmtext_clear(&fm2);
+  owl_fmtext_truncate_lines(&fm1, 1, 3, &fm2);
+  str = owl_fmtext_print_plain(&fm2);
+  FAIL_UNLESS("lines corrected truncated",
+	      str && !strcmp(str, "1\n2\n3\n"));
+  owl_free(str);
+
+  owl_fmtext_clear(&fm2);
+  owl_fmtext_truncate_lines(&fm1, 1, 5, &fm2);
+  str = owl_fmtext_print_plain(&fm2);
+  FAIL_UNLESS("lines corrected truncated",
+	      str && !strcmp(str, "1\n2\n3\n4\n"));
+  owl_free(str);
+
+  /* Test owl_fmtext_truncate_cols. */
+  owl_fmtext_clear(&fm1);
+  owl_fmtext_append_normal(&fm1, "123456789012345\n");
+  owl_fmtext_append_normal(&fm1, "123456789\n");
+  owl_fmtext_append_normal(&fm1, "1234567890\n");
+
+  owl_fmtext_clear(&fm2);
+  owl_fmtext_truncate_cols(&fm1, 4, 9, &fm2);
+  str = owl_fmtext_print_plain(&fm2);
+  FAIL_UNLESS("columns correctly truncated",
+              str && !strcmp(str, "567890"
+                                  "56789\n"
+                                  "567890"));
+  owl_free(str);
+
+  owl_fmtext_cleanup(&fm1);
+  owl_fmtext_cleanup(&fm2);
+
+  printf("# END testing owl_fmtext (%d failures)\n", numfailed);
 
   return numfailed;
 }
