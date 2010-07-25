@@ -174,9 +174,9 @@ static void _owl_fmtext_scan_attributes(const owl_fmtext *f, int start, char *at
   }
 }  
 
-/* Internal function.  Append text from 'in' between index 'start' and
- * 'stop', inclusive, to the end of 'f'. This function works with
- * bytes.
+/* Internal function.  Append text from 'in' between index 'start'
+ * inclusive and 'stop' exclusive, to the end of 'f'. This function
+ * works with bytes.
  */
 static void _owl_fmtext_append_fmtext(owl_fmtext *f, const owl_fmtext *in, int start, int stop)
 {
@@ -193,7 +193,7 @@ static void _owl_fmtext_append_fmtext(owl_fmtext *f, const owl_fmtext *in, int s
 
   /* We will reset to defaults after appending the text. We may need
      to set initial attributes. */
-  newlen=strlen(f->textbuff)+(stop-start+1) + (4 * (a + fg + bg)) + 12;
+  newlen=strlen(f->textbuff)+(stop-start) + (4 * (a + fg + bg)) + 12;
   _owl_fmtext_realloc(f, newlen);
 
   if (a)
@@ -206,7 +206,7 @@ static void _owl_fmtext_append_fmtext(owl_fmtext *f, const owl_fmtext *in, int s
     strncat(f->textbuff, attrbuff,
 	    g_unichar_to_utf8(OWL_FMTEXT_UC_BGCOLOR | bgcolor, attrbuff));
 
-  strncat(f->textbuff, in->textbuff+start, stop-start+1);
+  strncat(f->textbuff, in->textbuff+start, stop-start);
 
   /* Reset attributes */
   strcat(f->textbuff, OWL_FMTEXT_UTF8_BGDEFAULT);
@@ -401,10 +401,12 @@ int owl_fmtext_truncate_lines(const owl_fmtext *in, int aline, int lines, owl_fm
     offset = ptr1 - in->textbuff;
     ptr2 = strchr(ptr1, '\n');
     if (!ptr2) {
-      _owl_fmtext_append_fmtext(out, in, offset, (in->textlen) - 1);
+      /* Copy to the end of the buffer. */
+      _owl_fmtext_append_fmtext(out, in, offset, in->textlen);
       return(-1);
     }
-    _owl_fmtext_append_fmtext(out, in, offset, (ptr2 - ptr1) + offset);
+    /* Copy up to, and including, the new line. */
+    _owl_fmtext_append_fmtext(out, in, offset, (ptr2 - ptr1) + offset + 1);
     ptr1 = ptr2 + 1;
   }
   return(0);
@@ -474,20 +476,19 @@ void owl_fmtext_truncate_cols(const owl_fmtext *in, int acol, int bcol, owl_fmte
       /* lead padding */
       owl_fmtext_append_spaces(out, padding);
       if (ptr_c == ptr_e) {
-	/* We made it to the newline. */
-	_owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
+	/* We made it to the newline. Append up to, and including it. */
+	_owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff + 1);
       }
       else if (chwidth > 1) {
         /* Last char is wide, truncate. */
-        _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff - 1);
+        _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
         owl_fmtext_append_normal(out, "\n");
       }
       else {
-        /* Last char fits perfectly, We skip to the next char and back
-         * up a byte to make sure we get it all.
-         */
+        /* Last char fits perfectly, We stop at the next char to make
+	 * sure we get it all. */
         ptr_c = g_utf8_next_char(ptr_c);
-        _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff - 1);
+        _owl_fmtext_append_fmtext(out, in, ptr_s - in->textbuff, ptr_c - in->textbuff);
       }
     }
     else {
