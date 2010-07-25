@@ -502,16 +502,26 @@ void owl_fmtext_truncate_cols(const owl_fmtext *in, int acol, int bcol, owl_fmte
 int owl_fmtext_num_lines(const owl_fmtext *f)
 {
   int lines, i;
+  char *lastbreak, *p;
 
-  if (f->textlen==0) return(0);
-  
   lines=0;
+  lastbreak = f->textbuff;
   for (i=0; i<f->textlen; i++) {
-    if (f->textbuff[i]=='\n') lines++;
+    if (f->textbuff[i]=='\n') {
+      lastbreak = f->textbuff + i;
+      lines++;
+    }
   }
 
-  /* if the last char wasn't a \n there's one more line */
-  if (f->textbuff[i-1]!='\n') lines++;
+  /* Check if there's a trailing line; formatting characters don't count. */
+  for (p = g_utf8_next_char(lastbreak);
+       p < f->textbuff + f->textlen;
+       p = g_utf8_next_char(p)) {
+    if (!owl_fmtext_is_format_char(g_utf8_get_char(p))) {
+      lines++;
+      break;
+    }
+  }
 
   return(lines);
 }
