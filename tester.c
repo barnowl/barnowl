@@ -469,6 +469,19 @@ int owl_fmtext_regtest(void) {
                                   "567890"));
   owl_free(str);
 
+  owl_fmtext_clear(&fm1);
+  owl_fmtext_append_normal(&fm1, "12\t1234");
+  owl_fmtext_append_bold(&fm1, "56\n");
+  owl_fmtext_append_bold(&fm1, "12345678\t\n");
+
+  owl_fmtext_clear(&fm2);
+  owl_fmtext_truncate_cols(&fm1, 4, 13, &fm2);
+  str = owl_fmtext_print_plain(&fm2);
+  FAIL_UNLESS("columns correctly truncated",
+              str && !strcmp(str, "    123456"
+                                  "5678      "));
+  owl_free(str);
+
   /* Test owl_fmtext_expand_tabs. */
   owl_fmtext_clear(&fm1);
   owl_fmtext_append_normal(&fm1, "12\t1234");

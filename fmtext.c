@@ -449,19 +449,8 @@ int owl_fmtext_truncate_lines(const owl_fmtext *in, int aline, int lines, owl_fm
   return(0);
 }
 
-/* Truncate the message so that each line begins at column 'acol' and
- * ends at 'bcol' or sooner.  The first column is number 0.  The new
- * message is placed in 'out'.  The message is expected to end in a
- * new line for now.
- *
- * NOTE: This needs to be modified to deal with backing up if we find
- * a SPACING COMBINING MARK at the end of a line. If that happens, we
- * should back up to the last non-mark character and stop there.
- *
- * NOTE: If a line ends at bcol, we omit the newline. This is so printing
- * to ncurses works.
- */
-void owl_fmtext_truncate_cols(const owl_fmtext *in, int acol, int bcol, owl_fmtext *out)
+/* Implementation of owl_fmtext_truncate_cols. Does not support tabs in input. */
+void _owl_fmtext_truncate_cols_internal(const owl_fmtext *in, int acol, int bcol, owl_fmtext *out)
 {
   const char *ptr_s, *ptr_e, *ptr_c, *last;
   int col, st, padding, chwidth;
@@ -532,6 +521,33 @@ void owl_fmtext_truncate_cols(const owl_fmtext *in, int acol, int bcol, owl_fmte
       owl_fmtext_append_normal(out, "\n");
     }
     ptr_s = g_utf8_next_char(ptr_e);
+  }
+}
+
+/* Truncate the message so that each line begins at column 'acol' and
+ * ends at 'bcol' or sooner.  The first column is number 0.  The new
+ * message is placed in 'out'.  The message is expected to end in a
+ * new line for now.
+ *
+ * NOTE: This needs to be modified to deal with backing up if we find
+ * a SPACING COMBINING MARK at the end of a line. If that happens, we
+ * should back up to the last non-mark character and stop there.
+ *
+ * NOTE: If a line ends at bcol, we omit the newline. This is so printing
+ * to ncurses works.
+ */
+void owl_fmtext_truncate_cols(const owl_fmtext *in, int acol, int bcol, owl_fmtext *out)
+{
+  owl_fmtext notabs;
+
+  /* _owl_fmtext_truncate_cols_internal cannot handle tabs. */
+  if (strchr(in->textbuff, '\t')) {
+    owl_fmtext_init_null(&notabs);
+    owl_fmtext_expand_tabs(in, &notabs, 0);
+    _owl_fmtext_truncate_cols_internal(&notabs, acol, bcol, out);
+    owl_fmtext_cleanup(&notabs);
+  } else {
+    _owl_fmtext_truncate_cols_internal(in, acol, bcol, out);
   }
 }
 
