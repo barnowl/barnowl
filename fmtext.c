@@ -388,7 +388,7 @@ void owl_fmtext_expand_tabs(const owl_fmtext *in, owl_fmtext *out, int start) {
     int chwidth;
     if (c == '\t') {
       /* Copy up to this tab */
-      _owl_fmtext_append_fmtext(out, in, numcopied, ptr - in->textbuff - 1);
+      _owl_fmtext_append_fmtext(out, in, numcopied, ptr - in->textbuff);
       /* and then copy spaces for the tab. */
       chwidth = OWL_TAB_WIDTH - (col % OWL_TAB_WIDTH);
       owl_fmtext_append_spaces(out, chwidth);
@@ -405,7 +405,7 @@ void owl_fmtext_expand_tabs(const owl_fmtext *in, owl_fmtext *out, int start) {
   }
   /* Append anything we've missed. */
   if (numcopied < in->textlen)
-    _owl_fmtext_append_fmtext(out, in, numcopied, in->textlen - 1);
+    _owl_fmtext_append_fmtext(out, in, numcopied, in->textlen);
 }
 
 /* start with line 'aline' (where the first line is 0) and print

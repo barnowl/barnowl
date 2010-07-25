@@ -44,6 +44,7 @@ void owl_style_get_formattext(const owl_style *s, owl_fmtext *fm, const owl_mess
   const char *body;
   char *indent;
   int curlen;
+  owl_fmtext with_tabs;
 
   SV *sv = NULL;
   
@@ -71,8 +72,13 @@ void owl_style_get_formattext(const owl_style *s, owl_fmtext *fm, const owl_mess
     indent[curlen+1] = '\0';
   }
 
+  owl_fmtext_init_null(&with_tabs);
   /* fmtext_append.  This needs to change */
-  owl_fmtext_append_ztext(fm, indent);
+  owl_fmtext_append_ztext(&with_tabs, indent);
+  /* Expand tabs, taking the indent into account. Otherwise, tabs from the
+   * style display incorrectly due to our own indent. */
+  owl_fmtext_expand_tabs(&with_tabs, fm, OWL_TAB_WIDTH - OWL_TAB);
+  owl_fmtext_cleanup(&with_tabs);
 
   owl_free(indent);
   if(sv)
