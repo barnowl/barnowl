@@ -469,6 +469,28 @@ int owl_fmtext_regtest(void) {
                                   "567890"));
   owl_free(str);
 
+  /* Test owl_fmtext_expand_tabs. */
+  owl_fmtext_clear(&fm1);
+  owl_fmtext_append_normal(&fm1, "12\t1234");
+  owl_fmtext_append_bold(&fm1, "567\t1\n12345678\t1");
+  owl_fmtext_clear(&fm2);
+  owl_fmtext_expand_tabs(&fm1, &fm2, 0);
+  str = owl_fmtext_print_plain(&fm2);
+  FAIL_UNLESS("no tabs remaining", strchr(str, '\t') == NULL);
+  FAIL_UNLESS("tabs corrected expanded",
+              str && !strcmp(str, "12      1234567 1\n"
+                                  "12345678        1"));
+  owl_free(str);
+
+  owl_fmtext_clear(&fm2);
+  owl_fmtext_expand_tabs(&fm1, &fm2, 1);
+  str = owl_fmtext_print_plain(&fm2);
+  FAIL_UNLESS("no tabs remaining", strchr(str, '\t') == NULL);
+  FAIL_UNLESS("tabs corrected expanded",
+              str && !strcmp(str, "12     1234567 1\n"
+                                  "12345678       1"));
+  owl_free(str);
+
   owl_fmtext_cleanup(&fm1);
   owl_fmtext_cleanup(&fm2);
 

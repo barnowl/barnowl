@@ -125,8 +125,6 @@ char *owl_text_htmlstrip(const char *in)
   return(out2);
 }
 
-#define OWL_TAB_WIDTH 8
-
 /* Caller must free return */
 char *owl_text_expand_tabs(const char *in)
 {

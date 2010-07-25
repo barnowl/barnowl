@@ -113,6 +113,8 @@ typedef void HV;
 #define OWL_COLOR_DEFAULT   -1
 #define OWL_COLOR_INVALID   -2
 
+#define OWL_TAB_WIDTH 8
+
 #define OWL_EDITWIN_STYLE_MULTILINE 0
 #define OWL_EDITWIN_STYLE_ONELINE   1
 

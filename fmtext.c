@@ -371,6 +371,43 @@ void owl_fmtext_curs_waddstr_without_search(const owl_fmtext *f, WINDOW *w)
   _owl_fmtext_curs_waddstr(f, w, 0);
 }
 
+/* Expands tabs. Tabs are expanded as if given an initial indent of start. */
+void owl_fmtext_expand_tabs(const owl_fmtext *in, owl_fmtext *out, int start) {
+  int col = start, numcopied = 0;
+  char *ptr;
+
+  /* Copy the default attributes. */
+  out->default_attrs = in->default_attrs;
+  out->default_fgcolor = in->default_fgcolor;
+  out->default_bgcolor = in->default_bgcolor;
+
+  for (ptr = in->textbuff;
+       ptr < in->textbuff + in->textlen;
+       ptr = g_utf8_next_char(ptr)) {
+    gunichar c = g_utf8_get_char(ptr);
+    int chwidth;
+    if (c == '\t') {
+      /* Copy up to this tab */
+      _owl_fmtext_append_fmtext(out, in, numcopied, ptr - in->textbuff - 1);
+      /* and then copy spaces for the tab. */
+      chwidth = OWL_TAB_WIDTH - (col % OWL_TAB_WIDTH);
+      owl_fmtext_append_spaces(out, chwidth);
+      col += chwidth;
+      numcopied = g_utf8_next_char(ptr) - in->textbuff;
+    } else {
+      /* Just update col. We'll append later. */
+      if (c == '\n') {
+        col = start;
+      } else if (!owl_fmtext_is_format_char(c)) {
+        col += mk_wcwidth(c);
+      }
+    }
+  }
+  /* Append anything we've missed. */
+  if (numcopied < in->textlen)
+    _owl_fmtext_append_fmtext(out, in, numcopied, in->textlen - 1);
+}
+
 /* start with line 'aline' (where the first line is 0) and print
  * 'lines' number of lines into 'out'
  */
