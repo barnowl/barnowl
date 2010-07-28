@@ -6,7 +6,6 @@
 /**********************************************************************/
 
 struct owlfaim_priv {
-  char *aimbinarypath;
   char *screenname;
   char *password;
   char *server;
@@ -64,8 +63,6 @@ static int faimtest_locrights(aim_session_t *sess, aim_frame_t *fr, ...);
 static int faimtest_reportinterval(aim_session_t *sess, aim_frame_t *fr, ...);
 /* static int reportinterval(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs); */
 static int faimtest_parse_motd(aim_session_t *sess, aim_frame_t *fr, ...);
-static int getaimdata(aim_session_t *sess, unsigned char **bufret, int *buflenret, unsigned long offset, unsigned long len, const char *modname);
-static int faimtest_memrequest(aim_session_t *sess, aim_frame_t *fr, ...);
 /* static void printuserflags(fu16_t flags); */
 static int faimtest_parse_userinfo(aim_session_t *sess, aim_frame_t *fr, ...);
 static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, struct aim_incomingim_ch1_args *args);
@@ -516,8 +513,6 @@ static int faimtest_parse_login(aim_session_t *sess, aim_frame_t *fr, ...)
   key = va_arg(ap, const char *);
   va_end(ap);
 
-  owl_function_debugmsg("faimtest_parse_login: %s %s %s", priv->screenname, priv->password, key);
-
   aim_send_login(sess, fr->conn, priv->screenname, priv->password, &info, key);
   
   return(1);
@@ -634,7 +629,6 @@ void addcb_bos(aim_session_t *sess, aim_conn_t *bosconn)
   aim_conn_addhandler(sess, bosconn, 0x0004,         0x0005,                        faimtest_icbmparaminfo, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNERR,    faimtest_parse_connerr, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOC, AIM_CB_LOC_RIGHTSINFO,         faimtest_locrights, 0);
-  aim_conn_addhandler(sess, bosconn, 0x0001,         0x001f,                        faimtest_memrequest, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_BUD, AIM_CB_BUD_ONCOMING,           faimtest_parse_oncoming, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_BUD, AIM_CB_BUD_OFFGOING,           faimtest_parse_offgoing, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_INCOMING,           faimtest_parse_incoming_im, 0);
@@ -946,168 +940,6 @@ static int faimtest_parse_motd(aim_session_t *sess, aim_frame_t *fr, ...)
 
   owl_function_debugmsg("faimtest_parse_motd: %s (%d / %s)\n", msg?msg:"nomsg", id, (id < codeslen)?codes[id]:"unknown");
   
-  return 1;
-}
-
-/*
- * This is a little more complicated than it looks.  The module
- * name (proto, boscore, etc) may or may not be given.  If it is
- * not given, then use aim.exe.  If it is given, put ".ocm" on the
- * end of it.
- *
- * Now, if the offset or length requested would cause a read past
- * the end of the file, then the request is considered invalid.  Invalid
- * requests are processed specially.  The value hashed is the
- * the request, put into little-endian (eight bytes: offset followed
- * by length).  
- *
- * Additionally, if the request is valid, the length is mod 4096.  It is
- * important that the length is checked for validity first before doing
- * the mod.
- *
- * Note to Bosco's Brigade: if you'd like to break this, put the 
- * module name on an invalid request.
- *
- */
-static int getaimdata(aim_session_t *sess, unsigned char **bufret, int *buflenret, unsigned long offset, unsigned long len, const char *modname)
-{
-  struct owlfaim_priv *priv = sess->aux_data;
-  FILE *f;
-  static const char defaultmod[] = "aim.exe";
-  char *filename = NULL;
-  struct stat st;
-  unsigned char *buf;
-  int invalid = 0;
-  
-  if (!bufret || !buflenret)
-    return -1;
-  
-  if (modname) {
-    filename = owl_sprintf("%s/%s.ocm", priv->aimbinarypath, modname);
-  } else {
-    filename = owl_sprintf("%s/%s", priv->aimbinarypath, defaultmod);
-  }
-  
-  if (stat(filename, &st) == -1) {
-    if (!modname) {
-      /* perror("memrequest: stat"); */
-      owl_free(filename);
-      return -1;
-    }
-    invalid = 1;
-  }
-  
-  if (!invalid) {
-    if ((offset > st.st_size) || (len > st.st_size))
-      invalid = 1;
-    else if ((st.st_size - offset) < len)
-      len = st.st_size - offset;
-    else if ((st.st_size - len) < len)
-      len = st.st_size - len;
-  }
-  
-  if (!invalid && len) {
-    len %= 4096;
-  }
-  
-  if (invalid) {
-    int i;
-    
-    owl_free(filename); /* not needed */
-    owl_function_error("getaimdata memrequest: recieved invalid request for 0x%08lx bytes at 0x%08lx (file %s)\n", len, offset, modname);
-    i = 8;
-    if (modname) {
-      i+=strlen(modname);
-    }
-    
-    if (!(buf = owl_malloc(i))) {
-      return -1;
-    }
-    
-    i=0;
-    
-    if (modname) {
-      memcpy(buf, modname, strlen(modname));
-      i+=strlen(modname);
-    }
-    
-    /* Damn endianness. This must be little (LSB first) endian. */
-    buf[i++] = offset & 0xff;
-    buf[i++] = (offset >> 8) & 0xff;
-    buf[i++] = (offset >> 16) & 0xff;
-    buf[i++] = (offset >> 24) & 0xff;
-    buf[i++] = len & 0xff;
-    buf[i++] = (len >> 8) & 0xff;
-    buf[i++] = (len >> 16) & 0xff;
-    buf[i++] = (len >> 24) & 0xff;
-    
-    *bufret = buf;
-    *buflenret = i;
-  } else {
-    if (!(buf = owl_malloc(len))) {
-      owl_free(filename);
-      return -1;
-    }
-    /* printf("memrequest: loading %ld bytes from 0x%08lx in \"%s\"...\n", len, offset, filename); */
-    if (!(f = fopen(filename, "r"))) {
-      /* perror("memrequest: fopen"); */
-      owl_free(filename);
-      owl_free(buf);
-      return -1;
-    }
-    
-    owl_free(filename);
-    
-    if (fseek(f, offset, SEEK_SET) == -1) {
-      /* perror("memrequest: fseek"); */
-      fclose(f);
-      owl_free(buf);
-      return -1;
-    }
-    
-    if (fread(buf, len, 1, f) != 1) {
-      /* perror("memrequest: fread"); */
-      fclose(f);
-      owl_free(buf);
-      return -1;
-    }
-    
-    fclose(f);
-    *bufret = buf;
-    *buflenret = len;
-  }
-  return 0; /* success! */
-}
-
-/*
- * This will get an offset and a length.  The client should read this
- * data out of whatever AIM.EXE binary the user has provided (hopefully
- * it matches the client information thats sent at login) and pass a
- * buffer back to libfaim so it can hash the data and send it to AOL for
- * inspection by the client police.
- */
-static int faimtest_memrequest(aim_session_t *sess, aim_frame_t *fr, ...)
-{
-  struct owlfaim_priv *priv = sess->aux_data;
-  va_list ap;
-  fu32_t offset, len;
-  const char *modname;
-  unsigned char *buf;
-  int buflen;
-  
-  va_start(ap, fr);
-  offset = va_arg(ap, fu32_t);
-  len = va_arg(ap, fu32_t);
-  modname = va_arg(ap, const char *);
-  va_end(ap);
-  
-  if (priv->aimbinarypath && (getaimdata(sess, &buf, &buflen, offset, len, modname) == 0)) {
-    aim_sendmemblock(sess, fr->conn, offset, buflen, buf, AIM_SENDMEMBLOCK_FLAG_ISREQUEST);
-    owl_free(buf);
-  } else {
-    owl_function_debugmsg("faimtest_memrequest: unable to use AIM binary (\"%s/%s\"), sending defaults...\n", priv->aimbinarypath, modname);
-    aim_sendmemblock(sess, fr->conn, offset, len, NULL, AIM_SENDMEMBLOCK_FLAG_ISREQUEST);
-  }
   return 1;
 }
 

@@ -75,7 +75,7 @@ typedef void HV;
 #define OWL_STDERR_REDIR 1
 
 #define OWL_DEBUG 0
-#define OWL_DEBUG_FILE "/var/tmp/owldebug"
+#define OWL_DEBUG_FILE "/var/tmp/barnowl-debug"
 
 #define OWL_CONFIG_DIR "/.owl"             /* this is relative to the user's home directory */
 #define OWL_STARTUP_FILE "/.owl/startup"   /* this is relative to the user's home directory */
@@ -642,6 +642,7 @@ typedef struct _owl_global {
   owl_timer *aim_nop_timer;
   int load_initial_subs;
   volatile sig_atomic_t interrupted;
+  FILE *debug_file;
 } owl_global;
 
 /* globals */

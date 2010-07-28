@@ -185,7 +185,8 @@ static owl_variable variables_to_init[] = {
 
   OWLVAR_PATH( "debug_file" /* %OwlVarStub */, OWL_DEBUG_FILE,
 	       "path for logging debug messages when debugging is enabled",
-	       "This file will be logged to if 'debug' is set to 'on'.\n"),
+	       "This file will be logged to if 'debug' is set to 'on'.\n"
+               "BarnOwl will append a dot and the current process's pid to the filename."),
   
   OWLVAR_PATH( "zsigproc" /* %OwlVarStub:zsigproc */, NULL,
 	       "name of a program to run that will generate zsigs",
