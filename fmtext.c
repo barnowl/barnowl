@@ -579,6 +579,23 @@ int owl_fmtext_num_lines(const owl_fmtext *f)
   return(lines);
 }
 
+/* Returns the line number, starting at 0, of the character which
+ * contains the byte at 'offset'. Note that a trailing newline is part
+ * of the line it ends. Also, while a trailing line of formatting
+ * characters does not contribute to owl_fmtext_num_lines, those
+ * characters are considered on a new line. */
+int owl_fmtext_line_number(const owl_fmtext *f, int offset)
+{
+  int i, lineno = 0;
+  if (offset >= f->textlen)
+    offset = f->textlen - 1;
+  for (i = 0; i < offset; i++) {
+    if (f->textbuff[i] == '\n')
+      lineno++;
+  }
+  return lineno;
+}
+
 const char *owl_fmtext_get_text(const owl_fmtext *f)
 {
   return(f->textbuff);

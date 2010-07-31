@@ -435,6 +435,7 @@ int owl_fmtext_regtest(void) {
   int numfailed = 0;
   owl_fmtext fm1;
   owl_fmtext fm2;
+  owl_regex re;
   char *str;
 
   printf("# BEGIN testing owl_fmtext\n");
@@ -525,6 +526,18 @@ int owl_fmtext_regtest(void) {
               str && !strcmp(str, "12     1234567 1\n"
                                   "12345678       1"));
   owl_free(str);
+
+  /* Test owl_fmtext_line_number. */
+  owl_fmtext_clear(&fm1);
+  owl_fmtext_append_normal(&fm1, "123\n456\n");
+  owl_fmtext_append_bold(&fm1, "");
+  FAIL_UNLESS("lines start at 0", 0 == owl_fmtext_line_number(&fm1, 0));
+  FAIL_UNLESS("trailing formatting characters part of false line",
+	      2 == owl_fmtext_line_number(&fm1, owl_fmtext_num_bytes(&fm1)));
+  owl_regex_create_quoted(&re, "456");
+  FAIL_UNLESS("correctly find second line (line 1)",
+	      1 == owl_fmtext_line_number(&fm1, owl_fmtext_search(&fm1, &re, 0)));
+  owl_regex_cleanup(&re);
 
   owl_fmtext_cleanup(&fm1);
   owl_fmtext_cleanup(&fm2);
