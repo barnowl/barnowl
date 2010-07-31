@@ -27,7 +27,16 @@ void owl_viewwin_init_text(owl_viewwin *v, owl_window *win, const char *text)
 
 void owl_viewwin_append_text(owl_viewwin *v, const char *text) {
     owl_fmtext_append_normal(&(v->fmtext), text);
-    v->textlines=owl_fmtext_num_lines(&(v->fmtext));  
+    v->textlines=owl_fmtext_num_lines(&(v->fmtext));
+    owl_viewwin_dirty(v);
+}
+
+/* Schedule a redraw of 'v'. Exported for hooking into the search
+   string; when we have some way of listening for changes, this can be
+   removed. */
+void owl_viewwin_dirty(owl_viewwin *v)
+{
+  if (v->window)
     owl_window_dirty(v->window);
 }
 
@@ -111,7 +120,7 @@ void owl_viewwin_pagedown(owl_viewwin *v)
   if ( (v->topline+winlines-BOTTOM_OFFSET) > v->textlines) {
     v->topline = v->textlines - winlines + BOTTOM_OFFSET;
   }
-  owl_window_dirty(v->window);
+  owl_viewwin_dirty(v);
 }
 
 void owl_viewwin_linedown(owl_viewwin *v)
@@ -122,7 +131,7 @@ void owl_viewwin_linedown(owl_viewwin *v)
   if ( (v->topline+winlines-BOTTOM_OFFSET) > v->textlines) {
     v->topline = v->textlines - winlines + BOTTOM_OFFSET;
   }
-  owl_window_dirty(v->window);
+  owl_viewwin_dirty(v);
 }
 
 void owl_viewwin_pageup(owl_viewwin *v)
@@ -131,34 +140,35 @@ void owl_viewwin_pageup(owl_viewwin *v)
   owl_window_get_position(v->window, &winlines, 0, 0, 0);
   v->topline-=winlines;
   if (v->topline<0) v->topline=0;
-  owl_window_dirty(v->window);
+  owl_viewwin_dirty(v);
+
 }
 
 void owl_viewwin_lineup(owl_viewwin *v)
 {
   v->topline--;
   if (v->topline<0) v->topline=0;
-  owl_window_dirty(v->window);
+  owl_viewwin_dirty(v);
 }
 
 void owl_viewwin_right(owl_viewwin *v, int n)
 {
   v->rightshift+=n;
-  owl_window_dirty(v->window);
+  owl_viewwin_dirty(v);
 }
 
 void owl_viewwin_left(owl_viewwin *v, int n)
 {
   v->rightshift-=n;
   if (v->rightshift<0) v->rightshift=0;
-  owl_window_dirty(v->window);
+  owl_viewwin_dirty(v);
 }
 
 void owl_viewwin_top(owl_viewwin *v)
 {
   v->topline=0;
   v->rightshift=0;
-  owl_window_dirty(v->window);
+  owl_viewwin_dirty(v);
 }
 
 void owl_viewwin_bottom(owl_viewwin *v)
@@ -166,7 +176,7 @@ void owl_viewwin_bottom(owl_viewwin *v)
   int winlines;
   owl_window_get_position(v->window, &winlines, 0, 0, 0);
   v->topline = v->textlines - winlines + BOTTOM_OFFSET;
-  owl_window_dirty(v->window);
+  owl_viewwin_dirty(v);
 }
 
 void owl_viewwin_cleanup(owl_viewwin *v)
