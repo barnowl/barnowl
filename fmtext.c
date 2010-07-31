@@ -619,13 +619,17 @@ void owl_fmtext_copy(owl_fmtext *dst, const owl_fmtext *src)
   dst->default_bgcolor = src->default_bgcolor;
 }
 
-/* return 1 if the string is found, 0 if not.  This is a case
- *  insensitive search.
+/* Search 'f' for the regex 're' for matches starting at
+ * 'start'. Returns the offset of the first match, -1 if not
+ * found. This is a case-insensitive search.
  */
-int owl_fmtext_search(const owl_fmtext *f, const owl_regex *re)
+int owl_fmtext_search(const owl_fmtext *f, const owl_regex *re, int start)
 {
-  if (owl_regex_compare(re, f->textbuff, NULL, NULL) == 0) return(1);
-  return(0);
+  int offset;
+  if (start > f->textlen ||
+      owl_regex_compare(re, f->textbuff + start, &offset, NULL) != 0)
+    return -1;
+  return offset + start;
 }
 
 

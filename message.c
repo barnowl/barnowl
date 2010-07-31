@@ -680,7 +680,7 @@ int owl_message_search(owl_message *m, const owl_regex *re)
 
   owl_message_format(m); /* is this necessary? */
   
-  return (owl_fmtext_search(&(m->fmtext->fmtext), re));
+  return owl_fmtext_search(&(m->fmtext->fmtext), re, 0) >= 0;
 }
 
 
