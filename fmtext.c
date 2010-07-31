@@ -298,7 +298,7 @@ static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_sear
    
       tmp = p[0];
       p[0] = '\0';
-      if (owl_global_is_search_active(&g)) {
+      if (do_search && owl_global_is_search_active(&g)) {
 	/* Search is active, so highlight search results. */
 	char tmp2;
 	int start, end;
@@ -363,7 +363,7 @@ static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_sear
 
 void owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w)
 {
-  _owl_fmtext_curs_waddstr(f, w, owl_global_is_search_active(&g));
+  _owl_fmtext_curs_waddstr(f, w, 1);
 }
 
 void owl_fmtext_curs_waddstr_without_search(const owl_fmtext *f, WINDOW *w)
