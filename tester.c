@@ -527,6 +527,23 @@ int owl_fmtext_regtest(void) {
                                   "12345678       1"));
   owl_free(str);
 
+  /* Test owl_fmtext_search. */
+  owl_fmtext_clear(&fm1);
+  owl_fmtext_append_normal(&fm1, "123123123123");
+  owl_regex_create(&re, "12");
+  {
+    int count = 0, offset;
+    offset = owl_fmtext_search(&fm1, &re, 0);
+    while (offset >= 0) {
+      FAIL_UNLESS("search matches",
+		  !strncmp("12", owl_fmtext_get_text(&fm1) + offset, 2));
+      count++;
+      offset = owl_fmtext_search(&fm1, &re, offset+1);
+    }
+    FAIL_UNLESS("exactly four matches", count == 4);
+  }
+  owl_regex_cleanup(&re);
+
   /* Test owl_fmtext_line_number. */
   owl_fmtext_clear(&fm1);
   owl_fmtext_append_normal(&fm1, "123\n456\n");
