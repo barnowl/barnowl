@@ -393,15 +393,23 @@ typedef struct _owl_mainwin {
   owl_window *window;
 } owl_mainwin;
 
+typedef struct _owl_editwin owl_editwin;
+typedef struct _owl_editwin_excursion owl_editwin_excursion;
+
 typedef struct _owl_viewwin {
   owl_fmtext fmtext;
   int textlines;
   int topline;
   int rightshift;
   owl_window *window;
-  gulong sig_redraw_id;
   void (*onclose_hook) (struct _owl_viewwin *vwin, void *data);
   void *onclose_hook_data;
+
+  gulong sig_resize_id;
+  owl_window *content;
+  gulong sig_content_redraw_id;
+  owl_window *status;
+  gulong sig_status_redraw_id;
 } owl_viewwin;
   
 typedef struct _owl_popwin {
@@ -461,9 +469,6 @@ typedef struct _owl_history {
   int partial;
   int repeats;
 } owl_history;
-
-typedef struct _owl_editwin owl_editwin;
-typedef struct _owl_editwin_excursion owl_editwin_excursion;
 
 typedef struct _owl_mainpanel {
   owl_window *panel;

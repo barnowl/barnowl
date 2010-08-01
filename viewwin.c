@@ -4,7 +4,9 @@
 #define BOTTOM_OFFSET 1
 #define EMPTY_INDICATOR "~"
 
-static void owl_viewwin_redraw(owl_window *w, WINDOW *curswin, void *user_data);
+static void owl_viewwin_redraw_content(owl_window *w, WINDOW *curswin, void *user_data);
+static void owl_viewwin_redraw_status(owl_window *w, WINDOW *curswin, void *user_data);
+static void owl_viewwin_layout(owl_viewwin *v);
 static void owl_viewwin_set_window(owl_viewwin *v, owl_window *w);
 
 /* Create a viewwin.  'win' is an already initialized owl_window that
@@ -55,11 +57,20 @@ owl_viewwin *owl_viewwin_new_fmtext(owl_window *win, const owl_fmtext *fmtext)
 
 static void owl_viewwin_set_window(owl_viewwin *v, owl_window *w)
 {
-  v->window = w;
-  if (w) {
-    g_object_ref(v->window);
-    v->sig_redraw_id = g_signal_connect(w, "redraw", G_CALLBACK(owl_viewwin_redraw), v);
-  }
+  v->window = g_object_ref(w);
+  v->content = owl_window_new(v->window);
+  v->status = owl_window_new(v->window);
+
+  v->sig_content_redraw_id =
+    g_signal_connect(v->content, "redraw", G_CALLBACK(owl_viewwin_redraw_content), v);
+  v->sig_status_redraw_id =
+    g_signal_connect(v->status, "redraw", G_CALLBACK(owl_viewwin_redraw_status), v);
+  v->sig_resize_id =
+    g_signal_connect_swapped(v->window, "resized", G_CALLBACK(owl_viewwin_layout), v);
+  owl_viewwin_layout(v);
+
+  owl_window_show(v->content);
+  owl_window_show(v->status);
 }
 
 void owl_viewwin_set_onclose_hook(owl_viewwin *v, void (*onclose_hook) (owl_viewwin *vwin, void *data), void *onclose_hook_data) {
@@ -67,8 +78,16 @@ void owl_viewwin_set_onclose_hook(owl_viewwin *v, void (*onclose_hook) (owl_view
   v->onclose_hook_data = onclose_hook_data;
 }
 
+static void owl_viewwin_layout(owl_viewwin *v)
+{
+  int lines, cols;
+  owl_window_get_position(v->window, &lines, &cols, NULL, NULL);
+  owl_window_set_position(v->content, lines - BOTTOM_OFFSET, cols, 0, 0);
+  owl_window_set_position(v->status, BOTTOM_OFFSET, cols, lines - BOTTOM_OFFSET, 0);
+}
+
 /* regenerate text on the curses window. */
-static void owl_viewwin_redraw(owl_window *w, WINDOW *curswin, void *user_data)
+static void owl_viewwin_redraw_content(owl_window *w, WINDOW *curswin, void *user_data)
 {
   owl_fmtext fm1, fm2;
   owl_viewwin *v = user_data;
@@ -76,14 +95,14 @@ static void owl_viewwin_redraw(owl_window *w, WINDOW *curswin, void *user_data)
   int y;
 
   owl_window_get_position(w, &winlines, &wincols, 0, 0);
-  
+
   werase(curswin);
   wmove(curswin, 0, 0);
 
   owl_fmtext_init_null(&fm1);
   owl_fmtext_init_null(&fm2);
-  
-  owl_fmtext_truncate_lines(&(v->fmtext), v->topline, winlines-BOTTOM_OFFSET, &fm1);
+
+  owl_fmtext_truncate_lines(&(v->fmtext), v->topline, winlines, &fm1);
   owl_fmtext_truncate_cols(&fm1, v->rightshift, wincols-1+v->rightshift, &fm2);
 
   owl_fmtext_curs_waddstr(&fm2, curswin);
@@ -91,23 +110,31 @@ static void owl_viewwin_redraw(owl_window *w, WINDOW *curswin, void *user_data)
   /* Fill remaining lines with tildes. */
   y = v->textlines - v->topline;
   wmove(curswin, y, 0);
-  for (; y < winlines-BOTTOM_OFFSET; y++) {
+  for (; y < winlines; y++) {
     waddstr(curswin, EMPTY_INDICATOR);
     waddstr(curswin, "\n");
   }
 
-  /* print the message at the bottom */
-  wmove(curswin, winlines-1, 0);
+  owl_fmtext_cleanup(&fm1);
+  owl_fmtext_cleanup(&fm2);
+}
+
+static void owl_viewwin_redraw_status(owl_window *w, WINDOW *curswin, void *user_data)
+{
+  owl_viewwin *v = user_data;
+  int winlines, wincols;
+
+  owl_window_get_position(v->content, &winlines, &wincols, 0, 0);
+
+  werase(curswin);
+  wmove(curswin, 0, 0);
   wattrset(curswin, A_REVERSE);
-  if (v->textlines - v->topline > winlines-BOTTOM_OFFSET) {
+  if (v->textlines - v->topline > winlines) {
     waddstr(curswin, "--More-- (Space to see more, 'q' to quit)");
   } else {
     waddstr(curswin, "--End-- (Press 'q' to quit)");
   }
   wattroff(curswin, A_REVERSE);
-
-  owl_fmtext_cleanup(&fm1);
-  owl_fmtext_cleanup(&fm2);
 }
 
 void owl_viewwin_append_text(owl_viewwin *v, const char *text) {
@@ -121,15 +148,15 @@ void owl_viewwin_append_text(owl_viewwin *v, const char *text) {
    removed. */
 void owl_viewwin_dirty(owl_viewwin *v)
 {
-  if (v->window)
-    owl_window_dirty(v->window);
+  owl_window_dirty(v->content);
+  owl_window_dirty(v->status);
 }
 
 void owl_viewwin_down(owl_viewwin *v, int amount) {
   int winlines;
-  owl_window_get_position(v->window, &winlines, 0, 0, 0);
+  owl_window_get_position(v->content, &winlines, 0, 0, 0);
   /* Don't scroll past the bottom. */
-  amount = MIN(amount, v->textlines - (v->topline + winlines - BOTTOM_OFFSET));
+  amount = MIN(amount, v->textlines - (v->topline + winlines));
   /* But if we're already past the bottom, don't back up either. */
   if (amount > 0) {
     v->topline += amount;
@@ -147,8 +174,8 @@ void owl_viewwin_up(owl_viewwin *v, int amount)
 void owl_viewwin_pagedown(owl_viewwin *v)
 {
   int winlines;
-  owl_window_get_position(v->window, &winlines, 0, 0, 0);
-  owl_viewwin_down(v, winlines - BOTTOM_OFFSET);
+  owl_window_get_position(v->content, &winlines, 0, 0, 0);
+  owl_viewwin_down(v, winlines);
 }
 
 void owl_viewwin_linedown(owl_viewwin *v)
@@ -159,8 +186,8 @@ void owl_viewwin_linedown(owl_viewwin *v)
 void owl_viewwin_pageup(owl_viewwin *v)
 {
   int winlines;
-  owl_window_get_position(v->window, &winlines, 0, 0, 0);
-  owl_viewwin_up(v, winlines - BOTTOM_OFFSET);
+  owl_window_get_position(v->content, &winlines, 0, 0, 0);
+  owl_viewwin_up(v, winlines);
 }
 
 void owl_viewwin_lineup(owl_viewwin *v)
@@ -191,8 +218,8 @@ void owl_viewwin_top(owl_viewwin *v)
 void owl_viewwin_bottom(owl_viewwin *v)
 {
   int winlines;
-  owl_window_get_position(v->window, &winlines, 0, 0, 0);
-  v->topline = v->textlines - winlines + BOTTOM_OFFSET;
+  owl_window_get_position(v->content, &winlines, 0, 0, 0);
+  v->topline = v->textlines - winlines;
   owl_viewwin_dirty(v);
 }
 
@@ -227,11 +254,17 @@ void owl_viewwin_delete(owl_viewwin *v)
     v->onclose_hook = NULL;
     v->onclose_hook_data = NULL;
   }
-  if (v->window) {
-    g_signal_handler_disconnect(v->window, v->sig_redraw_id);
-    g_object_unref(v->window);
-    v->window = NULL;
-  }
+  /* TODO: This is far too tedious. owl_viewwin should own v->window
+   * and just unlink it in one go. Signals should also go away for
+   * free. */
+  g_signal_handler_disconnect(v->window, v->sig_resize_id);
+  g_signal_handler_disconnect(v->content, v->sig_content_redraw_id);
+  g_signal_handler_disconnect(v->status, v->sig_status_redraw_id);
+  owl_window_unlink(v->content);
+  owl_window_unlink(v->status);
+  g_object_unref(v->window);
+  g_object_unref(v->content);
+  g_object_unref(v->status);
   owl_fmtext_cleanup(&(v->fmtext));
   owl_free(v);
 }
