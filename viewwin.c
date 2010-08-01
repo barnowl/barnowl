@@ -118,11 +118,13 @@ static void owl_viewwin_redraw(owl_window *w, WINDOW *curswin, void *user_data)
 void owl_viewwin_down(owl_viewwin *v, int amount) {
   int winlines;
   owl_window_get_position(v->window, &winlines, 0, 0, 0);
-  v->topline += amount;
-  if ( (v->topline+winlines-BOTTOM_OFFSET) > v->textlines) {
-    v->topline = v->textlines - winlines + BOTTOM_OFFSET;
+  /* Don't scroll past the bottom. */
+  amount = MIN(amount, v->textlines - (v->topline + winlines - BOTTOM_OFFSET));
+  /* But if we're already past the bottom, don't back up either. */
+  if (amount > 0) {
+    v->topline += amount;
+    owl_viewwin_dirty(v);
   }
-  owl_viewwin_dirty(v);
 }
 
 void owl_viewwin_up(owl_viewwin *v, int amount)
