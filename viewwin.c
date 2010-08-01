@@ -115,43 +115,45 @@ static void owl_viewwin_redraw(owl_window *w, WINDOW *curswin, void *user_data)
   owl_fmtext_cleanup(&fm2);
 }
 
-void owl_viewwin_pagedown(owl_viewwin *v)
-{
+void owl_viewwin_down(owl_viewwin *v, int amount) {
   int winlines;
   owl_window_get_position(v->window, &winlines, 0, 0, 0);
-  v->topline+=winlines - BOTTOM_OFFSET;
+  v->topline += amount;
   if ( (v->topline+winlines-BOTTOM_OFFSET) > v->textlines) {
     v->topline = v->textlines - winlines + BOTTOM_OFFSET;
   }
   owl_viewwin_dirty(v);
 }
 
-void owl_viewwin_linedown(owl_viewwin *v)
+void owl_viewwin_up(owl_viewwin *v, int amount)
+{
+  v->topline -= amount;
+  if (v->topline<0) v->topline=0;
+  owl_viewwin_dirty(v);
+}
+
+void owl_viewwin_pagedown(owl_viewwin *v)
 {
   int winlines;
   owl_window_get_position(v->window, &winlines, 0, 0, 0);
-  v->topline++;
-  if ( (v->topline+winlines-BOTTOM_OFFSET) > v->textlines) {
-    v->topline = v->textlines - winlines + BOTTOM_OFFSET;
-  }
-  owl_viewwin_dirty(v);
+  owl_viewwin_down(v, winlines - BOTTOM_OFFSET);
+}
+
+void owl_viewwin_linedown(owl_viewwin *v)
+{
+  owl_viewwin_down(v, 1);
 }
 
 void owl_viewwin_pageup(owl_viewwin *v)
 {
   int winlines;
   owl_window_get_position(v->window, &winlines, 0, 0, 0);
-  v->topline-=winlines;
-  if (v->topline<0) v->topline=0;
-  owl_viewwin_dirty(v);
-
+  owl_viewwin_up(v, winlines - BOTTOM_OFFSET);
 }
 
 void owl_viewwin_lineup(owl_viewwin *v)
 {
-  v->topline--;
-  if (v->topline<0) v->topline=0;
-  owl_viewwin_dirty(v);
+  owl_viewwin_up(v, 1);
 }
 
 void owl_viewwin_right(owl_viewwin *v, int n)
