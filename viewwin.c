@@ -30,21 +30,6 @@ owl_viewwin *owl_viewwin_new_text(owl_window *win, const char *text)
   return v;
 }
 
-void owl_viewwin_append_text(owl_viewwin *v, const char *text) {
-    owl_fmtext_append_normal(&(v->fmtext), text);
-    v->textlines=owl_fmtext_num_lines(&(v->fmtext));
-    owl_viewwin_dirty(v);
-}
-
-/* Schedule a redraw of 'v'. Exported for hooking into the search
-   string; when we have some way of listening for changes, this can be
-   removed. */
-void owl_viewwin_dirty(owl_viewwin *v)
-{
-  if (v->window)
-    owl_window_dirty(v->window);
-}
-
 /* Create a viewwin.  'win' is an already initialized owl_window that
  * will be used by the viewwin
  */
@@ -123,6 +108,21 @@ static void owl_viewwin_redraw(owl_window *w, WINDOW *curswin, void *user_data)
 
   owl_fmtext_cleanup(&fm1);
   owl_fmtext_cleanup(&fm2);
+}
+
+void owl_viewwin_append_text(owl_viewwin *v, const char *text) {
+    owl_fmtext_append_normal(&(v->fmtext), text);
+    v->textlines=owl_fmtext_num_lines(&(v->fmtext));
+    owl_viewwin_dirty(v);
+}
+
+/* Schedule a redraw of 'v'. Exported for hooking into the search
+   string; when we have some way of listening for changes, this can be
+   removed. */
+void owl_viewwin_dirty(owl_viewwin *v)
+{
+  if (v->window)
+    owl_window_dirty(v->window);
 }
 
 void owl_viewwin_down(owl_viewwin *v, int amount) {
