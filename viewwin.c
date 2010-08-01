@@ -4,6 +4,7 @@
 #define BOTTOM_OFFSET 1
 
 static void owl_viewwin_redraw(owl_window *w, WINDOW *curswin, void *user_data);
+static void owl_viewwin_set_window(owl_viewwin *v, owl_window *w);
 
 /* initialize the viewwin e.  'win' is an already initialzed curses
  * window that will be used by viewwin
@@ -60,7 +61,7 @@ void owl_viewwin_init_fmtext(owl_viewwin *v, owl_window *win, const owl_fmtext *
   owl_viewwin_set_window(v, win);
 }
 
-void owl_viewwin_set_window(owl_viewwin *v, owl_window *w)
+static void owl_viewwin_set_window(owl_viewwin *v, owl_window *w)
 {
   if (v->window) {
     g_signal_handler_disconnect(v->window, v->sig_redraw_id);
