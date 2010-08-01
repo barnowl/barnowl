@@ -433,6 +433,7 @@ int owl_editwin_regtest(void) {
 
 int owl_fmtext_regtest(void) {
   int numfailed = 0;
+  int start, end;
   owl_fmtext fm1;
   owl_fmtext fm2;
   owl_regex re;
@@ -555,6 +556,15 @@ int owl_fmtext_regtest(void) {
   FAIL_UNLESS("correctly find second line (line 1)",
 	      1 == owl_fmtext_line_number(&fm1, owl_fmtext_search(&fm1, &re, 0)));
   owl_regex_cleanup(&re);
+
+  /* Test owl_fmtext_line_extents. */
+  owl_fmtext_clear(&fm1);
+  owl_fmtext_append_normal(&fm1, "123\n456\n789");
+  owl_fmtext_line_extents(&fm1, 1, &start, &end);
+  FAIL_UNLESS("line contents",
+	      !strncmp("456\n", owl_fmtext_get_text(&fm1)+start, end-start));
+  owl_fmtext_line_extents(&fm1, 2, &start, &end);
+  FAIL_UNLESS("point to end of buffer", end == owl_fmtext_num_bytes(&fm1));
 
   owl_fmtext_cleanup(&fm1);
   owl_fmtext_cleanup(&fm2);

@@ -596,6 +596,23 @@ int owl_fmtext_line_number(const owl_fmtext *f, int offset)
   return lineno;
 }
 
+/* Searches for line 'lineno' in 'f'. The returned range, [start,
+ * end), forms a half-open interval for the extent of the line. */
+void owl_fmtext_line_extents(const owl_fmtext *f, int lineno, int *o_start, int *o_end)
+{
+  int start, end;
+  char *newline;
+  for (start = 0; lineno > 0 && start < f->textlen; start++) {
+    if (f->textbuff[start] == '\n')
+      lineno--;
+  }
+  newline = strchr(f->textbuff + start, '\n');
+  /* Include the newline, if it is there. */
+  end = newline ? newline - f->textbuff + 1 : f->textlen;
+  if (o_start) *o_start = start;
+  if (o_end) *o_end = end;
+}
+
 const char *owl_fmtext_get_text(const owl_fmtext *f)
 {
   return(f->textbuff);
