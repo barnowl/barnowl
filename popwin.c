@@ -12,9 +12,12 @@ int owl_popwin_up(owl_popwin *pw)
     return 1;
   pw->border = owl_window_new(NULL);
   pw->content = owl_window_new(pw->border);
-  g_signal_connect(pw->border, "redraw", G_CALLBACK(owl_popwin_draw_border), 0);
+  /* To be thorough, we ensure each signal is disconnected when we close. */
+  pw->sig_redraw_id =
+    g_signal_connect(pw->border, "redraw", G_CALLBACK(owl_popwin_draw_border), 0);
+  pw->sig_resize_id =
+    g_signal_connect(pw->border, "resized", G_CALLBACK(owl_popwin_size_content), pw);
   owl_signal_connect_object(owl_window_get_screen(), "resized", G_CALLBACK(owl_popwin_size_border), pw->border, 0);
-  owl_signal_connect_object(pw->border, "resized", G_CALLBACK(owl_popwin_size_content), pw->content, 0);
 
   /* bootstrap sizing */
   owl_popwin_size_border(owl_window_get_screen(), pw->border);
@@ -44,9 +47,9 @@ void owl_popwin_size_border(owl_window *parent, void *user_data)
 void owl_popwin_size_content(owl_window *parent, void *user_data)
 {
   int lines, cols;
-  owl_window *content = user_data;
+  owl_popwin *pw = user_data;
   owl_window_get_position(parent, &lines, &cols, 0, 0);
-  owl_window_set_position(content, lines-2, cols-2, 1, 1);
+  owl_window_set_position(pw->content, lines-2, cols-2, 1, 1);
 }
 
 void owl_popwin_draw_border(owl_window *w, WINDOW *borderwin, void *user_data)
@@ -72,6 +75,8 @@ int owl_popwin_close(owl_popwin *pw)
 {
   if (!pw->active)
     return 1;
+  g_signal_handler_disconnect(pw->border, pw->sig_resize_id);
+  g_signal_handler_disconnect(pw->border, pw->sig_redraw_id);
   owl_window_unlink(pw->border);
   g_object_unref(pw->border);
   g_object_unref(pw->content);

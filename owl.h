@@ -407,6 +407,8 @@ typedef struct _owl_viewwin {
 typedef struct _owl_popwin {
   owl_window *border;
   owl_window *content;
+  gulong sig_redraw_id;
+  gulong sig_resize_id;
   int active;
 } owl_popwin;
   
