@@ -196,6 +196,30 @@ void owl_viewwin_bottom(owl_viewwin *v)
   owl_viewwin_dirty(v);
 }
 
+/* Scroll in 'direction' to the next line containing 're' in 'v',
+ * starting from the current line. Returns 0 if no occurrence is
+ * found.
+ *
+ * If mode==0 then stay on the current line if it matches.
+ */
+int owl_viewwin_search(owl_viewwin *v, const owl_regex *re, int mode, int direction)
+{
+  int start, end, offset;
+  owl_fmtext_line_extents(&v->fmtext, v->topline, &start, &end);
+  if (direction == OWL_DIRECTION_DOWNWARDS) {
+    offset = owl_fmtext_search(&v->fmtext, re, mode ? end : start);
+    if (offset < 0)
+      return 0;
+    v->topline = owl_fmtext_line_number(&v->fmtext, offset);
+    owl_viewwin_dirty(v);
+    return 1;
+  } else {
+    /* FIXME */
+    owl_function_error("Upwards searching is not implemented in viewwin.");
+    return 1;
+  }
+}
+
 void owl_viewwin_delete(owl_viewwin *v)
 {
   if (v->onclose_hook) {
