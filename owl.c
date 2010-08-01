@@ -581,7 +581,7 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: setting context interactive");
 
   owl_global_pop_context(&g);
-  owl_global_push_context(&g, OWL_CTX_READCONFIG|OWL_CTX_RECV, NULL, "recv", NULL);
+  owl_global_push_context(&g, OWL_CTX_INTERACTIVE|OWL_CTX_RECV, NULL, "recv", NULL);
 
   owl_select_add_pre_select_action(owl_refresh_pre_select_action, NULL, NULL);
   owl_select_add_pre_select_action(owl_process_messages, NULL, NULL);
