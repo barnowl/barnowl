@@ -1,15 +1,10 @@
 #include "owl.h"
 
-int owl_popwin_init(owl_popwin *pw)
+owl_popwin *owl_popwin_new(void)
 {
-  pw->active=0;
-  return(0);
-}
+  owl_popwin *pw = owl_malloc(sizeof(owl_popwin));
+  memset(pw, 0, sizeof(*pw));
 
-int owl_popwin_up(owl_popwin *pw)
-{
-  if (pw->active)
-    return 1;
   pw->border = owl_window_new(NULL);
   pw->content = owl_window_new(pw->border);
   /* To be thorough, we ensure each signal is disconnected when we close. */
@@ -22,10 +17,17 @@ int owl_popwin_up(owl_popwin *pw)
   /* bootstrap sizing */
   owl_popwin_size_border(owl_window_get_screen(), pw->border);
 
-  owl_window_show_all(pw->border);
+  owl_window_show(pw->content);
 
-  pw->active=1;
-  return(0);
+  return pw;
+}
+
+int owl_popwin_up(owl_popwin *pw)
+{
+  if (owl_window_is_shown(pw->border))
+    return 1;
+  owl_window_show(pw->border);
+  return 0;
 }
 
 void owl_popwin_size_border(owl_window *parent, void *user_data)
@@ -73,23 +75,29 @@ void owl_popwin_draw_border(owl_window *w, WINDOW *borderwin, void *user_data)
 
 int owl_popwin_close(owl_popwin *pw)
 {
-  if (!pw->active)
+  if (!owl_window_is_shown(pw->border))
     return 1;
+  owl_window_hide(pw->border);
+  return 0;
+}
+
+void owl_popwin_delete(owl_popwin *pw)
+{
+  owl_popwin_close(pw);
+
+  /* Remove everything that references us. */
   g_signal_handler_disconnect(pw->border, pw->sig_resize_id);
   g_signal_handler_disconnect(pw->border, pw->sig_redraw_id);
   owl_window_unlink(pw->border);
   g_object_unref(pw->border);
   g_object_unref(pw->content);
 
-  pw->border = 0;
-  pw->content = 0;
-  pw->active=0;
-  return(0);
+  owl_free(pw);
 }
 
 int owl_popwin_is_active(const owl_popwin *pw)
 {
-  return pw->active;
+  return owl_window_is_shown(pw->border);
 }
 
 owl_window *owl_popwin_get_content(const owl_popwin *pw)

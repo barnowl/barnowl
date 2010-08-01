@@ -47,6 +47,7 @@ void owl_global_init(owl_global *g) {
 
   g->rightshift=0;
 
+  g->pw = NULL;
   g->tw = NULL;
 
   owl_keyhandler_init(&g->kh);
@@ -125,7 +126,6 @@ static void _owl_global_init_windows(owl_global *g)
 
   /* Create the widgets */
   owl_mainwin_init(&(g->mw), g->mainpanel.recwin);
-  owl_popwin_init(&(g->pw));
   owl_msgwin_init(&(g->msgwin), g->mainpanel.msgwin);
   owl_sepbar_init(g->mainpanel.sepwin);
 
@@ -254,7 +254,11 @@ owl_mainwin *owl_global_get_mainwin(owl_global *g) {
 }
 
 owl_popwin *owl_global_get_popwin(owl_global *g) {
-  return(&(g->pw));
+  return g->pw;
+}
+
+void owl_global_set_popwin(owl_global *g, owl_popwin *pw) {
+  g->pw = pw;
 }
 
 /* msglist */

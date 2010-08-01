@@ -1236,13 +1236,15 @@ void owl_function_popless_text(const char *text)
   owl_popwin *pw;
   owl_viewwin *v;
 
-  pw=owl_global_get_popwin(&g);
   v=owl_global_get_viewwin(&g);
 
-  if (owl_popwin_up(pw) != 0) {
+  if (owl_global_get_popwin(&g)) {
     owl_function_error("Popwin already in use.");
     return;
   }
+  pw = owl_popwin_new();
+  owl_global_set_popwin(&g, pw);
+  owl_popwin_up(pw);
   owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless", NULL);
   owl_viewwin_init_text(v, owl_popwin_get_content(pw), text);
 }
@@ -1252,13 +1254,15 @@ void owl_function_popless_fmtext(const owl_fmtext *fm)
   owl_popwin *pw;
   owl_viewwin *v;
 
-  pw=owl_global_get_popwin(&g);
   v=owl_global_get_viewwin(&g);
 
-  if (owl_popwin_up(pw) != 0) {
+  if (owl_global_get_popwin(&g)) {
     owl_function_error("Popwin already in use.");
     return;
   }
+  pw = owl_popwin_new();
+  owl_global_set_popwin(&g, pw);
+  owl_popwin_up(pw);
   owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless", NULL);
   owl_viewwin_init_fmtext(v, owl_popwin_get_content(pw), fm);
 }

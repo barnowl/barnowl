@@ -16,19 +16,22 @@ owl_popexec *owl_popexec_new(const char *command)
   int pipefds[2], child_write_fd, parent_read_fd;
   pid_t pid;
 
+  if (owl_global_get_popwin(&g)) {
+    owl_function_error("Popwin already in use.");
+    return NULL;
+  }
+
   pe = owl_malloc(sizeof(owl_popexec));
   if (!pe) return NULL;
   pe->winactive=0;
   pe->pid=0;
   pe->refcount=0;
 
-  pw=owl_global_get_popwin(&g);
   pe->vwin=v=owl_global_get_viewwin(&g);
+  pw = owl_popwin_new();
+  owl_global_set_popwin(&g, pw);
+  owl_popwin_up(pw);
 
-  if (owl_popwin_up(pw) != 0) {
-    owl_function_error("Popwin already in use.");
-    return NULL;
-  }
   owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless", NULL);
   owl_viewwin_init_text(v, owl_popwin_get_content(pw), "");
   owl_viewwin_set_onclose_hook(v, owl_popexec_viewwin_onclose, pe);

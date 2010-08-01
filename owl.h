@@ -409,7 +409,6 @@ typedef struct _owl_popwin {
   owl_window *content;
   gulong sig_redraw_id;
   gulong sig_resize_id;
-  int active;
 } owl_popwin;
   
 typedef struct _owl_msgwin {
@@ -562,7 +561,7 @@ typedef struct _OwlGlobalNotifier OwlGlobalNotifier;
 
 typedef struct _owl_global {
   owl_mainwin mw;
-  owl_popwin pw;
+  owl_popwin *pw;
   owl_msgwin msgwin;
   owl_history cmdhist;		/* command history */
   owl_history msghist;		/* outgoing message history */
