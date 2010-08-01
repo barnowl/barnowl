@@ -150,7 +150,7 @@ void owl_global_complete_setup(owl_global *g)
   owl_cmddict_setup(&(g->cmds));
 }
 
-owl_context *owl_global_get_context(owl_global *g) {
+owl_context *owl_global_get_context(const owl_global *g) {
   if (!g->context_stack)
     return NULL;
   return g->context_stack->data;
@@ -282,8 +282,14 @@ owl_window *owl_global_get_typwin_window(const owl_global *g) {
 
 /* typwin */
 
+/* Gets the currently active typwin out of the current context. */
 owl_editwin *owl_global_get_typwin(const owl_global *g) {
-  return(g->tw);
+  owl_context *ctx = owl_global_get_context(g);
+  /* Get the current editwin from the context. */
+  if (ctx && owl_context_matches(ctx, OWL_CTX_TYPWIN)) {
+    return owl_context_get_data(ctx);
+  }
+  return NULL;
 }
 
 /* variable dictionary */
