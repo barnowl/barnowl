@@ -200,6 +200,8 @@ static void _owl_window_link(owl_window *w, owl_window *parent)
   if (parent) {
     w->parent = parent;
     w->next = parent->child;
+    if (w->next)
+      w->next->prev = w;
     parent->child = w;
     g_object_ref (w);
   }
