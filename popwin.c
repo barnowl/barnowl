@@ -8,6 +8,8 @@ int owl_popwin_init(owl_popwin *pw)
 
 int owl_popwin_up(owl_popwin *pw)
 {
+  if (pw->active)
+    return 1;
   pw->border = owl_window_new(NULL);
   pw->content = owl_window_new(pw->border);
   g_signal_connect(pw->border, "redraw", G_CALLBACK(owl_popwin_draw_border), 0);
@@ -68,6 +70,8 @@ void owl_popwin_draw_border(owl_window *w, WINDOW *borderwin, void *user_data)
 
 int owl_popwin_close(owl_popwin *pw)
 {
+  if (!pw->active)
+    return 1;
   owl_window_unlink(pw->border);
   g_object_unref(pw->border);
   g_object_unref(pw->content);
