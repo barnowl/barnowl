@@ -81,6 +81,7 @@ void owl_editwin_delete(owl_editwin *e)
   if (e->win) {
     g_signal_handler_disconnect(e->win, e->repaint_id);
     g_signal_handler_disconnect(e->win, e->resized_id);
+    g_object_unref(e->win);
   }
   owl_free(e->buff);
   owl_free(e->killbuf);
@@ -170,6 +171,7 @@ static void oe_set_window(owl_editwin *e, owl_window *w, int winlines, int winco
   else
     e->wrapcol = 0;
   if (e->win) {
+    g_object_ref(e->win);
     e->repaint_id = g_signal_connect(w, "redraw", G_CALLBACK(oe_redraw), e);
     e->resized_id = g_signal_connect(w, "resized", G_CALLBACK(oe_window_resized), e);
     owl_window_dirty(e->win);
