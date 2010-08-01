@@ -1236,17 +1236,18 @@ void owl_function_popless_text(const char *text)
   owl_popwin *pw;
   owl_viewwin *v;
 
-  v=owl_global_get_viewwin(&g);
-
-  if (owl_global_get_popwin(&g)) {
+  if (owl_global_get_popwin(&g) || owl_global_get_viewwin(&g)) {
     owl_function_error("Popwin already in use.");
     return;
   }
   pw = owl_popwin_new();
   owl_global_set_popwin(&g, pw);
   owl_popwin_up(pw);
+
+  v = owl_viewwin_new_text(owl_popwin_get_content(pw), text);
+  owl_global_set_viewwin(&g, v);
+
   owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless", NULL);
-  owl_viewwin_init_text(v, owl_popwin_get_content(pw), text);
 }
 
 void owl_function_popless_fmtext(const owl_fmtext *fm)
@@ -1254,17 +1255,18 @@ void owl_function_popless_fmtext(const owl_fmtext *fm)
   owl_popwin *pw;
   owl_viewwin *v;
 
-  v=owl_global_get_viewwin(&g);
-
-  if (owl_global_get_popwin(&g)) {
+  if (owl_global_get_popwin(&g) || owl_global_get_viewwin(&g)) {
     owl_function_error("Popwin already in use.");
     return;
   }
   pw = owl_popwin_new();
   owl_global_set_popwin(&g, pw);
   owl_popwin_up(pw);
+
+  v = owl_viewwin_new_fmtext(owl_popwin_get_content(pw), fm);
+  owl_global_set_viewwin(&g, v);
+
   owl_global_push_context(&g, OWL_CTX_POPLESS, v, "popless", NULL);
-  owl_viewwin_init_fmtext(v, owl_popwin_get_content(pw), fm);
 }
 
 void owl_function_popless_file(const char *filename)

@@ -595,7 +595,7 @@ typedef struct _owl_global {
   int config_format;
   void *buffercbdata;
   owl_editwin *tw;
-  owl_viewwin vw;
+  owl_viewwin *vw;
   void *perl;
   int debug;
   time_t starttime;

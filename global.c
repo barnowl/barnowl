@@ -48,6 +48,7 @@ void owl_global_init(owl_global *g) {
   g->rightshift=0;
 
   g->pw = NULL;
+  g->vw = NULL;
   g->tw = NULL;
 
   owl_keyhandler_init(&g->kh);
@@ -491,7 +492,11 @@ const char *owl_global_get_hostname(const owl_global *g) {
 /* viewwin */
 
 owl_viewwin *owl_global_get_viewwin(owl_global *g) {
-  return(&(g->vw));
+  return g->vw;
+}
+
+void owl_global_set_viewwin(owl_global *g, owl_viewwin *vw) {
+  g->vw = vw;
 }
 
 

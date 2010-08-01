@@ -6,11 +6,13 @@
 static void owl_viewwin_redraw(owl_window *w, WINDOW *curswin, void *user_data);
 static void owl_viewwin_set_window(owl_viewwin *v, owl_window *w);
 
-/* initialize the viewwin e.  'win' is an already initialzed curses
- * window that will be used by viewwin
+/* Create a viewwin.  'win' is an already initialized owl_window that
+ * will be used by the viewwin
  */
-void owl_viewwin_init_text(owl_viewwin *v, owl_window *win, const char *text)
+owl_viewwin *owl_viewwin_new_text(owl_window *win, const char *text)
 {
+  owl_viewwin *v = owl_malloc(sizeof(owl_viewwin));
+  memset(v, 0, sizeof(*v));
   owl_fmtext_init_null(&(v->fmtext));
   if (text) {
     owl_fmtext_append_normal(&(v->fmtext), text);
@@ -24,6 +26,7 @@ void owl_viewwin_init_text(owl_viewwin *v, owl_window *win, const char *text)
   v->onclose_hook = NULL;
 
   owl_viewwin_set_window(v, win);
+  return v;
 }
 
 void owl_viewwin_append_text(owl_viewwin *v, const char *text) {
@@ -41,12 +44,14 @@ void owl_viewwin_dirty(owl_viewwin *v)
     owl_window_dirty(v->window);
 }
 
-/* initialize the viewwin e.  'win' is an already initialzed curses
- * window that will be used by viewwin
+/* Create a viewwin.  'win' is an already initialized owl_window that
+ * will be used by the viewwin
  */
-void owl_viewwin_init_fmtext(owl_viewwin *v, owl_window *win, const owl_fmtext *fmtext)
+owl_viewwin *owl_viewwin_new_fmtext(owl_window *win, const owl_fmtext *fmtext)
 {
   char *text;
+  owl_viewwin *v = owl_malloc(sizeof(owl_viewwin));
+  memset(v, 0, sizeof(*v));
 
   owl_fmtext_copy(&(v->fmtext), fmtext);
   text = owl_fmtext_print_plain(fmtext);
@@ -59,14 +64,11 @@ void owl_viewwin_init_fmtext(owl_viewwin *v, owl_window *win, const owl_fmtext *
   v->rightshift=0;
 
   owl_viewwin_set_window(v, win);
+  return v;
 }
 
 static void owl_viewwin_set_window(owl_viewwin *v, owl_window *w)
 {
-  if (v->window) {
-    g_signal_handler_disconnect(v->window, v->sig_redraw_id);
-    g_object_unref(v->window);
-  }
   v->window = w;
   if (w) {
     g_object_ref(v->window);
@@ -180,13 +182,18 @@ void owl_viewwin_bottom(owl_viewwin *v)
   owl_viewwin_dirty(v);
 }
 
-void owl_viewwin_cleanup(owl_viewwin *v)
+void owl_viewwin_delete(owl_viewwin *v)
 {
-  owl_viewwin_set_window(v, NULL);
   if (v->onclose_hook) {
     v->onclose_hook(v, v->onclose_hook_data);
     v->onclose_hook = NULL;
     v->onclose_hook_data = NULL;
   }
+  if (v->window) {
+    g_signal_handler_disconnect(v->window, v->sig_redraw_id);
+    g_object_unref(v->window);
+    v->window = NULL;
+  }
   owl_fmtext_cleanup(&(v->fmtext));
+  owl_free(v);
 }

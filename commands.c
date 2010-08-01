@@ -2771,7 +2771,11 @@ void owl_command_popless_quit(owl_viewwin *vw)
   owl_popwin *pw;
   pw = owl_global_get_popwin(&g);
   owl_global_set_popwin(&g, NULL);
-  owl_viewwin_cleanup(vw);
+  /* Kind of a hack, but you can only have one active viewwin right
+   * now anyway. */
+  if (vw == owl_global_get_viewwin(&g))
+    owl_global_set_viewwin(&g, NULL);
+  owl_viewwin_delete(vw);
   owl_popwin_delete(pw);
   owl_global_pop_context(&g);
 }
