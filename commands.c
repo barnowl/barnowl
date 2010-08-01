@@ -2768,7 +2768,10 @@ void owl_command_edit_done_or_delete(owl_editwin *e)
 
 void owl_command_popless_quit(owl_viewwin *vw)
 {
+  owl_popwin *pw;
+  pw = owl_global_get_popwin(&g);
+  owl_global_set_popwin(&g, NULL);
   owl_viewwin_cleanup(vw);
-  owl_popwin_close(owl_global_get_popwin(&g));
+  owl_popwin_delete(pw);
   owl_global_pop_context(&g);
 }
