@@ -11,39 +11,23 @@ foreach $file (@ARGV) {
     my $varname = $2;
     my $altvarname = $2;
     $altvarname = $3 if ($3);
-    my $detailname = $altvarname;
-    $detailname =~ s/[^a-zA-Z0-9]/-/g;
-    $detailname =~ s/^[^a-zA-Z]+//;
     if ($vartype =~ /^BOOL/) {
-        print <<EOT;
-void owl_global_set_${altvarname}_on(owl_global *g) {
-  owl_variable_set_bool_on(&g->vars, "$altvarname");
-}
-void owl_global_set_${altvarname}_off(owl_global *g) {
-  owl_variable_set_bool_off(&g->vars, "$altvarname");
-}
-int owl_global_is_$altvarname(const owl_global *g) {
-  return owl_variable_get_bool(&g->vars, "$varname");
-}
-EOT
+	print "void owl_global_set_${altvarname}_on(owl_global *g) {\n";
+	print "  owl_variable_set_bool_on(&g->vars, \"$varname\");\n}\n";
+	print "void owl_global_set_${altvarname}_off(owl_global *g) {\n";
+	print "  owl_variable_set_bool_off(&g->vars, \"$varname\");\n}\n";
+	print "int owl_global_is_$altvarname(const owl_global *g) {\n";
+	print "  return owl_variable_get_bool(&g->vars, \"$varname\");\n}\n";
     } elsif ($vartype =~ /^PATH/ or $vartype =~ /^STRING/) {
-        print <<EOT;
-void owl_global_set_${altvarname}(owl_global *g, const char *text) {
-  owl_variable_set_string(&g->vars, "$altvarname", text);
-}
-const char *owl_global_get_$altvarname(const owl_global *g) {
-  return owl_variable_get_string(&g->vars, "$varname");
-}
-EOT
+	print "void owl_global_set_$altvarname(owl_global *g, const char *text) {\n";
+	print "  owl_variable_set_string(&g->vars, \"$varname\", text);\n}\n";
+	print "const char *owl_global_get_$altvarname(const owl_global *g) {\n";
+	print "  return owl_variable_get_string(&g->vars, \"$varname\");\n}\n";
     } elsif ($vartype =~ /^INT/ or $vartype =~ /^ENUM/) {
-        print <<EOT;
-void owl_global_set_${altvarname}(owl_global *g, int n) {
-  owl_variable_set_int(&g->vars, "$altvarname", n);
-}
-int owl_global_get_$altvarname(const owl_global *g) {
-  return owl_variable_get_int(&g->vars, "$varname");
-}
-EOT
+	print "void owl_global_set_$altvarname(owl_global *g, int n) {\n";
+	print "  owl_variable_set_int(&g->vars, \"$varname\", n);\n}\n";
+	print "int owl_global_get_$altvarname(const owl_global *g) {\n";
+	print "  return owl_variable_get_int(&g->vars, \"$varname\");\n}\n";
     } 
     }
     }
