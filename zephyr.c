@@ -352,11 +352,13 @@ int owl_zephyr_loadbarnowldefaultsubs(void)
 int owl_zephyr_loaddefaultsubs(void)
 {
 #ifdef HAVE_LIBZEPHYR
-  ZSubscription_t subs[10];
+  if (owl_global_is_havezephyr(&g)) {
+    ZSubscription_t subs[10];
     
-  if (ZSubscribeTo(subs,0,0) != ZERR_NONE) {
-    owl_function_error("Error subscribing to default zephyr notifications.");
-    return(-1);
+    if (ZSubscribeTo(subs,0,0) != ZERR_NONE) {
+      owl_function_error("Error subscribing to default zephyr notifications.");
+      return(-1);
+    }
   }
   return(0);
 #else
