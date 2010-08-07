@@ -303,6 +303,8 @@ typedef struct _owl_context {
   void *data;		/* determined by mode */
   char *keymap;
   owl_window *cursor;
+  void (*deactivate_cb)(struct _owl_context*);
+  void (*delete_cb)(struct _owl_context*);
 } owl_context;
 
 typedef struct _owl_cmd {	/* command */

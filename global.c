@@ -173,26 +173,40 @@ void owl_global_push_context(owl_global *g, int mode, void *data, const char *ke
   if (!(mode & OWL_CTX_MODE_BITS))
     mode |= OWL_CTX_INTERACTIVE;
   c = owl_malloc(sizeof *c);
+  memset(c, 0, sizeof(*c));
   c->mode = mode;
   c->data = data;
   c->cursor = cursor ? g_object_ref(cursor) : NULL;
   c->keymap = owl_strdup(keymap);
+  owl_global_push_context_obj(g, c);
+}
+
+void owl_global_push_context_obj(owl_global *g, owl_context *c)
+{
   g->context_stack = g_list_prepend(g->context_stack, c);
   owl_global_activate_context(g, owl_global_get_context(g));
 }
 
-void owl_global_pop_context(owl_global *g) {
+/* Pops the current context from the context stack and returns it. Caller is
+ * responsible for freeing. */
+owl_context *owl_global_pop_context_no_delete(owl_global *g) {
   owl_context *c;
   if (!g->context_stack)
-    return;
+    return NULL;
   c = owl_global_get_context(g);
+  owl_context_deactivate(c);
   g->context_stack = g_list_delete_link(g->context_stack,
                                         g->context_stack);
-  if (c->cursor)
-    g_object_unref(c->cursor);
-  owl_free(c->keymap);
-  owl_free(c);
   owl_global_activate_context(g, owl_global_get_context(g));
+  return c;
+}
+
+/* Pops the current context from the context stack and deletes it. */
+void owl_global_pop_context(owl_global *g) {
+  owl_context *c;
+  c = owl_global_pop_context_no_delete(g);
+  if (c)
+    owl_context_delete(c);
 }
 
 int owl_global_get_lines(const owl_global *g) {

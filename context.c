@@ -52,3 +52,19 @@ int owl_context_is_interactive(const owl_context *ctx)
 {
   return(ctx->mode & OWL_CTX_INTERACTIVE)?1:0;
 }
+
+void owl_context_deactivate(owl_context *ctx)
+{
+  if (ctx->deactivate_cb)
+    ctx->deactivate_cb(ctx);
+}
+
+void owl_context_delete(owl_context *ctx)
+{
+  if (ctx->cursor)
+    g_object_unref(ctx->cursor);
+  owl_free(ctx->keymap);
+  if (ctx->delete_cb)
+    ctx->delete_cb(ctx);
+  owl_free(ctx);
+}
