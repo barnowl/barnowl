@@ -553,7 +553,7 @@ replace(count, string)
 	PREINIT:
 		owl_editwin *e;
 	CODE:
-		e = owl_global_get_typwin(&g);
+		e = owl_global_current_typwin(&g);
 		if (e) {
 			RETVAL = owl_editwin_replace(e, count, string);
 		} else {
@@ -568,7 +568,7 @@ point_move(delta)
 	PREINIT:
 		owl_editwin *e;
 	CODE:
-		e = owl_global_get_typwin(&g);
+		e = owl_global_current_typwin(&g);
 		if (e) {
 			RETVAL = owl_editwin_point_move(e, delta);
 		} else {
@@ -583,7 +583,7 @@ replace_region(string)
 	PREINIT:
 		owl_editwin *e;
 	CODE:
-		e = owl_global_get_typwin(&g);
+		e = owl_global_current_typwin(&g);
 		if (e) {
 			RETVAL = owl_editwin_replace_region(e, string);
 		} else {
@@ -598,9 +598,9 @@ get_region()
 		char *region;
 		owl_editwin *e;
 	CODE:
-		e = owl_global_get_typwin(&g);
+		e = owl_global_current_typwin(&g);
 		if (e) {
-			region = owl_editwin_get_region(owl_global_get_typwin(&g));
+			region = owl_editwin_get_region(owl_global_current_typwin(&g));
 		} else {
 			region = NULL;
 		}
@@ -620,15 +620,15 @@ save_excursion(sub)
 		owl_editwin_excursion *x;
 	CODE:
 	{
-		e = owl_global_get_typwin(&g);
+		e = owl_global_current_typwin(&g);
 		if(!e)
 			croak("The edit window is not currently active!");
 
-		x = owl_editwin_begin_excursion(owl_global_get_typwin(&g));
+		x = owl_editwin_begin_excursion(owl_global_current_typwin(&g));
 		PUSHMARK(SP);
 		count = call_sv(sub, G_SCALAR|G_EVAL|G_NOARGS);
 		SPAGAIN;
-		owl_editwin_end_excursion(owl_global_get_typwin(&g), x);
+		owl_editwin_end_excursion(owl_global_current_typwin(&g), x);
 
 		if(SvTRUE(ERRSV)) {
 			croak(NULL);
@@ -648,7 +648,7 @@ current_column()
 	PREINIT:
 		owl_editwin *e;
 	CODE:
-		e = owl_global_get_typwin(&g);
+		e = owl_global_current_typwin(&g);
 		if (e) {
 			RETVAL = owl_editwin_current_column(e);
 		} else {
@@ -662,7 +662,7 @@ point()
 	PREINIT:
 		owl_editwin *e;
 	CODE:
-		e = owl_global_get_typwin(&g);
+		e = owl_global_current_typwin(&g);
 		if (e) {
 			RETVAL = owl_editwin_get_point(e);
 		} else {
@@ -676,7 +676,7 @@ mark()
 	PREINIT:
 		owl_editwin *e;
 	CODE:
-		e = owl_global_get_typwin(&g);
+		e = owl_global_current_typwin(&g);
 		if (e) {
 			RETVAL = owl_editwin_get_mark(e);
 		} else {

@@ -283,7 +283,7 @@ owl_window *owl_global_get_typwin_window(const owl_global *g) {
 /* typwin */
 
 /* Gets the currently active typwin out of the current context. */
-owl_editwin *owl_global_get_typwin(const owl_global *g) {
+owl_editwin *owl_global_current_typwin(const owl_global *g) {
   owl_context *ctx = owl_global_get_context(g);
   /* Get the current editwin from the context. */
   if (ctx && owl_context_matches(ctx, OWL_CTX_TYPWIN)) {
