@@ -834,7 +834,10 @@ int owl_editwin_move_to_beginning_of_line(owl_editwin *e)
     /* move off the \n if were at the end of a line */
     distance += owl_editwin_point_move(e, -1);
     distance += owl_editwin_move_if_not_in(e, -1, "\n");
-    if (distance && !owl_editwin_at_beginning_of_buffer(e))
+    /* If we stopped because we reached a '\n', rather than because we
+     * hit the top of the buffer, move forward from the end of the
+     * previous line to the start of the current. */
+    if (owl_editwin_get_char_at_point(e) == '\n')
       distance += owl_editwin_point_move(e, 1);
   }
   e->goal_column = 0; /* subtleties */
