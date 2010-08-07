@@ -281,14 +281,6 @@ owl_keyhandler *owl_global_get_keyhandler(owl_global *g) {
   return(&(g->kh));
 }
 
-/* underlying owl_windows */
-
-owl_window *owl_global_get_typwin_window(const owl_global *g) {
-  return g->mainpanel.typwin;
-}
-
-/* typwin */
-
 /* Gets the currently active typwin out of the current context. */
 owl_editwin *owl_global_current_typwin(const owl_global *g) {
   owl_context *ctx = owl_global_get_context(g);
@@ -331,11 +323,11 @@ owl_editwin *owl_global_set_typwin_active(owl_global *g, int style, owl_history 
       owl_function_resize_typwin(owl_global_get_typwin_lines(g) + d);
 
   if (g->typwin_erase_id) {
-    g_signal_handler_disconnect(owl_global_get_typwin_window(g), g->typwin_erase_id);
+    g_signal_handler_disconnect(g->mainpanel.typwin, g->typwin_erase_id);
     g->typwin_erase_id = 0;
   }
 
-  g->tw = owl_editwin_new(owl_global_get_typwin_window(g),
+  g->tw = owl_editwin_new(g->mainpanel.typwin,
                           owl_global_get_typwin_lines(g),
                           g->cols,
                           style,
@@ -350,9 +342,9 @@ void owl_global_set_typwin_inactive(owl_global *g) {
 
   if (!g->typwin_erase_id) {
     g->typwin_erase_id =
-      g_signal_connect(owl_global_get_typwin_window(g), "redraw", G_CALLBACK(owl_window_erase_cb), NULL);
+      g_signal_connect(g->mainpanel.typwin, "redraw", G_CALLBACK(owl_window_erase_cb), NULL);
   }
-  owl_window_dirty(owl_global_get_typwin_window(g));
+  owl_window_dirty(g->mainpanel.typwin);
 
   g->tw = NULL;
 }

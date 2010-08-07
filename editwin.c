@@ -178,6 +178,11 @@ static void oe_set_window(owl_editwin *e, owl_window *w, int winlines, int winco
   }
 }
 
+owl_window *owl_editwin_get_window(owl_editwin *e)
+{
+  return e->win;
+}
+
 /* echo the character 'ch' for each normal character keystroke,
  * excepting locktext.  This is useful for entering passwords etc.  If
  * ch=='\0' characters are echo'd normally

@@ -285,7 +285,7 @@ void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin 
 
   owl_editwin_set_cbdata(e, data, cleanup);
   owl_editwin_set_callback(e, callback);
-  owl_global_push_context(&g, OWL_CTX_EDITMULTI, e, "editmulti", owl_global_get_typwin_window(&g));
+  owl_global_push_context(&g, OWL_CTX_EDITMULTI, e, "editmulti", owl_editwin_get_window(e));
 }
 
 static void owl_function_write_setup(const char *noun)
@@ -1887,7 +1887,7 @@ void owl_function_start_command(const char *line)
 
   owl_editwin_insert_string(tw, line);
 
-  owl_global_push_context(&g, OWL_CTX_EDITLINE, tw, "editline", owl_global_get_typwin_window(&g));
+  owl_global_push_context(&g, OWL_CTX_EDITLINE, tw, "editline", owl_editwin_get_window(tw));
   owl_editwin_set_callback(tw, owl_callback_command);
 }
 
@@ -1899,7 +1899,7 @@ owl_editwin *owl_function_start_question(const char *line)
 
   owl_editwin_set_locktext(tw, line);
 
-  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse", owl_global_get_typwin_window(&g));
+  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse", owl_editwin_get_window(tw));
   return tw;
 }
 
@@ -1913,7 +1913,7 @@ owl_editwin *owl_function_start_password(const char *line)
 
   owl_editwin_set_locktext(tw, line);
 
-  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse", owl_global_get_typwin_window(&g));
+  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse", owl_editwin_get_window(tw));
   return tw;
 }
 
