@@ -170,14 +170,7 @@ static void owl_global_activate_context(owl_global *g, owl_context *c) {
 
 void owl_global_push_context(owl_global *g, int mode, void *data, const char *keymap, owl_window *cursor) {
   owl_context *c;
-  if (!(mode & OWL_CTX_MODE_BITS))
-    mode |= OWL_CTX_INTERACTIVE;
-  c = owl_malloc(sizeof *c);
-  memset(c, 0, sizeof(*c));
-  c->mode = mode;
-  c->data = data;
-  c->cursor = cursor ? g_object_ref(cursor) : NULL;
-  c->keymap = owl_strdup(keymap);
+  c = owl_context_new(mode, data, keymap, cursor);
   owl_global_push_context_obj(g, c);
 }
 
