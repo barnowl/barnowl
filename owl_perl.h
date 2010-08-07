@@ -1,5 +1,5 @@
-#ifndef INC_OWL_PERL_H
-#define INC_OWL_PERL_H
+#ifndef INC_BARNOWL_OWL_PERL_H
+#define INC_BARNOWL_OWL_PERL_H
 
 #define OWL_PERL_VOID_CALL (void)POPs;
 
@@ -52,4 +52,4 @@
     LEAVE; \
 }
 
-#endif /* INC_PERL_PERL_H */
+#endif /* INC_BARNOWL_OWL_PERL_H */

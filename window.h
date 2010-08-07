@@ -1,5 +1,5 @@
-#ifndef __BARNOWL_WINDOW_H__
-#define __BARNOWL_WINDOW_H__
+#ifndef INC_BARNOWL_WINDOW_H
+#define INC_BARNOWL_WINDOW_H
 
 #include <glib.h>
 #include <glib-object.h>
@@ -66,4 +66,4 @@ void owl_window_fill_parent_cb(owl_window *parent, void *user_data);
 
 G_END_DECLS
 
-#endif /* __BARNOWL_WINDOW_H__ */
+#endif /* INC_BARNOWL_WINDOW_H */

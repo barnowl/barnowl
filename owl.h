@@ -6,8 +6,8 @@
  *  file included with the distribution for more information.
  */
 
-#ifndef INC_OWL_H
-#define INC_OWL_H
+#ifndef INC_BARNOWL_OWL_H
+#define INC_BARNOWL_OWL_H
 
 #ifdef HAVE_STDBOOL_H
 #include <stdbool.h>
@@ -647,4 +647,4 @@ int ZGetSubscriptions(ZSubscription_t *, int *);
 int ZGetLocations(ZLocations_t *,int *);
 #endif
 
-#endif /* INC_OWL_H */
+#endif /* INC_BARNOWL_OWL_H */
