@@ -404,6 +404,28 @@ int owl_editwin_regtest(void) {
 
   owl_editwin_delete(oe); oe = NULL;
 
+  /* Test owl_editwin_move_to_beginning_of_line. */
+  oe = owl_editwin_new(NULL, 80, 80, OWL_EDITWIN_STYLE_MULTILINE, NULL);
+  owl_editwin_insert_string(oe, "\n");
+  owl_editwin_insert_string(oe, "12345678\n");
+  owl_editwin_insert_string(oe, "\n");
+  owl_editwin_insert_string(oe, "abcdefg\n");
+  owl_editwin_move_to_top(oe);
+  FAIL_UNLESS("already at beginning of line",
+	      owl_editwin_move_to_beginning_of_line(oe) == 0);
+  owl_editwin_line_move(oe, 1);
+  owl_editwin_point_move(oe, 5);
+  FAIL_UNLESS("find beginning of line after empty first line",
+	      owl_editwin_move_to_beginning_of_line(oe) == -5);
+  owl_editwin_line_move(oe, 1);
+  FAIL_UNLESS("find beginning empty middle line",
+	      owl_editwin_move_to_beginning_of_line(oe) == 0);
+  owl_editwin_line_move(oe, 1);
+  owl_editwin_point_move(oe, 2);
+  FAIL_UNLESS("find beginning of line after empty middle line",
+	      owl_editwin_move_to_beginning_of_line(oe) == -2);
+  owl_editwin_delete(oe); oe = NULL;
+
   printf("# END testing owl_editwin (%d failures)\n", numfailed);
 
   return numfailed;
