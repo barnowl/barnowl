@@ -173,16 +173,6 @@ typedef void HV;
 #define OWL_CTX_EDITMULTI    0x2000
 #define OWL_CTX_EDITRESPONSE 0x4000
 
-#define OWL_USERCLUE_NONE       0
-#define OWL_USERCLUE_CLASSES    1
-#define OWL_USERCLUE_FOOBAR     2
-#define OWL_USERCLUE_BAZ        4
-
-#define OWL_WEBBROWSER_NONE     0
-#define OWL_WEBBROWSER_NETSCAPE 1
-#define OWL_WEBBROWSER_GALEON   2
-#define OWL_WEBBROWSER_OPERA    3
-
 #define OWL_VARIABLE_OTHER      0
 #define OWL_VARIABLE_INT        1
 #define OWL_VARIABLE_BOOL       2
@@ -609,7 +599,6 @@ typedef struct _owl_global {
   time_t starttime;
   time_t lastinputtime;
   char *startupargs;
-  int userclue;
   int nextmsgid;
   int hascolors;
   int colorpairs;

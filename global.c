@@ -73,7 +73,6 @@ void owl_global_init(owl_global *g) {
   g->newmsgproc_pid=0;
   
   owl_global_set_config_format(g, 0);
-  owl_global_set_userclue(g, OWL_USERCLUE_NONE);
   owl_global_set_no_have_config(g);
   owl_history_init(&(g->msghist));
   owl_history_init(&(g->cmdhist));
@@ -507,25 +506,6 @@ time_t owl_global_get_idletime(const owl_global *g) {
 const char *owl_global_get_hostname(const owl_global *g) {
   if (g->thishost) return(g->thishost);
   return("");
-}
-
-/* userclue */
-
-void owl_global_set_userclue(owl_global *g, int clue) {
-  g->userclue=clue;
-}
-
-void owl_global_add_userclue(owl_global *g, int clue) {
-  g->userclue|=clue;
-}
-
-int owl_global_get_userclue(const owl_global *g) {
-  return(g->userclue);
-}
-
-int owl_global_is_userclue(const owl_global *g, int clue) {
-  if (g->userclue & clue) return(1);
-  return(0);
 }
 
 /* viewwin */

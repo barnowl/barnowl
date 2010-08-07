@@ -147,8 +147,6 @@ void owl_zephyr_load_initial_subs(void) {
 
   if (ret_sd || ret_bd || ret_u) {
     owl_function_error("Error loading zephyr subscriptions");
-  } else if (ret_u!=-1) {
-    owl_global_add_userclue(&g, OWL_USERCLUE_CLASSES);
   }
 
   /* load login subscriptions */

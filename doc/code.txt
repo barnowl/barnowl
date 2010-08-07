@@ -166,19 +166,6 @@ The four curses windows on the screen are
 
 ===========================================================================
 
-
-MISC THINGS
------------
-
-userclue:  right now userclue is just used to decide if you sub to
-	   classes other than the default.  If you don't it doesn't bother
-	   making your personal messages bold since there's no point in
-	   making every message bold.
-
-
-
-===========================================================================
-
 Conventions and Design Criteria
 -------------------------------
 
