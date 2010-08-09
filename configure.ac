@@ -130,8 +130,9 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 AX_CFLAGS_WARN_ALL([AM_CFLAGS])
 AX_CFLAGS_STRICT_PROTOTYPES([AM_CFLAGS])
 
-AX_C_CHECK_FLAG([-Wno-pointer-sign],[],[],
-  [LIBFAIM_CFLAGS="$LIBFAIM_CFLAGS -Wno-pointer-sign"])
+m4_foreach([myflag],
+  [[-Wno-pointer-sign],[-Wno-empty-body],[-Wno-unused-value]],
+  [AX_C_CHECK_FLAG([myflag],[],[],[LIBFAIM_CFLAGS="$LIBFAIM_CFLAGS myflag"])])
 
 AM_CONDITIONAL([ENABLE_ZCRYPT], [test "$HAVE_DES_STRING_TO_KEY" && dnl
                                  test "$HAVE_DES_KEY_SCHED" && dnl
