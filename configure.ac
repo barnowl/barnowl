@@ -16,7 +16,7 @@ AC_ARG_WITH([stack-protector],
 
 AS_IF([test "x$with_stack_protector" != xno],
   [AX_C_CHECK_FLAG([-fstack-protector],[],[],
-    [CFLAGS="$CFLAGS -fstack-protector"],
+    [AM_CFLAGS="$AM_CFLAGS -fstack-protector"],
     [if test "x$with_stack_protector" != xcheck; then
        AC_MSG_FAILURE([--with-stack-protector selected, but gcc does support it.])
      fi
@@ -44,14 +44,14 @@ AS_IF([test "x$with_zephyr" != xno],
     AS_IF([krb5-config krb4 --libs >/dev/null 2>&1],
       [AC_MSG_RESULT([yes])
        AC_DEFINE([HAVE_KERBEROS_IV], [1], [Define if you have kerberos IV])
-       CFLAGS="${CFLAGS} `krb5-config krb4 --cflags`"
+       AM_CFLAGS="${AM_CFLAGS} `krb5-config krb4 --cflags`"
        LIBS="${LIBS} `krb5-config krb4 --libs`"
       ],
       [AC_MSG_RESULT([no])
        AS_IF([test "x$with_krb4" = "xyes"],
              [AC_MSG_ERROR([Kerberos IV requested but not found])])
        PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
-       CFLAGS="${CFLAGS} ${LIBCRYPTO_CFLAGS}"
+       AM_CFLAGS="${AM_CFLAGS} ${LIBCRYPTO_CFLAGS}"
        LIBS="${LIBS} ${LIBCRYPTO_LIBS}"
      ])])
    AC_CHECK_LIB([zephyr], [ZGetSender],
@@ -85,7 +85,7 @@ AC_CHECK_HEADERS(strings.h sys/ioctl.h sys/filio.h unistd.h)
 dnl Add CFLAGS for embeded perl
 PERL_CFLAGS=`perl -MExtUtils::Embed -e ccopts`
 AC_MSG_NOTICE([Adding perl CFLAGS ${PERL_CFLAGS}])
-CFLAGS="${CFLAGS} ${PERL_CFLAGS}"
+AM_CFLAGS="${AM_CFLAGS} ${PERL_CFLAGS}"
 
 dnl Find the location of perl XSUBPP
 AC_MSG_CHECKING(for the perl xsubpp precompiler)
@@ -117,9 +117,9 @@ dnl Add CFLAGS and LDFLAGS for glib-2.0
 PKG_CHECK_MODULES(GLIB,[glib-2.0 gobject-2.0])
 
 AC_MSG_NOTICE([Adding glib-2.0 CFLAGS ${GLIB_CFLAGS}])
-CFLAGS="${GLIB_CFLAGS} ${CFLAGS}"
+AM_CFLAGS="${GLIB_CFLAGS} ${AM_CFLAGS}"
 AC_MSG_NOTICE([Adding glib-2.0 LDFLAGS ${GLIB_LIBS}])
-LDFLAGS="${GLIB_LIBS} ${LDFLAGS}"
+AM_LDFLAGS="${GLIB_LIBS} ${AM_LDFLAGS}"
 
 if test "x${prefix}" = "xNONE"; then
    prefix="${ac_default_prefix}"
@@ -127,8 +127,8 @@ fi
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
-AX_CFLAGS_WARN_ALL
-AX_CFLAGS_STRICT_PROTOTYPES
+AX_CFLAGS_WARN_ALL([AM_CFLAGS])
+AX_CFLAGS_STRICT_PROTOTYPES([AM_CFLAGS])
 
 AX_C_CHECK_FLAG([-Wno-pointer-sign],[],[],
   [LIBFAIM_CFLAGS="$LIBFAIM_CFLAGS -Wno-pointer-sign"])
@@ -137,11 +137,13 @@ AM_CONDITIONAL([ENABLE_ZCRYPT], [test "$HAVE_DES_STRING_TO_KEY" && dnl
                                  test "$HAVE_DES_KEY_SCHED" && dnl
                                  test "$HAVE_DES_ECB_ENCRYPT"])
 
-CFLAGS="$CFLAGS -D_XOPEN_SOURCE"
+AM_CFLAGS="$AM_CFLAGS -D_XOPEN_SOURCE"
 dnl __EXTENSIONS__ is needed for struct timeval on Solaris when
 dnl _XOPEN_SOURCE is defined.
-CFLAGS="$CFLAGS -D__EXTENSIONS__"
+AM_CFLAGS="$AM_CFLAGS -D__EXTENSIONS__"
 
+AC_SUBST([AM_CFLAGS])
+AC_SUBST([AM_LDFLAGS])
 AC_SUBST([LIBFAIM_CFLAGS])
 
 AC_SUBST(XSUBPPDIR)

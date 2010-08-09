@@ -1,5 +1,4 @@
 ACLOCAL_AMFLAGS = -I m4
-CFLAGS += $(EXTRA_CFLAGS)
 
 GIT_DESCRIPTION := $(if $(wildcard .git),$(shell git describe --match='barnowl-*' HEAD 2>/dev/null))
 GIT_FLAGS := $(if $(GIT_DESCRIPTION),-DGIT_VERSION=$(GIT_DESCRIPTION:barnowl-%=%))
@@ -32,7 +31,7 @@ tester_bin_LDADD = compat/libcompat.a libfaim/libfaim.a
 
 TESTS=runtests.sh
 
-CPPFLAGS = -I$(top_srcdir)/ \
+AM_CPPFLAGS = -I$(top_srcdir)/ \
            -I$(top_srcdir)/libfaim/ \
            -DDATADIR='"$(pkgdatadir)"' \
            -DBINDIR='"$(bindir)"' \
@@ -76,7 +75,7 @@ owl_prototypes.h.new: codelist.pl varstubs.c $(CODELIST_SRCS)
 
 # For emacs flymake-mode
 check-syntax: proto
-	$(CC) $(CFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES)
+	$(COMPILE) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES)
 
 install-data-local:
 	$(mkinstalldirs) ${DESTDIR}${pkgdatadir}/lib
