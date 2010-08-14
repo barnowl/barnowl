@@ -284,11 +284,7 @@ owl_keyhandler *owl_global_get_keyhandler(owl_global *g) {
 /* Gets the currently active typwin out of the current context. */
 owl_editwin *owl_global_current_typwin(const owl_global *g) {
   owl_context *ctx = owl_global_get_context(g);
-  /* Get the current editwin from the context. */
-  if (ctx && owl_context_matches(ctx, OWL_CTX_TYPWIN)) {
-    return owl_context_get_data(ctx);
-  }
-  return NULL;
+  return owl_editcontext_get_editwin(ctx);
 }
 
 /* variable dictionary */
@@ -346,6 +342,7 @@ void owl_global_set_typwin_inactive(owl_global *g) {
   }
   owl_window_dirty(g->mainpanel.typwin);
 
+  owl_editwin_unref(g->tw);
   g->tw = NULL;
 }
 

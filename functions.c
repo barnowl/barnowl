@@ -273,6 +273,7 @@ owl_message *owl_function_make_outgoing_loopback(const char *body)
 void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin *), void *data, void (*cleanup)(void *))
 {
   owl_editwin *e;
+  owl_context *ctx;
   char *s;
 
   /* create and setup the editwin */
@@ -285,7 +286,9 @@ void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin 
 
   owl_editwin_set_cbdata(e, data, cleanup);
   owl_editwin_set_callback(e, callback);
-  owl_global_push_context(&g, OWL_CTX_EDITMULTI, e, "editmulti", owl_editwin_get_window(e));
+  ctx = owl_editcontext_new(OWL_CTX_EDITMULTI, e, "editmulti");
+  owl_global_push_context_obj(&g, ctx);
+
 }
 
 static void owl_function_write_setup(const char *noun)
@@ -1880,6 +1883,7 @@ void owl_callback_command(owl_editwin *e)
 void owl_function_start_command(const char *line)
 {
   owl_editwin *tw;
+  owl_context *ctx;
 
   tw = owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
 
@@ -1887,25 +1891,29 @@ void owl_function_start_command(const char *line)
 
   owl_editwin_insert_string(tw, line);
 
-  owl_global_push_context(&g, OWL_CTX_EDITLINE, tw, "editline", owl_editwin_get_window(tw));
+  ctx = owl_editcontext_new(OWL_CTX_EDITLINE, tw, "editline");
+  owl_global_push_context_obj(&g, ctx);
   owl_editwin_set_callback(tw, owl_callback_command);
 }
 
 owl_editwin *owl_function_start_question(const char *line)
 {
   owl_editwin *tw;
+  owl_context *ctx;
 
   tw = owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_ONELINE, owl_global_get_cmd_history(&g));
 
   owl_editwin_set_locktext(tw, line);
 
-  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse", owl_editwin_get_window(tw));
+  ctx = owl_editcontext_new(OWL_CTX_EDITRESPONSE, tw, "editresponse");
+  owl_global_push_context_obj(&g, ctx);
   return tw;
 }
 
 owl_editwin *owl_function_start_password(const char *line)
 {
   owl_editwin *tw;
+  owl_context *ctx;
 
   tw = owl_global_set_typwin_active(&g, OWL_EDITWIN_STYLE_ONELINE, NULL);
 
@@ -1913,7 +1921,8 @@ owl_editwin *owl_function_start_password(const char *line)
 
   owl_editwin_set_locktext(tw, line);
 
-  owl_global_push_context(&g, OWL_CTX_EDITRESPONSE, tw, "editresponse", owl_editwin_get_window(tw));
+  ctx = owl_editcontext_new(OWL_CTX_EDITRESPONSE, tw, "editresponse");
+  owl_global_push_context_obj(&g, ctx);
   return tw;
 }
 
