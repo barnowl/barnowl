@@ -305,6 +305,7 @@ typedef struct _owl_context {
   owl_window *cursor;
   void (*deactivate_cb)(struct _owl_context*);
   void (*delete_cb)(struct _owl_context*);
+  void *cbdata;
 } owl_context;
 
 typedef struct _owl_cmd {	/* command */

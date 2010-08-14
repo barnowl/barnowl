@@ -331,6 +331,11 @@ owl_editwin *owl_global_set_typwin_active(owl_global *g, int style, owl_history 
   return g->tw;
 }
 
+void owl_global_deactivate_editcontext(owl_context *ctx) {
+  owl_global *g = ctx->cbdata;
+  owl_global_set_typwin_inactive(g);
+}
+
 void owl_global_set_typwin_inactive(owl_global *g) {
   int d = owl_global_get_typewindelta(g);
   if (d > 0 && owl_editwin_get_style(g->tw) == OWL_EDITWIN_STYLE_MULTILINE)

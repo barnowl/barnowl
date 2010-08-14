@@ -2690,8 +2690,6 @@ void owl_command_edit_cancel(owl_editwin *e)
   }
 
   owl_global_pop_context(&g);
-
-  owl_global_set_typwin_inactive(&g);
 }
 
 void owl_command_edit_history_prev(owl_editwin *e)
@@ -2749,7 +2747,6 @@ void owl_command_edit_done(owl_editwin *e)
    * the context so that, even if a command pops a context, the
    * context itself will last until the command returns. */
   owl_editwin_ref(e);
-  owl_global_set_typwin_inactive(&g);
   owl_global_pop_context(&g);
 
   owl_editwin_do_callback(e);
