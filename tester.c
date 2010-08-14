@@ -389,7 +389,7 @@ int owl_editwin_regtest(void) {
 							    "\n"
 							    "blah"));
 
-  owl_editwin_delete(oe); oe = NULL;
+  owl_editwin_unref(oe); oe = NULL;
   oe = owl_editwin_new(NULL, 80, 80, OWL_EDITWIN_STYLE_MULTILINE, NULL);
 
   /* check that lines ending with ". " correctly fill */
@@ -402,7 +402,7 @@ int owl_editwin_regtest(void) {
 							    "\n"
 							    "blah"));
 
-  owl_editwin_delete(oe); oe = NULL;
+  owl_editwin_unref(oe); oe = NULL;
 
   /* Test owl_editwin_move_to_beginning_of_line. */
   oe = owl_editwin_new(NULL, 80, 80, OWL_EDITWIN_STYLE_MULTILINE, NULL);
@@ -424,7 +424,7 @@ int owl_editwin_regtest(void) {
   owl_editwin_point_move(oe, 2);
   FAIL_UNLESS("find beginning of line after empty middle line",
 	      owl_editwin_move_to_beginning_of_line(oe) == -2);
-  owl_editwin_delete(oe); oe = NULL;
+  owl_editwin_unref(oe); oe = NULL;
 
   printf("# END testing owl_editwin (%d failures)\n", numfailed);
 
