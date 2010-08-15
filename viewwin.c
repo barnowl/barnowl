@@ -223,6 +223,17 @@ void owl_viewwin_bottom(owl_viewwin *v)
   owl_viewwin_dirty(v);
 }
 
+/* This is a bit of a hack, because regexec doesn't have an 'n'
+ * version. */
+static int _re_memcompare(const owl_regex *re, const char *string, int start, int end)
+{
+  int ans;
+  char *tmp = g_strndup(string + start, end - start);
+  ans = owl_regex_compare(re, tmp, NULL, NULL);
+  g_free(tmp);
+  return !ans;
+}
+
 /* Scroll in 'direction' to the next line containing 're' in 'v',
  * starting from the current line. Returns 0 if no occurrence is
  * found.
@@ -232,6 +243,8 @@ void owl_viewwin_bottom(owl_viewwin *v)
 int owl_viewwin_search(owl_viewwin *v, const owl_regex *re, int mode, int direction)
 {
   int start, end, offset;
+  int lineend, linestart;
+  const char *buf, *linestartp;
   owl_fmtext_line_extents(&v->fmtext, v->topline, &start, &end);
   if (direction == OWL_DIRECTION_DOWNWARDS) {
     offset = owl_fmtext_search(&v->fmtext, re, mode ? end : start);
@@ -241,9 +254,23 @@ int owl_viewwin_search(owl_viewwin *v, const owl_regex *re, int mode, int direct
     owl_viewwin_dirty(v);
     return 1;
   } else {
-    /* FIXME */
-    owl_function_error("Upwards searching is not implemented in viewwin.");
-    return 1;
+    /* TODO: This is a hack. Really, we should have an owl_fmlines or
+     * something containing an array of owl_fmtext split into
+     * lines. Also, it cannot handle multi-line regex, if we ever care about
+     * them. */
+    buf = owl_fmtext_get_text(&v->fmtext);
+    lineend = mode ? start : end;
+    while (lineend > 0) {
+      linestartp = memrchr(buf, '\n', lineend - 1);
+      linestart = linestartp ? linestartp - buf + 1 : 0;
+      if (_re_memcompare(re, buf, linestart, lineend)) {
+        v->topline = owl_fmtext_line_number(&v->fmtext, linestart);
+        owl_viewwin_dirty(v);
+        return 1;
+      }
+      lineend = linestart;
+    }
+    return 0;
   }
 }
 
