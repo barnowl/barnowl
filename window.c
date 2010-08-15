@@ -321,12 +321,16 @@ bool owl_window_is_subwin(owl_window *w)
   return w->pan == NULL && !w->is_screen;
 }
 
+static bool _owl_window_should_realize(owl_window *w)
+{
+  return owl_window_is_shown(w) &&
+    (!w->parent || owl_window_is_realized(w->parent));
+}
+
 static void _owl_window_realize(owl_window *w)
 {
   /* check if we can create a window */
-  if ((w->parent && w->parent->win == NULL)
-      || !w->shown
-      || w->win != NULL)
+  if (owl_window_is_realized(w) || !_owl_window_should_realize(w))
     return;
   if (w->nlines <= 0 || w->ncols <= 0)
     return;
