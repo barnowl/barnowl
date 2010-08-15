@@ -1004,6 +1004,15 @@ const owl_cmd commands_to_init[]
 		  "popless:start-command [initial-value]",
 		  "Initializes the command field to initial-value"),
 
+  OWLCMD_ARGS_CTX("popless:search", owl_viewwin_command_search, OWL_CTX_POPLESS,
+		  "search lines for a particular string",
+		  "popless:search [-r] [<string>]",
+		  "The popless:search command will find lines that contain the\n"
+		  "specified string and scroll the popwin there.  If no string\n"
+		  "argument is supplied then the previous one is used.  By\n"
+		  "default searches are done forwards; if -r is used the search\n"
+		  "is performed backwards"),
+
   OWLCMD_ALIAS("webzephyr", "zwrite daemon.webzephyr -c webzephyr -i"),
 
   /* This line MUST be last! */

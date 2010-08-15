@@ -141,6 +141,30 @@ static void owl_viewwin_redraw_status(owl_window *w, WINDOW *curswin, void *user
   wattroff(curswin, A_REVERSE);
 }
 
+char *owl_viewwin_command_search(owl_viewwin *v, int argc, const char *const *argv, const char *buff)
+{
+  int direction, mode;
+  const char *buffstart;
+
+  direction=OWL_DIRECTION_DOWNWARDS;
+  buffstart=skiptokens(buff, 1);
+  if (argc>1 && !strcmp(argv[1], "-r")) {
+    direction=OWL_DIRECTION_UPWARDS;
+    buffstart=skiptokens(buff, 2);
+  }
+
+  if (argc==1 || (argc==2 && !strcmp(argv[1], "-r"))) {
+    mode = OWL_SEARCH_CONTINUE;
+  } else {
+    owl_function_set_search(buffstart);
+    mode = OWL_SEARCH_MATCH_CURRENT;
+  }
+
+  if (!owl_viewwin_search(v, owl_global_get_search_re(&g), mode, direction))
+    owl_function_error("No more matches");
+  return NULL;
+}
+
 char *owl_viewwin_start_command(owl_viewwin *v, int argc, const char *const *argv, const char *buff)
 {
   owl_editwin *tw;
