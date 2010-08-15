@@ -2897,19 +2897,6 @@ void owl_function_set_search(const char *string)
   }
 }
 
-void owl_function_search_start(const char *string, int direction)
-{
-  /* direction is OWL_DIRECTION_DOWNWARDS or OWL_DIRECTION_UPWARDS */
-  owl_function_set_search(string);
-  owl_function_search_helper(0, direction);
-}
-
-void owl_function_search_continue(int direction)
-{
-  /* direction is OWL_DIRECTION_DOWNWARDS or OWL_DIRECTION_UPWARDS */
-  owl_function_search_helper(1, direction);
-}
-
 void owl_function_search_helper(int mode, int direction)
 {
   /* move to a message that contains the string.  If direction is

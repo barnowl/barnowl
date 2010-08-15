@@ -2537,9 +2537,10 @@ char *owl_command_search(int argc, const char *const *argv, const char *buff)
   }
     
   if (argc==1 || (argc==2 && !strcmp(argv[1], "-r"))) {
-    owl_function_search_continue(direction);
+    owl_function_search_helper(1, direction);
   } else {
-    owl_function_search_start(buffstart, direction);
+    owl_function_set_search(buffstart);
+    owl_function_search_helper(0, direction);
   }
   
   return(NULL);
