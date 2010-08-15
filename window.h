@@ -4,6 +4,18 @@
 #include <glib.h>
 #include <glib-object.h>
 
+#ifdef HAVE_STDBOOL_H
+#include <stdbool.h>
+#else
+#ifndef HAVE__BOOL
+#define _Bool signed char
+#endif
+#define bool _Bool
+#define false 0
+#define true 1
+#define __bool_true_false_are_defined 1
+#endif  /* HAVE_STDBOOL_H */
+
 G_BEGIN_DECLS
 
 #define OWL_TYPE_WINDOW                  (owl_window_get_type ())
@@ -42,10 +54,10 @@ owl_window *owl_window_previous_sibling(owl_window *w);
 void owl_window_show(owl_window *w);
 void owl_window_show_all(owl_window *w);
 void owl_window_hide(owl_window *w);
-int owl_window_is_shown(owl_window *w);
-int owl_window_is_realized(owl_window *w);
-int owl_window_is_toplevel(owl_window *w);
-int owl_window_is_subwin(owl_window *w);
+bool owl_window_is_shown(owl_window *w);
+bool owl_window_is_realized(owl_window *w);
+bool owl_window_is_toplevel(owl_window *w);
+bool owl_window_is_subwin(owl_window *w);
 
 void owl_window_set_cursor(owl_window *w);
 void owl_window_set_default_cursor(owl_window *w);

@@ -301,22 +301,22 @@ void owl_window_hide(owl_window *w)
   _owl_window_unrealize(w);
 }
 
-int owl_window_is_shown(owl_window *w)
+bool owl_window_is_shown(owl_window *w)
 {
   return w->shown;
 }
 
-int owl_window_is_realized(owl_window *w)
+bool owl_window_is_realized(owl_window *w)
 {
   return w->win != NULL;
 }
 
-int owl_window_is_toplevel(owl_window *w)
+bool owl_window_is_toplevel(owl_window *w)
 {
   return w->pan != NULL;
 }
 
-int owl_window_is_subwin(owl_window *w)
+bool owl_window_is_subwin(owl_window *w)
 {
   return w->pan == NULL && !w->is_screen;
 }
