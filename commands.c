@@ -2550,7 +2550,7 @@ char *owl_command_setsearch(int argc, const char *const *argv, const char *buff)
   const char *buffstart;
 
   buffstart=skiptokens(buff, 1);
-  owl_function_search_start(*buffstart ? buffstart : NULL, OWL_DIRECTION_NONE);
+  owl_function_set_search(*buffstart ? buffstart : NULL);
   
   return(NULL);
 }

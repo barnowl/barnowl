@@ -2885,10 +2885,8 @@ void owl_function_help_for_command(const char *cmdname)
   owl_fmtext_cleanup(&fm);
 }
 
-void owl_function_search_start(const char *string, int direction)
+void owl_function_set_search(const char *string)
 {
-  /* direction is OWL_DIRECTION_DOWNWARDS or OWL_DIRECTION_UPWARDS or
-   * OWL_DIRECTION_NONE */
   owl_regex re;
 
   if (string && owl_regex_create_quoted(&re, string) == 0) {
@@ -2897,11 +2895,13 @@ void owl_function_search_start(const char *string, int direction)
   } else {
     owl_global_set_search_re(&g, NULL);
   }
+}
 
-  if (direction == OWL_DIRECTION_NONE)
-    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  else
-    owl_function_search_helper(0, direction);
+void owl_function_search_start(const char *string, int direction)
+{
+  /* direction is OWL_DIRECTION_DOWNWARDS or OWL_DIRECTION_UPWARDS */
+  owl_function_set_search(string);
+  owl_function_search_helper(0, direction);
 }
 
 void owl_function_search_continue(int direction)

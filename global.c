@@ -658,9 +658,10 @@ void owl_global_set_search_re(owl_global *g, const owl_regex *re) {
   }
   if (re != NULL)
     owl_regex_copy(re, &g->search_re);
-  /* TODO: Emit a signal so we don't depend on the viewwin here. */
+  /* TODO: Emit a signal so we don't depend on the viewwin and mainwin */
   if (owl_global_get_viewwin(g))
     owl_viewwin_dirty(owl_global_get_viewwin(g));
+  owl_mainwin_redisplay(owl_global_get_mainwin(g));
 }
 
 const owl_regex *owl_global_get_search_re(const owl_global *g) {
