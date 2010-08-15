@@ -2903,8 +2903,8 @@ void owl_function_search_helper(int mode, int direction)
    * OWL_DIRECTION_DOWNWARDS then search fowards, if direction is
    * OWL_DIRECTION_UPWARDS then search backwards.
    *
-   * If mode==0 then it will stay on the current message if it
-   * contains the string.
+   * If mode is OWL_SEARCH_MATCH_CURRENT then it will stay on the
+   * current message if it contains the string.
    */
 
   const owl_view *v;
@@ -2920,7 +2920,7 @@ void owl_function_search_helper(int mode, int direction)
     return;
   }
 
-  if (mode==0) {
+  if (mode == OWL_SEARCH_MATCH_CURRENT) {
     start=curmsg;
   } else if (direction==OWL_DIRECTION_DOWNWARDS) {
     start=curmsg+1;
