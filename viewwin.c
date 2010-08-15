@@ -60,6 +60,7 @@ static void owl_viewwin_set_window(owl_viewwin *v, owl_window *w)
   v->window = g_object_ref(w);
   v->content = owl_window_new(v->window);
   v->status = owl_window_new(v->window);
+  v->cmdwin = NULL;
 
   v->sig_content_redraw_id =
     g_signal_connect(v->content, "redraw", G_CALLBACK(owl_viewwin_redraw_content), v);
@@ -83,7 +84,10 @@ static void owl_viewwin_layout(owl_viewwin *v)
   int lines, cols;
   owl_window_get_position(v->window, &lines, &cols, NULL, NULL);
   owl_window_set_position(v->content, lines - BOTTOM_OFFSET, cols, 0, 0);
+  /* Only one of these will be visible at a time: */
   owl_window_set_position(v->status, BOTTOM_OFFSET, cols, lines - BOTTOM_OFFSET, 0);
+  if (v->cmdwin)
+    owl_window_set_position(v->cmdwin, BOTTOM_OFFSET, cols, lines - BOTTOM_OFFSET, 0);
 }
 
 /* regenerate text on the curses window. */
@@ -135,6 +139,63 @@ static void owl_viewwin_redraw_status(owl_window *w, WINDOW *curswin, void *user
     waddstr(curswin, "--End-- (Press 'q' to quit)");
   }
   wattroff(curswin, A_REVERSE);
+}
+
+char *owl_viewwin_start_command(owl_viewwin *v, int argc, const char *const *argv, const char *buff)
+{
+  owl_editwin *tw;
+  owl_context *ctx;
+
+  buff = skiptokens(buff, 1);
+
+  tw = owl_viewwin_set_typwin_active(v, owl_global_get_cmd_history(&g));
+  owl_editwin_set_locktext(tw, ":");
+
+  owl_editwin_insert_string(tw, buff);
+
+  ctx = owl_editcontext_new(OWL_CTX_EDITLINE, tw, "editline");
+  ctx->deactivate_cb = owl_viewwin_deactivate_editcontext;
+  ctx->cbdata = v;
+  owl_global_push_context_obj(&g, ctx);
+  owl_editwin_set_callback(tw, owl_callback_command);
+
+  return NULL;
+}
+
+void owl_viewwin_deactivate_editcontext(owl_context *ctx) {
+  owl_viewwin *v = ctx->cbdata;
+  owl_viewwin_set_typwin_inactive(v);
+}
+
+owl_editwin *owl_viewwin_set_typwin_active(owl_viewwin *v, owl_history *hist) {
+  int lines, cols;
+  if (v->cmdwin || v->cmdline)
+    return NULL;
+  /* Create the command line. */
+  v->cmdwin = owl_window_new(v->window);
+  owl_viewwin_layout(v);
+  owl_window_get_position(v->cmdwin, &lines, &cols, NULL, NULL);
+  v->cmdline = owl_editwin_new(v->cmdwin, lines, cols, OWL_EDITWIN_STYLE_ONELINE, hist);
+  /* Swap out the bottom window. */
+  owl_window_hide(v->status);
+  owl_window_show(v->cmdwin);
+  return v->cmdline;
+}
+
+void owl_viewwin_set_typwin_inactive(owl_viewwin *v) {
+  if (v->cmdwin) {
+    /* Swap out the bottom window. */
+    owl_window_hide(v->cmdwin);
+    owl_window_show(v->status);
+    /* Destroy the window itself. */
+    owl_window_unlink(v->cmdwin);
+    g_object_unref(v->cmdwin);
+    v->cmdwin = NULL;
+  }
+  if (v->cmdline) {
+    owl_editwin_unref(v->cmdline);
+    v->cmdline = NULL;
+  }
 }
 
 void owl_viewwin_append_text(owl_viewwin *v, const char *text) {
@@ -281,6 +342,7 @@ void owl_viewwin_delete(owl_viewwin *v)
     v->onclose_hook = NULL;
     v->onclose_hook_data = NULL;
   }
+  owl_viewwin_set_typwin_inactive(v);
   /* TODO: This is far too tedious. owl_viewwin should own v->window
    * and just unlink it in one go. Signals should also go away for
    * free. */

@@ -413,6 +413,8 @@ typedef struct _owl_viewwin {
   gulong sig_content_redraw_id;
   owl_window *status;
   gulong sig_status_redraw_id;
+  owl_window *cmdwin;
+  owl_editwin *cmdline;
 } owl_viewwin;
   
 typedef struct _owl_popwin {

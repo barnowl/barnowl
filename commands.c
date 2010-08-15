@@ -998,6 +998,12 @@ const owl_cmd commands_to_init[]
 		  "exits the popless window",
 		  "", ""),
 
+  OWLCMD_ARGS_CTX("popless:start-command", owl_viewwin_start_command,
+		  OWL_CTX_POPLESS,
+		  "starts a command line in the popless",
+		  "popless:start-command [initial-value]",
+		  "Initializes the command field to initial-value"),
+
   OWLCMD_ALIAS("webzephyr", "zwrite daemon.webzephyr -c webzephyr -i"),
 
   /* This line MUST be last! */
