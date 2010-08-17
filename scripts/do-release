@@ -78,6 +78,7 @@ CODIR=$(pwd)
 cd "$TMPDIR/$TGZ"
 [ "$git" ] && perl -i -pe 's{^(AC_INIT\(\[[^\]]+\],\s*)\[([^\]]+)\]}{${1}['$VERS']}' configure.ac
 autoreconf -fvi
+rm -r autom4te.cache/
 cd "$TMPDIR"
 tar czvf "$TGZ.tgz" "$TGZ"
 cd "$CODIR"
