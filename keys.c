@@ -211,8 +211,12 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("C-c",         "popless:quit", "");
   BIND_CMD("C-g",         "popless:quit", "");
 
+  /* Don't bind popless:start-command for now, as most commands make
+   * no sense. */
+#if 0
   BIND_CMD(":",           "popless:start-command",  "start a new command");
   BIND_CMD("M-x",         "popless:start-command",  "start a new command");
+#endif
 
   BIND_CMD("/",   "popless:start-search", "start a search command");
   BIND_CMD("?",   "popless:start-search -r", "start a reverse search command");
