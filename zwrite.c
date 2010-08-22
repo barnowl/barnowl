@@ -253,7 +253,7 @@ int owl_zwrite_is_message_set(const owl_zwrite *z)
 
 int owl_zwrite_send_message(const owl_zwrite *z)
 {
-  int i, j;
+  int i, j, ret = 0;
   char *to = NULL;
 
   if (z->message==NULL) return(-1);
@@ -266,16 +266,19 @@ int owl_zwrite_send_message(const owl_zwrite *z)
       } else {
         to = owl_strdup( owl_list_get_element(&(z->recips), i));
       }
-      send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
+      ret = send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
+      /* Abort on the first error, to match the zwrite binary. */
+      if (ret != 0)
+        break;
       owl_free(to);
       to = NULL;
     }
   } else {
     to = owl_sprintf( "@%s", z->realm);
-    send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
+    ret = send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
   }
   owl_free(to);
-  return(0);
+  return ret;
 }
 
 int owl_zwrite_create_and_send_from_line(const char *cmd, const char *msg)

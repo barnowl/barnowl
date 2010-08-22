@@ -344,6 +344,7 @@ void owl_callback_zwrite(owl_editwin *e) {
 void owl_function_zwrite(owl_zwrite *z, const char *msg)
 {
   owl_message *m;
+  int ret;
 
   if(strcmp(z->cmd, "zcrypt") == 0) {
     owl_function_zcrypt(z, msg);
@@ -355,7 +356,11 @@ void owl_function_zwrite(owl_zwrite *z, const char *msg)
   if (msg) {
     owl_zwrite_set_message(z, msg);
   }
-  owl_zwrite_send_message(z);
+  ret = owl_zwrite_send_message(z);
+  if (ret != 0) {
+    owl_function_makemsg("Error sending zephyr: %s", error_message(ret));
+    return;
+  }
   owl_function_makemsg("Waiting for ack...");
 
   /* If it's personal */
