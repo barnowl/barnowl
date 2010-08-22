@@ -165,6 +165,54 @@ char *owl_viewwin_command_search(owl_viewwin *v, int argc, const char *const *ar
   return NULL;
 }
 
+typedef struct _owl_viewwin_search_data { /*noproto*/
+  owl_viewwin *v;
+  int direction;
+} owl_viewwin_search_data;
+
+static void owl_viewwin_callback_search(owl_editwin *e)
+{
+  const char *line = owl_editwin_get_text(e);
+  owl_viewwin_search_data *data = owl_editwin_get_cbdata(e);
+  owl_function_set_search(line);
+  if (!owl_viewwin_search(data->v, owl_global_get_search_re(&g),
+			  OWL_SEARCH_MATCH_CURRENT, data->direction))
+    owl_function_error("No matches");
+}
+
+char *owl_viewwin_command_start_search(owl_viewwin *v, int argc, const char *const *argv, const char *buff)
+{
+  int direction;
+  const char *buffstart;
+  owl_editwin *tw;
+  owl_context *ctx;
+  owl_viewwin_search_data *data;
+
+  direction=OWL_DIRECTION_DOWNWARDS;
+  buffstart=skiptokens(buff, 1);
+  if (argc>1 && !strcmp(argv[1], "-r")) {
+    direction=OWL_DIRECTION_UPWARDS;
+    buffstart=skiptokens(buff, 2);
+  }
+
+  /* TODO: Add a search history? */
+  tw = owl_viewwin_set_typwin_active(v, NULL);
+  owl_editwin_set_locktext(tw, (direction == OWL_DIRECTION_DOWNWARDS) ? "/" : "?");
+  owl_editwin_insert_string(tw, buffstart);
+
+  data = owl_malloc(sizeof(owl_viewwin_search_data));
+  data->v = v;
+  data->direction = direction;
+
+  ctx = owl_editcontext_new(OWL_CTX_EDITLINE, tw, "editline");
+  ctx->deactivate_cb = owl_viewwin_deactivate_editcontext;
+  ctx->cbdata = v;
+  owl_global_push_context_obj(&g, ctx);
+  owl_editwin_set_callback(tw, owl_viewwin_callback_search);
+  owl_editwin_set_cbdata(tw, data, owl_free);
+  return NULL;
+}
+
 char *owl_viewwin_start_command(owl_viewwin *v, int argc, const char *const *argv, const char *buff)
 {
   owl_editwin *tw;

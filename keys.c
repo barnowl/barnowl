@@ -214,8 +214,8 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD(":",           "popless:start-command",  "start a new command");
   BIND_CMD("M-x",         "popless:start-command",  "start a new command");
 
-  BIND_CMD("/",   "popless:start-command popless:search ", "start a search command");
-  BIND_CMD("?",   "popless:start-command popless:search -r ", "start a reverse search command");
+  BIND_CMD("/",   "popless:start-search", "start a search command");
+  BIND_CMD("?",   "popless:start-search -r", "start a reverse search command");
   BIND_CMD("n",   "popless:search", "find next occurrence of search");
   BIND_CMD("N",   "popless:search -r", "find previous occurrence of search");
 
