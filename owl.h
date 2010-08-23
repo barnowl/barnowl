@@ -9,6 +9,8 @@
 #ifndef INC_BARNOWL_OWL_H
 #define INC_BARNOWL_OWL_H
 
+#include "config.h"
+
 #ifdef HAVE_STDBOOL_H
 #include <stdbool.h>
 #else
@@ -34,7 +36,6 @@
 #include <termios.h>
 #include "libfaim/aim.h"
 #include <wchar.h>
-#include "config.h"
 #include "glib.h"
 #ifdef HAVE_LIBZEPHYR
 #include <zephyr/zephyr.h>
