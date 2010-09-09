@@ -64,7 +64,9 @@ sub new {
         poll_for_dms     => 1,
         publish_tweets   => 0,
         show_mentions    => 1,
-        %$cfg
+        oauth_key        => BARNOWL_CONSUMER_KEY,
+        oauth_secret     => BARNOWL_CONSUMER_SECRET,
+        %$cfg,
        };
 
     my $self = {
@@ -86,8 +88,8 @@ sub new {
         $xauth = 1;
         $username = delete $twitter_args{username};
         $password = delete $twitter_args{password};
-        $twitter_args{consumer_key}    = BARNOWL_CONSUMER_KEY;
-        $twitter_args{consumer_secret} = BARNOWL_CONSUMER_SECRET;
+        $twitter_args{consumer_key}    = $cfg->{oauth_key};
+        $twitter_args{consumer_secret} = $cfg->{oauth_secret};
     } else {
         BarnOwl::error("Please upgrade your version of Net::Twitter::Lite to support xAuth.");
     }
