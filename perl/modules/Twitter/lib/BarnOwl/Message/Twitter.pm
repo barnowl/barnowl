@@ -33,15 +33,15 @@ sub replycmd {
     if($self->is_private) {
         return $self->replysendercmd;
     } elsif(exists($self->{status_id})) {
-        return 'twitter-atreply ' . $self->sender . " " . $self->{status_id} . " " . $self->account;
+        return BarnOwl::quote('twitter-atreply', $self->sender, $self->{status_id}, $self->account);
     } else {
-        return 'twitter-atreply ' . $self->sender . " " . $self->account;
+        return BarnOwl::quote('twitter-atreply', $self->sender, $self->account);
     }
 }
 
 sub replysendercmd {
     my $self = shift;
-    return 'twitter-direct ' . $self->sender . " " . $self->account;
+    return BarnOwl::quote('twitter-direct', $self->sender, $self->account);
 }
 
 sub smartfilter {
