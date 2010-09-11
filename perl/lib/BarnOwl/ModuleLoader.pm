@@ -3,9 +3,7 @@ use warnings;
 
 package BarnOwl::ModuleLoader;
 
-use lib (BarnOwl::get_data_dir() . "/modules/");
-use PAR (BarnOwl::get_data_dir() . "/modules/*.par");
-use PAR (BarnOwl::get_config_dir() . "/modules/*.par");
+use PAR;
 
 our %modules;
 
@@ -23,34 +21,70 @@ sub load_all {
     $BarnOwl::Hooks::startup->add(\&register_keybindings);
 }
 
+=h2 rescan_modules
+
+Re-compute the list of available modules, and add the necessary items to @INC
+and @PAR_INC.
+
+We load modules from two directories, the system module dir, and the user module
+directory. Modules can be in either of two forms: ${modname}.par, or else a
+${modname}/ directory containing lib/${modname}.
+
+We prefer to load modules from the user's directory, and if a module exists in
+both packed and unpacked form in the same directory, we prefer the unpacked
+module.
+
+We walk the module directories in order of ascending priority -- user directory,
+and then system directory.
+
+When we walk the directories, we first check all things that are not named
+Foo.par, add them to @INC, and add them to the module list. We then walk the
+.par files and add them to @PAR_INC and update the module list.
+
+It is important that we never add a module to @INC (or @PAR_INC) if we already
+have a source for it, in order to get priorities right. The reason is that @INC
+is processed before @PAR_INC, so if we had an unpacked system module and a
+packed local module, if we added both, the system module would take priority.
+
+=cut
+
 sub rescan_modules {
-    PAR->import(BarnOwl::get_data_dir() . "/modules/*.par");
-    PAR->import(BarnOwl::get_config_dir() . "/modules/*.par");
-    my @modules;
+    @PAR::PAR_INC = ();
 
     %modules = ();
 
     my @moddirs = ();
-    push @moddirs, BarnOwl::get_data_dir() . "/modules";
     push @moddirs, BarnOwl::get_config_dir() . "/modules";
-    
+    push @moddirs, BarnOwl::get_data_dir() . "/modules";
+
     for my $dir (@moddirs) {
+        # Strip defunct entries from @INC
+        @INC = grep {!/^\Q$dir/} @INC;
+
         opendir(my $dh, $dir) or next;
-        while(defined(my $f = readdir($dh))) {
-            next if $f =~ /^\./;
-            if(-f "$dir/$f" && $f =~ /^(.+)\.par$/) {
-                $modules{$1} = 1;
-            } elsif(-d "$dir/$f" && -d "$dir/$f/lib") {
+        my @ents = grep {!/^\./} readdir($dh);
+
+        # Walk unpacked modules
+        for my $f (grep {!/\.par$/} @ents) {
+            if(-d "$dir/$f" && -d "$dir/$f/lib") {
+                next if $modules{$f};
+
                 unshift @INC, "$dir/$f/lib" unless grep m{^$dir/$f/lib$}, @INC;
                 $modules{$f} = 1;
             }
         }
-        @modules = grep /\.par$/, readdir($dh);
-        closedir($dh);
-        for my $mod (@modules) {
-            my ($class) = ($mod =~ /^(.+)\.par$/);
-            $modules{$class} = 1;
+
+        # Walk parfiles
+        for my $f (grep /\.par$/, @ents) {
+            if(-f "$dir/$f" && $f =~ /^(.+)\.par$/) {
+                next if $modules{$1};
+
+                PAR->import("$dir/$f");
+                $modules{$1} = 1;
+            }
         }
+
+        closedir($dh);
     }
 }
 
