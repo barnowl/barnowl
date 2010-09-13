@@ -84,14 +84,17 @@ sub new {
 
     my ($username, $password, $xauth);
 
-    if (*Net::Twitter::Lite::xauth{CODE}) {
-        $xauth = 1;
-        $username = delete $twitter_args{username};
-        $password = delete $twitter_args{password};
-        $twitter_args{consumer_key}    = $cfg->{oauth_key};
-        $twitter_args{consumer_secret} = $cfg->{oauth_secret};
-    } else {
-        BarnOwl::error("Please upgrade your version of Net::Twitter::Lite to support xAuth.");
+    if ($cfg->{service} eq 'http://twitter.com') {
+        BarnOwl::debug('Checking for xAuth support in Net::Twitter');
+        if (*Net::Twitter::Lite::xauth{CODE}) {
+            $xauth = 1;
+            $username = delete $twitter_args{username};
+            $password = delete $twitter_args{password};
+            $twitter_args{consumer_key}    = $cfg->{oauth_key};
+            $twitter_args{consumer_secret} = $cfg->{oauth_secret};
+        } else {
+            BarnOwl::error("Please upgrade your version of Net::Twitter::Lite to support xAuth.");
+        }
     }
 
     $self->{twitter}  = Net::Twitter::Lite->new(%twitter_args,);
