@@ -128,7 +128,7 @@ fi
 dnl Checks for typedefs, structures, and compiler characteristics.
 
 AX_CFLAGS_WARN_ALL([AM_CFLAGS])
-AX_CFLAGS_STRICT_PROTOTYPES([AM_CFLAGS])
+AX_C_CHECK_FLAG([-Wstrict-prototypes],[],[],[AM_CFLAGS="$AM_CFLAGS -Wstrict-prototypes"])
 
 m4_foreach([myflag],
   [[-Wno-pointer-sign],[-Wno-empty-body],[-Wno-unused-value]],
