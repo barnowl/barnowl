@@ -583,9 +583,6 @@ int main(int argc, char **argv, char **env)
   owl_select_add_pre_select_action(owl_errsignal_pre_select_action, NULL, NULL);
 
   owl_function_debugmsg("startup: entering main loop");
-  /* main loop */
-  while (1) {
-    /* select on FDs we know about. */
-    owl_select();
-  }
+  owl_select_run_loop();
+  return 0;
 }

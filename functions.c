@@ -975,7 +975,7 @@ void owl_function_quit(void)
   tcsetattr(0, TCSAFLUSH, owl_global_get_startup_tio(&g));
 
   owl_function_debugmsg("Quitting Owl");
-  exit(0);
+  owl_select_quit_loop();
 }
 
 void owl_function_calculate_topmsg(int direction)

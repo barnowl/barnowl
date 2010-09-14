@@ -2,6 +2,7 @@
 
 static int dispatch_active = 0;
 static int psa_active = 0;
+static int loop_active = 0;
 
 int _owl_select_timer_cmp(const owl_timer *t1, const owl_timer *t2) {
   return t1->time - t2->time;
@@ -434,4 +435,17 @@ void owl_select(void)
     }
     owl_select_io_dispatch(&r, &w, &e, max_fd);
   }
+}
+
+void owl_select_run_loop(void)
+{
+  loop_active = 1;
+  while (loop_active) {
+    owl_select();
+  }
+}
+
+void owl_select_quit_loop(void)
+{
+  loop_active = 0;
 }
