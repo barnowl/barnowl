@@ -148,6 +148,11 @@ void owl_start_curses(void) {
   owl_start_color();
 }
 
+void owl_shutdown_curses(void) {
+  endwin();
+  /* restore terminal settings */
+  tcsetattr(0, TCSAFLUSH, owl_global_get_startup_tio(&g));
+}
 
 /*
  * Process a new message passed to us on the message queue from some
@@ -584,5 +589,9 @@ int main(int argc, char **argv, char **env)
 
   owl_function_debugmsg("startup: entering main loop");
   owl_select_run_loop();
+
+  /* Shut down everything. */
+  owl_zephyr_shutdown();
+  owl_shutdown_curses();
   return 0;
 }

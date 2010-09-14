@@ -959,20 +959,11 @@ void owl_function_quit(void)
   if (owl_global_get_newmsgproc_pid(&g)) {
     kill(owl_global_get_newmsgproc_pid(&g), SIGHUP);
   }
-
-  /* Quit zephyr */
-  owl_zephyr_shutdown();
   
   /* Quit AIM */
   if (owl_global_is_aimloggedin(&g)) {
     owl_aim_logout();
   }
-
-  /* done with curses */
-  endwin();
-
-  /* restore terminal settings */
-  tcsetattr(0, TCSAFLUSH, owl_global_get_startup_tio(&g));
 
   owl_function_debugmsg("Quitting Owl");
   owl_select_quit_loop();
