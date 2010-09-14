@@ -355,6 +355,18 @@ void sigint_handler(int sig, siginfo_t *si, void *data)
   owl_global_set_interrupted(&g);
 }
 
+static int owl_errsignal_pre_select_action(owl_ps_action *a, void *data)
+{
+  siginfo_t si;
+  int signum;
+  if ((signum = owl_global_get_errsignal_and_clear(&g, &si)) > 0) {
+    owl_function_error("Got unexpected signal: %d %s  (code: %d band: %ld  errno: %d)",
+        signum, signum==SIGPIPE?"SIGPIPE":"SIG????",
+        si.si_code, si.si_band, si.si_errno);
+  }
+  return 0;
+}
+
 void owl_register_signal_handlers(void) {
   struct sigaction sigact;
 
@@ -568,23 +580,12 @@ int main(int argc, char **argv, char **env)
 
   owl_select_add_pre_select_action(owl_refresh_pre_select_action, NULL, NULL);
   owl_select_add_pre_select_action(owl_process_messages, NULL, NULL);
+  owl_select_add_pre_select_action(owl_errsignal_pre_select_action, NULL, NULL);
 
   owl_function_debugmsg("startup: entering main loop");
   /* main loop */
   while (1) {
     /* select on FDs we know about. */
     owl_select();
-
-    /* Log any error signals */
-    {
-      siginfo_t si;
-      int signum;
-      if ((signum = owl_global_get_errsignal_and_clear(&g, &si)) > 0) {
-	owl_function_error("Got unexpected signal: %d %s  (code: %d band: %ld  errno: %d)",
-			   signum, signum==SIGPIPE?"SIGPIPE":"SIG????",
-			   si.si_code, si.si_band, si.si_errno);
-      }
-    }
-
   }
 }
