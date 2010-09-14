@@ -149,30 +149,6 @@ void owl_global_complete_setup(owl_global *g)
   owl_cmddict_setup(&(g->cmds));
 }
 
-/* If *pan does not exist, we create a new panel, otherwise we replace the
-   window in *pan with win.
-
-   libpanel PANEL objects cannot exist without owner a valid window. This
-   maintains the invariant for _owl_global_setup_windows. */
-void _owl_panel_set_window(PANEL **pan, WINDOW *win)
-{
-  WINDOW *oldwin;
-
-  if (win == NULL) {
-    owl_function_debugmsg("_owl_panel_set_window: passed NULL win (failed to allocate?)");
-    endwin();
-    exit(50);
-  }
-
-  if (*pan) {
-    oldwin = panel_window(*pan);
-    replace_panel(*pan, win);
-    delwin(oldwin);
-  } else {
-    *pan = new_panel(win);
-  }
-}
-
 owl_context *owl_global_get_context(owl_global *g) {
   if (!g->context_stack)
     return NULL;
