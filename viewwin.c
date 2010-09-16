@@ -241,17 +241,18 @@ void owl_viewwin_deactivate_editcontext(owl_context *ctx) {
 
 owl_editwin *owl_viewwin_set_typwin_active(owl_viewwin *v, owl_history *hist) {
   int lines, cols;
-  if (v->cmdwin || v->cmdline)
+  owl_editwin *cmdline;
+  if (v->cmdwin)
     return NULL;
   /* Create the command line. */
   v->cmdwin = owl_window_new(v->window);
   owl_viewwin_layout(v);
   owl_window_get_position(v->cmdwin, &lines, &cols, NULL, NULL);
-  v->cmdline = owl_editwin_new(v->cmdwin, lines, cols, OWL_EDITWIN_STYLE_ONELINE, hist);
+  cmdline = owl_editwin_new(v->cmdwin, lines, cols, OWL_EDITWIN_STYLE_ONELINE, hist);
   /* Swap out the bottom window. */
   owl_window_hide(v->status);
   owl_window_show(v->cmdwin);
-  return v->cmdline;
+  return cmdline;
 }
 
 void owl_viewwin_set_typwin_inactive(owl_viewwin *v) {
@@ -263,10 +264,6 @@ void owl_viewwin_set_typwin_inactive(owl_viewwin *v) {
     owl_window_unlink(v->cmdwin);
     g_object_unref(v->cmdwin);
     v->cmdwin = NULL;
-  }
-  if (v->cmdline) {
-    owl_editwin_unref(v->cmdline);
-    v->cmdline = NULL;
   }
 }
 
