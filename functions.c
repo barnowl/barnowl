@@ -2893,13 +2893,13 @@ void owl_function_set_search(const char *string)
   }
 }
 
-void owl_function_search_helper(int mode, int direction)
+void owl_function_search_helper(int consider_current, int direction)
 {
   /* move to a message that contains the string.  If direction is
    * OWL_DIRECTION_DOWNWARDS then search fowards, if direction is
    * OWL_DIRECTION_UPWARDS then search backwards.
    *
-   * If mode is OWL_SEARCH_MATCH_CURRENT then it will stay on the
+   * If consider_current is true then it will stay on the
    * current message if it contains the string.
    */
 
@@ -2916,7 +2916,7 @@ void owl_function_search_helper(int mode, int direction)
     return;
   }
 
-  if (mode == OWL_SEARCH_MATCH_CURRENT) {
+  if (consider_current) {
     start=curmsg;
   } else if (direction==OWL_DIRECTION_DOWNWARDS) {
     start=curmsg+1;

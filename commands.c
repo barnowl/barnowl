@@ -2552,10 +2552,11 @@ char *owl_command_search(int argc, const char *const *argv, const char *buff)
   }
     
   if (argc==1 || (argc==2 && !strcmp(argv[1], "-r"))) {
-    owl_function_search_helper(OWL_SEARCH_CONTINUE, direction);
+    /* When continuing a search, don't consider the current message. */
+    owl_function_search_helper(false, direction);
   } else {
     owl_function_set_search(buffstart);
-    owl_function_search_helper(OWL_SEARCH_MATCH_CURRENT, direction);
+    owl_function_search_helper(true, direction);
   }
   
   return(NULL);

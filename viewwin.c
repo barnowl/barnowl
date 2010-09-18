@@ -143,7 +143,7 @@ static void owl_viewwin_redraw_status(owl_window *w, WINDOW *curswin, void *user
 
 char *owl_viewwin_command_search(owl_viewwin *v, int argc, const char *const *argv, const char *buff)
 {
-  int direction, mode;
+  int direction, consider_current;
   const char *buffstart;
 
   direction=OWL_DIRECTION_DOWNWARDS;
@@ -154,13 +154,13 @@ char *owl_viewwin_command_search(owl_viewwin *v, int argc, const char *const *ar
   }
 
   if (argc==1 || (argc==2 && !strcmp(argv[1], "-r"))) {
-    mode = OWL_SEARCH_CONTINUE;
+    consider_current = false;
   } else {
     owl_function_set_search(buffstart);
-    mode = OWL_SEARCH_MATCH_CURRENT;
+    consider_current = true;
   }
 
-  if (!owl_viewwin_search(v, owl_global_get_search_re(&g), mode, direction))
+  if (!owl_viewwin_search(v, owl_global_get_search_re(&g), consider_current, direction))
     owl_function_error("No more matches");
   return NULL;
 }
@@ -176,7 +176,7 @@ static void owl_viewwin_callback_search(owl_editwin *e)
   owl_viewwin_search_data *data = owl_editwin_get_cbdata(e);
   owl_function_set_search(line);
   if (!owl_viewwin_search(data->v, owl_global_get_search_re(&g),
-			  OWL_SEARCH_MATCH_CURRENT, data->direction))
+			  true, data->direction))
     owl_function_error("No matches");
 }
 
@@ -367,10 +367,10 @@ static int _re_memcompare(const owl_regex *re, const char *string, int start, in
  * starting from the current line. Returns 0 if no occurrence is
  * found.
  *
- * If mode is OWL_SEARCH_MATCH_CURRENT then stay on the current line
+ * If consider_current is true then stay on the current line
  * if it matches.
  */
-int owl_viewwin_search(owl_viewwin *v, const owl_regex *re, int mode, int direction)
+int owl_viewwin_search(owl_viewwin *v, const owl_regex *re, int consider_current, int direction)
 {
   int start, end, offset;
   int lineend, linestart;
@@ -378,7 +378,7 @@ int owl_viewwin_search(owl_viewwin *v, const owl_regex *re, int mode, int direct
   owl_fmtext_line_extents(&v->fmtext, v->topline, &start, &end);
   if (direction == OWL_DIRECTION_DOWNWARDS) {
     offset = owl_fmtext_search(&v->fmtext, re,
-			       (mode == OWL_SEARCH_CONTINUE) ? end : start);
+			       consider_current ? start : end);
     if (offset < 0)
       return 0;
     v->topline = owl_fmtext_line_number(&v->fmtext, offset);
@@ -390,7 +390,7 @@ int owl_viewwin_search(owl_viewwin *v, const owl_regex *re, int mode, int direct
      * lines. Also, it cannot handle multi-line regex, if we ever care about
      * them. */
     buf = owl_fmtext_get_text(&v->fmtext);
-    lineend = (mode == OWL_SEARCH_CONTINUE) ? start : end;
+    lineend = consider_current ? end : start;
     while (lineend > 0) {
       linestartp = memrchr(buf, '\n', lineend - 1);
       linestart = linestartp ? linestartp - buf + 1 : 0;
