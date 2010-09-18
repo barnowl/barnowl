@@ -286,9 +286,8 @@ void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin 
 
   owl_editwin_set_cbdata(e, data, cleanup);
   owl_editwin_set_callback(e, callback);
-  ctx = owl_editcontext_new(OWL_CTX_EDITMULTI, e, "editmulti");
-  ctx->deactivate_cb = owl_global_deactivate_editcontext;
-  ctx->cbdata = &g;
+  ctx = owl_editcontext_new(OWL_CTX_EDITMULTI, e, "editmulti",
+                            owl_global_deactivate_editcontext, &g);
   owl_global_push_context_obj(&g, ctx);
 
 }
@@ -1893,9 +1892,8 @@ void owl_function_start_command(const char *line)
 
   owl_editwin_insert_string(tw, line);
 
-  ctx = owl_editcontext_new(OWL_CTX_EDITLINE, tw, "editline");
-  ctx->deactivate_cb = owl_global_deactivate_editcontext;
-  ctx->cbdata = &g;
+  ctx = owl_editcontext_new(OWL_CTX_EDITLINE, tw, "editline",
+                            owl_global_deactivate_editcontext, &g);
   owl_global_push_context_obj(&g, ctx);
   owl_editwin_set_callback(tw, owl_callback_command);
 }
@@ -1909,9 +1907,8 @@ owl_editwin *owl_function_start_question(const char *line)
 
   owl_editwin_set_locktext(tw, line);
 
-  ctx = owl_editcontext_new(OWL_CTX_EDITRESPONSE, tw, "editresponse");
-  ctx->deactivate_cb = owl_global_deactivate_editcontext;
-  ctx->cbdata = &g;
+  ctx = owl_editcontext_new(OWL_CTX_EDITRESPONSE, tw, "editresponse",
+                            owl_global_deactivate_editcontext, &g);
   owl_global_push_context_obj(&g, ctx);
   return tw;
 }
@@ -1927,9 +1924,8 @@ owl_editwin *owl_function_start_password(const char *line)
 
   owl_editwin_set_locktext(tw, line);
 
-  ctx = owl_editcontext_new(OWL_CTX_EDITRESPONSE, tw, "editresponse");
-  ctx->deactivate_cb = owl_global_deactivate_editcontext;
-  ctx->cbdata = &g;
+  ctx = owl_editcontext_new(OWL_CTX_EDITRESPONSE, tw, "editresponse",
+                            owl_global_deactivate_editcontext, &g);
   owl_global_push_context_obj(&g, ctx);
   return tw;
 }

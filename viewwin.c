@@ -204,8 +204,8 @@ char *owl_viewwin_command_start_search(owl_viewwin *v, int argc, const char *con
   data->v = v;
   data->direction = direction;
 
-  ctx = owl_editcontext_new(OWL_CTX_EDITLINE, tw, "editline");
-  ctx->deactivate_cb = owl_viewwin_deactivate_editcontext;
+  ctx = owl_editcontext_new(OWL_CTX_EDITLINE, tw, "editline",
+                            owl_viewwin_deactivate_editcontext, v);
   ctx->cbdata = v;
   owl_global_push_context_obj(&g, ctx);
   owl_editwin_set_callback(tw, owl_viewwin_callback_search);
@@ -225,9 +225,8 @@ char *owl_viewwin_start_command(owl_viewwin *v, int argc, const char *const *arg
 
   owl_editwin_insert_string(tw, buff);
 
-  ctx = owl_editcontext_new(OWL_CTX_EDITLINE, tw, "editline");
-  ctx->deactivate_cb = owl_viewwin_deactivate_editcontext;
-  ctx->cbdata = v;
+  ctx = owl_editcontext_new(OWL_CTX_EDITLINE, tw, "editline",
+                            owl_viewwin_deactivate_editcontext, v);
   owl_global_push_context_obj(&g, ctx);
   owl_editwin_set_callback(tw, owl_callback_command);
 
