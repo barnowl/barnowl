@@ -560,6 +560,25 @@ sub default_zephyr_signature
   return $zsig;
 }
 
+=head3 random_zephyr_signature
+
+Retrieve a random line from ~/.zsigs (except those beginning with '#') 
+and use it as the zephyr signature.
+
+=cut
+
+sub random_zephyr_signature
+{
+    my $zsigfile = "$ENV{'HOME'}/.zsigs";
+    open my $file, '<', $zsigfile or die "Error opening file $zsigfile: $!";
+    my @lines = grep !(/^#/ || /^\s*$/), <$file>;
+    close $file;
+    return '' if !@lines;
+    my $zsig = "$lines[int(rand(scalar @lines))]";
+    chomp $zsig;
+    return $zsig;
+}
+
 # Stub for owl::startup / BarnOwl::startup, so it isn't bound to the
 # startup command. This may be redefined in a user's configfile.
 sub startup

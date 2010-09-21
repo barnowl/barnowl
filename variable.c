@@ -213,7 +213,8 @@ static owl_variable variables_to_init[] = {
 		 "zsig perl function",
 		 "Called every time you start a zephyrgram without an\n"
 		 "explicit zsig.  The default setting implements the policy\n"
-		 "described in the documentation for the 'zsig' variable.\n"),
+		 "described in the documentation for the 'zsig' variable.\n"
+		 "See also BarnOwl::random_zephyr_signature().\n"),
 
   OWLVAR_STRING( "zsig" /* %OwlVarStub */, "",
 	         "zephyr signature",
