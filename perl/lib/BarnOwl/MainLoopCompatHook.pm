@@ -36,6 +36,11 @@ sub clear {
     $self->{hook}->clear();
 }
 
+sub DESTROY {
+    my $self = shift;
+    $self->clear();
+}
+
 sub _ensure_timer {
   my $self = shift;
   BarnOwl::debug("Enabling backwards-compatibility \"main loop\" hook");

@@ -111,6 +111,9 @@ $BarnOwl::Hooks::startup->add("BarnOwl::Module::Jabber::onStart");
 sub do_keep_alive_and_auto_away {
     if ( !$conn->connected() ) {
         # We don't need this timer any more.
+        if (defined $vars{keepAliveTimer}) {
+            $vars{keepAliveTimer}->stop;
+        }
         delete $vars{keepAliveTimer};
         return;
     }

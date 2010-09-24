@@ -149,6 +149,16 @@ sub sleep {
     my $weak = $self;
     weaken($weak);
 
+    # Stop any existing timers.
+    if (defined $self->{timer}) {
+        $self->{timer}->stop;
+        $self->{timer} = undef;
+    }
+    if (defined $self->{direct_timer}) {
+        $self->{direct_timer}->stop;
+        $self->{direct_timer} = undef;
+    }
+
     if($self->{cfg}->{poll_for_tweets}) {
         $self->{timer} = BarnOwl::Timer->new({
             after    => $delay,
