@@ -12,7 +12,7 @@ int _owl_select_timer_eq(const owl_timer *t1, const owl_timer *t2) {
   return t1 == t2;
 }
 
-owl_timer *owl_select_add_timer(int after, int interval, void (*cb)(owl_timer *, void *), void (*destroy)(owl_timer*), void *data)
+owl_timer *owl_select_add_timer(const char* name, int after, int interval, void (*cb)(owl_timer *, void *), void (*destroy)(owl_timer*), void *data)
 {
   owl_timer *t = owl_malloc(sizeof(owl_timer));
   GList **timers = owl_global_get_timerlist(&g);
@@ -22,6 +22,7 @@ owl_timer *owl_select_add_timer(int after, int interval, void (*cb)(owl_timer *,
   t->callback = cb;
   t->destroy = destroy;
   t->data = data;
+  t->name = name ? owl_strdup(name) : NULL;
 
   *timers = g_list_insert_sorted(*timers, t,
                                  (GCompareFunc)_owl_select_timer_cmp);
@@ -36,6 +37,7 @@ void owl_select_remove_timer(owl_timer *t)
     if(t->destroy) {
       t->destroy(t);
     }
+    owl_free(t->name);
     owl_free(t);
   }
 }

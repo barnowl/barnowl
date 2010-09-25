@@ -43,6 +43,7 @@ sub _ensure_timer {
   weaken($weak);
   unless ($self->{timer}) {
     $self->{timer} = BarnOwl::Timer->new( {
+        name => "BarnOwl::MainLoopCompatHook",
         after => 0,
         interval => 1,
         cb => sub {

@@ -12,11 +12,15 @@ sub new {
 
     my $self = {cb => $cb};
 
+    my $name = $args->{name};
+    $name = "(unnamed)" unless defined $name;
+
     bless($self, $class);
 
     $self->{timer} = BarnOwl::Internal::add_timer($args->{after} || 0,
                                                   $args->{interval} || 0,
-                                                  $self);
+                                                  $self,
+                                                  $name);
     return $self;
 }
 

@@ -434,7 +434,8 @@ int owl_variable_pseudologins_set(owl_variable *v, const void *newval)
     if (*(const int*)newval == 1) {
       owl_function_zephyr_buddy_check(0);
       if (timer == NULL) {
-        timer = owl_select_add_timer(180, 180, owl_zephyr_buddycheck_timer, NULL, NULL);
+        timer = owl_select_add_timer("owl_zephyr_buddycheck_timer",
+                                     180, 180, owl_zephyr_buddycheck_timer, NULL, NULL);
       }
     } else {
       if (timer != NULL) {

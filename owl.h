@@ -531,6 +531,7 @@ typedef struct _owl_timer {
   void (*callback)(struct _owl_timer *, void *);
   void (*destroy)(struct _owl_timer *);
   void *data;
+  char *name;
 } owl_timer;
 
 typedef struct _owl_errqueue {

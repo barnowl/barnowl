@@ -159,8 +159,10 @@ sub sleep {
         $self->{direct_timer} = undef;
     }
 
+    my $nickname = $self->{cfg}->{account_nickname};
     if($self->{cfg}->{poll_for_tweets}) {
         $self->{timer} = BarnOwl::Timer->new({
+            name     => "Twitter ($nickname) poll_for_tweets",
             after    => $delay,
             interval => 90,
             cb       => sub { $weak->poll_twitter if $weak }
@@ -169,6 +171,7 @@ sub sleep {
 
     if($self->{cfg}->{poll_for_dms}) {
         $self->{direct_timer} = BarnOwl::Timer->new({
+            name     => "Twitter ($nickname) poll_for_dms",
             after    => $delay,
             interval => 180,
             cb       => sub { $weak->poll_direct if $weak }

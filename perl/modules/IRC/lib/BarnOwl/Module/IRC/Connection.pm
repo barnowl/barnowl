@@ -323,6 +323,7 @@ sub schedule_reconnect {
     }
     $self->{reconnect_timer} = 
         BarnOwl::Timer->new( {
+            name  => 'IRC (' . $self->alias . ') reconnect_timer',
             after => $interval,
             cb    => sub {
                 $weak->reconnect( $interval ) if $weak;

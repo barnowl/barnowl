@@ -197,6 +197,7 @@ sub onConnect {
     unless (exists $BarnOwl::Module::Jabber::vars{keepAliveTimer}) {
         $BarnOwl::Module::Jabber::vars{keepAliveTimer} =
             BarnOwl::Timer->new({
+                'name' => "Jabber ($fullJid) keepAliveTimer",
                 'after' => 5,
                 'interval' => 5,
                 'cb' => sub { BarnOwl::Module::Jabber::do_keep_alive_and_auto_away(@_) }
