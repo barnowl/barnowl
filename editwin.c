@@ -26,6 +26,7 @@ struct _owl_editwin { /*noproto*/
   char *killbuf;
   int goal_column;
   int topindex;
+  int column;
   int winlines, wincols, fillcol, wrapcol;
   owl_window *win;
   gulong repaint_id;
@@ -49,7 +50,8 @@ static void oe_release_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_restore_excursion(owl_editwin *e, oe_excursion *x);
 static void oe_restore_mark_only(owl_editwin *e, oe_excursion *x);
 static int oe_char_width(gunichar c, int column);
-static int oe_region_width(owl_editwin *e, int start, int end, int width);
+static int oe_region_column(owl_editwin *e, int start, int end, int offset);
+static int oe_region_width(owl_editwin *e, int start, int end, int offset);
 static int oe_find_display_line(owl_editwin *e, int *x, int index, int *hard);
 static void oe_insert_char(owl_editwin *e, gunichar c);
 static int owl_editwin_limit_maxcols(int width, int cols);
@@ -99,6 +101,7 @@ static inline void oe_set_index(owl_editwin *e, int index)
 {
   if (index != e->index) {
     e->goal_column = -1;
+    e->column = -1;
   }
   e->index = index;
   oe_dirty(e);
@@ -132,6 +135,7 @@ static void _owl_editwin_init(owl_editwin *e,
     owl_free(e->killbuf);
   e->killbuf = NULL;
   e->goal_column = -1;
+  e->column = -1;
   e->topindex = 0;
   e->excursions = NULL;
   e->style=style;
@@ -645,7 +649,7 @@ int owl_editwin_replace(owl_editwin *e, int replace, const char *s)
 
 static int owl_editwin_replace_internal(owl_editwin *e, int replace, const char *s)
 {
-  int start, end, free, need, size, change;
+  int start, end, free, need, size, change, oldindex;
   oe_excursion *x;
 
   start = e->index;
@@ -664,7 +668,10 @@ static int owl_editwin_replace_internal(owl_editwin *e, int replace, const char 
   memcpy(e->buff + start, s, strlen(s));
   change = start - end + strlen(s);
   e->bufflen += change;
+  oldindex = e->index;
   e->index += strlen(s);
+  if (e->column != -1)
+    e->column = oe_region_column(e, oldindex, e->index, e->column);
 
   /* fix up the mark */
   oe_fixup(&e->mark, start, end, change);
@@ -1145,14 +1152,17 @@ void owl_editwin_forward_paragraph(owl_editwin *e)
 
 int owl_editwin_current_column(owl_editwin *e)
 {
-  oe_excursion x;
-  int lineindex;
+  if (e->column == -1) {
+    oe_excursion x;
+    int lineindex;
 
-  oe_save_excursion(e, &x);
-  owl_editwin_move_to_beginning_of_line(e);
-  lineindex = e->index;
-  oe_restore_excursion(e, &x);
-  return oe_region_width(e, lineindex, e->index, 0);
+    oe_save_excursion(e, &x);
+    owl_editwin_move_to_beginning_of_line(e);
+    lineindex = e->index;
+    oe_restore_excursion(e, &x);
+    e->column = oe_region_width(e, lineindex, e->index, 0);
+  }
+  return e->column;
 }
 
 void owl_editwin_fill_paragraph(owl_editwin *e)
@@ -1271,6 +1281,23 @@ void owl_editwin_post_process_char(owl_editwin *e, owl_input j)
     owl_command_edit_done(e);
     return;
   }
+}
+
+static int oe_region_column(owl_editwin *e, int start, int end, int offset)
+{
+  const char *p;
+  int column = offset;
+
+  for(p = e->buff + start;
+      p < e->buff + end;
+      p = g_utf8_find_next_char(p, NULL)) {
+    gunichar c = g_utf8_get_char(p);
+    if (c == '\n')
+      column = 0;
+    else
+      column += oe_char_width(c, column);
+  }
+  return column;
 }
 
 static int oe_region_width(owl_editwin *e, int start, int end, int offset)

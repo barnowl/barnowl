@@ -449,6 +449,19 @@ int owl_editwin_regtest(void) {
   owl_editwin_unref(oe); oe = NULL;
   owl_global_set_edit_maxwrapcols(&g, 70);
 
+  /* Test owl_editwin_current_column. */
+  oe = owl_editwin_new(NULL, 80, 80, OWL_EDITWIN_STYLE_MULTILINE, NULL);
+  FAIL_UNLESS("initial column zero", owl_editwin_current_column(oe) == 0);
+  owl_editwin_insert_string(oe, "abcdef");
+  FAIL_UNLESS("simple insert", owl_editwin_current_column(oe) == 6);
+  owl_editwin_insert_string(oe, "\t");
+  FAIL_UNLESS("insert tabs", owl_editwin_current_column(oe) == 8);
+  owl_editwin_insert_string(oe, "123\n12\t3");
+  FAIL_UNLESS("newline with junk", owl_editwin_current_column(oe) == 9);
+  owl_editwin_move_to_beginning_of_line(oe);
+  FAIL_UNLESS("beginning of line", owl_editwin_current_column(oe) == 0);
+  owl_editwin_unref(oe); oe = NULL;
+
   printf("# END testing owl_editwin (%d failures)\n", numfailed);
 
   return numfailed;
