@@ -26,7 +26,6 @@ struct _owl_editwin { /*noproto*/
   char *killbuf;
   int goal_column;
   int topindex;
-  int cursorx;
   int winlines, wincols, fillcol, wrapcol;
   owl_window *win;
   gulong repaint_id;
@@ -100,7 +99,6 @@ static inline void oe_set_index(owl_editwin *e, int index)
 {
   if (index != e->index) {
     e->goal_column = -1;
-    e->cursorx = -1;
   }
   e->index = index;
   oe_dirty(e);
@@ -134,7 +132,6 @@ static void _owl_editwin_init(owl_editwin *e,
     owl_free(e->killbuf);
   e->killbuf = NULL;
   e->goal_column = -1;
-  e->cursorx = -1;
   e->topindex = 0;
   e->excursions = NULL;
   e->style=style;
@@ -590,7 +587,6 @@ static void oe_redraw(owl_window *win, WINDOW *curswin, void *user_data)
   } while(x == -1 && times < 3);
 
   wmove(curswin, y, x);
-  e->cursorx = x;
 }
 
 static inline void oe_fixup(int *target, int start, int end, int change) {
@@ -1295,6 +1291,7 @@ static void oe_insert_char(owl_editwin *e, gunichar c)
   oe_excursion x;
   char tmp[7];
   int replaced = -1;
+  int column;
 
   if (c == '\r') /* translate CRs to NLs */
     c = '\n';
@@ -1304,11 +1301,10 @@ static void oe_insert_char(owl_editwin *e, gunichar c)
       return;
     }
 
-    if (e->wrapcol > 0 && e->cursorx != -1 &&
-        e->cursorx + oe_char_width(c, e->cursorx) > e->wrapcol) {
+    column = owl_editwin_current_column(e);
+    if (e->wrapcol > 0 && column != -1 &&
+        column + oe_char_width(c, column) > e->wrapcol) {
       /* XXX this is actually wrong:
-       * + If the line has been been wrapped, we can be past the wrap column but
-       *   e->cursorx be much smaller.
        * + If the user went back and inserted a bunch of stuff in the middle of
        *   the line, there may be more than one word past the wrap column.
        */
