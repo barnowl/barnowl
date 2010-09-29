@@ -372,6 +372,8 @@ int owl_editwin_regtest(void) {
   int numfailed = 0;
   const char *p;
   owl_editwin *oe;
+  const char *autowrap_string = "we feel our owls should live "
+                                "closer to our ponies.";
 
   printf("# BEGIN testing owl_editwin\n");
 
@@ -425,6 +427,27 @@ int owl_editwin_regtest(void) {
   FAIL_UNLESS("find beginning of line after empty middle line",
 	      owl_editwin_move_to_beginning_of_line(oe) == -2);
   owl_editwin_unref(oe); oe = NULL;
+
+  /* Test automatic line-wrapping. */
+  owl_global_set_edit_maxwrapcols(&g, 10);
+  oe = owl_editwin_new(NULL, 80, 80, OWL_EDITWIN_STYLE_MULTILINE, NULL);
+  for (p = autowrap_string; *p; p++) {
+    owl_input j;
+    j.ch = *p;
+    j.uch = *p; /* Assuming ASCII. */
+    owl_editwin_process_char(oe, j);
+  }
+  p = owl_editwin_get_text(oe);
+  FAIL_UNLESS("text was automatically wrapped",
+	      p && !strcmp(p, "we feel\n"
+			   "our owls\n"
+			   "should\n"
+			   "live\n"
+			   "closer to\n"
+			   "our\n"
+			   "ponies."));
+  owl_editwin_unref(oe); oe = NULL;
+  owl_global_set_edit_maxwrapcols(&g, 70);
 
   printf("# END testing owl_editwin (%d failures)\n", numfailed);
 
