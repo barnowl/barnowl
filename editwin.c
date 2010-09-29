@@ -425,6 +425,14 @@ static int oe_char_width(gunichar c, int column)
   return cw;
 }
 
+/* Finds the display line of 'e' starting at the character
+ * 'index'. The index just after the line is returned. Whether the
+ * line ends at a hard break (newline) or soft break (wrapping) is
+ * returned in 'hard'.
+ *
+ * If the point (e->index) is contained in the line, its position is
+ * returned in 'x'.
+ */
 static int oe_find_display_line(owl_editwin *e, int *x, int index, int *hard)
 {
   int width = 0, cw;
