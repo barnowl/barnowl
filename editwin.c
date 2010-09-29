@@ -169,22 +169,33 @@ void owl_editwin_unref(owl_editwin *e)
     _owl_editwin_delete(e);
 }
 
-static void oe_window_resized(owl_window *w, owl_editwin *e)
+/* TODO: collapse this window into oe_window_resized. Need to stop
+ * passing winlines and wincols to oe_set_window and get them out of
+ * the owl_window. The tester code will first need to pass in an
+ * owl_window headless or so. */
+static void oe_set_window_size(owl_editwin *e, int winlines, int wincols)
 {
-  /* update the sizes */
-  owl_window_get_position(w, &e->winlines, &e->wincols, NULL, NULL);
-}
-
-static void oe_set_window(owl_editwin *e, owl_window *w, int winlines, int wincols)
-{
-  e->win=w;
   e->winlines=winlines;
   e->wincols=wincols;
+  /* fillcol and wrapcol may have changed. */
   e->fillcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxfillcols(&g));
   if (e->style == OWL_EDITWIN_STYLE_MULTILINE)
     e->wrapcol=owl_editwin_limit_maxcols(wincols-7, owl_global_get_edit_maxwrapcols(&g));
   else
     e->wrapcol = 0;
+}
+
+static void oe_window_resized(owl_window *w, owl_editwin *e)
+{
+  int winlines, wincols;
+  owl_window_get_position(w, &winlines, &wincols, NULL, NULL);
+  oe_set_window_size(e, winlines, wincols);
+}
+
+static void oe_set_window(owl_editwin *e, owl_window *w, int winlines, int wincols)
+{
+  e->win=w;
+  oe_set_window_size(e, winlines, wincols);
   if (e->win) {
     g_object_ref(e->win);
     e->repaint_id = g_signal_connect(w, "redraw", G_CALLBACK(oe_redraw), e);
