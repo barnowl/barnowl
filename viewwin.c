@@ -172,11 +172,17 @@ typedef struct _owl_viewwin_search_data { /*noproto*/
 
 static void owl_viewwin_callback_search(owl_editwin *e)
 {
+  int consider_current = false;
   const char *line = owl_editwin_get_text(e);
   owl_viewwin_search_data *data = owl_editwin_get_cbdata(e);
-  owl_function_set_search(line);
+
+  /* Given an empty string, just continue the current search. */
+  if (line && *line) {
+    owl_function_set_search(line);
+    consider_current = true;
+  }
   if (!owl_viewwin_search(data->v, owl_global_get_search_re(&g),
-			  true, data->direction))
+                          consider_current, data->direction))
     owl_function_error("No matches");
 }
 
