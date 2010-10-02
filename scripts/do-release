@@ -7,7 +7,7 @@ die() {
 
 usage() {
     cat >&2 <<EOF
-Usage: %0 [options]
+Usage: $0 [options]
 Generate a barnowl release tarball.
 
 OPTIONS:
