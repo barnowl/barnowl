@@ -1016,9 +1016,10 @@ const owl_cmd commands_to_init[]
 
   OWLCMD_ARGS_CTX("popless:start-search", owl_viewwin_command_start_search, OWL_CTX_POPLESS,
 		  "starts a command line to search for particular string",
-		  "popless:search [-r] [inital-value]",
+		  "popless:start-search [-r] [inital-value]",
 		  "Initializes the command-line to search for initial-value. If\n"
-		  "-r is used, the search will be performed backwards."),
+		  "-r is used, the search will be performed backwards.\n\n"
+                  "SEE ALSO: popless:search"),
 
   OWLCMD_ALIAS("webzephyr", "zwrite daemon.webzephyr -c webzephyr -i"),
 
