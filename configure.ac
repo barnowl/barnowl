@@ -138,6 +138,9 @@ AM_CONDITIONAL([ENABLE_ZCRYPT], [test "$HAVE_DES_STRING_TO_KEY" && dnl
                                  test "$HAVE_DES_ECB_ENCRYPT"])
 
 CFLAGS="$CFLAGS -D_XOPEN_SOURCE"
+dnl __EXTENSIONS__ is needed for struct timeval on Solaris when
+dnl _XOPEN_SOURCE is defined.
+CFLAGS="$CFLAGS -D__EXTENSIONS__"
 
 AC_SUBST([LIBFAIM_CFLAGS])
 
