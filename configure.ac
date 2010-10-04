@@ -154,5 +154,8 @@ if test "x${HAVE_ZIP}" = "xno"; then
    AC_MSG_ERROR([cannot find a 'zip' binary.])
 fi
 
-AC_CONFIG_FILES([Makefile libfaim/Makefile perl/Makefile perl/modules/Makefile])
+AC_CONFIG_LIBOBJ_DIR([compat])
+AC_REPLACE_FUNCS([memrchr])
+
+AC_CONFIG_FILES([Makefile compat/Makefile libfaim/Makefile perl/Makefile perl/modules/Makefile])
 AC_OUTPUT

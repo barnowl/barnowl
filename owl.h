@@ -11,6 +11,8 @@
 
 #include "config.h"
 
+#include "compat/compat.h"
+
 #ifdef HAVE_STDBOOL_H
 #include <stdbool.h>
 #else
