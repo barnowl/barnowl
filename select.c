@@ -244,7 +244,7 @@ int owl_select_aim_hack(fd_set *rfds, fd_set *wfds)
 
   max_fd = 0;
   sess = owl_global_get_aimsess(&g);
-  for (cur = sess->connlist, max_fd = 0; cur; cur = cur->next) {
+  for (cur = sess->connlist; cur; cur = cur->next) {
     if (cur->fd != -1) {
       FD_SET(cur->fd, rfds);
       if (cur->status & AIM_CONN_STATUS_INPROGRESS) {
