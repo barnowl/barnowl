@@ -3422,7 +3422,6 @@ void owl_function_zephyr_buddy_check(int notify)
 #ifdef HAVE_LIBZEPHYR
   int i, j;
   owl_list anyone;
-  owl_zbuddylist *zbl;
   GList **zaldlist;
   GList *zaldptr;
   ZAsyncLocateData_t *zald;
@@ -3430,7 +3429,6 @@ void owl_function_zephyr_buddy_check(int notify)
 
   if (!owl_global_is_havezephyr(&g)) return;
   owl_global_set_pseudologin_notify(&g, notify);
-  zbl = owl_global_get_zephyr_buddylist(&g);
   zaldlist = owl_global_get_zaldlist(&g);
 
   /* Clear the existing ZALDs first. */
