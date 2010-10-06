@@ -185,7 +185,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
 {
   owl_message * m;
   HE * ent;
-  I32 count, len;
+  I32 len;
   const char *key,*val;
   HV * hash;
   struct tm tm;
@@ -195,7 +195,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
   m = owl_malloc(sizeof(owl_message));
   owl_message_init(m);
 
-  count = hv_iterinit(hash);
+  hv_iterinit(hash);
   while((ent = hv_iternext(hash))) {
     key = hv_iterkey(ent, &len);
     val = SvPV_nolen(hv_iterval(hash, ent));
