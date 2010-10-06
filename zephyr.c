@@ -333,7 +333,6 @@ int owl_zephyr_loadbarnowldefaultsubs(void)
   int count, ret;
 
   subs = owl_malloc(sizeof(ZSubscription_t) * subSize);
-  ret = 0;
   ZResetAuthentication();
   count=0;
 
