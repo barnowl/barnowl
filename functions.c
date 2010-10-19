@@ -2354,22 +2354,20 @@ done:
 
 /* Create a filter for personal zephyrs to or from the specified
  * zephyr user.  Includes login/logout notifications for the user.
- * The name of the filter will be 'user-<user>'.  If a filter already
+ * The name of the filter will be 'user-<shortuser>'.  If a filter already
  * exists with this name, no new filter will be created.  This allows
  * the configuration to override this function.  Returns the name of
  * the filter, which the caller must free.
  */
-char *owl_function_zuserfilt(const char *user)
+char *owl_function_zuserfilt(const char *longuser)
 {
   owl_filter *f;
-  char *argbuff, *longuser, *esclonguser, *shortuser, *filtname;
-
-  /* stick the local realm on if it's not there */
-  longuser=long_zuser(user);
-  shortuser=short_zuser(user);
+  char *argbuff, *esclonguser, *shortuser, *filtname;
 
   /* name for the filter */
-  filtname=owl_sprintf("user-%s", shortuser);
+  shortuser = short_zuser(longuser);
+  filtname = owl_sprintf("user-%s", shortuser);
+  owl_free(shortuser);
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
@@ -2391,9 +2389,7 @@ char *owl_function_zuserfilt(const char *user)
 
   /* free stuff */
   owl_free(argbuff);
-  owl_free(longuser);
   owl_free(esclonguser);
-  owl_free(shortuser);
 
   return(filtname);
 }
@@ -2536,8 +2532,8 @@ char *owl_function_smartfilter(int type, int invert_related)
 {
   const owl_view *v;
   const owl_message *m;
-  char *zperson, *filtname=NULL;
-  const char *argv[2];
+  char *filtname = NULL;
+  const char *argv[2], *zperson;
   int related = owl_global_is_narrow_related(&g) ^ invert_related;
 
   v=owl_global_get_current_view(&g);
@@ -2576,13 +2572,12 @@ char *owl_function_smartfilter(int type, int invert_related)
       }
 
       if (owl_message_is_direction_in(m)) {
-        zperson=short_zuser(owl_message_get_sender(m));
+        zperson = owl_message_get_sender(m);
       } else {
-        zperson=short_zuser(owl_message_get_recipient(m));
+        zperson = owl_message_get_recipient(m);
       }
-      filtname=owl_function_zuserfilt(zperson);
-      owl_free(zperson);
-      return(filtname);
+      filtname = owl_function_zuserfilt(zperson);
+      return filtname;
     }
 
     /* narrow class MESSAGE, instance foo, recip * messages to class, inst */
