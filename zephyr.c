@@ -951,6 +951,7 @@ char *owl_zephyr_zlocate(const char *user, int auth)
       result = p;
     }
   }
+  owl_free(myuser);
 
   return result;
 #else

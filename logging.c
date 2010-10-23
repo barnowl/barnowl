@@ -141,6 +141,7 @@ void owl_log_outgoing(const owl_message *m)
       snprintf(filename, MAXPATHLEN, "%s/%s", logpath, temp);
       owl_log_append(m, filename);
 
+      owl_free(temp);
       owl_free(cc->data);
       cc = g_list_delete_link(cc, cc);
     }
@@ -157,7 +158,7 @@ void owl_log_outgoing(const owl_message *m)
     owl_free(temp2);
     owl_free(temp);
   } else {
-    to = owl_sprintf("loopback");
+    to = owl_strdup("loopback");
   }
 
   snprintf(filename, MAXPATHLEN, "%s/%s", logpath, to);
@@ -334,6 +335,7 @@ void owl_log_incoming(const owl_message *m)
         owl_log_append(m, filename);
       }
 
+      owl_free(temp);
       owl_free(cc->data);
       cc = g_list_delete_link(cc, cc);
     }
