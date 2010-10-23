@@ -3406,7 +3406,7 @@ void owl_function_makemsg(const char *fmt, ...)
   va_end(ap);
 
   owl_function_debugmsg("makemsg: %s", str);
-  owl_msgwin_set_text(&g.msgwin, str);
+  owl_msgwin_set_text_nocopy(&g.msgwin, str);
 }
 
 /* get locations for everyone in .anyone.  If 'notify' is '1' then
