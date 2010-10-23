@@ -216,6 +216,8 @@ char *owl_viewwin_command_start_search(owl_viewwin *v, int argc, const char *con
   owl_global_push_context_obj(&g, ctx);
   owl_editwin_set_callback(tw, owl_viewwin_callback_search);
   owl_editwin_set_cbdata(tw, data, owl_free);
+  /* We aren't saving tw, so release the reference we were given. */
+  owl_editwin_unref(tw);
   return NULL;
 }
 
@@ -235,6 +237,8 @@ char *owl_viewwin_start_command(owl_viewwin *v, int argc, const char *const *arg
                             owl_viewwin_deactivate_editcontext, v);
   owl_global_push_context_obj(&g, ctx);
   owl_editwin_set_callback(tw, owl_callback_command);
+  /* We aren't saving tw, so release the reference we were given. */
+  owl_editwin_unref(tw);
 
   return NULL;
 }
