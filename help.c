@@ -39,6 +39,8 @@ void owl_help(void)
      "    i             Print more information about a message\n"
      "    P             Move to the next personal message\n"
      "    M-P           Move to the previous personal message\n"
+     "    C-space       Move the mark (asterisk) to the current message\n"
+     "    C-x C-x       Move the mark to the current message while moving to previous mark\n"
      "\n"
      "    d             Mark message for deletion\n"
      "    u             Undelete a message marked for deletion\n"
