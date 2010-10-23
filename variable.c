@@ -480,6 +480,10 @@ int owl_variable_dict_setup(owl_vardict *vd) {
   for (var = variables_to_init; var->name != NULL; var++) {
     cur = owl_malloc(sizeof(owl_variable));
     *cur = *var;
+    /* strdup all the strings so we can delete them consistently. */
+    cur->name = owl_strdup(var->name);
+    cur->summary = owl_strdup(var->summary);
+    cur->description = owl_strdup(var->description);
     switch (cur->type) {
     case OWL_VARIABLE_OTHER:
       cur->set_fn(cur, cur->pval_default);
@@ -641,6 +645,9 @@ void owl_variable_dict_namelist_cleanup(owl_list *l)
 void owl_variable_delete(owl_variable *v)
 {
   if (v->delete_fn) v->delete_fn(v);
+  owl_free(v->name);
+  owl_free(v->summary);
+  owl_free(v->description);
   owl_free(v);
 }
 
