@@ -127,32 +127,38 @@ int owl_util_regtest(void)
 
   printf("# BEGIN testing owl_util\n");
 
-  FAIL_UNLESS("owl_util_substitute 1",
-	      !strcmp("foo", owl_text_substitute("foo", "", "Y")));
-  FAIL_UNLESS("owl_text_substitute 2",
-	      !strcmp("fYZYZ", owl_text_substitute("foo", "o", "YZ")));
-  FAIL_UNLESS("owl_text_substitute 3",
-	      !strcmp("foo", owl_text_substitute("fYZYZ", "YZ", "o")));
-  FAIL_UNLESS("owl_text_substitute 4",
-	      !strcmp("/u/foo/meep", owl_text_substitute("~/meep", "~", "/u/foo")));
+#define CHECK_STR_AND_FREE(desc, expected, expr)         \
+    do {                                                 \
+      char *__value = (expr);                            \
+      FAIL_UNLESS((desc), !strcmp((expected), __value)); \
+      owl_free(__value);                                 \
+    } while (0)
+
+  CHECK_STR_AND_FREE("owl_util_substitute 1", "foo",
+	             owl_text_substitute("foo", "", "Y"));
+  CHECK_STR_AND_FREE("owl_text_substitute 2", "fYZYZ",
+                     owl_text_substitute("foo", "o", "YZ"));
+  CHECK_STR_AND_FREE("owl_text_substitute 3", "foo",
+                     owl_text_substitute("fYZYZ", "YZ", "o"));
+  CHECK_STR_AND_FREE("owl_text_substitute 4", "/u/foo/meep",
+                     owl_text_substitute("~/meep", "~", "/u/foo"));
 
   FAIL_UNLESS("skiptokens 1", 
 	      !strcmp("bar quux", skiptokens("foo bar quux", 1)));
   FAIL_UNLESS("skiptokens 2", 
 	      !strcmp("meep", skiptokens("foo 'bar quux' meep", 2)));
 
-  FAIL_UNLESS("expand_tabs 1",
-              !strcmp("        hi", owl_text_expand_tabs("\thi")));
+  CHECK_STR_AND_FREE("expand_tabs 1", "        hi", owl_text_expand_tabs("\thi"));
 
-  FAIL_UNLESS("expand_tabs 2",
-              !strcmp("        hi\nword    tab", owl_text_expand_tabs("\thi\nword\ttab")));
+  CHECK_STR_AND_FREE("expand_tabs 2", "        hi\nword    tab",
+                     owl_text_expand_tabs("\thi\nword\ttab"));
 
-  FAIL_UNLESS("expand_tabs 3",
-              !strcmp("                2 tabs", owl_text_expand_tabs("\t\t2 tabs")));
-  FAIL_UNLESS("expand_tabs 4",
-	      !strcmp("α       ααααααα!        ", owl_text_expand_tabs("α\tααααααα!\t")));
-  FAIL_UNLESS("expand_tabs 5",
-	      !strcmp("Ａ      ＡＡＡ!!        ", owl_text_expand_tabs("Ａ\tＡＡＡ!!\t")));
+  CHECK_STR_AND_FREE("expand_tabs 3", "                2 tabs",
+                     owl_text_expand_tabs("\t\t2 tabs"));
+  CHECK_STR_AND_FREE("expand_tabs 4", "α       ααααααα!        ",
+                     owl_text_expand_tabs("α\tααααααα!\t"));
+  CHECK_STR_AND_FREE("expand_tabs 5", "Ａ      ＡＡＡ!!        ",
+                     owl_text_expand_tabs("Ａ\tＡＡＡ!!\t"));
 
   FAIL_UNLESS("skiptokens 1",
               !strcmp("world", skiptokens("hello world", 1)));
