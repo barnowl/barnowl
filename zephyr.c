@@ -381,6 +381,7 @@ int owl_zephyr_loadloginsubs(const char *filename)
   subsfile = owl_zephyr_dotfile(".anyone", filename);
 
   if (stat(subsfile, &statbuff) == -1) {
+    owl_free(subs);
     owl_free(subsfile);
     return 0;
   }
