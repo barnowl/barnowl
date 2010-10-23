@@ -549,8 +549,9 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: creating splash message");
   owl_function_adminmsg("",
     "-----------------------------------------------------------------------\n"
-    "Welcome to barnowl version " OWL_VERSION_STRING ".  Press 'h' for on-line help.\n"
+    "Welcome to barnowl version " OWL_VERSION_STRING ".\n"
     "To see a quick introduction, type ':show quickstart'.                  \n"
+    "Press 'h' for on-line help.                                            \n"
     "                                                                       \n"
     "BarnOwl is free software. Type ':show license' for more                \n"
     "information.                                                     ^ ^   \n"
