@@ -52,6 +52,7 @@ void owl_history_store(owl_history *h, const char *line)
 
   /* if partial is set, remove the first entry first */
   if (h->partial) {
+    owl_free(owl_list_get_element(&(h->hist), 0));
     owl_list_remove_element(&(h->hist), 0);
   }
 
