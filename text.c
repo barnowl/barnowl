@@ -136,7 +136,7 @@ char *owl_text_expand_tabs(const char *in)
   col = 0;
   while(*p) {
     gunichar c = g_utf8_get_char(p);
-    char *q = g_utf8_next_char(p);
+    const char *q = g_utf8_next_char(p);
     switch (c) {
     case '\t':
       do { len++; col++; } while (col % OWL_TAB_WIDTH);
@@ -161,7 +161,7 @@ char *owl_text_expand_tabs(const char *in)
   col = 0;
   while(*p) {
     gunichar c = g_utf8_get_char(p);
-    char *q = g_utf8_next_char(p);
+    const char *q = g_utf8_next_char(p);
     switch (c) {
     case '\t':
       do {*(out++) = ' '; col++; } while (col % OWL_TAB_WIDTH);
