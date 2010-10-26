@@ -97,7 +97,7 @@ static void _owl_function_timer_append_fmtext(gpointer data, gpointer user_data)
   owl_timer *timer = data;
   char *str = owl_sprintf("- %s: in %d seconds",
                           timer->name ? timer->name : "(unnamed)",
-                          timer->time - time(NULL));
+                          (int)(timer->time - time(NULL)));
   owl_fmtext_append_normal(fm, str);
   owl_free(str);
   if (timer->interval) {
