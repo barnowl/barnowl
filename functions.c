@@ -364,7 +364,7 @@ void owl_function_loopwrite_setup(void)
   owl_function_write_setup("message");
   owl_function_start_edit_win("loopwrite",
                               &owl_callback_loopwrite,
-                              "loopwrite", NULL);
+                              NULL, NULL);
 }
 
 void owl_callback_zwrite(owl_editwin *e) {
