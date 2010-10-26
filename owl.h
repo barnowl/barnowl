@@ -655,8 +655,8 @@ extern owl_global g;
 
 #include "owl_prototypes.h"
 
-/* these are missing from the zephyr includes for some reason */
-#ifdef HAVE_LIBZEPHYR
+/* These were missing from the Zephyr includes before Zephyr 3. */
+#if defined HAVE_LIBZEPHYR && defined ZCONST
 int ZGetSubscriptions(ZSubscription_t *, int *);
 int ZGetLocations(ZLocations_t *,int *);
 #endif
