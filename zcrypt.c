@@ -49,7 +49,7 @@
 typedef struct
 {
   int flags;
-  char *signature;
+  const char *signature;
   char *message;
 } ZWRITEOPTIONS;
 
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
   int cipher;
   int error = FALSE;
   int zephyr = FALSE;
-  char *class = NULL, *instance = NULL;
+  const char *class = NULL, *instance = NULL;
   int mode = M_NONE;
 
   char c;
