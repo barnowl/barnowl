@@ -1228,37 +1228,42 @@ char *long_zuser(const char *in)
 }
 
 /* strip out the instance from a zsender's principal.  Preserves the
- * realm if present.  daemon/webzephyr.mit.edu is a special case.
- * The caller must free the return.
+ * realm if present.  Leave host/ and daemon/ krb5 principals
+ * alone. Also leave rcmd. and daemon. krb4 principals alone. The
+ * caller must free the return.
  */
 char *owl_zephyr_smartstripped_user(const char *in)
 {
-  char *ptr, *realm, *out;
+  char *slash, *dot, *realm, *out;
 
-  out=owl_strdup(in);
+  out = owl_strdup(in);
 
   /* bail immeaditly if we don't have to do any work */
-  ptr=strchr(out, '.');
-  if (!strchr(out, '/') && !ptr) {
-    /* no '/' and no '.' */
+  slash = strchr(out, '/');
+  dot = strchr(out, '.');
+  if (!slash && !dot) {
     return(out);
   }
-  if (ptr && strchr(out, '@') && (ptr > strchr(out, '@'))) {
-    /* There's a '.' but it's in the realm */
+
+  if (!strncasecmp(out, OWL_ZEPHYR_NOSTRIP_HOST, strlen(OWL_ZEPHYR_NOSTRIP_HOST)) ||
+      !strncasecmp(out, OWL_ZEPHYR_NOSTRIP_RCMD, strlen(OWL_ZEPHYR_NOSTRIP_RCMD)) ||
+      !strncasecmp(out, OWL_ZEPHYR_NOSTRIP_DAEMON5, strlen(OWL_ZEPHYR_NOSTRIP_DAEMON5)) ||
+      !strncasecmp(out, OWL_ZEPHYR_NOSTRIP_DAEMON4, strlen(OWL_ZEPHYR_NOSTRIP_DAEMON4))) {
     return(out);
   }
-  if (!strncasecmp(out, OWL_WEBZEPHYR_PRINCIPAL, strlen(OWL_WEBZEPHYR_PRINCIPAL))) {
+
+  realm = strchr(out, '@');
+  if (!slash && dot && realm && (dot > realm)) {
+    /* There's no '/', and the first '.' is in the realm */
     return(out);
   }
 
   /* remove the realm from out, but hold on to it */
-  realm=strchr(out, '@');
   if (realm) realm[0]='\0';
 
   /* strip */
-  ptr=strchr(out, '.');
-  if (!ptr) ptr=strchr(out, '/');
-  ptr[0]='\0';
+  if (slash) slash[0] = '\0';  /* krb5 style user/instance */
+  else if (dot) dot[0] = '\0'; /* krb4 style user.instance */
 
   /* reattach the realm if we had one */
   if (realm) {

@@ -201,6 +201,11 @@ typedef void HV;
 #define OWL_WEBZEPHYR_CLASS     "webzephyr"
 #define OWL_WEBZEPHYR_OPCODE    "webzephyr"
 
+#define OWL_ZEPHYR_NOSTRIP_HOST         "host/"
+#define OWL_ZEPHYR_NOSTRIP_RCMD         "rcmd."
+#define OWL_ZEPHYR_NOSTRIP_DAEMON5      "daemon/"
+#define OWL_ZEPHYR_NOSTRIP_DAEMON4      "daemon."
+
 #define OWL_REGEX_QUOTECHARS    "!+*.?[]^\\${}()"
 #define OWL_REGEX_QUOTEWITH     "\\"
 
