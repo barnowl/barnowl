@@ -1262,7 +1262,10 @@ static void _dirty_everything(owl_window *w) {
 
 void owl_function_full_redisplay(void)
 {
+  /* Ask every widget to redraw itself. */
   _dirty_everything(owl_window_get_screen());
+  /* Force ncurses to redisplay everything. */
+  clearok(stdscr, TRUE);
 }
 
 void owl_function_popless_text(const char *text)
