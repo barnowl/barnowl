@@ -197,7 +197,7 @@ typedef void HV;
 
 #define OWL_CMD_ALIAS_SUMMARY_PREFIX "command alias to: "
 
-#define OWL_WEBZEPHYR_PRINCIPAL "daemon.webzephyr"
+#define OWL_WEBZEPHYR_PRINCIPAL "daemon/webzephyr.mit.edu"
 #define OWL_WEBZEPHYR_CLASS     "webzephyr"
 #define OWL_WEBZEPHYR_OPCODE    "webzephyr"
 

@@ -1021,7 +1021,7 @@ const owl_cmd commands_to_init[]
 		  "-r is used, the search will be performed backwards.\n\n"
                   "SEE ALSO: popless:search"),
 
-  OWLCMD_ALIAS("webzephyr", "zwrite daemon.webzephyr -c webzephyr -i"),
+  OWLCMD_ALIAS("webzephyr", "zwrite " OWL_WEBZEPHYR_PRINCIPAL " -c " OWL_WEBZEPHYR_CLASS " -i"),
 
   /* This line MUST be last! */
   { NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }

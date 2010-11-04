@@ -1228,8 +1228,8 @@ char *long_zuser(const char *in)
 }
 
 /* strip out the instance from a zsender's principal.  Preserves the
- * realm if present.  daemon.webzephyr is a special case.  The
- * caller must free the return
+ * realm if present.  daemon/webzephyr.mit.edu is a special case.
+ * The caller must free the return.
  */
 char *owl_zephyr_smartstripped_user(const char *in)
 {

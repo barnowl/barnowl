@@ -3,7 +3,7 @@ use warnings;
 
 package BarnOwl::Message::Zephyr;
 
-use constant WEBZEPHYR_PRINCIPAL => "daemon.webzephyr";
+use constant WEBZEPHYR_PRINCIPAL => "daemon/webzephyr.mit.edu";
 use constant WEBZEPHYR_CLASS     => "webzephyr";
 use constant WEBZEPHYR_OPCODE    => "webzephyr";
 
