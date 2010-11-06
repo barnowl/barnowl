@@ -1329,13 +1329,13 @@ char *owl_command_smartnarrow(int argc, const char *const *argv, const char *buf
   int instance = 0, related = 0, i;
   const char **tmp_argv = owl_malloc(sizeof(char *) * argc);
 
-  for (i = 0; i < argc; i++)
-    tmp_argv[i] = argv[i];
-
   static const struct option options[] = {
     {"instance", 0, 0, 'i'},
     {"related",  0, 0, 'r'},
     {NULL,       0, 0, 0}};
+
+  for (i = 0; i < argc; i++)
+    tmp_argv[i] = argv[i];
 
   optind = 0;
   while ((opt = getopt_long(argc, (char **)tmp_argv, "ir", options, NULL)) != -1) {
