@@ -957,7 +957,7 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, const char 
   g_free(longuser);
 }
 
-void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const char *body)
+void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const char *body, int recip_index)
 {
   char *replyline;
   
@@ -969,10 +969,9 @@ void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const c
   owl_message_set_sender(m, owl_zephyr_get_sender());
   owl_message_set_class(m, owl_zwrite_get_class(z));
   owl_message_set_instance(m, owl_zwrite_get_instance(z));
-  if (owl_zwrite_get_numrecips(z)>0) {
-    char *longzuser = long_zuser(owl_zwrite_get_recip_n(z, 0));
-    owl_message_set_recipient(m,
-			      longzuser); /* only gets the first user, must fix */
+  if (recip_index < owl_zwrite_get_numrecips(z)) {
+    char *longzuser = long_zuser(owl_zwrite_get_recip_n(z, recip_index));
+    owl_message_set_recipient(m, longzuser);
     g_free(longzuser);
   }
   owl_message_set_opcode(m, owl_zwrite_get_opcode(z));

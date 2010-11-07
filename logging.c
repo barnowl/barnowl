@@ -185,7 +185,8 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
    * owl_log_shouldlog_message(void)
    */
   m = g_new(owl_message, 1);
-  owl_message_create_from_zwrite(m, zw, text);
+  /* recip_index = 0 because there can only be one recipient anyway */
+  owl_message_create_from_zwrite(m, zw, text, 0);
   if (!owl_log_shouldlog_message(m)) {
     owl_message_delete(m);
     return;

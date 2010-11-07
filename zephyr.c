@@ -850,7 +850,6 @@ void owl_zephyr_zaway(const owl_message *m)
 {
 #ifdef HAVE_LIBZEPHYR
   char *tmpbuff, *myuser, *to;
-  owl_message *mout;
   owl_zwrite *z;
   
   /* bail if it doesn't look like a message we should reply to.  Some
@@ -897,8 +896,7 @@ void owl_zephyr_zaway(const owl_message *m)
   owl_zwrite_set_zsig(z, "Automated reply:");
 
   /* display the message as an admin message in the receive window */
-  mout=owl_function_make_outgoing_zephyr(z);
-  owl_global_messagequeue_addmsg(&g, mout);
+  owl_function_add_outgoing_zephyrs(z);
   owl_zwrite_delete(z);
 #endif
 }

@@ -249,25 +249,34 @@ void owl_function_adminmsg(const char *header, const char *body)
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
 
-/* Create an outgoing zephyr message and return a pointer to it.  Does
- * not put it on the global queue, use owl_global_messagequeue_addmsg() for
- * that.
+/* Queues outgoing zephyrs; if z sends to n people, queue n messages
+ * (except in case of cc). If there are no recipients queues 1
+ * message.
  */
-owl_message *owl_function_make_outgoing_zephyr(const owl_zwrite *z)
+void owl_function_add_outgoing_zephyrs(const owl_zwrite *z)
 {
-  owl_message *m;
+  if (z->cc || owl_zwrite_get_numrecips(z) == 0) {
+    /* create the message */
+    owl_message *m = g_new(owl_message, 1);
+    owl_message_create_from_zwrite(m, z, owl_zwrite_get_message(z), 0);
 
-  /* create the message */
-  m=g_new(owl_message, 1);
-  owl_message_create_from_zwrite(m, z, owl_zwrite_get_message(z));
+    owl_global_messagequeue_addmsg(&g, m);
+  } else {
+    int i;
+    for (i = 0; i < owl_zwrite_get_numrecips(z); i++) {
+      /* create the message */
+      owl_message *m = g_new(owl_message, 1);
+      owl_message_create_from_zwrite(m, z, owl_zwrite_get_message(z), i);
 
-  return(m);
+      owl_global_messagequeue_addmsg(&g, m);
+    }
+  }
 }
 
 /* Create an outgoing AIM message, returns a pointer to the created
  * message or NULL if we're not logged into AIM (and thus unable to
  * create the message).  Does not put it on the global queue.  Use
- * owl_global_messagequeue_addmsg() for that .
+ * owl_global_messagequeue_addmsg() for that.
  */
 owl_message *owl_function_make_outgoing_aim(const char *body, const char *to)
 {
@@ -377,13 +386,12 @@ void owl_callback_zwrite(owl_editwin *e) {
   owl_function_zwrite(z, owl_editwin_get_text(e));
 }
 
-/* send, log and display an outgoing zephyr.  If 'msg' is NULL
- * the message is expected to be set from the zwrite line itself
+/* send, log and display outgoing zephyrs.  If 'msg' is NULL the
+ * message is expected to be set from the zwrite line itself
  */
 #ifdef HAVE_LIBZEPHYR
 void owl_function_zwrite(owl_zwrite *z, const char *msg)
 {
-  owl_message *m;
   int ret;
 
   if(strcmp(z->cmd, "zcrypt") == 0) {
@@ -406,13 +414,7 @@ void owl_function_zwrite(owl_zwrite *z, const char *msg)
   /* If it's personal */
   if (owl_zwrite_is_personal(z)) {
     /* create the outgoing message */
-    m=owl_function_make_outgoing_zephyr(z);
-
-    if (m) {
-      owl_global_messagequeue_addmsg(&g, m);
-    } else {
-      owl_function_error("Could not create outgoing zephyr message");
-    }
+    owl_function_add_outgoing_zephyrs(z);
   }
 }
 #else
@@ -420,13 +422,12 @@ void owl_function_zwrite(owl_zwrite *z, const char *msg) {
 }
 #endif
 
-/* send, log and display an outgoing zcrypt zephyr.  If 'msg' is NULL
+/* send, log and display outgoing zcrypt zephyrs.  If 'msg' is NULL
  * the message is expected to be set from the zwrite line itself
  */
 void owl_function_zcrypt(owl_zwrite *z, const char *msg)
 {
   char *cryptmsg;
-  owl_message *m;
   const char *argv[7];
   char *zcrypt;
   int rv, status;
@@ -468,12 +469,7 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
   if (owl_zwrite_is_personal(z)) {
     /* Create the outgoing message. Restore the un-crypted message for display. */
     owl_zwrite_set_message_raw(z, old_msg);
-    m=owl_function_make_outgoing_zephyr(z);
-    if (m) {
-      owl_global_messagequeue_addmsg(&g, m);
-    } else {
-      owl_function_error("Could not create outgoing zephyr message");
-    }
+    owl_function_add_outgoing_zephyrs(z);
   }
 
   /* free the zwrite */
