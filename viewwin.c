@@ -2,7 +2,6 @@
 #include "owl.h"
 
 #define BOTTOM_OFFSET 1
-#define EMPTY_INDICATOR "~"
 
 static void owl_viewwin_redraw_content(owl_window *w, WINDOW *curswin, void *user_data);
 static void owl_viewwin_redraw_status(owl_window *w, WINDOW *curswin, void *user_data);
@@ -96,7 +95,6 @@ static void owl_viewwin_redraw_content(owl_window *w, WINDOW *curswin, void *use
   owl_fmtext fm1, fm2;
   owl_viewwin *v = user_data;
   int winlines, wincols;
-  int y;
 
   owl_window_get_position(w, &winlines, &wincols, 0, 0);
 
@@ -110,14 +108,6 @@ static void owl_viewwin_redraw_content(owl_window *w, WINDOW *curswin, void *use
   owl_fmtext_truncate_cols(&fm1, v->rightshift, wincols-1+v->rightshift, &fm2);
 
   owl_fmtext_curs_waddstr(&fm2, curswin);
-
-  /* Fill remaining lines with tildes. */
-  y = v->textlines - v->topline;
-  wmove(curswin, y, 0);
-  for (; y < winlines; y++) {
-    waddstr(curswin, EMPTY_INDICATOR);
-    waddstr(curswin, "\n");
-  }
 
   owl_fmtext_cleanup(&fm1);
   owl_fmtext_cleanup(&fm2);
