@@ -2710,8 +2710,8 @@ void owl_command_edit_cancel(owl_editwin *e)
 
   owl_function_makemsg("Command cancelled.");
 
-  if(owl_editwin_get_echochar(e) == 0) {
-    hist=owl_editwin_get_history(e);
+  hist = owl_editwin_get_history(e);
+  if (hist) {
     owl_history_store(hist, owl_editwin_get_text(e));
     owl_history_reset(hist);
   }
@@ -2725,6 +2725,8 @@ void owl_command_edit_history_prev(owl_editwin *e)
   const char *ptr;
 
   hist=owl_editwin_get_history(e);
+  if (!hist)
+    return;
   if (!owl_history_is_touched(hist)) {
     owl_history_store(hist, owl_editwin_get_text(e));
     owl_history_set_partial(hist);
@@ -2744,6 +2746,8 @@ void owl_command_edit_history_next(owl_editwin *e)
   const char *ptr;
 
   hist=owl_editwin_get_history(e);
+  if (!hist)
+    return;
   ptr=owl_history_get_next(hist);
   if (ptr) {
     owl_editwin_clear(e);
