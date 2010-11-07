@@ -564,14 +564,6 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: processing startup file");
   owl_function_source(NULL);
 
-  /* Set the default style */
-  owl_function_debugmsg("startup: setting startup and default style");
-  if (0 != strcmp(owl_global_get_default_style(&g), "__unspecified__")) {
-    /* the style was set by the user: leave it alone */
-  } else {
-    owl_global_set_default_style(&g, "default");
-  }
-
   owl_function_debugmsg("startup: set style for the view: %s", owl_global_get_default_style(&g));
   s = owl_global_get_style_by_name(&g, owl_global_get_default_style(&g));
   if(s)

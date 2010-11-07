@@ -268,7 +268,7 @@ static owl_variable variables_to_init[] = {
   OWLVAR_STRING_FULL( "tty" /* %OwlVarStub */, "", "tty name for zephyr location", "",
 		      NULL, owl_variable_tty_set, NULL),
 
-  OWLVAR_STRING( "default_style" /* %OwlVarStub */, "__unspecified__",
+  OWLVAR_STRING( "default_style" /* %OwlVarStub */, "default",
 		 "name of the default formatting style",
 		 "This sets the default message formatting style.\n"
 		 "Styles may be created with the 'style' command.\n"
