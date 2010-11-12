@@ -768,6 +768,16 @@ const owl_cmd commands_to_init[]
               "message <message>",
               ""),
 
+  OWLCMD_ARGS("add-cmd-history", owl_command_add_cmd_history, OWL_CTX_ANY,
+              "Add a command to the history",
+              "add-cmd-history <cmd>",
+              ""),
+
+  OWLCMD_ARGS("with-history", owl_command_with_history, OWL_CTX_ANY,
+              "Run a command and store it into the history",
+              "with-history <cmd>",
+              ""),
+
   OWLCMD_VOID("yes", owl_command_yes, OWL_CTX_RECV,
               "Answer yes to a question",
               "yes",
@@ -2630,6 +2640,46 @@ char *owl_command_message(int argc, const char *const *argv, const char *buff)
     buff = skiptokens(buff, 1);
     owl_function_makemsg("%s", buff);
     return NULL;
+}
+
+char *owl_command_add_cmd_history(int argc, const char *const *argv, const char *buff)
+{
+  owl_history *hist;
+  const char *ptr;
+
+  if (argc < 2) {
+    owl_function_makemsg("usage: %s <commands> ...", argv[0]);
+    return NULL;
+  }
+
+  ptr = skiptokens(buff, 1);
+  hist = owl_global_get_cmd_history(&g);
+  owl_history_store(hist, ptr);
+  owl_history_reset(hist);
+  /* owl_function_makemsg("History '%s' stored successfully", ptr+1); */
+  return NULL;
+}
+
+char *owl_command_with_history(int argc, const char *const *argv, const char *buff)
+{
+  owl_history *hist;
+  const char *ptr;
+
+  if (argc < 2) {
+    owl_function_makemsg("usage: %s <commands> ...", argv[2]);
+    return NULL;
+  }
+
+  ptr = skiptokens(buff, 1);
+  if (!ptr) {
+    owl_function_makemsg("Parse error finding command");
+    return NULL;
+  }
+
+  hist = owl_global_get_cmd_history(&g);
+  owl_history_store(hist, ptr);
+  owl_history_reset(hist);
+  return owl_function_command(ptr);
 }
 
 void owl_command_yes(void)
