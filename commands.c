@@ -2666,7 +2666,7 @@ char *owl_command_with_history(int argc, const char *const *argv, const char *bu
   const char *ptr;
 
   if (argc < 2) {
-    owl_function_makemsg("usage: %s <commands> ...", argv[2]);
+    owl_function_makemsg("usage: %s <commands> ...", argv[0]);
     return NULL;
   }
 
