@@ -380,7 +380,7 @@ char *owl_util_stripnewlines(const char *in)
  * backup file containing the original contents.  The match is
  * case-insensitive.
  *
- * Returns the number of lines removed
+ * Returns the number of lines removed on success.  Returns -1 on failure.
  */
 int owl_util_file_deleteline(const char *filename, const char *line, int backup)
 {
@@ -392,21 +392,21 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
   if ((old = fopen(filename, "r")) == NULL) {
     owl_function_error("Cannot open %s (for reading): %s",
 		       filename, strerror(errno));
-    return 0;
+    return -1;
   }
 
   if (fstat(fileno(old), &st) != 0) {
     owl_function_error("Cannot stat %s: %s", filename, strerror(errno));
-    return 0;
+    return -1;
   }
 
   newfile = owl_sprintf("%s.new", filename);
   if ((new = fopen(newfile, "w")) == NULL) {
     owl_function_error("Cannot open %s (for writing): %s",
 		       filename, strerror(errno));
-    free(newfile);
+    owl_free(newfile);
     fclose(old);
-    return 0;
+    return -1;
   }
 
   if (fchmod(fileno(new), st.st_mode & 0777) != 0) {
@@ -414,9 +414,9 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
 		       filename, strerror(errno));
     unlink(newfile);
     fclose(new);
-    free(newfile);
+    owl_free(newfile);
     fclose(old);
-    return 0;
+    return -1;
   }
 
   while (owl_getline_chomp(&buf, old))
@@ -437,7 +437,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
       owl_free(backupfile);
       unlink(newfile);
       owl_free(newfile);
-      return 0;
+      return -1;
     }
     owl_free(backupfile);
   }
@@ -445,7 +445,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
   if (rename(newfile, filename) != 0) {
     owl_function_error("Cannot move %s to %s: %s",
 		       newfile, filename, strerror(errno));
-    numremoved = 0;
+    numremoved = -1;
   }
 
   unlink(newfile);

@@ -1011,7 +1011,7 @@ void owl_zephyr_delsub(const char *filename, const char *class, const char *inst
   linesdeleted = owl_util_file_deleteline(subsfile, line, 1);
   if (linesdeleted > 0) {
     owl_function_makemsg("Subscription removed");
-  } else {
+  } else if (linesdeleted == 0) {
     owl_function_error("No subscription present in %s", subsfile);
   }
   owl_free(subsfile);
