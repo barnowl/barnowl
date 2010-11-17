@@ -6,7 +6,9 @@
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <assert.h>
+#include <glib.h>
+#include <glib/gstdio.h>
 #include <glib-object.h>
 
 char **atokenize(const char *buffer, const char *sep, int *i)
@@ -375,6 +377,34 @@ char *owl_util_stripnewlines(const char *in)
   return(out);
 }
 
+
+/* If filename is a link, recursively resolve symlinks.  Otherwise, return the filename
+ * unchanged.  On error, call owl_function_error and return NULL.
+ *
+ * This function assumes that filename eventually resolves to an acutal file.
+ * If you want to check this, you should stat() the file first.
+ *
+ * The caller of this function is responsible for freeing the return value.
+ *
+ * Error conditions are the same as g_file_read_link.
+ */
+gchar *owl_util_recursive_resolve_link(const char *filename)
+{
+  gchar *last_filename = g_strdup(filename);
+  GError *err = NULL;
+  while (last_filename != NULL && g_file_test(last_filename, G_FILE_TEST_IS_SYMLINK)) {
+    gchar *cur_filename = g_file_read_link(last_filename, &err);
+    g_free(last_filename);
+    last_filename = cur_filename;
+  }
+  if (last_filename == NULL) {
+    owl_function_error("Cannot resolve symlinked file %s: %s",
+		       filename, err->message);
+    g_error_free(err);
+  }
+  return last_filename;
+}
+
 /* Delete all lines matching "line" from the named file.  If no such
  * line is found the file is left intact.  If backup==1 then leave a
  * backup file containing the original contents.  The match is
@@ -385,6 +415,7 @@ char *owl_util_stripnewlines(const char *in)
 int owl_util_file_deleteline(const char *filename, const char *line, int backup)
 {
   char *backupfile, *newfile, *buf = NULL;
+  gchar *actual_filename; /* gchar; we need to g_free it */
   FILE *old, *new;
   struct stat st;
   int numremoved = 0;
@@ -400,22 +431,29 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
     return -1;
   }
 
-  newfile = owl_sprintf("%s.new", filename);
+  /* resolve symlinks, because link() fails on symlinks, at least on AFS */
+  actual_filename = owl_util_recursive_resolve_link(filename);
+  if (actual_filename == NULL)
+    return -1; /* resolving the symlink failed, but we already logged this error */
+
+  newfile = owl_sprintf("%s.new", actual_filename);
   if ((new = fopen(newfile, "w")) == NULL) {
     owl_function_error("Cannot open %s (for writing): %s",
-		       filename, strerror(errno));
+		       actual_filename, strerror(errno));
     owl_free(newfile);
     fclose(old);
+    free(actual_filename);
     return -1;
   }
 
   if (fchmod(fileno(new), st.st_mode & 0777) != 0) {
     owl_function_error("Cannot set permissions on %s: %s",
-		       filename, strerror(errno));
+		       actual_filename, strerror(errno));
     unlink(newfile);
     fclose(new);
     owl_free(newfile);
     fclose(old);
+    free(actual_filename);
     return -1;
   }
 
@@ -430,9 +468,9 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
   fclose(old);
 
   if (backup) {
-    backupfile = owl_sprintf("%s.backup", filename);
+    backupfile = owl_sprintf("%s.backup", actual_filename);
     unlink(backupfile);
-    if (link(filename, backupfile) != 0) {
+    if (link(actual_filename, backupfile) != 0) {
       owl_function_error("Cannot link %s: %s", backupfile, strerror(errno));
       owl_free(backupfile);
       unlink(newfile);
@@ -442,14 +480,16 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
     owl_free(backupfile);
   }
 
-  if (rename(newfile, filename) != 0) {
+  if (rename(newfile, actual_filename) != 0) {
     owl_function_error("Cannot move %s to %s: %s",
-		       newfile, filename, strerror(errno));
+		       newfile, actual_filename, strerror(errno));
     numremoved = -1;
   }
 
   unlink(newfile);
   owl_free(newfile);
+
+  g_free(actual_filename);
 
   return numremoved;
 }
