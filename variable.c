@@ -687,7 +687,7 @@ int owl_variable_set_fromstring(owl_vardict *d, const char *name, const char *va
     return -1;
   }
   if (msg && v->get_tostring_fn) {
-    tostring = v->get_tostring_fn(v, v->val);
+    tostring = v->get_tostring_fn(v, v->get_fn(v));
     owl_function_makemsg("%s = '%s'", name, tostring);
     g_free(tostring);
   }    
@@ -725,7 +725,7 @@ char *owl_variable_get_tostring(const owl_vardict *d, const char *name) {
   if (!name) return NULL;
   v = owl_dict_find_element(d, name);
   if (v == NULL || !v->get_tostring_fn) return NULL;
-  return v->get_tostring_fn(v, v->val);
+  return v->get_tostring_fn(v, v->get_fn(v));
 }
 
 char *owl_variable_get_default_tostring(const owl_vardict *d, const char *name) {
