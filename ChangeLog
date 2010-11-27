@@ -1,3 +1,55 @@
+1.7
+ * Download Twitter consumer keys from barnowl.mit.edu. -nelhage@MIT.EDU
+ * Fix unsub when .zephyr.subs is a symlink. -jgross@MIT.EDU
+ * Display subject as XMPP personal context (if set). -adehnert@mit.edu
+ * Allow adding text to the command history. -adehnert@mit.edu
+ * Fix webzephyr handling. -asedeno@mit.edu
+ * Fix searching for text containing '!'. -andersk@mit.edu
+ * Fix a number of memory leaks. -davidben@mit.edu
+ * Correctly narrow on personals from realm-less senders. -davidben@mit.edu
+ * Add a random zsig function -kevinr@free-dissociation.com
+ * Implement searching in popup windows (help, etc.). davidben@mit.edu
+ * When a zwrite fails, display a more accurate error than "Waiting for ack". davidben@mit.edu
+ * Fix editwin motion for empty first lines -davidben@mit.edu
+ * Handle incoming messages with tab characters better. -davidben@mit.edu
+ * Use fpathconf to disable signals -asedeno@mit.edu
+ * Fix tab-completion of aliases. -nelhage@mit.edu
+ * Fix a crash and some bugs in 'zcrypt'. -nelhage@mit.edu
+ * Display the cleartext on outgoing zcrypted personals. -nelhage@mit.edu
+ * Add owl_window framework to allow more flexible UI. -davidben@mit.edu
+ * Display submap bindings in :show keymap KEYMAP. -davidben@mit.edu
+ * Make unit test environment more consistent with standard BarnOwl. -nelhage@mit.edu
+ * Jabber: Set long_sender in a MUC to the full sender JID (from presence). -andersk@mit.edu
+ * Do not instantiate various timers unless used. -davidben@mit.edu
+ * Make smartnarrow work better on CC:'d personals. -nelhage@mit.edu
+ * Set edit:maxwrapcols to 70 by default. -andersk@mit.edu
+ * Allow disabling of both automatic wrapping and filling, display soft line-breaks. -nelhage@mit.edu
+ * Fix a bug in editwin redraw with echochar set. -nelhage@mit.edu
+ * Refactor resize code to cut down on flicker and relayout the popwin. -davidben@mit.edu
+ * Make viewperson, vp aliases for viewuser. -kevinr@free-dissociation.com
+ * Import Twitter module into main tree. -nelhage@mit.edu
+
+1.6.2
+ * Use a uniquified debug file location. -nelhage@mit.edu
+ * Open the debug file using O_EXCL and an explicit mode. -nelhage@mit.edu
+ * Don't send AIM passwords to the debug log. -geofft@mit.edu
+ * Remove some dead AIM code that sends local files to the server. -geofft@mit.edu
+ * Handle errors from ZPending and ZReceiveNotice (CVE-2010-2725). -nelhage@mit.edu
+ * Include the public repository URL in the README -alexmv@mit.edu
+ * Install the documentation in 'make install'. -nelhage@mit.edu
+ * Add a configure flag to enable/disable building with krb4. -wthrowe@mit.edu
+ * Fix an infinite loop on 'view -r args'. -nelhage@mit.edu
+ * Free paths to Zephyr dot-files when non-existant -davidben@mit.edu
+ * Jabber: Accept a -m argument to jwrite to set the message. -nelhage@mit.edu
+
+1.6.1
+ * Jabber: Explain how to set your nick when joining a MUC. -andersk@mit.edu
+ * Jabber: Make smartnarrow -i filter on subject. -andersk@mit.edu
+ * Jabber: Fix completion of MUC names. -nelhage@mit.edu
+ * Improve help for bindkey and unbindkey -leonidg@mit.edu
+ * Fix a segfault in smartnarrow. -nelhage@mit.edu
+ * Fix a race in handling of resize events. -andersk@mit.edu
+
 1.6
  * Support filtering on whether a message has been deleted. -nelhage@mit.edu
  * Properly quote strings containing newlines or tabs. -nelhage@mit.edu
