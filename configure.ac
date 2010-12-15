@@ -138,9 +138,10 @@ AM_CONDITIONAL([ENABLE_ZCRYPT], [test "$HAVE_DES_STRING_TO_KEY" && dnl
                                  test "$HAVE_DES_KEY_SCHED" && dnl
                                  test "$HAVE_DES_ECB_ENCRYPT"])
 
-AM_CFLAGS="$AM_CFLAGS -D_XOPEN_SOURCE"
-dnl __EXTENSIONS__ is needed for struct timeval on Solaris when
-dnl _XOPEN_SOURCE is defined.
+AM_CFLAGS="$AM_CFLAGS -D_XOPEN_SOURCE=500"
+dnl Define _BSD_SOURCE because zephyr needs caddr_t.
+AM_CFLAGS="$AM_CFLAGS -D_BSD_SOURCE"
+dnl Define __EXTENSIONS__ for strcasecmp on Solaris.
 AM_CFLAGS="$AM_CFLAGS -D__EXTENSIONS__"
 
 AC_SUBST([AM_CFLAGS])
