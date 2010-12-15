@@ -390,19 +390,36 @@ char *owl_util_stripnewlines(const char *in)
  */
 gchar *owl_util_recursive_resolve_link(const char *filename)
 {
-  gchar *last_filename = g_strdup(filename);
+  gchar *last_path = g_strdup(filename);
   GError *err = NULL;
-  while (last_filename != NULL && g_file_test(last_filename, G_FILE_TEST_IS_SYMLINK)) {
-    gchar *cur_filename = g_file_read_link(last_filename, &err);
-    g_free(last_filename);
-    last_filename = cur_filename;
+
+  while (g_file_test(last_path, G_FILE_TEST_IS_SYMLINK)) {
+    gchar *link_path = g_file_read_link(last_path, &err);
+    if (link_path == NULL) {
+      owl_function_error("Cannot resolve symlink %s: %s",
+			 last_path, err->message);
+      g_error_free(err);
+      g_free(last_path);
+      return NULL;
+    }
+
+    /* Deal with obnoxious relative paths. If we really care, all this
+     * is racy. Whatever. */
+    if (!g_path_is_absolute(link_path)) {
+      char *last_dir = g_path_get_dirname(last_path);
+      char *tmp = g_build_path(G_DIR_SEPARATOR_S,
+			       last_dir,
+			       link_path,
+			       NULL);
+      g_free(last_dir);
+      g_free(link_path);
+      link_path = tmp;
+    }
+
+    g_free(last_path);
+    last_path = link_path;
   }
-  if (last_filename == NULL) {
-    owl_function_error("Cannot resolve symlinked file %s: %s",
-		       filename, err->message);
-    g_error_free(err);
-  }
-  return last_filename;
+  return last_path;
 }
 
 /* Delete all lines matching "line" from the named file.  If no such
