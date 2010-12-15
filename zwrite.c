@@ -389,3 +389,48 @@ void owl_zwrite_cleanup(owl_zwrite *z)
   if (z->message) owl_free(z->message);
   if (z->zsig) owl_free(z->zsig);
 }
+
+/*
+ * Returns a zwrite line suitable for replying, specifically the
+ * message field is stripped out. Result should be freed with
+ * owl_free.
+ */
+char *owl_zwrite_get_replyline(const owl_zwrite *z)
+{
+  /* Match ordering in zwrite help. */
+  GString *buf = g_string_new("");
+  int i;
+
+  /* Disturbingly, it is apparently possible to z->cmd to be null if
+   * owl_zwrite_create_from_line got something starting with -. And we
+   * can't kill it because this is exported to perl. */
+  owl_string_append_quoted_arg(buf, z->cmd ? z->cmd : "zwrite");
+  if (z->noping) {
+    g_string_append(buf, " -n");
+  }
+  if (z->cc) {
+    g_string_append(buf, " -C");
+  }
+  if (strcmp(z->class, "message")) {
+    g_string_append(buf, " -c ");
+    owl_string_append_quoted_arg(buf, z->class);
+  }
+  if (strcmp(z->inst, "personal")) {
+    g_string_append(buf, " -i ");
+    owl_string_append_quoted_arg(buf, z->inst);
+  }
+  if (z->realm && z->realm[0] != '\0') {
+    g_string_append(buf, " -r ");
+    owl_string_append_quoted_arg(buf, z->realm);
+  }
+  if (z->opcode && z->opcode[0] != '\0') {
+    g_string_append(buf, " -O ");
+    owl_string_append_quoted_arg(buf, z->opcode);
+  }
+  for (i = 0; i < owl_list_get_size(&(z->recips)); i++) {
+    g_string_append_c(buf, ' ');
+    owl_string_append_quoted_arg(buf, owl_list_get_element(&(z->recips), i));
+  }
+
+  return g_string_free(buf, false);
+}

@@ -963,6 +963,7 @@ void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const c
 {
   int ret;
   char hostbuff[5000];
+  char *replyline;
   
   owl_message_init(m);
 
@@ -980,9 +981,13 @@ void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const c
   }
   owl_message_set_opcode(m, owl_zwrite_get_opcode(z));
   owl_message_set_realm(m, owl_zwrite_get_realm(z)); /* also a hack, but not here */
-  if(z->zwriteline) {
-    owl_message_set_zwriteline(m, z->zwriteline);
-  }
+
+  /* Although not strictly the zwriteline, anyone using the unsantized version
+   * of it probably has a bug. */
+  replyline = owl_zwrite_get_replyline(z);
+  owl_message_set_zwriteline(m, replyline);
+  owl_free(replyline);
+
   owl_message_set_body(m, body);
   owl_message_set_zsig(m, owl_zwrite_get_zsig(z));
   
