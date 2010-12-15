@@ -38,9 +38,9 @@ void owl_popwin_size_border(owl_window *parent, void *user_data)
 
   owl_window_get_position(parent, &glines, &gcols, 0, 0);
 
-  lines = owl_util_min(glines,24)*3/4 + owl_util_max(glines-24,0)/2;
+  lines = MIN(glines, 24) * 3/4 + MAX(glines - 24, 0) / 2;
   startline = (glines-lines)/2;
-  cols = owl_util_min(gcols,90)*15/16 + owl_util_max(gcols-90,0)/2;
+  cols = MIN(gcols, 90) * 15 / 16 + MAX(gcols - 90, 0) / 2;
   startcol = (gcols-cols)/2;
 
   owl_window_set_position(border, lines, cols, startline, startcol);

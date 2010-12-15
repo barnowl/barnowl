@@ -494,18 +494,6 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
   return numremoved;
 }
 
-int owl_util_max(int a, int b)
-{
-  if (a>b) return(a);
-  return(b);
-}
-
-int owl_util_min(int a, int b)
-{
-  if (a<b) return(a);
-  return(b);
-}
-
 /* Return the base class or instance from a zephyr class, by removing
    leading `un' or trailing `.d'.
    The caller is responsible for freeing the allocated string.
