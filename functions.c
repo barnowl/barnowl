@@ -1631,7 +1631,7 @@ void owl_function_printallvars(void)
   owl_variable_dict_namelist_cleanup(&varnames);
 
   owl_function_popless_text(str->str);
-  g_string_free(str, TRUE);
+  g_string_free(str, true);
 }
 
 void owl_function_show_variables(void)
@@ -2491,9 +2491,10 @@ void owl_function_delete_curview_msgs(int flag)
 
 static char *owl_function_smartfilter_cc(const owl_message *m) {
   const char *ccs;
+  char *ccs_quoted;
   char *filtname;
-  char *text;
   owl_filter *f;
+  GString *buf;
 
   ccs = owl_message_get_attribute_value(m, "zephyr_ccs");
 
@@ -2504,15 +2505,17 @@ static char *owl_function_smartfilter_cc(const owl_message *m) {
     return filtname;
   }
 
-  text = owl_sprintf("type ^zephyr$ and filter personal and "
-                     "zephyr_ccs ^%s%s%s$",
-                     owl_getquoting(ccs), ccs, owl_getquoting(ccs));
+  buf = g_string_new("type ^zephyr$ and filter personal and "
+                     "zephyr_ccs ^");
+  ccs_quoted = owl_text_quote(ccs, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
+  owl_string_append_quoted_arg(buf, ccs_quoted);
+  g_string_append_c(buf, '$');
+  owl_free(ccs_quoted);
 
-  f = owl_filter_new_fromstring(filtname, text);
+  f = owl_filter_new_fromstring(filtname, buf->str);
+  g_string_free(buf, true);
 
   owl_global_add_filter(&g, f);
-
-  owl_free(text);
 
   return filtname;
 }
@@ -2610,8 +2613,8 @@ void owl_function_smartzpunt(int type)
    * If type=0, uses just class.  If type=1, uses instance as well. */
   const owl_view *v;
   const owl_message *m;
-  const char *cmdprefix, *mclass, *minst;
-  char *cmd;
+  const char *mclass, *minst;
+  GString *buf;
   
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
@@ -2637,22 +2640,16 @@ void owl_function_smartzpunt(int type)
     owl_function_error("smartzpunt can't safely do this for <%s,%s>",
 			 mclass, minst);
   } else {
-    cmdprefix = "start-command zpunt ";
-    cmd = owl_malloc(strlen(cmdprefix)+strlen(mclass)+strlen(minst)+10);
-    strcpy(cmd, cmdprefix);
-    strcat(cmd, owl_getquoting(mclass));
-    strcat(cmd, mclass);
-    strcat(cmd, owl_getquoting(mclass));
+    buf = g_string_new("start-command zpunt ");
+    owl_string_append_quoted_arg(buf, mclass);
     if (type) {
-      strcat(cmd, " ");
-      strcat(cmd, owl_getquoting(minst));
-      strcat(cmd, minst);
-      strcat(cmd, owl_getquoting(minst));
+      g_string_append_c(buf, ' ');
+      owl_string_append_quoted_arg(buf, minst);
     } else {
-      strcat(cmd, " *");
+      g_string_append(buf, " *");
     }
-    owl_function_command(cmd);
-    owl_free(cmd);
+    owl_function_command(buf->str);
+    g_string_free(buf, true);
   }
 }
 

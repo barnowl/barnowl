@@ -138,27 +138,24 @@ static void owl_filterelement_print_false(const owl_filterelement *fe, GString *
 
 static void owl_filterelement_print_re(const owl_filterelement *fe, GString *buf)
 {
-  const char *re, *q;
+  const char *re;
   g_string_append(buf, fe->field);
   g_string_append(buf, " ");
 
   re = owl_regex_get_string(&(fe->re));
-  q = owl_getquoting(re);
-  g_string_append(buf, q);
-  g_string_append(buf, re);
-  g_string_append(buf, q);
+  owl_string_append_quoted_arg(buf, re);
 }
 
 static void owl_filterelement_print_filter(const owl_filterelement *fe, GString *buf)
 {
   g_string_append(buf, "filter ");
-  g_string_append(buf, fe->field);
+  owl_string_append_quoted_arg(buf, fe->field);
 }
 
 static void owl_filterelement_print_perl(const owl_filterelement *fe, GString *buf)
 {
   g_string_append(buf, "perl ");
-  g_string_append(buf, fe->field);
+  owl_string_append_quoted_arg(buf, fe->field);
 }
 
 static void owl_filterelement_print_group(const owl_filterelement *fe, GString *buf)
