@@ -1669,7 +1669,7 @@ char *owl_command_multi(int argc, const char *const *argv, const char *buff)
 {
   char *lastrv = NULL, *newbuff;
   char **commands;
-  int  ncommands, i;
+  int  i;
   if (argc < 2) {
     owl_function_makemsg("Invalid arguments to 'multi' command.");    
     return NULL;
@@ -1687,15 +1687,15 @@ char *owl_command_multi(int argc, const char *const *argv, const char *buff)
       }
     }
   }
-  commands = atokenize(newbuff, ";", &ncommands);
-  for (i=0; i<ncommands; i++) {
+  commands = g_strsplit_set(newbuff, ";", 0);
+  for (i = 0; commands[i] != NULL; i++) {
     if (lastrv) {
       owl_free(lastrv);
     }
     lastrv = owl_function_command(commands[i]);
   }
   owl_free(newbuff);
-  atokenize_delete(commands, ncommands);
+  g_strfreev(commands);
   return lastrv;
 }
 

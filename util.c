@@ -11,36 +11,6 @@
 #include <glib/gstdio.h>
 #include <glib-object.h>
 
-char **atokenize(const char *buffer, const char *sep, int *i)
-{
-  /* each element of return must be freed by user */
-  char **args;
-  char *workbuff, *foo;
-  int done=0, first=1, count=0;
-
-  workbuff = owl_strdup(buffer);
-
-  args=NULL;
-  while (!done) {
-    if (first) {
-      first=0;
-      foo=strtok(workbuff, sep);
-    } else {
-      foo=strtok(NULL, sep);
-    }
-    if (foo==NULL) {
-      done=1;
-    } else {
-      args=owl_realloc(args, sizeof(char *) * (count+1));
-      args[count] = owl_strdup(foo);
-      count++;
-    }
-  }
-  *i=count;
-  owl_free(workbuff);
-  return(args);
-}
-
 const char *skiptokens(const char *buff, int n) {
   /* skips n tokens and returns where that would be. */
   char quote = 0;
@@ -125,16 +95,6 @@ char *owl_util_makepath(const char *in)
   out[x]='\0';
   return(out);
 }
-
-void atokenize_delete(char **tok, int nels)
-{
-  int i;
-  for (i=0; i<nels; i++) {
-    owl_free(tok[i]);
-  }
-  owl_free(tok);
-}
-
 
 void owl_parse_delete(char **argv, int argc)
 {

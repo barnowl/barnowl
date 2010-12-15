@@ -38,23 +38,23 @@ int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq)
   char **ktokens;
   int    nktokens, i;
 
-  ktokens = atokenize(keyseq, " ", &nktokens);
-  if (!ktokens) return(-1);
-  if (nktokens > OWL_KEYMAP_MAXSTACK) {
-    atokenize_delete(ktokens, nktokens);
+  ktokens = g_strsplit_set(keyseq, " ", 0);
+  nktokens = g_strv_length(ktokens);
+  if (nktokens < 1 || nktokens > OWL_KEYMAP_MAXSTACK) {
+    g_strfreev(ktokens);
     return(-1);
   }
   kb->keys = owl_malloc(nktokens*sizeof(int));
   for (i=0; i<nktokens; i++) {
     kb->keys[i] = owl_keypress_fromstring(ktokens[i]);
-    if (kb->keys[i] == ERR) { 
-      atokenize_delete(ktokens, nktokens);
+    if (kb->keys[i] == ERR) {
+      g_strfreev(ktokens);
       owl_free(kb->keys);
       return(-1);
     }
   }
   kb->len = nktokens;
-  atokenize_delete(ktokens, nktokens);
+  g_strfreev(ktokens);
   return(0);
 }
 
