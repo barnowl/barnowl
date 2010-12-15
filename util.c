@@ -193,6 +193,47 @@ char **owl_parseline(const char *line, int *argc)
   return(argv);
 }
 
+/* Appends a quoted version of arg suitable for placing in a
+ * command-line to a GString. Does not append a space. */
+void owl_string_append_quoted_arg(GString *buf, const char *arg)
+{
+  const char *argp;
+  if (arg[0] == '\0') {
+    /* Quote the empty string. */
+    g_string_append(buf, "''");
+  } else if (arg[strcspn(arg, "'\" \n\t")] == '\0') {
+    /* If there are no nasty characters, return as-is. */
+    g_string_append(buf, arg);
+  } else if (!strchr(arg, '\'')) {
+    /* Single-quote if possible. */
+    g_string_append_c(buf, '\'');
+    g_string_append(buf, arg);
+    g_string_append_c(buf, '\'');
+  } else {
+    /* Nasty case: double-quote, but change all internal "s to "'"'"
+     * so that they are single-quoted because we're too cool for
+     * backslashes.
+     */
+    g_string_append_c(buf, '"');
+    for (argp = arg; *argp; argp++) {
+      if (*argp == '"')
+	g_string_append(buf, "\"'\"'\"");
+      else
+	g_string_append_c(buf, *argp);
+    }
+    g_string_append_c(buf, '"');
+  }
+}
+
+/* Returns a quoted version of arg suitable for placing in a
+ * command-line. Result should be freed with owl_free. */
+char *owl_arg_quote(const char *arg)
+{
+  GString *buf = g_string_new("");;
+  owl_string_append_quoted_arg(buf, arg);
+  return g_string_free(buf, false);
+}
+
 /* caller must free the return */
 char *owl_util_minutes_to_timestr(int in)
 {

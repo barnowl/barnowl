@@ -175,6 +175,43 @@ int owl_util_regtest(void)
   FAIL_UNLESS("skiptokens 5",
               !strcmp("c d e", skiptokens("a \"'\" c d e", 2)));
 
+#define CHECK_QUOTING(desc, unquoted, quoted)		\
+  do {							\
+      int __argc;					\
+      char *__quoted = owl_arg_quote(unquoted);		\
+      char **__argv;					\
+      FAIL_UNLESS(desc, !strcmp(quoted, __quoted));	\
+      __argv = owl_parseline(__quoted, &__argc);	\
+      FAIL_UNLESS(desc " - arg count", __argc == 1);	\
+      FAIL_UNLESS(desc " - parsed",			\
+		  !strcmp(__argv[0], unquoted));	\
+      owl_parse_delete(__argv, __argc);			\
+      owl_free(__quoted);				\
+    } while (0)
+
+  CHECK_QUOTING("boring text", "mango", "mango");
+  CHECK_QUOTING("spaces", "mangos are tasty", "'mangos are tasty'");
+  CHECK_QUOTING("single quotes", "mango's", "\"mango's\"");
+  CHECK_QUOTING("double quotes", "he said \"mangos are tasty\"",
+		"'he said \"mangos are tasty\"'");
+  CHECK_QUOTING("both quotes",
+		"he said \"mango's are tasty even when you put in "
+		"a random apostrophe\"",
+		"\"he said \"'\"'\"mango's are tasty even when you put in "
+		"a random apostrophe\"'\"'\"\"");
+  CHECK_QUOTING("quote monster", "'\"\"'\"'''\"",
+		"\""
+		"'"
+		"\"'\"'\""
+		"\"'\"'\""
+		"'"
+		"\"'\"'\""
+		"'"
+		"'"
+		"'"
+		"\"'\"'\""
+		"\"");
+
   /* if (numfailed) printf("*** WARNING: failures encountered with owl_util\n"); */
   printf("# END testing owl_util (%d failures)\n", numfailed);
   return(numfailed);
