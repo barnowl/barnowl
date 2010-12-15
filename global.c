@@ -18,6 +18,7 @@ void owl_global_init(owl_global *g) {
   struct hostent *hent;
   char hostname[MAXHOSTNAMELEN];
   char *cd;
+  const char *homedir;
 
   g_type_init();
 
@@ -82,8 +83,13 @@ void owl_global_init(owl_global *g) {
   g->nextmsgid=0;
 
   /* Fill in some variables which don't have constant defaults */
-  /* TODO: come back later and check passwd file first */
-  g->homedir=owl_strdup(getenv("HOME"));
+
+  /* glib's g_get_home_dir prefers passwd entries to $HOME, so we
+   * explicitly check getenv first. */
+  homedir = getenv("HOME");
+  if (!homedir)
+    homedir = g_get_home_dir();
+  g->homedir = owl_strdup(homedir);
 
   g->confdir = NULL;
   g->startupfile = NULL;
