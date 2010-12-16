@@ -626,8 +626,6 @@ typedef struct _owl_global {
   owl_regex search_re;
   aim_session_t aimsess;
   aim_conn_t bosconn;
-  owl_timer aim_noop_timer;
-  owl_timer aim_ignorelogin_timer;
   int aim_loggedin;         /* true if currently logged into AIM */
   int aim_doprocessing;     /* true if we should process AIM events (like pending login) */
   char *aim_screenname;     /* currently logged in AIM screen name */
@@ -642,7 +640,6 @@ typedef struct _owl_global {
   volatile sig_atomic_t got_err_signal; /* 1 if we got an unexpected signal */
   volatile siginfo_t err_signal_info;
   owl_zbuddylist zbuddies;
-  owl_timer zephyr_buddycheck_timer;
   GList *zaldlist;
   int pseudologin_notify;
   struct termios startup_tio;
