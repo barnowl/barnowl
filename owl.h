@@ -549,6 +549,7 @@ typedef struct _owl_io_dispatch {
   void (*callback)(const struct _owl_io_dispatch *, void *); /* C function to dispatch to. */
   void (*destroy)(const struct _owl_io_dispatch *);  /* Destructor */
   void *data;
+  GPollFD pollfd;
 } owl_io_dispatch;
 
 typedef struct _owl_ps_action {

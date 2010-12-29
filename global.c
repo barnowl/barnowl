@@ -16,6 +16,8 @@ void owl_global_init(owl_global *g) {
 
   g_type_init();
 
+  owl_select_init();
+
   g->lines=LINES;
   g->cols=COLS;
   /* We shouldn't need this if we initialize lines and cols before the first
