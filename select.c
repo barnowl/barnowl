@@ -1,8 +1,11 @@
 #include "owl.h"
 
+static GMainLoop *loop = NULL;
 static int dispatch_active = 0;
 static int psa_active = 0;
-static int loop_active = 0;
+
+static GSource *owl_timer_source;
+static GSource *owl_io_dispatch_source;
 
 static int _owl_select_timer_cmp(const owl_timer *t1, const owl_timer *t2) {
   return t1->time - t2->time;
@@ -38,21 +41,66 @@ void owl_select_remove_timer(owl_timer *t)
   }
 }
 
-void owl_select_process_timers(struct timespec *timeout)
-{
-  time_t now = time(NULL);
+static gboolean owl_timer_prepare(GSource *source, int *timeout) {
   GList **timers = owl_global_get_timerlist(&g);
+  GTimeVal now;
 
+  /* TODO: In the far /far/ future, g_source_get_time is what the cool
+   * kids use to get system monotonic time. */
+  g_source_get_current_time(source, &now);
+
+  /* FIXME: bother with millisecond accuracy now that we can? */
+  if (*timers) {
+    owl_timer *t = (*timers)->data;
+    *timeout = t->time - now.tv_sec;
+    if (*timeout <= 0) {
+      *timeout = 0;
+      return TRUE;
+    }
+    if (*timeout > 60 * 1000)
+      *timeout = 60 * 1000;
+  } else {
+    *timeout = 60 * 1000;
+  }
+  return FALSE;
+}
+
+static gboolean owl_timer_check(GSource *source) {
+  GList **timers = owl_global_get_timerlist(&g);
+  GTimeVal now;
+
+  /* TODO: In the far /far/ future, g_source_get_time is what the cool
+   * kids use to get system monotonic time. */
+  g_source_get_current_time(source, &now);
+
+  /* FIXME: bother with millisecond accuracy now that we can? */
+  if (*timers) {
+    owl_timer *t = (*timers)->data;
+    return t->time >= now.tv_sec;
+  }
+  return FALSE;
+}
+
+
+static gboolean owl_timer_dispatch(GSource *source, GSourceFunc callback, gpointer user_data) {
+  GList **timers = owl_global_get_timerlist(&g);
+  GTimeVal now;
+
+  /* TODO: In the far /far/ future, g_source_get_time is what the cool
+   * kids use to get system monotonic time. */
+  g_source_get_current_time(source, &now);
+
+  /* FIXME: bother with millisecond accuracy now that we can? */
   while(*timers) {
     owl_timer *t = (*timers)->data;
     int remove = 0;
 
-    if(t->time > now)
+    if(t->time > now.tv_sec)
       break;
 
     /* Reschedule if appropriate */
     if(t->interval > 0) {
-      t->time = now + t->interval;
+      t->time = now.tv_sec + t->interval;
       *timers = g_list_remove(*timers, t);
       *timers = g_list_insert_sorted(*timers, t,
                                      (GCompareFunc)_owl_select_timer_cmp);
@@ -66,18 +114,16 @@ void owl_select_process_timers(struct timespec *timeout)
       owl_select_remove_timer(t);
     }
   }
-
-  if(*timers) {
-    owl_timer *t = (*timers)->data;
-    timeout->tv_sec = t->time - now;
-    if (timeout->tv_sec > 60)
-      timeout->tv_sec = 60;
-  } else {
-    timeout->tv_sec = 60;
-  }
-
-  timeout->tv_nsec = 0;
+  return TRUE;
 }
+
+static GSourceFuncs owl_timer_funcs = {
+  owl_timer_prepare,
+  owl_timer_check,
+  owl_timer_dispatch,
+  NULL
+};
+
 
 static const owl_io_dispatch *owl_select_find_io_dispatch_by_fd(const int fd)
 {
@@ -123,6 +169,7 @@ void owl_select_remove_io_dispatch(const owl_io_dispatch *in)
         owl_list_remove_element(dl, elt);
         if (d->destroy)
           d->destroy(d);
+	g_source_remove_poll(owl_io_dispatch_source, &d->pollfd);
         g_free(d);
       }
     }
@@ -164,51 +211,69 @@ const owl_io_dispatch *owl_select_add_io_dispatch(int fd, int mode, void (*cb)(c
   d->destroy = destroy;
   d->data = data;
 
+  /* TODO: Allow changing fd and mode in the middle? Probably don't care... */
+  d->pollfd.fd = fd;
+  d->pollfd.events = 0;
+  if (d->mode & OWL_IO_READ)
+    d->pollfd.events |= G_IO_IN | G_IO_HUP | G_IO_ERR;
+  if (d->mode & OWL_IO_WRITE)
+    d->pollfd.events |= G_IO_OUT | G_IO_ERR;
+  if (d->mode & OWL_IO_EXCEPT)
+    d->pollfd.events |= G_IO_PRI | G_IO_ERR;
+  g_source_add_poll(owl_io_dispatch_source, &d->pollfd);
+
+
   owl_select_remove_io_dispatch(owl_select_find_io_dispatch_by_fd(fd));
   owl_list_append_element(dl, d);
 
   return d;
 }
 
-int owl_select_prepare_io_dispatch_fd_sets(fd_set *rfds, fd_set *wfds, fd_set *efds) {
-  int i, len, max_fd;
-  owl_io_dispatch *d;
-  owl_list *dl = owl_global_get_io_dispatch_list(&g);
-
-  max_fd = 0;
-  len = owl_list_get_size(dl);
-  for (i = 0; i < len; i++) {
-    d = owl_list_get_element(dl, i);
-    if (d->mode & (OWL_IO_READ | OWL_IO_WRITE | OWL_IO_EXCEPT)) {
-      if (max_fd < d->fd) max_fd = d->fd;
-      if (d->mode & OWL_IO_READ) FD_SET(d->fd, rfds);
-      if (d->mode & OWL_IO_WRITE) FD_SET(d->fd, wfds);
-      if (d->mode & OWL_IO_EXCEPT) FD_SET(d->fd, efds);
-    }
-  }
-  return max_fd + 1;
+static gboolean owl_io_dispatch_prepare(GSource *source, int *timeout) {
+  owl_select_do_pre_select_actions(); /* HACK */
+  *timeout = -1;
+  return FALSE;
 }
 
-void owl_select_io_dispatch(const fd_set *rfds, const fd_set *wfds, const fd_set *efds, const int max_fd)
-{
+static gboolean owl_io_dispatch_check(GSource *source) {
   int i, len;
-  owl_io_dispatch *d;
-  owl_list *dl = owl_global_get_io_dispatch_list(&g);
+  const owl_list *dl;
+
+  dl = owl_global_get_io_dispatch_list(&g);
+  len = owl_list_get_size(dl);
+  for(i = 0; i < len; i++) {
+    const owl_io_dispatch *d = owl_list_get_element(dl, i);
+    if (d->pollfd.revents & d->pollfd.events)
+      return TRUE;
+  }
+  return FALSE;
+}
+
+static gboolean owl_io_dispatch_dispatch(GSource *source, GSourceFunc callback, gpointer user_data) {
+  int i, len;
+  const owl_list *dl;
 
   dispatch_active = 1;
+  dl = owl_global_get_io_dispatch_list(&g);
   len = owl_list_get_size(dl);
   for (i = 0; i < len; i++) {
-    d = owl_list_get_element(dl, i);
-    if (d->fd < max_fd && d->callback != NULL &&
-        ((d->mode & OWL_IO_READ && FD_ISSET(d->fd, rfds)) ||
-         (d->mode & OWL_IO_WRITE && FD_ISSET(d->fd, wfds)) ||
-         (d->mode & OWL_IO_EXCEPT && FD_ISSET(d->fd, efds)))) {
+    owl_io_dispatch *d = owl_list_get_element(dl, i);
+    if ((d->pollfd.revents & d->pollfd.events) && d->callback != NULL) {
       d->callback(d, d->data);
     }
   }
   dispatch_active = 0;
   owl_select_io_dispatch_gc();
+
+  return TRUE;
 }
+
+static GSourceFuncs owl_io_dispatch_funcs = {
+  owl_io_dispatch_prepare,
+  owl_io_dispatch_check,
+  owl_io_dispatch_dispatch,
+  NULL
+};
 
 int owl_select_add_perl_io_dispatch(int fd, int mode, SV *cb)
 {
@@ -350,6 +415,8 @@ int owl_select_do_pre_select_actions(void)
   return ret;
 }
 
+#if 0
+/* FIXME: Reimplement the AIM hack and handle AIM events. */
 void owl_select(void)
 {
   int i, max_fd, max_fd2, aim_done, ret;
@@ -434,16 +501,27 @@ void owl_select(void)
     owl_select_io_dispatch(&r, &w, &e, max_fd);
   }
 }
+#endif
+
+void owl_select_init(void)
+{
+  owl_timer_source = g_source_new(&owl_timer_funcs, sizeof(GSource));
+  g_source_attach(owl_timer_source, NULL);
+
+  owl_io_dispatch_source = g_source_new(&owl_io_dispatch_funcs, sizeof(GSource));
+  g_source_attach(owl_io_dispatch_source, NULL);
+}
 
 void owl_select_run_loop(void)
 {
-  loop_active = 1;
-  while (loop_active) {
-    owl_select();
-  }
+  loop = g_main_loop_new(NULL, FALSE);
+  g_main_loop_run(loop);
 }
 
 void owl_select_quit_loop(void)
 {
-  loop_active = 0;
+  if (loop) {
+    g_main_loop_quit(loop);
+    loop = NULL;
+  }
 }
