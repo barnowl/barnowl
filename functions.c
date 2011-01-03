@@ -2285,9 +2285,10 @@ void owl_function_show_zpunts(void)
 char *owl_function_classinstfilt(const char *c, const char *i, int related) 
 {
   owl_filter *f;
-  char *argbuff, *filtname;
+  char *filtname;
   char *tmpclass, *tmpinstance = NULL;
   char *class, *instance = NULL;
+  GString *buf;
 
   if (related) {
     class = owl_util_baseclass(c);
@@ -2327,27 +2328,27 @@ char *owl_function_classinstfilt(const char *c, const char *i, int related)
 
   /* create the new filter */
   tmpclass=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
-  owl_text_tr(tmpclass, ' ', '.');
-  owl_text_tr(tmpclass, '\'', '.');
-  owl_text_tr(tmpclass, '"', '.');
   if (instance) {
     tmpinstance=owl_text_quote(instance, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
-    owl_text_tr(tmpinstance, ' ', '.');
-    owl_text_tr(tmpinstance, '\'', '.');
-    owl_text_tr(tmpinstance, '"', '.');
   }
 
-  argbuff = owl_sprintf(related ? "class ^(un)*%s(\\.d)*$" : "class ^%s$", tmpclass);
+  buf = g_string_new("");
+  owl_string_appendf_quoted(buf,
+                            related ? "class ^(un)*%q(\\.d)*$" : "class ^%q$",
+                            tmpclass);
+
   if (tmpinstance) {
-    char *tmp = argbuff;
-    argbuff = owl_sprintf(related ? "%s and ( instance ^(un)*%s(\\.d)*$ )" : "%s and instance ^%s$", tmp, tmpinstance);
-    owl_free(tmp);
+    owl_string_appendf_quoted(buf,
+                              related ?
+                              " and ( instance ^(un)*%q(\\.d)*$ )" :
+                              " and instance ^%q$",
+                              tmpinstance);
   }
   owl_free(tmpclass);
-  if (tmpinstance) owl_free(tmpinstance);
+  owl_free(tmpinstance);
 
-  f = owl_filter_new_fromstring(filtname, argbuff);
-  owl_free(argbuff);
+  f = owl_filter_new_fromstring(filtname, buf->str);
+  g_string_free(buf, true);
   if (f == NULL) {
     /* Couldn't make a filter for some reason. Return NULL. */
     owl_function_error("Error creating filter '%s'", filtname);
