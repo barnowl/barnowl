@@ -2393,10 +2393,10 @@ char *owl_function_zuserfilt(const char *longuser)
   /* create the new-internal filter */
   esclonguser = owl_text_quote(longuser, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
 
-  argbuff=owl_sprintf("( type ^zephyr$ and filter personal and "
-      "( ( direction ^in$ and sender ^%1$s$ ) or ( direction ^out$ and "
-      "recipient ^%1$s$ ) ) ) or ( ( class ^login$ ) and ( sender ^%1$s$ ) )",
-      esclonguser);
+  argbuff=owl_string_build_quoted("( type ^zephyr$ and filter personal and "
+      "( ( direction ^in$ and sender ^%q$ ) or ( direction ^out$ and "
+      "recipient ^%q$ ) ) ) or ( ( class ^login$ ) and ( sender ^%q$ ) )",
+      esclonguser, esclonguser, esclonguser);
   owl_free(esclonguser);
 
   f = owl_filter_new_fromstring(filtname, argbuff);
