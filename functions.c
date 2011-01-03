@@ -2279,7 +2279,7 @@ void owl_function_show_zpunts(void)
 
 /* Create a filter for a class, instance if one doesn't exist.  If
  * instance is NULL then catch all messgaes in the class.  Returns the
- * name of the filter, which the caller must free.
+ * name of the filter or null.  The caller must free this name.
  * If 'related' is nonzero, encompass unclasses and .d classes as well.
  */
 char *owl_function_classinstfilt(const char *c, const char *i, int related) 
@@ -2347,11 +2347,18 @@ char *owl_function_classinstfilt(const char *c, const char *i, int related)
   if (tmpinstance) owl_free(tmpinstance);
 
   f = owl_filter_new_fromstring(filtname, argbuff);
+  owl_free(argbuff);
+  if (f == NULL) {
+    /* Couldn't make a filter for some reason. Return NULL. */
+    owl_function_error("Error creating filter '%s'", filtname);
+    owl_free(filtname);
+    filtname = NULL;
+    goto done;
+  }
 
   /* add it to the global list */
   owl_global_add_filter(&g, f);
 
-  owl_free(argbuff);
 done:
   owl_free(class);
   if (instance) {
@@ -2389,15 +2396,20 @@ char *owl_function_zuserfilt(const char *longuser)
       "( ( direction ^in$ and sender ^%1$s$ ) or ( direction ^out$ and "
       "recipient ^%1$s$ ) ) ) or ( ( class ^login$ ) and ( sender ^%1$s$ ) )",
       esclonguser);
+  owl_free(esclonguser);
 
   f = owl_filter_new_fromstring(filtname, argbuff);
+  owl_free(argbuff);
+
+  if (f == NULL) {
+    /* Couldn't make a filter for some reason. Return NULL. */
+    owl_function_error("Error creating filter '%s'", filtname);
+    owl_free(filtname);
+    return NULL;
+  }
 
   /* add it to the global list */
   owl_global_add_filter(&g, f);
-
-  /* free stuff */
-  owl_free(argbuff);
-  owl_free(esclonguser);
 
   return(filtname);
 }
@@ -2429,15 +2441,19 @@ char *owl_function_aimuserfilt(const char *user)
       "( type ^aim$ and ( ( sender ^%1$s$ and recipient ^%2$s$ ) or "
       "( sender ^%2$s$ and recipient ^%1$s$ ) ) )",
       escuser, owl_global_get_aim_screenname_for_filters(&g));
+  owl_free(escuser);
 
   f = owl_filter_new_fromstring(filtname, argbuff);
+  owl_free(argbuff);
+
+  if (f == NULL) {
+    owl_function_error("Error creating filter '%s'", filtname);
+    owl_free(filtname);
+    return NULL;
+  }
 
   /* add it to the global list */
   owl_global_add_filter(&g, f);
-
-  /* free stuff */
-  owl_free(argbuff);
-  owl_free(escuser);
 
   return(filtname);
 }
@@ -2459,15 +2475,19 @@ char *owl_function_typefilt(const char *type)
   esctype = owl_text_quote(type, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
 
   argbuff = owl_sprintf("type ^%s$", esctype);
+  owl_free(esctype);
 
   f = owl_filter_new_fromstring(filtname, argbuff);
+  owl_free(argbuff);
+
+  if (f == NULL) {
+    owl_function_error("Error creating filter '%s'", filtname);
+    owl_free(filtname);
+    return NULL;
+  }
 
   /* add it to the global list */
   owl_global_add_filter(&g, f);
-
-  /* free stuff */
-  owl_free(argbuff);
-  owl_free(esctype);
 
   return filtname;
 }
@@ -2519,6 +2539,12 @@ static char *owl_function_smartfilter_cc(const owl_message *m) {
 
   f = owl_filter_new_fromstring(filtname, buf->str);
   g_string_free(buf, true);
+
+  if (f == NULL) {
+    owl_function_error("Error creating filter '%s'", filtname);
+    owl_free(filtname);
+    return NULL;
+  }
 
   owl_global_add_filter(&g, f);
 
