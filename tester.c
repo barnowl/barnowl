@@ -703,6 +703,31 @@ static int owl_classinstfilt_test(const char *c, const char *i, int related, con
   return failed;
 }
 
+static int owl_zuserfilt_test(const char *longuser, const char *expected) {
+  char *filtname = NULL;
+  int failed = 0;
+
+  filtname = owl_function_zuserfilt(longuser);
+  if (filtname == NULL) {
+    printf("not ok null filtname: %s\n", longuser);
+    failed = 1;
+    goto out;
+  }
+  if (owl_smartfilter_test_equals(filtname, expected)) {
+    failed = 1;
+    goto out;
+  }
+ out:
+  if (!failed) {
+    printf("ok %s\n", filtname);
+  }
+  if (filtname)
+    owl_global_remove_filter(&g, filtname);
+  owl_free(filtname);
+  return failed;
+}
+
+
 int owl_smartfilter_regtest(void) {
   int numfailed = 0;
 
@@ -734,6 +759,28 @@ int owl_smartfilter_regtest(void) {
   TEST_CLASSINSTFILT("message", "evil$instance", false,
 		     "class ^message$ and instance ^evil\\$instance$\n");
 
+#define TEST_ZUSERFILT(l, e) do {			\
+    numtests++;						\
+    numfailed += owl_zuserfilt_test(l, e);		\
+  } while (0)
+  TEST_ZUSERFILT("user",
+		 "( type ^zephyr$ and filter personal and "
+		 "( ( direction ^in$ and sender "
+		 "^user$"
+		 " ) or ( direction ^out$ and recipient "
+		 "^user$"
+		 " ) ) ) or ( ( class ^login$ ) and ( sender "
+		 "^user$"
+		 " ) )\n");
+  TEST_ZUSERFILT("very evil\t.user",
+		 "( type ^zephyr$ and filter personal and "
+		 "( ( direction ^in$ and sender "
+		 "'^very evil\t\\.user$'"
+		 " ) or ( direction ^out$ and recipient "
+		 "'^very evil\t\\.user$'"
+		 " ) ) ) or ( ( class ^login$ ) and ( sender "
+		 "'^very evil\t\\.user$'"
+		 " ) )\n");
 
   printf("# END testing owl_smartfilter (%d failures)\n", numfailed);
 
