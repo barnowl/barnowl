@@ -2784,49 +2784,37 @@ void owl_function_show_colors(void)
  */
 void owl_function_zpunt(const char *class, const char *inst, const char *recip, int direction)
 {
-  char *puntexpr, *classexpr, *instexpr, *recipexpr;
+  GString *buf;
   char *quoted;
 
+  buf = g_string_new("");
   if (!strcmp(class, "*")) {
-    classexpr = owl_sprintf("class .*");
+    g_string_append(buf, "class .*");
   } else {
     quoted=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
-    owl_text_tr(quoted, ' ', '.');
-    owl_text_tr(quoted, '\'', '.');
-    owl_text_tr(quoted, '"', '.');
-    classexpr = owl_sprintf("class ^(un)*%s(\\.d)*$", quoted);
+    owl_string_appendf_quoted(buf, "class ^(un)*%q(\\.d)*$", quoted);
     owl_free(quoted);
   }
   if (!strcmp(inst, "*")) {
-    instexpr = owl_sprintf(" and instance .*");
+    g_string_append(buf, " and instance .*");
   } else {
     quoted=owl_text_quote(inst, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
-    owl_text_tr(quoted, ' ', '.');
-    owl_text_tr(quoted, '\'', '.');
-    owl_text_tr(quoted, '"', '.');
-    instexpr = owl_sprintf(" and instance ^(un)*%s(\\.d)*$", quoted);
+    owl_string_appendf_quoted(buf, " and instance ^(un)*%q(\\.d)*$", quoted);
     owl_free(quoted);
   }
   if (!strcmp(recip, "*")) {
-    recipexpr = owl_sprintf("");
+    /* g_string_append(buf, ""); */
   } else {
     if(!strcmp(recip, "%me%")) {
       recip = owl_zephyr_get_sender();
     }
     quoted=owl_text_quote(recip, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
-    owl_text_tr(quoted, ' ', '.');
-    owl_text_tr(quoted, '\'', '.');
-    owl_text_tr(quoted, '"', '.');
-    recipexpr = owl_sprintf(" and recipient ^%s$", quoted);
+    owl_string_appendf_quoted(buf, " and recipient ^%q$", quoted);
     owl_free(quoted);
   }
 
-  puntexpr = owl_sprintf("%s %s %s", classexpr, instexpr, recipexpr);
-  owl_function_punt(puntexpr, direction);
-  owl_free(puntexpr);
-  owl_free(classexpr);
-  owl_free(instexpr);
-  owl_free(recipexpr);
+  owl_function_punt(buf->str, direction);
+  g_string_free(buf, true);
 }
 
 void owl_function_punt(const char *filter, int direction)
