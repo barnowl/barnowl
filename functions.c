@@ -2475,7 +2475,7 @@ char *owl_function_typefilt(const char *type)
   /* create the new-internal filter */
   esctype = owl_text_quote(type, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
 
-  argbuff = owl_sprintf("type ^%s$", esctype);
+  argbuff = owl_string_build_quoted("type ^%q$", esctype);
   owl_free(esctype);
 
   f = owl_filter_new_fromstring(filtname, argbuff);
