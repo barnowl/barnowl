@@ -21,6 +21,7 @@ int owl_filter_regtest(void);
 int owl_obarray_regtest(void);
 int owl_editwin_regtest(void);
 int owl_fmtext_regtest(void);
+int owl_smartfilter_regtest(void);
 
 extern void owl_perl_xs_init(pTHX);
 
@@ -107,6 +108,7 @@ int owl_regtest(void) {
   numfailures += owl_filter_regtest();
   numfailures += owl_editwin_regtest();
   numfailures += owl_fmtext_regtest();
+  numfailures += owl_smartfilter_regtest();
   if (numfailures) {
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
@@ -647,6 +649,93 @@ int owl_fmtext_regtest(void) {
   owl_fmtext_cleanup(&fm2);
 
   printf("# END testing owl_fmtext (%d failures)\n", numfailed);
+
+  return numfailed;
+}
+
+static int owl_smartfilter_test_equals(const char *filtname, const char *expected) {
+  owl_filter *f = NULL;
+  char *filtstr = NULL;
+  int failed = 0;
+  f = owl_global_get_filter(&g, filtname);
+  if (f == NULL) {
+    printf("not ok filter missing: %s\n", filtname);
+    failed = 1;
+    goto out;
+  }
+
+  /* TODO: Come up with a better way to test this. */
+  filtstr = owl_filter_print(f);
+  if (strcmp(expected, filtstr)) {
+    printf("not ok filter incorrect: |%s| instead of |%s|\n",
+	   filtstr, expected);
+    failed = 1;
+    goto out;
+  }
+
+ out:
+  owl_free(filtstr);
+  return failed;
+}
+
+static int owl_classinstfilt_test(const char *c, const char *i, int related, const char *expected) {
+  char *filtname = NULL;
+  int failed = 0;
+
+  filtname = owl_function_classinstfilt(c, i, related);
+  if (filtname == NULL) {
+    printf("not ok null filtname: %s %s %s\n", c, i ? i : "(null)",
+	   related ? "related" : "not related");
+    failed = 1;
+    goto out;
+  }
+  if (owl_smartfilter_test_equals(filtname, expected)) {
+    failed = 1;
+    goto out;
+  }
+ out:
+  if (!failed) {
+    printf("ok %s\n", filtname);
+  }
+  if (filtname)
+    owl_global_remove_filter(&g, filtname);
+  owl_free(filtname);
+  return failed;
+}
+
+int owl_smartfilter_regtest(void) {
+  int numfailed = 0;
+
+  printf("# BEGIN testing owl_smartfilter\n");
+
+  /* Check classinst making. */
+
+#define TEST_CLASSINSTFILT(c, i, r, e) do {		\
+    numtests++;						\
+    numfailed += owl_classinstfilt_test(c, i, r, e);	\
+  } while (0)
+  TEST_CLASSINSTFILT("message", NULL, false,
+		     "class ^message$\n");
+  TEST_CLASSINSTFILT("message", NULL, true,
+		     "class ^(un)*message(\\.d)*$\n");
+  TEST_CLASSINSTFILT("message", "personal", false,
+		     "class ^message$ and instance ^personal$\n");
+  TEST_CLASSINSTFILT("message", "personal", true,
+		     "class ^(un)*message(\\.d)*$ and ( instance ^(un)*personal(\\.d)*$ )\n");
+
+  TEST_CLASSINSTFILT("message", "evil\tinstance", false,
+		     "class ^message$ and instance '^evil\tinstance$'\n");
+  TEST_CLASSINSTFILT("message", "evil instance", false,
+		     "class ^message$ and instance '^evil instance$'\n");
+  TEST_CLASSINSTFILT("message", "evil'instance", false,
+		     "class ^message$ and instance \"^evil'instance$\"\n");
+  TEST_CLASSINSTFILT("message", "evil\"instance", false,
+		     "class ^message$ and instance '^evil\"instance$'\n");
+  TEST_CLASSINSTFILT("message", "evil$instance", false,
+		     "class ^message$ and instance ^evil\\$instance$\n");
+
+
+  printf("# END testing owl_smartfilter (%d failures)\n", numfailed);
 
   return numfailed;
 }
