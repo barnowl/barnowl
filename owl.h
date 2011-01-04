@@ -593,7 +593,6 @@ typedef struct _owl_global {
   gulong typwin_erase_id;
   int rightshift;
   volatile sig_atomic_t resizepending;
-  char *thishost;
   char *homedir;
   char *confdir;
   char *startupfile;

@@ -8,27 +8,13 @@
 #include <time.h>
 #include "owl.h"
 
-#ifndef MAXHOSTNAMELEN
-#define MAXHOSTNAMELEN 256
-#endif
-
 static void _owl_global_init_windows(owl_global *g);
 
 void owl_global_init(owl_global *g) {
-  struct hostent *hent;
-  char hostname[MAXHOSTNAMELEN];
   char *cd;
   const char *homedir;
 
   g_type_init();
-
-  gethostname(hostname, MAXHOSTNAMELEN);
-  hent=gethostbyname(hostname);
-  if (!hent) {
-    g->thishost=g_strdup("localhost");
-  } else {
-    g->thishost=g_strdup(hent->h_name);
-  }
 
   g->lines=LINES;
   g->cols=COLS;
@@ -496,11 +482,6 @@ void owl_global_set_lastinputtime(owl_global *g, time_t time) {
 
 time_t owl_global_get_idletime(const owl_global *g) {
   return(time(NULL)-g->lastinputtime);
-}
-
-const char *owl_global_get_hostname(const owl_global *g) {
-  if (g->thishost) return(g->thishost);
-  return("");
 }
 
 /* viewwin */

@@ -959,8 +959,6 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, const char 
 
 void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const char *body)
 {
-  int ret;
-  char hostbuff[5000];
   char *replyline;
   
   owl_message_init(m);
@@ -990,13 +988,7 @@ void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const c
   owl_message_set_zsig(m, owl_zwrite_get_zsig(z));
   
   /* save the hostname */
-  ret=gethostname(hostbuff, MAXHOSTNAMELEN);
-  hostbuff[MAXHOSTNAMELEN]='\0';
-  if (ret) {
-    owl_message_set_hostname(m, "localhost");
-  } else {
-    owl_message_set_hostname(m, hostbuff);
-  }
+  owl_message_set_hostname(m, g_get_host_name());
 
   /* set the "isprivate" attribute if it's a private zephyr. */
   if (owl_zwrite_is_personal(z)) {

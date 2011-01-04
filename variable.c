@@ -465,7 +465,7 @@ int owl_variable_disable_ctrl_d_set(owl_variable *v, const void *newval)
 
 int owl_variable_tty_set(owl_variable *v, const void *newval)
 {
-  owl_zephyr_set_locationinfo(owl_global_get_hostname(&g), newval);
+  owl_zephyr_set_locationinfo(g_get_host_name(), newval);
   return(owl_variable_string_set_default(v, newval));
 }
 
