@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
+#include <stdarg.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <glib-object.h>
@@ -263,6 +264,48 @@ void owl_string_append_quoted_arg(GString *buf, const char *arg)
     }
     g_string_append_c(buf, '"');
   }
+}
+
+/*
+ * Appends 'tmpl' to 'buf', replacing any instances of '%q' with arguments from
+ * the varargs provided, quoting them to be safe for placing in a barnowl
+ * command line.
+ */
+void owl_string_appendf_quoted(GString *buf, const char *tmpl, ...)
+{
+  va_list ap;
+  va_start(ap, tmpl);
+  owl_string_vappendf_quoted(buf, tmpl, ap);
+  va_end(ap);
+}
+
+void owl_string_vappendf_quoted(GString *buf, const char *tmpl, va_list ap)
+{
+  const char *p = tmpl, *last = tmpl;
+  while (true) {
+    p = strchr(p, '%');
+    if (p == NULL) break;
+    if (*(p+1) != 'q') {
+      p++;
+      if (*p) p++;
+      continue;
+    }
+    g_string_append_len(buf, last, p - last);
+    owl_string_append_quoted_arg(buf, va_arg(ap, char *));
+    p += 2; last = p;
+  }
+
+  g_string_append(buf, last);
+}
+
+char *owl_string_build_quoted(const char *tmpl, ...)
+{
+  GString *buf = g_string_new("");
+  va_list ap;
+  va_start(ap, tmpl);
+  owl_string_vappendf_quoted(buf, tmpl, ap);
+  va_end(ap);
+  return g_string_free(buf, false);  
 }
 
 /* Returns a quoted version of arg suitable for placing in a
