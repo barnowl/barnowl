@@ -375,6 +375,7 @@ void owl_callback_zwrite(owl_editwin *e) {
 /* send, log and display an outgoing zephyr.  If 'msg' is NULL
  * the message is expected to be set from the zwrite line itself
  */
+#ifdef HAVE_LIBZEPHYR
 void owl_function_zwrite(owl_zwrite *z, const char *msg)
 {
   owl_message *m;
@@ -409,6 +410,10 @@ void owl_function_zwrite(owl_zwrite *z, const char *msg)
     }
   }
 }
+#else
+void owl_function_zwrite(owl_zwrite *z, const char *msg) {
+}
+#endif
 
 /* send, log and display an outgoing zcrypt zephyr.  If 'msg' is NULL
  * the message is expected to be set from the zwrite line itself
