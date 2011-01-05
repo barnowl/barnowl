@@ -23,7 +23,6 @@ struct _owl_editwin { /*noproto*/
   int allocated;
   int index;
   int mark;
-  char *killbuf;
   int goal_column;
   int topindex;
   int column;
@@ -87,7 +86,6 @@ static void _owl_editwin_delete(owl_editwin *e)
     g_object_unref(e->win);
   }
   owl_free(e->buff);
-  owl_free(e->killbuf);
   /* just in case someone forgot to clean up */
   while (e->excursions) {
     oe_release_excursion(e, e->excursions);
@@ -131,9 +129,6 @@ static void _owl_editwin_init(owl_editwin *e,
   e->allocated=INCR;
   oe_set_index(e, 0);
   oe_set_mark(e, -1);
-  if (e->killbuf != NULL)
-    owl_free(e->killbuf);
-  e->killbuf = NULL;
   e->goal_column = -1;
   e->column = -1;
   e->topindex = 0;
@@ -1065,21 +1060,24 @@ void owl_editwin_delete_to_endofline(owl_editwin *e)
 
 void owl_editwin_yank(owl_editwin *e)
 {
-  if (e->killbuf != NULL)
-    owl_editwin_replace(e, 0, e->killbuf);
+  char *killbuf = owl_global_get_kill_buffer(&g);
+
+  if (killbuf != NULL)
+    owl_editwin_replace(e, 0, killbuf);
 }
 
 static const char *oe_copy_buf(owl_editwin *e, const char *buf, int len)
 {
   char *p;
+  char *killbuf = owl_global_get_kill_buffer(&g);
 
   p = owl_malloc(len + 1);
 
   if (p != NULL) {
-    owl_free(e->killbuf);
-    e->killbuf = p;
-    memcpy(e->killbuf, buf, len);
-    e->killbuf[len] = 0;
+    owl_free(killbuf);
+    memcpy(p, buf, len);
+    p[len] = 0;
+    owl_global_set_kill_buffer(&g,p);
   }
 
   return p;

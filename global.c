@@ -124,6 +124,7 @@ void owl_global_init(owl_global *g) {
   owl_list_create(&(g->psa_list));
   g->timerlist = NULL;
   g->interrupted = FALSE;
+  g->kill_buffer = NULL;
 }
 
 static void _owl_global_init_windows(owl_global *g)
@@ -987,4 +988,12 @@ FILE *owl_global_get_debug_file_handle(owl_global *g) {
     open_file = owl_strdup(filename);
   }
   return g->debug_file;
+}
+
+char *owl_global_get_kill_buffer(owl_global *g) {
+  return g->kill_buffer;
+}
+
+void owl_global_set_kill_buffer(owl_global *g,char *kill) {
+  g->kill_buffer = kill;
 }

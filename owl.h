@@ -650,6 +650,7 @@ typedef struct _owl_global {
   int load_initial_subs;
   volatile sig_atomic_t interrupted;
   FILE *debug_file;
+  char *kill_buffer;
 } owl_global;
 
 /* globals */
