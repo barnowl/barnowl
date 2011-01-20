@@ -1,4 +1,5 @@
 1.7
+ * Fix quoting bugs in smartfilter, zpunt, and numerous other commands. -davidben@mit.edu
  * Download Twitter consumer keys from barnowl.mit.edu. -nelhage@MIT.EDU
  * Fix unsub when .zephyr.subs is a symlink. -jgross@MIT.EDU
  * Display subject as XMPP personal context (if set). -adehnert@mit.edu
