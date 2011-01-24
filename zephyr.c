@@ -479,7 +479,6 @@ int owl_zephyr_unsub(const char *class, const char *inst, const char *recip)
 char *owl_zephyr_get_field(const ZNotice_t *n, int j)
 {
   int i, count, save;
-  char *out;
 
   /* If there's no message here, just run along now */
   if (n->z_message_len == 0)
@@ -499,10 +498,7 @@ char *owl_zephyr_get_field(const ZNotice_t *n, int j)
   }
   /* catch the last field, which might not be null terminated */
   if (count==j-1) {
-    out=owl_malloc(n->z_message_len-save+5);
-    memcpy(out, n->z_message+save, n->z_message_len-save);
-    out[n->z_message_len-save]='\0';
-    return(out);
+    return g_strndup(n->z_message + save, n->z_message_len - save);
   }
 
   return(owl_strdup(""));
@@ -531,9 +527,7 @@ char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
   /* catch the last field, which might not be null terminated */
   if (count == j - 1) {
     char *tmp, *out;
-    tmp = owl_malloc(n->z_message_len-save+5);
-    memcpy(tmp, n->z_message+save, n->z_message_len-save);
-    tmp[n->z_message_len-save]='\0';
+    tmp = g_strndup(n->z_message + save, n->z_message_len - save);
     out = owl_validate_or_convert(tmp);
     owl_free(tmp);
     return out;
