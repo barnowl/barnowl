@@ -1973,81 +1973,51 @@ char *owl_command_zwrite(int argc, const char *const *argv, const char *buff)
 
 char *owl_command_aimwrite(int argc, const char *const *argv, const char *buff)
 {
-  char *newbuff, *recip;
+  char *message = NULL;
+  GString *recip = g_string_new("");
   const char *const *myargv;
-  int i, j, myargc;
-  owl_message *m;
+  int myargc;
   
   if (!owl_global_is_aimloggedin(&g)) {
-    owl_function_makemsg("You are not logged in to AIM.");
-    return(NULL);
+    owl_function_error("You are not logged in to AIM.");
+    goto err;
   }
 
-  if (argc < 2) {
-    owl_function_makemsg("Not enough arguments to the aimwrite command.");
-    return(NULL);
-  }
-
-  myargv=argv;
-  if (argc<0) {
-    owl_function_error("Unbalanced quotes in aimwrite");
-    return(NULL);
-  }
-  myargc=argc;
-  if (myargc && *(myargv[0])!='-') {
-    myargc--;
-    myargv++;
-  }
+  /* Skip argv[0]. */
+  myargv = argv+1;
+  myargc = argc-1;
   while (myargc) {
     if (!strcmp(myargv[0], "-m")) {
-      if (myargc<2) {
-	break;
+      if (myargc <= 1) {
+	owl_function_error("No message specified.");
+	goto err;
       }
-
       /* Once we have -m, gobble up everything else on the line */
       myargv++;
       myargc--;
-      newbuff=owl_strdup("");
-      while (myargc) {
-	newbuff=owl_realloc(newbuff, strlen(newbuff)+strlen(myargv[0])+5);
-	strcat(newbuff, myargv[0]);
-	strcat(newbuff, " ");
-	myargc--;
-	myargv++;
-      }
-      if (strlen(newbuff) >= 1)
-	newbuff[strlen(newbuff) - 1] = '\0'; /* remove last space */
-
-      recip=owl_strdup(argv[1]);
-      owl_aim_send_im(recip, newbuff);
-      m=owl_function_make_outgoing_aim(newbuff, recip);
-      if (m) { 
-          owl_global_messagequeue_addmsg(&g, m);
-      } else {
-          owl_function_error("Could not create outgoing AIM message");
-      }
-
-      owl_free(recip);
-      owl_free(newbuff);
-      return(NULL);
+      message = g_strjoinv(" ", (char**)myargv);
+      break;
     } else {
-      /* we don't care */
+      /* squish arguments together to make one screenname w/o spaces for now */
+      g_string_append(recip, myargv[0]);
       myargv++;
       myargc--;
     }
   }
 
-  /* squish arguments together to make one screenname w/o spaces for now */
-  newbuff=owl_malloc(strlen(buff)+5);
-  sprintf(newbuff, "%s ", argv[0]);
-  j=argc-1;
-  for (i=0; i<j; i++) {
-    strcat(newbuff, argv[i+1]);
+  if (recip->str[0] == '\0') {
+    owl_function_error("No recipient specified");
+    goto err;
   }
-    
-  owl_function_aimwrite_setup(newbuff);
-  owl_free(newbuff);
-  return(NULL);
+
+  if (message != NULL)
+    owl_function_aimwrite(recip->str, message, false);
+  else
+    owl_function_aimwrite_setup(recip->str);
+ err:
+  g_string_free(recip, true);
+  owl_free(message);
+  return NULL;
 }
 
 char *owl_command_loopwrite(int argc, const char *const *argv, const char *buff)

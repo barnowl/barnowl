@@ -349,14 +349,17 @@ void owl_function_zwrite_setup(owl_zwrite *z)
                               z, (void(*)(void*))owl_zwrite_delete);
 }
 
-void owl_function_aimwrite_setup(const char *line)
+void owl_function_aimwrite_setup(const char *to)
 {
+  /* TODO: We probably actually want an owl_aimwrite object like
+   * owl_zwrite. */
+  char *line = owl_sprintf("aimwrite %s", to);
   owl_function_write_setup("message");
   owl_function_start_edit_win(line,
                               &owl_callback_aimwrite,
-                              owl_strdup(line),
+                              owl_strdup(to),
                               owl_free);
-
+  owl_free(line);
 }
 
 void owl_function_loopwrite_setup(void)
@@ -476,23 +479,20 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
 }
 
 void owl_callback_aimwrite(owl_editwin *e) {
-  char *command = owl_editwin_get_cbdata(e);
-  owl_function_aimwrite(command,
-                        owl_editwin_get_text(e));
+  char *to = owl_editwin_get_cbdata(e);
+  owl_function_aimwrite(to, owl_editwin_get_text(e), true);
 }
 
-void owl_function_aimwrite(const char *line, const char *msg)
+void owl_function_aimwrite(const char *to, const char *msg, bool unwrap)
 {
   int ret;
-  const char *to;
   char *format_msg;
   owl_message *m;
 
-  to = line + 9;
-
   /* make a formatted copy of the message */
-  format_msg=owl_strdup(msg);
-  owl_text_wordunwrap(format_msg);
+  format_msg = owl_strdup(msg);
+  if (unwrap)
+    owl_text_wordunwrap(format_msg);
   
   /* send the message */
   ret=owl_aim_send_im(to, format_msg);
