@@ -2300,11 +2300,14 @@ char *owl_command_viewclass(int argc, const char *const *argv, const char *buff)
 char *owl_command_viewuser(int argc, const char *const *argv, const char *buff)
 {
   char *filtname;
+  char *longuser;
   if (argc!=2) {
     owl_function_makemsg("Wrong number of arguments to viewuser command");
     return NULL;
   }
-  filtname=owl_function_zuserfilt(argv[1]);
+  longuser = long_zuser(argv[1]);
+  filtname = owl_function_zuserfilt(longuser);
+  owl_free(longuser);
   if (filtname) {
     owl_function_change_currentview_filter(filtname);
     owl_free(filtname);
