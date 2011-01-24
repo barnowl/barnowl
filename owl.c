@@ -453,8 +453,8 @@ static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
 
 int main(int argc, char **argv, char **env)
 {
-  int argcsave;
-  const char *const *argvsave;
+  int argc_copy;
+  char **argv_copy;
   char *perlout, *perlerr;
   const owl_style *s;
   const char *dir;
@@ -463,8 +463,8 @@ int main(int argc, char **argv, char **env)
   if (!GLIB_CHECK_VERSION (2, 12, 0))
     g_error ("GLib version 2.12.0 or above is needed.");
 
-  argcsave=argc;
-  argvsave=strs(argv);
+  argc_copy = argc;
+  argv_copy = g_strdupv(argv);
 
   setlocale(LC_ALL, "");
 
@@ -482,7 +482,8 @@ int main(int argc, char **argv, char **env)
   if (opts.debug) owl_global_set_debug_on(&g);
   if (opts.confdir) owl_global_set_confdir(&g, opts.confdir);
   owl_function_debugmsg("startup: first available debugging message");
-  owl_global_set_startupargs(&g, argcsave, argvsave);
+  owl_global_set_startupargs(&g, argc_copy, argv_copy);
+  g_strfreev(argv_copy);
   owl_global_set_haveaim(&g);
 
   /* register STDIN dispatch; throw away return, we won't need it */

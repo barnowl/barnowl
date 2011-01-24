@@ -526,22 +526,9 @@ void owl_global_set_curmsg_vert_offset(owl_global *g, int i) {
 
 /* startup args */
 
-void owl_global_set_startupargs(owl_global *g, int argc, const char *const *argv) {
-  int i, len;
-
+void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
   if (g->startupargs) owl_free(g->startupargs);
-  
-  len=0;
-  for (i=0; i<argc; i++) {
-    len+=strlen(argv[i])+5;
-  }
-  g->startupargs=owl_malloc(len+5);
-
-  strcpy(g->startupargs, "");
-  for (i=0; i<argc; i++) {
-    sprintf(g->startupargs + strlen(g->startupargs), "%s ", argv[i]);
-  }
-  g->startupargs[strlen(g->startupargs)-1]='\0';
+  g->startupargs = g_strjoinv(" ", argv);
 }
 
 const char *owl_global_get_startupargs(const owl_global *g) {
