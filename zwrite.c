@@ -16,7 +16,7 @@ owl_zwrite *owl_zwrite_new(const char *line)
 
 int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
 {
-  int argc, badargs, myargc, i, len;
+  int argc, badargs, myargc;
   char **argv;
   const char *const *myargv;
   char *msg = NULL;
@@ -104,20 +104,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
       /* Once we have -m, gobble up everything else on the line */
       myargv++;
       myargc--;
-      len = 0;
-      for (i=0;i<myargc;i++) {
-        len += strlen(myargv[i]) + 1;
-      }
-      len++;    /* NULL after the last trailing ' ' in the loop below. */
-      msg = owl_malloc(len);
-      msg[0] = '\0';
-      while (myargc) {
-        strcat(msg, myargv[0]);
-        strcat(msg, " ");
-        myargc--;
-        myargv++;
-      }
-      msg[strlen(msg)-1] = '\0';
+      msg = g_strjoinv(" ", (char**)myargv);
       break;
     } else if (!strcmp(myargv[0], "-C")) {
       z->cc=1;
