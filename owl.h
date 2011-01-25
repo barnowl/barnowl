@@ -1,4 +1,4 @@
-/*  Copyright (c) 2006-2010 The BarnOwl Developers. All rights reserved.
+/*  Copyright (c) 2006-2011 The BarnOwl Developers. All rights reserved.
  *  Copyright (c) 2004 James Kretchmar. All rights reserved.
  *
  *  This program is free software. You can redistribute it and/or
