@@ -3214,9 +3214,6 @@ void owl_function_do_newmsgproc(void)
 	if (myargc <= 0) {
 	  _exit(127);
 	}
-	parsed=owl_realloc(parsed, sizeof(*parsed) * (myargc+1));
-	parsed[myargc] = NULL;
-	
 	owl_function_debugmsg("About to exec \"%s\" with %d arguments", parsed[0], myargc);
 	
 	execvp(parsed[0], parsed);
