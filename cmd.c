@@ -109,26 +109,20 @@ char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const c
 }
 
 char *owl_cmddict_execute_argv(const owl_cmddict *cd, const owl_context *ctx, const char *const *argv, int argc) {
-  char *buff, *ptr;
-  int len = 0, i;
-  char *retval = NULL;
+  GString *buf = g_string_new("");
+  int i;
+  char *retval;
 
+  /* We weren't given a command line, so fabricate a valid one. */
   for(i = 0; i < argc; i++) {
-    len += strlen(argv[i]) + 1;
+    if (i != 0)
+      g_string_append_c(buf, ' ');
+    owl_string_append_quoted_arg(buf, argv[i]);
   }
 
-  ptr = buff = owl_malloc(len);
+  retval = _owl_cmddict_execute(cd, ctx, argv, argc, buf->str);
 
-  for(i = 0; i < argc; i++) {
-    strcpy(ptr, argv[i]);
-    ptr += strlen(argv[i]);
-    *(ptr++) = ' ';
-  }
-  *(ptr - 1) = 0;
-
-  retval = _owl_cmddict_execute(cd, ctx, argv, argc, buff);
-
-  owl_free(buff);
+  g_string_free(buf, true);
   return retval;
 }
 
