@@ -2149,7 +2149,8 @@ char *owl_command_view(int argc, const char *const *argv, const char *buff)
     const char **myargv;
     int i;
 
-    myargv=owl_malloc((argc*sizeof(const char *))+50);
+    /* Allocate one more than argc for the trailing NULL. */
+    myargv = g_new0(const char*, argc+1);
     myargv[0]="";
     myargv[1]="owl-dynamic";
     for (i=2; i<argc; i++) {
