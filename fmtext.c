@@ -300,7 +300,6 @@ static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_sear
       p[0] = '\0';
       if (do_search && owl_global_is_search_active(&g)) {
 	/* Search is active, so highlight search results. */
-	char tmp2;
 	int start, end;
 	while (owl_regex_compare(owl_global_get_search_re(&g), s, &start, &end) == 0) {
 	  /* Prevent an infinite loop matching the empty string. */
@@ -309,18 +308,12 @@ static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_sear
 
 	  /* Found search string, highlight it. */
 
-	  tmp2 = s[start];
-	  s[start] = '\0';
-	  waddstr(w, s);
-	  s[start] = tmp2;
+	  waddnstr(w, s, start);
 
 	  _owl_fmtext_wattrset(w, attr ^ OWL_FMTEXT_ATTR_REVERSE);
 	  _owl_fmtext_wcolor_set(w, pair);
 	  
-	  tmp2 = s[end];
-	  s[end] = '\0';
-	  waddstr(w, s + start);
-	  s[end] = tmp2;
+	  waddnstr(w, s + start, end - start);
 
 	  _owl_fmtext_wattrset(w, attr);
 	  _owl_fmtext_wcolor_set(w, pair);
