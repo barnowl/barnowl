@@ -4,28 +4,30 @@
 #include <ctype.h>
 #include "owl.h"
 
-void owl_text_indent(char *out, const char *in, int n)
+/* Returns a copy of 'in' with each line indented 'n'
+ * characters. Result must be freed with owl_free. */
+char *owl_text_indent(const char *in, int n)
 {
   const char *ptr1, *ptr2, *last;
+  GString *out = g_string_new("");
   int i;
-
-  strcpy(out, "");
 
   last=in+strlen(in)-1;
   ptr1=in;
   while (ptr1<=last) {
     for (i=0; i<n; i++) {
-      strcat(out, " ");
+      g_string_append_c(out, ' ');
     }
     ptr2=strchr(ptr1, '\n');
     if (!ptr2) {
-      strcat(out, ptr1);
+      g_string_append(out, ptr1);
       break;
     } else {
-      strncat(out, ptr1, ptr2-ptr1+1);
+      g_string_append_len(out, ptr1, ptr2-ptr1+1);
     }
     ptr1=ptr2+1;
   }
+  return g_string_free(out, false);
 }
 
 int owl_text_num_lines(const char *in)

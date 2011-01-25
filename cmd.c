@@ -275,8 +275,7 @@ void owl_cmd_get_help(const owl_cmddict *d, const char *name, owl_fmtext *fm) {
 
   if (cmd->usage && *cmd->usage) {
     s = cmd->usage;
-    indent = owl_malloc(strlen(s)+(owl_text_num_lines(s)+3)*OWL_TAB+1);
-    owl_text_indent(indent, s, OWL_TAB);
+    indent = owl_text_indent(s, OWL_TAB);
     owl_fmtext_append_bold(fm, "\nSYNOPSIS\n");
     owl_fmtext_append_normal(fm, indent);
     owl_fmtext_append_normal(fm, "\n");
@@ -290,8 +289,7 @@ void owl_cmd_get_help(const owl_cmddict *d, const char *name, owl_fmtext *fm) {
 
   if (cmd->description && *cmd->description) {
     s = cmd->description;
-    indent = owl_malloc(strlen(s)+(owl_text_num_lines(s)+3)*OWL_TAB+1);
-    owl_text_indent(indent, s, OWL_TAB);
+    indent = owl_text_indent(s, OWL_TAB);
     owl_fmtext_append_bold(fm, "\nDESCRIPTION\n");
     owl_fmtext_append_normal(fm, indent);
     owl_fmtext_append_normal(fm, "\n");
