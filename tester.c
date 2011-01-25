@@ -185,6 +185,8 @@ int owl_util_regtest(void)
       FAIL_UNLESS(desc, !strcmp(quoted, __quoted));	\
       __argv = owl_parseline(__quoted, &__argc);	\
       FAIL_UNLESS(desc " - arg count", __argc == 1);	\
+      FAIL_UNLESS(desc " - null-terminated",		\
+		  __argv[__argc] == NULL);		\
       FAIL_UNLESS(desc " - parsed",			\
 		  !strcmp(__argv[0], unquoted));	\
       owl_parse_delete(__argv, __argc);			\

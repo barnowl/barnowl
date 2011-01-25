@@ -99,14 +99,7 @@ char *owl_util_makepath(const char *in)
 
 void owl_parse_delete(char **argv, int argc)
 {
-  int i;
-
-  if (!argv) return;
-  
-  for (i=0; i<argc; i++) {
-    if (argv[i]) owl_free(argv[i]);
-  }
-  owl_free(argv);
+  g_strfreev(argv);
 }
 
 char **owl_parseline(const char *line, int *argc)
@@ -114,14 +107,14 @@ char **owl_parseline(const char *line, int *argc)
   /* break a command line up into argv, argc.  The caller must free
      the returned values.  If there is an error argc will be set to
      -1, argv will be NULL and the caller does not need to free
-     anything */
+     anything. The returned vector is NULL-terminated. */
 
-  char **argv;
+  GPtrArray *argv;
   int i, len, between=1;
   char *curarg;
   char quote;
 
-  argv=owl_malloc(sizeof(char *));
+  argv = g_ptr_array_new_with_free_func(owl_free);
   len=strlen(line);
   curarg=owl_malloc(len+10);
   strcpy(curarg, "");
@@ -169,9 +162,7 @@ char **owl_parseline(const char *line, int *argc)
     /* otherwise, if we're not in quotes, add the whole argument */
     if (quote=='\0') {
       /* add the argument */
-      argv=owl_realloc(argv, sizeof(char *)*((*argc)+1));
-      argv[*argc] = owl_strdup(curarg);
-      *argc=*argc+1;
+      g_ptr_array_add(argv, owl_strdup(curarg));
       strcpy(curarg, "");
       between=1;
       continue;
@@ -182,16 +173,18 @@ char **owl_parseline(const char *line, int *argc)
     curarg[strlen(curarg)]=line[i];
   }
 
+  *argc = argv->len;
+  g_ptr_array_add(argv, NULL);
   owl_free(curarg);
 
   /* check for unbalanced quotes */
   if (quote!='\0') {
-    owl_parse_delete(argv, *argc);
-    *argc=-1;
+    g_ptr_array_free(argv, true);
+    *argc = -1;
     return(NULL);
   }
 
-  return(argv);
+  return (char**)g_ptr_array_free(argv, false);
 }
 
 /* Appends a quoted version of arg suitable for placing in a
