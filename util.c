@@ -111,13 +111,12 @@ char **owl_parseline(const char *line, int *argc)
 
   GPtrArray *argv;
   int i, len, between=1;
-  char *curarg;
+  GString *curarg;
   char quote;
 
   argv = g_ptr_array_new_with_free_func(owl_free);
   len=strlen(line);
-  curarg=owl_malloc(len+10);
-  strcpy(curarg, "");
+  curarg = g_string_new("");
   quote='\0';
   *argc=0;
   for (i=0; i<len+1; i++) {
@@ -147,35 +146,32 @@ char **owl_parseline(const char *line, int *argc)
       }
 
       /* if another type of quote is open then treat this as a literal */
-      curarg[strlen(curarg)+1]='\0';
-      curarg[strlen(curarg)]=line[i];
+      g_string_append_c(curarg, line[i]);
       continue;
     }
 
     /* if it's not a space or end of command, then use it */
     if (line[i]!=' ' && line[i]!='\t' && line[i]!='\n' && line[i]!='\0') {
-      curarg[strlen(curarg)+1]='\0';
-      curarg[strlen(curarg)]=line[i];
+      g_string_append_c(curarg, line[i]);
       continue;
     }
 
     /* otherwise, if we're not in quotes, add the whole argument */
     if (quote=='\0') {
       /* add the argument */
-      g_ptr_array_add(argv, owl_strdup(curarg));
-      strcpy(curarg, "");
+      g_ptr_array_add(argv, g_string_free(curarg, false));
+      curarg = g_string_new("");
       between=1;
       continue;
     }
 
     /* if it is a space and we're in quotes, then use it */
-    curarg[strlen(curarg)+1]='\0';
-    curarg[strlen(curarg)]=line[i];
+    g_string_append_c(curarg, line[i]);
   }
 
   *argc = argv->len;
   g_ptr_array_add(argv, NULL);
-  owl_free(curarg);
+  g_string_free(curarg, true);
 
   /* check for unbalanced quotes */
   if (quote!='\0') {
