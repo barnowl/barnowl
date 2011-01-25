@@ -875,8 +875,9 @@ void owl_fmtext_reset_colorpairs(owl_colorpair_mgr *cpmgr)
 {
   short i, j;
 
+  cpmgr->overflow = false;
   cpmgr->next = 8;
-    /* The test is <= because we allocated COLORS+1 entries. */
+  /* The test is <= because we allocated COLORS+1 entries. */
   for(i = 0; i <= COLORS; i++) {
     for(j = 0; j <= COLORS; j++) {
       cpmgr->pairs[i][j] = -1;
@@ -924,11 +925,13 @@ short owl_fmtext_get_colorpair(int fg, int bg)
     else if (bg != OWL_COLOR_DEFAULT) {
       /* We still don't have a pair, drop the background color. Too bad. */
       owl_function_debugmsg("colorpairs: color shortage - dropping background color.");
+      cpmgr->overflow = true;
       pair = owl_fmtext_get_colorpair(fg, OWL_COLOR_DEFAULT);
     }
     else {
       /* We still don't have a pair, defaults all around. */
       owl_function_debugmsg("colorpairs: color shortage - dropping foreground and background color.");
+      cpmgr->overflow = true;
       pair = 0;
     }
   }

@@ -546,6 +546,7 @@ typedef struct _owl_errqueue {
 typedef struct _owl_colorpair_mgr {
   int next;
   short **pairs;
+  bool overflow;
 } owl_colorpair_mgr;
 
 typedef struct _owl_io_dispatch {

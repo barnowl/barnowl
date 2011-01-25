@@ -443,10 +443,23 @@ void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
 
 static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
 {
+  owl_colorpair_mgr *cpmgr;
+
   /* if a resize has been scheduled, deal with it */
   owl_global_check_resize(&g);
   /* update the terminal if we need to */
   owl_window_redraw_scheduled();
+  /* On colorpair shortage, reset and redraw /everything/. NOTE: if
+   * the current screen uses too many colorpairs, this draws
+   * everything twice. But this is unlikely; COLOR_PAIRS is 64 with
+   * 8+1 colors, and 256^2 with 256+1 colors. (+1 for default.) */
+  cpmgr = owl_global_get_colorpair_mgr(&g);
+  if (cpmgr->overflow) {
+    owl_function_debugmsg("colorpairs: color shortage; reset pairs and redraw. COLOR_PAIRS = %d", COLOR_PAIRS);
+    owl_fmtext_reset_colorpairs(cpmgr);
+    owl_function_full_redisplay();
+    owl_window_redraw_scheduled();
+  }
   return 0;
 }
 
