@@ -1126,10 +1126,8 @@ char *owl_zephyr_getsubs(void)
 {
 #ifdef HAVE_LIBZEPHYR
   int ret, num, i, one;
-  int buffsize;
   ZSubscription_t sub;
-  char *out;
-  one=1;
+  GString *buf;
 
   ret=ZRetrieveSubscriptions(0, &num);
   if (ret==ZERR_TOOMANYSUBS) {
@@ -1138,40 +1136,26 @@ char *owl_zephyr_getsubs(void)
     return(owl_strdup("Zephyr: error retriving subscriptions\n"));
   }
 
-  buffsize = (num + 1) * 50;
-  out=owl_malloc(buffsize);
-  strcpy(out, "");
+  buf = g_string_new("");
   for (i=0; i<num; i++) {
+    one = 1;
     if ((ret = ZGetSubscriptions(&sub, &one)) != ZERR_NONE) {
-      owl_free(out);
       ZFlushSubscriptions();
-      out=owl_strdup("Error while getting subscriptions\n");
-      return(out);
+      g_string_free(buf, true);
+      return owl_strdup("Error while getting subscriptions\n");
     } else {
-      int tmpbufflen;
-      char *tmpbuff;
-      tmpbuff = owl_sprintf("<%s,%s,%s>\n%s", sub.zsub_class, sub.zsub_classinst, sub.zsub_recipient, out);
-      tmpbufflen = strlen(tmpbuff) + 1;
-      if (tmpbufflen > buffsize) {
-        char *out2;
-        buffsize = tmpbufflen * 2;
-        out2 = owl_realloc(out, buffsize);
-        if (out2 == NULL) {
-          owl_free(out);
-          owl_free(tmpbuff);
-          ZFlushSubscriptions();
-          out=owl_strdup("Realloc error while getting subscriptions\n");
-          return(out);    
-        }
-        out = out2;
-      }
-      strcpy(out, tmpbuff);
-      owl_free(tmpbuff);
+      /* g_string_append_printf would be backwards. */
+      char *tmp = owl_sprintf("<%s,%s,%s>\n",
+                              sub.zsub_class,
+                              sub.zsub_classinst,
+                              sub.zsub_recipient);
+      g_string_prepend(buf, tmp);
+      owl_free(tmp);
     }
   }
 
   ZFlushSubscriptions();
-  return(out);
+  return g_string_free(buf, false);
 #else
   return(owl_strdup("Zephyr not available"));
 #endif
