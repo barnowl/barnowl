@@ -52,7 +52,7 @@ static void owl_mainwin_redraw(owl_window *w, WINDOW *recwin, void *user_data)
   curmsg = owl_global_get_curmsg(&g);
   markedmsgid = owl_global_get_markedmsgid(&g);
   v = owl_global_get_current_view(&g);
-  owl_fmtext_reset_colorpairs();
+  owl_fmtext_reset_colorpairs(owl_global_get_colorpair_mgr(&g));
 
   if (v==NULL) {
     owl_function_debugmsg("Hit a null window in owl_mainwin_redisplay.");

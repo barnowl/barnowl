@@ -861,41 +861,28 @@ void owl_fmtext_cleanup(owl_fmtext *f)
 void owl_fmtext_init_colorpair_mgr(owl_colorpair_mgr *cpmgr)
 {
   /* This could be a bitarray if we wanted to save memory. */
-  short i, j;
-  cpmgr->next = 8;
-  
+  short i;
   /* The test is <= because we allocate COLORS+1 entries. */
   cpmgr->pairs = owl_malloc((COLORS+1) * sizeof(short*));
   for(i = 0; i <= COLORS; i++) {
     cpmgr->pairs[i] = owl_malloc((COLORS+1) * sizeof(short));
+  }
+  owl_fmtext_reset_colorpairs(cpmgr);
+}
+
+/* Reset used list */
+void owl_fmtext_reset_colorpairs(owl_colorpair_mgr *cpmgr)
+{
+  short i, j;
+
+  cpmgr->next = 8;
+    /* The test is <= because we allocated COLORS+1 entries. */
+  for(i = 0; i <= COLORS; i++) {
     for(j = 0; j <= COLORS; j++) {
       cpmgr->pairs[i][j] = -1;
     }
   }
   if (owl_global_get_hascolors(&g)) {
-    for(i = 0; i < 8; i++) {
-      short fg, bg;
-      if (i >= COLORS) continue;
-      pair_content(i, &fg, &bg);
-      cpmgr->pairs[fg+1][bg+1] = i;
-    }
-  }
-}
-
-/* Reset used list */
-void owl_fmtext_reset_colorpairs(void)
-{
-  if (owl_global_get_hascolors(&g)) {
-    short i, j;
-    owl_colorpair_mgr *cpmgr = owl_global_get_colorpair_mgr(&g);
-    cpmgr->next = 8;
-    
-    /* The test is <= because we allocated COLORS+1 entries. */
-    for(i = 0; i <= COLORS; i++) {
-      for(j = 0; j <= COLORS; j++) {
-	cpmgr->pairs[i][j] = -1;
-      }
-    }
     for(i = 0; i < 8; i++) {
       short fg, bg;
       if (i >= COLORS) continue;
