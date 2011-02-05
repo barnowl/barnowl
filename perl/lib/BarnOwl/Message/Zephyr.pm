@@ -16,6 +16,12 @@ sub strip_realm {
     return $sender;
 }
 
+sub principal_realm {
+    my $principal = shift;
+    my ($user, $realm) = split(/@/,$principal);
+    return $realm;
+}
+
 sub login_type {
     return (shift->zsig eq "") ? "(PSEUDO)" : "";
 }
@@ -183,13 +189,28 @@ sub replycmd {
     }
 
     push @cmd, context_reply_cmd($class, $instance);
+
     if ($to ne '') {
         $to = strip_realm($to);
         if (defined $cc and not $sender) {
             my @cc = grep /^[^-]/, ($to, split /\s+/, $cc);
             my %cc = map {$_ => 1} @cc;
+            # this isn't quite right - it doesn't strip off the
+            # user if the message was addressed to them by fully qualified
+            # name
             delete $cc{strip_realm(BarnOwl::zephyr_getsender())};
             @cc = keys %cc;
+
+            my $sender_realm = principal_realm($self->sender);
+            if (BarnOwl::zephyr_getrealm() ne $sender_realm) {
+                @cc = map {
+                    if($_ !~ /@/) {
+                       "${_}\@${sender_realm}";
+                    } else {
+                        $_;
+                    }
+                } @cc;
+            }
             push @cmd, '-C', @cc;
         } else {
             if(BarnOwl::getvar('smartstrip') eq 'on') {
