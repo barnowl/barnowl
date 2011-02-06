@@ -170,12 +170,13 @@ sub replycmd {
     } else {
         $class = $self->class;
         $instance = $self->instance;
-        $to = $self->recipient;
-        $cc = $self->zephyr_cc();
-        if($to eq '*' || $to eq '') {
+        if ($self->recipient eq '*' || $self->recipient eq '') {
             $to = '';
-        } elsif($to !~ /^@/) {
+        } elsif ($self->recipient =~ /^@/) {
+            $to = $self->recipient;
+        } else {
             $to = $self->sender;
+            $cc = $self->zephyr_cc();
         }
     }
 
