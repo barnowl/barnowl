@@ -102,7 +102,7 @@ else
    XSUBPPFLAGS=""
 fi
 
-dnl Add LDFLAGS for embedded perl
+dnl Add LIBS for embedded perl
 FOO=`perl -MExtUtils::Embed -e ldopts`
 AC_MSG_NOTICE([Adding perl LIBS ${FOO}])
 LIBS=${LIBS}\ ${FOO}
@@ -113,13 +113,13 @@ AX_PROG_PERL_MODULES([Class::Accessor::Fast],,
 AX_PROG_PERL_MODULES([PAR],,
                      [AC_MSG_WARN([PAR.pm not found. Loadable modules will be disabled.])])
 
-dnl Add CFLAGS and LDFLAGS for glib-2.0
+dnl Add CFLAGS and LIBS for glib-2.0
 PKG_CHECK_MODULES(GLIB,[glib-2.0 gobject-2.0])
 
 AC_MSG_NOTICE([Adding glib-2.0 CFLAGS ${GLIB_CFLAGS}])
 AM_CFLAGS="${GLIB_CFLAGS} ${AM_CFLAGS}"
-AC_MSG_NOTICE([Adding glib-2.0 LDFLAGS ${GLIB_LIBS}])
-AM_LDFLAGS="${GLIB_LIBS} ${AM_LDFLAGS}"
+AC_MSG_NOTICE([Adding glib-2.0 LIBS ${GLIB_LIBS}])
+LIBS="${GLIB_LIBS} ${LIBS}"
 
 if test "x${prefix}" = "xNONE"; then
    prefix="${ac_default_prefix}"
@@ -145,7 +145,6 @@ dnl Define __EXTENSIONS__ for strcasecmp on Solaris.
 AM_CFLAGS="$AM_CFLAGS -D__EXTENSIONS__"
 
 AC_SUBST([AM_CFLAGS])
-AC_SUBST([AM_LDFLAGS])
 AC_SUBST([LIBFAIM_CFLAGS])
 
 AC_SUBST(XSUBPPDIR)
