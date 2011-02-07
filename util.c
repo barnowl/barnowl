@@ -114,7 +114,7 @@ char **owl_parseline(const char *line, int *argc)
   GString *curarg;
   char quote;
 
-  argv = g_ptr_array_new_with_free_func(owl_free);
+  argv = g_ptr_array_new();
   len=strlen(line);
   curarg = g_string_new("");
   quote='\0';
@@ -175,6 +175,9 @@ char **owl_parseline(const char *line, int *argc)
 
   /* check for unbalanced quotes */
   if (quote!='\0') {
+    /* TODO: when we move to requiring glib 2.22+, use
+     * g_ptr_array_new_with_free_func. */
+    g_ptr_array_foreach(argv, (GFunc)owl_free, NULL);
     g_ptr_array_free(argv, true);
     *argc = -1;
     return(NULL);
