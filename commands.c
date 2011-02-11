@@ -2470,9 +2470,7 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
   fl = owl_global_get_puntlist(&g);
   if(argc == 1) {
     owl_function_show_zpunts();
-  }
-
-  if(argc == 2) {
+  } else if(argc == 2) {
     /* Handle :unpunt <number> */
     if(unpunt && (i=atoi(argv[1])) !=0) {
       i--;      /* Accept 1-based indexing */
