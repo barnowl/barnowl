@@ -276,20 +276,6 @@ char *owl_text_substitute(const char *in, const char *from, const char *to)
   return out;
 }
 
-/* replace all instances of character a in buff with the character
- * b.  buff must be null terminated.
- */
-void owl_text_tr(char *buff, char a, char b)
-{
-  int i;
-
-  owl_function_debugmsg("In: %s", buff);
-  for (i=0; buff[i]!='\0'; i++) {
-    if (buff[i]==a) buff[i]=b;
-  }
-  owl_function_debugmsg("Out: %s", buff);
-}
-
 /* Return a string which is like 'in' except that every instance of
  * any character in 'toquote' found in 'in' is preceeded by the string
  * 'quotestr'.  For example, owl_text_quote(in, "+*.", "\") would
