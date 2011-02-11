@@ -2316,10 +2316,6 @@ char *owl_function_classinstfilt(const char *c, const char *i, int related)
       filtname = temp;
     }
   }
-  /* turn spaces, single quotes, and double quotes into dots */
-  owl_text_tr(filtname, ' ', '.');
-  owl_text_tr(filtname, '\'', '.');
-  owl_text_tr(filtname, '"', '.');
   
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
