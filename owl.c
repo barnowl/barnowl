@@ -32,8 +32,6 @@
 int stderr_replace(void);
 #endif
 
-#define STDIN 0
-
 owl_global g;
 
 typedef struct _owl_options {
@@ -132,13 +130,13 @@ void owl_start_color(void) {
 void owl_start_curses(void) {
   struct termios tio;
   /* save initial terminal settings */
-  tcgetattr(0, owl_global_get_startup_tio(&g));
+  tcgetattr(STDIN_FILENO, owl_global_get_startup_tio(&g));
 
-  tcgetattr(0, &tio);
+  tcgetattr(STDIN_FILENO, &tio);
   tio.c_iflag &= ~(ISTRIP|IEXTEN);
-  tio.c_cc[VQUIT] = fpathconf(STDIN, _PC_VDISABLE);
-  tio.c_cc[VSUSP] = fpathconf(STDIN, _PC_VDISABLE);
-  tcsetattr(0, TCSAFLUSH, &tio);
+  tio.c_cc[VQUIT] = fpathconf(STDIN_FILENO, _PC_VDISABLE);
+  tio.c_cc[VSUSP] = fpathconf(STDIN_FILENO, _PC_VDISABLE);
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, &tio);
 
   /* screen init */
   initscr();
@@ -151,7 +149,7 @@ void owl_start_curses(void) {
 void owl_shutdown_curses(void) {
   endwin();
   /* restore terminal settings */
-  tcsetattr(0, TCSAFLUSH, owl_global_get_startup_tio(&g));
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, owl_global_get_startup_tio(&g));
 }
 
 /*
@@ -500,7 +498,7 @@ int main(int argc, char **argv, char **env)
   owl_global_set_haveaim(&g);
 
   /* register STDIN dispatch; throw away return, we won't need it */
-  owl_select_add_io_dispatch(STDIN, OWL_IO_READ, &owl_process_input, NULL, NULL);
+  owl_select_add_io_dispatch(STDIN_FILENO, OWL_IO_READ, &owl_process_input, NULL, NULL);
   owl_zephyr_initialize();
 
 #if OWL_STDERR_REDIR
