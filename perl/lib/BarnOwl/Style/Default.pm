@@ -96,14 +96,22 @@ sub chat_header {
         if ( $m->direction eq "out" ) {
             $header = ucfirst $m->type . $personal_context . " sent to " . $m->pretty_recipient;
         } else {
-            $header = ucfirst $m->type . $personal_context . " from " . $m->pretty_sender;
+            $header = ucfirst $m->type . $personal_context . " from ";
+            if(defined($m->auth) && ($m->auth ne "YES")) {
+                $header .= "UNAUTH: ";
+            }
+            $header .= maybe($m->pretty_sender);
         }
     } else {
         $header = $self->humanize($m->context, 1);
         if(defined $m->subcontext) {
             $header .= ' / ' . $self->humanize($m->subcontext, 1);
         }
-        $header .= ' / @b{' . maybe($m->pretty_sender) . '}';
+        $header .= ' / ';
+        if(defined($m->auth) && ($m->auth ne "YES")) {
+            $header .= "UNAUTH: ";
+        }
+        $header .= '@b{' . maybe($m->pretty_sender) . '}';
     }
 
     if($m->opcode) {
