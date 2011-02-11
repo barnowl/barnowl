@@ -2483,7 +2483,7 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
         owl_function_error("No such filter number: %d", i+1);
       }
     }
-    text = owl_sprintf("filter %s", argv[1]);
+    text = owl_string_build_quoted("filter %q", argv[1]);
     owl_function_punt(text, unpunt);
     owl_free(text);
   } else {
