@@ -210,11 +210,15 @@ const char *owl_zephyr_get_sender(void)
 int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
 {
   int ret = 0;
+  Code_t code;
+
   if (owl_global_is_havezephyr(&g)) {
     int i;
     /* sub without defaults */
-    if (ZSubscribeToSansDefaults(subs,count,0) != ZERR_NONE) {
-      owl_function_error("Error subscribing to zephyr notifications.");
+    code = ZSubscribeToSansDefaults(subs, count, 0);
+    if (code != ZERR_NONE) {
+      owl_function_error("Error subscribing to zephyr notifications: %s",
+                         error_message(code));
       ret=-2;
     }
 
@@ -350,11 +354,15 @@ int owl_zephyr_loadbarnowldefaultsubs(void)
 int owl_zephyr_loaddefaultsubs(void)
 {
 #ifdef HAVE_LIBZEPHYR
+  Code_t ret;
+
   if (owl_global_is_havezephyr(&g)) {
     ZSubscription_t subs[10];
-    
-    if (ZSubscribeTo(subs,0,0) != ZERR_NONE) {
-      owl_function_error("Error subscribing to default zephyr notifications.");
+
+    ret = ZSubscribeTo(subs, 0, 0);
+    if (ret != ZERR_NONE) {
+      owl_function_error("Error subscribing to default zephyr notifications: %s.",
+                           error_message(ret));
       return(-1);
     }
   }
@@ -434,14 +442,18 @@ int owl_zephyr_sub(const char *class, const char *inst, const char *recip)
 {
 #ifdef HAVE_LIBZEPHYR
   ZSubscription_t subs[5];
+  Code_t ret;
 
   subs[0].zsub_class=zstr(class);
   subs[0].zsub_classinst=zstr(inst);
   subs[0].zsub_recipient=zstr(recip);
 
   ZResetAuthentication();
-  if (ZSubscribeTo(subs,1,0) != ZERR_NONE) {
-    owl_function_error("Error subbing to <%s,%s,%s>", class, inst, recip);
+  ret = ZSubscribeTo(subs, 1, 0);
+  if (ret != ZERR_NONE) {
+    owl_function_error("Error subbing to <%s,%s,%s>: %s",
+                       class, inst, recip,
+                       error_message(ret));
     return(-2);
   }
   return(0);
@@ -455,14 +467,18 @@ int owl_zephyr_unsub(const char *class, const char *inst, const char *recip)
 {
 #ifdef HAVE_LIBZEPHYR
   ZSubscription_t subs[5];
+  Code_t ret;
 
   subs[0].zsub_class=zstr(class);
   subs[0].zsub_classinst=zstr(inst);
   subs[0].zsub_recipient=zstr(recip);
 
   ZResetAuthentication();
-  if (ZUnsubscribeTo(subs,1,0) != ZERR_NONE) {
-    owl_function_error("Error unsubbing from <%s,%s,%s>", class, inst, recip);
+  ret = ZUnsubscribeTo(subs, 1, 0);
+  if (ret != ZERR_NONE) {
+    owl_function_error("Error unsubbing from <%s,%s,%s>: %s",
+                       class, inst, recip,
+                       error_message(ret));
     return(-2);
   }
   return(0);
@@ -667,7 +683,7 @@ const char *owl_zephyr_get_zsig(const void *n, int *k)
 int send_zephyr(const char *opcode, const char *zsig, const char *class, const char *instance, const char *recipient, const char *message)
 {
 #ifdef HAVE_LIBZEPHYR
-  int ret;
+  Code_t ret;
   ZNotice_t notice;
     
   memset(&notice, 0, sizeof(notice));
@@ -702,8 +718,8 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   /* free then check the return */
   g_free(notice.z_message);
   ZFreeNotice(&notice);
-  if (ret!=ZERR_NONE) {
-    owl_function_error("Error sending zephyr");
+  if (ret != ZERR_NONE) {
+    owl_function_error("Error sending zephyr: %s", error_message(ret));
     return(ret);
   }
   return(0);
@@ -1129,16 +1145,16 @@ const char *owl_zephyr_get_authstr(const void *n)
 char *owl_zephyr_getsubs(void)
 {
 #ifdef HAVE_LIBZEPHYR
-  int ret, num, i, one;
+  Code_t ret;
+  int num, i, one;
   ZSubscription_t sub;
   GString *buf;
 
-  ret=ZRetrieveSubscriptions(0, &num);
-  if (ret==ZERR_TOOMANYSUBS) {
-    return(g_strdup("Zephyr: too many subscriptions\n"));
-  } else if (ret || (num <= 0)) {
-    return(g_strdup("Zephyr: error retrieving subscriptions\n"));
-  }
+  ret = ZRetrieveSubscriptions(0, &num);
+  if (ret != ZERR_NONE)
+    return g_strdup_printf("Zephyr: Requesting subscriptions: %s\n", error_message(ret));
+  if (num == 0)
+    return g_strdup("Zephyr: No subscriptions retrieved\n");
 
   buf = g_string_new("");
   for (i=0; i<num; i++) {
@@ -1146,7 +1162,7 @@ char *owl_zephyr_getsubs(void)
     if ((ret = ZGetSubscriptions(&sub, &one)) != ZERR_NONE) {
       ZFlushSubscriptions();
       g_string_free(buf, true);
-      return g_strdup("Error while getting subscriptions\n");
+      return g_strdup_printf("Zephyr: Getting subscriptions: %s\n", error_message(ret));
     } else {
       /* g_string_append_printf would be backwards. */
       char *tmp = g_strdup_printf("<%s,%s,%s>\n",
