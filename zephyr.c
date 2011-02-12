@@ -590,65 +590,48 @@ int owl_zephyr_get_num_fields(const void *n)
  */
 char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
 {
+#define OWL_NFIELDS	5
+  int i;
+  char *fields[OWL_NFIELDS + 1];
+  char *msg = NULL;
+
   /* don't let ping messages have a body */
   if (!strcasecmp(n->z_opcode, "ping")) {
     return(g_strdup(""));
   }
 
+  for(i = 0; i < OWL_NFIELDS; i++)
+    fields[i + 1] = owl_zephyr_get_field(n, i + 1);
+
   /* deal with MIT NOC messages */
   if (!strcasecmp(n->z_default_format, "@center(@bold(NOC Message))\n\n@bold(Sender:) $1 <$sender>\n@bold(Time:  ) $time\n\n@italic($opcode service on $instance $3.) $4\n")) {
-    char *msg, *field3, *field4;
 
-    field3 = owl_zephyr_get_field(n, 3);
-    field4 = owl_zephyr_get_field(n, 4);
-
-    msg = g_strdup_printf("%s service on %s %s\n%s", n->z_opcode, n->z_class_inst, field3, field4);
-    g_free(field3);
-    g_free(field4);
-    if (msg) {
-      return msg;
-    }
+    msg = g_strdup_printf("%s service on %s %s\n%s", n->z_opcode, n->z_class_inst, fields[3], fields[4]);
   }
   /* deal with MIT Discuss messages */
   else if (!strcasecmp(n->z_default_format, "New transaction [$1] entered in $2\nFrom: $3 ($5)\nSubject: $4") ||
            !strcasecmp(n->z_default_format, "New transaction [$1] entered in $2\nFrom: $3\nSubject: $4")) {
-    char *msg, *field1, *field2, *field3, *field4, *field5;
     
-    field1 = owl_zephyr_get_field(n, 1);
-    field2 = owl_zephyr_get_field(n, 2);
-    field3 = owl_zephyr_get_field(n, 3);
-    field4 = owl_zephyr_get_field(n, 4);
-    field5 = owl_zephyr_get_field(n, 5);
-    
-    msg = g_strdup_printf("New transaction [%s] entered in %s\nFrom: %s (%s)\nSubject: %s", field1, field2, field3, field5, field4);
-    g_free(field1);
-    g_free(field2);
-    g_free(field3);
-    g_free(field4);
-    g_free(field5);
-    if (msg) {
-      return msg;
-    }
+    msg = g_strdup_printf("New transaction [%s] entered in %s\nFrom: %s (%s)\nSubject: %s",
+                          fields[1], fields[2], fields[3], fields[5], fields[4]);
   }
   /* deal with MIT Moira messages */
   else if (!strcasecmp(n->z_default_format, "MOIRA $instance on $fromhost:\n $message\n")) {
-    char *msg, *field1;
-    
-    field1 = owl_zephyr_get_field(n, 1);
-    
-    msg = g_strdup_printf("MOIRA %s on %s: %s", n->z_class_inst, owl_message_get_hostname(m), field1);
-    g_free(field1);
-    if (msg) {
-      return msg;
-    }
+    msg = g_strdup_printf("MOIRA %s on %s: %s",
+                          n->z_class_inst,
+                          owl_message_get_hostname(m),
+                          fields[1]);
+  } else {
+    if (owl_zephyr_get_num_fields(n) == 1)
+      msg = g_strdup(fields[1]);
+    else
+      msg = g_strdup(fields[2]);
   }
 
-  if (owl_zephyr_get_num_fields(n) == 1) {
-    return(owl_zephyr_get_field(n, 1));
-  }
-  else {
-    return(owl_zephyr_get_field(n, 2));
-  }
+  for (i = 0; i < OWL_NFIELDS; i++)
+    g_free(fields[i + 1]);
+
+  return msg;
 }
 #endif
 
