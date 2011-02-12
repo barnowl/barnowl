@@ -1026,50 +1026,33 @@ char *owl_zephyr_makesubline(const char *class, const char *inst, const char *re
 void owl_zephyr_zlog_in(void)
 {
 #ifdef HAVE_LIBZEPHYR
-  const char *exposure, *eset;
-  int ret;
+  char *exposure, *eset;
+  Code_t ret;
 
   ZResetAuthentication();
-    
-  eset=EXPOSE_REALMVIS;
-  exposure=ZGetVariable(zstr("exposure"));
-  if (exposure==NULL) {
-    eset=EXPOSE_REALMVIS;
-  } else if (!strcasecmp(exposure,EXPOSE_NONE)) {
-    eset = EXPOSE_NONE;
-  } else if (!strcasecmp(exposure,EXPOSE_OPSTAFF)) {
-    eset = EXPOSE_OPSTAFF;
-  } else if (!strcasecmp(exposure,EXPOSE_REALMVIS)) {
-    eset = EXPOSE_REALMVIS;
-  } else if (!strcasecmp(exposure,EXPOSE_REALMANN)) {
-    eset = EXPOSE_REALMANN;
-  } else if (!strcasecmp(exposure,EXPOSE_NETVIS)) {
-    eset = EXPOSE_NETVIS;
-  } else if (!strcasecmp(exposure,EXPOSE_NETANN)) {
-    eset = EXPOSE_NETANN;
-  }
+
+  eset = EXPOSE_REALMVIS;
+  exposure = ZGetVariable(zstr("exposure"));
+  if (exposure)
+    exposure = ZParseExposureLevel(exposure);
+  if (exposure)
+    eset = exposure;
    
-  ret=ZSetLocation(zstr(eset));
-  if (ret != ZERR_NONE) {
-    /*
-      owl_function_makemsg("Error setting location: %s", error_message(ret));
-    */
-  }
+  ret = ZSetLocation(eset);
+  if (ret != ZERR_NONE)
+    owl_function_error("Error setting location: %s", error_message(ret));
 #endif
 }
 
 void owl_zephyr_zlog_out(void)
 {
 #ifdef HAVE_LIBZEPHYR
-  int ret;
+  Code_t ret;
 
   ZResetAuthentication();
-  ret=ZUnsetLocation();
-  if (ret != ZERR_NONE) {
-    /*
-      owl_function_makemsg("Error unsetting location: %s", error_message(ret));
-    */
-  }
+  ret = ZUnsetLocation();
+  if (ret != ZERR_NONE)
+    owl_function_error("Error unsetting location: %s", error_message(ret));
 #endif
 }
 
