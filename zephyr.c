@@ -30,11 +30,10 @@ static char *owl_zephyr_dotfile(const char *name, const char *input)
 #ifdef HAVE_LIBZEPHYR
 void owl_zephyr_initialize(void)
 {
-  int ret;
+  Code_t ret;
   struct servent *sp;
   struct sockaddr_in sin;
   ZNotice_t req;
-  Code_t code;
 
   /*
    * Code modified from libzephyr's ZhmStat.c
@@ -68,13 +67,13 @@ void owl_zephyr_initialize(void)
   req.z_default_format = zstr("");
   req.z_message_len = 0;
 
-  if ((code = ZSetDestAddr(&sin)) != ZERR_NONE) {
-    owl_function_error("Initializing Zephyr: %s", error_message(code));
+  if ((ret = ZSetDestAddr(&sin)) != ZERR_NONE) {
+    owl_function_error("Initializing Zephyr: %s", error_message(ret));
     return;
   }
 
-  if ((code = ZSendNotice(&req, ZNOAUTH)) != ZERR_NONE) {
-    owl_function_error("Initializing Zephyr: %s", error_message(code));
+  if ((ret = ZSendNotice(&req, ZNOAUTH)) != ZERR_NONE) {
+    owl_function_error("Initializing Zephyr: %s", error_message(ret));
     return;
   }
 
