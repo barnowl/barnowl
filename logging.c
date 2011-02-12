@@ -130,7 +130,7 @@ void owl_log_outgoing(const owl_message *m)
   GList *cc;
 
   /* expand ~ in path names */
-  logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
+  logpath = owl_util_makepath(owl_global_get_logpath(&g));
 
   /* Figure out what path to log to */
   if (owl_message_is_type_zephyr(m)) {
@@ -193,7 +193,7 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   tobuff = short_zuser(owl_list_get_element(&(zw->recips), 0));
 
   /* expand ~ in path names */
-  logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
+  logpath = owl_util_makepath(owl_global_get_logpath(&g));
 
   snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
   file=fopen(filename, "a");
@@ -309,13 +309,13 @@ void owl_log_incoming(const owl_message *m)
 
   /* create the filename (expanding ~ in path names) */
   if (personal) {
-    logpath = owl_text_substitute(owl_global_get_logpath(&g), "~", owl_global_get_homedir(&g));
+    logpath = owl_util_makepath(owl_global_get_logpath(&g));
     snprintf(filename, MAXPATHLEN, "%s/%s", logpath, from);
     snprintf(allfilename, MAXPATHLEN, "%s/all", logpath);
     owl_log_append(m, allfilename);
 
   } else {
-    logpath = owl_text_substitute(owl_global_get_classlogpath(&g), "~", owl_global_get_homedir(&g));
+    logpath = owl_util_makepath(owl_global_get_classlogpath(&g));
     snprintf(filename, MAXPATHLEN, "%s/%s", logpath, from);
   }
 
