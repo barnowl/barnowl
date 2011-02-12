@@ -266,36 +266,14 @@ int only_whitespace(const char *s)
 }
 
 /* Return a string with any occurances of 'from' replaced with 'to'.
- * Does not currently handle backslash quoting, but may in the future.
  * Caller must free returned string.
  */
 char *owl_text_substitute(const char *in, const char *from, const char *to)
 {
-  
-  char *out;
-  int   outlen, tolen, fromlen, inpos=0, outpos=0;
-
-  if (!*from) return g_strdup(in);
-
-  outlen = strlen(in)+1;
-  tolen  = strlen(to);
-  fromlen  = strlen(from);
-  out = g_new(char, outlen);
-
-  while (in[inpos]) {
-    if (!strncmp(in+inpos, from, fromlen)) {
-      outlen += tolen;
-      out = g_renew(char, out, outlen);
-      strcpy(out+outpos, to);
-      inpos += fromlen;
-      outpos += tolen;
-    } else {
-      out[outpos] = in[inpos];
-      inpos++; outpos++;
-    }
-  }
-  out[outpos] = '\0';
-  return(out);
+  char **split = g_strsplit(in, from, 0), *out;
+  out = g_strjoinv(to, split);
+  g_strfreev(split);
+  return out;
 }
 
 /* replace all instances of character a in buff with the character

@@ -136,8 +136,6 @@ int owl_util_regtest(void)
       g_free(__value);                                 \
     } while (0)
 
-  CHECK_STR_AND_FREE("owl_util_substitute 1", "foo",
-	             owl_text_substitute("foo", "", "Y"));
   CHECK_STR_AND_FREE("owl_text_substitute 2", "fYZYZ",
                      owl_text_substitute("foo", "o", "YZ"));
   CHECK_STR_AND_FREE("owl_text_substitute 3", "foo",
