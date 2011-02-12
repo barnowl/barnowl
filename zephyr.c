@@ -428,13 +428,13 @@ int owl_zephyr_loadloginsubs(const char *filename)
 void unsuball(void)
 {
 #if HAVE_LIBZEPHYR
-  int ret;
+  Code_t ret;
 
   ZResetAuthentication();
-  ret=ZCancelSubscriptions(0);
-  if (ret != ZERR_NONE) {
-    com_err("owl",ret,"while unsubscribing");
-  }
+  ret = ZCancelSubscriptions(0);
+  if (ret != ZERR_NONE)
+    owl_function_error("Zephyr: Cancelling subscriptions: %s",
+                       error_message(ret));
 #endif
 }
 
