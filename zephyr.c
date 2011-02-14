@@ -1133,7 +1133,7 @@ char *owl_zephyr_getsubs(void)
   if (ret==ZERR_TOOMANYSUBS) {
     return(g_strdup("Zephyr: too many subscriptions\n"));
   } else if (ret || (num <= 0)) {
-    return(g_strdup("Zephyr: error retriving subscriptions\n"));
+    return(g_strdup("Zephyr: error retrieving subscriptions\n"));
   }
 
   buf = g_string_new("");
