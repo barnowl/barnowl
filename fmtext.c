@@ -583,17 +583,6 @@ int owl_fmtext_num_bytes(const owl_fmtext *f)
   return f->buff->len;
 }
 
-/* set the charater at 'index' to be 'char'.  If index is out of
- * bounds don't do anything. If c or char at index is not ASCII, don't
- * do anything because it's not UTF-8 safe. */
-void owl_fmtext_set_char(owl_fmtext *f, int index, char ch)
-{
-  if ((index < 0) || (index > f->buff->len - 1)) return;
-  /* NOT ASCII*/
-  if (f->buff->str[index] & 0x80 || ch & 0x80) return;
-  f->buff->str[index] = ch;
-}
-
 /* Make a copy of the fmtext 'src' into 'dst' */
 void owl_fmtext_copy(owl_fmtext *dst, const owl_fmtext *src)
 {
