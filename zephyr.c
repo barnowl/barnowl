@@ -889,13 +889,17 @@ void owl_zephyr_zaway(const owl_message *m)
   g_free(to);
 
   z = owl_zwrite_new(tmpbuff);
+  g_free(tmpbuff);
+  if (z == NULL) {
+    owl_function_error("Error creating outgoing zephyr.");
+    return;
+  }
   owl_zwrite_set_message(z, owl_global_get_zaway_msg(&g));
   owl_zwrite_set_zsig(z, "Automated reply:");
 
   /* display the message as an admin message in the receive window */
   mout=owl_function_make_outgoing_zephyr(z);
   owl_global_messagequeue_addmsg(&g, mout);
-  g_free(tmpbuff);
   owl_zwrite_delete(z);
 #endif
 }
