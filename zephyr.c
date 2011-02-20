@@ -881,9 +881,9 @@ void owl_zephyr_zaway(const owl_message *m)
 
   myuser=short_zuser(to);
   if (!strcasecmp(owl_message_get_instance(m), "personal")) {
-    tmpbuff = g_strdup_printf("zwrite %s", myuser);
+    tmpbuff = owl_string_build_quoted("zwrite %q", myuser);
   } else {
-    tmpbuff = g_strdup_printf("zwrite -i %s %s", owl_message_get_instance(m), myuser);
+    tmpbuff = owl_string_build_quoted("zwrite -i %q %q", owl_message_get_instance(m), myuser);
   }
   g_free(myuser);
   g_free(to);
