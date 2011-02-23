@@ -288,9 +288,9 @@ const owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("unpunt", owl_command_unpunt, OWL_CTX_ANY,
 	      "remove an entry from the punt list",
-	      "zpunt <filter-text>\n"
-	      "zpunt <filter-text>\n"
-	      "zpunt <number>\n",
+	      "unpunt <filter-text>\n"
+	      "unpunt <filter-text>\n"
+	      "unpunt <number>\n",
 	      "The unpunt command will remove an entry from the puntlist.\n"
 	      "The first two forms correspond to the first two forms of the :punt\n"
 	      "command. The latter allows you to remove a specific entry from the\n"
