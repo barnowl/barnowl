@@ -1,4 +1,5 @@
 #include "owl.h"
+#include <sys/stat.h>
 
 static int dispatch_active = 0;
 static int psa_active = 0;
@@ -354,6 +355,23 @@ int owl_select_do_pre_select_actions(void)
   return ret;
 }
 
+static void owl_select_prune_bad_fds(void) {
+  owl_list *dl = owl_global_get_io_dispatch_list(&g);
+  int len, i;
+  struct stat st;
+  owl_io_dispatch *d;
+
+  len = owl_list_get_size(dl);
+  for (i = 0; i < len; i++) {
+    d = owl_list_get_element(dl, i);
+    if (fstat(d->fd, &st) < 0 && errno == EBADF) {
+      owl_function_debugmsg("Pruning defunct dispatch on fd %d.", d->fd);
+      d->needs_gc = 1;
+    }
+  }
+  owl_select_io_dispatch_gc();
+}
+
 void owl_select(void)
 {
   int i, max_fd, max_fd2, aim_done, ret;
@@ -415,9 +433,14 @@ void owl_select(void)
 
   ret = pselect(max_fd+1, &r, &w, &e, &timeout, &mask);
 
-  if(ret < 0 && errno == EINTR) {
-    if(owl_global_is_interrupted(&g)) {
-      owl_select_handle_intr(NULL);
+  if(ret < 0) {
+    if (errno == EINTR) {
+      if(owl_global_is_interrupted(&g)) {
+        owl_select_handle_intr(NULL);
+      }
+    } else if (errno == EBADF) {
+      /* Perl must have closed an fd on us without removing it first. */
+      owl_select_prune_bad_fds();
     }
     sigprocmask(SIG_SETMASK, &mask, NULL);
     return;
