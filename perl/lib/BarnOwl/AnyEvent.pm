@@ -11,7 +11,7 @@ sub io {
     my $self = {cb => $cb,
                 mode => $mode,
                 fd => $fd };
-    bless($self, class);
+    bless($self, $class);
     $self->{dispatch} = BarnOwl::add_io_dispatch($fd, $mode, $cb);
     return $self;
 }
@@ -24,8 +24,10 @@ sub BarnOwl::AnyEvent::io::DESTROY
 
 sub timer {
     my ($class, %arg) = @_;
-    return BarnOwl::Timer->new(%args);
+    return BarnOwl::Timer->new(\%arg);
 }
+
+sub DESTROY { }
 
 # sub idle {
 #     my ($class, %arg) = @_;

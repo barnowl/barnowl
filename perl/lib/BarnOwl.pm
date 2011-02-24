@@ -2,6 +2,9 @@ use strict;
 use warnings;
 
 package BarnOwl;
+# AnyEvent needs a VERSION to autodetect us as being loaded. Throw in
+# a dummy one.
+our $VERSION = 1;
 
 use base qw(Exporter);
 our @EXPORT_OK = qw(command getcurmsg getnumcols getidletime
@@ -28,8 +31,6 @@ BEGIN {
 use lib(get_data_dir() . "/lib");
 use lib(get_config_dir() . "/lib");
 
-push @AnyEvent::REGISTRY, [BarnOwl => BarnOwl::AnyEvent::];
-
 use BarnOwl::Hook;
 use BarnOwl::Hooks;
 use BarnOwl::Message;
@@ -39,6 +40,10 @@ use BarnOwl::Timer;
 use BarnOwl::Editwin;
 use BarnOwl::Completion;
 use BarnOwl::Help;
+use BarnOwl::AnyEvent;
+
+unshift @AnyEvent::REGISTRY, [BarnOwl => BarnOwl::AnyEvent::];
+require AnyEvent;
 
 use List::Util qw(max);
 
