@@ -49,9 +49,9 @@ void owl_fmtext_append_attr(owl_fmtext *f, const char *text, char attr, short fg
   g_string_append(f->buff, text);
 
   /* Reset attributes */
-  if (bg) g_string_append(f->buff, OWL_FMTEXT_UTF8_BGDEFAULT);
-  if (fg) g_string_append(f->buff, OWL_FMTEXT_UTF8_FGDEFAULT);
-  if (a)  g_string_append(f->buff, OWL_FMTEXT_UTF8_ATTR_NONE);
+  if (bg) g_string_append_unichar(f->buff, OWL_FMTEXT_UC_BGDEFAULT);
+  if (fg) g_string_append_unichar(f->buff, OWL_FMTEXT_UC_FGDEFAULT);
+  if (a)  g_string_append_unichar(f->buff, OWL_FMTEXT_UC_ATTR | OWL_FMTEXT_UC_ATTR);
 }
 
 /* Append normal, uncolored text 'text' to 'f' */
@@ -179,9 +179,9 @@ static void _owl_fmtext_append_fmtext(owl_fmtext *f, const owl_fmtext *in, int s
   g_string_append_len(f->buff, in->buff->str+start, stop-start);
 
   /* Reset attributes */
-  g_string_append(f->buff, OWL_FMTEXT_UTF8_BGDEFAULT);
-  g_string_append(f->buff, OWL_FMTEXT_UTF8_FGDEFAULT);
-  g_string_append(f->buff, OWL_FMTEXT_UTF8_ATTR_NONE);
+  g_string_append_unichar(f->buff, OWL_FMTEXT_UC_BGDEFAULT);
+  g_string_append_unichar(f->buff, OWL_FMTEXT_UC_FGDEFAULT);
+  g_string_append_unichar(f->buff, OWL_FMTEXT_UC_ATTR | OWL_FMTEXT_UC_ATTR);
 }
 
 /* append fmtext 'in' to 'f' */
