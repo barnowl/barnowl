@@ -524,10 +524,8 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
   
   owl_fmtext_truncate_lines(&(m->fmtext->fmtext), aline, bline-aline, &a);
   owl_fmtext_truncate_cols(&a, acol, bcol, &b);
-  owl_fmtext_colorize(&b, fgcolor);
-  owl_fmtext_colorizebg(&b, bgcolor);
 
-  owl_fmtext_curs_waddstr(&b, win);
+  owl_fmtext_curs_waddstr(&b, win, OWL_FMTEXT_ATTR_NONE, fgcolor, bgcolor);
 
   owl_fmtext_cleanup(&a);
   owl_fmtext_cleanup(&b);

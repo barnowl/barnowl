@@ -105,7 +105,7 @@ static void owl_viewwin_redraw_content(owl_window *w, WINDOW *curswin, void *use
   owl_fmtext_truncate_lines(&(v->fmtext), v->topline, winlines, &fm1);
   owl_fmtext_truncate_cols(&fm1, v->rightshift, wincols-1+v->rightshift, &fm2);
 
-  owl_fmtext_curs_waddstr(&fm2, curswin);
+  owl_fmtext_curs_waddstr(&fm2, curswin, OWL_FMTEXT_ATTR_NONE, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
 
   owl_fmtext_cleanup(&fm1);
   owl_fmtext_cleanup(&fm2);

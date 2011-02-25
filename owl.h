@@ -275,9 +275,6 @@ typedef struct _owl_input {
 
 typedef struct _owl_fmtext {
   GString *buff;
-  char default_attrs;
-  short default_fgcolor;
-  short default_bgcolor;
 } owl_fmtext;
 
 typedef struct _owl_list {
