@@ -130,21 +130,17 @@ static void _owl_fmtext_scan_attributes(const owl_fmtext *f, int start, char *at
  */
 static void _owl_fmtext_append_fmtext(owl_fmtext *f, const owl_fmtext *in, int start, int stop)
 {
-  int a = 0, fg = 0, bg = 0;
   char attr = 0;
   short fgcolor = OWL_COLOR_DEFAULT;
   short bgcolor = OWL_COLOR_DEFAULT;
 
   _owl_fmtext_scan_attributes(in, start, &attr, &fgcolor, &bgcolor);
-  if (attr != OWL_FMTEXT_ATTR_NONE) a=1;
-  if (fgcolor != OWL_COLOR_DEFAULT) fg=1;
-  if (bgcolor != OWL_COLOR_DEFAULT) bg=1;
 
-  if (a)
+  if (attr != OWL_FMTEXT_ATTR_NONE)
     g_string_append_unichar(f->buff, OWL_FMTEXT_UC_ATTR | attr);
-  if (fg)
+  if (fgcolor != OWL_COLOR_DEFAULT)
     g_string_append_unichar(f->buff, OWL_FMTEXT_UC_FGCOLOR | fgcolor);
-  if (bg)
+  if (bgcolor != OWL_COLOR_DEFAULT)
     g_string_append_unichar(f->buff, OWL_FMTEXT_UC_BGCOLOR | bgcolor);
 
   g_string_append_len(f->buff, in->buff->str+start, stop-start);
@@ -263,18 +259,16 @@ static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_sear
       waddstr(w, s);
       p[0] = tmp;
 
-      /* Deal with new attributes. Initialize to defaults, then
-	 process all consecutive formatting characters. */
-      attr = default_attrs;
-      fg = default_fgcolor;
-      bg = default_bgcolor;
+      /* Deal with new attributes. Process all consecutive formatting
+       * characters, and then apply defaults where relevant. */
       while (owl_fmtext_is_format_char(g_utf8_get_char(p))) {
 	_owl_fmtext_update_attributes(g_utf8_get_char(p), &attr, &fg, &bg);
 	p = g_utf8_next_char(p);
       }
-      _owl_fmtext_wattrset(w, attr | default_attrs);
+      attr |= default_attrs;
       if (fg == OWL_COLOR_DEFAULT) fg = default_fgcolor;
       if (bg == OWL_COLOR_DEFAULT) bg = default_bgcolor;
+      _owl_fmtext_wattrset(w, attr);
       _owl_fmtext_update_colorpair(fg, bg, &pair);
       _owl_fmtext_wcolor_set(w, pair);
 
