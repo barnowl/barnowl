@@ -15,65 +15,71 @@ support
 
 =cut
 
-use Net::IRC::Connection;
+use AnyEvent::IRC::Client;
+use AnyEvent::IRC::Util qw(split_prefix prefix_nick);
 
-use base qw(Class::Accessor Exporter);
-__PACKAGE__->mk_accessors(qw(conn alias channels motd names_tmp whois_tmp));
-our @EXPORT_OK = qw(&is_private);
+use base qw(Class::Accessor);
+use Exporter 'import';
+__PACKAGE__->mk_accessors(qw(conn alias motd names_tmp whois_tmp nick server autoconnect_channels));
+our @EXPORT_OK = qw(is_private);
 
 use BarnOwl;
 use Scalar::Util qw(weaken);
 
-BEGIN {
-    no strict 'refs';
-    my @delegate = qw(nick server);
-    for my $meth (@delegate) {
-        *{"BarnOwl::Module::IRC::Connection::$meth"} = sub {
-            shift->conn->$meth(@_);
-        }
-    }
-};
-
 sub new {
     my $class = shift;
-    my $irc = shift;
     my $alias = shift;
-    my %args = (@_);
-    my $conn = Net::IRC::Connection->new($irc, %args);
+    my $host  = shift;
+    my $port  = shift;
+    my $args  = shift;
+    my $nick = $args->{nick};
+    my $conn = AnyEvent::IRC::Client->new();
+    if(delete $args->{SSL}) {
+        $conn->enable_ssl;
+    }
+    $conn->connect($host, $port, $args);
     my $self = bless({}, $class);
     $self->conn($conn);
+    $self->autoconnect_channels([]);
     $self->alias($alias);
-    $self->channels([]);
+    $self->server($host);
+    $self->nick($nick);
     $self->motd("");
     $self->names_tmp(0);
     $self->whois_tmp("");
 
-    $self->conn->add_default_handler(sub { shift; $self->on_event(@_) });
-    $self->conn->add_handler(['msg', 'notice', 'public', 'caction'],
-            sub { shift; $self->on_msg(@_) });
-    $self->conn->add_handler(['welcome', 'yourhost', 'created',
-                              'luserclient', 'luserop', 'luserchannels', 'luserme',
-                              'error'],
-            sub { shift; $self->on_admin_msg(@_) });
-    $self->conn->add_handler(['myinfo', 'map', 'n_local', 'n_global',
-            'luserconns'],
-            sub { });
-    $self->conn->add_handler(motdstart => sub { shift; $self->on_motdstart(@_) });
-    $self->conn->add_handler(motd      => sub { shift; $self->on_motd(@_) });
-    $self->conn->add_handler(endofmotd => sub { shift; $self->on_endofmotd(@_) });
-    $self->conn->add_handler(join      => sub { shift; $self->on_join(@_) });
-    $self->conn->add_handler(part      => sub { shift; $self->on_part(@_) });
-    $self->conn->add_handler(quit      => sub { shift; $self->on_quit(@_) });
-    $self->conn->add_handler(disconnect => sub { shift; $self->on_disconnect(@_) });
-    $self->conn->add_handler(nicknameinuse => sub { shift; $self->on_nickinuse(@_) });
-    $self->conn->add_handler(cping     => sub { shift; $self->on_ping(@_) });
-    $self->conn->add_handler(topic     => sub { shift; $self->on_topic(@_) });
-    $self->conn->add_handler(topicinfo => sub { shift; $self->on_topicinfo(@_) });
-    $self->conn->add_handler(namreply  => sub { shift; $self->on_namreply(@_) });
-    $self->conn->add_handler(endofnames=> sub { shift; $self->on_endofnames(@_) });
-    $self->conn->add_handler(endofwhois=> sub { shift; $self->on_endofwhois(@_) });
-    $self->conn->add_handler(mode      => sub { shift; $self->on_mode(@_) });
-    $self->conn->add_handler(nosuchchannel => sub { shift; $self->on_nosuchchannel(@_) });
+    # $self->conn->add_default_handler(sub { shift; $self->on_event(@_) });
+    $self->conn->reg_cb(registered => sub { shift; $self->connected("Connected to $alias as $nick") },
+                        connfail   => sub { shift; BarnOwl::error("Connection to $host failed!") },
+                        disconnect => sub { shift; $self->on_disconnect(@_) },
+                        publicmsg  => sub { shift; $self->on_msg(@_) },
+                        privatemsg => sub { shift; $self->on_msg(@_) });
+    for my $m (qw(welcome yourhost created
+                  luserclient luserop luserchannels luserme
+                  error)) {
+        $self->conn->reg_cb("irc_$m" => sub { shift;  $self->on_admin_msg(@_) });
+    }
+    $self->conn->reg_cb(irc_375       => sub { shift; $self->on_motdstart(@_) },
+                        irc_372       => sub { shift; $self->on_motd(@_) },
+                        irc_376       => sub { shift; $self->on_endofmotd(@_) },
+                        irc_join      => sub { shift; $self->on_join(@_) },
+                        irc_part      => sub { shift; $self->on_part(@_) },
+                        irc_quit      => sub { shift; $self->on_quit(@_) },
+                        irc_433       => sub { shift; $self->on_nickinuse(@_) },
+                        channel_topic => sub { shift; $self->on_topic(@_) },
+                        irc_333       => sub { shift; $self->on_topicinfo(@_) },
+                        irc_353       => sub { shift; $self->on_namreply(@_) },
+                        irc_366       => sub { shift; $self->on_endofnames(@_) },
+                        irc_311       => sub { shift; $self->on_whois(@_) },
+                        irc_312       => sub { shift; $self->on_whois(@_) },
+                        irc_319       => sub { shift; $self->on_whois(@_) },
+                        irc_320       => sub { shift; $self->on_whois(@_) },
+                        irc_318       => sub { shift; $self->on_endofwhois(@_) },
+                        irc_mode      => sub { shift; $self->on_mode(@_) },
+                        irc_401       => sub { shift; $self->on_nosuch(@_) },
+                        irc_402       => sub { shift; $self->on_nosuch(@_) },
+                        irc_403       => sub { shift; $self->on_nosuch(@_) },
+                        'irc_*' => sub { BarnOwl::debug("IRC: " . $_[1]->{command}) });
 
     return $self;
 }
@@ -91,66 +97,60 @@ sub getSocket
 sub new_message {
     my $self = shift;
     my $evt = shift;
+    my ($nick, $user, $host) = split_prefix($evt);
     return BarnOwl::Message->new(
         type        => 'IRC',
         server      => $self->server,
         network     => $self->alias,
-        sender      => $evt->nick,
-        hostname    => $evt->host,
-        from        => $evt->from,
+        sender      => $nick,
+        defined($host) ? (hostname    => $host) : (),
+        from        => $evt->{prefix},
         @_
        );
 }
 
 sub on_msg {
-    my ($self, $evt) = @_;
-    my ($recipient) = $evt->to;
-    my $body = strip_irc_formatting([$evt->args]->[0]);
-    my $nick = $self->nick;
-    $body = '* '.$evt->nick.' '.$body if $evt->type eq 'caction';
+    my ($self, $recipient, $evt) = @_;
+    my $body = strip_irc_formatting($evt->{params}->[1]);
+
     my $msg = $self->new_message($evt,
         direction   => 'in',
         recipient   => $recipient,
-        body => $body,
-        $evt->type eq 'notice' ?
+        body        => $body,
+        $evt->{command} eq 'notice' ?
           (notice     => 'true') : (),
         is_private($recipient) ?
           (private  => 'true') : (channel => $recipient),
         replycmd    => BarnOwl::quote('irc-msg', '-a', $self->alias,
-          (is_private($recipient) ? $evt->nick : $recipient)),
-        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
+           (is_private($recipient) ? prefix_nick($evt) : $recipient)),
+        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, prefix_nick($evt)),
        );
 
     BarnOwl::queue_message($msg);
 }
 
-sub on_ping {
-    my ($self, $evt) = @_;
-    $self->conn->ctcp_reply($evt->nick, join (' ', ($evt->args)));
-}
-
 sub on_admin_msg {
     my ($self, $evt) = @_;
-    return if BarnOwl::Module::IRC->skip_msg($evt->type);
+    return if BarnOwl::Module::IRC->skip_msg($evt->{command});
     BarnOwl::admin_message("IRC",
-            BarnOwl::Style::boldify('IRC ' . $evt->type . ' message from '
+            BarnOwl::Style::boldify('IRC ' . $evt->{command} . ' message from '
                 . $self->alias) . "\n"
-            . strip_irc_formatting(join ' ', cdr($evt->args)));
+            . strip_irc_formatting(join ' ', cdr($evt->{params})));
 }
 
 sub on_motdstart {
     my ($self, $evt) = @_;
-    $self->motd(join "\n", cdr($evt->args));
+    $self->motd(join "\n", cdr(@{$evt->{params}}));
 }
 
 sub on_motd {
     my ($self, $evt) = @_;
-    $self->motd(join "\n", $self->motd, cdr($evt->args));
+    $self->motd(join "\n", $self->motd, cdr(@{$evt->{params}}));
 }
 
 sub on_endofmotd {
     my ($self, $evt) = @_;
-    $self->motd(join "\n", $self->motd, cdr($evt->args));
+    $self->motd(join "\n", $self->motd, cdr(@{$evt->{params}}));
     BarnOwl::admin_message("IRC",
             BarnOwl::Style::boldify('MOTD for ' . $self->alias) . "\n"
             . strip_irc_formatting($self->motd));
@@ -158,28 +158,28 @@ sub on_endofmotd {
 
 sub on_join {
     my ($self, $evt) = @_;
+    my $chan = $evt->{params}[0];
     my $msg = $self->new_message($evt,
         loginout   => 'login',
         action     => 'join',
-        channel    => $evt->to,
-        replycmd   => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->to),
-        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
+        channel    => $chan,
+        replycmd   => BarnOwl::quote('irc-msg', '-a', $self->alias, $chan),
+        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, prefix_nick($evt)),
         );
     BarnOwl::queue_message($msg);
-    push @{$self->channels}, $evt->to;
 }
 
 sub on_part {
     my ($self, $evt) = @_;
+    my $chan = $evt->{params}[0];
     my $msg = $self->new_message($evt,
         loginout   => 'logout',
         action     => 'part',
-        channel    => $evt->to,
-        replycmd   => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->to),
-        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
+        channel    => $chan,
+        replycmd   => BarnOwl::quote('irc-msg', '-a', $self->alias, $chan),
+        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, prefix_nick($evt)),
         );
     BarnOwl::queue_message($msg);
-    $self->channels([ grep {$_ ne $evt->to} @{$self->channels}]);
 }
 
 sub on_quit {
@@ -187,10 +187,10 @@ sub on_quit {
     my $msg = $self->new_message($evt,
         loginout   => 'logout',
         action     => 'quit',
-        from       => $evt->to,
-        reason     => [$evt->args]->[0],
-        replycmd   => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
-        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, $evt->nick),
+        from       => $evt->{prefix},
+        reason     => $evt->{params}->[1],
+        replycmd   => BarnOwl::quote('irc-msg', '-a', $self->alias, prefix_nick($evt)),
+        replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, prefix_nick($evt)),
         );
     BarnOwl::queue_message($msg);
 }
@@ -206,19 +206,16 @@ sub disconnect {
             delete $BarnOwl::Module::IRC::channels{$k};
         }
     }
-    BarnOwl::remove_io_dispatch($self->{FD});
     $self->motd("");
 }
 
 sub on_disconnect {
-    my ($self, $evt) = @_;
+    my ($self, $why) = @_;
     $self->disconnect;
     BarnOwl::admin_message('IRC',
                            "[" . $self->alias . "] Disconnected from server");
-    if ($evt->format and $evt->format eq "error") {
+    if ($why && $why =~ m{error in connection}) {
         $self->schedule_reconnect;
-    } else {
-        $self->channels([]);
     }
 }
 
@@ -226,25 +223,23 @@ sub on_nickinuse {
     my ($self, $evt) = @_;
     BarnOwl::admin_message("IRC",
                            "[" . $self->alias . "] " .
-                           [$evt->args]->[1] . ": Nick already in use");
-    $self->disconnect unless $self->motd;
+                           $evt->{params}->[1] . ": Nick already in use");
 }
 
 sub on_topic {
-    my ($self, $evt) = @_;
-    my @args = $evt->args;
-    if (scalar @args > 1) {
+    my ($self, $channel, $topic, $who) = @_;
+    if ($channel) {
         BarnOwl::admin_message("IRC",
-                "Topic for $args[1] on " . $self->alias . " is $args[2]");
+                "Topic for $channel on " . $self->alias . " is $topic");
     } else {
         BarnOwl::admin_message("IRC",
-                "Topic changed to $args[0]");
+                "Topic changed to $channel");
     }
 }
 
 sub on_topicinfo {
     my ($self, $evt) = @_;
-    my @args = $evt->args;
+    my @args = @{$evt->{params}};
     BarnOwl::admin_message("IRC",
         "Topic for $args[1] set by $args[2] at " . localtime($args[3]));
 }
@@ -256,7 +251,7 @@ sub on_topicinfo {
 sub on_namreply {
     my ($self, $evt) = @_;
     return unless $self->names_tmp;
-    $self->names_tmp([@{$self->names_tmp}, split(' ', [$evt->args]->[3])]);
+    $self->names_tmp([@{$self->names_tmp}, split(' ', $evt->{params}[3])]);
 }
 
 sub cmp_user {
@@ -271,7 +266,7 @@ sub cmp_user {
 sub on_endofnames {
     my ($self, $evt) = @_;
     return unless $self->names_tmp;
-    my $names = BarnOwl::Style::boldify("Members of " . [$evt->args]->[1] . ":\n");
+    my $names = BarnOwl::Style::boldify("Members of " . $evt->{params}->[1] . ":\n");
     for my $name (sort {cmp_user($a, $b)} @{$self->names_tmp}) {
         $names .= "  $name\n";
     }
@@ -281,16 +276,22 @@ sub on_endofnames {
 
 sub on_whois {
     my ($self, $evt) = @_;
+    my %names = (
+        311 => 'user',
+        312 => 'server',
+        319 => 'channels',
+        330 => 'whowas',
+       );
     $self->whois_tmp(
-      $self->whois_tmp . "\n" . $evt->type . ":\n  " .
-      join("\n  ", cdr(cdr($evt->args))) . "\n"
-    );
+        $self->whois_tmp . "\n" . $names{$evt->{command}} . ":\n  " .
+        join("\n  ", cdr(cdr(@{$evt->{params}}))) . "\n"
+       );
 }
 
 sub on_endofwhois {
     my ($self, $evt) = @_;
     BarnOwl::popless_ztext(
-        BarnOwl::Style::boldify("/whois for " . [$evt->args]->[1] . ":\n") .
+        BarnOwl::Style::boldify("/whois for " . $evt->{params}->[1] . ":\n") .
         $self->whois_tmp
     );
     $self->whois_tmp('');
@@ -299,16 +300,17 @@ sub on_endofwhois {
 sub on_mode {
     my ($self, $evt) = @_;
     BarnOwl::admin_message("IRC",
-                           "[" . $self->alias . "] User " . ($evt->nick) . + " set mode " .
-                           join(" ", $evt->args) . "on " . $evt->to->[0]
+                           "[" . $self->alias . "] User " . (prefix_nick($evt)) . + " set mode " .
+                           join(" ", cdr(@{$evt->{params}})) . "on " . $evt->{params}->[0]
                           );
 }
 
-sub on_nosuchchannel {
+sub on_nosuch {
     my ($self, $evt) = @_;
+    my %things = (401 => 'nick', 402 => 'server', 403 => 'channel');
     BarnOwl::admin_message("IRC",
                            "[" . $self->alias . "] " .
-                           "No such channel: " . [$evt->args]->[1])
+                           "No such @{[$things{$evt->{command}}]}: @{[$evt->{params}->[1]]}")
 }
 
 sub on_event {
@@ -355,21 +357,26 @@ sub connected {
     BarnOwl::admin_message("IRC", $msg);
     $self->cancel_reconnect;
     $BarnOwl::Module::IRC::ircnets{$self->alias} = $self;
-    my $fd = $self->getSocket()->fileno();
-    BarnOwl::add_io_dispatch($fd, 'r', \&BarnOwl::Module::IRC::OwlProcess);
-    $self->{FD} = $fd;
+    if ($self->autoconnect_channels) {
+        for my $c (@{$self->autoconnect_channels}) {
+            $self->conn->send_msg(join => $c);
+        }
+        $self->autoconnect_channels([]);
+    }
+    $self->conn->enable_ping(60, sub {
+                                 $self->disconnect("Connection timed out.");
+                                 $self->schedule_reconnect;
+                             });
 }
 
 sub reconnect {
     my $self = shift;
     my $backoff = shift;
 
+    $self->autoconnect_channels([keys(%{$self->channel_list})]);
     $self->conn->connect;
     if ($self->conn->connected) {
         $self->connected("Reconnected to ".$self->alias);
-        my @channels = @{$self->channels};
-        $self->channels([]);
-        $self->conn->join($_) for @channels;
         return;
     }
 
