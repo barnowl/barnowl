@@ -71,6 +71,8 @@ void owl_window_set_position(owl_window *w, int nlines, int ncols, int begin_y, 
 void owl_window_move(owl_window *w, int begin_y, int begin_x);
 void owl_window_resize(owl_window *w, int nlines, int ncols);
 
+GSource *owl_window_redraw_source_new(void);
+
 /* Standard callback functions in windowcb.c */
 
 void owl_window_erase_cb(owl_window *w, WINDOW *win, void *user_data);
