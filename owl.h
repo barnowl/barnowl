@@ -609,7 +609,7 @@ typedef struct _owl_global {
   aim_session_t aimsess;
   aim_conn_t bosconn;
   int aim_loggedin;         /* true if currently logged into AIM */
-  int aim_doprocessing;     /* true if we should process AIM events (like pending login) */
+  GSource *aim_event_source; /* where we get our AIM events from */
   char *aim_screenname;     /* currently logged in AIM screen name */
   char *aim_screenname_for_filters;     /* currently logged in AIM screen name */
   owl_buddylist buddylist;  /* list of logged in AIM buddies */

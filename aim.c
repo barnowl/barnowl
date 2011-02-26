@@ -445,15 +445,13 @@ char *owl_aim_normalize_screenname(const char *in)
   return(out);
 }
 
-int owl_aim_process_events(void)
+int owl_aim_process_events(aim_session_t *aimsess)
 {
-  aim_session_t *aimsess;
   aim_conn_t *waitingconn = NULL;
   struct timeval tv;
   int selstat = 0;
   struct owlfaim_priv *priv;
 
-  aimsess=owl_global_get_aimsess(&g);
   priv = aimsess->aux_data;
 
   /* do a select without blocking */
@@ -1794,9 +1792,114 @@ void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
   return;	
 }
 
-void owl_process_aim(void)
+typedef struct _owl_aim_event_source { /*noproto*/
+  GSource source;
+  aim_session_t *sess;
+  GPtrArray *fds;
+} owl_aim_event_source;
+
+static void truncate_pollfd_list(owl_aim_event_source *event_source, int len)
 {
-  if (owl_global_is_doaimevents(&g)) {
-    owl_aim_process_events();
+  GPollFD *fd;
+  int i;
+  if (len < event_source->fds->len)
+    owl_function_debugmsg("Truncating AIM PollFDs to %d, was %d", len, event_source->fds->len);
+  for (i = len; i < event_source->fds->len; i++) {
+    fd = event_source->fds->pdata[i];
+    g_source_remove_poll(&event_source->source, fd);
+    g_free(fd);
   }
+  g_ptr_array_remove_range(event_source->fds, len, event_source->fds->len - len);
+}
+
+static gboolean owl_aim_event_source_prepare(GSource *source, int *timeout)
+{
+  owl_aim_event_source *event_source = (owl_aim_event_source*)source;
+  aim_conn_t *cur;
+  GPollFD *fd;
+  int i;
+
+  /* AIM HACK:
+   *
+   *  The problem - I'm not sure where to hook into the owl/faim
+   *  interface to keep track of when the AIM socket(s) open and
+   *  close. In particular, the bosconn thing throws me off. So,
+   *  rather than register particular dispatchers for AIM, I look up
+   *  the relevant FDs and add them to select's watch lists, then
+   *  check for them individually before moving on to the other
+   *  dispatchers. --asedeno
+   */
+  i = 0;
+  for (cur = event_source->sess->connlist; cur; cur = cur->next) {
+    if (cur->fd != -1) {
+      /* Add new GPollFDs as necessary. */
+      if (i == event_source->fds->len) {
+	fd = g_new0(GPollFD, 1);
+	g_ptr_array_add(event_source->fds, fd);
+	g_source_add_poll(source, fd);
+        owl_function_debugmsg("Allocated new AIM PollFD, len = %d", event_source->fds->len);
+      }
+      fd = event_source->fds->pdata[i];
+      fd->fd = cur->fd;
+      fd->events |= G_IO_IN | G_IO_HUP | G_IO_ERR;
+      if (cur->status & AIM_CONN_STATUS_INPROGRESS) {
+        /* Yes, we're checking writable sockets here. Without it, AIM
+           login is really slow. */
+	fd->events |= G_IO_OUT;
+      }
+      i++;
+    }
+  }
+  /* If the number of GPollFDs went down, clean up. */
+  truncate_pollfd_list(event_source, i);
+
+  *timeout = -1;
+  return FALSE;
+}
+
+static gboolean owl_aim_event_source_check(GSource *source)
+{
+  owl_aim_event_source *event_source = (owl_aim_event_source*)source;
+  int i;
+
+  for (i = 0; i < event_source->fds->len; i++) {
+    GPollFD *fd = event_source->fds->pdata[i];
+    if (fd->revents & fd->events)
+      return TRUE;
+  }
+  return FALSE;
+}
+
+static gboolean owl_aim_event_source_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
+{
+  owl_aim_event_source *event_source = (owl_aim_event_source*)source;
+  owl_aim_process_events(event_source->sess);
+  return TRUE;
+}
+
+static void owl_aim_event_source_finalize(GSource *source)
+{
+  owl_aim_event_source *event_source = (owl_aim_event_source*)source;
+  truncate_pollfd_list(event_source, 0);
+  g_ptr_array_free(event_source->fds, TRUE);
+}
+
+static GSourceFuncs aim_event_funcs = {
+  owl_aim_event_source_prepare,
+  owl_aim_event_source_check,
+  owl_aim_event_source_dispatch,
+  owl_aim_event_source_finalize,
+};
+
+GSource *owl_aim_event_source_new(aim_session_t *sess)
+{
+  GSource *source;
+  owl_aim_event_source *event_source;
+
+  source = g_source_new(&aim_event_funcs, sizeof(owl_aim_event_source));
+  event_source = (owl_aim_event_source *)source;
+  event_source->sess = sess;
+  /* TODO: When we depend on glib 2.22+, use g_ptr_array_new_with_free_func. */
+  event_source->fds = g_ptr_array_new();
+  return source;
 }
