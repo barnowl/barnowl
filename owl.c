@@ -441,29 +441,6 @@ void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
 
 #endif /* OWL_STDERR_REDIR */
 
-static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
-{
-  owl_colorpair_mgr *cpmgr;
-
-  /* if a resize has been scheduled, deal with it */
-  owl_global_check_resize(&g);
-  /* update the terminal if we need to */
-  owl_window_redraw_scheduled();
-  /* On colorpair shortage, reset and redraw /everything/. NOTE: if
-   * the current screen uses too many colorpairs, this draws
-   * everything twice. But this is unlikely; COLOR_PAIRS is 64 with
-   * 8+1 colors, and 256^2 with 256+1 colors. (+1 for default.) */
-  cpmgr = owl_global_get_colorpair_mgr(&g);
-  if (cpmgr->overflow) {
-    owl_function_debugmsg("colorpairs: color shortage; reset pairs and redraw. COLOR_PAIRS = %d", COLOR_PAIRS);
-    owl_fmtext_reset_colorpairs(cpmgr);
-    owl_function_full_redisplay();
-    owl_window_redraw_scheduled();
-  }
-  return 0;
-}
-
-
 int main(int argc, char **argv, char **env)
 {
   int argc_copy;
@@ -472,6 +449,7 @@ int main(int argc, char **argv, char **env)
   const owl_style *s;
   const char *dir;
   owl_options opts;
+  GSource *source;
 
   if (!GLIB_CHECK_VERSION (2, 12, 0))
     g_error ("GLib version 2.12.0 or above is needed.");
@@ -590,7 +568,10 @@ int main(int argc, char **argv, char **env)
   owl_global_pop_context(&g);
   owl_global_push_context(&g, OWL_CTX_INTERACTIVE|OWL_CTX_RECV, NULL, "recv", NULL);
 
-  owl_select_add_pre_select_action(owl_refresh_pre_select_action, NULL, NULL);
+  source = owl_window_redraw_source_new();
+  g_source_attach(source, NULL);
+  g_source_unref(source);
+
   owl_select_add_pre_select_action(owl_process_messages, NULL, NULL);
   owl_select_add_pre_select_action(owl_errsignal_pre_select_action, NULL, NULL);
 

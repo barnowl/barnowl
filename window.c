@@ -523,3 +523,53 @@ void owl_window_resize(owl_window *w, int nlines, int ncols)
 {
   owl_window_set_position(w, nlines, ncols, w->begin_y, w->begin_x);
 }
+
+/** Redrawing main loop hooks **/
+
+static bool _owl_window_should_redraw(void) {
+  return g.resizepending || owl_window_get_screen()->dirty_subtree;
+}
+
+static gboolean _owl_window_redraw_prepare(GSource *source, int *timeout) {
+  *timeout = -1;
+  return _owl_window_should_redraw();
+}
+
+static gboolean _owl_window_redraw_check(GSource *source) {
+  return _owl_window_should_redraw();
+}
+
+static gboolean _owl_window_redraw_dispatch(GSource *source, GSourceFunc callback, gpointer user_data) {
+  owl_colorpair_mgr *cpmgr;
+
+  /* if a resize has been scheduled, deal with it */
+  owl_global_check_resize(&g);
+  /* update the terminal if we need to */
+  owl_window_redraw_scheduled();
+  /* On colorpair shortage, reset and redraw /everything/. NOTE: if
+   * the current screen uses too many colorpairs, this draws
+   * everything twice. But this is unlikely; COLOR_PAIRS is 64 with
+   * 8+1 colors, and 256^2 with 256+1 colors. (+1 for default.) */
+  cpmgr = owl_global_get_colorpair_mgr(&g);
+  if (cpmgr->overflow) {
+    owl_function_debugmsg("colorpairs: color shortage; reset pairs and redraw. COLOR_PAIRS = %d", COLOR_PAIRS);
+    owl_fmtext_reset_colorpairs(cpmgr);
+    owl_function_full_redisplay();
+    owl_window_redraw_scheduled();
+  }
+  return TRUE;
+}
+
+static GSourceFuncs redraw_funcs = {
+  _owl_window_redraw_prepare,
+  _owl_window_redraw_check,
+  _owl_window_redraw_dispatch,
+  NULL
+};
+
+GSource *owl_window_redraw_source_new(void) {
+  GSource *source;
+  source = g_source_new(&redraw_funcs, sizeof(GSource));
+  /* TODO: priority?? */
+  return source;
+}
