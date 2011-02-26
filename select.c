@@ -336,31 +336,6 @@ void owl_process_input_char(owl_input j)
   }
 }
 
-void owl_select_mask_signals(sigset_t *oldmask) {
-  sigset_t set;
-
-  sigemptyset(&set);
-  sigaddset(&set, SIGWINCH);
-  sigaddset(&set, SIGALRM);
-  sigaddset(&set, SIGPIPE);
-  sigaddset(&set, SIGTERM);
-  sigaddset(&set, SIGHUP);
-  sigaddset(&set, SIGINT);
-  sigprocmask(SIG_BLOCK, &set, oldmask);
-}
-
-void owl_select_handle_intr(sigset_t *restore)
-{
-  owl_input in;
-
-  owl_global_unset_interrupted(&g);
-
-  sigprocmask(SIG_SETMASK, restore, NULL);
-
-  in.ch = in.uch = owl_global_get_startup_tio(&g)->c_cc[VINTR];
-  owl_process_input_char(in);
-}
-
 owl_ps_action *owl_select_add_pre_select_action(int (*cb)(owl_ps_action *, void *), void (*destroy)(owl_ps_action *), void *data)
 {
   owl_ps_action *a = g_new(owl_ps_action, 1);

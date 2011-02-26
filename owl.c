@@ -353,55 +353,38 @@ void owl_process_input(const owl_io_dispatch *d, void *data)
   }
 }
 
-void sig_handler(int sig, siginfo_t *si, void *data)
-{
-  if (sig==SIGWINCH) {
+static void sig_handler(int sig, void *data) {
+  owl_function_debugmsg("Got signal %d", sig);
+  /* TODO: These don't need to be re-entrant anymore! */
+  if (sig == SIGWINCH) {
     /* we can't inturrupt a malloc here, so it just sets a flag
      * schedulding a resize for later
      */
     owl_function_resize();
-  } else if (sig==SIGPIPE || sig==SIGCHLD) {
-    /* Set a flag and some info that we got the sigpipe
-     * so we can record that we got it and why... */
-    owl_global_set_errsignal(&g, sig, si);
-  } else if (sig==SIGTERM || sig==SIGHUP) {
+  } else if (sig == SIGPIPE || sig == SIGCHLD) {
+    owl_function_error("Got unexpected signal: %d %s",
+		       sig, (sig == SIGPIPE) ? "SIGPIPE" : "SIGCHLD");
+  } else if (sig == SIGTERM || sig == SIGHUP) {
     owl_function_quit();
+  } else if (sig == SIGINT) {
+    owl_input in;
+    in.ch = in.uch = owl_global_get_startup_tio(&g)->c_cc[VINTR];
+    owl_process_input_char(in);
   }
-}
-
-void sigint_handler(int sig, siginfo_t *si, void *data)
-{
-  owl_global_set_interrupted(&g);
-}
-
-static int owl_errsignal_pre_select_action(owl_ps_action *a, void *data)
-{
-  siginfo_t si;
-  int signum;
-  if ((signum = owl_global_get_errsignal_and_clear(&g, &si)) > 0) {
-    owl_function_error("Got unexpected signal: %d %s  (code: %d band: %ld  errno: %d)",
-        signum, signum==SIGPIPE?"SIGPIPE":"SIG????",
-        si.si_code, si.si_band, si.si_errno);
-  }
-  return 0;
 }
 
 void owl_register_signal_handlers(void) {
-  struct sigaction sigact;
+  sigset_t sigset;
 
-  /* signal handler */
-  /*sigact.sa_handler=sig_handler;*/
-  sigact.sa_sigaction=sig_handler;
-  sigemptyset(&sigact.sa_mask);
-  sigact.sa_flags=SA_SIGINFO;
-  sigaction(SIGWINCH, &sigact, NULL);
-  sigaction(SIGALRM, &sigact, NULL);
-  sigaction(SIGPIPE, &sigact, NULL);
-  sigaction(SIGTERM, &sigact, NULL);
-  sigaction(SIGHUP, &sigact, NULL);
+  sigemptyset(&sigset);
+  sigaddset(&sigset, SIGWINCH);
+  sigaddset(&sigset, SIGALRM);
+  sigaddset(&sigset, SIGPIPE);
+  sigaddset(&sigset, SIGTERM);
+  sigaddset(&sigset, SIGHUP);
+  sigaddset(&sigset, SIGINT);
 
-  sigact.sa_sigaction=sigint_handler;
-  sigaction(SIGINT, &sigact, NULL);
+  owl_signal_init(&sigset, sig_handler, NULL);
 }
 
 #if OWL_STDERR_REDIR
@@ -478,7 +461,6 @@ int main(int argc, char **argv, char **env)
   owl_parse_options(argc, argv, &opts);
   g.load_initial_subs = opts.load_initial_subs;
 
-  owl_register_signal_handlers();
   owl_start_curses();
 
   /* owl global init */
@@ -490,6 +472,8 @@ int main(int argc, char **argv, char **env)
   owl_global_set_startupargs(&g, argc_copy, argv_copy);
   g_strfreev(argv_copy);
   owl_global_set_haveaim(&g);
+
+  owl_register_signal_handlers();
 
   /* register STDIN dispatch; throw away return, we won't need it */
   owl_select_add_io_dispatch(STDIN_FILENO, OWL_IO_READ, &owl_process_input, NULL, NULL);
@@ -589,8 +573,6 @@ int main(int argc, char **argv, char **env)
   source = g_source_new(&owl_process_messages_funcs, sizeof(GSource));
   g_source_attach(source, NULL);
   g_source_unref(source);
-
-  owl_select_add_pre_select_action(owl_errsignal_pre_select_action, NULL, NULL);
 
   owl_function_debugmsg("startup: entering main loop");
   owl_select_run_loop();

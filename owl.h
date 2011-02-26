@@ -628,8 +628,6 @@ typedef struct _owl_global {
   int havezephyr;
   int haveaim;
   int ignoreaimlogin;
-  volatile sig_atomic_t got_err_signal; /* 1 if we got an unexpected signal */
-  volatile siginfo_t err_signal_info;
   owl_zbuddylist zbuddies;
   GList *zaldlist;
   int pseudologin_notify;
@@ -639,7 +637,6 @@ typedef struct _owl_global {
   GList *timerlist;
   owl_timer *aim_nop_timer;
   int load_initial_subs;
-  volatile sig_atomic_t interrupted;
   FILE *debug_file;
   char *kill_buffer;
 } owl_global;
