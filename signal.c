@@ -11,8 +11,13 @@ static void (*signal_cb)(int, void*);
 static void *signal_cbdata;
 
 static gpointer signal_thread_func(gpointer data);
-static gboolean signal_thunk(gpointer data);
 
+/* Initializes the signal thread to listen for 'set' on a dedicated
+ * thread. 'callback' is called *on the signal thread* when a signal
+ * is received.
+ *
+ * This function /must/ be called before any other threads are
+ * created. (Otherwise the signals will not get blocked correctly.) */
 void owl_signal_init(const sigset_t *set, void (*callback)(int, void*), void *data) {
   GError *error = NULL;
 
@@ -22,8 +27,7 @@ void owl_signal_init(const sigset_t *set, void (*callback)(int, void*), void *da
   /* Block these signals in all threads, so we can get them. */
   pthread_sigmask(SIG_BLOCK, set, NULL);
   /* Spawn a dedicated thread to sigwait. */
-  signal_thread = g_thread_create(signal_thread_func, g_main_context_default(),
-				  FALSE, &error);
+  signal_thread = g_thread_create(signal_thread_func, NULL, FALSE, &error);
   if (signal_thread == NULL) {
     fprintf(stderr, "Failed to create signal thread: %s\n", error->message);
     exit(1);
@@ -31,11 +35,8 @@ void owl_signal_init(const sigset_t *set, void (*callback)(int, void*), void *da
 }
 
 static gpointer signal_thread_func(gpointer data) {
-  GMainContext *context = data;
-
   while (1) {
-    GSource *source;
-    int signal;
+     int signal;
     int ret;
 
     ret = sigwait(&signal_set, &signal);
@@ -43,17 +44,7 @@ static gpointer signal_thread_func(gpointer data) {
     if (ret != 0)
       continue;
 
-    /* Send a message to the other main. */
-    source = g_idle_source_new();
-    g_source_set_priority(source, G_PRIORITY_DEFAULT);
-    g_source_set_callback(source, signal_thunk, GINT_TO_POINTER(signal), NULL);
-    g_source_attach(source, context);
-    g_source_unref(source);
+    signal_cb(signal, signal_cbdata);
   }
   return NULL;
-}
-
-static gboolean signal_thunk(gpointer data) {
-  signal_cb(GPOINTER_TO_INT(data), signal_cbdata);
-  return FALSE;
 }

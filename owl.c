@@ -353,7 +353,9 @@ void owl_process_input(const owl_io_dispatch *d, void *data)
   }
 }
 
-static void sig_handler(int sig, void *data) {
+static gboolean sig_handler_main_thread(gpointer data) {
+  int sig = GPOINTER_TO_INT(data);
+
   owl_function_debugmsg("Got signal %d", sig);
   /* TODO: These don't need to be re-entrant anymore! */
   if (sig == SIGWINCH) {
@@ -371,6 +373,23 @@ static void sig_handler(int sig, void *data) {
     in.ch = in.uch = owl_global_get_startup_tio(&g)->c_cc[VINTR];
     owl_process_input_char(in);
   }
+  return FALSE;
+}
+
+static void sig_handler(int sig, void *data) {
+  GMainContext *context = data;
+  GSource *source;
+
+  /* TODO: Special-case SIGINT so that it can interrupt outside the
+   * event loop. */
+
+  /* Send a message to the main thread. */
+  source = g_idle_source_new();
+  g_source_set_priority(source, G_PRIORITY_DEFAULT);
+  g_source_set_callback(source, sig_handler_main_thread,
+			GINT_TO_POINTER(sig), NULL);
+  g_source_attach(source, context);
+  g_source_unref(source);
 }
 
 void owl_register_signal_handlers(void) {
@@ -384,7 +403,7 @@ void owl_register_signal_handlers(void) {
   sigaddset(&sigset, SIGHUP);
   sigaddset(&sigset, SIGINT);
 
-  owl_signal_init(&sigset, sig_handler, NULL);
+  owl_signal_init(&sigset, sig_handler, g_main_context_default());
 }
 
 #if OWL_STDERR_REDIR
