@@ -368,7 +368,7 @@ static gboolean sig_handler_main_thread(gpointer data) {
 		       sig, (sig == SIGPIPE) ? "SIGPIPE" : "SIGCHLD");
   } else if (sig == SIGTERM || sig == SIGHUP) {
     owl_function_quit();
-  } else if (sig == SIGINT) {
+  } else if (sig == SIGINT && owl_global_take_interrupt(&g)) {
     owl_input in;
     in.ch = in.uch = owl_global_get_startup_tio(&g)->c_cc[VINTR];
     owl_process_input_char(in);
@@ -380,9 +380,12 @@ static void sig_handler(int sig, void *data) {
   GMainContext *context = data;
   GSource *source;
 
-  /* TODO: Special-case SIGINT so that it can interrupt outside the
-   * event loop. */
-
+  /* If it was an interrupt, set a flag so we can handle it earlier if
+   * needbe. sig_handler_main_thread will check the flag to make sure
+   * no one else took it. */
+  if (sig == SIGINT) {
+    owl_global_add_interrupt(&g);
+  }
   /* Send a message to the main thread. */
   source = g_idle_source_new();
   g_source_set_priority(source, G_PRIORITY_DEFAULT);
