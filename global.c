@@ -696,20 +696,26 @@ void owl_global_set_aimnologgedin(owl_global *g)
   g->aim_loggedin=0;
 }
 
-int owl_global_is_doaimevents(const owl_global *g)
+bool owl_global_is_doaimevents(const owl_global *g)
 {
-  if (g->aim_doprocessing) return(1);
-  return(0);
+  return g->aim_event_source != NULL;
 }
 
 void owl_global_set_doaimevents(owl_global *g)
 {
-  g->aim_doprocessing=1;
+  if (g->aim_event_source)
+    return;
+  g->aim_event_source = owl_aim_event_source_new(owl_global_get_aimsess(g));
+  g_source_attach(g->aim_event_source, NULL);
 }
 
 void owl_global_set_no_doaimevents(owl_global *g)
 {
-  g->aim_doprocessing=0;
+  if (!g->aim_event_source)
+    return;
+  g_source_destroy(g->aim_event_source);
+  g_source_unref(g->aim_event_source);
+  g->aim_event_source = NULL;
 }
 
 aim_session_t *owl_global_get_aimsess(owl_global *g)
