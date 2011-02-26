@@ -15,6 +15,7 @@ void owl_global_init(owl_global *g) {
   const char *homedir;
 
   g_type_init();
+  g_thread_init(NULL);
 
   owl_select_init();
 
@@ -100,7 +101,6 @@ void owl_global_init(owl_global *g) {
   owl_global_set_no_doaimevents(g);
 
   owl_errqueue_init(&(g->errqueue));
-  g->got_err_signal=0;
 
   owl_zbuddylist_create(&(g->zbuddies));
 
@@ -111,7 +111,6 @@ void owl_global_init(owl_global *g) {
   owl_list_create(&(g->io_dispatch_list));
   owl_list_create(&(g->psa_list));
   g->timerlist = NULL;
-  g->interrupted = FALSE;
   g->kill_buffer = NULL;
 }
 
@@ -349,7 +348,7 @@ void owl_global_set_typwin_inactive(owl_global *g) {
 /* resize */
 
 void owl_global_set_resize_pending(owl_global *g) {
-  g->resizepending=1;
+  g->resizepending = true;
 }
 
 const char *owl_global_get_homedir(const owl_global *g) {
@@ -449,7 +448,7 @@ void owl_global_get_terminal_size(int *lines, int *cols) {
 void owl_global_check_resize(owl_global *g) {
   /* resize the screen.  If lines or cols is 0 use the terminal size */
   if (!g->resizepending) return;
-  g->resizepending = 0;
+  g->resizepending = false;
 
   owl_global_get_terminal_size(&g->lines, &g->cols);
   owl_window_resize(owl_window_get_screen(), g->lines, g->cols);
@@ -825,30 +824,6 @@ owl_errqueue *owl_global_get_errqueue(owl_global *g)
   return(&(g->errqueue));
 }
 
-void owl_global_set_errsignal(owl_global *g, int signum, siginfo_t *siginfo)
-{
-  g->got_err_signal = signum;
-  if (siginfo) {
-    g->err_signal_info = *siginfo;
-  } else {
-    siginfo_t si;
-    memset(&si, 0, sizeof(si));
-    g->err_signal_info = si;
-  }
-}
-
-int owl_global_get_errsignal_and_clear(owl_global *g, siginfo_t *siginfo)
-{
-  int signum;
-  if (siginfo && g->got_err_signal) {
-    *siginfo = g->err_signal_info;
-  } 
-  signum = g->got_err_signal;
-  g->got_err_signal = 0;
-  return signum;
-}
-
-
 owl_zbuddylist *owl_global_get_zephyr_buddylist(owl_global *g)
 {
   return(&(g->zbuddies));
@@ -887,18 +862,6 @@ owl_list *owl_global_get_psa_list(owl_global *g)
 GList **owl_global_get_timerlist(owl_global *g)
 {
   return &(g->timerlist);
-}
-
-int owl_global_is_interrupted(const owl_global *g) {
-  return g->interrupted;
-}
-
-void owl_global_set_interrupted(owl_global *g) {
-  g->interrupted = 1;
-}
-
-void owl_global_unset_interrupted(owl_global *g) {
-  g->interrupted = 0;
 }
 
 void owl_global_setup_default_filters(owl_global *g)
