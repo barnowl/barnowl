@@ -79,6 +79,7 @@ sub new {
                         irc_401       => sub { shift; $self->on_nosuch(@_) },
                         irc_402       => sub { shift; $self->on_nosuch(@_) },
                         irc_403       => sub { shift; $self->on_nosuch(@_) },
+                        nick_change  => sub { shift; $self->on_nick(@_); },
                         'irc_*' => sub { BarnOwl::debug("IRC: " . $_[1]->{command}) });
 
     return $self;
@@ -224,6 +225,19 @@ sub on_nickinuse {
     BarnOwl::admin_message("IRC",
                            "[" . $self->alias . "] " .
                            $evt->{params}->[1] . ": Nick already in use");
+}
+
+sub on_nick {
+    my ($self, $old_nick, $new_nick, $is_me) = @_;
+    if ($is_me) {
+        BarnOwl::admin_message("IRC",
+                               "[" . $self->alias . "] " .
+                               "You are now known as $new_nick");
+    } else {
+        BarnOwl::admin_message("IRC",
+                               "[" . $self->alias . "] " .
+                               "$old_nick is now known as $new_nick");
+    }
 }
 
 sub on_topic {
