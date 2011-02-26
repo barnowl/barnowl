@@ -552,13 +552,6 @@ typedef struct _owl_io_dispatch {
   GPollFD pollfd;
 } owl_io_dispatch;
 
-typedef struct _owl_ps_action {
-  int needs_gc;
-  int (*callback)(struct _owl_ps_action *, void *);
-  void (*destroy)(struct _owl_ps_action *);
-  void *data;
-} owl_ps_action;
-
 typedef struct _owl_popexec {
   int refcount;
   owl_viewwin *vwin;
@@ -631,7 +624,6 @@ typedef struct _owl_global {
   int pseudologin_notify;
   struct termios startup_tio;
   owl_list io_dispatch_list;
-  owl_list psa_list;
   GList *timerlist;
   owl_timer *aim_nop_timer;
   int load_initial_subs;
