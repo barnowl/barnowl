@@ -165,7 +165,7 @@ void owl_shutdown_curses(void) {
  * Returns 1 if the message was added to the message list, and 0 if it
  * was ignored due to user settings or otherwise.
  */
-int owl_process_message(owl_message *m) {
+static int owl_process_message(owl_message *m) {
   const owl_filter *f;
   /* if this message it on the puntlist, nuke it and continue */
   if (owl_global_message_is_puntable(&g, m)) {
@@ -250,12 +250,19 @@ int owl_process_message(owl_message *m) {
   return 1;
 }
 
+static gboolean owl_process_messages_prepare(GSource *source, int *timeout) {
+  *timeout = -1;
+  return owl_global_messagequeue_pending(&g);
+}
+
+static gboolean owl_process_messages_check(GSource *source) {
+  return owl_global_messagequeue_pending(&g);
+}
+
 /*
  * Process any new messages we have waiting in the message queue.
- * Returns 1 if any messages were added to the message list, and 0 otherwise.
  */
-int owl_process_messages(owl_ps_action *d, void *p)
-{
+static gboolean owl_process_messages_dispatch(GSource *source, GSourceFunc callback, gpointer user_data) {
   int newmsgs=0;
   int followlast = owl_global_should_followlast(&g);
   owl_message *m;
@@ -279,8 +286,15 @@ int owl_process_messages(owl_ps_action *d, void *p)
     /* this should be optimized to not run if the new messages won't be displayed */
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   }
-  return newmsgs;
+  return TRUE;
 }
+
+static GSourceFuncs owl_process_messages_funcs = {
+  owl_process_messages_prepare,
+  owl_process_messages_check,
+  owl_process_messages_dispatch,
+  NULL
+};
 
 void owl_process_input(const owl_io_dispatch *d, void *data)
 {
@@ -572,7 +586,10 @@ int main(int argc, char **argv, char **env)
   g_source_attach(source, NULL);
   g_source_unref(source);
 
-  owl_select_add_pre_select_action(owl_process_messages, NULL, NULL);
+  source = g_source_new(&owl_process_messages_funcs, sizeof(GSource));
+  g_source_attach(source, NULL);
+  g_source_unref(source);
+
   owl_select_add_pre_select_action(owl_errsignal_pre_select_action, NULL, NULL);
 
   owl_function_debugmsg("startup: entering main loop");
