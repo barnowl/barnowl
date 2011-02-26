@@ -2,7 +2,6 @@
 
 static GMainLoop *loop = NULL;
 static int dispatch_active = 0;
-static int psa_active = 0;
 
 static GSource *owl_timer_source;
 static GSource *owl_io_dispatch_source;
@@ -130,7 +129,6 @@ void owl_select_remove_timer(owl_timer *t)
 
 
 static gboolean owl_io_dispatch_prepare(GSource *source, int *timeout) {
-  owl_select_do_pre_select_actions(); /* HACK */
   *timeout = -1;
   return FALSE;
 }
@@ -334,64 +332,6 @@ void owl_process_input_char(owl_input j)
   if (ret!=0 && ret!=1) {
     owl_function_makemsg("Unable to handle keypress");
   }
-}
-
-owl_ps_action *owl_select_add_pre_select_action(int (*cb)(owl_ps_action *, void *), void (*destroy)(owl_ps_action *), void *data)
-{
-  owl_ps_action *a = g_new(owl_ps_action, 1);
-  owl_list *psa_list = owl_global_get_psa_list(&g);
-  a->needs_gc = 0;
-  a->callback = cb;
-  a->destroy = destroy;
-  a->data = data;
-  owl_list_append_element(psa_list, a);
-  return a;
-}
-
-void owl_select_psa_gc(void)
-{
-  int i;
-  owl_list *psa_list;
-  owl_ps_action *a;
-
-  psa_list = owl_global_get_psa_list(&g);
-  for (i = owl_list_get_size(psa_list) - 1; i >= 0; i--) {
-    a = owl_list_get_element(psa_list, i);
-    if (a->needs_gc) {
-      owl_list_remove_element(psa_list, i);
-      if (a->destroy) {
-        a->destroy(a);
-      }
-      g_free(a);
-    }
-  }
-}
-
-void owl_select_remove_pre_select_action(owl_ps_action *a)
-{
-  a->needs_gc = 1;
-  if (!psa_active)
-    owl_select_psa_gc();
-}
-
-int owl_select_do_pre_select_actions(void)
-{
-  int i, len, ret;
-  owl_list *psa_list;
-
-  psa_active = 1;
-  ret = 0;
-  psa_list = owl_global_get_psa_list(&g);
-  len = owl_list_get_size(psa_list);
-  for (i = 0; i < len; i++) {
-    owl_ps_action *a = owl_list_get_element(psa_list, i);
-    if (a->callback != NULL && a->callback(a, a->data)) {
-      ret = 1;
-    }
-  }
-  psa_active = 0;
-  owl_select_psa_gc();
-  return ret;
 }
 
 #if 0
