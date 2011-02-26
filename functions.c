@@ -1201,7 +1201,7 @@ void owl_function_resize(void)
   owl_global_set_resize_pending(&g);
 }
 
-void owl_function_debugmsg(const char *fmt, ...)
+void G_GNUC_PRINTF(1, 2) owl_function_debugmsg(const char *fmt, ...)
 {
   FILE *file;
   time_t now;
@@ -3345,7 +3345,7 @@ void owl_function_toggleoneline(void)
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
 
-void owl_function_error(const char *fmt, ...)
+void G_GNUC_PRINTF(1, 2) owl_function_error(const char *fmt, ...)
 {
   static int in_error = 0;
   va_list ap;
@@ -3413,7 +3413,7 @@ void owl_function_showerrs(void)
   owl_function_popless_fmtext(&fm);
 }
 
-void owl_function_makemsg(const char *fmt, ...)
+void G_GNUC_PRINTF(1, 2) owl_function_makemsg(const char *fmt, ...)
 {
   va_list ap;
   char *str;

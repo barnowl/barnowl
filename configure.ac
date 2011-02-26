@@ -130,6 +130,10 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 AX_CFLAGS_WARN_ALL([AM_CFLAGS])
 AX_C_CHECK_FLAG([-Wstrict-prototypes],[],[],[AM_CFLAGS="$AM_CFLAGS -Wstrict-prototypes"])
 
+dnl Shut gcc up about zero-length format strings; the warning's apparently for
+dnl efficiency reasons, which is bogus for custom functions.
+AX_C_CHECK_FLAG([-Wno-format-zero-length],[],[],[AM_CFLAGS="$AM_CFLAGS -Wno-format-zero-length"])
+
 m4_foreach([myflag],
   [[-Wno-pointer-sign],[-Wno-empty-body],[-Wno-unused-value]],
   [AX_C_CHECK_FLAG([myflag],[],[],[LIBFAIM_CFLAGS="$LIBFAIM_CFLAGS myflag"])])

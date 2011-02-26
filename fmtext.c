@@ -55,7 +55,7 @@ void owl_fmtext_append_normal(owl_fmtext *f, const char *text)
 }
 
 /* Append normal, uncolored text specified by format string to 'f' */
-void owl_fmtext_appendf_normal(owl_fmtext *f, const char *fmt, ...)
+void G_GNUC_PRINTF(2, 3) owl_fmtext_appendf_normal(owl_fmtext *f, const char *fmt, ...)
 {
   va_list ap;
   char *buff;
