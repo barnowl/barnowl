@@ -60,7 +60,7 @@ sub new {
     }
 
     # $self->conn->add_default_handler(sub { shift; $self->on_event(@_) });
-    $self->conn->reg_cb(registered => on("connected"),
+    $self->conn->reg_cb(registered => on("connect"),
                         connfail   => sub { BarnOwl::error("Connection to $host failed!") },
                         disconnect => on("disconnect"),
                         publicmsg  => on("msg"),
