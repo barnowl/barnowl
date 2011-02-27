@@ -357,15 +357,8 @@ static gboolean sig_handler_main_thread(gpointer data) {
   int sig = GPOINTER_TO_INT(data);
 
   owl_function_debugmsg("Got signal %d", sig);
-  /* TODO: These don't need to be re-entrant anymore! */
   if (sig == SIGWINCH) {
-    /* we can't inturrupt a malloc here, so it just sets a flag
-     * schedulding a resize for later
-     */
     owl_function_resize();
-  } else if (sig == SIGPIPE || sig == SIGCHLD) {
-    owl_function_error("Got unexpected signal: %d %s",
-		       sig, (sig == SIGPIPE) ? "SIGPIPE" : "SIGCHLD");
   } else if (sig == SIGTERM || sig == SIGHUP) {
     owl_function_quit();
   } else if (sig == SIGINT && owl_global_take_interrupt(&g)) {
@@ -396,16 +389,19 @@ static void sig_handler(int sig, void *data) {
 }
 
 void owl_register_signal_handlers(void) {
+  struct sigaction ignore = { .sa_handler = SIG_IGN };
   sigset_t sigset;
 
+  /* Turn off SIGPIPE; we check the return value of write. */
+  sigaction(SIGPIPE, &ignore, NULL);
+
+  /* Register some signals with the signal thread. */
   sigemptyset(&sigset);
   sigaddset(&sigset, SIGWINCH);
   sigaddset(&sigset, SIGALRM);
-  sigaddset(&sigset, SIGPIPE);
   sigaddset(&sigset, SIGTERM);
   sigaddset(&sigset, SIGHUP);
   sigaddset(&sigset, SIGINT);
-
   owl_signal_init(&sigset, sig_handler, g_main_context_default());
 }
 

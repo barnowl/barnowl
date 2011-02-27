@@ -16,7 +16,6 @@ int send_receive(int rfd, int wfd, const char *out, char **in)
   nfds_t nfds;
   int err = 0;
   struct pollfd fds[2];
-  struct sigaction sig = {.sa_handler = SIG_IGN}, old;
 
   fcntl(rfd, F_SETFL, O_NONBLOCK | fcntl(rfd, F_GETFL));
   fcntl(wfd, F_SETFL, O_NONBLOCK | fcntl(wfd, F_GETFL));
@@ -26,8 +25,6 @@ int send_receive(int rfd, int wfd, const char *out, char **in)
   fds[1].fd = wfd;
   fds[1].events = POLLOUT;
 
-  sigaction(SIGPIPE, &sig, &old);
-  
   while(1) {
     if(out && *out) {
       nfds = 2;
@@ -66,7 +63,6 @@ int send_receive(int rfd, int wfd, const char *out, char **in)
   }
 
   *in = g_string_free(str, err < 0);
-  sigaction(SIGPIPE, &old, NULL);
   return err;
 }
 
