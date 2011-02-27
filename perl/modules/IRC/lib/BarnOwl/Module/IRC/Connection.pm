@@ -20,7 +20,7 @@ use AnyEvent::IRC::Util qw(split_prefix prefix_nick);
 
 use base qw(Class::Accessor);
 use Exporter 'import';
-__PACKAGE__->mk_accessors(qw(conn alias motd names_tmp whois_tmp nick server autoconnect_channels));
+__PACKAGE__->mk_accessors(qw(conn alias motd names_tmp whois_tmp server autoconnect_channels));
 our @EXPORT_OK = qw(is_private);
 
 use BarnOwl;
@@ -43,7 +43,6 @@ sub new {
     $self->autoconnect_channels([]);
     $self->alias($alias);
     $self->server($host);
-    $self->nick($nick);
     $self->motd("");
     $self->names_tmp(0);
     $self->whois_tmp("");
@@ -83,6 +82,11 @@ sub new {
                         'irc_*' => sub { BarnOwl::debug("IRC: " . $_[1]->{command}) });
 
     return $self;
+}
+
+sub nick {
+    my $self = shift;
+    return $self->conn->nick;
 }
 
 sub getSocket
