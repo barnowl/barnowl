@@ -16,7 +16,7 @@ support
 =cut
 
 use AnyEvent::IRC::Client;
-use AnyEvent::IRC::Util qw(split_prefix prefix_nick);
+use AnyEvent::IRC::Util qw(split_prefix prefix_nick encode_ctcp);
 
 use base qw(Class::Accessor);
 use Exporter 'import';
@@ -91,6 +91,7 @@ sub new {
                         irc_402       => on("nosuch"),
                         irc_403       => on("nosuch"),
                         nick_change   => on("nick"),
+                        ctcp_action   => on("ctcp_action"),
                         'irc_*' => sub { BarnOwl::debug("IRC: " . $_[1]->{command}) });
 
     return $self;
@@ -105,6 +106,12 @@ sub getSocket
 {
     my $self = shift;
     return $self->conn->socket;
+}
+
+sub me {
+    my ($self, $to, $msg) = @_;
+    $self->conn->send_msg('privmsg', $to,
+                          encode_ctcp(['ACTION', $msg]))
 }
 
 ################################################################################
@@ -129,7 +136,22 @@ sub new_message {
 sub on_msg {
     my ($self, $recipient, $evt) = @_;
     my $body = strip_irc_formatting($evt->{params}->[1]);
+    $self->handle_message($recipient, $evt, $body);
+}
 
+sub on_ctcp_action {
+    my ($self, $src, $target, $msg) = @_;
+    my $body = strip_irc_formatting($msg);
+    my $evt = {
+        params => [$src],
+        type   => 'privmsg',
+        prefix => $src
+       };
+    $self->handle_message($target, $evt, "* $body");
+}
+
+sub handle_message {
+    my ($self, $recipient, $evt, $body) = @_;
     my $msg = $self->new_message($evt,
         direction   => 'in',
         recipient   => $recipient,
@@ -145,6 +167,7 @@ sub on_msg {
 
     BarnOwl::queue_message($msg);
 }
+
 
 sub on_admin_msg {
     my ($self, $evt) = @_;
