@@ -398,7 +398,6 @@ void owl_register_signal_handlers(void) {
   /* Register some signals with the signal thread. */
   sigemptyset(&sigset);
   sigaddset(&sigset, SIGWINCH);
-  sigaddset(&sigset, SIGALRM);
   sigaddset(&sigset, SIGTERM);
   sigaddset(&sigset, SIGHUP);
   sigaddset(&sigset, SIGINT);
