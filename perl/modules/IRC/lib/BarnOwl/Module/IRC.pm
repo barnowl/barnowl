@@ -30,7 +30,6 @@ our $irc;
 # Hash alias -> BarnOwl::Module::IRC::Connection object
 our %ircnets;
 our %channels;
-our %reconnect;
 
 sub startup {
     BarnOwl::new_variable_string('irc:nick', {
@@ -397,10 +396,11 @@ sub cmd_disconnect {
     my $conn = shift;
     if ($conn->conn->{socket}) {
         $conn->conn->disconnect("Goodbye!");
-    } elsif ($reconnect{$conn->alias}) {
+    } elsif ($conn->{reconnect_timer}) {
         BarnOwl::admin_message('IRC',
                                "[" . $conn->alias . "] Reconnect cancelled");
         $conn->cancel_reconnect;
+        delete $ircnets{$conn->alias};
     }
 }
 
@@ -619,9 +619,12 @@ sub get_connection_by_alias {
     my $key = shift;
     my $allow_disconnected = shift;
 
-    return $ircnets{$key} if exists $ircnets{$key};
-    return $reconnect{$key} if $allow_disconnected && exists $reconnect{$key};
-    die("No such ircnet: $key\n")
+    my $conn = $ircnets{$key};
+    die("No such ircnet: $key\n") unless $conn;
+    if ($conn->conn->{registered} || $allow_disconnected) {
+        return $conn;
+    }
+    die("[@{[$conn->alias]}] Not currently connected.");
 }
 
 1;

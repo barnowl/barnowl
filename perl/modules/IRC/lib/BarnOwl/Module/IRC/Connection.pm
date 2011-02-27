@@ -378,7 +378,7 @@ sub on_event {
 sub schedule_reconnect {
     my $self = shift;
     my $interval = shift || 5;
-    $BarnOwl::Module::IRC::reconnect{$self->alias} = $self;
+
     my $weak = $self;
     weaken($weak);
     if (defined $self->{reconnect_timer}) {
@@ -396,7 +396,7 @@ sub schedule_reconnect {
 
 sub cancel_reconnect {
     my $self = shift;
-    delete $BarnOwl::Module::IRC::reconnect{$self->alias};
+
     if (defined $self->{reconnect_timer}) {
         $self->{reconnect_timer}->stop;
     }
