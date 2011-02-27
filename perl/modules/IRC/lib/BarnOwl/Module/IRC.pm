@@ -388,13 +388,14 @@ sub cmd_connect {
         SSL       => $ssl,
         timeout   => sub {0}
        });
+    $ircnets{$alias} = $conn;
     return;
 }
 
 sub cmd_disconnect {
     my $cmd = shift;
     my $conn = shift;
-    if ($conn->conn->is_connected) {
+    if ($conn->conn->{socket}) {
         $conn->conn->disconnect("Goodbye!");
     } elsif ($reconnect{$conn->alias}) {
         BarnOwl::admin_message('IRC',

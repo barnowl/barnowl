@@ -34,10 +34,6 @@ sub new {
     my $args  = shift;
     my $nick = $args->{nick};
     my $conn = AnyEvent::IRC::Client->new();
-    if(delete $args->{SSL}) {
-        $conn->enable_ssl;
-    }
-    $conn->connect($host, $port, $args);
     my $self = bless({}, $class);
     $self->conn($conn);
     $self->autoconnect_channels([]);
@@ -47,38 +43,54 @@ sub new {
     $self->names_tmp(0);
     $self->whois_tmp("");
 
+    if(delete $args->{SSL}) {
+        $conn->enable_ssl;
+    }
+    $conn->connect($host, $port, $args);
+    $conn->{heap}{parent} = $self;
+    weaken($conn->{heap}{parent});
+
+    sub on {
+        my $meth = "on_" . shift;
+        return sub {
+            my $conn = shift;
+            return unless $conn->{heap}{parent};
+            $conn->{heap}{parent}->$meth(@_);
+        }
+    }
+
     # $self->conn->add_default_handler(sub { shift; $self->on_event(@_) });
-    $self->conn->reg_cb(registered => sub { shift; $self->connected("Connected to $alias as $nick") },
-                        connfail   => sub { shift; BarnOwl::error("Connection to $host failed!") },
-                        disconnect => sub { shift; $self->on_disconnect(@_) },
-                        publicmsg  => sub { shift; $self->on_msg(@_) },
-                        privatemsg => sub { shift; $self->on_msg(@_) });
+    $self->conn->reg_cb(registered => on("connected"),
+                        connfail   => sub { BarnOwl::error("Connection to $host failed!") },
+                        disconnect => on("disconnect"),
+                        publicmsg  => on("msg"),
+                        privatemsg => on("msg"));
     for my $m (qw(welcome yourhost created
                   luserclient luserop luserchannels luserme
                   error)) {
-        $self->conn->reg_cb("irc_$m" => sub { shift;  $self->on_admin_msg(@_) });
+        $self->conn->reg_cb("irc_$m" => on("admin_msg"));
     }
-    $self->conn->reg_cb(irc_375       => sub { shift; $self->on_motdstart(@_) },
-                        irc_372       => sub { shift; $self->on_motd(@_) },
-                        irc_376       => sub { shift; $self->on_endofmotd(@_) },
-                        irc_join      => sub { shift; $self->on_join(@_) },
-                        irc_part      => sub { shift; $self->on_part(@_) },
-                        irc_quit      => sub { shift; $self->on_quit(@_) },
-                        irc_433       => sub { shift; $self->on_nickinuse(@_) },
-                        channel_topic => sub { shift; $self->on_topic(@_) },
-                        irc_333       => sub { shift; $self->on_topicinfo(@_) },
-                        irc_353       => sub { shift; $self->on_namreply(@_) },
-                        irc_366       => sub { shift; $self->on_endofnames(@_) },
-                        irc_311       => sub { shift; $self->on_whois(@_) },
-                        irc_312       => sub { shift; $self->on_whois(@_) },
-                        irc_319       => sub { shift; $self->on_whois(@_) },
-                        irc_320       => sub { shift; $self->on_whois(@_) },
-                        irc_318       => sub { shift; $self->on_endofwhois(@_) },
-                        irc_mode      => sub { shift; $self->on_mode(@_) },
-                        irc_401       => sub { shift; $self->on_nosuch(@_) },
-                        irc_402       => sub { shift; $self->on_nosuch(@_) },
-                        irc_403       => sub { shift; $self->on_nosuch(@_) },
-                        nick_change  => sub { shift; $self->on_nick(@_); },
+    $self->conn->reg_cb(irc_375       => on("motdstart"),
+                        irc_372       => on("motd"),
+                        irc_376       => on("endofmotd"),
+                        irc_join      => on("join"),
+                        irc_part      => on("part"),
+                        irc_quit      => on("quit"),
+                        irc_433       => on("nickinuse"),
+                        channel_topic => on("topic"),
+                        irc_333       => on("topicinfo"),
+                        irc_353       => on("namreply"),
+                        irc_366       => on("endofnames"),
+                        irc_311       => on("whois"),
+                        irc_312       => on("whois"),
+                        irc_319       => on("whois"),
+                        irc_320       => on("whois"),
+                        irc_318       => on("endofwhois"),
+                        irc_mode      => on("mode"),
+                        irc_401       => on("nosuch"),
+                        irc_402       => on("nosuch"),
+                        irc_403       => on("nosuch"),
+                        nick_change   => on("nick"),
                         'irc_*' => sub { BarnOwl::debug("IRC: " . $_[1]->{command}) });
 
     return $self;
@@ -202,7 +214,6 @@ sub on_quit {
 
 sub disconnect {
     my $self = shift;
-    delete $BarnOwl::Module::IRC::ircnets{$self->alias};
     for my $k (keys %BarnOwl::Module::IRC::channels) {
         my @conns = grep {$_ ne $self} @{$BarnOwl::Module::IRC::channels{$k}};
         if(@conns) {
@@ -343,7 +354,6 @@ sub on_event {
 sub schedule_reconnect {
     my $self = shift;
     my $interval = shift || 5;
-    delete $BarnOwl::Module::IRC::ircnets{$self->alias};
     $BarnOwl::Module::IRC::reconnect{$self->alias} = $self;
     my $weak = $self;
     weaken($weak);
@@ -369,12 +379,16 @@ sub cancel_reconnect {
     delete $self->{reconnect_timer};
 }
 
+sub on_connect {
+    my $self = shift;
+    $self->connected("Connected to $self->alias as $self->nick")
+}
+
 sub connected {
     my $self = shift;
     my $msg = shift;
     BarnOwl::admin_message("IRC", $msg);
     $self->cancel_reconnect;
-    $BarnOwl::Module::IRC::ircnets{$self->alias} = $self;
     if ($self->autoconnect_channels) {
         for my $c (@{$self->autoconnect_channels}) {
             $self->conn->send_msg(join => $c);
