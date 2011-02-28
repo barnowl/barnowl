@@ -560,8 +560,6 @@ typedef struct _owl_popexec {
   const owl_io_dispatch *dispatch;
 } owl_popexec;
 
-typedef struct _OwlGlobalNotifier OwlGlobalNotifier;
-
 typedef struct _owl_global {
   owl_mainwin mw;
   owl_popwin *pw;
