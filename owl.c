@@ -296,6 +296,17 @@ static GSourceFuncs owl_process_messages_funcs = {
   NULL
 };
 
+void owl_process_input_char(owl_input j)
+{
+  int ret;
+
+  owl_global_set_lastinputtime(&g, time(NULL));
+  ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
+  if (ret!=0 && ret!=1) {
+    owl_function_makemsg("Unable to handle keypress");
+  }
+}
+
 void owl_process_input(const owl_io_dispatch *d, void *data)
 {
   owl_input j;

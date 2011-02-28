@@ -298,17 +298,6 @@ int owl_select_remove_perl_io_dispatch(int fd)
   return 1;
 }
 
-void owl_process_input_char(owl_input j)
-{
-  int ret;
-
-  owl_global_set_lastinputtime(&g, time(NULL));
-  ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
-  if (ret!=0 && ret!=1) {
-    owl_function_makemsg("Unable to handle keypress");
-  }
-}
-
 void owl_select_init(void)
 {
   owl_timer_source = g_source_new(&owl_timer_funcs, sizeof(GSource));
