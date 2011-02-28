@@ -610,6 +610,8 @@ int main(int argc, char **argv, char **env)
   g_source_attach(source, NULL);
   g_source_unref(source);
 
+  owl_log_init();
+
   owl_function_debugmsg("startup: entering main loop");
   owl_select_run_loop();
 
@@ -617,5 +619,6 @@ int main(int argc, char **argv, char **env)
   owl_zephyr_shutdown();
   owl_signal_shutdown();
   owl_shutdown_curses();
+  owl_log_shutdown();
   return 0;
 }
