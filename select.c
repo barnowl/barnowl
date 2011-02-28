@@ -6,6 +6,9 @@ static int dispatch_active = 0;
 static GSource *owl_timer_source;
 static GSource *owl_io_dispatch_source;
 
+static int _owl_select_timer_cmp(const owl_timer *t1, const owl_timer *t2);
+static void owl_select_io_dispatch_gc(void);
+
 static gboolean owl_timer_prepare(GSource *source, int *timeout) {
   GList **timers = owl_global_get_timerlist(&g);
   GTimeVal now;
@@ -89,12 +92,8 @@ static GSourceFuncs owl_timer_funcs = {
   NULL
 };
 
-int _owl_select_timer_cmp(const owl_timer *t1, const owl_timer *t2) {
+static int _owl_select_timer_cmp(const owl_timer *t1, const owl_timer *t2) {
   return t1->time - t2->time;
-}
-
-int _owl_select_timer_eq(const owl_timer *t1, const owl_timer *t2) {
-  return t1 == t2;
 }
 
 owl_timer *owl_select_add_timer(const char* name, int after, int interval, void (*cb)(owl_timer *, void *), void (*destroy)(owl_timer*), void *data)
@@ -224,7 +223,7 @@ void owl_select_remove_io_dispatch(const owl_io_dispatch *in)
   }
 }
 
-void owl_select_io_dispatch_gc(void)
+static void owl_select_io_dispatch_gc(void)
 {
   int i;
   owl_list *dl;
@@ -297,30 +296,6 @@ int owl_select_remove_perl_io_dispatch(int fd)
     return 0;
   }
   return 1;
-}
-
-int owl_select_aim_hack(fd_set *rfds, fd_set *wfds)
-{
-  aim_conn_t *cur;
-  aim_session_t *sess;
-  int max_fd;
-
-  max_fd = 0;
-  sess = owl_global_get_aimsess(&g);
-  for (cur = sess->connlist; cur; cur = cur->next) {
-    if (cur->fd != -1) {
-      FD_SET(cur->fd, rfds);
-      if (cur->status & AIM_CONN_STATUS_INPROGRESS) {
-        /* Yes, we're checking writable sockets here. Without it, AIM
-           login is really slow. */
-        FD_SET(cur->fd, wfds);
-      }
-      
-      if (cur->fd > max_fd)
-        max_fd = cur->fd;
-    }
-  }
-  return max_fd;
 }
 
 void owl_process_input_char(owl_input j)
