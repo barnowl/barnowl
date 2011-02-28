@@ -2257,7 +2257,6 @@ void owl_function_show_zpunts(void)
 {
   const owl_filter *f;
   const owl_list *fl;
-  char buff[5000];
   char *tmp;
   owl_fmtext fm;
   int i, j;
@@ -2270,8 +2269,7 @@ void owl_function_show_zpunts(void)
 
   for (i=0; i<j; i++) {
     f=owl_list_get_element(fl, i);
-    snprintf(buff, sizeof(buff), "[% 2d] ", i+1);
-    owl_fmtext_append_normal(&fm, buff);
+    owl_fmtext_appendf_normal(&fm, "[% 2d] ", i+1);
     tmp = owl_filter_print(f);
     owl_fmtext_append_normal(&fm, tmp);
     g_free(tmp);

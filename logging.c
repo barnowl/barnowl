@@ -125,7 +125,7 @@ void owl_log_append(const owl_message *m, const char *filename) {
 
 void owl_log_outgoing(const owl_message *m)
 {
-  char filename[MAXPATHLEN], *logpath;
+  char *filename, *logpath;
   char *to, *temp;
   GList *cc;
 
@@ -138,9 +138,10 @@ void owl_log_outgoing(const owl_message *m)
     cc = owl_message_get_cc_without_recipient(m);
     while (cc != NULL) {
       temp = short_zuser(cc->data);
-      snprintf(filename, MAXPATHLEN, "%s/%s", logpath, temp);
+      filename = g_strdup_printf("%s/%s", logpath, temp);
       owl_log_append(m, filename);
 
+      g_free(filename);
       g_free(temp);
       g_free(cc->data);
       cc = g_list_delete_link(cc, cc);
@@ -161,20 +162,22 @@ void owl_log_outgoing(const owl_message *m)
     to = g_strdup("loopback");
   }
 
-  snprintf(filename, MAXPATHLEN, "%s/%s", logpath, to);
+  filename = g_strdup_printf("%s/%s", logpath, to);
   owl_log_append(m, filename);
   g_free(to);
+  g_free(filename);
 
-  snprintf(filename, MAXPATHLEN, "%s/all", logpath);
+  filename = g_strdup_printf("%s/all", logpath);
   owl_log_append(m, filename);
   g_free(logpath);
+  g_free(filename);
 }
 
 
 void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
 {
   FILE *file;
-  char filename[MAXPATHLEN], *logpath;
+  char *filename, *logpath;
   char *tobuff;
   owl_message *m;
 
@@ -195,8 +198,9 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   /* expand ~ in path names */
   logpath = owl_util_makepath(owl_global_get_logpath(&g));
 
-  snprintf(filename, MAXPATHLEN, "%s/%s", logpath, tobuff);
+  filename = g_strdup_printf("%s/%s", logpath, tobuff);
   file=fopen(filename, "a");
+  g_free(filename);
   if (!file) {
     owl_function_error("Unable to open file for outgoing logging");
     g_free(logpath);
@@ -209,9 +213,10 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   }
   fclose(file);
 
-  snprintf(filename, MAXPATHLEN, "%s/all", logpath);
+  filename = g_strdup_printf("%s/all", logpath);
   g_free(logpath);
   file=fopen(filename, "a");
+  g_free(filename);
   if (!file) {
     owl_function_error("Unable to open file for outgoing logging");
     g_free(tobuff);
@@ -228,7 +233,7 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
 
 void owl_log_incoming(const owl_message *m)
 {
-  char filename[MAXPATHLEN], allfilename[MAXPATHLEN], *logpath;
+  char *filename, *allfilename, *logpath;
   const char *from=NULL;
   char *frombuff=NULL;
   int len, ch, i, personal;
@@ -310,16 +315,17 @@ void owl_log_incoming(const owl_message *m)
   /* create the filename (expanding ~ in path names) */
   if (personal) {
     logpath = owl_util_makepath(owl_global_get_logpath(&g));
-    snprintf(filename, MAXPATHLEN, "%s/%s", logpath, from);
-    snprintf(allfilename, MAXPATHLEN, "%s/all", logpath);
+    filename = g_strdup_printf("%s/%s", logpath, from);
+    allfilename = g_strdup_printf("%s/all", logpath);
     owl_log_append(m, allfilename);
-
+    g_free(allfilename);
   } else {
     logpath = owl_util_makepath(owl_global_get_classlogpath(&g));
-    snprintf(filename, MAXPATHLEN, "%s/%s", logpath, from);
+    filename = g_strdup_printf("%s/%s", logpath, from);
   }
 
   owl_log_append(m, filename);
+  g_free(filename);
 
   if (personal && owl_message_is_type_zephyr(m)) {
     /* We want to log to all of the CC'd people who were not us, or
@@ -331,8 +337,9 @@ void owl_log_incoming(const owl_message *m)
     while (cc != NULL) {
       temp = short_zuser(cc->data);
       if (strcasecmp(temp, frombuff) != 0) {
-        snprintf(filename, MAXPATHLEN, "%s/%s", logpath, temp);
+	filename = g_strdup_printf("%s/%s", logpath, temp);
         owl_log_append(m, filename);
+	g_free(filename);
       }
 
       g_free(temp);

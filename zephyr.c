@@ -761,16 +761,16 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
       }
     }
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
-    #define BUFFLEN 1024
     if (retnotice->z_recipient == NULL
         || *retnotice->z_recipient == 0
         || *retnotice->z_recipient == '@') {
-      char buff[BUFFLEN];
+      char *buff;
       owl_function_error("No one subscribed to class %s", retnotice->z_class);
-      snprintf(buff, BUFFLEN, "Could not send message to class %s: no one subscribed.\n", retnotice->z_class);
+      buff = g_strdup_printf("Could not send message to class %s: no one subscribed.\n", retnotice->z_class);
       owl_function_adminmsg("", buff);
+      g_free(buff);
     } else {
-      char buff[BUFFLEN];
+      char *buff;
       owl_zwrite zw;
       char *realm;
 
@@ -782,20 +782,20 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
        * terminals or who don't care, not splitting saves a line in the UI
        */
       if(strcasecmp(retnotice->z_class, "message")) {
-        snprintf(buff, BUFFLEN,
+        buff = g_strdup_printf(
                  "Could not send message to %s: "
                  "not logged in or subscribing to class %s, instance %s.\n",
                  tmp,
                  retnotice->z_class,
                  retnotice->z_class_inst);
       } else if(strcasecmp(retnotice->z_class_inst, "personal")) {
-        snprintf(buff, BUFFLEN,
+        buff = g_strdup_printf(
                  "Could not send message to %s: "
                  "not logged in or subscribing to instance %s.\n",
                  tmp,
                  retnotice->z_class_inst);
       } else {
-        snprintf(buff, BUFFLEN,
+        buff = g_strdup_printf(
                  "Could not send message to %s: "
                  "not logged in or subscribing to messages.\n",
                  tmp);
@@ -819,6 +819,7 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
       owl_log_outgoing_zephyr_error(&zw, buff);
 
       owl_zwrite_cleanup(&zw);
+      g_free(buff);
       g_free(tmp);
     }
   } else {
