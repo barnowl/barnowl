@@ -268,7 +268,7 @@ int owl_dict_regtest(void) {
 int owl_variable_regtest(void) {
   owl_vardict vd;
   int numfailed=0;
-  char buf[1024];
+  char *value;
   const void *v;
 
   printf("# BEGIN testing owl_variable\n");
@@ -276,8 +276,9 @@ int owl_variable_regtest(void) {
 
   FAIL_UNLESS("get bool", 0==owl_variable_get_bool(&vd,"rxping"));
   FAIL_UNLESS("get bool (no such)", -1==owl_variable_get_bool(&vd,"mumble"));
-  FAIL_UNLESS("get bool as string 1", 0==owl_variable_get_tostring(&vd,"rxping", buf, 1024));
-  FAIL_UNLESS("get bool as string 2", 0==strcmp(buf,"off"));
+  FAIL_UNLESS("get bool as string",
+	      !strcmp((value = owl_variable_get_tostring(&vd,"rxping")), "off"));
+  g_free(value);
   FAIL_UNLESS("set bool 1", 0==owl_variable_set_bool_on(&vd,"rxping"));
   FAIL_UNLESS("get bool 2", 1==owl_variable_get_bool(&vd,"rxping"));
   FAIL_UNLESS("set bool 3", 0==owl_variable_set_fromstring(&vd,"rxping","off",0,0));
@@ -292,8 +293,9 @@ int owl_variable_regtest(void) {
 
   FAIL_UNLESS("get int", 8==owl_variable_get_int(&vd,"typewinsize"));
   FAIL_UNLESS("get int (no such)", -1==owl_variable_get_int(&vd,"mmble"));
-  FAIL_UNLESS("get int as string 1", 0==owl_variable_get_tostring(&vd,"typewinsize", buf, 1024));
-  FAIL_UNLESS("get int as string 2", 0==strcmp(buf,"8"));
+  FAIL_UNLESS("get int as string",
+	      !strcmp((value = owl_variable_get_tostring(&vd,"typewinsize")), "8"));
+  g_free(value);
   FAIL_UNLESS("set int 1", 0==owl_variable_set_int(&vd,"typewinsize",12));
   FAIL_UNLESS("get int 2", 12==owl_variable_get_int(&vd,"typewinsize"));
   FAIL_UNLESS("set int 1b", -1==owl_variable_set_int(&vd,"typewinsize",-3));

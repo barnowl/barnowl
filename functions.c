@@ -1615,7 +1615,7 @@ void owl_function_getsubs(void)
 void owl_function_printallvars(void)
 {
   const char *name;
-  char var[LINE];
+  char *var;
   owl_list varnames;
   int i, numvarnames;
   GString *str   = g_string_new("");
@@ -1628,8 +1628,11 @@ void owl_function_printallvars(void)
     name = owl_list_get_element(&varnames, i);
     if (name && name[0]!='_') {
       g_string_append_printf(str, "\n%-20s = ", name);
-      owl_variable_get_tostring(owl_global_get_vardict(&g), name, var, LINE);
-      g_string_append(str, var);
+      var = owl_variable_get_tostring(owl_global_get_vardict(&g), name);
+      if (var) {
+	g_string_append(str, var);
+	g_free(var);
+      }
     }
   }
   g_string_append(str, "\n");

@@ -260,10 +260,9 @@ typedef struct _owl_variable {
 				/* returns a reference to the current value.
 				 * WARNING:  this approach is hard to make
 				 * thread-safe... */
-  int  (*get_tostring_fn)(const struct _owl_variable *v, 
-			  char *buf, int bufsize, const void *val); 
-                                /* converts val to a string 
-				 * and puts into buf */
+  char *(*get_tostring_fn)(const struct _owl_variable *v, const void *val);
+                                /* converts val to a string;
+				 * caller must free the result */
   void (*delete_fn)(struct _owl_variable *v);
 				/* frees val as needed */
 } owl_variable;
