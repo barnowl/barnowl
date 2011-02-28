@@ -2738,8 +2738,11 @@ void owl_function_show_colors(void)
   int i; 
   
   owl_fmtext_init_null(&fm);
-  owl_fmtext_append_normal(&fm, "default: ");
+  owl_fmtext_append_normal(&fm,"default:  ");
   owl_fmtext_append_normal_color(&fm, "default\n", OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
+
+  owl_fmtext_append_normal(&fm,"black:    ");
+  owl_fmtext_append_normal_color(&fm, "black\n", OWL_COLOR_BLACK, OWL_COLOR_DEFAULT);
 
   owl_fmtext_append_normal(&fm,"red:      ");
   owl_fmtext_append_normal_color(&fm, "red\n", OWL_COLOR_RED, OWL_COLOR_DEFAULT);
