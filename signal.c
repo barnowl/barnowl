@@ -1,4 +1,5 @@
 #include <glib.h>
+#include <errno.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -20,12 +21,16 @@ static gpointer signal_thread_func(gpointer data);
  * created. (Otherwise the signals will not get blocked correctly.) */
 void owl_signal_init(const sigset_t *set, void (*callback)(int, void*), void *data) {
   GError *error = NULL;
+  int ret;
 
   signal_set = *set;
   signal_cb = callback;
   signal_cbdata = data;
   /* Block these signals in all threads, so we can get them. */
-  pthread_sigmask(SIG_BLOCK, set, NULL);
+  if ((ret = pthread_sigmask(SIG_BLOCK, set, NULL)) != 0) {
+    errno = ret;
+    perror("pthread_sigmask");
+  }
   /* Spawn a dedicated thread to sigwait. */
   signal_thread = g_thread_create(signal_thread_func, NULL, FALSE, &error);
   if (signal_thread == NULL) {

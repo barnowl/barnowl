@@ -388,19 +388,42 @@ static void sig_handler(int sig, void *data) {
   g_source_unref(source);
 }
 
+#define CHECK_RESULT(s, syscall) \
+  G_STMT_START {		 \
+    if ((syscall) != 0) {	 \
+      perror((s));		 \
+      exit(1);			 \
+    }				 \
+  } G_STMT_END
+
 void owl_register_signal_handlers(void) {
-  struct sigaction ignore = { .sa_handler = SIG_IGN };
+  struct sigaction sig_ignore = { .sa_handler = SIG_IGN };
+  struct sigaction sig_default = { .sa_handler = SIG_DFL };
   sigset_t sigset;
+  int ret, i;
+  const int signals[] = { SIGABRT, SIGBUS, SIGCHLD, SIGFPE, SIGHUP, SIGILL,
+                          SIGINT, SIGQUIT, SIGSEGV, SIGTERM, SIGWINCH };
+
+  /* Sanitize our signals; the mask and dispositions from our parent
+   * aren't really useful. Signal list taken from equivalent code in
+   * Chromium. */
+  CHECK_RESULT("sigemptyset", sigemptyset(&sigset));
+  if ((ret = pthread_sigmask(SIG_SETMASK, &sigset, NULL)) != 0) {
+    errno = ret;
+    perror("pthread_sigmask");
+  }
+  for (i = 0; i < G_N_ELEMENTS(signals); i++) {
+    CHECK_RESULT("sigaction", sigaction(signals[i], &sig_default, NULL));
+  }
 
   /* Turn off SIGPIPE; we check the return value of write. */
-  sigaction(SIGPIPE, &ignore, NULL);
+  CHECK_RESULT("sigaction", sigaction(SIGPIPE, &sig_ignore, NULL));
 
   /* Register some signals with the signal thread. */
-  sigemptyset(&sigset);
-  sigaddset(&sigset, SIGWINCH);
-  sigaddset(&sigset, SIGTERM);
-  sigaddset(&sigset, SIGHUP);
-  sigaddset(&sigset, SIGINT);
+  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGWINCH));
+  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGTERM));
+  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGHUP));
+  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGINT));
   owl_signal_init(&sigset, sig_handler, g_main_context_default());
 }
 
