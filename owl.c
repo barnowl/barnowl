@@ -364,7 +364,7 @@ void owl_process_input(const owl_io_dispatch *d, void *data)
   }
 }
 
-static gboolean sig_handler_main_thread(gpointer data) {
+static void sig_handler_main_thread(void *data) {
   int sig = GPOINTER_TO_INT(data);
 
   owl_function_debugmsg("Got signal %d", sig);
@@ -377,13 +377,9 @@ static gboolean sig_handler_main_thread(gpointer data) {
     in.ch = in.uch = owl_global_get_startup_tio(&g)->c_cc[VINTR];
     owl_process_input_char(in);
   }
-  return FALSE;
 }
 
 static void sig_handler(int sig, void *data) {
-  GMainContext *context = data;
-  GSource *source;
-
   /* If it was an interrupt, set a flag so we can handle it earlier if
    * needbe. sig_handler_main_thread will check the flag to make sure
    * no one else took it. */
@@ -391,12 +387,7 @@ static void sig_handler(int sig, void *data) {
     owl_global_add_interrupt(&g);
   }
   /* Send a message to the main thread. */
-  source = g_idle_source_new();
-  g_source_set_priority(source, G_PRIORITY_DEFAULT);
-  g_source_set_callback(source, sig_handler_main_thread,
-			GINT_TO_POINTER(sig), NULL);
-  g_source_attach(source, context);
-  g_source_unref(source);
+  owl_select_post_task(sig_handler_main_thread, GINT_TO_POINTER(sig), NULL);
 }
 
 #define CHECK_RESULT(s, syscall) \
@@ -435,7 +426,7 @@ void owl_register_signal_handlers(void) {
   CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGTERM));
   CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGHUP));
   CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGINT));
-  owl_signal_init(&sigset, sig_handler, g_main_context_default());
+  owl_signal_init(&sigset, sig_handler, NULL);
 }
 
 #if OWL_STDERR_REDIR
