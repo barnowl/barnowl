@@ -1,6 +1,7 @@
 #include "owl.h"
 
 static GMainLoop *loop = NULL;
+static GMainContext *context;
 static int dispatch_active = 0;
 
 static GSource *owl_timer_source;
@@ -309,7 +310,8 @@ void owl_select_init(void)
 
 void owl_select_run_loop(void)
 {
-  loop = g_main_loop_new(NULL, FALSE);
+  context = g_main_context_default();
+  loop = g_main_loop_new(context, FALSE);
   g_main_loop_run(loop);
 }
 
@@ -319,4 +321,39 @@ void owl_select_quit_loop(void)
     g_main_loop_quit(loop);
     loop = NULL;
   }
+}
+
+typedef struct _owl_task { /*noproto*/
+  void (*cb)(void *);
+  void *cbdata;
+  void (*destroy_cbdata)(void *);
+} owl_task;
+
+static gboolean _run_task(gpointer data)
+{
+  owl_task *t = data;
+  if (t->cb)
+    t->cb(t->cbdata);
+  return FALSE;
+}
+
+static void _destroy_task(void *data)
+{
+  owl_task *t = data;
+  if (t->destroy_cbdata)
+    t->destroy_cbdata(t->cbdata);
+  g_free(t);
+}
+
+void owl_select_post_task(void (*cb)(void*), void *cbdata, void (*destroy_cbdata)(void*))
+{
+  GSource *source = g_idle_source_new();
+  owl_task *t = g_new0(owl_task, 1);
+  t->cb = cb;
+  t->cbdata = cbdata;
+  t->destroy_cbdata = destroy_cbdata;
+  g_source_set_priority(source, G_PRIORITY_DEFAULT);
+  g_source_set_callback(source, _run_task, t, _destroy_task);
+  g_source_attach(source, context);
+  g_source_unref(source);
 }
