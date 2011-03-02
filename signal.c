@@ -1,17 +1,16 @@
-#include <glib.h>
 #include <errno.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-static GThread *signal_thread;
+static pthread_t signal_thread;
 static sigset_t signal_set;
 
 static void (*signal_cb)(int, void*);
 static void *signal_cbdata;
 
-static gpointer signal_thread_func(gpointer data);
+static void *signal_thread_func(void *data);
 
 /* Initializes the signal thread to listen for 'set' on a dedicated
  * thread. 'callback' is called *on the signal thread* when a signal
@@ -20,7 +19,6 @@ static gpointer signal_thread_func(gpointer data);
  * This function /must/ be called before any other threads are
  * created. (Otherwise the signals will not get blocked correctly.) */
 void owl_signal_init(const sigset_t *set, void (*callback)(int, void*), void *data) {
-  GError *error = NULL;
   int ret;
 
   signal_set = *set;
@@ -32,14 +30,15 @@ void owl_signal_init(const sigset_t *set, void (*callback)(int, void*), void *da
     perror("pthread_sigmask");
   }
   /* Spawn a dedicated thread to sigwait. */
-  signal_thread = g_thread_create(signal_thread_func, NULL, FALSE, &error);
-  if (signal_thread == NULL) {
-    fprintf(stderr, "Failed to create signal thread: %s\n", error->message);
+  if ((ret = pthread_create(&signal_thread, NULL,
+                            signal_thread_func, NULL)) != 0) {
+    errno = ret;
+    perror("pthread_create");
     exit(1);
   }
 }
 
-static gpointer signal_thread_func(gpointer data) {
+static void *signal_thread_func(void *data) {
   while (1) {
      int signal;
     int ret;
@@ -50,6 +49,14 @@ static gpointer signal_thread_func(gpointer data) {
       continue;
 
     signal_cb(signal, signal_cbdata);
+    /* Die on SIGTERM. */
+    if (signal == SIGTERM)
+      break;
   }
   return NULL;
+}
+
+void owl_signal_shutdown(void) {
+  pthread_kill(signal_thread, SIGTERM);
+  pthread_join(signal_thread, NULL);
 }
