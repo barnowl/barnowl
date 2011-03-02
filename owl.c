@@ -630,6 +630,7 @@ int main(int argc, char **argv, char **env)
 
   /* Shut down everything. */
   owl_zephyr_shutdown();
+  owl_signal_shutdown();
   owl_shutdown_curses();
   return 0;
 }
