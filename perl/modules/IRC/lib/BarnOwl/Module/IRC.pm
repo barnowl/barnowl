@@ -21,6 +21,7 @@ use BarnOwl::Module::IRC::Completion;
 
 use Net::IRC;
 use Getopt::Long;
+use Encode;
 
 our $VERSION = 0.02;
 
