@@ -228,7 +228,7 @@ sub on_quit {
         loginout   => 'logout',
         action     => 'quit',
         from       => $evt->{prefix},
-        reason     => $evt->{params}->[1],
+        reason     => $evt->{params}->[0],
         replycmd   => BarnOwl::quote('irc-msg', '-a', $self->alias, prefix_nick($evt)),
         replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias, prefix_nick($evt)),
         );
