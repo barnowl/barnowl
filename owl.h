@@ -584,7 +584,7 @@ typedef struct _owl_global {
   owl_mainpanel mainpanel;
   gulong typwin_erase_id;
   int rightshift;
-  volatile sig_atomic_t resizepending;
+  bool resizepending;
   char *homedir;
   char *confdir;
   char *startupfile;
