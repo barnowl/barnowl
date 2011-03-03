@@ -379,15 +379,16 @@ static void sig_handler_main_thread(void *data) {
   }
 }
 
-static void sig_handler(int sig, void *data) {
+static void sig_handler(const siginfo_t *siginfo, void *data) {
   /* If it was an interrupt, set a flag so we can handle it earlier if
    * needbe. sig_handler_main_thread will check the flag to make sure
    * no one else took it. */
-  if (sig == SIGINT) {
+  if (siginfo->si_signo == SIGINT) {
     owl_global_add_interrupt(&g);
   }
   /* Send a message to the main thread. */
-  owl_select_post_task(sig_handler_main_thread, GINT_TO_POINTER(sig), NULL);
+  owl_select_post_task(sig_handler_main_thread,
+                       GINT_TO_POINTER(siginfo->si_signo), NULL);
 }
 
 #define CHECK_RESULT(s, syscall) \

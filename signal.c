@@ -7,7 +7,7 @@
 static pthread_t signal_thread;
 static sigset_t signal_set;
 
-static void (*signal_cb)(int, void*);
+static void (*signal_cb)(const siginfo_t*, void*);
 static void *signal_cbdata;
 
 static void *signal_thread_func(void *data);
@@ -18,7 +18,7 @@ static void *signal_thread_func(void *data);
  *
  * This function /must/ be called before any other threads are
  * created. (Otherwise the signals will not get blocked correctly.) */
-void owl_signal_init(const sigset_t *set, void (*callback)(int, void*), void *data) {
+void owl_signal_init(const sigset_t *set, void (*callback)(const siginfo_t*, void*), void *data) {
   int ret;
 
   signal_set = *set;
@@ -40,17 +40,17 @@ void owl_signal_init(const sigset_t *set, void (*callback)(int, void*), void *da
 
 static void *signal_thread_func(void *data) {
   while (1) {
-     int signal;
+    siginfo_t siginfo;
     int ret;
 
-    ret = sigwait(&signal_set, &signal);
-    /* TODO: Print an error? man page claims it never errors. */
-    if (ret != 0)
+    ret = sigwaitinfo(&signal_set, &siginfo);
+    /* TODO: Print an error? */
+    if (ret < 0)
       continue;
 
-    signal_cb(signal, signal_cbdata);
+    signal_cb(&siginfo, signal_cbdata);
     /* Die on SIGTERM. */
-    if (signal == SIGTERM)
+    if (siginfo.si_signo == SIGTERM)
       break;
   }
   return NULL;
