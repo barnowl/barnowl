@@ -121,16 +121,20 @@ sub me {
 sub new_message {
     my $self = shift;
     my $evt = shift;
-    my ($nick, $user, $host) = split_prefix($evt);
-    return BarnOwl::Message->new(
+    my %args = (
         type        => 'IRC',
         server      => $self->server,
         network     => $self->alias,
-        sender      => $nick,
-        defined($host) ? (hostname    => $host) : (),
-        from        => $evt->{prefix},
         @_
        );
+    if ($evt) {
+        my ($nick, $user, $host) = split_prefix($evt);
+        $args{sender}   ||= $nick;
+        $args{hostname} ||= $host if defined($host);
+        $args{from}     ||= $evt->{prefix};
+        $args{params}   ||= join(' ', @{$evt->{params}})
+    }
+    return BarnOwl::Message->new(%args);
 }
 
 sub on_msg {
@@ -273,9 +277,17 @@ sub on_nick {
                                "[" . $self->alias . "] " .
                                "You are now known as $new_nick");
     } else {
-        BarnOwl::admin_message("IRC",
-                               "[" . $self->alias . "] " .
-                               "$old_nick is now known as $new_nick");
+        my $msg = $self->new_message('',
+            loginout   => 'login',
+            action     => 'nick change',
+            from       => $new_nick,
+            sender     => $new_nick,
+            replycmd   => BarnOwl::quote('irc-msg', '-a', $self->alias,
+                                         $new_nick),
+            replysendercmd => BarnOwl::quote('irc-msg', '-a', $self->alias,
+                                             $new_nick),
+            old_nick   => $old_nick);
+        BarnOwl::queue_message($msg);
     }
 }
 

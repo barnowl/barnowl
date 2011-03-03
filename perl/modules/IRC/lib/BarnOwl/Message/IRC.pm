@@ -65,6 +65,7 @@ sub network {shift->{network}}
 sub channel {shift->{channel}}
 sub action {shift->{action}}
 sub reason {shift->{reason}}
+sub old_nick {shift->{old_nick}};
 
 # display
 sub context {shift->{network};}
@@ -79,10 +80,12 @@ sub login_type {
     return " (" . uc $self->action . ")";
 }
 
-sub login_extra { 
+sub login_extra {
     my $self = shift;
     if ($self->action eq "quit") {
         return $self->reason;
+    } elsif ($self->action eq 'nick change') {
+        return "was: " . $self->old_nick;
     } else {
         return $self->channel;
     }
