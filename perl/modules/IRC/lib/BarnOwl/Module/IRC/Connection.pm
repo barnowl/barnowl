@@ -160,7 +160,7 @@ sub handle_message {
         direction   => 'in',
         recipient   => $recipient,
         body        => $body,
-        $evt->{command} eq 'notice' ?
+        ($evt->{command}||'') eq 'notice' ?
           (notice     => 'true') : (),
         is_private($recipient) ?
           (private  => 'true') : (channel => $recipient),
