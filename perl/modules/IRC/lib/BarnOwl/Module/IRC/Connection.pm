@@ -417,7 +417,7 @@ sub cancel_reconnect {
 
 sub on_connect {
     my $self = shift;
-    $self->connected("Connected to $self->alias as $self->nick")
+    $self->connected("Connected to " . $self->alias . " as " . $self->nick)
 }
 
 sub connected {
