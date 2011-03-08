@@ -62,6 +62,7 @@ HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const void *))
   ret = newHV();
 
   /* TODO: add an iterator-like interface to owl_dict */
+  owl_list_create(&l);
   owl_dict_get_keys(d, &l);
   for (i = 0; i < owl_list_get_size(&l); i++) {
     key = owl_list_get_element(&l, i);

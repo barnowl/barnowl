@@ -247,6 +247,7 @@ int owl_dict_regtest(void) {
   FAIL_UNLESS("find d (post-removal)", NULL==owl_dict_find_element(&d, "d"));
 
   FAIL_UNLESS("get_size", 3==owl_dict_get_size(&d));
+  owl_list_create(&l);
   FAIL_UNLESS("get_keys", 0==owl_dict_get_keys(&d, &l));
   FAIL_UNLESS("get_keys result size", 3==owl_list_get_size(&l));
   

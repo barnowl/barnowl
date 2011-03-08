@@ -763,8 +763,6 @@ const owl_style *owl_global_get_style_by_name(const owl_global *g, const char *n
   return owl_dict_find_element(&(g->styledict), name);
 }
 
-/* creates a list and fills it in with keys.  duplicates the keys, 
- * so they will need to be freed by the caller. */
 int owl_global_get_style_names(const owl_global *g, owl_list *l) {
   return owl_dict_get_keys(&(g->styledict), l);
 }

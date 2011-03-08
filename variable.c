@@ -631,14 +631,8 @@ void owl_variable_dict_cleanup(owl_vardict *d)
   owl_dict_cleanup(d, (void (*)(void *))owl_variable_delete);
 }
 
-/* free the list with owl_variable_dict_namelist_cleanup */
 void owl_variable_dict_get_names(const owl_vardict *d, owl_list *l) {
   owl_dict_get_keys(d, l);
-}
-
-void owl_variable_dict_namelist_cleanup(owl_list *l)
-{
-  owl_list_cleanup(l, g_free);
 }
 
 void owl_variable_delete(owl_variable *v)
