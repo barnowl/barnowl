@@ -122,7 +122,7 @@ int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
     }
   }
 
-  owl_parse_delete(argv, argc);
+  g_strfreev(argv);
 
   if (badargs) {
     return(-1);

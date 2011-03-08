@@ -97,18 +97,12 @@ char *owl_util_makepath(const char *in)
   return(out);
 }
 
-void owl_parse_delete(char **argv, int argc)
-{
-  g_strfreev(argv);
-}
-
+/* Break a command line up into argv, argc.  The caller must free
+   the returned values with g_strfreev.  If there is an error argc will be set
+   to -1, argv will be NULL and the caller does not need to free anything. The
+   returned vector is NULL-terminated. */
 char **owl_parseline(const char *line, int *argc)
 {
-  /* break a command line up into argv, argc.  The caller must free
-     the returned values.  If there is an error argc will be set to
-     -1, argv will be NULL and the caller does not need to free
-     anything. The returned vector is NULL-terminated. */
-
   GPtrArray *argv;
   int i, len, between=1;
   GString *curarg;
@@ -118,7 +112,7 @@ char **owl_parseline(const char *line, int *argc)
   len=strlen(line);
   curarg = g_string_new("");
   quote='\0';
-  *argc=0;
+  if (argc) *argc=0;
   for (i=0; i<len+1; i++) {
     /* find the first real character */
     if (between) {
@@ -169,7 +163,7 @@ char **owl_parseline(const char *line, int *argc)
     g_string_append_c(curarg, line[i]);
   }
 
-  *argc = argv->len;
+  if (argc) *argc = argv->len;
   g_ptr_array_add(argv, NULL);
   g_string_free(curarg, true);
 
@@ -179,7 +173,7 @@ char **owl_parseline(const char *line, int *argc)
      * g_ptr_array_new_with_free_func. */
     g_ptr_array_foreach(argv, (GFunc)g_free, NULL);
     g_ptr_array_free(argv, true);
-    *argc = -1;
+    if (argc) *argc = -1;
     return(NULL);
   }
 

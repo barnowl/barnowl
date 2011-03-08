@@ -187,7 +187,7 @@ int owl_util_regtest(void)
 		  __argv[__argc] == NULL);		\
       FAIL_UNLESS(desc " - parsed",			\
 		  !strcmp(__argv[0], unquoted));	\
-      owl_parse_delete(__argv, __argc);			\
+      g_strfreev(__argv);               		\
       g_free(__quoted);				\
     } while (0)
 

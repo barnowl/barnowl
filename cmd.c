@@ -84,27 +84,22 @@ char *_owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const 
 char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const char *cmdbuff) {
   char **argv;
   int argc;
-  char *tmpbuff;
   char *retval = NULL;
 
-  tmpbuff=g_strdup(cmdbuff);
-  argv=owl_parseline(tmpbuff, &argc);
-  if (argc < 0) {
-    g_free(tmpbuff);
+  argv = owl_parseline(cmdbuff, &argc);
+  if (argv == NULL) {
     owl_function_makemsg("Unbalanced quotes");
     return NULL;
   } 
   
   if (argc < 1) {
-    owl_parse_delete(argv, argc);
-    g_free(tmpbuff);
+    g_strfreev(argv);
     return NULL;
   }
 
   retval = _owl_cmddict_execute(cd, ctx, strs(argv), argc, cmdbuff);
 
-  owl_parse_delete(argv, argc);
-  g_free(tmpbuff);
+  g_strfreev(argv);
   return retval;
 }
 
