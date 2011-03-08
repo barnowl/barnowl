@@ -1214,7 +1214,7 @@ char *owl_command_startup(int argc, const char *const *argv, const char *buff)
 
   ptr = skiptokens(buff, 1);
 
-  owl_function_command(ptr);
+  owl_function_command_norv(ptr);
   owl_function_addstartup(ptr);
 
   return(NULL);

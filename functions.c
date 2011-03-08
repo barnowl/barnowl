@@ -2681,7 +2681,7 @@ void owl_function_smartzpunt(int type)
     } else {
       g_string_append(buf, " *");
     }
-    owl_function_command(buf->str);
+    owl_function_command_norv(buf->str);
     g_string_free(buf, true);
   }
 }
@@ -3309,7 +3309,7 @@ void owl_function_source(const char *filename)
   while (owl_getline_chomp(&s, file)) {
     if (s[0] == '\0' || s[0] == '#')
       continue;
-    owl_function_command(s);
+    owl_function_command_norv(s);
   }
 
   g_free(s);

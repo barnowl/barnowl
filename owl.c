@@ -225,7 +225,7 @@ int owl_process_message(owl_message *m) {
     /* if it matches the alert filter, do the alert action */
     f=owl_global_get_filter(&g, owl_global_get_alert_filter(&g));
     if (f && owl_filter_message_match(f, m)) {
-      owl_function_command(owl_global_get_alert_action(&g));
+      owl_function_command_norv(owl_global_get_alert_action(&g));
     }
 
     /* if it's a zephyr login or logout, update the zbuddylist */
