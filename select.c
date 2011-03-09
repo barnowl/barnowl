@@ -1,7 +1,7 @@
 #include "owl.h"
 
 static GMainLoop *loop = NULL;
-static GMainContext *context;
+static GMainContext *main_context;
 static int dispatch_active = 0;
 
 static GSource *owl_timer_source;
@@ -343,8 +343,8 @@ void owl_select_init(void)
 
 void owl_select_run_loop(void)
 {
-  context = g_main_context_default();
-  loop = g_main_loop_new(context, FALSE);
+  main_context = g_main_context_default();
+  loop = g_main_loop_new(main_context, FALSE);
   g_main_loop_run(loop);
 }
 
@@ -378,7 +378,7 @@ static void _destroy_task(void *data)
   g_free(t);
 }
 
-void owl_select_post_task(void (*cb)(void*), void *cbdata, void (*destroy_cbdata)(void*))
+void owl_select_post_task(void (*cb)(void*), void *cbdata, void (*destroy_cbdata)(void*), GMainContext *context)
 {
   GSource *source = g_idle_source_new();
   owl_task *t = g_new0(owl_task, 1);

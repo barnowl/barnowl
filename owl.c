@@ -382,7 +382,8 @@ static void sig_handler(const siginfo_t *siginfo, void *data) {
   }
   /* Send a message to the main thread. */
   owl_select_post_task(sig_handler_main_thread,
-                       GINT_TO_POINTER(siginfo->si_signo), NULL);
+                       GINT_TO_POINTER(siginfo->si_signo), 
+		       NULL, g_main_context_default());
 }
 
 #define CHECK_RESULT(s, syscall) \
