@@ -114,9 +114,8 @@ CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
                    owl_new_sv(owl_zephyr_get_authstr(owl_message_get_notice(m))),0);
   }
 
-  j=owl_list_get_size(&(m->attributes));
-  for(i=0; i<j; i++) {
-    pair=owl_list_get_element(&(m->attributes), i);
+  for (i = 0; i < m->attributes->len; i++) {
+    pair = m->attributes->pdata[i];
     (void)hv_store(h, owl_pair_get_key(pair), strlen(owl_pair_get_key(pair)),
                    owl_new_sv(owl_pair_get_value(pair)),0);
   }

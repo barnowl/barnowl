@@ -362,7 +362,7 @@ typedef struct _owl_message {
   struct _owl_fmtext_cache * fmtext;
   int delete;
   const char *hostname;
-  owl_list attributes;            /* this is a list of pairs */
+  GPtrArray *attributes;          /* this is a list of pairs */
   char *timestr;
   time_t time;
 } owl_message;
