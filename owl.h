@@ -341,7 +341,7 @@ typedef struct _owl_zwrite {
   char *opcode;
   char *zsig;
   char *message;
-  owl_list recips;
+  GPtrArray *recips;
   int cc;
   int noping;
 } owl_zwrite;

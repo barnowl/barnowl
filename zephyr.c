@@ -837,8 +837,8 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
       zw.realm = g_strdup("");
       zw.opcode = g_strdup(retnotice->z_opcode);
       zw.zsig   = g_strdup("");
-      owl_list_create(&(zw.recips));
-      owl_list_append_element(&(zw.recips), g_strdup(retnotice->z_recipient));
+      zw.recips = g_ptr_array_new();
+      g_ptr_array_add(zw.recips, g_strdup(retnotice->z_recipient));
 
       owl_log_outgoing_zephyr_error(&zw, buff);
 
