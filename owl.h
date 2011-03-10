@@ -270,12 +270,6 @@ typedef struct _owl_fmtext {
   GString *buff;
 } owl_fmtext;
 
-typedef struct _owl_list {
-  int size;
-  int avail;
-  void **list;
-} owl_list;
-
 typedef struct _owl_dict_el {
   char *k;			/* key   */
   void *v;			/* value */
