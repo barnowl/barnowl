@@ -10,7 +10,7 @@ int owl_keymap_init(owl_keymap *km, const char *name, const char *desc, void (*d
   if (!name || !desc) return(-1);
   km->name = g_strdup(name);
   km->desc = g_strdup(desc);
-  owl_list_create(&km->bindings);
+  km->bindings = g_ptr_array_new();
   km->parent = NULL;
   km->default_fn = default_fn;
   km->prealways_fn = prealways_fn;
@@ -23,7 +23,8 @@ void owl_keymap_cleanup(owl_keymap *km)
 {
   g_free(km->name);
   g_free(km->desc);
-  owl_list_cleanup(&km->bindings, (void (*)(void *))owl_keybinding_delete);
+  g_ptr_array_foreach(km->bindings, (GFunc)owl_keybinding_delete, NULL);
+  g_ptr_array_free(km->bindings, true);
 }
 
 void owl_keymap_set_parent(owl_keymap *km, const owl_keymap *parent)
@@ -34,7 +35,7 @@ void owl_keymap_set_parent(owl_keymap *km, const owl_keymap *parent)
 /* creates and adds a key binding */
 int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *command, void (*function_fn)(void), const char *desc)
 {
-  owl_keybinding *kb, *curkb;
+  owl_keybinding *kb;
   int i;
 
   kb = owl_keybinding_new(keyseq, command, function_fn, desc);
@@ -43,32 +44,28 @@ int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *co
   /* see if another matching binding, and if so remove it.
    * otherwise just add this one. 
    */
-  for (i = owl_list_get_size(&km->bindings)-1; i>=0; i--) {
-    curkb = owl_list_get_element(&km->bindings, i);
-    if (owl_keybinding_equal(curkb, kb)) {
-      owl_list_remove_element(&km->bindings, i);
-      owl_keybinding_delete(curkb);
+  for (i = km->bindings->len-1; i >= 0; i--) {
+    if (owl_keybinding_equal(km->bindings->pdata[i], kb)) {
+      owl_keybinding_delete(g_ptr_array_remove_index(km->bindings, i));
     }
   }
-  owl_list_append_element(&km->bindings, kb);
+  g_ptr_array_add(km->bindings, kb);
   return 0;
 }
 
 /* removes the binding associated with the keymap */
 int owl_keymap_remove_binding(owl_keymap *km, const char *keyseq)
 {
-  owl_keybinding *kb, *curkb;
+  owl_keybinding *kb;
   int i;
 
   kb = owl_keybinding_new(keyseq, NULL, NULL, NULL);
   if (kb == NULL)
     return -1;
 
-  for (i = owl_list_get_size(&km->bindings)-1; i >= 0; i--) {
-    curkb = owl_list_get_element(&km->bindings, i);
-    if (owl_keybinding_equal(curkb, kb)) {
-      owl_list_remove_element(&km->bindings, i);
-      owl_keybinding_delete(curkb);
+  for (i = km->bindings->len-1; i >= 0; i--) {
+    if (owl_keybinding_equal(km->bindings->pdata[i], kb)) {
+      owl_keybinding_delete(g_ptr_array_remove_index(km->bindings, i));
       owl_keybinding_delete(kb);
       return(0);
     }
@@ -138,16 +135,15 @@ static void _owl_keymap_format_with_parents(const owl_keymap *km, owl_fmtext *fm
 
 static void _owl_keymap_format_bindings(const owl_keymap *km, owl_fmtext *fm)
 {
-  int i, nbindings;
+  int i;
   const owl_keybinding *kb;
   
-  nbindings = owl_list_get_size(&km->bindings);
-  for (i=0; i<nbindings; i++) {
+  for (i = 0; i < km->bindings->len; i++) {
     char *kbstr;
     const owl_cmd *cmd;
     const char *tmpdesc, *desc = "";
 
-    kb = owl_list_get_element(&km->bindings, i);
+    kb = km->bindings->pdata[i];
     kbstr = owl_keybinding_tostring(kb);
     owl_fmtext_append_normal(fm, OWL_TABSTR);
     owl_fmtext_append_normal(fm, kbstr);
@@ -273,8 +269,8 @@ int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
    * through parents... TODO:  clean this up so we can pull
    * keyhandler and keymap apart.  */
   for (km=kh->active; km; km=km->parent) {
-    for (i=owl_list_get_size(&km->bindings)-1; i>=0; i--) {
-      kb = owl_list_get_element(&km->bindings, i);
+    for (i = km->bindings->len-1; i >= 0; i--) {
+      kb = km->bindings->pdata[i];
       match = owl_keybinding_match(kb, kh);
       if (match == 1) {		/* subset match */
 

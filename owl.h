@@ -484,7 +484,7 @@ typedef struct _owl_keybinding {
 typedef struct _owl_keymap {
   char     *name;		/* name of keymap */
   char     *desc;		/* description */
-  owl_list  bindings;		/* key bindings */
+  GPtrArray *bindings;		/* key bindings */
   const struct _owl_keymap *parent;	/* parent */
   void (*default_fn)(owl_input j);	/* default action (takes a keypress) */
   void (*prealways_fn)(owl_input  j);	/* always called before a keypress is received */
