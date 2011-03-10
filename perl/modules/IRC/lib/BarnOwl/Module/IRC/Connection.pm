@@ -64,7 +64,8 @@ sub new {
                         connfail   => sub { BarnOwl::error("Connection to $host failed!") },
                         disconnect => on("disconnect"),
                         publicmsg  => on("msg"),
-                        privatemsg => on("msg"));
+                        privatemsg => on("msg"),
+                        irc_error  => on("error"));
     for my $m (qw(welcome yourhost created
                   luserclient luserop luserchannels luserme
                   error)) {
@@ -92,7 +93,8 @@ sub new {
                         irc_403       => on("nosuch"),
                         nick_change   => on("nick"),
                         ctcp_action   => on("ctcp_action"),
-                        'irc_*' => sub { BarnOwl::debug("IRC: " . $_[1]->{command}) });
+                        'irc_*' => sub { BarnOwl::debug("IRC: " . $_[1]->{command} .
+                                                        join(" ", @{$_[1]->{params}})) });
 
     return $self;
 }
@@ -255,12 +257,19 @@ sub disconnect {
 
 sub on_disconnect {
     my ($self, $why) = @_;
-    $self->disconnect;
     BarnOwl::admin_message('IRC',
                            "[" . $self->alias . "] Disconnected from server");
+    $self->disconnect;
     if ($why && $why =~ m{error in connection}) {
         $self->schedule_reconnect;
     }
+}
+
+sub on_error {
+    my ($self, $evt) = @_;
+    BarnOwl::admin_message('IRC',
+                           "[" . $self->alias . "] " .
+                           "Error: " . join(" ", @{$evt->{params}}));
 }
 
 sub on_nickinuse {
