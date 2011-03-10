@@ -421,7 +421,7 @@ typedef struct _owl_msgwin {
 } owl_msgwin;
 
 typedef struct _owl_messagelist {
-  owl_list list;
+  GPtrArray *list;
 } owl_messagelist;
 
 typedef struct _owl_regex {
