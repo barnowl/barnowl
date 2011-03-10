@@ -10,30 +10,37 @@
  *      
  */
 
+static int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq);
+
 /* sets up a new keybinding for a command */
-int owl_keybinding_init(owl_keybinding *kb, const char *keyseq, const char *command, void (*function_fn)(void), const char *desc)
+owl_keybinding *owl_keybinding_new(const char *keyseq, const char *command, void (*function_fn)(void), const char *desc)
 {
+  owl_keybinding *kb = g_new(owl_keybinding, 1);
+
   owl_function_debugmsg("owl_keybinding_init: creating binding for <%s> with desc: <%s>", keyseq, desc);
-  if (command && !function_fn) {
+  if (command && function_fn) {
+    g_free(kb);
+    return NULL;
+  } else if (command && !function_fn) {
     kb->type = OWL_KEYBINDING_COMMAND;
   } else if (!command && function_fn) {
     kb->type = OWL_KEYBINDING_FUNCTION;
   } else {
-    return(-1);
+    kb->type = OWL_KEYBINDING_NOOP;
   }
 
   if (owl_keybinding_make_keys(kb, keyseq) != 0) {
-    return(-1);
+    g_free(kb);
+    return NULL;
   }
 
-  if (command) kb->command = g_strdup(command);
+  kb->command = g_strdup(command);
   kb->function_fn = function_fn;
-  if (desc) kb->desc = g_strdup(desc);
-  else kb->desc = NULL;
-  return(0);
+  kb->desc = g_strdup(desc);
+  return kb;
 }
 
-int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq)
+static int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq)
 {
   char **ktokens;
   int    nktokens, i;
@@ -58,18 +65,12 @@ int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq)
   return(0);
 }
 
-/* Releases data associated with a keybinding */
-void owl_keybinding_cleanup(owl_keybinding *kb)
+/* Releases data associated with a keybinding, and the kb itself */
+void owl_keybinding_delete(owl_keybinding *kb)
 {
   if (kb->keys) g_free(kb->keys);
   if (kb->desc) g_free(kb->desc);
   if (kb->command) g_free(kb->command);
-}
-
-/* Releases data associated with a keybinding, and the kb itself */
-void owl_keybinding_delete(owl_keybinding *kb)
-{
-  owl_keybinding_cleanup(kb);
   g_free(kb);
 }
 

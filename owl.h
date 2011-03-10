@@ -185,6 +185,7 @@ typedef void HV;
 
 #define OWL_KEYMAP_MAXSTACK     20
 
+#define OWL_KEYBINDING_NOOP     0   /* dummy binding that does nothing */
 #define OWL_KEYBINDING_COMMAND  1   /* command string */
 #define OWL_KEYBINDING_FUNCTION 2   /* function taking no args */
 

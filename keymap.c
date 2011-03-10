@@ -37,11 +37,9 @@ int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *co
   owl_keybinding *kb, *curkb;
   int i;
 
-  if ((kb = g_new(owl_keybinding, 1)) == NULL) return(-1);
-  if (0 != owl_keybinding_init(kb, keyseq, command, function_fn, desc)) {
-    g_free(kb);
-    return(-1);
-  }
+  kb = owl_keybinding_new(keyseq, command, function_fn, desc);
+  if (kb == NULL)
+    return -1;
   /* see if another matching binding, and if so remove it.
    * otherwise just add this one. 
    */
@@ -62,20 +60,20 @@ int owl_keymap_remove_binding(owl_keymap *km, const char *keyseq)
   owl_keybinding *kb, *curkb;
   int i;
 
-  if ((kb = g_new(owl_keybinding, 1)) == NULL) return(-1);
-  if (0 != owl_keybinding_make_keys(kb, keyseq)) {
-    g_free(kb);
-    return(-1);
-  }
+  kb = owl_keybinding_new(keyseq, NULL, NULL, NULL);
+  if (kb == NULL)
+    return -1;
 
   for (i = owl_list_get_size(&km->bindings)-1; i >= 0; i--) {
     curkb = owl_list_get_element(&km->bindings, i);
     if (owl_keybinding_equal(curkb, kb)) {
       owl_list_remove_element(&km->bindings, i);
       owl_keybinding_delete(curkb);
+      owl_keybinding_delete(kb);
       return(0);
     }
   }
+  owl_keybinding_delete(kb);
   return(-2);
 }
 
