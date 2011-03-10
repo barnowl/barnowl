@@ -143,15 +143,16 @@ static void _owl_keymap_format_bindings(const owl_keymap *km, owl_fmtext *fm)
   
   nbindings = owl_list_get_size(&km->bindings);
   for (i=0; i<nbindings; i++) {
-    char buff[100];
+    char *kbstr;
     const owl_cmd *cmd;
     const char *tmpdesc, *desc = "";
 
     kb = owl_list_get_element(&km->bindings, i);
-    owl_keybinding_tostring(kb, buff, 100);
+    kbstr = owl_keybinding_tostring(kb);
     owl_fmtext_append_normal(fm, OWL_TABSTR);
-    owl_fmtext_append_normal(fm, buff);
-    owl_fmtext_append_spaces(fm, 11-strlen(buff));
+    owl_fmtext_append_normal(fm, kbstr);
+    owl_fmtext_append_spaces(fm, 11-strlen(kbstr));
+    g_free(kbstr);
     owl_fmtext_append_normal(fm, " - ");
     if (kb->desc && *kb->desc) {
       desc = kb->desc;
@@ -312,8 +313,8 @@ int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
 
 void owl_keyhandler_invalidkey(owl_keyhandler *kh)
 {
-    char kbbuff[500];
-    owl_keybinding_stack_tostring(kh->kpstack, kh->kpstackpos+1, kbbuff, 500);
+    char *kbbuff = owl_keybinding_stack_tostring(kh->kpstack, kh->kpstackpos+1);
     owl_function_makemsg("'%s' is not a valid key in this context.", kbbuff);
+    g_free(kbbuff);
     owl_keyhandler_reset(kh);
 }

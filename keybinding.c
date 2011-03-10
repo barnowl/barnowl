@@ -84,27 +84,24 @@ void owl_keybinding_execute(const owl_keybinding *kb, int j)
   }
 }
 
-/* returns 0 on success */
-int owl_keybinding_stack_tostring(int *j, int len, char *buff, int bufflen)
+char *owl_keybinding_stack_tostring(int *j, int len)
 {
-  char *pos = buff;
-  int   rem = bufflen;
-  int   i, n;
+  GString *string;
+  char keypress[64];  /* TODO: don't hard-code a value here. */
+  int  i;
 
-  for (i=0; i < len; i++) {
-    owl_keypress_tostring(j[i], 0, pos, rem-1);
-    if (i < len - 1) strcat(pos, " ");
-    n = strlen(pos);
-    pos += n;
-    rem -= n;
+  string = g_string_new("");
+  for (i = 0; i < len; i++) {
+    owl_keypress_tostring(j[i], 0, keypress, sizeof(keypress));
+    g_string_append(string, keypress);
+    if (i < len - 1) g_string_append_c(string, ' ');
   }
-  return 0;
+  return g_string_free(string, false);
 }
 
-/* returns 0 on success */
-int owl_keybinding_tostring(const owl_keybinding *kb, char *buff, int bufflen)
+char *owl_keybinding_tostring(const owl_keybinding *kb)
 {
-  return owl_keybinding_stack_tostring(kb->keys, kb->len, buff, bufflen);
+  return owl_keybinding_stack_tostring(kb->keys, kb->len);
 }
 
 const char *owl_keybinding_get_desc(const owl_keybinding *kb)
