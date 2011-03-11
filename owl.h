@@ -601,7 +601,6 @@ typedef struct _owl_global {
   char *cur_zaway_msg;
   int haveconfig;
   int config_format;
-  void *buffercbdata;
   owl_editwin *tw;
   owl_viewwin *vw;
   void *perl;
