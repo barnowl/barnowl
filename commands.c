@@ -2466,8 +2466,7 @@ char *owl_command_unpunt(int argc, const char *const *argv, const char *buff)
 
 void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buff, int unpunt)
 {
-  owl_list * fl;
-  owl_filter * f;
+  GPtrArray * fl;
   int i;
 
   fl = owl_global_get_puntlist(&g);
@@ -2477,10 +2476,8 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
     /* Handle :unpunt <number> */
     if(unpunt && (i=atoi(argv[1])) !=0) {
       i--;      /* Accept 1-based indexing */
-      if(i < owl_list_get_size(fl)) {
-        f = owl_list_get_element(fl, i);
-        owl_list_remove_element(fl, i);
-        owl_filter_delete(f);
+      if (i < fl->len) {
+        owl_filter_delete(g_ptr_array_remove_index(fl, i));
         return;
       } else {
         owl_function_makemsg("No such filter number: %d.", i+1);

@@ -541,7 +541,7 @@ typedef struct _owl_global {
   owl_keyhandler kh;
   owl_dict filters;
   GList *filterlist;
-  owl_list puntlist;
+  GPtrArray *puntlist;
   owl_vardict vars;
   owl_cmddict cmds;
   GList *context_stack;

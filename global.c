@@ -46,7 +46,7 @@ void owl_global_init(owl_global *g) {
 
   owl_dict_create(&(g->filters));
   g->filterlist = NULL;
-  owl_list_create(&(g->puntlist));
+  g->puntlist = g_ptr_array_new();
   g->messagequeue = g_queue_new();
   owl_dict_create(&(g->styledict));
   g->curmsg_vert_offset=0;
@@ -578,20 +578,19 @@ owl_colorpair_mgr *owl_global_get_colorpair_mgr(owl_global *g) {
 
 /* puntlist */
 
-owl_list *owl_global_get_puntlist(owl_global *g) {
-  return(&(g->puntlist));
+GPtrArray *owl_global_get_puntlist(owl_global *g) {
+  return g->puntlist;
 }
 
 int owl_global_message_is_puntable(owl_global *g, const owl_message *m) {
-  const owl_list *pl;
-  int i, j;
+  const GPtrArray *pl;
+  int i;
 
-  pl=owl_global_get_puntlist(g);
-  j=owl_list_get_size(pl);
-  for (i=0; i<j; i++) {
-    if (owl_filter_message_match(owl_list_get_element(pl, i), m)) return(1);
+  pl = owl_global_get_puntlist(g);
+  for (i = 0; i < pl->len; i++) {
+    if (owl_filter_message_match(pl->pdata[i], m)) return 1;
   }
-  return(0);
+  return 0;
 }
 
 int owl_global_should_followlast(owl_global *g) {

@@ -2214,19 +2214,18 @@ void owl_function_show_filter(const char *name)
 void owl_function_show_zpunts(void)
 {
   const owl_filter *f;
-  const owl_list *fl;
+  const GPtrArray *fl;
   char *tmp;
   owl_fmtext fm;
-  int i, j;
+  int i;
 
   owl_fmtext_init_null(&fm);
 
   fl=owl_global_get_puntlist(&g);
-  j=owl_list_get_size(fl);
   owl_fmtext_append_bold(&fm, "Active zpunt filters:\n");
 
-  for (i=0; i<j; i++) {
-    f=owl_list_get_element(fl, i);
+  for (i = 0; i < fl->len; i++) {
+    f = fl->pdata[i];
     owl_fmtext_appendf_normal(&fm, "[% 2d] ", i+1);
     tmp = owl_filter_print(f);
     owl_fmtext_append_normal(&fm, tmp);
@@ -2786,8 +2785,8 @@ void owl_function_zpunt(const char *class, const char *inst, const char *recip, 
 void owl_function_punt(int argc, const char *const *argv, int direction)
 {
   owl_filter *f;
-  owl_list *fl;
-  int i, j;
+  GPtrArray *fl;
+  int i;
   fl=owl_global_get_puntlist(&g);
 
   /* first, create the filter */
@@ -2798,9 +2797,8 @@ void owl_function_punt(int argc, const char *const *argv, int direction)
   }
 
   /* Check for an identical filter */
-  j=owl_list_get_size(fl);
-  for (i=0; i<j; i++) {
-    if (owl_filter_equiv(f, owl_list_get_element(fl, i))) {
+  for (i = 0; i < fl->len; i++) {
+    if (owl_filter_equiv(f, fl->pdata[i])) {
       owl_function_debugmsg("found an equivalent punt filter");
       /* if we're punting, then just silently bow out on this duplicate */
       if (direction==0) {
@@ -2810,8 +2808,7 @@ void owl_function_punt(int argc, const char *const *argv, int direction)
 
       /* if we're unpunting, then remove this filter from the puntlist */
       if (direction==1) {
-	owl_filter_delete(owl_list_get_element(fl, i));
-	owl_list_remove_element(fl, i);
+	owl_filter_delete(g_ptr_array_remove_index(fl, i));
 	owl_filter_delete(f);
 	return;
       }
@@ -2821,7 +2818,7 @@ void owl_function_punt(int argc, const char *const *argv, int direction)
   if (direction == 0) {
     owl_function_debugmsg("punting");
     /* If we're punting, add the filter to the global punt list */
-    owl_list_append_element(fl, f);
+    g_ptr_array_add(fl, f);
   } else if (direction == 1) {
     owl_function_makemsg("No matching punt filter");
  }
