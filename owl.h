@@ -507,7 +507,7 @@ typedef struct _owl_buddy {
 } owl_buddy;
 
 typedef struct _owl_buddylist {
-  owl_list buddies;
+  GPtrArray *buddies;
 } owl_buddylist;
 
 typedef struct _owl_zbuddylist {

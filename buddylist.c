@@ -2,7 +2,7 @@
 
 void owl_buddylist_init(owl_buddylist *bl)
 {
-  owl_list_create(&(bl->buddies));
+  bl->buddies = g_ptr_array_new();
 }
 
 /* add a (logged-in) AIM buddy to the buddy list
@@ -13,22 +13,20 @@ void owl_buddylist_add_aim_buddy(owl_buddylist *bl, const char *screenname)
   b=g_new(owl_buddy, 1);
   
   owl_buddy_create(b, OWL_PROTOCOL_AIM, screenname);
-  owl_list_append_element(&(bl->buddies), b);
+  g_ptr_array_add(bl->buddies, b);
 }
 
 /* remove an AIM buddy from the buddy list
  */
 int owl_buddylist_remove_aim_buddy(owl_buddylist *bl, const char *name)
 {
-  int i, j;
+  int i;
   owl_buddy *b;
 
-  j=owl_list_get_size(&(bl->buddies));
-  for (i=0; i<j; i++) {
-    b=owl_list_get_element(&(bl->buddies), i);
+  for (i = 0; i < bl->buddies->len; i++) {
+    b = bl->buddies->pdata[i];
     if (!strcasecmp(name, owl_buddy_get_name(b)) && owl_buddy_is_proto_aim(b)) {
-      owl_list_remove_element(&(bl->buddies), i);
-      owl_buddy_delete(b);
+      owl_buddy_delete(g_ptr_array_remove_index(bl->buddies, i));
       return(0);
     }
   }
@@ -86,7 +84,7 @@ void owl_buddylist_offgoing(owl_buddylist *bl, const char *screenname)
 /* return the number of logged in buddies */
 int owl_buddylist_get_size(const owl_buddylist *bl)
 {
-  return(owl_list_get_size(&(bl->buddies)));
+  return bl->buddies->len;
 }
 
 /* return the buddy with index N.  If out of range, return NULL
@@ -96,7 +94,7 @@ owl_buddy *owl_buddylist_get_buddy_n(const owl_buddylist *bl, int index)
   if (index<0) return(NULL);
   if (index>(owl_buddylist_get_size(bl)-1)) return(NULL);
 
-  return(owl_list_get_element(&(bl->buddies), index));
+  return bl->buddies->pdata[index];
 }
 
 /* return the AIM buddy with screenname 'name'.  If
@@ -104,12 +102,11 @@ owl_buddy *owl_buddylist_get_buddy_n(const owl_buddylist *bl, int index)
  */
 owl_buddy *owl_buddylist_get_aim_buddy(const owl_buddylist *bl, const char *name)
 {
-  int i, j;
+  int i;
   owl_buddy *b;
 
-  j=owl_list_get_size(&(bl->buddies));
-  for (i=0; i<j; i++) {
-    b=owl_list_get_element(&(bl->buddies), i);
+  for (i = 0; i < bl->buddies->len; i++) {
+    b = bl->buddies->pdata[i];
     if (!strcasecmp(name, owl_buddy_get_name(b))) return(b);
   }
   return(NULL);
@@ -130,11 +127,12 @@ int owl_buddylist_is_aim_buddy_loggedin(const owl_buddylist *bl, const char *scr
 /* remove all buddies from the list */
 void owl_buddylist_clear(owl_buddylist *bl)
 {
-  owl_list_cleanup(&(bl->buddies), (void (*)(void *))owl_buddy_delete);
-  owl_list_create(&(bl->buddies));
+  g_ptr_array_foreach(bl->buddies, (GFunc)owl_buddy_delete, NULL);
+  g_ptr_array_set_size(bl->buddies, 0);
 }
 
 void owl_buddylist_cleanup(owl_buddylist *bl)
 {
-  owl_list_cleanup(&(bl->buddies), (void (*)(void *))owl_buddy_delete);
+  g_ptr_array_foreach(bl->buddies, (GFunc)owl_buddy_delete, NULL);
+  g_ptr_array_free(bl->buddies, true);
 }
