@@ -174,11 +174,7 @@ void owl_zwrite_send_ping(const owl_zwrite *z)
      is what we want */
   j=owl_list_get_size(&(z->recips));
   for (i=0; i<j; i++) {
-    if (strcmp(z->realm, "")) {
-      to = g_strdup_printf("%s@%s", (const char *) owl_list_get_element(&(z->recips), i), z->realm);
-    } else {
-      to = g_strdup(owl_list_get_element(&(z->recips), i));
-    }
+    to = owl_zwrite_get_recip_n_with_realm(z, i);
     send_ping(to, z->class, z->inst);
     g_free(to);
   }
@@ -195,28 +191,24 @@ void owl_zwrite_set_message_raw(owl_zwrite *z, const char *msg)
 void owl_zwrite_set_message(owl_zwrite *z, const char *msg)
 {
   int i, j;
-  char *toline = NULL;
+  GString *message;
   char *tmp = NULL, *tmp2;
 
   if (z->message) g_free(z->message);
 
   j=owl_list_get_size(&(z->recips));
   if (j>0 && z->cc) {
-    toline = g_strdup( "CC: ");
+    message = g_string_new("CC: ");
     for (i=0; i<j; i++) {
-      tmp = toline;
-      if (strcmp(z->realm, "")) {
-        toline = g_strdup_printf( "%s%s@%s ", toline, (const char *) owl_list_get_element(&(z->recips), i), z->realm);
-      } else {
-        toline = g_strdup_printf( "%s%s ", toline, (const char *) owl_list_get_element(&(z->recips), i));
-      }
+      tmp = owl_zwrite_get_recip_n_with_realm(z, i);
+      g_string_append_printf(message, "%s ", tmp);
       g_free(tmp);
       tmp = NULL;
     }
     tmp = owl_validate_utf8(msg);
     tmp2 = owl_text_expand_tabs(tmp);
-    z->message=g_strdup_printf("%s\n%s", toline, tmp2);
-    g_free(toline);
+    g_string_append_printf(message, "\n%s", tmp2);
+    z->message = g_string_free(message, false);
     g_free(tmp);
     g_free(tmp2);
   } else {
@@ -248,11 +240,7 @@ int owl_zwrite_send_message(const owl_zwrite *z)
   j=owl_list_get_size(&(z->recips));
   if (j>0) {
     for (i=0; i<j; i++) {
-      if (strcmp(z->realm, "")) {
-        to = g_strdup_printf("%s@%s", (const char *) owl_list_get_element(&(z->recips), i), z->realm);
-      } else {
-        to = g_strdup( owl_list_get_element(&(z->recips), i));
-      }
+      to = owl_zwrite_get_recip_n_with_realm(z, i);
       ret = send_zephyr(z->opcode, z->zsig, z->class, z->inst, to, z->message);
       /* Abort on the first error, to match the zwrite binary. */
       if (ret != 0)
@@ -321,19 +309,6 @@ void owl_zwrite_set_zsig(owl_zwrite *z, const char *zsig)
   z->zsig = g_strdup(zsig);
 }
 
-void owl_zwrite_get_recipstr(const owl_zwrite *z, char *buff)
-{
-  int i, j;
-
-  strcpy(buff, "");
-  j=owl_list_get_size(&(z->recips));
-  for (i=0; i<j; i++) {
-    strcat(buff, owl_list_get_element(&(z->recips), i));
-    strcat(buff, " ");
-  }
-  buff[strlen(buff)-1]='\0';
-}
-
 int owl_zwrite_get_numrecips(const owl_zwrite *z)
 {
   return(owl_list_get_size(&(z->recips)));
@@ -342,6 +317,16 @@ int owl_zwrite_get_numrecips(const owl_zwrite *z)
 const char *owl_zwrite_get_recip_n(const owl_zwrite *z, int n)
 {
   return(owl_list_get_element(&(z->recips), n));
+}
+
+/* Caller must free the result. */
+char *owl_zwrite_get_recip_n_with_realm(const owl_zwrite *z, int n)
+{
+  if (z->realm[0]) {
+    return g_strdup_printf("%s@%s", owl_zwrite_get_recip_n(z, n), z->realm);
+  } else {
+    return g_strdup(owl_zwrite_get_recip_n(z, n));
+  }
 }
 
 int owl_zwrite_is_personal(const owl_zwrite *z)
