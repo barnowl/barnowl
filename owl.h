@@ -511,7 +511,7 @@ typedef struct _owl_buddylist {
 } owl_buddylist;
 
 typedef struct _owl_zbuddylist {
-  owl_list zusers;
+  GPtrArray *zusers;
 } owl_zbuddylist;
 
 typedef struct _owl_errqueue {
