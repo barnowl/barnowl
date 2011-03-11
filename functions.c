@@ -3422,20 +3422,19 @@ void owl_function_zephyr_buddy_check(int notify)
 #endif
 }
 
-void owl_function_aimsearch_results(const char *email, owl_list *namelist)
+void owl_function_aimsearch_results(const char *email, GPtrArray *namelist)
 {
   owl_fmtext fm;
-  int i, j;
+  int i;
 
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_normal(&fm, "AIM screennames associated with ");
   owl_fmtext_append_normal(&fm, email);
   owl_fmtext_append_normal(&fm, ":\n");
 
-  j=owl_list_get_size(namelist);
-  for (i=0; i<j; i++) {
+  for (i = 0; i < namelist->len; i++) {
     owl_fmtext_append_normal(&fm, "  ");
-    owl_fmtext_append_normal(&fm, owl_list_get_element(namelist, i));
+    owl_fmtext_append_normal(&fm, namelist->pdata[i]);
     owl_fmtext_append_normal(&fm, "\n");
   }
 
