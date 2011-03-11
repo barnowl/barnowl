@@ -515,7 +515,7 @@ typedef struct _owl_zbuddylist {
 } owl_zbuddylist;
 
 typedef struct _owl_errqueue {
-  owl_list errlist;
+  GPtrArray *errlist;
 } owl_errqueue;
 
 typedef struct _owl_colorpair_mgr {
