@@ -1323,16 +1323,16 @@ CALLER_OWN char *owl_zephyr_smartstripped_user(const char *in)
   return(out);
 }
 
-/* read the list of users in 'filename' as a .anyone file, and put the
- * names of the zephyr users in the list 'in'.  If 'filename' is NULL,
- * use the default .anyone file in the users home directory.  Returns
- * -1 on failure, 0 on success.
+/* Read the list of users in 'filename' as a .anyone file, and return as a
+ * GPtrArray of strings.  If 'filename' is NULL, use the default .anyone file
+ * in the users home directory.  Returns NULL on failure.
  */
-int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
+GPtrArray *owl_zephyr_get_anyone_list(const char *filename)
 {
 #ifdef HAVE_LIBZEPHYR
   char *ourfile, *tmp, *s = NULL;
   FILE *f;
+  GPtrArray *list;
 
   ourfile = owl_zephyr_dotfile(".anyone", filename);
 
@@ -1340,10 +1340,11 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
   if (!f) {
     owl_function_error("Error opening file %s: %s", ourfile, strerror(errno) ? strerror(errno) : "");
     g_free(ourfile);
-    return -1;
+    return NULL;
   }
   g_free(ourfile);
 
+  list = g_ptr_array_new();
   while (owl_getline_chomp(&s, f)) {
     /* ignore comments, blank lines etc. */
     if (s[0] == '#' || s[0] == '\0')
@@ -1359,13 +1360,13 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
     if (tmp)
       tmp[0] = '\0';
 
-    owl_list_append_element(in, long_zuser(s));
+    g_ptr_array_add(list, long_zuser(s));
   }
   g_free(s);
   fclose(f);
-  return 0;
+  return list;
 #else
-  return -1;
+  return NULL;
 #endif
 }
 

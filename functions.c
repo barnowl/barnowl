@@ -2993,7 +2993,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
   char *timestr;
 #ifdef HAVE_LIBZEPHYR
   int x;
-  owl_list anyone;
+  GPtrArray *anyone;
   const char *user;
   char *tmp;
   ZLocations_t location[200];
@@ -3028,9 +3028,8 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
       owl_function_error("Zephyr currently not available.");
     } else {
       owl_fmtext_append_bold(&fm, "Zephyr users logged in:\n");
-      owl_list_create(&anyone);
-      ret=owl_zephyr_get_anyone_list(&anyone, filename);
-      if (ret) {
+      anyone = owl_zephyr_get_anyone_list(filename);
+      if (anyone == NULL) {
         if (errno == ENOENT) {
           owl_fmtext_append_normal(&fm, " You have not added any zephyr buddies.  Use the\n");
           owl_fmtext_append_normal(&fm, " command ':addbuddy zephyr ");
@@ -3040,9 +3039,8 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
           owl_fmtext_append_normal(&fm, " Could not read zephyr buddies from the .anyone file.\n");
         }
       } else {
-        j=owl_list_get_size(&anyone);
-        for (i=0; i<j; i++) {
-          user=owl_list_get_element(&anyone, i);
+        for (i = 0; i < anyone->len; i++) {
+          user = anyone->pdata[i];
           ret=ZLocateUser(zstr(user), &numlocs, ZAUTH);
 
 	  if (owl_global_take_interrupt(&g)) {
@@ -3074,7 +3072,8 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
           }
         }
       }
-      owl_list_cleanup(&anyone, g_free);
+      g_ptr_array_foreach(anyone, (GFunc)g_free, NULL);
+      g_ptr_array_free(anyone, true);
     }
   }
 #endif
@@ -3386,8 +3385,8 @@ void G_GNUC_PRINTF(1, 2) owl_function_makemsg(const char *fmt, ...)
 void owl_function_zephyr_buddy_check(int notify)
 {
 #ifdef HAVE_LIBZEPHYR
-  int i, j;
-  owl_list anyone;
+  int i;
+  GPtrArray *anyone;
   GList **zaldlist;
   GList *zaldptr;
   ZAsyncLocateData_t *zald;
@@ -3407,11 +3406,9 @@ void owl_function_zephyr_buddy_check(int notify)
   g_list_free(*zaldlist);
   *zaldlist = NULL;
 
-  owl_list_create(&anyone);
-  owl_zephyr_get_anyone_list(&anyone, NULL);
-  j = owl_list_get_size(&anyone);
-  for (i = 0; i < j; i++) {
-    user = owl_list_get_element(&anyone, i);
+  anyone = owl_zephyr_get_anyone_list(NULL);
+  for (i = 0; i < anyone->len; i++) {
+    user = anyone->pdata[i];
     zald = g_new(ZAsyncLocateData_t, 1);
     if (ZRequestLocations(zstr(user), zald, UNACKED, ZAUTH) == ZERR_NONE) {
       *zaldlist = g_list_append(*zaldlist, zald);
@@ -3420,7 +3417,8 @@ void owl_function_zephyr_buddy_check(int notify)
     }
   }
 
-  owl_list_cleanup(&anyone, g_free);
+  g_ptr_array_foreach(anyone, (GFunc)g_free, NULL);
+  g_ptr_array_free(anyone, true);
 #endif
 }
 
