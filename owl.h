@@ -624,7 +624,6 @@ typedef struct _owl_global {
   int pseudologin_notify;
   struct termios startup_tio;
   owl_list io_dispatch_list;
-  owl_list psa_list;
   GList *timerlist;
   owl_timer *aim_nop_timer;
   int load_initial_subs;
