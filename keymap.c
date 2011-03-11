@@ -196,7 +196,6 @@ owl_keymap *owl_keyhandler_create_and_add_keymap(owl_keyhandler *kh, const char 
 {
   owl_keymap *km;
   km = g_new(owl_keymap, 1);
-  if (!km) return NULL;
   owl_keymap_init(km, name, desc, default_fn, prealways_fn, postalways_fn);
   owl_keyhandler_add_keymap(kh, km);
   return km;

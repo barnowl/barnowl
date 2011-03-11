@@ -300,9 +300,7 @@ void owl_editwin_clear(owl_editwin *e)
   char echochar=e->echochar;
 
   if (lock > 0) {
-    locktext = g_new(char, lock+1);
-    strncpy(locktext, e->buff, lock);
-    locktext[lock] = 0;
+    locktext = g_strndup(e->buff, lock);
   }
 
   g_free(e->buff);
@@ -1058,7 +1056,7 @@ void owl_editwin_delete_to_endofline(owl_editwin *e)
 
 void owl_editwin_yank(owl_editwin *e)
 {
-  char *killbuf = owl_global_get_kill_buffer(&g);
+  const char *killbuf = owl_global_get_kill_buffer(&g);
 
   if (killbuf != NULL)
     owl_editwin_replace(e, 0, killbuf);
@@ -1066,19 +1064,8 @@ void owl_editwin_yank(owl_editwin *e)
 
 static const char *oe_copy_buf(owl_editwin *e, const char *buf, int len)
 {
-  char *p;
-  char *killbuf = owl_global_get_kill_buffer(&g);
-
-  p = g_new(char, len + 1);
-
-  if (p != NULL) {
-    g_free(killbuf);
-    memcpy(p, buf, len);
-    p[len] = 0;
-    owl_global_set_kill_buffer(&g,p);
-  }
-
-  return p;
+  owl_global_set_kill_buffer(&g, buf, len);
+  return owl_global_get_kill_buffer(&g);
 }
 
 static int oe_copy_region(owl_editwin *e)

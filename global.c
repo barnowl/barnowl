@@ -956,10 +956,11 @@ FILE *owl_global_get_debug_file_handle(owl_global *g) {
   return g->debug_file;
 }
 
-char *owl_global_get_kill_buffer(owl_global *g) {
+const char *owl_global_get_kill_buffer(owl_global *g) {
   return g->kill_buffer;
 }
 
-void owl_global_set_kill_buffer(owl_global *g,char *kill) {
-  g->kill_buffer = kill;
+void owl_global_set_kill_buffer(owl_global *g, const char *kill, int len) {
+  g_free(g->kill_buffer);
+  g->kill_buffer = g_strndup(kill, len);
 }

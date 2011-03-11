@@ -22,7 +22,6 @@ owl_popexec *owl_popexec_new(const char *command)
   }
 
   pe = g_new(owl_popexec, 1);
-  if (!pe) return NULL;
   pe->winactive=0;
   pe->pid=0;
   pe->refcount=0;
