@@ -381,8 +381,10 @@ void owl_zwrite_cleanup(owl_zwrite *z)
  * Returns a zwrite line suitable for replying, specifically the
  * message field is stripped out. Result should be freed with
  * g_free.
+ *
+ * If not a CC, only the recip_index'th user will be replied to.
  */
-char *owl_zwrite_get_replyline(const owl_zwrite *z)
+char *owl_zwrite_get_replyline(const owl_zwrite *z, int recip_index)
 {
   /* Match ordering in zwrite help. */
   GString *buf = g_string_new("");
@@ -414,9 +416,14 @@ char *owl_zwrite_get_replyline(const owl_zwrite *z)
     g_string_append(buf, " -O ");
     owl_string_append_quoted_arg(buf, z->opcode);
   }
-  for (i = 0; i < owl_list_get_size(&(z->recips)); i++) {
+  if (z->cc) {
+    for (i = 0; i < owl_list_get_size(&(z->recips)); i++) {
+      g_string_append_c(buf, ' ');
+      owl_string_append_quoted_arg(buf, owl_list_get_element(&(z->recips), i));
+    }
+  } else if (recip_index < owl_list_get_size(&(z->recips))) {
     g_string_append_c(buf, ' ');
-    owl_string_append_quoted_arg(buf, owl_list_get_element(&(z->recips), i));
+    owl_string_append_quoted_arg(buf, owl_list_get_element(&(z->recips), recip_index));
   }
 
   return g_string_free(buf, false);

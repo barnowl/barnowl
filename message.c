@@ -979,7 +979,7 @@ void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const c
 
   /* Although not strictly the zwriteline, anyone using the unsantized version
    * of it probably has a bug. */
-  replyline = owl_zwrite_get_replyline(z);
+  replyline = owl_zwrite_get_replyline(z, recip_index);
   owl_message_set_zwriteline(m, replyline);
   g_free(replyline);
 
