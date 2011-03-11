@@ -128,48 +128,44 @@ static const struct _owl_keypress_specialmap {
 #define OWL_CTRL(key) ((key)&037)
 /* OWL_META is definied in owl.h */
 
-/* returns 0 on success */
-int owl_keypress_tostring(int j, int esc, char *buff, int bufflen)
+char *owl_keypress_tostring(int j, int esc)
 {
-  char kb[64], kb2[2];
+  GString *kb;
   const struct _owl_keypress_specialmap *sm;
 
-  *kb = '\0';
+  kb = g_string_new("");
   for (sm = specialmap; sm->kj!=0; sm++) {
     if (j == OWL_META(sm->kj) || (esc && j == sm->kj)) {
-      strcat(kb, "M-");
-      strcat(kb, sm->ks);
+      g_string_append(kb, "M-");
+      g_string_append(kb, sm->ks);
       break;
     } else if (j == sm->kj) {
-      strcat(kb, sm->ks);
+      g_string_append(kb, sm->ks);
       break;
     }
   }
-  if (!*kb) {
+  if (!kb->str[0]) {
     if (j & OWL_META(0)) {
-      strcat(kb, "M-");
+      g_string_append(kb, "M-");
       j &= ~OWL_META(0);
     }
     if ((OWL_CTRL(j) == j)) {
-      strcat(kb, "C-");
+      g_string_append(kb, "C-");
       j |= 0x40;
       if (isupper(j)) j = tolower(j);
 
     }
     if (isascii(j)) {
-      kb2[0] = j;
-      kb2[1] = 0;
-      strcat(kb, kb2);    
+      g_string_append_c(kb, j);
     }
     
   }  
-  if (!*kb) {
+  if (!kb->str[0]) {
     /* not a valid key */
-    strncpy(buff, "INVALID", bufflen);
-    return(-1);
+    g_string_free(kb, true);
+    return NULL;
   }
-  strncpy(buff, kb, bufflen);
-  return(0);
+  return g_string_free(kb, false);
 }
 
 

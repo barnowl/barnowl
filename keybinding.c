@@ -87,13 +87,13 @@ void owl_keybinding_execute(const owl_keybinding *kb, int j)
 char *owl_keybinding_stack_tostring(int *j, int len)
 {
   GString *string;
-  char keypress[64];  /* TODO: don't hard-code a value here. */
   int  i;
 
   string = g_string_new("");
   for (i = 0; i < len; i++) {
-    owl_keypress_tostring(j[i], 0, keypress, sizeof(keypress));
-    g_string_append(string, keypress);
+    char *keypress = owl_keypress_tostring(j[i], 0);
+    g_string_append(string, keypress ? keypress : "INVALID");
+    g_free(keypress);
     if (i < len - 1) g_string_append_c(string, ' ');
   }
   return g_string_free(string, false);
