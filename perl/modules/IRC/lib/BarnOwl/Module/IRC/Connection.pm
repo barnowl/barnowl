@@ -325,7 +325,8 @@ sub on_topicinfo {
 sub on_namreply {
     my ($self, $evt) = @_;
     return unless $self->names_tmp;
-    $self->names_tmp([@{$self->names_tmp}, split(' ', $evt->{params}[3])]);
+    $self->names_tmp([@{$self->names_tmp},
+                      map {prefix_nick($_)} split(' ', $evt->{params}[3])]);
 }
 
 sub cmp_user {
