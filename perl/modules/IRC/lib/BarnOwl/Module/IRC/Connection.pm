@@ -451,7 +451,7 @@ sub reconnect {
     my $self = shift;
     my $backoff = shift;
 
-    $self->autoconnect_channels([keys(%{$self->channel_list})]);
+    $self->autoconnect_channels([keys(%{$self->{channel_list}})]);
     $self->conn->connect;
     if ($self->conn->connected) {
         $self->connected("Reconnected to ".$self->alias);

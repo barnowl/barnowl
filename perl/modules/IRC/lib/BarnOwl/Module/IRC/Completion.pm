@@ -10,7 +10,15 @@ our %servers = ();
 
 sub complete_networks { keys %BarnOwl::Module::IRC::ircnets }
 sub complete_dests    { keys %users, complete_channels() }
-sub complete_channels { keys %BarnOwl::Module::IRC::channels }
+sub complete_channels {
+    my %channels;
+    for my $conn (values %BarnOwl::Module::IRC::ircnets) {
+        for my $chan (keys %{$conn->conn->{channel_list}}) {
+            $channels{$chan} = 1;
+        }
+    }
+    return keys %channels;
+}
 sub complete_nicks    { keys %users }
 sub complete_servers  { keys %servers }
 

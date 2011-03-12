@@ -29,7 +29,6 @@ our $irc;
 
 # Hash alias -> BarnOwl::Module::IRC::Connection object
 our %ircnets;
-our %channels;
 
 sub startup {
     BarnOwl::new_variable_string('irc:nick', {
@@ -95,8 +94,7 @@ sub buddylist {
         $list .= BarnOwl::Style::boldify("IRC channels for $net ($nick\@$server)");
         $list .= "\n";
 
-        for my $chan (keys %channels) {
-            next unless grep $_ eq $conn, @{$channels{$chan}};
+        for my $chan (keys %{$conn->conn->{channel_list}}) {
             $list .= "  $chan\n";
         }
     }
@@ -465,8 +463,6 @@ sub cmd_join {
     my $cmd = shift;
     my $conn = shift;
     my $chan = shift or die("Usage: $cmd channel\n");
-    $channels{$chan} ||= [];
-    push @{$channels{$chan}}, $conn;
     $conn->conn->send_msg(join => $chan, @_);
     return;
 }
@@ -475,7 +471,6 @@ sub cmd_part {
     my $cmd = shift;
     my $conn = shift;
     my $chan = shift;
-    $channels{$chan} = [grep {$_ ne $conn} @{$channels{$chan} || []}];
     $conn->conn->send_msg(part => $chan);
     return;
 }
@@ -557,6 +552,17 @@ sub cmd_quote {
 ########################### Utilities/Helpers ##################################
 ################################################################################
 
+sub find_channel {
+    my $channel = shift;
+    my @found;
+    for my $conn (values %ircnets) {
+        if($conn->conn->{channel_list}{lc $channel}) {
+            push @found, $conn;
+        }
+    }
+    return $found[0] if(scalar @found == 1);
+}
+
 sub mk_irc_command {
     my $sub = shift;
     my $flags = shift || 0;
@@ -579,9 +585,9 @@ sub mk_irc_command {
         if($flags & CHANNEL_ARG) {
             $channel = $ARGV[0];
             if(defined($channel) && $channel =~ /^#/) {
-                if($channels{$channel} && @{$channels{$channel}} == 1) {
+                if(my $c = find_channel($channel)) {
                     shift @ARGV;
-                    $conn = $channels{$channel}[0] unless $conn;
+                    $conn ||= $c;
                 }
             } elsif ($m && $m->type eq 'IRC' && !$m->is_private) {
                 $channel = $m->channel;
