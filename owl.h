@@ -202,7 +202,7 @@ typedef void HV;
 #define OWL_ZEPHYR_NOSTRIP_DAEMON5      "daemon/"
 #define OWL_ZEPHYR_NOSTRIP_DAEMON4      "daemon."
 
-#define OWL_REGEX_QUOTECHARS    "!+*.?[]^\\${}()"
+#define OWL_REGEX_QUOTECHARS    "!+*.?[]^\\${}()|"
 #define OWL_REGEX_QUOTEWITH     "\\"
 
 #if defined(HAVE_DES_STRING_TO_KEY) && defined(HAVE_DES_KEY_SCHED) && defined(HAVE_DES_ECB_ENCRYPT)
