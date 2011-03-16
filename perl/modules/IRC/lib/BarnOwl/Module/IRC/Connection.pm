@@ -376,7 +376,7 @@ sub on_mode {
     my ($self, $evt) = @_;
     BarnOwl::admin_message("IRC",
                            "[" . $self->alias . "] User " . (prefix_nick($evt)) . + " set mode " .
-                           join(" ", cdr(@{$evt->{params}})) . "on " . $evt->{params}->[0]
+                           join(" ", cdr(@{$evt->{params}})) . " on " . $evt->{params}->[0]
                           );
 }
 
