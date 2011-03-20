@@ -158,6 +158,7 @@ if test "x${HAVE_ZIP}" = "xno"; then
 fi
 
 AC_CONFIG_LIBOBJ_DIR([compat])
+AC_CHECK_DECLS([memrchr])
 AC_REPLACE_FUNCS([memrchr])
 
 AC_CONFIG_FILES([Makefile compat/Makefile libfaim/Makefile perl/Makefile perl/modules/Makefile])

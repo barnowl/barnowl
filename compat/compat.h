@@ -2,6 +2,6 @@
 
 #include <stddef.h>
 
-#ifndef HAVE_MEMRCHR
+#if !HAVE_DECL_MEMRCHR
 void *memrchr(const void *s, int c, size_t n);
-#endif  /* HAVE_MEMRCHR */
+#endif  /* !HAVE_DECL_MEMRCHR */
