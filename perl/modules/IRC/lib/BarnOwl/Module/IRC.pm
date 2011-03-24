@@ -393,6 +393,7 @@ sub cmd_disconnect {
     my $cmd = shift;
     my $conn = shift;
     if ($conn->conn->{socket}) {
+        $conn->did_quit(1);
         $conn->conn->disconnect("Goodbye!");
     } elsif ($conn->{reconnect_timer}) {
         BarnOwl::admin_message('IRC',

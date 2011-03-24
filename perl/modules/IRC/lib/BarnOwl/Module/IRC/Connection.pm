@@ -20,7 +20,9 @@ use AnyEvent::IRC::Util qw(split_prefix prefix_nick encode_ctcp);
 
 use base qw(Class::Accessor);
 use Exporter 'import';
-__PACKAGE__->mk_accessors(qw(conn alias motd names_tmp whois_tmp server autoconnect_channels));
+__PACKAGE__->mk_accessors(qw(conn alias motd names_tmp whois_tmp
+                             server autoconnect_channels
+                             connect_args backoff did_quit));
 our @EXPORT_OK = qw(is_private);
 
 use BarnOwl;
@@ -41,11 +43,14 @@ sub new {
     $self->server($host);
     $self->motd("");
     $self->names_tmp(0);
+    $self->backoff(0);
     $self->whois_tmp("");
+    $self->did_quit(0);
 
     if(delete $args->{SSL}) {
         $conn->enable_ssl;
     }
+    $self->connect_args([$host, $port, $args]);
     $conn->connect($host, $port, $args);
     $conn->{heap}{parent} = $self;
     weaken($conn->{heap}{parent});
@@ -93,7 +98,7 @@ sub new {
                         irc_403       => on("nosuch"),
                         nick_change   => on("nick"),
                         ctcp_action   => on("ctcp_action"),
-                        'irc_*' => sub { BarnOwl::debug("IRC: " . $_[1]->{command} .
+                        'irc_*' => sub { BarnOwl::debug("IRC: " . $_[1]->{command} . " " .
                                                         join(" ", @{$_[1]->{params}})) });
 
     return $self;
@@ -243,25 +248,18 @@ sub on_quit {
 
 sub disconnect {
     my $self = shift;
-    delete $BarnOwl::Module::IRC::ircnets{$self->alias};
-    for my $k (keys %BarnOwl::Module::IRC::channels) {
-        my @conns = grep {$_ ne $self} @{$BarnOwl::Module::IRC::channels{$k}};
-        if(@conns) {
-            $BarnOwl::Module::IRC::channels{$k} = \@conns;
-        } else {
-            delete $BarnOwl::Module::IRC::channels{$k};
-        }
-    }
-    $self->motd("");
+    $self->conn->disconnect;
 }
 
 sub on_disconnect {
     my ($self, $why) = @_;
     BarnOwl::admin_message('IRC',
-                           "[" . $self->alias . "] Disconnected from server");
-    $self->disconnect;
-    if ($why && $why =~ m{error in connection}) {
+                           "[" . $self->alias . "] Disconnected from server: $why");
+    $self->motd("");
+    if (!$self->did_quit) {
         $self->schedule_reconnect;
+    } else {
+        delete $BarnOwl::Module::IRC::ircnets{$self->alias};
     }
 }
 
@@ -399,7 +397,14 @@ sub on_event {
 
 sub schedule_reconnect {
     my $self = shift;
-    my $interval = shift || 5;
+    my $interval = $self->backoff;
+    if ($interval) {
+        $interval *= 2;
+        $interval = 60*5 if $interval > 60*5;
+    } else {
+        $interval = 5;
+    }
+    $self->backoff($interval);
 
     my $weak = $self;
     weaken($weak);
@@ -442,25 +447,18 @@ sub connected {
         $self->autoconnect_channels([]);
     }
     $self->conn->enable_ping(60, sub {
-                                 $self->disconnect("Connection timed out.");
+                                 $self->on_disconnect("Connection timed out.");
                                  $self->schedule_reconnect;
                              });
+    $self->backoff(0);
 }
 
 sub reconnect {
     my $self = shift;
-    my $backoff = shift;
+    my $backoff = $self->backoff;
 
     $self->autoconnect_channels([keys(%{$self->{channel_list}})]);
-    $self->conn->connect;
-    if ($self->conn->connected) {
-        $self->connected("Reconnected to ".$self->alias);
-        return;
-    }
-
-    $backoff *= 2;
-    $backoff = 60*5 if $backoff > 60*5;
-    $self->schedule_reconnect( $backoff );
+    $self->conn->connect(@{$self->connect_args});
 }
 
 ################################################################################
