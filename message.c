@@ -774,7 +774,6 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
 #else /* !ZNOTICE_SOCKADDR */
   struct hostent *hent;
 #endif /* ZNOTICE_SOCKADDR */
-  const char *ptr;
   char *tmp, *tmp2;
   int len;
 
@@ -807,11 +806,7 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   }
   owl_message_set_zsig(m, owl_zephyr_get_zsig(n, &len));
 
-  if ((ptr=strchr(n->z_recipient, '@'))!=NULL) {
-    owl_message_set_realm(m, ptr+1);
-  } else {
-    owl_message_set_realm(m, owl_zephyr_get_realm());
-  }
+  owl_message_set_realm(m, zuser_realm(n->z_recipient));
 
   /* Set the "isloginout" attribute if it's a login message */
   if (!strcasecmp(n->z_class, "login") || !strcasecmp(n->z_class, OWL_WEBZEPHYR_CLASS)) {
@@ -914,7 +909,6 @@ void owl_message_create_from_znotice(owl_message *m, const void *n)
 void owl_message_create_pseudo_zlogin(owl_message *m, int direction, const char *user, const char *host, const char *time, const char *tty)
 {
   char *longuser;
-  const char *ptr;
 
 #ifdef HAVE_LIBZEPHYR
   memset(&(m->notice), 0, sizeof(ZNotice_t));
@@ -943,11 +937,7 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, const char 
     owl_message_set_islogout(m);
   }
 
-  if ((ptr=strchr(longuser, '@'))!=NULL) {
-    owl_message_set_realm(m, ptr+1);
-  } else {
-    owl_message_set_realm(m, owl_zephyr_get_realm());
-  }
+  owl_message_set_realm(m, zuser_realm(longuser));
 
   owl_message_set_body(m, "<uninitialized>");
 

@@ -770,7 +770,6 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
     } else {
       char *buff;
       owl_zwrite zw;
-      char *realm;
 
       tmp = short_zuser(retnotice->z_recipient);
       owl_function_error("%s: Not logged in or subscribing.", tmp);
@@ -803,12 +802,7 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
       memset(&zw, 0, sizeof(zw));
       zw.class = g_strdup(retnotice->z_class);
       zw.inst  = g_strdup(retnotice->z_class_inst);
-      realm = strchr(retnotice->z_recipient, '@');
-      if(realm) {
-        zw.realm = g_strdup(realm + 1);
-      } else {
-        zw.realm = g_strdup(owl_zephyr_get_realm());
-      }
+      zw.realm = g_strdup(zuser_realm(retnotice->z_recipient));
       zw.opcode = g_strdup(retnotice->z_opcode);
       zw.zsig   = g_strdup("");
       owl_list_create(&(zw.recips));
@@ -1186,6 +1180,17 @@ char *long_zuser(const char *in)
     return g_strdup_printf("%s%s", in, owl_zephyr_get_realm());
   }
   return g_strdup_printf("%s@%s", in, owl_zephyr_get_realm());
+}
+
+/* Return the realm of the zephyr user name. Caller does /not/ free the return.
+ * The string is valid at least as long as the input is.
+ */
+const char *zuser_realm(const char *in)
+{
+  char *ptr = strrchr(in, '@');
+  /* If the name has an @ and does not end with @, use that. Otherwise, take
+   * the default realm. */
+  return (ptr && ptr[1]) ? (ptr+1) : owl_zephyr_get_realm();
 }
 
 /* strip out the instance from a zsender's principal.  Preserves the
