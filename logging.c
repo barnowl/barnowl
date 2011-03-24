@@ -178,7 +178,7 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
 {
   FILE *file;
   char *filename, *logpath;
-  char *tobuff;
+  char *tobuff, *recip;
   owl_message *m;
 
   /* create a present message so we can pass it to
@@ -194,7 +194,9 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   owl_message_delete(m);
 
   /* chop off a local realm */
-  tobuff = short_zuser(owl_list_get_element(&(zw->recips), 0));
+  recip = owl_zwrite_get_recip_n_with_realm(zw, 0);
+  tobuff = short_zuser(recip);
+  g_free(recip);
 
   /* expand ~ in path names */
   logpath = owl_util_makepath(owl_global_get_logpath(&g));

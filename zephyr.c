@@ -802,11 +802,11 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
       memset(&zw, 0, sizeof(zw));
       zw.class = g_strdup(retnotice->z_class);
       zw.inst  = g_strdup(retnotice->z_class_inst);
-      zw.realm = g_strdup(zuser_realm(retnotice->z_recipient));
+      zw.realm = g_strdup("");
       zw.opcode = g_strdup(retnotice->z_opcode);
       zw.zsig   = g_strdup("");
       owl_list_create(&(zw.recips));
-      owl_list_append_element(&(zw.recips), g_strdup(tmp));
+      owl_list_append_element(&(zw.recips), g_strdup(retnotice->z_recipient));
 
       owl_log_outgoing_zephyr_error(&zw, buff);
 
