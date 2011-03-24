@@ -960,12 +960,20 @@ void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const c
   owl_message_set_class(m, owl_zwrite_get_class(z));
   owl_message_set_instance(m, owl_zwrite_get_instance(z));
   if (recip_index < owl_zwrite_get_numrecips(z)) {
-    char *longzuser = long_zuser(owl_zwrite_get_recip_n(z, recip_index));
+    char *zuser = owl_zwrite_get_recip_n_with_realm(z, recip_index);
+    char *longzuser = long_zuser(zuser);
     owl_message_set_recipient(m, longzuser);
+    owl_message_set_realm(m, zuser_realm(longzuser));
     g_free(longzuser);
+    g_free(zuser);
+  } else {
+    /* TODO: We should maybe munge this into the case above, as that comparison
+     * is a little overly clever. It's also not clear this codepath ever runs
+     * anyway. */
+    const char *realm = owl_zwrite_get_realm(z);
+    owl_message_set_realm(m, realm[0] ? realm : owl_zephyr_get_realm());
   }
   owl_message_set_opcode(m, owl_zwrite_get_opcode(z));
-  owl_message_set_realm(m, owl_zwrite_get_realm(z)); /* also a hack, but not here */
 
   /* Although not strictly the zwriteline, anyone using the unsantized version
    * of it probably has a bug. */
