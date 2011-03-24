@@ -1166,16 +1166,11 @@ void owl_zephyr_set_locationinfo(const char *host, const char *val)
  */
 char *short_zuser(const char *in)
 {
-  char *out, *ptr;
-
-  out=g_strdup(in);
-  ptr=strchr(out, '@');
-  if (ptr) {
-    if (!strcasecmp(ptr+1, owl_zephyr_get_realm())) {
-      *ptr='\0';
-    }
+  char *ptr = strrchr(in, '@');
+  if (ptr && (ptr[1] == '\0' || !strcasecmp(ptr+1, owl_zephyr_get_realm()))) {
+    return g_strndup(in, ptr - in);
   }
-  return(out);
+  return g_strdup(in);
 }
 
 /* Append a local realm to the zephyr user name if necessary.
@@ -1183,10 +1178,14 @@ char *short_zuser(const char *in)
  */
 char *long_zuser(const char *in)
 {
-  if (strchr(in, '@')) {
-    return(g_strdup(in));
+  char *ptr = strrchr(in, '@');
+  if (ptr) {
+    if (ptr[1])
+      return g_strdup(in);
+    /* Ends in @, so assume default realm. */
+    return g_strdup_printf("%s%s", in, owl_zephyr_get_realm());
   }
-  return(g_strdup_printf("%s@%s", in, owl_zephyr_get_realm()));
+  return g_strdup_printf("%s@%s", in, owl_zephyr_get_realm());
 }
 
 /* strip out the instance from a zsender's principal.  Preserves the
