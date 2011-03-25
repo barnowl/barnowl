@@ -1993,7 +1993,7 @@ char *owl_function_exec(int argc, const char *const *argv, const char *buff, int
   }
 
   buff = skiptokens(buff, 1);
-  newbuff = g_strdup_printf("%s%s", buff, redirect);
+  newbuff = g_strdup_printf("exec%s; %s", redirect, buff);
 
   if (type == OWL_OUTPUT_POPUP) {
     owl_popexec_new(newbuff);
