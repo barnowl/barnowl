@@ -40,7 +40,6 @@ typedef struct _owl_options {
   char *tty;
   char *confdir;
   bool debug;
-  bool rm_debug;
 } owl_options;
 
 void usage(void)
@@ -49,7 +48,6 @@ void usage(void)
   fprintf(stderr, "Usage: barnowl [-n] [-d] [-D] [-v] [-h] [-c <configfile>] [-s <confdir>] [-t <ttyname>]\n");
   fprintf(stderr, "  -n,--no-subs        don't load zephyr subscriptions\n");
   fprintf(stderr, "  -d,--debug          enable debugging\n");
-  fprintf(stderr, "  -D,--remove-debug   enable debugging and delete previous debug file\n");
   fprintf(stderr, "  -v,--version        print the Barnowl version number and exit\n");
   fprintf(stderr, "  -h,--help           print this help message\n");
   fprintf(stderr, "  -c,--config-file    specify an alternate config file\n");
@@ -65,7 +63,6 @@ void owl_parse_options(int argc, char *argv[], owl_options *opts) {
     { "config-dir",      1, 0, 's' },
     { "tty",             1, 0, 't' },
     { "debug",           0, 0, 'd' },
-    { "remove-debug",    0, 0, 'D' },
     { "version",         0, 0, 'v' },
     { "help",            0, 0, 'h' },
     { NULL, 0, NULL, 0}
@@ -87,9 +84,6 @@ void owl_parse_options(int argc, char *argv[], owl_options *opts) {
     case 't':
       opts->tty = g_strdup(optarg);
       break;
-    case 'D':
-      opts->rm_debug = 1;
-      /* fallthrough */
     case 'd':
       opts->debug = 1;
       break;
@@ -491,7 +485,6 @@ int main(int argc, char **argv, char **env)
 
   /* owl global init */
   owl_global_init(&g);
-  if (opts.rm_debug) unlink(OWL_DEBUG_FILE);
   if (opts.debug) owl_global_set_debug_on(&g);
   if (opts.confdir) owl_global_set_confdir(&g, opts.confdir);
   owl_function_debugmsg("startup: first available debugging message");
