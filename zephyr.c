@@ -1018,19 +1018,12 @@ char *owl_zephyr_makesubline(const char *class, const char *inst, const char *re
 void owl_zephyr_zlog_in(void)
 {
 #ifdef HAVE_LIBZEPHYR
-  char *exposure, *eset;
   Code_t ret;
 
   ZResetAuthentication();
 
-  eset = EXPOSE_REALMVIS;
-  exposure = ZGetVariable(zstr("exposure"));
-  if (exposure)
-    exposure = ZParseExposureLevel(exposure);
-  if (exposure)
-    eset = exposure;
-   
-  ret = ZSetLocation(eset);
+  ret = ZSetLocation(zstr(owl_global_get_exposure(&g)));
+
   if (ret != ZERR_NONE)
     owl_function_error("Error setting location: %s", error_message(ret));
 #endif
@@ -1152,6 +1145,44 @@ void owl_zephyr_set_locationinfo(const char *host, const char *val)
 {
 #ifdef HAVE_LIBZEPHYR
   ZInitLocationInfo(zstr(host), zstr(val));
+#endif
+}
+
+int owl_zephyr_set_exposure(const char *exposure)
+{
+#ifdef HAVE_LIBZEPHYR
+  Code_t ret;
+  if (exposure == NULL)
+    return -1;
+  exposure = ZParseExposureLevel(zstr(exposure));
+  if (exposure == NULL)
+    return -1;
+  ret = ZSetLocation(zstr(exposure));
+  if (ret != ZERR_NONE) {
+    owl_function_debugmsg("Unable to set exposure location to %s (%s)", exposure, error_message(ret));
+    return -1; /* I don't like this.  We should return -1, because we failed,
+                * but the user gets a message that implies that the value they
+                * gave is wrong.
+                */
+  }
+  ret = ZSetVariable(zstr("exposure"), zstr(exposure));
+  if (ret != ZERR_NONE) {
+    owl_function_debugmsg("Unable to set exposure variable to %s (%s)", exposure, error_message(ret));
+    return -1; /* ditto the above comment */
+  }
+#endif
+  return 0;
+}
+
+const char *owl_zephyr_get_exposure(void)
+{
+#ifdef HAVE_LIBZEPHYR
+  const char *exposure = ZParseExposureLevel(ZGetVariable(zstr("exposure")));
+  if (exposure == NULL)
+    exposure = EXPOSE_REALMVIS;
+  return exposure;
+#else
+  return "";
 #endif
 }
   
