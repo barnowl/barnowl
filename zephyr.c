@@ -1018,21 +1018,10 @@ char *owl_zephyr_makesubline(const char *class, const char *inst, const char *re
 void owl_zephyr_zlog_in(void)
 {
 #ifdef HAVE_LIBZEPHYR
-  char *exposure, *eset;
-  Code_t ret;
-
   ZResetAuthentication();
 
-  eset = EXPOSE_REALMVIS;
-  exposure = ZGetVariable(zstr("exposure"));
-  if (exposure)
-    exposure = ZParseExposureLevel(exposure);
-  if (exposure)
-    eset = exposure;
-   
-  ret = ZSetLocation(eset);
-  if (ret != ZERR_NONE)
-    owl_function_error("Error setting location: %s", error_message(ret));
+  /* ZSetLocation, and store the default value as the current value */
+  owl_global_set_exposure(&g, owl_global_get_default_exposure(&g));
 #endif
 }
 
@@ -1153,6 +1142,68 @@ void owl_zephyr_set_locationinfo(const char *host, const char *val)
 #ifdef HAVE_LIBZEPHYR
   ZInitLocationInfo(zstr(host), zstr(val));
 #endif
+}
+
+const char *owl_zephyr_normalize_exposure(const char *exposure)
+{
+  if (exposure == NULL)
+    return NULL;
+#ifdef HAVE_LIBZEPHYR
+  return ZParseExposureLevel(zstr(exposure));
+#else
+  return exposure;
+#endif
+}
+
+int owl_zephyr_set_default_exposure(const char *exposure)
+{
+#ifdef HAVE_LIBZEPHYR
+  Code_t ret;
+  if (exposure == NULL)
+    return -1;
+  exposure = ZParseExposureLevel(zstr(exposure));
+  if (exposure == NULL)
+    return -1;
+  ret = ZSetVariable(zstr("exposure"), zstr(exposure)); /* ZSetVariable does file I/O */
+  if (ret != ZERR_NONE) {
+    owl_function_error("Unable to set default exposure location: %s", error_message(ret));
+    return -1;
+  }
+#endif
+  return 0;
+}
+
+const char *owl_zephyr_get_default_exposure(void)
+{
+#ifdef HAVE_LIBZEPHYR
+  const char *exposure = ZGetVariable(zstr("exposure")); /* ZGetVariable does file I/O */
+  if (exposure == NULL)
+    return EXPOSE_REALMVIS;
+  exposure = ZParseExposureLevel(zstr(exposure));
+  if (exposure == NULL) /* The user manually entered an invalid value in ~/.zephyr.vars, or something weird happened. */
+    return EXPOSE_REALMVIS;
+  return exposure;
+#else
+  return "";
+#endif
+}
+
+int owl_zephyr_set_exposure(const char *exposure)
+{
+#ifdef HAVE_LIBZEPHYR
+  Code_t ret;
+  if (exposure == NULL)
+    return -1;
+  exposure = ZParseExposureLevel(zstr(exposure));
+  if (exposure == NULL)
+    return -1;
+  ret = ZSetLocation(zstr(exposure));
+  if (ret != ZERR_NONE) {
+    owl_function_error("Unable to set exposure level: %s.", error_message(ret));
+    return -1;
+  }
+#endif
+  return 0;
 }
   
 /* Strip a local realm fron the zephyr user name.
