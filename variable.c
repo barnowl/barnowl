@@ -29,8 +29,8 @@
         { name, OWL_VARIABLE_STRING, default, 0, "<string>", summary,description, NULL, \
         NULL, NULL, NULL, NULL, NULL, NULL }
 
-#define OWLVAR_STRING_FULL(name,default,summary,description,validate,set,get) \
-        { name, OWL_VARIABLE_STRING, default, 0, "<string>", summary,description, NULL, \
+#define OWLVAR_STRING_FULL(name,default,validset,summary,description,validate,set,get) \
+        { name, OWL_VARIABLE_STRING, default, 0, validset, summary,description, NULL, \
         validate, set, NULL, get, NULL, NULL }
 
 /* enums are really integers, but where validset is a comma-separated
@@ -265,7 +265,7 @@ static owl_variable variables_to_init[] = {
 		 "owl command to execute for alert actions",
 		 "" ),
 
-  OWLVAR_STRING_FULL( "tty" /* %OwlVarStub */, "", "tty name for zephyr location", "",
+  OWLVAR_STRING_FULL( "tty" /* %OwlVarStub */, "", "<string>", "tty name for zephyr location", "",
 		      NULL, owl_variable_tty_set, NULL),
 
   OWLVAR_STRING( "default_style" /* %OwlVarStub */, "default",
@@ -369,6 +369,71 @@ static owl_variable variables_to_init[] = {
 	       "Note that this is currently risky as you might accidentally\n"
 	       "delete a message right as it came in.\n" ),
 
+  OWLVAR_STRING_FULL( "default_exposure" /* %OwlVarStub */, "",
+                      "none,opstaff,realm-visible,realm-announced,net-visible,net-announced",
+                      "controls the persistent value for exposure",
+                      "The default exposure level corresponds to the Zephyr exposure value\n"
+                      "in ~/.zephyr.vars.  Defaults to realm-visible if there is no value in\n"
+                      "~/.zephyr.vars.\n"
+                      "See the description of exposure for the values this can be.",
+                      NULL, owl_variable_default_exposure_set, owl_variable_default_exposure_get ),
+
+  OWLVAR_STRING_FULL( "exposure" /* %OwlVarStub */, "",
+                      "none,opstaff,realm-visible,realm-announced,net-visible,net-announced",
+                      "controls who can zlocate you",
+                      "The exposure level, defaulting to the value of default_exposure,\n"
+                      "can be one of the following (from least exposure to widest exposure,\n"
+                      "as listed in zctl(1)):\n"
+                      "\n"
+                      "   none            - This completely disables Zephyr for the user. \n"
+                      "                     The user is not registered with Zephyr.  No user\n"
+                      "                     location information is retained by Zephyr.  No\n"
+                      "                     login or logout announcements will be sent.  No\n"
+                      "                     subscriptions will be entered for the user, and\n"
+                      "                     no notices will be displayed by zwgc(1).\n"
+                      "   opstaff         - The user is registered with Zephyr.  No login or\n"
+                      "                     logout announcements will be sent, and location\n"
+                      "                     information will only be visible to Operations\n"
+                      "                     staff.  Default subscriptions and any additional\n"
+                      "                     personal subscriptions will be entered for the\n"
+                      "                     user.\n"
+                      "   realm-visible   - The user is registered with Zephyr.  User\n"
+                      "                     location information is retained by Zephyr and\n"
+                      "                     made available only to users within the user’s\n"
+                      "                     Kerberos realm.  No login or logout\n"
+                      "                     announcements will be sent.  This is the system\n"
+                      "                     default.  Default subscriptions and any\n"
+                      "                     additional personal subscriptions will be\n"
+                      "                     entered for the user.\n"
+                      "   realm-announced - The user is registered with Zephyr.  User\n"
+                      "                     location information is retained by Zephyr and\n"
+                      "                     made available only to users authenticated\n"
+                      "                     within the user’s Kerberos realm.  Login and\n"
+                      "                     logout announcements will be sent, but only to\n"
+                      "                     users within the user’s Kerberos realm who have\n"
+                      "                     explicitly requested such via subscriptions. \n"
+                      "                     Default subscriptions and any additional\n"
+                      "                     personal subscriptions will be entered for the\n"
+                      "                     user.\n"
+                      "   net-visible     - The user is registered with Zephyr.  User\n"
+                      "                     location information is retained by Zephyr and\n"
+                      "                     made available to any authenticated user who\n"
+                      "                     requests such.  Login and logout announcements\n"
+                      "                     will be sent only to users within the user’s\n"
+                      "                     Kerberos realm who have explicitly requested\n"
+                      "                     such via subscriptions.  Default subscriptions\n"
+                      "                     and any additional personal subscriptions will\n"
+                      "                     be entered for the user.\n"
+                      "   net-announced   - The user is registered with Zephyr.  User\n"
+                      "                     location information is retained by Zephyr and\n"
+                      "                     made available to any authenticated user who\n"
+                      "                     requests such.  Login and logout announcements\n"
+                      "                     will be sent to any user has requested such. \n"
+                      "                     Default subscriptions and any additional\n"
+                      "                     personal subscriptions will be entered for the\n"
+                      "                     user.\n",
+                      NULL, owl_variable_exposure_set, NULL /* use default for get */ ),
+
   /* This MUST be last... */
   { NULL, 0, NULL, 0, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL }
@@ -469,6 +534,23 @@ int owl_variable_tty_set(owl_variable *v, const void *newval)
   return(owl_variable_string_set_default(v, newval));
 }
 
+int owl_variable_default_exposure_set(owl_variable *v, const void *newval)
+{
+  return owl_zephyr_set_default_exposure(newval);
+}
+
+const void *owl_variable_default_exposure_get(const owl_variable *v)
+{
+  return owl_zephyr_get_default_exposure();
+}
+
+int owl_variable_exposure_set(owl_variable *v, const void *newval)
+{
+  int ret = owl_zephyr_set_exposure(newval);
+  if (ret != 0)
+    return ret;
+  return owl_variable_string_set_default(v, owl_zephyr_normalize_exposure(newval));
+}
 
 /**************************************************************************/
 /****************************** GENERAL ***********************************/
