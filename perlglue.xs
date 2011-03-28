@@ -42,7 +42,8 @@ command(cmd, ...)
 		if (items == 1) {
 			rv = owl_function_command(cmd);
 		} else {
-			argv = g_new(const char *, items + 1);
+			/* Ensure this is NULL-terminated. */
+			argv = g_new0(const char *, items + 1);
 			argv[0] = cmd;
 			for(i = 1; i < items; i++) {
 				argv[i] = SvPV_nolen(ST(i));
