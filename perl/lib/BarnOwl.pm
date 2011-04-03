@@ -2,9 +2,6 @@ use strict;
 use warnings;
 
 package BarnOwl;
-# AnyEvent needs a VERSION to autodetect us as being loaded. Throw in
-# a dummy one.
-our $VERSION = 1;
 
 use base qw(Exporter);
 our @EXPORT_OK = qw(command getcurmsg getnumcols getidletime
