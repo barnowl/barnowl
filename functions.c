@@ -2958,7 +2958,7 @@ void owl_function_search_helper(int consider_current, int direction)
   curmsg=owl_global_get_curmsg(&g);
   
   if (viewsize==0) {
-    owl_function_error("No messages present");
+    owl_function_makemsg("No messages present");
     return;
   }
 
@@ -2972,7 +2972,7 @@ void owl_function_search_helper(int consider_current, int direction)
 
   /* bounds check */
   if (start>=viewsize || start<0) {
-    owl_function_error("No further matches found");
+    owl_function_makemsg("No further matches found");
     return;
   }
 
@@ -3005,7 +3005,7 @@ void owl_function_search_helper(int consider_current, int direction)
     owl_function_unmask_sigint(NULL);
   }
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-  owl_function_error("No matches found");
+  owl_function_makemsg("No matches found");
 }
 
 /* strips formatting from ztext and returns the unformatted text. 

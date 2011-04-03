@@ -149,7 +149,7 @@ char *owl_viewwin_command_search(owl_viewwin *v, int argc, const char *const *ar
   }
 
   if (!owl_viewwin_search(v, owl_global_get_search_re(&g), consider_current, direction))
-    owl_function_error("No more matches");
+    owl_function_makemsg("No more matches");
   return NULL;
 }
 
@@ -171,7 +171,7 @@ static void owl_viewwin_callback_search(owl_editwin *e)
   }
   if (!owl_viewwin_search(data->v, owl_global_get_search_re(&g),
                           consider_current, data->direction))
-    owl_function_error("No matches");
+    owl_function_makemsg("No matches");
 }
 
 char *owl_viewwin_command_start_search(owl_viewwin *v, int argc, const char *const *argv, const char *buff)
