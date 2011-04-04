@@ -2463,7 +2463,6 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
 {
   owl_list * fl;
   owl_filter * f;
-  char * text;
   int i;
 
   fl = owl_global_get_puntlist(&g);
@@ -2482,11 +2481,11 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
         owl_function_error("No such filter number: %d", i+1);
       }
     }
-    text = owl_string_build_quoted("filter %q", argv[1]);
-    owl_function_punt(text, unpunt);
-    g_free(text);
+    const char *filter[] = {"filter", argv[1]};
+    owl_function_punt(2, filter, unpunt);
   } else {
-    owl_function_punt(skiptokens(buff, 1), unpunt);
+    /* Pass in argv[1]..argv[argc-1]. */
+    owl_function_punt(argc - 1, argv + 1, unpunt);
   }
 }
 
