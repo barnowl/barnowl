@@ -2478,7 +2478,7 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
         owl_filter_delete(f);
         return;
       } else {
-        owl_function_error("No such filter number: %d", i+1);
+        owl_function_makemsg("No such filter number: %d.", i+1);
       }
     }
     const char *filter[] = {"filter", argv[1]};

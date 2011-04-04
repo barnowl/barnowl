@@ -2857,11 +2857,13 @@ void owl_function_punt(int argc, const char *const *argv, int direction)
     }
   }
 
-  owl_function_debugmsg("punting");
-  /* If we're punting, add the filter to the global punt list */
-  if (direction==0) {
+  if (direction == 0) {
+    owl_function_debugmsg("punting");
+    /* If we're punting, add the filter to the global punt list */
     owl_list_append_element(fl, f);
-  }
+  } else if (direction == 1) {
+    owl_function_makemsg("No matching punt filter");
+ }
 }
 
 void owl_function_show_keymaps(void)
