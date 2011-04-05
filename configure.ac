@@ -7,6 +7,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADER([config.h])
 
 AC_PROG_CC
+AC_PROG_CC_C99
 
 AC_ARG_WITH([stack-protector],
   [AS_HELP_STRING([--with-stack-protector],
@@ -142,7 +143,7 @@ AM_CONDITIONAL([ENABLE_ZCRYPT], [test "$HAVE_DES_STRING_TO_KEY" && dnl
                                  test "$HAVE_DES_KEY_SCHED" && dnl
                                  test "$HAVE_DES_ECB_ENCRYPT"])
 
-AM_CFLAGS="$AM_CFLAGS -D_XOPEN_SOURCE=500"
+AM_CFLAGS="$AM_CFLAGS -D_XOPEN_SOURCE=600"
 dnl Define _BSD_SOURCE because zephyr needs caddr_t.
 AM_CFLAGS="$AM_CFLAGS -D_BSD_SOURCE"
 dnl Define __EXTENSIONS__ for strcasecmp on Solaris.
