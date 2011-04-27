@@ -609,7 +609,6 @@ typedef struct _owl_global {
   time_t lastinputtime;
   char *startupargs;
   int nextmsgid;
-  int hascolors;
   owl_colorpair_mgr cpmgr;
   pid_t newmsgproc_pid;
   owl_regex search_re;

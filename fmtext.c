@@ -183,16 +183,9 @@ static void _owl_fmtext_wattrset(WINDOW *w, int attrs)
   if (attrs & OWL_FMTEXT_ATTR_UNDERLINE) wattron(w, A_UNDERLINE);
 }
 
-static void _owl_fmtext_update_colorpair(short fg, short bg, short *pair)
-{
-  if (owl_global_get_hascolors(&g)) {
-    *pair = owl_fmtext_get_colorpair(fg, bg);
-  }
-}
-
 static void _owl_fmtext_wcolor_set(WINDOW *w, short pair)
 {
-  if (owl_global_get_hascolors(&g)) {
+  if (has_colors()) {
       wcolor_set(w,pair,NULL);
       wbkgdset(w, COLOR_PAIR(pair));
   }
@@ -220,7 +213,7 @@ static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_sear
   fg = default_fgcolor;
   bg = default_bgcolor;
   _owl_fmtext_wattrset(w, attr);
-  _owl_fmtext_update_colorpair(fg, bg, &pair);
+  pair = owl_fmtext_get_colorpair(fg, bg);
   _owl_fmtext_wcolor_set(w, pair);
 
   /* Find next possible format character. */
@@ -269,7 +262,7 @@ static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_sear
       if (fg == OWL_COLOR_DEFAULT) fg = default_fgcolor;
       if (bg == OWL_COLOR_DEFAULT) bg = default_bgcolor;
       _owl_fmtext_wattrset(w, attr);
-      _owl_fmtext_update_colorpair(fg, bg, &pair);
+      pair = owl_fmtext_get_colorpair(fg, bg);
       _owl_fmtext_wcolor_set(w, pair);
 
       /* Advance to next non-formatting character. */
@@ -661,7 +654,6 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
         /* if it's a color read the color, set the current color and
            continue */
       } else if (!strcasecmp(buff, "@color") 
-                 && owl_global_get_hascolors(&g)
                  && owl_global_is_colorztext(&g)) {
         g_free(buff);
         txtptr+=7;
@@ -819,7 +811,7 @@ void owl_fmtext_reset_colorpairs(owl_colorpair_mgr *cpmgr)
       cpmgr->pairs[i][j] = -1;
     }
   }
-  if (owl_global_get_hascolors(&g)) {
+  if (has_colors()) {
     for(i = 0; i < 8; i++) {
       short fg, bg;
       if (i >= COLORS) continue;
@@ -834,6 +826,9 @@ short owl_fmtext_get_colorpair(int fg, int bg)
 {
   owl_colorpair_mgr *cpmgr;
   short pair;
+
+  if (!has_colors())
+    return 0;
 
   /* Sanity (Bounds) Check */
   if (fg > COLORS || fg < OWL_COLOR_DEFAULT) fg = OWL_COLOR_DEFAULT;
