@@ -1818,7 +1818,7 @@ void owl_function_show_term(void)
 
   if (owl_global_get_hascolors(&g)) {
     owl_fmtext_append_normal(&fm, "Color: Yes\n");
-    owl_fmtext_appendf_normal(&fm, "Number of color pairs: %i\n", owl_global_get_colorpairs(&g));
+    owl_fmtext_appendf_normal(&fm, "Number of color pairs: %i\n", owl_util_get_colorpairs());
     owl_fmtext_appendf_normal(&fm, "Can change colors: %s\n", can_change_color() ? "yes" : "no");
   } else {
     owl_fmtext_append_normal(&fm, "Color: No\n");

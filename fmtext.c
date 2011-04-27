@@ -851,7 +851,7 @@ short owl_fmtext_get_colorpair(int fg, int bg)
   pair = cpmgr->pairs[fg+1][bg+1];
   if (!(pair != -1 && pair < cpmgr->next)) {
     /* If we didn't find a pair, search for a free one to assign. */
-    pair = (cpmgr->next < COLOR_PAIRS) ? cpmgr->next : -1;
+    pair = (cpmgr->next < owl_util_get_colorpairs()) ? cpmgr->next : -1;
     if (pair != -1) {
       /* We found a free pair, initialize it. */
       init_pair(pair, fg, bg);
