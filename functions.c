@@ -1816,9 +1816,9 @@ void owl_function_show_term(void)
 	  owl_global_get_lines(&g),
 	  owl_global_get_cols(&g));
 
-  if (owl_global_get_hascolors(&g)) {
+  if (has_colors()) {
     owl_fmtext_append_normal(&fm, "Color: Yes\n");
-    owl_fmtext_appendf_normal(&fm, "Number of color pairs: %i\n", owl_global_get_colorpairs(&g));
+    owl_fmtext_appendf_normal(&fm, "Number of color pairs: %i\n", owl_util_get_colorpairs());
     owl_fmtext_appendf_normal(&fm, "Can change colors: %s\n", can_change_color() ? "yes" : "no");
   } else {
     owl_fmtext_append_normal(&fm, "Color: No\n");
@@ -2225,11 +2225,9 @@ void owl_function_show_filters(void)
   for (fl = g.filterlist; fl; fl = g_list_next(fl)) {
     f = fl->data;
     owl_fmtext_append_normal(&fm, "   ");
-    if (owl_global_get_hascolors(&g)) {
-      owl_fmtext_append_normal_color(&fm, owl_filter_get_name(f), owl_filter_get_fgcolor(f), owl_filter_get_bgcolor(f));
-    } else {
-      owl_fmtext_append_normal(&fm, owl_filter_get_name(f));
-    }
+    owl_fmtext_append_normal_color(&fm, owl_filter_get_name(f),
+                                   owl_filter_get_fgcolor(f),
+                                   owl_filter_get_bgcolor(f));
     owl_fmtext_append_normal(&fm, "\n");
   }
   owl_function_popless_fmtext(&fm);

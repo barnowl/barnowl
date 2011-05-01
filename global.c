@@ -50,10 +50,6 @@ void owl_global_init(owl_global *g) {
   g->resizepending=0;
   g->direction=OWL_DIRECTION_DOWNWARDS;
   g->zaway=0;
-  if (has_colors()) {
-    g->hascolors=1;
-  }
-  g->colorpairs=COLOR_PAIRS;
   owl_fmtext_init_colorpair_mgr(&(g->cpmgr));
   g->debug=OWL_DEBUG;
   owl_regex_init(&g->search_re);
@@ -573,19 +569,6 @@ int owl_global_get_nextmsgid(owl_global *g) {
 
 owl_view *owl_global_get_current_view(owl_global *g) {
   return(&(g->current_view));
-}
-
-/* has colors */
-
-int owl_global_get_hascolors(const owl_global *g) {
-  if (g->hascolors) return(1);
-  return(0);
-}
-
-/* color pairs */
-
-int owl_global_get_colorpairs(const owl_global *g) {
-  return(g->colorpairs);
 }
 
 owl_colorpair_mgr *owl_global_get_colorpair_mgr(owl_global *g) {

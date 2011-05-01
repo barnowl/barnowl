@@ -443,13 +443,14 @@ static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
   owl_global_check_resize(&g);
   /* update the terminal if we need to */
   owl_window_redraw_scheduled();
-  /* On colorpair shortage, reset and redraw /everything/. NOTE: if
-   * the current screen uses too many colorpairs, this draws
-   * everything twice. But this is unlikely; COLOR_PAIRS is 64 with
-   * 8+1 colors, and 256^2 with 256+1 colors. (+1 for default.) */
+  /* On colorpair shortage, reset and redraw /everything/. NOTE: if we
+   * still overflow, this be useless work. With 8-colors, we get 64
+   * pairs. With 256-colors, we get 32768 pairs with ext-colors
+   * support and 256 otherwise. */
   cpmgr = owl_global_get_colorpair_mgr(&g);
   if (cpmgr->overflow) {
-    owl_function_debugmsg("colorpairs: color shortage; reset pairs and redraw. COLOR_PAIRS = %d", COLOR_PAIRS);
+    owl_function_debugmsg("colorpairs: used all %d pairs; reset pairs and redraw.",
+                          owl_util_get_colorpairs());
     owl_fmtext_reset_colorpairs(cpmgr);
     owl_function_full_redisplay();
     owl_window_redraw_scheduled();

@@ -714,6 +714,17 @@ char *owl_slurp(FILE *fp)
   return buf;
 }
 
+int owl_util_get_colorpairs(void) {
+#ifndef NCURSES_EXT_COLORS
+  /* Without ext-color support (an ABI change), ncurses only supports 256
+   * different color pairs. However, it gives us a larger number even if your
+   * ncurses is compiled without ext-color. */
+  return MIN(COLOR_PAIRS, 256);
+#else
+  return COLOR_PAIRS;
+#endif
+}
+
 gulong owl_dirty_window_on_signal(owl_window *w, gpointer sender, const gchar *detailed_signal)
 {
   return owl_signal_connect_object(sender, detailed_signal, G_CALLBACK(owl_window_dirty), w, G_CONNECT_SWAPPED);
