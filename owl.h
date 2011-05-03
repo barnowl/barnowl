@@ -549,14 +549,8 @@ typedef struct _owl_io_dispatch {
   void (*callback)(const struct _owl_io_dispatch *, void *); /* C function to dispatch to. */
   void (*destroy)(const struct _owl_io_dispatch *);  /* Destructor */
   void *data;
+  GPollFD pollfd;
 } owl_io_dispatch;
-
-typedef struct _owl_ps_action {
-  int needs_gc;
-  int (*callback)(struct _owl_ps_action *, void *);
-  void (*destroy)(struct _owl_ps_action *);
-  void *data;
-} owl_ps_action;
 
 typedef struct _owl_popexec {
   int refcount;
@@ -565,8 +559,6 @@ typedef struct _owl_popexec {
   pid_t pid;			/* or 0 if it has terminated */
   const owl_io_dispatch *dispatch;
 } owl_popexec;
-
-typedef struct _OwlGlobalNotifier OwlGlobalNotifier;
 
 typedef struct _owl_global {
   owl_mainwin mw;
@@ -592,7 +584,7 @@ typedef struct _owl_global {
   owl_mainpanel mainpanel;
   gulong typwin_erase_id;
   int rightshift;
-  volatile sig_atomic_t resizepending;
+  bool resizepending;
   char *homedir;
   char *confdir;
   char *startupfile;
@@ -617,7 +609,7 @@ typedef struct _owl_global {
   aim_session_t aimsess;
   aim_conn_t bosconn;
   int aim_loggedin;         /* true if currently logged into AIM */
-  int aim_doprocessing;     /* true if we should process AIM events (like pending login) */
+  GSource *aim_event_source; /* where we get our AIM events from */
   char *aim_screenname;     /* currently logged in AIM screen name */
   char *aim_screenname_for_filters;     /* currently logged in AIM screen name */
   owl_buddylist buddylist;  /* list of logged in AIM buddies */
@@ -627,20 +619,18 @@ typedef struct _owl_global {
   int havezephyr;
   int haveaim;
   int ignoreaimlogin;
-  volatile sig_atomic_t got_err_signal; /* 1 if we got an unexpected signal */
-  volatile siginfo_t err_signal_info;
   owl_zbuddylist zbuddies;
   GList *zaldlist;
   int pseudologin_notify;
   struct termios startup_tio;
   owl_list io_dispatch_list;
-  owl_list psa_list;
   GList *timerlist;
   owl_timer *aim_nop_timer;
   int load_initial_subs;
-  volatile sig_atomic_t interrupted;
   FILE *debug_file;
   char *kill_buffer;
+  int interrupt_count;
+  GMutex *interrupt_lock;
 } owl_global;
 
 /* globals */

@@ -159,7 +159,7 @@ void owl_shutdown_curses(void) {
  * Returns 1 if the message was added to the message list, and 0 if it
  * was ignored due to user settings or otherwise.
  */
-int owl_process_message(owl_message *m) {
+static int owl_process_message(owl_message *m) {
   const owl_filter *f;
   /* if this message it on the puntlist, nuke it and continue */
   if (owl_global_message_is_puntable(&g, m)) {
@@ -244,12 +244,19 @@ int owl_process_message(owl_message *m) {
   return 1;
 }
 
+static gboolean owl_process_messages_prepare(GSource *source, int *timeout) {
+  *timeout = -1;
+  return owl_global_messagequeue_pending(&g);
+}
+
+static gboolean owl_process_messages_check(GSource *source) {
+  return owl_global_messagequeue_pending(&g);
+}
+
 /*
  * Process any new messages we have waiting in the message queue.
- * Returns 1 if any messages were added to the message list, and 0 otherwise.
  */
-int owl_process_messages(owl_ps_action *d, void *p)
-{
+static gboolean owl_process_messages_dispatch(GSource *source, GSourceFunc callback, gpointer user_data) {
   int newmsgs=0;
   int followlast = owl_global_should_followlast(&g);
   owl_message *m;
@@ -273,7 +280,25 @@ int owl_process_messages(owl_ps_action *d, void *p)
     /* this should be optimized to not run if the new messages won't be displayed */
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   }
-  return newmsgs;
+  return TRUE;
+}
+
+static GSourceFuncs owl_process_messages_funcs = {
+  owl_process_messages_prepare,
+  owl_process_messages_check,
+  owl_process_messages_dispatch,
+  NULL
+};
+
+void owl_process_input_char(owl_input j)
+{
+  int ret;
+
+  owl_global_set_lastinputtime(&g, time(NULL));
+  ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
+  if (ret!=0 && ret!=1) {
+    owl_function_makemsg("Unable to handle keypress");
+  }
 }
 
 void owl_process_input(const owl_io_dispatch *d, void *data)
@@ -333,55 +358,70 @@ void owl_process_input(const owl_io_dispatch *d, void *data)
   }
 }
 
-void sig_handler(int sig, siginfo_t *si, void *data)
-{
-  if (sig==SIGWINCH) {
-    /* we can't inturrupt a malloc here, so it just sets a flag
-     * schedulding a resize for later
-     */
+static void sig_handler_main_thread(void *data) {
+  int sig = GPOINTER_TO_INT(data);
+
+  owl_function_debugmsg("Got signal %d", sig);
+  if (sig == SIGWINCH) {
     owl_function_resize();
-  } else if (sig==SIGPIPE || sig==SIGCHLD) {
-    /* Set a flag and some info that we got the sigpipe
-     * so we can record that we got it and why... */
-    owl_global_set_errsignal(&g, sig, si);
-  } else if (sig==SIGTERM || sig==SIGHUP) {
+  } else if (sig == SIGTERM || sig == SIGHUP) {
     owl_function_quit();
+  } else if (sig == SIGINT && owl_global_take_interrupt(&g)) {
+    owl_input in;
+    in.ch = in.uch = owl_global_get_startup_tio(&g)->c_cc[VINTR];
+    owl_process_input_char(in);
   }
 }
 
-void sigint_handler(int sig, siginfo_t *si, void *data)
-{
-  owl_global_set_interrupted(&g);
+static void sig_handler(const siginfo_t *siginfo, void *data) {
+  /* If it was an interrupt, set a flag so we can handle it earlier if
+   * needbe. sig_handler_main_thread will check the flag to make sure
+   * no one else took it. */
+  if (siginfo->si_signo == SIGINT) {
+    owl_global_add_interrupt(&g);
+  }
+  /* Send a message to the main thread. */
+  owl_select_post_task(sig_handler_main_thread,
+                       GINT_TO_POINTER(siginfo->si_signo), NULL);
 }
 
-static int owl_errsignal_pre_select_action(owl_ps_action *a, void *data)
-{
-  siginfo_t si;
-  int signum;
-  if ((signum = owl_global_get_errsignal_and_clear(&g, &si)) > 0) {
-    owl_function_error("Got unexpected signal: %d %s  (code: %d band: %ld  errno: %d)",
-        signum, signum==SIGPIPE?"SIGPIPE":"SIG????",
-        si.si_code, si.si_band, si.si_errno);
-  }
-  return 0;
-}
+#define CHECK_RESULT(s, syscall) \
+  G_STMT_START {		 \
+    if ((syscall) != 0) {	 \
+      perror((s));		 \
+      exit(1);			 \
+    }				 \
+  } G_STMT_END
 
 void owl_register_signal_handlers(void) {
-  struct sigaction sigact;
+  struct sigaction sig_ignore = { .sa_handler = SIG_IGN };
+  struct sigaction sig_default = { .sa_handler = SIG_DFL };
+  sigset_t sigset;
+  int ret, i;
+  const int signals[] = { SIGABRT, SIGBUS, SIGCHLD, SIGFPE, SIGHUP, SIGILL,
+                          SIGINT, SIGQUIT, SIGSEGV, SIGTERM, SIGWINCH };
 
-  /* signal handler */
-  /*sigact.sa_handler=sig_handler;*/
-  sigact.sa_sigaction=sig_handler;
-  sigemptyset(&sigact.sa_mask);
-  sigact.sa_flags=SA_SIGINFO;
-  sigaction(SIGWINCH, &sigact, NULL);
-  sigaction(SIGALRM, &sigact, NULL);
-  sigaction(SIGPIPE, &sigact, NULL);
-  sigaction(SIGTERM, &sigact, NULL);
-  sigaction(SIGHUP, &sigact, NULL);
+  /* Sanitize our signals; the mask and dispositions from our parent
+   * aren't really useful. Signal list taken from equivalent code in
+   * Chromium. */
+  CHECK_RESULT("sigemptyset", sigemptyset(&sigset));
+  if ((ret = pthread_sigmask(SIG_SETMASK, &sigset, NULL)) != 0) {
+    errno = ret;
+    perror("pthread_sigmask");
+  }
+  for (i = 0; i < G_N_ELEMENTS(signals); i++) {
+    CHECK_RESULT("sigaction", sigaction(signals[i], &sig_default, NULL));
+  }
 
-  sigact.sa_sigaction=sigint_handler;
-  sigaction(SIGINT, &sigact, NULL);
+  /* Turn off SIGPIPE; we check the return value of write. */
+  CHECK_RESULT("sigaction", sigaction(SIGPIPE, &sig_ignore, NULL));
+
+  /* Register some signals with the signal thread. */
+  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGWINCH));
+  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGTERM));
+  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGHUP));
+  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGINT));
+  owl_signal_init(&sigset, sig_handler, NULL);
 }
 
 #if OWL_STDERR_REDIR
@@ -435,29 +475,6 @@ void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
 
 #endif /* OWL_STDERR_REDIR */
 
-static int owl_refresh_pre_select_action(owl_ps_action *a, void *data)
-{
-  owl_colorpair_mgr *cpmgr;
-
-  /* if a resize has been scheduled, deal with it */
-  owl_global_check_resize(&g);
-  /* update the terminal if we need to */
-  owl_window_redraw_scheduled();
-  /* On colorpair shortage, reset and redraw /everything/. NOTE: if
-   * the current screen uses too many colorpairs, this draws
-   * everything twice. But this is unlikely; COLOR_PAIRS is 64 with
-   * 8+1 colors, and 256^2 with 256+1 colors. (+1 for default.) */
-  cpmgr = owl_global_get_colorpair_mgr(&g);
-  if (cpmgr->overflow) {
-    owl_function_debugmsg("colorpairs: color shortage; reset pairs and redraw. COLOR_PAIRS = %d", COLOR_PAIRS);
-    owl_fmtext_reset_colorpairs(cpmgr);
-    owl_function_full_redisplay();
-    owl_window_redraw_scheduled();
-  }
-  return 0;
-}
-
-
 int main(int argc, char **argv, char **env)
 {
   int argc_copy;
@@ -466,6 +483,7 @@ int main(int argc, char **argv, char **env)
   const owl_style *s;
   const char *dir;
   owl_options opts;
+  GSource *source;
 
   if (!GLIB_CHECK_VERSION (2, 12, 0))
     g_error ("GLib version 2.12.0 or above is needed.");
@@ -480,7 +498,6 @@ int main(int argc, char **argv, char **env)
   owl_parse_options(argc, argv, &opts);
   g.load_initial_subs = opts.load_initial_subs;
 
-  owl_register_signal_handlers();
   owl_start_curses();
 
   /* owl global init */
@@ -491,6 +508,8 @@ int main(int argc, char **argv, char **env)
   owl_global_set_startupargs(&g, argc_copy, argv_copy);
   g_strfreev(argv_copy);
   owl_global_set_haveaim(&g);
+
+  owl_register_signal_handlers();
 
   /* register STDIN dispatch; throw away return, we won't need it */
   owl_select_add_io_dispatch(STDIN_FILENO, OWL_IO_READ, &owl_process_input, NULL, NULL);
@@ -583,15 +602,20 @@ int main(int argc, char **argv, char **env)
   owl_global_pop_context(&g);
   owl_global_push_context(&g, OWL_CTX_INTERACTIVE|OWL_CTX_RECV, NULL, "recv", NULL);
 
-  owl_select_add_pre_select_action(owl_refresh_pre_select_action, NULL, NULL);
-  owl_select_add_pre_select_action(owl_process_messages, NULL, NULL);
-  owl_select_add_pre_select_action(owl_errsignal_pre_select_action, NULL, NULL);
+  source = owl_window_redraw_source_new();
+  g_source_attach(source, NULL);
+  g_source_unref(source);
+
+  source = g_source_new(&owl_process_messages_funcs, sizeof(GSource));
+  g_source_attach(source, NULL);
+  g_source_unref(source);
 
   owl_function_debugmsg("startup: entering main loop");
   owl_select_run_loop();
 
   /* Shut down everything. */
   owl_zephyr_shutdown();
+  owl_signal_shutdown();
   owl_shutdown_curses();
   return 0;
 }

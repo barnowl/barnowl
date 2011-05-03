@@ -2994,15 +2994,11 @@ void owl_function_search_helper(int consider_current, int direction)
     } else {
       i--;
     }
-    owl_function_mask_sigint(NULL);
-    if(owl_global_is_interrupted(&g)) {
-      owl_global_unset_interrupted(&g);
-      owl_function_unmask_sigint(NULL);
+    if (owl_global_take_interrupt(&g)) {
       owl_function_makemsg("Search interrupted!");
       owl_mainwin_redisplay(owl_global_get_mainwin(&g));
       return;
     }
-    owl_function_unmask_sigint(NULL);
   }
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_function_makemsg("No matches found");
@@ -3085,16 +3081,11 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
           user=owl_list_get_element(&anyone, i);
           ret=ZLocateUser(zstr(user), &numlocs, ZAUTH);
 
-          owl_function_mask_sigint(NULL);
-          if(owl_global_is_interrupted(&g)) {
+	  if (owl_global_take_interrupt(&g)) {
             interrupted = 1;
-            owl_global_unset_interrupted(&g);
-            owl_function_unmask_sigint(NULL);
             owl_function_makemsg("Interrupted!");
             break;
           }
-
-          owl_function_unmask_sigint(NULL);
 
           if (ret!=ZERR_NONE) {
             owl_function_error("Error getting location for %s", user);
@@ -3497,22 +3488,6 @@ void owl_function_aimsearch_results(const char *email, owl_list *namelist)
 int owl_function_get_color_count(void)
 {
      return COLORS;
-}
-
-void owl_function_mask_sigint(sigset_t *oldmask) {
-  sigset_t intr;
-
-  sigemptyset(&intr);
-  sigaddset(&intr, SIGINT);
-  sigprocmask(SIG_BLOCK, &intr, oldmask);
-}
-
-void owl_function_unmask_sigint(sigset_t *oldmask) {
-  sigset_t intr;
-
-  sigemptyset(&intr);
-  sigaddset(&intr, SIGINT);
-  sigprocmask(SIG_UNBLOCK, &intr, oldmask);
 }
 
 void _owl_function_mark_message(const owl_message *m)
