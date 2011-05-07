@@ -248,7 +248,7 @@ int owl_dict_regtest(void) {
 
   FAIL_UNLESS("get_size", 3==owl_dict_get_size(&d));
   owl_list_create(&l);
-  FAIL_UNLESS("get_keys", 0==owl_dict_get_keys(&d, &l));
+  owl_dict_get_keys(&d, &l);
   FAIL_UNLESS("get_keys result size", 3==owl_list_get_size(&l));
   
   /* these assume the returned keys are sorted */
