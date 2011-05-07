@@ -56,7 +56,7 @@ command(cmd, ...)
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		if (rv) g_free(rv);
+		g_free(rv);
 
 SV *
 getcurmsg()
@@ -113,7 +113,7 @@ ztext_stylestrip(ztext)
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		if (rv) g_free(rv);
+		g_free(rv);
 
 const utf8 *
 zephyr_smartstrip_user(in)
@@ -140,7 +140,7 @@ zephyr_getsubs()
     OUTPUT:
 		RETVAL
     CLEANUP:
-		if (rv) g_free(rv);
+		g_free(rv);
 
 void
 queue_message(msg)
@@ -323,8 +323,7 @@ wordwrap(in, cols)
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		if (rv)
-			g_free(rv);
+		g_free(rv);
 
 void
 remove_io_dispatch(fd)

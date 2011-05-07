@@ -68,9 +68,9 @@ static int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq)
 /* Releases data associated with a keybinding, and the kb itself */
 void owl_keybinding_delete(owl_keybinding *kb)
 {
-  if (kb->keys) g_free(kb->keys);
-  if (kb->desc) g_free(kb->desc);
-  if (kb->command) g_free(kb->command);
+  g_free(kb->keys);
+  g_free(kb->desc);
+  g_free(kb->command);
   g_free(kb);
 }
 

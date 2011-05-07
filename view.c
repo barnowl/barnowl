@@ -159,5 +159,5 @@ const char *owl_view_get_filtname(const owl_view *v)
 void owl_view_cleanup(owl_view *v)
 {
   owl_list_cleanup(&v->ml.list, NULL);
-  if (v->name) g_free(v->name);
+  g_free(v->name);
 }

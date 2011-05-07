@@ -316,8 +316,7 @@ void owl_editwin_clear(owl_editwin *e)
     owl_editwin_set_echochar(e, echochar);
   }
 
-  if (locktext)
-    g_free(locktext);
+  g_free(locktext);
 
   oe_set_index(e, lock);
 }

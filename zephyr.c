@@ -416,8 +416,7 @@ int owl_zephyr_loadloginsubs(const char *filename)
   } else {
     return 0;
   }
-  if (buffer)
-    g_free(buffer);
+  g_free(buffer);
 
   return owl_zephyr_loadsubs_helper(subs, count);
 #else

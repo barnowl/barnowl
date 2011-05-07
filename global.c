@@ -504,7 +504,7 @@ void owl_global_set_curmsg_vert_offset(owl_global *g, int i) {
 /* startup args */
 
 void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
-  if (g->startupargs) g_free(g->startupargs);
+  g_free(g->startupargs);
   g->startupargs = g_strjoinv(" ", argv);
 }
 
