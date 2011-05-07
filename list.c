@@ -4,13 +4,11 @@
 #define INITSIZE 10
 #define GROWBY 3 / 2
 
-int owl_list_create(owl_list *l)
+void owl_list_create(owl_list *l)
 {
   l->size=0;
   l->list=g_new(void *, INITSIZE);
   l->avail=INITSIZE;
-  if (l->list==NULL) return(-1);
-  return(0);
 }
 
 int owl_list_get_size(const owl_list *l)
