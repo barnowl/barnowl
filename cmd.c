@@ -134,11 +134,11 @@ int owl_cmd_create_alias(owl_cmd *cmd, const char *name, const char *aliased_to)
 
 void owl_cmd_cleanup(owl_cmd *cmd)
 {
-  if (cmd->name) g_free(cmd->name);
-  if (cmd->summary) g_free(cmd->summary);
-  if (cmd->usage) g_free(cmd->usage);
-  if (cmd->description) g_free(cmd->description);
-  if (cmd->cmd_aliased_to) g_free(cmd->cmd_aliased_to);
+  g_free(cmd->name);
+  g_free(cmd->summary);
+  g_free(cmd->usage);
+  g_free(cmd->description);
+  g_free(cmd->cmd_aliased_to);
   if (cmd->cmd_perl) owl_perlconfig_cmd_cleanup(cmd);
 }
 

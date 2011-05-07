@@ -31,7 +31,7 @@ void owl_function_command_norv(const char *cmdbuff)
 {
   char *rv;
   rv=owl_function_command(cmdbuff);
-  if (rv) g_free(rv);
+  g_free(rv);
 }
 
 void owl_function_command_alias(const char *alias_from, const char *alias_to)
@@ -452,7 +452,7 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
   g_free(zcrypt);
 
   if (rv || status) {
-    if(cryptmsg) g_free(cryptmsg);
+    g_free(cryptmsg);
     g_free(old_msg);
     owl_function_error("Error in zcrypt, possibly no key found.  Message not sent.");
     owl_function_beep();
@@ -990,7 +990,7 @@ void owl_function_quit(void)
 
   /* execute the commands in shutdown */
   ret = owl_perlconfig_execute("BarnOwl::Hooks::_shutdown();");
-  if (ret) g_free(ret);
+  g_free(ret);
 
   /* signal our child process, if any */
   if (owl_global_get_newmsgproc_pid(&g)) {
@@ -2357,9 +2357,7 @@ char *owl_function_classinstfilt(const char *c, const char *i, int related)
 
 done:
   g_free(class);
-  if (instance) {
-    g_free(instance);
-  }
+  g_free(instance);
   return(filtname);
 }
 

@@ -640,9 +640,9 @@ owl_variable * owl_variable_newvar(const char *name, const char *summary, const 
 }
 
 void owl_variable_update(owl_variable *var, const char *summary, const char *desc) {
-  if(var->summary) g_free(var->summary);
+  g_free(var->summary);
   var->summary = g_strdup(summary);
-  if(var->description) g_free(var->description);
+  g_free(var->description);
   var->description = g_strdup(desc);
 }
 
@@ -650,7 +650,7 @@ void owl_variable_dict_newvar_string(owl_vardict * vd, const char *name, const c
   owl_variable *old = owl_variable_get_var(vd, name, OWL_VARIABLE_STRING);
   if(old) {
     owl_variable_update(old, summ, desc);
-    if(old->pval_default) g_free(old->pval_default);
+    g_free(old->pval_default);
     old->pval_default = g_strdup(initval);
   } else {
     owl_variable * var = owl_variable_newvar(name, summ, desc);
@@ -943,7 +943,7 @@ const void *owl_variable_get_default(const owl_variable *v) {
 
 void owl_variable_delete_default(owl_variable *v)
 {
-  if (v->val) g_free(v->val);
+  g_free(v->val);
 }
 
 /* default functions for booleans */
@@ -1075,7 +1075,7 @@ int owl_variable_string_set_default(owl_variable *v, const void *newval) {
   if (v->validate_fn) {
     if (!v->validate_fn(v, newval)) return(-1);
   }
-  if (v->val) g_free(v->val);
+  g_free(v->val);
   v->val = g_strdup(newval);
   return(0);
 }

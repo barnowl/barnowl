@@ -184,7 +184,7 @@ void owl_zwrite_send_ping(const owl_zwrite *z)
 /* Set the message with no post-processing*/
 void owl_zwrite_set_message_raw(owl_zwrite *z, const char *msg)
 {
-  if (z->message) g_free(z->message);
+  g_free(z->message);
   z->message = owl_validate_utf8(msg);
 }
 
@@ -194,7 +194,7 @@ void owl_zwrite_set_message(owl_zwrite *z, const char *msg)
   GString *message;
   char *tmp = NULL, *tmp2;
 
-  if (z->message) g_free(z->message);
+  g_free(z->message);
 
   j=owl_list_get_size(&(z->recips));
   if (j>0 && z->cc) {
@@ -288,7 +288,7 @@ const char *owl_zwrite_get_opcode(const owl_zwrite *z)
 
 void owl_zwrite_set_opcode(owl_zwrite *z, const char *opcode)
 {
-  if (z->opcode) g_free(z->opcode);
+  g_free(z->opcode);
   z->opcode=owl_validate_utf8(opcode);
 }
 
@@ -305,7 +305,7 @@ const char *owl_zwrite_get_zsig(const owl_zwrite *z)
 
 void owl_zwrite_set_zsig(owl_zwrite *z, const char *zsig)
 {
-  if(z->zsig) g_free(z->zsig);
+  g_free(z->zsig);
   z->zsig = g_strdup(zsig);
 }
 
@@ -352,14 +352,14 @@ void owl_zwrite_delete(owl_zwrite *z)
 void owl_zwrite_cleanup(owl_zwrite *z)
 {
   owl_list_cleanup(&(z->recips), &g_free);
-  if (z->cmd) g_free(z->cmd);
-  if (z->zwriteline) g_free(z->zwriteline);
-  if (z->class) g_free(z->class);
-  if (z->inst) g_free(z->inst);
-  if (z->opcode) g_free(z->opcode);
-  if (z->realm) g_free(z->realm);
-  if (z->message) g_free(z->message);
-  if (z->zsig) g_free(z->zsig);
+  g_free(z->cmd);
+  g_free(z->zwriteline);
+  g_free(z->class);
+  g_free(z->inst);
+  g_free(z->opcode);
+  g_free(z->realm);
+  g_free(z->message);
+  g_free(z->zsig);
 }
 
 /*
