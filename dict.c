@@ -14,12 +14,10 @@
 #define INITSIZE 30
 #define GROWBY 3 / 2
 
-int owl_dict_create(owl_dict *d) {
+void owl_dict_create(owl_dict *d) {
   d->size=0;
   d->els=g_new(owl_dict_el, INITSIZE);
   d->avail=INITSIZE;
-  if (d->els==NULL) return(-1);
-  return(0);
 }
 
 int owl_dict_get_size(const owl_dict *d) {

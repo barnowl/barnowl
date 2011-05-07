@@ -232,7 +232,7 @@ int owl_dict_regtest(void) {
   char *av="aval", *bv="bval", *cv="cval", *dv="dval";
 
   printf("# BEGIN testing owl_dict\n");
-  FAIL_UNLESS("create", 0==owl_dict_create(&d));
+  owl_dict_create(&d);
   FAIL_UNLESS("insert b", 0==owl_dict_insert_element(&d, "b", bv, owl_dict_noop_delete));
   FAIL_UNLESS("insert d", 0==owl_dict_insert_element(&d, "d", dv, owl_dict_noop_delete));
   FAIL_UNLESS("insert a", 0==owl_dict_insert_element(&d, "a", av, owl_dict_noop_delete));
