@@ -178,12 +178,11 @@ static void _owl_keymap_format_bindings(const owl_keymap *km, owl_fmtext *fm)
 
 /* NOTE: keyhandler has private access to the internals of keymap */
 
-int owl_keyhandler_init(owl_keyhandler *kh)
+void owl_keyhandler_init(owl_keyhandler *kh)
 {
-  if (0 != owl_dict_create(&kh->keymaps)) return(-1); 
+  owl_dict_create(&kh->keymaps);
   kh->active = NULL;
   owl_keyhandler_reset(kh);
-  return(0);
 }
 
 /* adds a new keymap */

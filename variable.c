@@ -558,7 +558,7 @@ int owl_variable_exposure_set(owl_variable *v, const void *newval)
 
 int owl_variable_dict_setup(owl_vardict *vd) {
   owl_variable *var, *cur;
-  if (owl_dict_create(vd)) return(-1);
+  owl_dict_create(vd);
   for (var = variables_to_init; var->name != NULL; var++) {
     cur = g_new(owl_variable, 1);
     *cur = *var;

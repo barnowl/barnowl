@@ -11,14 +11,13 @@ extern const owl_cmd commands_to_init[];
 /**************************************************************************/
 
 int owl_cmddict_setup(owl_cmddict *cd) {
-  if (0 != owl_cmddict_init(cd)) return(-1);
+  owl_cmddict_init(cd);
   if (0 != owl_cmddict_add_from_list(cd, commands_to_init)) return(-1);
   return(0);
 }
 
-int owl_cmddict_init(owl_cmddict *cd) {
-  if (owl_dict_create(cd)) return(-1);
-  return(0);
+void owl_cmddict_init(owl_cmddict *cd) {
+  owl_dict_create(cd);
 }
 
 /* for bulk initialization at startup */
