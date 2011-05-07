@@ -59,12 +59,11 @@ void *owl_dict_find_element(const owl_dict *d, const char *k) {
 
 /* Appends dictionary keys to a list.  Duplicates the keys,
  * so they will need to be freed by the caller. */
-int owl_dict_get_keys(const owl_dict *d, owl_list *l) {
+void owl_dict_get_keys(const owl_dict *d, owl_list *l) {
   int i;
   for (i=0; i<d->size; i++) {
     owl_list_append_element(l, g_strdup(d->els[i].k));
   }
-  return(0);
 }
 
 void owl_dict_noop_delete(void *x)

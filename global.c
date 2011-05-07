@@ -746,8 +746,8 @@ const owl_style *owl_global_get_style_by_name(const owl_global *g, const char *n
   return owl_dict_find_element(&(g->styledict), name);
 }
 
-int owl_global_get_style_names(const owl_global *g, owl_list *l) {
-  return owl_dict_get_keys(&(g->styledict), l);
+void owl_global_get_style_names(const owl_global *g, owl_list *l) {
+  owl_dict_get_keys(&(g->styledict), l);
 }
 
 void owl_global_add_style(owl_global *g, owl_style *s)
