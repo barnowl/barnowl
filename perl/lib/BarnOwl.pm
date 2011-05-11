@@ -37,6 +37,10 @@ use BarnOwl::Timer;
 use BarnOwl::Editwin;
 use BarnOwl::Completion;
 use BarnOwl::Help;
+use BarnOwl::AnyEvent;
+
+unshift @AnyEvent::REGISTRY, [BarnOwl => BarnOwl::AnyEvent::];
+require AnyEvent;
 
 use List::Util qw(max);
 

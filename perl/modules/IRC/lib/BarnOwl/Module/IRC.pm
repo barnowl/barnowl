@@ -19,7 +19,7 @@ use BarnOwl::Message::IRC;
 use BarnOwl::Module::IRC::Connection qw(is_private);
 use BarnOwl::Module::IRC::Completion;
 
-use Net::IRC;
+use AnyEvent::IRC;
 use Getopt::Long;
 use Encode;
 
@@ -29,8 +29,6 @@ our $irc;
 
 # Hash alias -> BarnOwl::Module::IRC::Connection object
 our %ircnets;
-our %channels;
-our %reconnect;
 
 sub startup {
     BarnOwl::new_variable_string('irc:nick', {
@@ -69,13 +67,12 @@ sub startup {
        });
 
     register_commands();
-    register_handlers();
     BarnOwl::filter(qw{irc type ^IRC$ or ( type ^admin$ and adminheader ^IRC$ )});
 }
 
 sub shutdown {
     for my $conn (values %ircnets) {
-        $conn->conn->disconnect();
+        $conn->conn->disconnect('Quitting');
     }
 }
 
@@ -97,37 +94,12 @@ sub buddylist {
         $list .= BarnOwl::Style::boldify("IRC channels for $net ($nick\@$server)");
         $list .= "\n";
 
-        for my $chan (keys %channels) {
-            next unless grep $_ eq $conn, @{$channels{$chan}};
+        for my $chan (keys %{$conn->conn->{channel_list}}) {
             $list .= "  $chan\n";
         }
     }
 
     return $list;
-}
-
-#sub mainloop_hook {
-#    return unless defined $irc;
-#    eval {
-#        $irc->do_one_loop();
-#    };
-#    return;
-#}
-
-sub OwlProcess {
-    return unless defined $irc;
-    eval {
-        $irc->do_one_loop();
-    };
-    return;
-}
-
-
-sub register_handlers {
-    if(!$irc) {
-        $irc = Net::IRC->new;
-        $irc->timeout(0);
-    }
 }
 
 sub skip_msg {
@@ -405,35 +377,29 @@ sub cmd_connect {
         die("Already connected to a server with alias '$alias'. Either disconnect or specify an alias with -a.\n");
     }
 
-    my $conn = BarnOwl::Module::IRC::Connection->new($irc, $alias,
-        Nick      => $nick,
-        Server    => $host,
-        Port      => $port,
-        Username  => $username,
-        Ircname   => $ircname,
-        Port      => $port,
-        Password  => $password,
-        SSL       => $ssl
-       );
-
-    if ($conn->conn->connected) {
-        $conn->connected("Connected to $alias as $nick");
-    } else {
-        die("IRC::Connection->connect failed: $!");
-    }
-
+    my $conn = BarnOwl::Module::IRC::Connection->new($alias, $host, $port, {
+        nick      => $nick,
+        user      => $username,
+        real      => $ircname,
+        password  => $password,
+        SSL       => $ssl,
+        timeout   => sub {0}
+       });
+    $ircnets{$alias} = $conn;
     return;
 }
 
 sub cmd_disconnect {
     my $cmd = shift;
     my $conn = shift;
-    if ($conn->conn->connected) {
-        $conn->conn->disconnect;
-    } elsif ($reconnect{$conn->alias}) {
+    if ($conn->conn->{socket}) {
+        $conn->did_quit(1);
+        $conn->conn->disconnect("Goodbye!");
+    } elsif ($conn->{reconnect_timer}) {
         BarnOwl::admin_message('IRC',
                                "[" . $conn->alias . "] Reconnect cancelled");
         $conn->cancel_reconnect;
+        delete $ircnets{$conn->alias};
     }
 }
 
@@ -462,10 +428,10 @@ sub process_msg {
     map { tr/\n/ / } @msgs;
     for my $body (@msgs) {
 	if ($body =~ /^\/me (.*)/) {
-	    $conn->conn->me($to, Encode::encode('utf-8', $1));
+	    $conn->me($to, Encode::encode('utf-8', $1));
 	    $body = '* '.$conn->nick.' '.$1;
 	} else {
-	    $conn->conn->privmsg($to, Encode::encode('utf-8', $body));
+	    $conn->conn->send_msg('privmsg', $to, Encode::encode('utf-8', $body));
 	}
 	my $msg = BarnOwl::Message->new(
 	    type        => 'IRC',
@@ -490,7 +456,7 @@ sub cmd_mode {
     my $conn = shift;
     my $target = shift;
     $target ||= shift;
-    $conn->conn->mode($target, @_);
+    $conn->conn->send_msg(mode => $target, @_);
     return;
 }
 
@@ -498,9 +464,7 @@ sub cmd_join {
     my $cmd = shift;
     my $conn = shift;
     my $chan = shift or die("Usage: $cmd channel\n");
-    $channels{$chan} ||= [];
-    push @{$channels{$chan}}, $conn;
-    $conn->conn->join($chan, @_);
+    $conn->conn->send_msg(join => $chan, @_);
     return;
 }
 
@@ -508,8 +472,7 @@ sub cmd_part {
     my $cmd = shift;
     my $conn = shift;
     my $chan = shift;
-    $channels{$chan} = [grep {$_ ne $conn} @{$channels{$chan} || []}];
-    $conn->conn->part($chan);
+    $conn->conn->send_msg(part => $chan);
     return;
 }
 
@@ -517,7 +480,7 @@ sub cmd_nick {
     my $cmd = shift;
     my $conn = shift;
     my $nick = shift or die("Usage: $cmd <new nick>\n");
-    $conn->conn->nick($nick);
+    $conn->conn->send_msg(nick => $nick);
     return;
 }
 
@@ -526,7 +489,7 @@ sub cmd_names {
     my $conn = shift;
     my $chan = shift;
     $conn->names_tmp([]);
-    $conn->conn->names($chan);
+    $conn->conn->send_msg(names => $chan);
     return;
 }
 
@@ -534,14 +497,14 @@ sub cmd_whois {
     my $cmd = shift;
     my $conn = shift;
     my $who = shift || die("Usage: $cmd <user>\n");
-    $conn->conn->whois($who);
+    $conn->conn->send_msg(whois => $who);
     return;
 }
 
 sub cmd_motd {
     my $cmd = shift;
     my $conn = shift;
-    $conn->conn->motd;
+    $conn->conn->send_msg('motd');
     return;
 }
 
@@ -559,8 +522,7 @@ sub cmd_who {
     my $cmd = shift;
     my $conn = shift;
     my $who = shift || die("Usage: $cmd <user>\n");
-    BarnOwl::error("WHO $cmd $conn $who");
-    $conn->conn->who($who);
+    $conn->conn->send_msg(who => $who);
     return;
 }
 
@@ -568,7 +530,7 @@ sub cmd_stats {
     my $cmd = shift;
     my $conn = shift;
     my $type = shift || die("Usage: $cmd <chiklmouy> [server] \n");
-    $conn->conn->stats($type, @_);
+    $conn->conn->send_msg(stats => $type, @_);
     return;
 }
 
@@ -576,20 +538,31 @@ sub cmd_topic {
     my $cmd = shift;
     my $conn = shift;
     my $chan = shift;
-    $conn->conn->topic($chan, @_ ? join(" ", @_) : undef);
+    $conn->conn->send_msg(topic => $chan, @_ ? join(" ", @_) : undef);
     return;
 }
 
 sub cmd_quote {
     my $cmd = shift;
     my $conn = shift;
-    $conn->conn->sl(join(" ", @_));
+    $conn->conn->send_msg(@_);
     return;
 }
 
 ################################################################################
 ########################### Utilities/Helpers ##################################
 ################################################################################
+
+sub find_channel {
+    my $channel = shift;
+    my @found;
+    for my $conn (values %ircnets) {
+        if($conn->conn->{channel_list}{lc $channel}) {
+            push @found, $conn;
+        }
+    }
+    return $found[0] if(scalar @found == 1);
+}
 
 sub mk_irc_command {
     my $sub = shift;
@@ -613,9 +586,9 @@ sub mk_irc_command {
         if($flags & CHANNEL_ARG) {
             $channel = $ARGV[0];
             if(defined($channel) && $channel =~ /^#/) {
-                if($channels{$channel} && @{$channels{$channel}} == 1) {
+                if(my $c = find_channel($channel)) {
                     shift @ARGV;
-                    $conn = $channels{$channel}[0] unless $conn;
+                    $conn ||= $c;
                 }
             } elsif ($m && $m->type eq 'IRC' && !$m->is_private) {
                 $channel = $m->channel;
@@ -653,9 +626,12 @@ sub get_connection_by_alias {
     my $key = shift;
     my $allow_disconnected = shift;
 
-    return $ircnets{$key} if exists $ircnets{$key};
-    return $reconnect{$key} if $allow_disconnected && exists $reconnect{$key};
-    die("No such ircnet: $key\n")
+    my $conn = $ircnets{$key};
+    die("No such ircnet: $key\n") unless $conn;
+    if ($conn->conn->{registered} || $allow_disconnected) {
+        return $conn;
+    }
+    die("[@{[$conn->alias]}] Not currently connected.");
 }
 
 1;

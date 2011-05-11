@@ -402,6 +402,8 @@ char *owl_perlconfig_initperl(const char * file, int *Pargc, char ***Pargv, char
     sv_setpv(cfg, file);
   }
 
+  sv_setpv(get_sv("BarnOwl::VERSION", TRUE), OWL_VERSION_STRING);
+
   /* Add the system lib path to @INC */
   inc = get_av("INC", 0);
   path = g_strdup_printf("%s/lib", owl_get_datadir());
