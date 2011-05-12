@@ -17,6 +17,7 @@ They have been modified slightly for the needs of this project.
 
 BarnOwl currently requires the following perl modules off of CPAN:
 
+AnyEvent
 PAR
 Net::DNS
 Authen::SASL::Perl
@@ -29,7 +30,7 @@ these for you.
 
 The IRC module requires:
 
-Net::IRC
+AnyEvent::IRC
 Class::Accessor
 
 The WordWrap module requires:

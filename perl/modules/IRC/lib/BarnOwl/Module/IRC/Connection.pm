@@ -10,7 +10,7 @@ BarnOwl::Module::IRC::Connection
 
 =head1 DESCRIPTION
 
-This module is a wrapper around Net::IRC::Connection for BarnOwl's IRC
+This module is a wrapper around AnyEvent::IRC::Client for BarnOwl's IRC
 support
 
 =cut
