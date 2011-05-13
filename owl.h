@@ -65,6 +65,7 @@ typedef void HV;
 
 #include "window.h"
 
+#ifndef OWL_VERSION_STRING
 #ifdef  GIT_VERSION
 #define stringify(x)       __stringify(x)
 #define __stringify(x)     #x
@@ -72,6 +73,7 @@ typedef void HV;
 #else
 #define OWL_VERSION_STRING PACKAGE_VERSION
 #endif
+#endif /* !OWL_VERSION_STRING */
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */
