@@ -3252,8 +3252,9 @@ void owl_function_addstartup(const char *buff)
 
   filename=owl_global_get_startupfile(&g);
 
-  /* delete earlier copies */
-  owl_util_file_deleteline(filename, buff, 1);
+  /* delete earlier copies, if the file exists */
+  if (g_file_test(filename, G_FILE_TEST_EXISTS))
+    owl_util_file_deleteline(filename, buff, 1);
 
   file=fopen(filename, "a");
   if (!file) {
