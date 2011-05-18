@@ -1287,7 +1287,7 @@ char *owl_command_next(int argc, const char *const *argv, const char *buff)
     }
   }
   owl_function_nextmsg_full(filter, skip_deleted, last_if_none);
-  if (filter) g_free(filter);
+  g_free(filter);
   return(NULL);
 }
 
@@ -1317,7 +1317,7 @@ char *owl_command_prev(int argc, const char *const *argv, const char *buff)
     }
   }
   owl_function_prevmsg_full(filter, skip_deleted, first_if_none);
-  if (filter) g_free(filter);
+  g_free(filter);
   return(NULL);
 }
 
@@ -1690,9 +1690,7 @@ char *owl_command_multi(int argc, const char *const *argv, const char *buff)
   }
   commands = g_strsplit_set(newbuff, ";", 0);
   for (i = 0; commands[i] != NULL; i++) {
-    if (lastrv) {
-      g_free(lastrv);
-    }
+    g_free(lastrv);
     lastrv = owl_function_command(commands[i]);
   }
   g_free(newbuff);

@@ -475,14 +475,10 @@ char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *ins
     fprintf(stderr, "Could not open key table file: %s\n", filename);
 
   for(i = 0; i < MAX_SEARCH; i++) {
-    if(varname[i] != NULL) {
-      g_free(varname[i]);
-    }
+    g_free(varname[i]);
   }
 
-  if(filename != NULL) {
-    g_free(filename);
-  }
+  g_free(filename);
 
   return keyfile;
 }
@@ -772,7 +768,7 @@ int do_encrypt_aes(const char *keyfile, const char *in, int length, FILE *outfil
   };
   err = call_filter("gpg", argv, in, &out, &status);
   if(err || status) {
-    if(out) g_free(out);
+    g_free(out);
     return FALSE;
   }
   fwrite(out, strlen(out), 1, outfile);
@@ -855,7 +851,7 @@ int do_decrypt_aes(const char *keyfile) {
 
   err = call_filter("gpg", argv, in, &out, &status);
   if(err || status) {
-    if(out) g_free(out);
+    g_free(out);
     return FALSE;
   }
   fwrite(out, strlen(out), 1, stdout);

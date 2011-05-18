@@ -466,7 +466,7 @@ void owl_perlconfig_getmsg(const owl_message *m, const char *subname)
     ptr = owl_perlconfig_call_with_message(subname?subname
                                            :"BarnOwl::_receive_msg_legacy_wrap", m);
   }
-  if (ptr) g_free(ptr);
+  g_free(ptr);
 }
 
 /* Called on all new messages; receivemsg is only called on incoming ones */
@@ -477,7 +477,7 @@ void owl_perlconfig_newmsg(const owl_message *m, const char *subname)
     ptr = owl_perlconfig_call_with_message(subname?subname
                                            :"BarnOwl::Hooks::_new_msg", m);
   }
-  if (ptr) g_free(ptr);
+  g_free(ptr);
 }
 
 void owl_perlconfig_new_command(const char *name)

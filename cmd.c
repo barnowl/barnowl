@@ -11,14 +11,13 @@ extern const owl_cmd commands_to_init[];
 /**************************************************************************/
 
 int owl_cmddict_setup(owl_cmddict *cd) {
-  if (0 != owl_cmddict_init(cd)) return(-1);
+  owl_cmddict_init(cd);
   if (0 != owl_cmddict_add_from_list(cd, commands_to_init)) return(-1);
   return(0);
 }
 
-int owl_cmddict_init(owl_cmddict *cd) {
-  if (owl_dict_create(cd)) return(-1);
-  return(0);
+void owl_cmddict_init(owl_cmddict *cd) {
+  owl_dict_create(cd);
 }
 
 /* for bulk initialization at startup */
@@ -134,11 +133,11 @@ int owl_cmd_create_alias(owl_cmd *cmd, const char *name, const char *aliased_to)
 
 void owl_cmd_cleanup(owl_cmd *cmd)
 {
-  if (cmd->name) g_free(cmd->name);
-  if (cmd->summary) g_free(cmd->summary);
-  if (cmd->usage) g_free(cmd->usage);
-  if (cmd->description) g_free(cmd->description);
-  if (cmd->cmd_aliased_to) g_free(cmd->cmd_aliased_to);
+  g_free(cmd->name);
+  g_free(cmd->summary);
+  g_free(cmd->usage);
+  g_free(cmd->description);
+  g_free(cmd->cmd_aliased_to);
   if (cmd->cmd_perl) owl_perlconfig_cmd_cleanup(cmd);
 }
 

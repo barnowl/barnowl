@@ -504,7 +504,7 @@ void owl_global_set_curmsg_vert_offset(owl_global *g, int i) {
 /* startup args */
 
 void owl_global_set_startupargs(owl_global *g, int argc, char **argv) {
-  if (g->startupargs) g_free(g->startupargs);
+  g_free(g->startupargs);
   g->startupargs = g_strjoinv(" ", argv);
 }
 
@@ -746,8 +746,8 @@ const owl_style *owl_global_get_style_by_name(const owl_global *g, const char *n
   return owl_dict_find_element(&(g->styledict), name);
 }
 
-int owl_global_get_style_names(const owl_global *g, owl_list *l) {
-  return owl_dict_get_keys(&(g->styledict), l);
+void owl_global_get_style_names(const owl_global *g, owl_list *l) {
+  owl_dict_get_keys(&(g->styledict), l);
 }
 
 void owl_global_add_style(owl_global *g, owl_style *s)

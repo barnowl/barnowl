@@ -232,7 +232,7 @@ int owl_dict_regtest(void) {
   char *av="aval", *bv="bval", *cv="cval", *dv="dval";
 
   printf("# BEGIN testing owl_dict\n");
-  FAIL_UNLESS("create", 0==owl_dict_create(&d));
+  owl_dict_create(&d);
   FAIL_UNLESS("insert b", 0==owl_dict_insert_element(&d, "b", bv, owl_dict_noop_delete));
   FAIL_UNLESS("insert d", 0==owl_dict_insert_element(&d, "d", dv, owl_dict_noop_delete));
   FAIL_UNLESS("insert a", 0==owl_dict_insert_element(&d, "a", av, owl_dict_noop_delete));
@@ -248,7 +248,7 @@ int owl_dict_regtest(void) {
 
   FAIL_UNLESS("get_size", 3==owl_dict_get_size(&d));
   owl_list_create(&l);
-  FAIL_UNLESS("get_keys", 0==owl_dict_get_keys(&d, &l));
+  owl_dict_get_keys(&d, &l);
   FAIL_UNLESS("get_keys result size", 3==owl_list_get_size(&l));
   
   /* these assume the returned keys are sorted */

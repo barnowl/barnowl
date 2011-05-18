@@ -8,9 +8,9 @@ static void _owl_keymap_format_with_parents(const owl_keymap *km, owl_fmtext *fm
 int owl_keymap_init(owl_keymap *km, const char *name, const char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
 {
   if (!name || !desc) return(-1);
-  if ((km->name = g_strdup(name)) == NULL) return(-1);
-  if ((km->desc = g_strdup(desc)) == NULL) return(-1);
-  if (0 != owl_list_create(&km->bindings)) return(-1);
+  km->name = g_strdup(name);
+  km->desc = g_strdup(desc);
+  owl_list_create(&km->bindings);
   km->parent = NULL;
   km->default_fn = default_fn;
   km->prealways_fn = prealways_fn;
@@ -178,12 +178,11 @@ static void _owl_keymap_format_bindings(const owl_keymap *km, owl_fmtext *fm)
 
 /* NOTE: keyhandler has private access to the internals of keymap */
 
-int owl_keyhandler_init(owl_keyhandler *kh)
+void owl_keyhandler_init(owl_keyhandler *kh)
 {
-  if (0 != owl_dict_create(&kh->keymaps)) return(-1); 
+  owl_dict_create(&kh->keymaps);
   kh->active = NULL;
   owl_keyhandler_reset(kh);
-  return(0);
 }
 
 /* adds a new keymap */

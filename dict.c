@@ -14,12 +14,10 @@
 #define INITSIZE 30
 #define GROWBY 3 / 2
 
-int owl_dict_create(owl_dict *d) {
+void owl_dict_create(owl_dict *d) {
   d->size=0;
   d->els=g_new(owl_dict_el, INITSIZE);
   d->avail=INITSIZE;
-  if (d->els==NULL) return(-1);
-  return(0);
 }
 
 int owl_dict_get_size(const owl_dict *d) {
@@ -59,14 +57,11 @@ void *owl_dict_find_element(const owl_dict *d, const char *k) {
 
 /* Appends dictionary keys to a list.  Duplicates the keys,
  * so they will need to be freed by the caller. */
-int owl_dict_get_keys(const owl_dict *d, owl_list *l) {
+void owl_dict_get_keys(const owl_dict *d, owl_list *l) {
   int i;
-  char *dupk;
   for (i=0; i<d->size; i++) {
-    if ((dupk = g_strdup(d->els[i].k)) == NULL) return(-1);
-    owl_list_append_element(l, dupk);
+    owl_list_append_element(l, g_strdup(d->els[i].k));
   }
-  return(0);
 }
 
 void owl_dict_noop_delete(void *x)
@@ -83,7 +78,6 @@ void owl_dict_noop_delete(void *x)
 int owl_dict_insert_element(owl_dict *d, const char *k, void *v, void (*delete_on_replace)(void *old))
 {
   int pos, found;
-  char *dupk;
   found = _owl_dict_find_pos(d, k, &pos);
   if (found && delete_on_replace) {
     delete_on_replace(d->els[pos].v);
@@ -98,14 +92,13 @@ int owl_dict_insert_element(owl_dict *d, const char *k, void *v, void (*delete_o
       d->avail = avail;
       if (d->els==NULL) return(-1);
     }
-    if ((dupk = g_strdup(k)) == NULL) return(-1);
     if (pos!=d->size) {
       /* shift forward to leave us a slot */
       memmove(d->els+pos+1, d->els+pos, 
 	      sizeof(owl_dict_el)*(d->size-pos));
     }
     d->size++;
-    d->els[pos].k = dupk;
+    d->els[pos].k = g_strdup(k);
     d->els[pos].v = v;    
     return(0);
   }
