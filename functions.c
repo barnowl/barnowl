@@ -2520,7 +2520,7 @@ static char *owl_function_smartfilter_cc(const owl_message *m) {
   ccs = owl_message_get_attribute_value(m, "zephyr_ccs");
 
   filtname = g_strdup_printf("conversation-%s", ccs);
-  owl_text_tr(filtname, ' ', '-');
+  g_strdelimit(filtname, " ", '-');
 
   if (owl_global_get_filter(&g, filtname)) {
     return filtname;
