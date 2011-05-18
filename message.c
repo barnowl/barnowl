@@ -119,16 +119,22 @@ const char *owl_message_get_attribute_value(const owl_message *m, const char *at
 void owl_message_attributes_tofmtext(const owl_message *m, owl_fmtext *fm) {
   int i, j;
   owl_pair *p;
-  char *buff;
+  char *buff, *tmpbuff;
 
   owl_fmtext_init_null(fm);
 
   j=owl_list_get_size(&(m->attributes));
   for (i=0; i<j; i++) {
     p=owl_list_get_element(&(m->attributes), i);
-    buff=g_strdup_printf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), owl_pair_get_value(p));
+
+    tmpbuff = g_strdup(owl_pair_get_value(p));
+    g_strdelimit(tmpbuff, "\n", '~');
+    g_strdelimit(tmpbuff, "\r", '!');
+    buff = g_strdup_printf("  %-15.15s: %s\n", owl_pair_get_key(p), tmpbuff);
+    g_free(tmpbuff);
+
     if(buff == NULL) {
-      buff=g_strdup_printf("  %-15.15s: %-35.35s\n", owl_pair_get_key(p), "<error>");
+      buff = g_strdup_printf("  %-15.15s: %s\n", owl_pair_get_key(p), "<error>");
       if(buff == NULL)
         buff=g_strdup("   <error>\n");
     }
