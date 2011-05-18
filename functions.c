@@ -1407,8 +1407,8 @@ void owl_function_info(void)
     owl_fmtext_appendf_normal(&fm, "  Opcode    : %s\n", owl_message_get_opcode(m));
 #ifdef HAVE_LIBZEPHYR
     if (owl_message_is_direction_in(m)) {
-      char *ptr, tmpbuff[1024];
-      int i, j, fields, len;
+      char *tmpbuff;
+      int i, fields;
 
       n=owl_message_get_notice(m);
 
@@ -1452,25 +1452,14 @@ void owl_function_info(void)
 	fields=owl_zephyr_get_num_fields(n);
 	owl_fmtext_appendf_normal(&fm, "  Fields    : %i\n", fields);
 
-	for (i=0; i<fields; i++) {
-	  ptr=owl_zephyr_get_field_as_utf8(n, i+1);
-	  len=strlen(ptr);
-	  if (len<30) {
-	    strncpy(tmpbuff, ptr, len);
-	    tmpbuff[len]='\0';
-	  } else {
-	    strncpy(tmpbuff, ptr, 30);
-	    tmpbuff[30]='\0';
-	    strcat(tmpbuff, "...");
-	  }
-	  g_free(ptr);
+	for (i = 0; i < fields; i++) {
+	  tmpbuff = owl_zephyr_get_field_as_utf8(n, i + 1);
 
-	  for (j=0; j<strlen(tmpbuff); j++) {
-	    if (tmpbuff[j]=='\n') tmpbuff[j]='~';
-	    if (tmpbuff[j]=='\r') tmpbuff[j]='!';
-	  }
+	  g_strdelimit(tmpbuff, "\n", '~');
+	  g_strdelimit(tmpbuff, "\r", '!');
 
-	  owl_fmtext_appendf_normal(&fm, "  Field %i   : %s\n", i+1, tmpbuff);
+	  owl_fmtext_appendf_normal(&fm, "  Field %i   : %s\n", i + 1, tmpbuff);
+	  g_free(tmpbuff);
 	}
 	owl_fmtext_appendf_normal(&fm, "  Default Fm: %s\n", n->z_default_format);
       }
