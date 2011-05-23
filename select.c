@@ -8,10 +8,6 @@ int _owl_select_timer_cmp(const owl_timer *t1, const owl_timer *t2) {
   return t1->time - t2->time;
 }
 
-int _owl_select_timer_eq(const owl_timer *t1, const owl_timer *t2) {
-  return t1 == t2;
-}
-
 owl_timer *owl_select_add_timer(const char* name, int after, int interval, void (*cb)(owl_timer *, void *), void (*destroy)(owl_timer*), void *data)
 {
   owl_timer *t = g_new(owl_timer, 1);
