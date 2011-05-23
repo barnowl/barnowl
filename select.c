@@ -4,7 +4,7 @@ static int dispatch_active = 0;
 static int psa_active = 0;
 static int loop_active = 0;
 
-int _owl_select_timer_cmp(const owl_timer *t1, const owl_timer *t2) {
+static int _owl_select_timer_cmp(const owl_timer *t1, const owl_timer *t2) {
   return t1->time - t2->time;
 }
 
@@ -129,7 +129,7 @@ void owl_select_remove_io_dispatch(const owl_io_dispatch *in)
   }
 }
 
-void owl_select_io_dispatch_gc(void)
+static void owl_select_io_dispatch_gc(void)
 {
   int i;
   owl_list *dl;
