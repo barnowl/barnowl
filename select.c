@@ -174,46 +174,6 @@ static GSourceFuncs owl_io_dispatch_funcs = {
   NULL
 };
 
-int owl_select_add_perl_io_dispatch(int fd, int mode, SV *cb)
-{
-  const owl_io_dispatch *d = owl_select_find_valid_io_dispatch_by_fd(fd);
-  if (d != NULL && d->callback != owl_perlconfig_io_dispatch) {
-    /* Don't mess with non-perl dispatch functions from here. */
-    return 1;
-  }
-  /* Also remove any invalidated perl dispatch functions that may have
-   * stuck around. */
-  owl_select_remove_perl_io_dispatch(fd);
-  owl_select_add_io_dispatch(fd, mode, owl_perlconfig_io_dispatch, owl_perlconfig_io_dispatch_destroy, cb);
-  return 0;
-}
-
-static owl_io_dispatch *owl_select_find_perl_io_dispatch(int fd)
-{
-  int i, len;
-  const owl_list *dl;
-  owl_io_dispatch *d;
-  dl = owl_global_get_io_dispatch_list(&g);
-  len = owl_list_get_size(dl);
-  for(i = 0; i < len; i++) {
-    d = owl_list_get_element(dl, i);
-    if (d->fd == fd && d->callback == owl_perlconfig_io_dispatch)
-      return d;
-  }
-  return NULL;
-}
-
-int owl_select_remove_perl_io_dispatch(int fd)
-{
-  owl_io_dispatch *d = owl_select_find_perl_io_dispatch(fd);
-  if (d != NULL) {
-    /* Only remove perl io dispatchers from here. */
-    owl_select_remove_io_dispatch(d);
-    return 0;
-  }
-  return 1;
-}
-
 void owl_select_init(void)
 {
   owl_io_dispatch_source = g_source_new(&owl_io_dispatch_funcs, sizeof(GSource));

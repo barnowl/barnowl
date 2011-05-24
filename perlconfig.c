@@ -546,11 +546,6 @@ void owl_perlconfig_cmd_cleanup(owl_cmd *cmd)
   SvREFCNT_dec(cmd->cmd_perl);
 }
 
-void owl_perlconfig_io_dispatch_destroy(const owl_io_dispatch *d)
-{
-  SvREFCNT_dec(d->data);
-}
-
 void owl_perlconfig_edit_callback(owl_editwin *e)
 {
   SV *cb = owl_editwin_get_cbdata(e);
@@ -584,29 +579,4 @@ void owl_perlconfig_dec_refcnt(void *data)
 {
   SV *v = data;
   SvREFCNT_dec(v);
-}
-
-void owl_perlconfig_io_dispatch(const owl_io_dispatch *d, void *data)
-{
-  SV *cb = data;
-  dSP;
-  if(cb == NULL) {
-    owl_function_error("Perl callback is NULL!");
-    return;
-  }
-
-  ENTER;
-  SAVETMPS;
-
-  PUSHMARK(SP);
-  PUTBACK;
-
-  call_sv(cb, G_DISCARD|G_EVAL);
-
-  if(SvTRUE(ERRSV)) {
-    owl_function_error("%s", SvPV_nolen(ERRSV));
-  }
-
-  FREETMPS;
-  LEAVE;
 }
