@@ -617,7 +617,7 @@ typedef struct _owl_global {
   struct termios startup_tio;
   owl_list io_dispatch_list;
   GList *timerlist;
-  owl_timer *aim_nop_timer;
+  guint aim_nop_timer;
   int load_initial_subs;
   FILE *debug_file;
   char *kill_buffer;
