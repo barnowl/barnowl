@@ -15,6 +15,7 @@ owl_popexec *owl_popexec_new(const char *command)
   owl_viewwin *v;
   int pipefds[2], child_write_fd, parent_read_fd;
   pid_t pid;
+  GIOChannel *channel;
 
   if (owl_global_get_popwin(&g) || owl_global_get_viewwin(&g)) {
     owl_function_error("Popwin already in use.");
@@ -53,7 +54,13 @@ owl_popexec *owl_popexec_new(const char *command)
     /* still in owl */
     pe->pid=pid;
     pe->winactive=1;
-    pe->dispatch = owl_select_add_io_dispatch(parent_read_fd, OWL_IO_READ|OWL_IO_EXCEPT, &owl_popexec_inputhandler, &owl_popexec_delete_dispatch, pe);
+    channel = g_io_channel_unix_new(parent_read_fd);
+    g_io_channel_set_close_on_unref(channel, TRUE);
+    pe->io_watch = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT,
+				       G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
+				       owl_popexec_inputhandler, pe,
+				       (GDestroyNotify)owl_popexec_unref);
+    g_io_channel_unref(channel);
     pe->refcount++;
   } else {
     /* in the child process */
@@ -74,14 +81,17 @@ owl_popexec *owl_popexec_new(const char *command)
   return pe;
 }
 
-void owl_popexec_inputhandler(const owl_io_dispatch *d, void *data)
+gboolean owl_popexec_inputhandler(GIOChannel *source, GIOCondition condition, void *data)
 {
   owl_popexec *pe = data;
   int navail, bread, rv_navail;
   char *buf;
   int status;
+  int fd = g_io_channel_unix_get_fd(source);
 
-  if (!pe) return;
+  /* TODO: Reading from GIOChannel may be more convenient. */
+
+  if (!pe) return FALSE;
 
   /* If pe->winactive is 0 then the vwin has closed. 
    * If pe->pid is 0 then the child has already been reaped.
@@ -95,12 +105,11 @@ void owl_popexec_inputhandler(const owl_io_dispatch *d, void *data)
 
   /* the viewwin has closed */
   if (!pe->pid && !pe->winactive) {
-    owl_select_remove_io_dispatch(d);
-    pe->dispatch = NULL;
-    return;
+    pe->io_watch = 0;
+    return FALSE;
   }
 
-  if (0 != (rv_navail = ioctl(d->fd, FIONREAD, &navail))) {
+  if (0 != (rv_navail = ioctl(fd, FIONREAD, &navail))) {
     owl_function_debugmsg("ioctl error");
   }
 
@@ -112,21 +121,20 @@ void owl_popexec_inputhandler(const owl_io_dispatch *d, void *data)
     if (pe->winactive) { 
       owl_viewwin_append_text(pe->vwin, "\n");
     }
-    owl_select_remove_io_dispatch(d);
-    pe->dispatch = NULL;
-    return;
+    pe->io_watch = 0;
+    return FALSE;
   }
 
-  if (d->fd<0 || !pe->pid || !pe->winactive || rv_navail) {
+  if (fd<0 || !pe->pid || !pe->winactive || rv_navail) {
     owl_function_error("popexec should not have reached this point");
-    return;
+    return FALSE;
   }
 
-  if (navail<=0) return;
+  if (navail<=0) return TRUE;
   if (navail>1024) { navail = 1024; }
   buf = g_new(char, navail+1);
   owl_function_debugmsg("about to read %d", navail);
-  bread = read(d->fd, buf, navail);
+  bread = read(fd, buf, navail);
   if (bread<0) {
     perror("read");
     owl_function_debugmsg("read error");
@@ -139,14 +147,7 @@ void owl_popexec_inputhandler(const owl_io_dispatch *d, void *data)
     owl_viewwin_append_text(pe->vwin, buf);
   }
   g_free(buf);
-  
-}
-
-void owl_popexec_delete_dispatch(const owl_io_dispatch *d)
-{
-  owl_popexec *pe = d->data;
-  close(d->fd);
-  owl_popexec_unref(pe);
+  return TRUE;
 }
 
 void owl_popexec_viewwin_onclose(owl_viewwin *vwin, void *data)
@@ -155,9 +156,9 @@ void owl_popexec_viewwin_onclose(owl_viewwin *vwin, void *data)
   int status, rv;
 
   pe->winactive = 0;
-  if (pe->dispatch) {
-    owl_select_remove_io_dispatch(pe->dispatch);
-    pe->dispatch = NULL;
+  if (pe->io_watch) {
+    g_source_remove(pe->io_watch);
+    pe->io_watch = 0;
   }
   if (pe->pid) {
     /* TODO: we should handle the case where SIGTERM isn't good enough */

@@ -542,7 +542,7 @@ typedef struct _owl_popexec {
   owl_viewwin *vwin;
   int winactive;
   pid_t pid;			/* or 0 if it has terminated */
-  const owl_io_dispatch *dispatch;
+  guint io_watch;
 } owl_popexec;
 
 typedef struct _owl_global {
