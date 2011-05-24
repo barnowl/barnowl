@@ -94,36 +94,6 @@ void owl_function_show_styles(void) {
   owl_fmtext_cleanup(&fm);
 }
 
-static void _owl_function_timer_append_fmtext(gpointer data, gpointer user_data) {
-  owl_fmtext *fm = user_data;
-  owl_timer *timer = data;
-  char *str = g_strdup_printf("- %s: in %d seconds",
-                              timer->name ? timer->name : "(unnamed)",
-                              (int)(timer->time - time(NULL)));
-  owl_fmtext_append_normal(fm, str);
-  g_free(str);
-  if (timer->interval) {
-    str = g_strdup_printf(", repeat every %d seconds", timer->interval);
-    owl_fmtext_append_normal(fm, str);
-    g_free(str);
-  }
-  owl_fmtext_append_normal(fm, "\n");
-}
-
-void owl_function_show_timers(void) {
-  owl_fmtext fm;
-  GList **timers;
-
-  owl_fmtext_init_null(&fm);
-  owl_fmtext_append_bold(&fm, "Active timers:\n");
-
-  timers = owl_global_get_timerlist(&g);
-  g_list_foreach(*timers, _owl_function_timer_append_fmtext, &fm);
-
-  owl_function_popless_fmtext(&fm);
-  owl_fmtext_cleanup(&fm);
-}
-
 char *owl_function_style_describe(const char *name) {
   const char *desc;
   char *s;
