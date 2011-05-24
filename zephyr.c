@@ -1431,7 +1431,7 @@ void owl_zephyr_process_pseudologin(void *n)
 }
 #endif
 
-void owl_zephyr_buddycheck_timer(owl_timer *t, void *data)
+gboolean owl_zephyr_buddycheck_timer(void *data)
 {
   if (owl_global_is_pseudologins(&g)) {
     owl_function_debugmsg("Doing zephyr buddy check");
@@ -1439,6 +1439,7 @@ void owl_zephyr_buddycheck_timer(owl_timer *t, void *data)
   } else {
     owl_function_debugmsg("Warning: owl_zephyr_buddycheck_timer call pointless; timer should have been disabled");
   }
+  return TRUE;
 }
 
 /*
