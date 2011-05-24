@@ -15,6 +15,9 @@ void owl_global_init(owl_global *g) {
   const char *homedir;
 
   g_type_init();
+  g_thread_init(NULL);
+
+  owl_select_init();
 
   g->lines=LINES;
   g->cols=COLS;
@@ -94,7 +97,6 @@ void owl_global_init(owl_global *g) {
   owl_global_set_no_doaimevents(g);
 
   owl_errqueue_init(&(g->errqueue));
-  g->got_err_signal=0;
 
   owl_zbuddylist_create(&(g->zbuddies));
 
@@ -103,10 +105,11 @@ void owl_global_init(owl_global *g) {
 
   owl_message_init_fmtext_cache();
   owl_list_create(&(g->io_dispatch_list));
-  owl_list_create(&(g->psa_list));
   g->timerlist = NULL;
-  g->interrupted = FALSE;
   g->kill_buffer = NULL;
+
+  g->interrupt_count = 0;
+  g->interrupt_lock = g_mutex_new();
 }
 
 static void _owl_global_init_windows(owl_global *g)
@@ -343,7 +346,7 @@ void owl_global_set_typwin_inactive(owl_global *g) {
 /* resize */
 
 void owl_global_set_resize_pending(owl_global *g) {
-  g->resizepending=1;
+  g->resizepending = true;
 }
 
 const char *owl_global_get_homedir(const owl_global *g) {
@@ -443,7 +446,7 @@ void owl_global_get_terminal_size(int *lines, int *cols) {
 void owl_global_check_resize(owl_global *g) {
   /* resize the screen.  If lines or cols is 0 use the terminal size */
   if (!g->resizepending) return;
-  g->resizepending = 0;
+  g->resizepending = false;
 
   owl_global_get_terminal_size(&g->lines, &g->cols);
   owl_window_resize(owl_window_get_screen(), g->lines, g->cols);
@@ -675,20 +678,26 @@ void owl_global_set_aimnologgedin(owl_global *g)
   g->aim_loggedin=0;
 }
 
-int owl_global_is_doaimevents(const owl_global *g)
+bool owl_global_is_doaimevents(const owl_global *g)
 {
-  if (g->aim_doprocessing) return(1);
-  return(0);
+  return g->aim_event_source != NULL;
 }
 
 void owl_global_set_doaimevents(owl_global *g)
 {
-  g->aim_doprocessing=1;
+  if (g->aim_event_source)
+    return;
+  g->aim_event_source = owl_aim_event_source_new(owl_global_get_aimsess(g));
+  g_source_attach(g->aim_event_source, NULL);
 }
 
 void owl_global_set_no_doaimevents(owl_global *g)
 {
-  g->aim_doprocessing=0;
+  if (!g->aim_event_source)
+    return;
+  g_source_destroy(g->aim_event_source);
+  g_source_unref(g->aim_event_source);
+  g->aim_event_source = NULL;
 }
 
 aim_session_t *owl_global_get_aimsess(owl_global *g)
@@ -806,30 +815,6 @@ owl_errqueue *owl_global_get_errqueue(owl_global *g)
   return(&(g->errqueue));
 }
 
-void owl_global_set_errsignal(owl_global *g, int signum, siginfo_t *siginfo)
-{
-  g->got_err_signal = signum;
-  if (siginfo) {
-    g->err_signal_info = *siginfo;
-  } else {
-    siginfo_t si;
-    memset(&si, 0, sizeof(si));
-    g->err_signal_info = si;
-  }
-}
-
-int owl_global_get_errsignal_and_clear(owl_global *g, siginfo_t *siginfo)
-{
-  int signum;
-  if (siginfo && g->got_err_signal) {
-    *siginfo = g->err_signal_info;
-  } 
-  signum = g->got_err_signal;
-  g->got_err_signal = 0;
-  return signum;
-}
-
-
 owl_zbuddylist *owl_global_get_zephyr_buddylist(owl_global *g)
 {
   return(&(g->zbuddies));
@@ -860,26 +845,9 @@ owl_list *owl_global_get_io_dispatch_list(owl_global *g)
   return &(g->io_dispatch_list);
 }
 
-owl_list *owl_global_get_psa_list(owl_global *g)
-{
-  return &(g->psa_list);
-}
-
 GList **owl_global_get_timerlist(owl_global *g)
 {
   return &(g->timerlist);
-}
-
-int owl_global_is_interrupted(const owl_global *g) {
-  return g->interrupted;
-}
-
-void owl_global_set_interrupted(owl_global *g) {
-  g->interrupted = 1;
-}
-
-void owl_global_unset_interrupted(owl_global *g) {
-  g->interrupted = 0;
 }
 
 void owl_global_setup_default_filters(owl_global *g)
@@ -946,4 +914,23 @@ const char *owl_global_get_kill_buffer(owl_global *g) {
 void owl_global_set_kill_buffer(owl_global *g, const char *kill, int len) {
   g_free(g->kill_buffer);
   g->kill_buffer = g_strndup(kill, len);
+}
+
+void owl_global_add_interrupt(owl_global *g) {
+  /* TODO: This can almost certainly be done with atomic
+   * operations. Whatever. */
+  g_mutex_lock(g->interrupt_lock);
+  g->interrupt_count++;
+  g_mutex_unlock(g->interrupt_lock);
+}
+
+bool owl_global_take_interrupt(owl_global *g) {
+  bool ans = false;
+  g_mutex_lock(g->interrupt_lock);
+  if (g->interrupt_count > 0) {
+    ans = true;
+    g->interrupt_count--;
+  }
+  g_mutex_unlock(g->interrupt_lock);
+  return ans;
 }

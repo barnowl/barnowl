@@ -6,6 +6,12 @@
 #include <string.h>
 #include "owl.h"
 
+static GSource *owl_zephyr_event_source_new(int fd);
+
+static gboolean owl_zephyr_event_prepare(GSource *source, int *timeout);
+static gboolean owl_zephyr_event_check(GSource *source);
+static gboolean owl_zephyr_event_dispatch(GSource *source, GSourceFunc callback, gpointer user_data);
+
 #ifdef HAVE_LIBZEPHYR
 static GList *deferred_subs = NULL;
 
@@ -15,6 +21,13 @@ typedef struct _owl_sub_list {                            /* noproto */
 } owl_sub_list;
 
 Code_t ZResetAuthentication(void);
+
+static GSourceFuncs zephyr_event_funcs = {
+  owl_zephyr_event_prepare,
+  owl_zephyr_event_check,
+  owl_zephyr_event_dispatch,
+  NULL
+};
 #endif
 
 #define HM_SVC_FALLBACK		htons((unsigned short) 2104)
@@ -83,6 +96,7 @@ void owl_zephyr_initialize(void)
 void owl_zephyr_finish_initialization(const owl_io_dispatch *d, void *data) {
   Code_t code;
   char *perl;
+  GSource *event_source;
 
   owl_select_remove_io_dispatch(d);
 
@@ -98,7 +112,9 @@ void owl_zephyr_finish_initialization(const owl_io_dispatch *d, void *data) {
     return;
   }
 
-  owl_select_add_io_dispatch(ZGetFD(), OWL_IO_READ|OWL_IO_EXCEPT, &owl_zephyr_process_events, NULL, NULL);
+  event_source = owl_zephyr_event_source_new(ZGetFD());
+  g_source_attach(event_source, NULL);
+  g_source_unref(event_source);
 
   owl_global_set_havezephyr(&g);
 
@@ -126,8 +142,6 @@ void owl_zephyr_finish_initialization(const owl_io_dispatch *d, void *data) {
 
   perl = owl_perlconfig_execute("BarnOwl::Zephyr::_zephyr_startup()");
   g_free(perl);
-
-  owl_select_add_pre_select_action(owl_zephyr_pre_select_action, NULL, NULL);
 }
 
 void owl_zephyr_load_initial_subs(void) {
@@ -179,6 +193,22 @@ int owl_zephyr_zpending(void)
   if(owl_global_is_havezephyr(&g)) {
     if((code = ZPending()) < 0) {
       owl_function_debugmsg("Error (%s) in ZPending()\n",
+                            error_message(code));
+      return 0;
+    }
+    return code;
+  }
+#endif
+  return 0;
+}
+
+int owl_zephyr_zqlength(void)
+{
+#ifdef HAVE_LIBZEPHYR
+  Code_t code;
+  if(owl_global_is_havezephyr(&g)) {
+    if((code = ZQLength()) < 0) {
+      owl_function_debugmsg("Error (%s) in ZQLength()\n",
                             error_message(code));
       return 0;
     }
@@ -1468,12 +1498,37 @@ static int _owl_zephyr_process_events(void)
   return zpendcount;
 }
 
-void owl_zephyr_process_events(const owl_io_dispatch *d, void *data)
-{
-  _owl_zephyr_process_events();
+typedef struct { /*noproto*/
+  GSource source;
+  GPollFD poll_fd;
+} owl_zephyr_event_source;
+
+static GSource *owl_zephyr_event_source_new(int fd) {
+  GSource *source;
+  owl_zephyr_event_source *event_source;
+
+  source = g_source_new(&zephyr_event_funcs, sizeof(owl_zephyr_event_source));
+  event_source = (owl_zephyr_event_source*) source;
+  event_source->poll_fd.fd = fd;
+  event_source->poll_fd.events = G_IO_IN | G_IO_HUP | G_IO_PRI | G_IO_ERR;
+  g_source_add_poll(source, &event_source->poll_fd);
+
+  return source;
 }
 
-int owl_zephyr_pre_select_action(owl_ps_action *a, void *p)
-{
-  return _owl_zephyr_process_events();
+static gboolean owl_zephyr_event_prepare(GSource *source, int *timeout) {
+  *timeout = -1;
+  return owl_zephyr_zqlength() > 0;
+}
+
+static gboolean owl_zephyr_event_check(GSource *source) {
+  owl_zephyr_event_source *event_source = (owl_zephyr_event_source*)source;
+  if (event_source->poll_fd.revents & event_source->poll_fd.events)
+    return owl_zephyr_zpending() > 0;
+  return FALSE;
+}
+
+static gboolean owl_zephyr_event_dispatch(GSource *source, GSourceFunc callback, gpointer user_data) {
+  _owl_zephyr_process_events();
+  return TRUE;
 }
