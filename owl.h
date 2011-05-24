@@ -547,6 +547,7 @@ typedef struct _owl_colorpair_mgr {
 typedef struct _owl_io_dispatch {
   int fd;                                     /* FD to watch for dispatch. */
   int mode;
+  bool valid;
   int needs_gc;
   void (*callback)(const struct _owl_io_dispatch *, void *); /* C function to dispatch to. */
   void (*destroy)(const struct _owl_io_dispatch *);  /* Destructor */

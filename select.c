@@ -124,8 +124,8 @@ static GSourceFuncs owl_timer_funcs = {
   NULL
 };
 
-
-static const owl_io_dispatch *owl_select_find_io_dispatch_by_fd(const int fd)
+/* Returns the valid owl_io_dispatch for a given file descriptor. */
+static owl_io_dispatch *owl_select_find_valid_io_dispatch_by_fd(const int fd)
 {
   int i, len;
   const owl_list *dl;
@@ -134,7 +134,7 @@ static const owl_io_dispatch *owl_select_find_io_dispatch_by_fd(const int fd)
   len = owl_list_get_size(dl);
   for(i = 0; i < len; i++) {
     d = owl_list_get_element(dl, i);
-    if (d->fd == fd) return d;
+    if (d->fd == fd && d->valid) return d;
   }
   return NULL;
 }
@@ -155,6 +155,14 @@ static int owl_select_find_io_dispatch(const owl_io_dispatch *in)
   return -1;
 }
 
+static void owl_select_invalidate_io_dispatch(owl_io_dispatch *d)
+{
+  if (d == NULL || !d->valid)
+    return;
+  d->valid = false;
+  g_source_remove_poll(owl_io_dispatch_source, &d->pollfd);
+}
+
 void owl_select_remove_io_dispatch(const owl_io_dispatch *in)
 {
   int elt;
@@ -166,10 +174,10 @@ void owl_select_remove_io_dispatch(const owl_io_dispatch *in)
       if (dispatch_active)
         d->needs_gc = 1;
       else {
+	owl_select_invalidate_io_dispatch(d);
         owl_list_remove_element(dl, elt);
         if (d->destroy)
           d->destroy(d);
-	g_source_remove_poll(owl_io_dispatch_source, &d->pollfd);
         g_free(d);
       }
     }
@@ -194,7 +202,7 @@ static void owl_select_io_dispatch_gc(void)
   }
 }
 
-/* Each FD may have at most one dispatcher.
+/* Each FD may have at most one valid dispatcher.
  * If a new dispatch is added for an FD, the old one is removed.
  * mode determines what types of events are watched for, and may be any combination of:
  * OWL_IO_READ, OWL_IO_WRITE, OWL_IO_EXCEPT
@@ -203,8 +211,10 @@ const owl_io_dispatch *owl_select_add_io_dispatch(int fd, int mode, void (*cb)(c
 {
   owl_io_dispatch *d = g_new(owl_io_dispatch, 1);
   owl_list *dl = owl_global_get_io_dispatch_list(&g);
+  owl_io_dispatch *other;
 
   d->fd = fd;
+  d->valid = true;
   d->needs_gc = 0;
   d->mode = mode;
   d->callback = cb;
@@ -223,7 +233,9 @@ const owl_io_dispatch *owl_select_add_io_dispatch(int fd, int mode, void (*cb)(c
   g_source_add_poll(owl_io_dispatch_source, &d->pollfd);
 
 
-  owl_select_remove_io_dispatch(owl_select_find_io_dispatch_by_fd(fd));
+  other = owl_select_find_valid_io_dispatch_by_fd(fd);
+  if (other)
+    owl_select_invalidate_io_dispatch(other);
   owl_list_append_element(dl, d);
 
   return d;
@@ -241,7 +253,12 @@ static gboolean owl_io_dispatch_check(GSource *source) {
   dl = owl_global_get_io_dispatch_list(&g);
   len = owl_list_get_size(dl);
   for(i = 0; i < len; i++) {
-    const owl_io_dispatch *d = owl_list_get_element(dl, i);
+    owl_io_dispatch *d = owl_list_get_element(dl, i);
+    if (!d->valid) continue;
+    if (d->pollfd.revents & G_IO_NVAL) {
+      owl_function_debugmsg("Pruning defunct dispatch on fd %d.", d->fd);
+      owl_select_invalidate_io_dispatch(d);
+    }
     if (d->pollfd.revents & d->pollfd.events)
       return TRUE;
   }
@@ -257,6 +274,7 @@ static gboolean owl_io_dispatch_dispatch(GSource *source, GSourceFunc callback, 
   len = owl_list_get_size(dl);
   for (i = 0; i < len; i++) {
     owl_io_dispatch *d = owl_list_get_element(dl, i);
+    if (!d->valid) continue;
     if ((d->pollfd.revents & d->pollfd.events) && d->callback != NULL) {
       d->callback(d, d->data);
     }
@@ -276,19 +294,37 @@ static GSourceFuncs owl_io_dispatch_funcs = {
 
 int owl_select_add_perl_io_dispatch(int fd, int mode, SV *cb)
 {
-  const owl_io_dispatch *d = owl_select_find_io_dispatch_by_fd(fd);
+  const owl_io_dispatch *d = owl_select_find_valid_io_dispatch_by_fd(fd);
   if (d != NULL && d->callback != owl_perlconfig_io_dispatch) {
     /* Don't mess with non-perl dispatch functions from here. */
     return 1;
   }
+  /* Also remove any invalidated perl dispatch functions that may have
+   * stuck around. */
+  owl_select_remove_perl_io_dispatch(fd);
   owl_select_add_io_dispatch(fd, mode, owl_perlconfig_io_dispatch, owl_perlconfig_io_dispatch_destroy, cb);
   return 0;
 }
 
+static owl_io_dispatch *owl_select_find_perl_io_dispatch(int fd)
+{
+  int i, len;
+  const owl_list *dl;
+  owl_io_dispatch *d;
+  dl = owl_global_get_io_dispatch_list(&g);
+  len = owl_list_get_size(dl);
+  for(i = 0; i < len; i++) {
+    d = owl_list_get_element(dl, i);
+    if (d->fd == fd && d->callback == owl_perlconfig_io_dispatch)
+      return d;
+  }
+  return NULL;
+}
+
 int owl_select_remove_perl_io_dispatch(int fd)
 {
-  const owl_io_dispatch *d = owl_select_find_io_dispatch_by_fd(fd);
-  if (d != NULL && d->callback == owl_perlconfig_io_dispatch) {
+  owl_io_dispatch *d = owl_select_find_perl_io_dispatch(fd);
+  if (d != NULL) {
     /* Only remove perl io dispatchers from here. */
     owl_select_remove_io_dispatch(d);
     return 0;
@@ -319,26 +355,6 @@ void owl_select_quit_loop(void)
     loop = NULL;
   }
 }
-
-#if 0
-/* FIXME: Reimplement this check in the glib world. */
-static void owl_select_prune_bad_fds(void) {
-  owl_list *dl = owl_global_get_io_dispatch_list(&g);
-  int len, i;
-  struct stat st;
-  owl_io_dispatch *d;
-
-  len = owl_list_get_size(dl);
-  for (i = 0; i < len; i++) {
-    d = owl_list_get_element(dl, i);
-    if (fstat(d->fd, &st) < 0 && errno == EBADF) {
-      owl_function_debugmsg("Pruning defunct dispatch on fd %d.", d->fd);
-      d->needs_gc = 1;
-    }
-  }
-  owl_select_io_dispatch_gc();
-}
-#endif
 
 typedef struct _owl_task { /*noproto*/
   void (*cb)(void *);
