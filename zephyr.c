@@ -6,13 +6,13 @@
 #include <string.h>
 #include "owl.h"
 
+#ifdef HAVE_LIBZEPHYR
 static GSource *owl_zephyr_event_source_new(int fd);
 
 static gboolean owl_zephyr_event_prepare(GSource *source, int *timeout);
 static gboolean owl_zephyr_event_check(GSource *source);
 static gboolean owl_zephyr_event_dispatch(GSource *source, GSourceFunc callback, gpointer user_data);
 
-#ifdef HAVE_LIBZEPHYR
 static GList *deferred_subs = NULL;
 
 typedef struct _owl_sub_list {                            /* noproto */
@@ -1450,10 +1450,10 @@ void owl_zephyr_buddycheck_timer(owl_timer *t, void *data)
 
 #define OWL_MAX_ZEPHYRGRAMS_TO_PROCESS 20
 
+#ifdef HAVE_LIBZEPHYR
 static int _owl_zephyr_process_events(void)
 {
   int zpendcount=0;
-#ifdef HAVE_LIBZEPHYR
   ZNotice_t notice;
   Code_t code;
   owl_message *m=NULL;
@@ -1494,7 +1494,6 @@ static int _owl_zephyr_process_events(void)
       owl_global_messagequeue_addmsg(&g, m);
     }
   }
-#endif
   return zpendcount;
 }
 
@@ -1532,3 +1531,4 @@ static gboolean owl_zephyr_event_dispatch(GSource *source, GSourceFunc callback,
   _owl_zephyr_process_events();
   return TRUE;
 }
+#endif
