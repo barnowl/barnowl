@@ -16,7 +16,7 @@ our @EXPORT_OK = qw(command getcurmsg getnumcols getidletime
                     add_dispatch remove_dispatch
                     add_io_dispatch remove_io_dispatch
                     new_command
-                    new_variable_int new_variable_bool new_variable_string
+                    new_variable_int new_variable_bool new_variable_string new_variable_enum
                     quote redisplay);
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -388,8 +388,10 @@ sub new_command {
 
 =head2 new_variable_string NAME [{ARGS}]
 
-Add a new owl variable, either an int, a bool, or a string, with the
-specified name.
+=head2 new_variable_enum NAME [{ARGS}]
+
+Add a new owl variable, either an int, a bool, a string, or an enum,
+with the specified name.
 
 ARGS can optionally contain the following keys:
 
@@ -397,7 +399,8 @@ ARGS can optionally contain the following keys:
 
 =item default
 
-The default and initial value for the variable
+The default and initial value for the variable.
+Note that this should be a string value for an enum.
 
 =item summary
 
@@ -406,6 +409,11 @@ A one-line summary of the variable's purpose
 =item description
 
 A longer description of the function of the variable
+
+=item valid_settings
+
+A listref of valid setttings for the enum variable.
+The settings must not contain any commas.
 
 =back
 
@@ -424,6 +432,25 @@ sub new_variable_bool {
 sub new_variable_string {
     unshift @_, \&BarnOwl::Internal::new_variable_string, "";
     goto \&_new_variable;
+}
+
+sub new_variable_enum {
+    my $name = shift;
+    my $args = shift || {};
+    my %args = (
+        summary     => "",
+        description => "",
+        %{$args});
+
+    my @valid_settings =  @{$args{valid_settings}};
+    if (defined $args{default}) {
+        ($args{default}) = grep { $args{default} eq $valid_settings[$_] } 0..$#valid_settings; # turn the string default into a numerical default
+    } else {
+        $args{default} = 0;
+    }
+    $args{valid_settings} = join ",", @valid_settings;
+
+    BarnOwl::Internal::new_variable_enum($name, $args{default}, $args{summary}, $args{description}, $args{valid_settings});
 }
 
 sub _new_variable {
