@@ -36,7 +36,6 @@ my %show = (
     subscriptions       => undef,
     subs        => undef,
     terminal    => undef,
-    timers      => undef,
     variables   => undef,
     variable    => \&complete_variable,
     version     => undef,

@@ -653,7 +653,6 @@ const owl_cmd commands_to_init[]
 	      "show styles\n"
 	      "show subscriptions / show subs\n"
 	      "show terminal\n"
-	      "show timers\n"
 	      "show variables\n"
 	      "show variable <variable>\n"
 	      "show version\n"
@@ -2224,8 +2223,6 @@ char *owl_command_show(int argc, const char *const *argv, const char *buff)
     owl_function_show_colors();
   } else if (!strcmp(argv[1], "styles")) {
     owl_function_show_styles();
-  } else if (!strcmp(argv[1], "timers")) {
-    owl_function_show_timers();
   } else if (!strcmp(argv[1], "subs") || !strcmp(argv[1], "subscriptions")) {
     owl_function_getsubs();
   } else if (!strcmp(argv[1], "terminal") || !strcmp(argv[1], "term")) {
