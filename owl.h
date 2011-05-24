@@ -525,15 +525,6 @@ typedef struct _owl_zbuddylist {
   owl_list zusers;
 } owl_zbuddylist;
 
-typedef struct _owl_timer {
-  time_t time;
-  int interval;
-  void (*callback)(struct _owl_timer *, void *);
-  void (*destroy)(struct _owl_timer *);
-  void *data;
-  char *name;
-} owl_timer;
-
 typedef struct _owl_errqueue {
   owl_list errlist;
 } owl_errqueue;
@@ -625,7 +616,6 @@ typedef struct _owl_global {
   int pseudologin_notify;
   struct termios startup_tio;
   owl_list io_dispatch_list;
-  GList *timerlist;
   guint aim_nop_timer;
   int load_initial_subs;
   FILE *debug_file;

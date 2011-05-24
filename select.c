@@ -4,125 +4,7 @@ static GMainLoop *loop = NULL;
 static GMainContext *main_context;
 static int dispatch_active = 0;
 
-static GSource *owl_timer_source;
 static GSource *owl_io_dispatch_source;
-
-static int _owl_select_timer_cmp(const owl_timer *t1, const owl_timer *t2) {
-  return t1->time - t2->time;
-}
-
-owl_timer *owl_select_add_timer(const char* name, int after, int interval, void (*cb)(owl_timer *, void *), void (*destroy)(owl_timer*), void *data)
-{
-  owl_timer *t = g_new(owl_timer, 1);
-  GList **timers = owl_global_get_timerlist(&g);
-
-  t->time = time(NULL) + after;
-  t->interval = interval;
-  t->callback = cb;
-  t->destroy = destroy;
-  t->data = data;
-  t->name = name ? g_strdup(name) : NULL;
-
-  *timers = g_list_insert_sorted(*timers, t,
-                                 (GCompareFunc)_owl_select_timer_cmp);
-  return t;
-}
-
-void owl_select_remove_timer(owl_timer *t)
-{
-  GList **timers = owl_global_get_timerlist(&g);
-  if (t && g_list_find(*timers, t)) {
-    *timers = g_list_remove(*timers, t);
-    if(t->destroy) {
-      t->destroy(t);
-    }
-    g_free(t->name);
-    g_free(t);
-  }
-}
-
-static gboolean owl_timer_prepare(GSource *source, int *timeout) {
-  GList **timers = owl_global_get_timerlist(&g);
-  GTimeVal now;
-
-  /* TODO: In the far /far/ future, g_source_get_time is what the cool
-   * kids use to get system monotonic time. */
-  g_source_get_current_time(source, &now);
-
-  /* FIXME: bother with millisecond accuracy now that we can? */
-  if (*timers) {
-    owl_timer *t = (*timers)->data;
-    *timeout = t->time - now.tv_sec;
-    if (*timeout <= 0) {
-      *timeout = 0;
-      return TRUE;
-    }
-    if (*timeout > 60 * 1000)
-      *timeout = 60 * 1000;
-  } else {
-    *timeout = 60 * 1000;
-  }
-  return FALSE;
-}
-
-static gboolean owl_timer_check(GSource *source) {
-  GList **timers = owl_global_get_timerlist(&g);
-  GTimeVal now;
-
-  /* TODO: In the far /far/ future, g_source_get_time is what the cool
-   * kids use to get system monotonic time. */
-  g_source_get_current_time(source, &now);
-
-  /* FIXME: bother with millisecond accuracy now that we can? */
-  if (*timers) {
-    owl_timer *t = (*timers)->data;
-    return t->time >= now.tv_sec;
-  }
-  return FALSE;
-}
-
-
-static gboolean owl_timer_dispatch(GSource *source, GSourceFunc callback, gpointer user_data) {
-  GList **timers = owl_global_get_timerlist(&g);
-  GTimeVal now;
-
-  /* TODO: In the far /far/ future, g_source_get_time is what the cool
-   * kids use to get system monotonic time. */
-  g_source_get_current_time(source, &now);
-
-  /* FIXME: bother with millisecond accuracy now that we can? */
-  while(*timers) {
-    owl_timer *t = (*timers)->data;
-    int remove = 0;
-
-    if(t->time > now.tv_sec)
-      break;
-
-    /* Reschedule if appropriate */
-    if(t->interval > 0) {
-      t->time = now.tv_sec + t->interval;
-      *timers = g_list_remove(*timers, t);
-      *timers = g_list_insert_sorted(*timers, t,
-                                     (GCompareFunc)_owl_select_timer_cmp);
-    } else {
-      remove = 1;
-    }
-
-    /* Do the callback */
-    t->callback(t, t->data);
-    if(remove) {
-      owl_select_remove_timer(t);
-    }
-  }
-  return TRUE;
-}
-
-static GSourceFuncs owl_timer_funcs = {
-  owl_timer_prepare,
-  owl_timer_check,
-  owl_timer_dispatch,
-  NULL
-};
 
 /* Returns the valid owl_io_dispatch for a given file descriptor. */
 static owl_io_dispatch *owl_select_find_valid_io_dispatch_by_fd(const int fd)
@@ -334,9 +216,6 @@ int owl_select_remove_perl_io_dispatch(int fd)
 
 void owl_select_init(void)
 {
-  owl_timer_source = g_source_new(&owl_timer_funcs, sizeof(GSource));
-  g_source_attach(owl_timer_source, NULL);
-
   owl_io_dispatch_source = g_source_new(&owl_io_dispatch_funcs, sizeof(GSource));
   g_source_attach(owl_io_dispatch_source, NULL);
 }
