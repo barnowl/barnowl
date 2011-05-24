@@ -28,6 +28,9 @@ BEGIN {
 use lib(get_data_dir() . "/lib");
 use lib(get_config_dir() . "/lib");
 
+use Glib;
+use AnyEvent;
+
 use BarnOwl::Hook;
 use BarnOwl::Hooks;
 use BarnOwl::Message;
@@ -37,10 +40,6 @@ use BarnOwl::Timer;
 use BarnOwl::Editwin;
 use BarnOwl::Completion;
 use BarnOwl::Help;
-use BarnOwl::AnyEvent;
-
-unshift @AnyEvent::REGISTRY, [BarnOwl => BarnOwl::AnyEvent::];
-require AnyEvent;
 
 use List::Util qw(max);
 

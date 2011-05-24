@@ -18,6 +18,7 @@ They have been modified slightly for the needs of this project.
 BarnOwl currently requires the following perl modules off of CPAN:
 
 AnyEvent
+Glib
 PAR
 Net::DNS
 Authen::SASL::Perl
