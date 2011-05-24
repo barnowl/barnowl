@@ -112,11 +112,13 @@ void owl_aim_init(void)
      
 }
 
-void owl_aim_send_nop(owl_timer *t, void *data) {
-    if(owl_global_is_doaimevents(&g)) {
-        aim_session_t *sess = owl_global_get_aimsess(&g);
-        aim_flap_nop(sess, aim_getconn_type(sess, AIM_CONN_TYPE_BOS));
-    }
+gboolean owl_aim_send_nop(gpointer data) {
+  owl_global *g = data;
+  if (owl_global_is_doaimevents(g)) {
+    aim_session_t *sess = owl_global_get_aimsess(g);
+    aim_flap_nop(sess, aim_getconn_type(sess, AIM_CONN_TYPE_BOS));
+  }
+  return TRUE;
 }
 
 
@@ -182,14 +184,16 @@ int owl_aim_login(const char *screenname, const char *password)
   aim_request_login(sess, conn, screenname);
   owl_function_debugmsg("owl_aim_login: connecting");
 
-  g.aim_nop_timer = owl_select_add_timer("owl_aim_send_nop", 30, 30, owl_aim_send_nop, NULL, NULL);
+  g.aim_nop_timer = g_timeout_add_seconds(30, owl_aim_send_nop, &g);
 
   return(0);
 }
 
-static void owl_aim_unset_ignorelogin(owl_timer *t, void *data)
+static gboolean owl_aim_unset_ignorelogin(void *data)
 {
-    owl_global_unset_ignore_aimlogin(&g);
+  owl_global *g = data;
+  owl_global_unset_ignore_aimlogin(g);
+  return FALSE;  /* only run once. */
 }
 
 /* stuff to run once login has been successful */
@@ -208,9 +212,8 @@ void owl_aim_successful_login(const char *screenname)
 
   /* start the ingorelogin timer */
   owl_global_set_ignore_aimlogin(&g);
-  owl_select_add_timer("owl_aim_unset_ignorelogin",
-                       owl_global_get_aim_ignorelogin_timer(&g),
-                       0, owl_aim_unset_ignorelogin, NULL, NULL);
+  g_timeout_add_seconds(owl_global_get_aim_ignorelogin_timer(&g),
+                        owl_aim_unset_ignorelogin, &g);
 
   /* aim_ssi_setpresence(owl_global_get_aimsess(&g), 0x00000400); */
   /* aim_bos_setidle(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), 5000); */
@@ -224,7 +227,10 @@ void owl_aim_logout(void)
   if (owl_global_is_aimloggedin(&g)) owl_function_adminmsg("", "Logged out of AIM");
   owl_global_set_aimnologgedin(&g);
   owl_global_set_no_doaimevents(&g);
-  owl_select_remove_timer(g.aim_nop_timer);
+  if (g.aim_nop_timer) {
+    g_source_remove(g.aim_nop_timer);
+    g.aim_nop_timer = 0;
+  }
 }
 
 void owl_aim_logged_out(void)
@@ -243,7 +249,10 @@ void owl_aim_login_error(const char *message)
   owl_function_beep();
   owl_global_set_aimnologgedin(&g);
   owl_global_set_no_doaimevents(&g);
-  owl_select_remove_timer(g.aim_nop_timer);
+  if (g.aim_nop_timer) {
+    g_source_remove(g.aim_nop_timer);
+    g.aim_nop_timer = 0;
+  }
 }
 
 /*
