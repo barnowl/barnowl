@@ -325,12 +325,6 @@ wordwrap(in, cols)
 	CLEANUP:
 		g_free(rv);
 
-void
-remove_io_dispatch(fd)
-	int fd
-	CODE:
-	owl_select_remove_perl_io_dispatch(fd);
-
 AV*
 all_filters()
 	PREINIT:
@@ -505,14 +499,6 @@ new_variable_bool(name, ival, summ, desc)
 				      summ,
 				      desc,
 				      ival);
-
-void
-add_io_dispatch(fd, mode, cb)
-	int fd
-	int mode
-	SV * cb
-	CODE:
-	owl_select_add_perl_io_dispatch(fd, mode, newSVsv(cb));
 
 MODULE = BarnOwl		PACKAGE = BarnOwl::Editwin
 

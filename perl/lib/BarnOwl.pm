@@ -165,8 +165,9 @@ Adds a file descriptor to C<BarnOwl>'s internal C<select()>
 loop. C<CALLBACK> will be invoked whenever data is available to be
 read from C<FD>.
 
-C<add_dispatch> has been deprecated in favor of C<add_io_dispatch>,
-and is now a wrapper for it called with C<mode> set to C<'r'>.
+C<add_dispatch> has been deprecated in favor of C<AnyEvent>, and is
+now a wrapper for C<add_io_dispatch> called with C<mode> set to
+C<'r'>.
 
 =cut
 
@@ -180,8 +181,7 @@ sub add_dispatch {
 
 Remove a file descriptor previously registered via C<add_dispatch>
 
-C<remove_dispatch> has been deprecated in favor of
-C<remove_io_dispatch>.
+C<remove_dispatch> has been deprecated in favor of C<AnyEvent>.
 
 =cut
 
@@ -196,19 +196,27 @@ whenever C<FD> becomes ready, as specified by <MODE>.
 Only one callback can be registered per FD. If a new callback is
 registered, the old one is removed.
 
+C<add_io_dispatch> has been deprecated in favor of C<AnyEvent>.
+
 =cut
+
+our %_io_dispatches;
 
 sub add_io_dispatch {
     my $fd = shift;
     my $modeStr = shift;
     my $cb = shift;
-    my $mode = 0;
+    my @modes;
 
-    $mode |= 0x1 if ($modeStr =~ /r/i); # Read
-    $mode |= 0x2 if ($modeStr =~ /w/i); # Write
-    if ($mode) {
-        $mode |= 0x4;                  # Exceptional
-        BarnOwl::Internal::add_io_dispatch($fd, $mode, $cb);
+    push @modes, 'r' if $modeStr =~ /r/i; # Read
+    push @modes, 'w' if $modeStr =~ /w/i; # Write
+    if (@modes) {
+	BarnOwl::remove_io_dispatch($fd);
+	for my $mode (@modes) {
+	    push @{$_io_dispatches{$fd}}, AnyEvent->io(fh => $fd,
+						       poll => $mode,
+						       cb => $cb);
+	}
     } else {
         die("Invalid I/O Dispatch mode: $modeStr");
     }
@@ -217,6 +225,16 @@ sub add_io_dispatch {
 =head2 remove_io_dispatch FD
 
 Remove a file descriptor previously registered via C<add_io_dispatch>
+
+C<remove_io_dispatch> has been deprecated in favor of C<AnyEvent>.
+
+=cut
+
+sub remove_io_dispatch {
+    my $fd = shift;
+    undef $_ foreach @{$_io_dispatches{$fd}};
+    delete $_io_dispatches{$fd};
+}
 
 =head2 create_style NAME OBJECT
 
