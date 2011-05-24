@@ -449,30 +449,34 @@ int stderr_replace(void)
 }
 
 /* Sends stderr (read from rfd) messages to the error console */
-void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
+gboolean stderr_redirect_handler(GIOChannel *source, GIOCondition condition, void *data)
 {
   int navail, bread;
   char buf[4096];
-  int rfd = d->fd;
+  int rfd = g_io_channel_unix_get_fd(source);
   char *err;
 
-  if (rfd<0) return;
+  /* TODO: Use g_io_channel_read_line? We'd have to be careful about
+   * blocking on the read. */
+
+  if (rfd<0) return TRUE;
   if (-1 == ioctl(rfd, FIONREAD, &navail)) {
-    return;
+    return TRUE;
   }
   /*owl_function_debugmsg("stderr_redirect: navail = %d\n", navail);*/
-  if (navail <= 0) return;
+  if (navail <= 0) return TRUE;
   if (navail > sizeof(buf)-1) {
     navail = sizeof(buf)-1;
   }
   bread = read(rfd, buf, navail);
   if (bread == -1)
-    return;
+    return TRUE;
 
   err = g_strdup_printf("[stderr]\n%.*s", bread, buf);
 
   owl_function_log_err(err);
   g_free(err);
+  return TRUE;
 }
 
 #endif /* OWL_STDERR_REDIR */
@@ -520,7 +524,9 @@ int main(int argc, char **argv, char **env)
 #if OWL_STDERR_REDIR
   /* Do this only after we've started curses up... */
   owl_function_debugmsg("startup: doing stderr redirection");
-  owl_select_add_io_dispatch(stderr_replace(), OWL_IO_READ, &stderr_redirect_handler, NULL, NULL);
+  channel = g_io_channel_unix_new(stderr_replace());
+  g_io_add_watch(channel, G_IO_IN | G_IO_HUP | G_IO_ERR, &stderr_redirect_handler, NULL);
+  g_io_channel_unref(channel);
 #endif
 
   /* create the owl directory, in case it does not exist */
