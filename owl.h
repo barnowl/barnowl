@@ -121,10 +121,6 @@ typedef void HV;
 #define OWL_MESSAGE_DIRECTION_IN    1
 #define OWL_MESSAGE_DIRECTION_OUT   2
 
-#define OWL_IO_READ   1
-#define OWL_IO_WRITE  2
-#define OWL_IO_EXCEPT 4
-
 #define OWL_DIRECTION_NONE      0
 #define OWL_DIRECTION_DOWNWARDS 1
 #define OWL_DIRECTION_UPWARDS   2
@@ -526,17 +522,6 @@ typedef struct _owl_colorpair_mgr {
   bool overflow;
 } owl_colorpair_mgr;
 
-typedef struct _owl_io_dispatch {
-  int fd;                                     /* FD to watch for dispatch. */
-  int mode;
-  bool valid;
-  int needs_gc;
-  void (*callback)(const struct _owl_io_dispatch *, void *); /* C function to dispatch to. */
-  void (*destroy)(const struct _owl_io_dispatch *);  /* Destructor */
-  void *data;
-  GPollFD pollfd;
-} owl_io_dispatch;
-
 typedef struct _owl_popexec {
   int refcount;
   owl_viewwin *vwin;
@@ -606,7 +591,6 @@ typedef struct _owl_global {
   GList *zaldlist;
   int pseudologin_notify;
   struct termios startup_tio;
-  owl_list io_dispatch_list;
   guint aim_nop_timer;
   int load_initial_subs;
   FILE *debug_file;
