@@ -301,13 +301,14 @@ void owl_process_input_char(owl_input j)
   }
 }
 
-void owl_process_input(const owl_io_dispatch *d, void *data)
+gboolean owl_process_input(GIOChannel *source, GIOCondition condition, void *data)
 {
+  owl_global *g = data;
   owl_input j;
 
   while (1) {
-    j.ch = wgetch(g.input_pad);
-    if (j.ch == ERR) return;
+    j.ch = wgetch(g->input_pad);
+    if (j.ch == ERR) return TRUE;
 
     j.uch = '\0';
     if (j.ch >= KEY_MIN && j.ch <= KEY_MAX) {
@@ -329,7 +330,7 @@ void owl_process_input(const owl_io_dispatch *d, void *data)
       else bytes = 1;
       
       for (i = 1; i < bytes; i++) {
-        int tmp = wgetch(g.input_pad);
+        int tmp = wgetch(g->input_pad);
         /* If what we got was not a byte, or not a continuation byte */
         if (tmp > 0xff || !(tmp & 0x80 && ~tmp & 0x40)) {
           /* ill-formed UTF-8 code unit subsequence, put back the
@@ -356,6 +357,7 @@ void owl_process_input(const owl_io_dispatch *d, void *data)
 
     owl_process_input_char(j);
   }
+  return TRUE;
 }
 
 static void sig_handler_main_thread(void *data) {
@@ -484,6 +486,7 @@ int main(int argc, char **argv, char **env)
   const char *dir;
   owl_options opts;
   GSource *source;
+  GIOChannel *channel;
 
   argc_copy = argc;
   argv_copy = g_strdupv(argv);
@@ -509,7 +512,9 @@ int main(int argc, char **argv, char **env)
   owl_register_signal_handlers();
 
   /* register STDIN dispatch; throw away return, we won't need it */
-  owl_select_add_io_dispatch(STDIN_FILENO, OWL_IO_READ, &owl_process_input, NULL, NULL);
+  channel = g_io_channel_unix_new(STDIN_FILENO);
+  g_io_add_watch(channel, G_IO_IN | G_IO_HUP | G_IO_ERR, &owl_process_input, &g);
+  g_io_channel_unref(channel);
   owl_zephyr_initialize();
 
 #if OWL_STDERR_REDIR
