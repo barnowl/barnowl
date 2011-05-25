@@ -280,20 +280,20 @@ const owl_cmd commands_to_init[]
 
   OWLCMD_ARGS("punt", owl_command_punt, OWL_CTX_ANY,
 	      "suppress an arbitrary filter",
-	      "punt <filter-text>",
-	      "punt <filter-text (multiple words)>\n"
+	      "punt <filter-name>\n"
+	      "punt <filter-text (multiple words)>",
 	      "The punt command will suppress messages to the specified\n"
 	      "filter\n\n"
 	      "SEE ALSO:  unpunt, zpunt, show zpunts\n"),
 
   OWLCMD_ARGS("unpunt", owl_command_unpunt, OWL_CTX_ANY,
 	      "remove an entry from the punt list",
-	      "unpunt <filter-text>\n"
-	      "unpunt <filter-text>\n"
-	      "unpunt <number>\n",
+	      "unpunt <number>\n"
+	      "unpunt <filter-name>\n"
+	      "unpunt <filter-text (multiple words)>",
 	      "The unpunt command will remove an entry from the puntlist.\n"
-	      "The first two forms correspond to the first two forms of the :punt\n"
-	      "command. The latter allows you to remove a specific entry from the\n"
+	      "The last two forms correspond to the two forms of the :punt\n"
+	      "command. The first allows you to remove a specific entry from\n"
 	      "the list (see :show zpunts)\n\n"
 	      "SEE ALSO:  punt, zpunt, zunpunt, show zpunts\n"),
 
@@ -2463,7 +2463,6 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
 {
   owl_list * fl;
   owl_filter * f;
-  char * text;
   int i;
 
   fl = owl_global_get_puntlist(&g);
@@ -2479,14 +2478,14 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
         owl_filter_delete(f);
         return;
       } else {
-        owl_function_error("No such filter number: %d", i+1);
+        owl_function_makemsg("No such filter number: %d.", i+1);
       }
     }
-    text = owl_string_build_quoted("filter %q", argv[1]);
-    owl_function_punt(text, unpunt);
-    g_free(text);
+    const char *filter[] = {"filter", argv[1]};
+    owl_function_punt(2, filter, unpunt);
   } else {
-    owl_function_punt(skiptokens(buff, 1), unpunt);
+    /* Pass in argv[1]..argv[argc-1]. */
+    owl_function_punt(argc - 1, argv + 1, unpunt);
   }
 }
 

@@ -2780,40 +2780,49 @@ void owl_function_show_colors(void)
  */
 void owl_function_zpunt(const char *class, const char *inst, const char *recip, int direction)
 {
-  GString *buf;
+  GPtrArray *argv;
   char *quoted;
 
-  buf = g_string_new("");
+  argv = g_ptr_array_new();
   if (!strcmp(class, "*")) {
-    g_string_append(buf, "class .*");
+    g_ptr_array_add(argv, g_strdup("class"));
+    g_ptr_array_add(argv, g_strdup(".*"));
   } else {
     quoted=owl_text_quote(class, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
-    owl_string_appendf_quoted(buf, "class ^(un)*%q(\\.d)*$", quoted);
+    g_ptr_array_add(argv, g_strdup("class"));
+    g_ptr_array_add(argv, g_strdup_printf("^(un)*%s(\\.d)*$", quoted));
     g_free(quoted);
   }
   if (!strcmp(inst, "*")) {
-    g_string_append(buf, " and instance .*");
+    g_ptr_array_add(argv, g_strdup("and"));
+    g_ptr_array_add(argv, g_strdup("instance"));
+    g_ptr_array_add(argv, g_strdup(".*"));
   } else {
     quoted=owl_text_quote(inst, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
-    owl_string_appendf_quoted(buf, " and instance ^(un)*%q(\\.d)*$", quoted);
+    g_ptr_array_add(argv, g_strdup("and"));
+    g_ptr_array_add(argv, g_strdup("instance"));
+    g_ptr_array_add(argv, g_strdup_printf("^(un)*%s(\\.d)*$", quoted));
     g_free(quoted);
   }
   if (!strcmp(recip, "*")) {
-    /* g_string_append(buf, ""); */
+    /* nothing */
   } else {
     if(!strcmp(recip, "%me%")) {
       recip = owl_zephyr_get_sender();
     }
     quoted=owl_text_quote(recip, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
-    owl_string_appendf_quoted(buf, " and recipient ^%q$", quoted);
+    g_ptr_array_add(argv, g_strdup("and"));
+    g_ptr_array_add(argv, g_strdup("recipient"));
+    g_ptr_array_add(argv, g_strdup_printf("^%s$", quoted));
     g_free(quoted);
   }
 
-  owl_function_punt(buf->str, direction);
-  g_string_free(buf, true);
+  owl_function_punt(argv->len, (const char *const*) argv->pdata, direction);
+  g_ptr_array_foreach(argv, (GFunc)g_free, NULL);
+  g_ptr_array_free(argv, true);
 }
 
-void owl_function_punt(const char *filter, int direction)
+void owl_function_punt(int argc, const char *const *argv, int direction)
 {
   owl_filter *f;
   owl_list *fl;
@@ -2821,8 +2830,7 @@ void owl_function_punt(const char *filter, int direction)
   fl=owl_global_get_puntlist(&g);
 
   /* first, create the filter */
-  owl_function_debugmsg("About to filter %s", filter);
-  f = owl_filter_new_fromstring("punt-filter", filter);
+  f = owl_filter_new("punt-filter", argc, argv);
   if (f == NULL) {
     owl_function_error("Error creating filter for zpunt");
     return;
@@ -2849,11 +2857,13 @@ void owl_function_punt(const char *filter, int direction)
     }
   }
 
-  owl_function_debugmsg("punting");
-  /* If we're punting, add the filter to the global punt list */
-  if (direction==0) {
+  if (direction == 0) {
+    owl_function_debugmsg("punting");
+    /* If we're punting, add the filter to the global punt list */
     owl_list_append_element(fl, f);
-  }
+  } else if (direction == 1) {
+    owl_function_makemsg("No matching punt filter");
+ }
 }
 
 void owl_function_show_keymaps(void)
