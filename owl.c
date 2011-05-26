@@ -463,11 +463,10 @@ void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
     navail = sizeof(buf)-1;
   }
   bread = read(rfd, buf, navail);
-  if (buf[navail-1] != '\0') {
-    buf[navail] = '\0';
-  }
+  if (bread == -1)
+    return;
 
-  err = g_strdup_printf("[stderr]\n%s", buf);
+  err = g_strdup_printf("[stderr]\n%.*s", bread, buf);
 
   owl_function_log_err(err);
   g_free(err);
