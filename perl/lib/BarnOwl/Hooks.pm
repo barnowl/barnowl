@@ -57,6 +57,21 @@ Called to display buddy lists for all protocol handlers. The result
 from every function registered with this hook will be appended and
 displayed in a popup window, with zephyr formatting parsed.
 
+=item $awayOn
+
+Called, for all protocol handlers, to go away, with the away message,
+if any.
+
+=item $awayOff
+
+Called, for all protocol handlers, to come back from away.
+
+=item $getIsAway
+
+Called to check away status for all protocol handlers.  Protocol
+handlers should return a true value if any account of the user is away
+for the given protocol, and a false value otherwise.
+
 =item $getQuickstart
 
 Called by :show quickstart to display 2-5 lines of help on how to
@@ -74,6 +89,7 @@ use Exporter;
 our @EXPORT_OK = qw($startup $shutdown
                     $receiveMessage $newMessage
                     $mainLoop $getBuddyList
+                    $awayOn $awayOff $getIsAway
                     $getQuickstart);
 
 our %EXPORT_TAGS = (all => [@EXPORT_OK]);
@@ -87,6 +103,9 @@ our $newMessage = BarnOwl::Hook->new;
 our $mainLoop = BarnOwl::MainLoopCompatHook->new;
 our $getBuddyList = BarnOwl::Hook->new;
 our $getQuickstart = BarnOwl::Hook->new;
+our $awayOn = BarnOwl::Hook->new;
+our $awayOff = BarnOwl::Hook->new;
+our $getIsAway = BarnOwl::Hook->new;
 
 # Internal startup/shutdown routines called by the C code
 
@@ -198,6 +217,19 @@ sub _get_blist {
 
 sub _get_quickstart {
     return join("\n", $getQuickstart->run);
+}
+
+sub _away_on {
+    $awayOn->run(@_);
+}
+
+sub _away_off {
+    $awayOff->run();
+}
+
+sub _get_is_away {
+    my @is_away = grep { $_ } $getIsAway->run();
+    return scalar @is_away;
 }
 
 sub _new_command {
