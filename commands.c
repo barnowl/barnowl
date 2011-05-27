@@ -478,15 +478,12 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "use the default.\n"),
 
   OWLCMD_ARGS("away", owl_command_away, OWL_CTX_INTERACTIVE,
-	      "Set, enable or disable both AIM and zephyr away messages",
+	      "Set, enable or disable all away messages",
 	      "away [ on | off | toggle ]\n"
 	      "away <message>",
-	      "Turn on or off the AIM and zephyr away message.  If\n"
+	      "Turn on or off all away messages.  If\n"
 	      "'message' is specified turn them on with that message,\n"
 	      "otherwise use the default.\n"
-	      "\n"
-	      "This command really just runs the 'aaway' and 'zaway'\n"
-	      "commands together\n"
 	      "\n"
 	      "SEE ALSO: aaway, zaway"),
 
@@ -1530,44 +1527,42 @@ char *owl_command_aaway(int argc, const char *const *argv, const char *buff)
 
 char *owl_command_away(int argc, const char *const *argv, const char *buff)
 {
-  if ((argc==1) ||
-      ((argc==2) && !strcmp(argv[1], "on"))) {
+  bool away_off;
+  const char *message = NULL;
+
+  if (argc == 1 ||
+      (argc == 2 && !strcmp(argv[1], "on"))) {
+    away_off = false;
     owl_global_set_aaway_msg(&g, owl_global_get_aaway_msg_default(&g));
     owl_global_set_zaway_msg(&g, owl_global_get_zaway_msg_default(&g));
-    owl_function_aaway_on();
-    owl_function_zaway_on();
-    owl_function_makemsg("Away messages set.");
-    return NULL;
+  } else if (argc == 2 && !strcmp(argv[1], "off")) {
+    away_off = true;
+  } else if (argc == 2 && !strcmp(argv[1], "toggle")) {
+    away_off = owl_function_is_away();
+  } else {
+    away_off = false;
+    message = skiptokens(buff, 1);
   }
 
-  if (argc==2 && !strcmp(argv[1], "off")) {
+  if (away_off) {
     owl_function_aaway_off();
     owl_function_zaway_off();
-    return NULL;
+    owl_perlconfig_perl_call_norv("BarnOwl::Hooks::_away_off", 0, NULL);
+    owl_function_makemsg("Away messages off.");
+  } else if (message != NULL) {
+    owl_global_set_aaway_msg(&g, message);
+    owl_global_set_zaway_msg(&g, message);
+    owl_function_aaway_on();
+    owl_function_zaway_on();
+    owl_perlconfig_perl_call_norv("BarnOwl::Hooks::_away_on", 1, &message);
+    owl_function_makemsg("Away messages set (%s).", message);
+  } else {
+    owl_function_aaway_on();
+    owl_function_zaway_on();
+    owl_perlconfig_perl_call_norv("BarnOwl::Hooks::_away_on", 0, NULL);
+    owl_function_makemsg("Away messages set.");
   }
 
-  if (argc==2 && !strcmp(argv[1], "toggle")) {
-    /* if either one is on, turn it off, otherwise toggle both (turn
-     *  them both on)
-     */
-    if (!owl_global_is_zaway(&g) && !owl_global_is_aaway(&g)) {
-      owl_function_aaway_toggle();
-      owl_function_zaway_toggle();
-      owl_function_makemsg("Away messages set.");
-    } else {
-      if (owl_global_is_zaway(&g)) owl_function_zaway_toggle();
-      if (owl_global_is_aaway(&g)) owl_function_aaway_toggle();
-      owl_function_makemsg("Away messages off.");
-    }
-    return NULL;
-  }
-
-  buff = skiptokens(buff, 1);
-  owl_global_set_aaway_msg(&g, buff);
-  owl_global_set_zaway_msg(&g, buff);
-  owl_function_aaway_on();
-  owl_function_zaway_on();
-  owl_function_makemsg("Away messages set.");
   return NULL;
 }
 
