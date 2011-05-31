@@ -57,7 +57,7 @@ owl_popexec *owl_popexec_new(const char *command)
     channel = g_io_channel_unix_new(parent_read_fd);
     g_io_channel_set_close_on_unref(channel, TRUE);
     pe->io_watch = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT,
-				       G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
+				       G_IO_IN | G_IO_ERR | G_IO_HUP,
 				       owl_popexec_inputhandler, pe,
 				       (GDestroyNotify)owl_popexec_unref);
     g_io_channel_unref(channel);
