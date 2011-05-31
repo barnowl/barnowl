@@ -92,7 +92,7 @@ void owl_zephyr_initialize(void)
   }
 
   channel = g_io_channel_unix_new(ZGetFD());
-  g_io_add_watch(channel, G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
+  g_io_add_watch(channel, G_IO_IN | G_IO_ERR | G_IO_HUP,
 		 &owl_zephyr_finish_initialization, NULL);
   g_io_channel_unref(channel);
 }
@@ -1513,7 +1513,7 @@ static GSource *owl_zephyr_event_source_new(int fd) {
   source = g_source_new(&zephyr_event_funcs, sizeof(owl_zephyr_event_source));
   event_source = (owl_zephyr_event_source*) source;
   event_source->poll_fd.fd = fd;
-  event_source->poll_fd.events = G_IO_IN | G_IO_HUP | G_IO_PRI | G_IO_ERR;
+  event_source->poll_fd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
   g_source_add_poll(source, &event_source->poll_fd);
 
   return source;
