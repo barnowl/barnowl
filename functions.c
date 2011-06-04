@@ -3182,35 +3182,30 @@ void owl_function_do_newmsgproc(void)
       }
     }
     
-    /* if it exited, fork & exec a new one */
+    /* if it exited, spawn a new one */
     if (owl_global_get_newmsgproc_pid(&g)==0) {
-      pid_t i;
       int myargc;
-      i=fork();
-      if (i) {
-	/* parent set the child's pid */
-	owl_global_set_newmsgproc_pid(&g, i);
-	owl_function_debugmsg("I'm the parent and I started a new newmsgproc with pid %i", i);
-      } else {
-	/* child exec's the program */
-	char **parsed;
-	parsed=owl_parseline(owl_global_get_newmsgproc(&g), &myargc);
-	if (myargc < 0) {
-	  owl_function_debugmsg("Could not parse newmsgproc '%s': unbalanced quotes?", owl_global_get_newmsgproc(&g));
-	}
-	if (myargc <= 0) {
-	  _exit(127);
-	}
-	owl_function_debugmsg("About to exec \"%s\" with %d arguments", parsed[0], myargc);
-	
-	execvp(parsed[0], parsed);
-	
-	
-	/* was there an error exec'ing? */
-	owl_function_debugmsg("Cannot run newmsgproc '%s': cannot exec '%s': %s", 
-			      owl_global_get_newmsgproc(&g), parsed[0], strerror(errno));
-	_exit(127);
+      char **argv = owl_parseline(owl_global_get_newmsgproc(&g), &myargc);
+      if (myargc < 0) {
+        owl_function_debugmsg("Could not parse newmsgproc '%s': unbalanced quotes?",
+                              owl_global_get_newmsgproc(&g));
+      } else if (myargc > 0) {
+        /* Spawn the child. */
+        pid_t pid;
+        GError *error = NULL;
+        owl_function_debugmsg("About to exec \"%s\" with %d arguments", argv[0], myargc);
+        if (g_spawn_async(NULL, argv, NULL,
+                          G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
+                          NULL, NULL, &pid, &error)) {
+          owl_global_set_newmsgproc_pid(&g, pid);
+          owl_function_debugmsg("I'm the parent and I started a new newmsgproc with pid %i", pid);
+        } else {
+          owl_function_debugmsg("Cannot run newmsgproc '%s': %s",
+                                owl_global_get_newmsgproc(&g), error->message);
+          g_error_free(error);
+        }
       }
+      g_strfreev(argv);
     }
   }
 }
