@@ -454,7 +454,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
 		       actual_filename, strerror(errno));
     g_free(newfile);
     fclose(old);
-    free(actual_filename);
+    g_free(actual_filename);
     return -1;
   }
 
@@ -465,7 +465,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
     fclose(new);
     g_free(newfile);
     fclose(old);
-    free(actual_filename);
+    g_free(actual_filename);
     return -1;
   }
 
