@@ -52,10 +52,10 @@ typedef struct
   char *message;
 } ZWRITEOPTIONS;
 
-char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *instance);
+G_GNUC_WARN_UNUSED_RESULT char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *instance);
 int ParseCryptSpec(const char *spec, const char **keyfile);
-char *BuildArgString(char **argv, int start, int end);
-char *read_keystring(const char *keyfile);
+G_GNUC_WARN_UNUSED_RESULT char *BuildArgString(char **argv, int start, int end);
+G_GNUC_WARN_UNUSED_RESULT char *read_keystring(const char *keyfile);
 
 int do_encrypt(int zephyr, const char *class, const char *instance,
                ZWRITEOPTIONS *zoptions, const char* keyfile, int cipher);
@@ -363,7 +363,7 @@ int ParseCryptSpec(const char *spec, const char **keyfile) {
 
 /* Build a space-separated string from argv from elements between start  *
  * and end - 1.  malloc()'s the returned string. */
-char *BuildArgString(char **argv, int start, int end)
+G_GNUC_WARN_UNUSED_RESULT char *BuildArgString(char **argv, int start, int end)
 {
   int len = 1;
   int i;
@@ -400,7 +400,7 @@ char *BuildArgString(char **argv, int start, int end)
 #define MAX_BUFF 258
 #define MAX_SEARCH 3
 /* Find the class/instance in the .crypt-table */
-char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *instance)
+G_GNUC_WARN_UNUSED_RESULT char *GetZephyrVarKeyFile(const char *whoami, const char *class, const char *instance)
 {
   char *keyfile = NULL;
   char *varname[MAX_SEARCH];
@@ -578,7 +578,7 @@ void block_to_ascii(unsigned char *output, FILE *outfile)
   }
 }
 
-char *slurp_stdin(int ignoredot, int *length) {
+G_GNUC_WARN_UNUSED_RESULT char *slurp_stdin(int ignoredot, int *length) {
   char *buf;
   char *inptr;
 
@@ -610,7 +610,7 @@ char *slurp_stdin(int ignoredot, int *length) {
   return buf;
 }
 
-char *GetInputBuffer(ZWRITEOPTIONS *zoptions, int *length) {
+G_GNUC_WARN_UNUSED_RESULT char *GetInputBuffer(ZWRITEOPTIONS *zoptions, int *length) {
   char *buf;
 
   if (zoptions->flags & ZCRYPT_OPT_MESSAGE)
@@ -636,7 +636,7 @@ char *GetInputBuffer(ZWRITEOPTIONS *zoptions, int *length) {
   return buf;
 }
 
-char *read_keystring(const char *keyfile) {
+G_GNUC_WARN_UNUSED_RESULT char *read_keystring(const char *keyfile) {
   char *keystring;
   FILE *fkey = fopen(keyfile, "r");
   if(!fkey) {

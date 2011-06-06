@@ -520,7 +520,7 @@ int owl_zephyr_unsub(const char *class, const char *inst, const char *recip)
  * definition).  Caller must free the return.
  */
 #ifdef HAVE_LIBZEPHYR
-char *owl_zephyr_get_field(const ZNotice_t *n, int j)
+G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_field(const ZNotice_t *n, int j)
 {
   int i, count, save;
 
@@ -548,7 +548,7 @@ char *owl_zephyr_get_field(const ZNotice_t *n, int j)
   return(g_strdup(""));
 }
 
-char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
+G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
 {
   int i, count, save;
 
@@ -580,11 +580,11 @@ char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
   return(g_strdup(""));
 }
 #else
-char *owl_zephyr_get_field(void *n, int j)
+G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_field(void *n, int j)
 {
   return(g_strdup(""));
 }
-char *owl_zephyr_get_field_as_utf8(void *n, int j)
+G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_field_as_utf8(void *n, int j)
 {
   return owl_zephyr_get_field(n, j);
 }
@@ -617,7 +617,7 @@ int owl_zephyr_get_num_fields(const void *n)
 /* return a pointer to the message, place the message length in k
  * caller must free the return
  */
-char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
+G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
 {
 #define OWL_NFIELDS	5
   int i;
@@ -938,7 +938,7 @@ void owl_zephyr_hackaway_cr(ZNotice_t *n)
 }
 #endif
 
-char *owl_zephyr_zlocate(const char *user, int auth)
+G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_zlocate(const char *user, int auth)
 {
 #ifdef HAVE_LIBZEPHYR
   int ret, numlocs;
@@ -1038,7 +1038,7 @@ void owl_zephyr_delsub(const char *filename, const char *class, const char *inst
 }
 
 /* caller must free the return */
-char *owl_zephyr_makesubline(const char *class, const char *inst, const char *recip)
+G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_makesubline(const char *class, const char *inst, const char *recip)
 {
   return g_strdup_printf("%s,%s,%s\n", class, inst, !strcmp(recip, "") ? "*" : recip);
 }
@@ -1118,7 +1118,7 @@ const char *owl_zephyr_get_authstr(const void *n)
 /* Returns a buffer of subscriptions or an error message.  Caller must
  * free the return.
  */
-char *owl_zephyr_getsubs(void)
+G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_getsubs(void)
 {
 #ifdef HAVE_LIBZEPHYR
   Code_t ret;
@@ -1238,7 +1238,7 @@ int owl_zephyr_set_exposure(const char *exposure)
 /* Strip a local realm fron the zephyr user name.
  * The caller must free the return
  */
-char *short_zuser(const char *in)
+G_GNUC_WARN_UNUSED_RESULT char *short_zuser(const char *in)
 {
   char *ptr = strrchr(in, '@');
   if (ptr && (ptr[1] == '\0' || !strcasecmp(ptr+1, owl_zephyr_get_realm()))) {
@@ -1250,7 +1250,7 @@ char *short_zuser(const char *in)
 /* Append a local realm to the zephyr user name if necessary.
  * The caller must free the return.
  */
-char *long_zuser(const char *in)
+G_GNUC_WARN_UNUSED_RESULT char *long_zuser(const char *in)
 {
   char *ptr = strrchr(in, '@');
   if (ptr) {
@@ -1278,7 +1278,7 @@ const char *zuser_realm(const char *in)
  * alone. Also leave rcmd. and daemon. krb4 principals alone. The
  * caller must free the return.
  */
-char *owl_zephyr_smartstripped_user(const char *in)
+G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_smartstripped_user(const char *in)
 {
   char *slash, *dot, *realm, *out;
 

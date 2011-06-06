@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "owl.h"
 
-owl_zwrite *owl_zwrite_new(const char *line)
+G_GNUC_WARN_UNUSED_RESULT owl_zwrite *owl_zwrite_new(const char *line)
 {
   owl_zwrite *z = g_new(owl_zwrite, 1);
   if (owl_zwrite_create_from_line(z, line) < 0) {
@@ -14,7 +14,7 @@ owl_zwrite *owl_zwrite_new(const char *line)
   return z;
 }
 
-int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
+G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
 {
   int argc, badargs, myargc;
   char **argv;
@@ -320,7 +320,7 @@ const char *owl_zwrite_get_recip_n(const owl_zwrite *z, int n)
 }
 
 /* Caller must free the result. */
-char *owl_zwrite_get_recip_n_with_realm(const owl_zwrite *z, int n)
+G_GNUC_WARN_UNUSED_RESULT char *owl_zwrite_get_recip_n_with_realm(const owl_zwrite *z, int n)
 {
   if (z->realm[0]) {
     return g_strdup_printf("%s@%s", owl_zwrite_get_recip_n(z, n), z->realm);
@@ -369,7 +369,7 @@ void owl_zwrite_cleanup(owl_zwrite *z)
  *
  * If not a CC, only the recip_index'th user will be replied to.
  */
-char *owl_zwrite_get_replyline(const owl_zwrite *z, int recip_index)
+G_GNUC_WARN_UNUSED_RESULT char *owl_zwrite_get_replyline(const owl_zwrite *z, int recip_index)
 {
   /* Match ordering in zwrite help. */
   GString *buf = g_string_new("");

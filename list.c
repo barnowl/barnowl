@@ -52,14 +52,14 @@ int owl_list_insert_element(owl_list *l, int at, void *element)
   return(0);
 }
 
-int owl_list_append_element(owl_list *l, void *element)
+void owl_list_append_element(owl_list *l, void *element)
 {
-  return owl_list_insert_element(l, l->size, element);
+  owl_list_insert_element(l, l->size, element);
 }
 
-int owl_list_prepend_element(owl_list *l, void *element)
+void owl_list_prepend_element(owl_list *l, void *element)
 {
-  return owl_list_insert_element(l, 0, element);
+  owl_list_insert_element(l, 0, element);
 }
 
 int owl_list_remove_element(owl_list *l, int n)
