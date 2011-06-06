@@ -13,14 +13,14 @@
 #include "owl.h"
 #include "filterproc.h"
 
-char *owl_function_command(const char *cmdbuff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_command(const char *cmdbuff)
 {
   owl_function_debugmsg("executing command: %s", cmdbuff);
   return owl_cmddict_execute(owl_global_get_cmddict(&g), 
 			     owl_global_get_context(&g), cmdbuff);
 }
 
-char *owl_function_command_argv(const char *const *argv, int argc)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_command_argv(const char *const *argv, int argc)
 {
   return owl_cmddict_execute_argv(owl_global_get_cmddict(&g),
                                   owl_global_get_context(&g),
@@ -94,7 +94,8 @@ void owl_function_show_styles(void) {
   owl_fmtext_cleanup(&fm);
 }
 
-char *owl_function_style_describe(const char *name) {
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_style_describe(const char *name)
+{
   const char *desc;
   char *s;
   const owl_style *style;
@@ -110,7 +111,7 @@ char *owl_function_style_describe(const char *name) {
   return s;
 }
 
-char *owl_function_cmd_describe(const char *name)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_cmd_describe(const char *name)
 {
   const owl_cmd *cmd = owl_cmddict_find(owl_global_get_cmddict(&g), name);
   if (cmd) return owl_cmd_describe(cmd);
@@ -248,7 +249,7 @@ void owl_function_add_outgoing_zephyrs(const owl_zwrite *z)
  * create the message).  Does not put it on the global queue.  Use
  * owl_global_messagequeue_addmsg() for that.
  */
-owl_message *owl_function_make_outgoing_aim(const char *body, const char *to)
+G_GNUC_WARN_UNUSED_RESULT owl_message *owl_function_make_outgoing_aim(const char *body, const char *to)
 {
   owl_message *m;
 
@@ -269,7 +270,7 @@ owl_message *owl_function_make_outgoing_aim(const char *body, const char *to)
  * Does not append it to the global queue, use
  * owl_global_messagequeue_addmsg() for that.
  */
-owl_message *owl_function_make_outgoing_loopback(const char *body)
+G_GNUC_WARN_UNUSED_RESULT owl_message *owl_function_make_outgoing_loopback(const char *body)
 {
   owl_message *m;
 
@@ -1898,7 +1899,7 @@ void owl_function_start_command(const char *line)
   owl_editwin_set_callback(tw, owl_callback_command);
 }
 
-owl_editwin *owl_function_start_question(const char *line)
+G_GNUC_WARN_UNUSED_RESULT owl_editwin *owl_function_start_question(const char *line)
 {
   owl_editwin *tw;
   owl_context *ctx;
@@ -1913,7 +1914,7 @@ owl_editwin *owl_function_start_question(const char *line)
   return tw;
 }
 
-owl_editwin *owl_function_start_password(const char *line)
+G_GNUC_WARN_UNUSED_RESULT owl_editwin *owl_function_start_password(const char *line)
 {
   owl_editwin *tw;
   owl_context *ctx;
@@ -1930,7 +1931,7 @@ owl_editwin *owl_function_start_password(const char *line)
   return tw;
 }
 
-char *owl_function_exec(int argc, const char *const *argv, const char *buff, int type)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_exec(int argc, const char *const *argv, const char *buff, int type)
 {
   /* if type == 1 display in a popup
    * if type == 2 display an admin messages
@@ -1973,7 +1974,7 @@ char *owl_function_exec(int argc, const char *const *argv, const char *buff, int
   return NULL;
 }
 
-char *owl_function_perl(int argc, const char *const *argv, const char *buff, int type)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_perl(int argc, const char *const *argv, const char *buff, int type)
 {
   /* if type == 1 display in a popup
    * if type == 2 display an admin messages
@@ -2143,7 +2144,7 @@ void owl_function_create_filter(int argc, const char *const *argv)
  *
  * Returns the name of the negated filter, which the caller must free.
  */
-char *owl_function_create_negative_filter(const char *filtername)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_create_negative_filter(const char *filtername)
 {
   char *newname;
   const owl_filter *tmpfilt;
@@ -2240,7 +2241,7 @@ void owl_function_show_zpunts(void)
  * name of the filter or null.  The caller must free this name.
  * If 'related' is nonzero, encompass unclasses and .d classes as well.
  */
-char *owl_function_classinstfilt(const char *c, const char *i, int related) 
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_classinstfilt(const char *c, const char *i, int related) 
 {
   owl_filter *f;
   char *filtname;
@@ -2327,7 +2328,7 @@ done:
  * the configuration to override this function.  Returns the name of
  * the filter, which the caller must free.
  */
-char *owl_function_zuserfilt(const char *longuser)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_zuserfilt(const char *longuser)
 {
   owl_filter *f;
   char *argbuff, *esclonguser, *shortuser, *filtname;
@@ -2373,7 +2374,7 @@ char *owl_function_zuserfilt(const char *longuser)
  * created.  This allows the configuration to override this function.
  * Returns the name of the filter, which the caller must free.
  */
-char *owl_function_aimuserfilt(const char *user)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_aimuserfilt(const char *user)
 {
   owl_filter *f;
   char *argbuff, *filtname;
@@ -2411,7 +2412,7 @@ char *owl_function_aimuserfilt(const char *user)
   return(filtname);
 }
 
-char *owl_function_typefilt(const char *type)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_typefilt(const char *type)
 {
   owl_filter *f;
   char *argbuff, *filtname, *esctype;
@@ -2467,7 +2468,8 @@ void owl_function_delete_curview_msgs(int flag)
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));  
 }
 
-static char *owl_function_smartfilter_cc(const owl_message *m) {
+static G_GNUC_WARN_UNUSED_RESULT char *owl_function_smartfilter_cc(const owl_message *m)
+{
   const char *ccs;
   char *ccs_quoted;
   char *filtname;
@@ -2518,7 +2520,7 @@ static char *owl_function_smartfilter_cc(const owl_message *m) {
  * If the curmsg is a personal AIM message returna  filter
  *    name to the AIM conversation with that user 
  */
-char *owl_function_smartfilter(int type, int invert_related)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_smartfilter(int type, int invert_related)
 {
   const owl_view *v;
   const owl_message *m;
@@ -2857,7 +2859,7 @@ void owl_function_show_keymaps(void)
   owl_fmtext_cleanup(&fm);
 }
 
-char *owl_function_keymap_summary(const char *name)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_keymap_summary(const char *name)
 {
   const owl_keymap *km 
     = owl_keyhandler_get_keymap(owl_global_get_keyhandler(&g), name);
@@ -2971,7 +2973,7 @@ void owl_function_search_helper(int consider_current, int direction)
 
 /* strips formatting from ztext and returns the unformatted text. 
  * caller is responsible for freeing. */
-char *owl_function_ztext_stylestrip(const char *zt)
+G_GNUC_WARN_UNUSED_RESULT char *owl_function_ztext_stylestrip(const char *zt)
 {
   owl_fmtext fm;
   char *plaintext;

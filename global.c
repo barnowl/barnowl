@@ -172,7 +172,8 @@ void owl_global_push_context_obj(owl_global *g, owl_context *c)
 
 /* Pops the current context from the context stack and returns it. Caller is
  * responsible for freeing. */
-owl_context *owl_global_pop_context_no_delete(owl_global *g) {
+G_GNUC_WARN_UNUSED_RESULT owl_context *owl_global_pop_context_no_delete(owl_global *g)
+{
   owl_context *c;
   if (!g->context_stack)
     return NULL;
@@ -724,7 +725,7 @@ void owl_global_messagequeue_addmsg(owl_global *g, owl_message *m)
  * is empty.  The caller should free the message after using it, if
  * necessary.
  */
-owl_message *owl_global_messagequeue_popmsg(owl_global *g)
+owl_message G_GNUC_WARN_UNUSED_RESULT *owl_global_messagequeue_popmsg(owl_global *g)
 {
   owl_message *out;
 

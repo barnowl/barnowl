@@ -436,7 +436,7 @@ int owl_aim_chat_sendmsg(const char *chatroom, const char *msg)
 }
 
 /* caller must free the return */
-char *owl_aim_normalize_screenname(const char *in)
+G_GNUC_WARN_UNUSED_RESULT char *owl_aim_normalize_screenname(const char *in)
 {
   char *out;
   int i, j, k;

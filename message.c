@@ -579,7 +579,7 @@ int owl_message_is_mail(const owl_message *m)
 }
 
 /* caller must free return value. */
-char *owl_message_get_cc(const owl_message *m)
+G_GNUC_WARN_UNUSED_RESULT char *owl_message_get_cc(const owl_message *m)
 {
   const char *cur;
   char *out, *end;
@@ -596,7 +596,7 @@ char *owl_message_get_cc(const owl_message *m)
 }
 
 /* caller must free return value */
-GList *owl_message_get_cc_without_recipient(const owl_message *m)
+G_GNUC_WARN_UNUSED_RESULT GList *owl_message_get_cc_without_recipient(const owl_message *m)
 {
   char *cc, *shortuser, *recip;
   const char *user;
