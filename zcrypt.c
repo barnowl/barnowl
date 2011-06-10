@@ -10,7 +10,6 @@
 
 #include <unistd.h>
 #include <sys/types.h>
-#include <zephyr/zephyr.h>
 #include <glib.h>
 #include <string.h>
 #include <stdlib.h>
