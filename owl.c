@@ -485,9 +485,6 @@ int main(int argc, char **argv, char **env)
   owl_options opts;
   GSource *source;
 
-  if (!GLIB_CHECK_VERSION (2, 12, 0))
-    g_error ("GLib version 2.12.0 or above is needed.");
-
   argc_copy = argc;
   argv_copy = g_strdupv(argv);
 
