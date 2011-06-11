@@ -160,10 +160,11 @@ sub replysendercmd {
 sub jwrite_cmd {
     my ($recip, $account, $subject) = @_;
     if (defined $recip) {
-        my @cmd = ('jwrite', $recip, '-a', $account);
+        my @cmd = ('jwrite', '-a', $account);
         if (defined $subject) {
             push @cmd, '-s', $subject;
         }
+        push @cmd, '--', $recip;
         return BarnOwl::quote(@cmd);
     } else {
         return undef;
