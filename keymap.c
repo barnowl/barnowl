@@ -23,8 +23,7 @@ void owl_keymap_cleanup(owl_keymap *km)
 {
   g_free(km->name);
   g_free(km->desc);
-  g_ptr_array_foreach(km->bindings, (GFunc)owl_keybinding_delete, NULL);
-  g_ptr_array_free(km->bindings, true);
+  owl_ptr_array_free(km->bindings, (GDestroyNotify)owl_keybinding_delete);
 }
 
 void owl_keymap_set_parent(owl_keymap *km, const owl_keymap *parent)

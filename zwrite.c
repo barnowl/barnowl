@@ -347,8 +347,7 @@ void owl_zwrite_delete(owl_zwrite *z)
 
 void owl_zwrite_cleanup(owl_zwrite *z)
 {
-  g_ptr_array_foreach(z->recips, (GFunc)g_free, NULL);
-  g_ptr_array_free(z->recips, true);
+  owl_ptr_array_free(z->recips, g_free);
   g_free(z->cmd);
   g_free(z->zwriteline);
   g_free(z->class);

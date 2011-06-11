@@ -133,6 +133,5 @@ void owl_buddylist_clear(owl_buddylist *bl)
 
 void owl_buddylist_cleanup(owl_buddylist *bl)
 {
-  g_ptr_array_foreach(bl->buddies, (GFunc)owl_buddy_delete, NULL);
-  g_ptr_array_free(bl->buddies, true);
+  owl_ptr_array_free(bl->buddies, (GDestroyNotify)owl_buddy_delete);
 }

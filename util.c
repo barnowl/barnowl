@@ -97,6 +97,15 @@ CALLER_OWN char *owl_util_makepath(const char *in)
   return(out);
 }
 
+void owl_ptr_array_free(GPtrArray *array, GDestroyNotify element_free_func)
+{
+  /* TODO: when we move to requiring glib 2.22+, use
+   * g_ptr_array_new_with_free_func instead. */
+  if (element_free_func)
+    g_ptr_array_foreach(array, (GFunc)element_free_func, NULL);
+  g_ptr_array_free(array, true);
+}
+
 /* Break a command line up into argv, argc.  The caller must free
    the returned values with g_strfreev.  If there is an error argc will be set
    to -1, argv will be NULL and the caller does not need to free anything. The
@@ -169,10 +178,7 @@ CALLER_OWN char **owl_parseline(const char *line, int *argc)
 
   /* check for unbalanced quotes */
   if (quote!='\0') {
-    /* TODO: when we move to requiring glib 2.22+, use
-     * g_ptr_array_new_with_free_func. */
-    g_ptr_array_foreach(argv, (GFunc)g_free, NULL);
-    g_ptr_array_free(argv, true);
+    owl_ptr_array_free(argv, g_free);
     if (argc) *argc = -1;
     return(NULL);
   }

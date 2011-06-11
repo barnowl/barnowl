@@ -2778,8 +2778,7 @@ void owl_function_zpunt(const char *class, const char *inst, const char *recip, 
   }
 
   owl_function_punt(argv->len, (const char *const*) argv->pdata, direction);
-  g_ptr_array_foreach(argv, (GFunc)g_free, NULL);
-  g_ptr_array_free(argv, true);
+  owl_ptr_array_free(argv, g_free);
 }
 
 void owl_function_punt(int argc, const char *const *argv, int direction)
@@ -3072,8 +3071,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
           }
         }
       }
-      g_ptr_array_foreach(anyone, (GFunc)g_free, NULL);
-      g_ptr_array_free(anyone, true);
+      owl_ptr_array_free(anyone, g_free);
     }
   }
 #endif
@@ -3417,8 +3415,7 @@ void owl_function_zephyr_buddy_check(int notify)
     }
   }
 
-  g_ptr_array_foreach(anyone, (GFunc)g_free, NULL);
-  g_ptr_array_free(anyone, true);
+  owl_ptr_array_free(anyone, g_free);
 #endif
 }
 
