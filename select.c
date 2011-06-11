@@ -1,7 +1,6 @@
 #include "owl.h"
 
 static GMainLoop *loop = NULL;
-static GMainContext *main_context;
 
 void owl_select_init(void)
 {
@@ -9,8 +8,7 @@ void owl_select_init(void)
 
 void owl_select_run_loop(void)
 {
-  main_context = g_main_context_default();
-  loop = g_main_loop_new(main_context, FALSE);
+  loop = g_main_loop_new(NULL, FALSE);
   g_main_loop_run(loop);
 }
 
