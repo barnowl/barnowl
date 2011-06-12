@@ -27,8 +27,8 @@ void owl_cmddict_add_from_list(owl_cmddict *cd, const owl_cmd *cmds)
   }
 }
 
-void owl_cmddict_get_names(const owl_cmddict *d, owl_list *l) {
-  owl_dict_get_keys(d, l);
+GPtrArray *owl_cmddict_get_names(const owl_cmddict *d) {
+  return owl_dict_get_keys(d);
 }
 
 const owl_cmd *owl_cmddict_find(const owl_cmddict *d, const char *name) {

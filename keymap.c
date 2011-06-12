@@ -208,9 +208,9 @@ owl_keymap *owl_keyhandler_get_keymap(const owl_keyhandler *kh, const char *mapn
   return owl_dict_find_element(&kh->keymaps, mapname);
 }
 
-void owl_keyhandler_get_keymap_names(const owl_keyhandler *kh, owl_list *l)
+CALLER_OWN GPtrArray *owl_keyhandler_get_keymap_names(const owl_keyhandler *kh)
 {
-  owl_dict_get_keys(&kh->keymaps, l);
+  return owl_dict_get_keys(&kh->keymaps);
 }
 
 

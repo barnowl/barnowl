@@ -728,8 +728,8 @@ void owl_variable_dict_cleanup(owl_vardict *d)
   owl_dict_cleanup(d, (void (*)(void *))owl_variable_delete);
 }
 
-void owl_variable_dict_get_names(const owl_vardict *d, owl_list *l) {
-  owl_dict_get_keys(d, l);
+CALLER_OWN GPtrArray *owl_variable_dict_get_names(const owl_vardict *d) {
+  return owl_dict_get_keys(d);
 }
 
 void owl_variable_cleanup(owl_variable *v)

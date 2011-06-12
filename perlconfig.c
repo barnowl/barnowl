@@ -35,7 +35,7 @@ CALLER_OWN SV *owl_new_sv(const char * str)
   return ret;
 }
 
-CALLER_OWN AV *owl_new_av(const owl_list *l, SV *(*to_sv)(const void *))
+CALLER_OWN AV *owl_new_av(const GPtrArray *l, SV *(*to_sv)(const void *))
 {
   AV *ret;
   int i;
@@ -43,8 +43,8 @@ CALLER_OWN AV *owl_new_av(const owl_list *l, SV *(*to_sv)(const void *))
 
   ret = newAV();
 
-  for (i = 0; i < owl_list_get_size(l); i++) {
-    element = owl_list_get_element(l, i);
+  for (i = 0; i < l->len; i++) {
+    element = l->pdata[i];
     av_push(ret, to_sv(element));
   }
 
@@ -54,7 +54,7 @@ CALLER_OWN AV *owl_new_av(const owl_list *l, SV *(*to_sv)(const void *))
 CALLER_OWN HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const void *))
 {
   HV *ret;
-  owl_list l;
+  GPtrArray *keys;
   const char *key;
   void *element;
   int i;
@@ -62,14 +62,13 @@ CALLER_OWN HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const void *))
   ret = newHV();
 
   /* TODO: add an iterator-like interface to owl_dict */
-  owl_list_create(&l);
-  owl_dict_get_keys(d, &l);
-  for (i = 0; i < owl_list_get_size(&l); i++) {
-    key = owl_list_get_element(&l, i);
+  keys = owl_dict_get_keys(d);
+  for (i = 0; i < keys->len; i++) {
+    key = keys->pdata[i];
     element = owl_dict_find_element(d, key);
     (void)hv_store(ret, key, strlen(key), to_sv(element), 0);
   }
-  owl_list_cleanup(&l, g_free);
+  owl_ptr_array_free(keys, g_free);
 
   return ret;
 }

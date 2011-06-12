@@ -229,7 +229,7 @@ int owl_util_regtest(void)
 
 int owl_dict_regtest(void) {
   owl_dict d;
-  owl_list l;
+  GPtrArray *l;
   int numfailed=0;
   char *av = g_strdup("aval"), *bv = g_strdup("bval"), *cv = g_strdup("cval"),
     *dv = g_strdup("dval");
@@ -250,16 +250,15 @@ int owl_dict_regtest(void) {
   FAIL_UNLESS("find d (post-removal)", NULL==owl_dict_find_element(&d, "d"));
 
   FAIL_UNLESS("get_size", 3==owl_dict_get_size(&d));
-  owl_list_create(&l);
-  owl_dict_get_keys(&d, &l);
-  FAIL_UNLESS("get_keys result size", 3==owl_list_get_size(&l));
+  l = owl_dict_get_keys(&d);
+  FAIL_UNLESS("get_keys result size", 3 == l->len);
   
   /* these assume the returned keys are sorted */
-  FAIL_UNLESS("get_keys result val",0==strcmp("a",owl_list_get_element(&l,0)));
-  FAIL_UNLESS("get_keys result val",0==strcmp("b",owl_list_get_element(&l,1)));
-  FAIL_UNLESS("get_keys result val",0==strcmp("c",owl_list_get_element(&l,2)));
+  FAIL_UNLESS("get_keys result val", 0 == strcmp("a", l->pdata[0]));
+  FAIL_UNLESS("get_keys result val", 0 == strcmp("b", l->pdata[1]));
+  FAIL_UNLESS("get_keys result val", 0 == strcmp("c", l->pdata[2]));
 
-  owl_list_cleanup(&l, g_free);
+  owl_ptr_array_free(l, g_free);
   owl_dict_cleanup(&d, NULL);
 
   g_free(av);

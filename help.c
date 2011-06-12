@@ -5,8 +5,8 @@ void owl_help(void)
 {
   owl_fmtext fm;
   const char *varname;
-  owl_list varnames;
-  int i, numvarnames;
+  GPtrArray *varnames;
+  int i;
 
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_bold
@@ -128,16 +128,14 @@ void owl_help(void)
   /* help for variables */
   owl_fmtext_append_bold(&fm, 
 			 "Variables:\n");
-  owl_list_create(&varnames);
-  owl_variable_dict_get_names(owl_global_get_vardict(&g), &varnames);
-  numvarnames = owl_list_get_size(&varnames);
-  for (i=0; i<numvarnames; i++) {
-    varname = owl_list_get_element(&varnames, i);
+  varnames = owl_variable_dict_get_names(owl_global_get_vardict(&g));
+  for (i = 0; i < varnames->len; i++) {
+    varname = varnames->pdata[i];
     if (varname && varname[0]!='_') {
       owl_variable_describe(owl_global_get_vardict(&g), varname, &fm);
     }
   }
-  owl_list_cleanup(&varnames, g_free);
+  owl_ptr_array_free(varnames, g_free);
 
   owl_fmtext_append_normal(&fm, "\n");
 

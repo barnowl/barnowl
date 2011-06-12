@@ -46,18 +46,17 @@ const owl_cmd *owl_function_get_cmd(const char *name)
 
 void owl_function_show_commands(void)
 {
-  owl_list l;
+  GPtrArray *l;
   owl_fmtext fm;
 
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_bold(&fm, "Commands:  ");
   owl_fmtext_append_normal(&fm, "(use 'show command <name>' for details)\n");
-  owl_list_create(&l);
-  owl_cmddict_get_names(owl_global_get_cmddict(&g), &l);
-  owl_fmtext_append_list(&fm, &l, "\n", owl_function_cmd_describe);
+  l = owl_cmddict_get_names(owl_global_get_cmddict(&g));
+  owl_fmtext_append_list(&fm, l, "\n", owl_function_cmd_describe);
   owl_fmtext_append_normal(&fm, "\n");
   owl_function_popless_fmtext(&fm);
-  owl_list_cleanup(&l, g_free);
+  owl_ptr_array_free(l, g_free);
   owl_fmtext_cleanup(&fm);
 }
 
@@ -80,17 +79,16 @@ void owl_function_show_view(const char *viewname)
 }
 
 void owl_function_show_styles(void) {
-  owl_list l;
+  GPtrArray *l;
   owl_fmtext fm;
 
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_bold(&fm, "Styles:\n");
-  owl_list_create(&l);
-  owl_global_get_style_names(&g, &l);
-  owl_fmtext_append_list(&fm, &l, "\n", owl_function_style_describe);
+  l = owl_global_get_style_names(&g);
+  owl_fmtext_append_list(&fm, l, "\n", owl_function_style_describe);
   owl_fmtext_append_normal(&fm, "\n");
   owl_function_popless_fmtext(&fm);
-  owl_list_cleanup(&l, g_free);
+  owl_ptr_array_free(l, g_free);
   owl_fmtext_cleanup(&fm);
 }
 
@@ -1575,17 +1573,15 @@ void owl_function_printallvars(void)
 {
   const char *name;
   char *var;
-  owl_list varnames;
-  int i, numvarnames;
+  GPtrArray *varnames;
+  int i;
   GString *str   = g_string_new("");
 
   g_string_append_printf(str, "%-20s = %s\n", "VARIABLE", "VALUE");
   g_string_append_printf(str, "%-20s   %s\n",  "--------", "-----");
-  owl_list_create(&varnames);
-  owl_variable_dict_get_names(owl_global_get_vardict(&g), &varnames);
-  numvarnames = owl_list_get_size(&varnames);
-  for (i=0; i<numvarnames; i++) {
-    name = owl_list_get_element(&varnames, i);
+  varnames = owl_variable_dict_get_names(owl_global_get_vardict(&g));
+  for (i = 0; i < varnames->len; i++) {
+    name = varnames->pdata[i];
     if (name && name[0]!='_') {
       g_string_append_printf(str, "\n%-20s = ", name);
       var = owl_variable_get_tostring(owl_global_get_vardict(&g), name);
@@ -1596,7 +1592,7 @@ void owl_function_printallvars(void)
     }
   }
   g_string_append(str, "\n");
-  owl_list_cleanup(&varnames, g_free);
+  owl_ptr_array_free(varnames, g_free);
 
   owl_function_popless_text(str->str);
   g_string_free(str, true);
@@ -1604,24 +1600,22 @@ void owl_function_printallvars(void)
 
 void owl_function_show_variables(void)
 {
-  owl_list varnames;
+  GPtrArray *varnames;
   owl_fmtext fm;  
-  int i, numvarnames;
+  int i;
   const char *varname;
 
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_bold(&fm, 
       "Variables: (use 'show variable <name>' for details)\n");
-  owl_list_create(&varnames);
-  owl_variable_dict_get_names(owl_global_get_vardict(&g), &varnames);
-  numvarnames = owl_list_get_size(&varnames);
-  for (i=0; i<numvarnames; i++) {
-    varname = owl_list_get_element(&varnames, i);
+  varnames = owl_variable_dict_get_names(owl_global_get_vardict(&g));
+  for (i = 0; i < varnames->len; i++) {
+    varname = varnames->pdata[i];
     if (varname && varname[0]!='_') {
       owl_variable_describe(owl_global_get_vardict(&g), varname, &fm);
     }
   }
-  owl_list_cleanup(&varnames, g_free);
+  owl_ptr_array_free(varnames, g_free);
   owl_function_popless_fmtext(&fm);
   owl_fmtext_cleanup(&fm);
 }
@@ -2825,25 +2819,23 @@ void owl_function_punt(int argc, const char *const *argv, int direction)
 
 void owl_function_show_keymaps(void)
 {
-  owl_list l;
+  GPtrArray *l;
   owl_fmtext fm;
   const owl_keymap *km;
   const owl_keyhandler *kh;
-  int i, numkm;
+  int i;
   const char *kmname;
 
   kh = owl_global_get_keyhandler(&g);
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_bold(&fm, "Keymaps:   ");
   owl_fmtext_append_normal(&fm, "(use 'show keymap <name>' for details)\n");
-  owl_list_create(&l);
-  owl_keyhandler_get_keymap_names(kh, &l);
-  owl_fmtext_append_list(&fm, &l, "\n", owl_function_keymap_summary);
+  l = owl_keyhandler_get_keymap_names(kh);
+  owl_fmtext_append_list(&fm, l, "\n", owl_function_keymap_summary);
   owl_fmtext_append_normal(&fm, "\n");
 
-  numkm = owl_list_get_size(&l);
-  for (i=0; i<numkm; i++) {
-    kmname = owl_list_get_element(&l, i);
+  for (i = 0; i < l->len; i++) {
+    kmname = l->pdata[i];
     km = owl_keyhandler_get_keymap(kh, kmname);
     owl_fmtext_append_bold(&fm, "\n\n----------------------------------------------------------------------------------------------------\n\n");
     owl_keymap_get_details(km, &fm, 0);
@@ -2851,7 +2843,7 @@ void owl_function_show_keymaps(void)
   owl_fmtext_append_normal(&fm, "\n");
   
   owl_function_popless_fmtext(&fm);
-  owl_list_cleanup(&l, g_free);
+  owl_ptr_array_free(l, g_free);
   owl_fmtext_cleanup(&fm);
 }
 
