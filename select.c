@@ -352,6 +352,7 @@ void owl_select_quit_loop(void)
 {
   if (loop) {
     g_main_loop_quit(loop);
+    g_main_loop_unref(loop);
     loop = NULL;
   }
 }
