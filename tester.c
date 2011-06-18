@@ -31,6 +31,7 @@ int main(int argc, char **argv, char **env)
   FILE *wnull;
   char *perlerr;
   int status = 0;
+  SCREEN *screen;
 
   if (argc <= 1) {
     fprintf(stderr, "Usage: %s --builtin|TEST.t|-le CODE\n", argv[0]);
@@ -40,7 +41,7 @@ int main(int argc, char **argv, char **env)
   /* initialize a fake ncurses, detached from std{in,out} */
   wnull = fopen("/dev/null", "w");
   rnull = fopen("/dev/null", "r");
-  newterm("xterm", wnull, rnull);
+  screen = newterm("xterm", wnull, rnull);
   /* initialize global structures */
   owl_global_init(&g);
 
@@ -90,6 +91,7 @@ int main(int argc, char **argv, char **env)
   perl_free(owl_global_get_perlinterp(&g));
   /* probably not necessary, but tear down the screen */
   endwin();
+  delscreen(screen);
   fclose(rnull);
   fclose(wnull);
   return status;
@@ -217,8 +219,8 @@ int owl_util_regtest(void)
   GString *g = g_string_new("");
   owl_string_appendf_quoted(g, "%q foo %q%q %s %", "hello", "world is", "can't");
   FAIL_UNLESS("owl_string_appendf",
-              !strcmp(g_string_free(g, false),
-                      "hello foo 'world is'\"can't\" %s %"));
+              !strcmp(g->str, "hello foo 'world is'\"can't\" %s %"));
+  g_string_free(g, true);
 
   /* if (numfailed) printf("*** WARNING: failures encountered with owl_util\n"); */
   printf("# END testing owl_util (%d failures)\n", numfailed);

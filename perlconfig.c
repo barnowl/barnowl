@@ -491,7 +491,7 @@ void owl_perlconfig_new_command(const char *name)
   XPUSHs(sv_2mortal(owl_new_sv(name)));
   PUTBACK;
 
-  call_pv("BarnOwl::Hooks::_new_command", G_SCALAR|G_VOID|G_EVAL);
+  call_pv("BarnOwl::Hooks::_new_command", G_VOID|G_EVAL);
 
   SPAGAIN;
 
