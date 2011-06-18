@@ -217,8 +217,8 @@ int owl_util_regtest(void)
   GString *g = g_string_new("");
   owl_string_appendf_quoted(g, "%q foo %q%q %s %", "hello", "world is", "can't");
   FAIL_UNLESS("owl_string_appendf",
-              !strcmp(g_string_free(g, false),
-                      "hello foo 'world is'\"can't\" %s %"));
+              !strcmp(g->str, "hello foo 'world is'\"can't\" %s %"));
+  g_string_free(g, true);
 
   /* if (numfailed) printf("*** WARNING: failures encountered with owl_util\n"); */
   printf("# END testing owl_util (%d failures)\n", numfailed);
