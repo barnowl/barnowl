@@ -1,0 +1,50 @@
+NAME
+  Facebook.par - Facebook support for BarnOwl
+
+DESCRIPTION
+  The Facebook module implements Facebook support for BarnOwl.
+
+SYNOPSIS
+  (1) Create an empty file ~/.owl/facebook (you can use the command
+  `touch ~/.owl/facebook`), in order to enable the module.
+
+  (2) Run ":reload-module Facebook" inside BarnOwl.
+
+  (3) Follow the instructions in the admin message.  BarnOwl will
+  ask you to log in via an OAuth URL, and run ':facebook-auth'
+  with the resulting URL.  It will then ask you to record the
+  resulting access token in your ~/.owl/facebook file, so you do
+  not have to login on subsequent BarnOwl sesions.
+
+  This token is valid until you change your
+  Facebook password or you revoke permissions for Barnowl at:
+    http://www.facebook.com/settings/?tab=applications&app_id=235537266461636
+
+  (4) Start receiving wall updates in Barnowl!
+      You can post updates with the ":facebook" command.
+
+POLLING
+  Facebook.par polls for normal messages once a minute. To disable
+  polling, you can unset the 'facebook:poll' variable in BarnOwl.
+
+TODO
+  * We support commenting on wall posts, but not /displaying/ comments
+    to a wall post.
+  * We currently expose the underlying post ID for disambiguating
+    instances.  Use something more user-friendly.
+  * No messaging support.
+  * No auto-completion support.
+  * No posting to an arbitrary user's wall.
+  * See code comments for more work items!
+
+TECHNICAL NOTES
+  This module uses 100% undeprecated Facebook Graph API, and should be
+  an interesting case study of how to implement a desktop application in
+  the new Facebook world order.  In particular, we do not use the old
+  infinite session keys trick described in
+  <http://www.emcro.com/blog/2009/01/facebook-infinite-session-keys-no-more/>,
+  instead, we use offline_access to get non-expiring tokens.
+
+  If we decide to extend our permissions to include read_friendlists
+  (for filtering) and rsvp_event (RSVP from BarnOwl), we will need
+  to make sure the UI for upgrading is correct.
