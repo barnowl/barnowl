@@ -129,6 +129,7 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 
 AX_CFLAGS_WARN_ALL([AM_CFLAGS])
 AX_C_CHECK_FLAG([-Wstrict-prototypes],[],[],[AM_CFLAGS="$AM_CFLAGS -Wstrict-prototypes"])
+AX_C_CHECK_FLAG([-Wwrite-strings],[],[],[AM_CFLAGS="$AM_CFLAGS -Wwrite-strings"])
 
 dnl Shut gcc up about zero-length format strings; the warning's apparently for
 dnl efficiency reasons, which is bogus for custom functions.
