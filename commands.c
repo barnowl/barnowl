@@ -40,8 +40,10 @@
           NULL, NULL, NULL, NULL, NULL, NULL, ((void(*)(void*,int))fn), NULL }
 
 
-const owl_cmd commands_to_init[]
-  = {
+int owl_cmd_add_defaults(owl_cmddict *cd)
+{
+  owl_cmd commands_to_init[] = {
+
   OWLCMD_ARGS("zlog", owl_command_zlog, OWL_CTX_ANY,
 	      "send a login or logout notification",
 	      "zlog in [tty]\nzlog out",
@@ -1036,7 +1038,10 @@ const owl_cmd commands_to_init[]
   /* This line MUST be last! */
   { NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
-};
+  };
+
+  return owl_cmddict_add_from_list(cd, commands_to_init);
+}
 
 void owl_command_info(void)
 {

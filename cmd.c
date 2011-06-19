@@ -4,16 +4,13 @@
 #include <unistd.h>
 #include "owl.h"
 
-extern const owl_cmd commands_to_init[];
-
 /**************************************************************************/
 /***************************** COMMAND DICT *******************************/
 /**************************************************************************/
 
 int owl_cmddict_setup(owl_cmddict *cd) {
   owl_cmddict_init(cd);
-  if (0 != owl_cmddict_add_from_list(cd, commands_to_init)) return(-1);
-  return(0);
+  return owl_cmd_add_defaults(cd);
 }
 
 void owl_cmddict_init(owl_cmddict *cd) {
