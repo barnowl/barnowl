@@ -231,7 +231,8 @@ int owl_dict_regtest(void) {
   owl_dict d;
   owl_list l;
   int numfailed=0;
-  char *av="aval", *bv="bval", *cv="cval", *dv="dval";
+  char *av = g_strdup("aval"), *bv = g_strdup("bval"), *cv = g_strdup("cval"),
+    *dv = g_strdup("dval");
 
   printf("# BEGIN testing owl_dict\n");
   owl_dict_create(&d);
@@ -260,6 +261,11 @@ int owl_dict_regtest(void) {
 
   owl_list_cleanup(&l, g_free);
   owl_dict_cleanup(&d, NULL);
+
+  g_free(av);
+  g_free(bv);
+  g_free(cv);
+  g_free(dv);
 
   /*  if (numfailed) printf("*** WARNING: failures encountered with owl_dict\n"); */
   printf("# END testing owl_dict (%d failures)\n", numfailed);
