@@ -101,8 +101,8 @@ $TAR -C "$TMPDIR" -xzf "$SRC_TGZ" || die "Unable to untar"
             ;;
     esac
 
-    CFLAGS="-I$BARNOWL/include" \
-        LDFLAGS="-L$BARNOWL/lib $opt_rpath$BARNOWL/lib" \
+    CPPFLAGS="-I$BARNOWL/include -I/usr/athena/include" \
+        LDFLAGS="-L$BARNOWL/lib -L/usr/athena/lib $opt_rpath$BARNOWL/lib" \
         ./configure --exec-prefix="/mit/barnowl/arch/$ATHENA_SYS" \
         --prefix="/mit/barnowl/builds/barnowl-$VERS" --mandir=/mit/barnowl/man \
         --program-suffix="-$VERS$SUFFIX" \
