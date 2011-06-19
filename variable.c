@@ -583,6 +583,7 @@ int owl_variable_dict_setup(owl_vardict *vd) {
 	cur->get_tostring_fn = owl_variable_string_get_tostring_default;      
       if (!cur->delete_fn)
 	cur->delete_fn = owl_variable_delete_default;
+      cur->pval_default = g_strdup(var->pval_default);
       cur->set_fn(cur, cur->pval_default);
       break;
     case OWL_VARIABLE_BOOL:
@@ -723,6 +724,8 @@ void owl_variable_delete(owl_variable *v)
   g_free(v->name);
   g_free(v->summary);
   g_free(v->description);
+  if (v->type == OWL_VARIABLE_STRING)
+    g_free(v->pval_default);
   g_free(v);
 }
 
