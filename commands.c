@@ -7,41 +7,43 @@
 
 /* fn is "char *foo(int argc, const char *const *argv, const char *buff)" */
 #define OWLCMD_ARGS(name, fn, ctx, summary, usage, description) \
-        { name, summary, usage, description, ctx, \
+        { g_strdup(name), g_strdup(summary), g_strdup(usage), g_strdup(description), ctx, \
           NULL, fn, NULL, NULL, NULL, NULL, NULL, NULL }
 
 /* fn is "void foo(void)" */
 #define OWLCMD_VOID(name, fn, ctx, summary, usage, description) \
-        { name, summary, usage, description, ctx, \
+        { g_strdup(name), g_strdup(summary), g_strdup(usage), g_strdup(description), ctx, \
           NULL, NULL, fn, NULL, NULL, NULL, NULL, NULL }
 
 /* fn is "void foo(int)" */
 #define OWLCMD_INT(name, fn, ctx, summary, usage, description) \
-        { name, summary, usage, description, ctx, \
+        { g_strdup(name), g_strdup(summary), g_strdup(usage), g_strdup(description), ctx, \
           NULL, NULL, NULL, fn, NULL, NULL, NULL, NULL }
 
 #define OWLCMD_ALIAS(name, actualname) \
-        { name, OWL_CMD_ALIAS_SUMMARY_PREFIX actualname, "", "", OWL_CTX_ANY, \
-          actualname, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+        { g_strdup(name), g_strdup(OWL_CMD_ALIAS_SUMMARY_PREFIX actualname), g_strdup(""), g_strdup(""), OWL_CTX_ANY, \
+          g_strdup(actualname), NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
 /* fn is "char *foo(void *ctx, int argc, const char *const *argv, const char *buff)" */
 #define OWLCMD_ARGS_CTX(name, fn, ctx, summary, usage, description) \
-        { name, summary, usage, description, ctx, \
+        { g_strdup(name), g_strdup(summary), g_strdup(usage), g_strdup(description), ctx, \
           NULL, NULL, NULL, NULL, ((char*(*)(void*,int,const char*const *,const char*))fn), NULL, NULL, NULL }
 
 /* fn is "void foo(void)" */
 #define OWLCMD_VOID_CTX(name, fn, ctx, summary, usage, description) \
-        { name, summary, usage, description, ctx, \
+        { g_strdup(name), g_strdup(summary), g_strdup(usage), g_strdup(description), ctx, \
           NULL, NULL, NULL, NULL, NULL, ((void(*)(void*))(fn)), NULL, NULL }
 
 /* fn is "void foo(int)" */
 #define OWLCMD_INT_CTX(name, fn, ctx, summary, usage, description) \
-        { name, summary, usage, description, ctx, \
+        { g_strdup(name), g_strdup(summary), g_strdup(usage), g_strdup(description), ctx, \
           NULL, NULL, NULL, NULL, NULL, NULL, ((void(*)(void*,int))fn), NULL }
 
 
-const owl_cmd commands_to_init[]
-  = {
+int owl_cmd_add_defaults(owl_cmddict *cd)
+{
+  owl_cmd commands_to_init[] = {
+
   OWLCMD_ARGS("zlog", owl_command_zlog, OWL_CTX_ANY,
 	      "send a login or logout notification",
 	      "zlog in [tty]\nzlog out",
@@ -1036,7 +1038,14 @@ const owl_cmd commands_to_init[]
   /* This line MUST be last! */
   { NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
-};
+  };
+
+  int ret = owl_cmddict_add_from_list(cd, commands_to_init);
+  owl_cmd *cmd;
+  for (cmd = commands_to_init; cmd->name != NULL; cmd++)
+    owl_cmd_cleanup(cmd);
+  return ret;
+}
 
 void owl_command_info(void)
 {
