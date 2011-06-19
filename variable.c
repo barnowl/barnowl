@@ -50,7 +50,9 @@
         get, owl_variable_enum_get_tostring, \
         NULL }
 
-static owl_variable variables_to_init[] = {
+int owl_variable_add_defaults(owl_vardict *vd)
+{
+  owl_variable variables_to_init[] = {
 
   OWLVAR_STRING( "personalbell" /* %OwlVarStub */, "off",
 		 "ring the terminal bell when personal messages are received",
@@ -438,7 +440,10 @@ static owl_variable variables_to_init[] = {
   { NULL, 0, NULL, 0, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL }
 
-};
+  };
+
+  return owl_variable_dict_add_from_list(vd, variables_to_init);
+}
 
 /**************************************************************************/
 /*********************** SPECIFIC TO VARIABLES ****************************/
@@ -557,8 +562,13 @@ int owl_variable_exposure_set(owl_variable *v, const void *newval)
 /**************************************************************************/
 
 int owl_variable_dict_setup(owl_vardict *vd) {
-  owl_variable *var, *cur;
   owl_dict_create(vd);
+  return owl_variable_add_defaults(vd);
+}
+
+int owl_variable_dict_add_from_list(owl_vardict *vd, owl_variable *variables_to_init)
+{
+  owl_variable *var, *cur;
   for (var = variables_to_init; var->name != NULL; var++) {
     cur = g_new(owl_variable, 1);
     *cur = *var;
