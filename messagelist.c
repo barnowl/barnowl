@@ -41,9 +41,9 @@ owl_message *owl_messagelist_get_by_id(const owl_messagelist *ml, int target_id)
   return(NULL);
 }
 
-int owl_messagelist_append_element(owl_messagelist *ml, void *element)
+void owl_messagelist_append_element(owl_messagelist *ml, void *element)
 {
-  return(owl_list_append_element(&(ml->list), element));
+  owl_list_append_element(&ml->list, element);
 }
 
 /* do we really still want this? */

@@ -50,8 +50,8 @@ int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *co
       owl_keybinding_delete(curkb);
     }
   }
-  return owl_list_append_element(&km->bindings, kb);  
-
+  owl_list_append_element(&km->bindings, kb);
+  return 0;
 }
 
 /* removes the binding associated with the keymap */
@@ -79,7 +79,7 @@ int owl_keymap_remove_binding(owl_keymap *km, const char *keyseq)
 
 
 /* returns a summary line describing this keymap.  the caller must free. */
-char *owl_keymap_summary(const owl_keymap *km)
+G_GNUC_WARN_UNUSED_RESULT char *owl_keymap_summary(const owl_keymap *km)
 {
   if (!km || !km->name || !km->desc) return NULL;
   return g_strdup_printf("%-15s - %s", km->name, km->desc);

@@ -11,7 +11,7 @@ static void owl_viewwin_set_window(owl_viewwin *v, owl_window *w);
 /* Create a viewwin.  'win' is an already initialized owl_window that
  * will be used by the viewwin
  */
-owl_viewwin *owl_viewwin_new_text(owl_window *win, const char *text)
+G_GNUC_WARN_UNUSED_RESULT owl_viewwin *owl_viewwin_new_text(owl_window *win, const char *text)
 {
   owl_viewwin *v = g_new0(owl_viewwin, 1);
   owl_fmtext_init_null(&(v->fmtext));
@@ -33,7 +33,7 @@ owl_viewwin *owl_viewwin_new_text(owl_window *win, const char *text)
 /* Create a viewwin.  'win' is an already initialized owl_window that
  * will be used by the viewwin
  */
-owl_viewwin *owl_viewwin_new_fmtext(owl_window *win, const owl_fmtext *fmtext)
+G_GNUC_WARN_UNUSED_RESULT owl_viewwin *owl_viewwin_new_fmtext(owl_window *win, const owl_fmtext *fmtext)
 {
   char *text;
   owl_viewwin *v = g_new0(owl_viewwin, 1);
@@ -236,7 +236,7 @@ void owl_viewwin_deactivate_editcontext(owl_context *ctx) {
   owl_viewwin_set_typwin_inactive(v);
 }
 
-owl_editwin *owl_viewwin_set_typwin_active(owl_viewwin *v, owl_history *hist) {
+G_GNUC_WARN_UNUSED_RESULT owl_editwin *owl_viewwin_set_typwin_active(owl_viewwin *v, owl_history *hist) {
   int lines, cols;
   owl_editwin *cmdline;
   if (v->cmdwin)

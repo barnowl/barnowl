@@ -646,7 +646,8 @@ void owl_variable_dict_add_variable(owl_vardict * vardict,
   owl_dict_insert_element(vardict, var->name, var, (void (*)(void *))owl_variable_delete);
 }
 
-owl_variable * owl_variable_newvar(const char *name, const char *summary, const char * description) {
+G_GNUC_WARN_UNUSED_RESULT owl_variable *owl_variable_newvar(const char *name, const char *summary, const char *description)
+{
   owl_variable * var = g_new0(owl_variable, 1);
   var->name = g_strdup(name);
   var->summary = g_strdup(summary);
@@ -824,7 +825,8 @@ int owl_variable_set_bool_off(owl_vardict *d, const char *name) {
   return owl_variable_set_int(d,name,0);
 }
 
-char *owl_variable_get_tostring(const owl_vardict *d, const char *name) {
+G_GNUC_WARN_UNUSED_RESULT char *owl_variable_get_tostring(const owl_vardict *d, const char *name)
+{
   owl_variable *v;
   if (!name) return NULL;
   v = owl_dict_find_element(d, name);
@@ -832,7 +834,8 @@ char *owl_variable_get_tostring(const owl_vardict *d, const char *name) {
   return v->get_tostring_fn(v, v->get_fn(v));
 }
 
-char *owl_variable_get_default_tostring(const owl_vardict *d, const char *name) {
+G_GNUC_WARN_UNUSED_RESULT char *owl_variable_get_default_tostring(const owl_vardict *d, const char *name)
+{
   owl_variable *v;
   if (!name) return NULL;
   v = owl_dict_find_element(d, name);
@@ -992,7 +995,8 @@ int owl_variable_bool_set_fromstring_default(owl_variable *v, const char *newval
   return (v->set_fn(v, &i));
 }
 
-char *owl_variable_bool_get_tostring_default(const owl_variable *v, const void *val) {
+G_GNUC_WARN_UNUSED_RESULT char *owl_variable_bool_get_tostring_default(const owl_variable *v, const void *val)
+{
   if (val == NULL) {
     return g_strdup("<null>");
   } else if (*(const int*)val == 0) {
@@ -1027,7 +1031,8 @@ int owl_variable_int_set_fromstring_default(owl_variable *v, const char *newval)
   return (v->set_fn(v, &i));
 }
 
-char *owl_variable_int_get_tostring_default(const owl_variable *v, const void *val) {
+G_GNUC_WARN_UNUSED_RESULT char *owl_variable_int_get_tostring_default(const owl_variable *v, const void *val)
+{
   if (val == NULL) {
     return g_strdup("<null>");
   } else {
@@ -1066,7 +1071,8 @@ int owl_variable_enum_set_fromstring(owl_variable *v, const char *newval) {
   return (v->set_fn(v, &val));
 }
 
-char *owl_variable_enum_get_tostring(const owl_variable *v, const void *val) {
+G_GNUC_WARN_UNUSED_RESULT char *owl_variable_enum_get_tostring(const owl_variable *v, const void *val)
+{
   char **enums;
   int nenums, i;
   char *tostring;
@@ -1106,7 +1112,8 @@ int owl_variable_string_set_fromstring_default(owl_variable *v, const char *newv
   return (v->set_fn(v, newval));
 }
 
-char *owl_variable_string_get_tostring_default(const owl_variable *v, const void *val) {
+G_GNUC_WARN_UNUSED_RESULT char *owl_variable_string_get_tostring_default(const owl_variable *v, const void *val)
+{
   if (val == NULL) {
     return g_strdup("<null>");
   } else {

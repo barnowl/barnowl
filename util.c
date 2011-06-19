@@ -34,7 +34,7 @@ const char *skiptokens(const char *buff, int n) {
 /* Return a "nice" version of the path.  Tilde expansion is done, and
  * duplicate slashes are removed.  Caller must free the return.
  */
-char *owl_util_makepath(const char *in)
+G_GNUC_WARN_UNUSED_RESULT char *owl_util_makepath(const char *in)
 {
   int i, j, x;
   char *out, user[MAXPATHLEN];
@@ -101,7 +101,7 @@ char *owl_util_makepath(const char *in)
    the returned values with g_strfreev.  If there is an error argc will be set
    to -1, argv will be NULL and the caller does not need to free anything. The
    returned vector is NULL-terminated. */
-char **owl_parseline(const char *line, int *argc)
+G_GNUC_WARN_UNUSED_RESULT char **owl_parseline(const char *line, int *argc)
 {
   GPtrArray *argv;
   int i, len, between=1;
@@ -244,7 +244,7 @@ void owl_string_vappendf_quoted(GString *buf, const char *tmpl, va_list ap)
   g_string_append(buf, last);
 }
 
-char *owl_string_build_quoted(const char *tmpl, ...)
+G_GNUC_WARN_UNUSED_RESULT char *owl_string_build_quoted(const char *tmpl, ...)
 {
   GString *buf = g_string_new("");
   va_list ap;
@@ -256,7 +256,7 @@ char *owl_string_build_quoted(const char *tmpl, ...)
 
 /* Returns a quoted version of arg suitable for placing in a
  * command-line. Result should be freed with g_free. */
-char *owl_arg_quote(const char *arg)
+G_GNUC_WARN_UNUSED_RESULT char *owl_arg_quote(const char *arg)
 {
   GString *buf = g_string_new("");;
   owl_string_append_quoted_arg(buf, arg);
@@ -264,7 +264,7 @@ char *owl_arg_quote(const char *arg)
 }
 
 /* caller must free the return */
-char *owl_util_minutes_to_timestr(int in)
+G_GNUC_WARN_UNUSED_RESULT char *owl_util_minutes_to_timestr(int in)
 {
   int days, hours;
   long run;
@@ -330,7 +330,7 @@ const char *owl_util_color_to_string(int color)
 }
 
 /* Get the default tty name.  Caller must free the return */
-char *owl_util_get_default_tty(void)
+G_GNUC_WARN_UNUSED_RESULT char *owl_util_get_default_tty(void)
 {
   const char *tmp;
   char *out;
@@ -352,7 +352,7 @@ char *owl_util_get_default_tty(void)
 /* strip leading and trailing new lines.  Caller must free the
  * return.
  */
-char *owl_util_stripnewlines(const char *in)
+G_GNUC_WARN_UNUSED_RESULT char *owl_util_stripnewlines(const char *in)
 {
   
   char  *tmp, *ptr1, *ptr2, *out;
@@ -383,7 +383,7 @@ char *owl_util_stripnewlines(const char *in)
  *
  * Error conditions are the same as g_file_read_link.
  */
-gchar *owl_util_recursive_resolve_link(const char *filename)
+G_GNUC_WARN_UNUSED_RESULT gchar *owl_util_recursive_resolve_link(const char *filename)
 {
   gchar *last_path = g_strdup(filename);
   GError *err = NULL;
@@ -510,7 +510,7 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
    leading `un' or trailing `.d'.
    The caller is responsible for freeing the allocated string.
 */
-char * owl_util_baseclass(const char * class)
+G_GNUC_WARN_UNUSED_RESULT char *owl_util_baseclass(const char *class)
 {
   char *start, *end;
 
@@ -545,8 +545,8 @@ const char * owl_get_bindir(void)
 }
 
 /* Strips format characters from a valid utf-8 string. Returns the
-   empty string if 'in' does not validate. */
-char * owl_strip_format_chars(const char *in)
+   empty string if 'in' does not validate.  Caller must free the return. */
+G_GNUC_WARN_UNUSED_RESULT char *owl_strip_format_chars(const char *in)
 {
   char *r;
   if (g_utf8_validate(in, -1, NULL)) {
@@ -583,8 +583,9 @@ char * owl_strip_format_chars(const char *in)
  * the caller to specify an alternative in the future. We also strip
  * out characters in Unicode Plane 16, as we use that plane internally
  * for formatting.
+ * Caller must free the return.
  */
-char * owl_validate_or_convert(const char *in)
+G_GNUC_WARN_UNUSED_RESULT char *owl_validate_or_convert(const char *in)
 {
   if (g_utf8_validate(in, -1, NULL)) {
     return owl_strip_format_chars(in);
@@ -598,8 +599,9 @@ char * owl_validate_or_convert(const char *in)
 /*
  * Validate 'in' as UTF-8, and either return a copy of it, or an empty
  * string if it is invalid utf-8.
+ * Caller must free the return.
  */
-char * owl_validate_utf8(const char *in)
+G_GNUC_WARN_UNUSED_RESULT char *owl_validate_utf8(const char *in)
 {
   char *out;
   if (g_utf8_validate(in, -1, NULL)) {
@@ -631,7 +633,8 @@ int owl_util_can_break_after(gunichar c)
   return 0;
 }
 
-char *owl_escape_highbit(const char *str)
+/* caller must free the return */
+G_GNUC_WARN_UNUSED_RESULT char *owl_escape_highbit(const char *str)
 {
   GString *out = g_string_new("");
   unsigned char c;
@@ -694,7 +697,7 @@ int owl_getline_chomp(char **s, FILE *fp)
 }
 
 /* Read the rest of the input available in fp into a string. */
-char *owl_slurp(FILE *fp)
+G_GNUC_WARN_UNUSED_RESULT char *owl_slurp(FILE *fp)
 {
   char *buf = NULL;
   char *p;

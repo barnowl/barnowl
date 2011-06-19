@@ -40,7 +40,7 @@
           NULL, NULL, NULL, NULL, NULL, NULL, ((void(*)(void*,int))fn), NULL }
 
 
-int owl_cmd_add_defaults(owl_cmddict *cd)
+void owl_cmd_add_defaults(owl_cmddict *cd)
 {
   owl_cmd commands_to_init[] = {
 
@@ -1040,11 +1040,10 @@ int owl_cmd_add_defaults(owl_cmddict *cd)
 
   };
 
-  int ret = owl_cmddict_add_from_list(cd, commands_to_init);
+  owl_cmddict_add_from_list(cd, commands_to_init);
   owl_cmd *cmd;
   for (cmd = commands_to_init; cmd->name != NULL; cmd++)
     owl_cmd_cleanup(cmd);
-  return ret;
 }
 
 void owl_command_info(void)
@@ -1374,7 +1373,7 @@ done:
   return NULL;
 }
 
-char *owl_command_smartfilter(int argc, const char *const *argv, const char *buff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_command_smartfilter(int argc, const char *const *argv, const char *buff)
 {
   char *filtname = NULL;
 
@@ -1414,7 +1413,7 @@ void owl_command_redisplay(void)
   owl_function_full_redisplay();
 }
 
-char *owl_command_get_shift(int argc, const char *const *argv, const char *buff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_command_get_shift(int argc, const char *const *argv, const char *buff)
 {
   if(argc != 1)
   {
@@ -1645,37 +1644,37 @@ char *owl_command_print(int argc, const char *const *argv, const char *buff)
 }
 
 
-char *owl_command_exec(int argc, const char *const *argv, const char *buff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_command_exec(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_exec(argc, argv, buff, OWL_OUTPUT_RETURN);
 }
 
-char *owl_command_pexec(int argc, const char *const *argv, const char *buff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_command_pexec(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_exec(argc, argv, buff, OWL_OUTPUT_POPUP);
 }
 
-char *owl_command_aexec(int argc, const char *const *argv, const char *buff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_command_aexec(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_exec(argc, argv, buff, OWL_OUTPUT_ADMINMSG);
 }
 
-char *owl_command_perl(int argc, const char *const *argv, const char *buff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_command_perl(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_perl(argc, argv, buff, OWL_OUTPUT_RETURN);
 }
 
-char *owl_command_pperl(int argc, const char *const *argv, const char *buff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_command_pperl(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_perl(argc, argv, buff, OWL_OUTPUT_POPUP);
 }
 
-char *owl_command_aperl(int argc, const char *const *argv, const char *buff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_command_aperl(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_perl(argc, argv, buff, OWL_OUTPUT_ADMINMSG);
 }
 
-char *owl_command_multi(int argc, const char *const *argv, const char *buff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_command_multi(int argc, const char *const *argv, const char *buff)
 {
   char *lastrv = NULL, *newbuff;
   char **commands;
@@ -2597,7 +2596,7 @@ char *owl_command_aimlogout(int argc, const char *const *argv, const char *buff)
   return(NULL);
 }
 
-char *owl_command_getstyle(int argc, const char *const *argv, const char *buff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_command_getstyle(int argc, const char *const *argv, const char *buff)
 {
   const char *stylename;
   if (argc != 1) {
@@ -2641,7 +2640,7 @@ char *owl_command_add_cmd_history(int argc, const char *const *argv, const char 
   return NULL;
 }
 
-char *owl_command_with_history(int argc, const char *const *argv, const char *buff)
+G_GNUC_WARN_UNUSED_RESULT char *owl_command_with_history(int argc, const char *const *argv, const char *buff)
 {
   owl_history *hist;
   const char *ptr;
