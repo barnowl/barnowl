@@ -31,8 +31,6 @@ TODO
   * Polling Facebook is pretty slow (on order of a second or more),
     and blocks the entire BarnOwl interface.  We need to confront
     Perl's threading demon.
-  * We currently expose the underlying post ID for disambiguating
-    instances.  Use something more user-friendly.
   * No messaging support.
   * No auto-completion support.
   * No posting to an arbitrary user's wall.

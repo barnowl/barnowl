@@ -14,7 +14,9 @@ Contains everything needed to send and receive messages from Facebook
 package BarnOwl::Module::Facebook::Handle;
 
 use Facebook::Graph;
-use Data::Dumper;
+
+use Lingua::EN::Keywords;
+
 use JSON;
 use Date::Parse;
 use POSIX;
@@ -79,7 +81,10 @@ sub new {
         # minified to fit in most terminal windows.
         'login_url' => 'http://goo.gl/yA42G',
 
-        'logged_in' => 0
+        'logged_in' => 0,
+
+        # would need another hash for topic de-dup
+        'topics' => {},
     };
 
     bless($self, $class);
@@ -144,6 +149,9 @@ sub poll_facebook {
     # Ideally, we should have some worker thread for polling facebook.
     # But BarnOwl is probably not thread-safe >_<
 
+    my $old_topics = $self->{topics};
+    $self->{topics} = {};
+
     my $updates = eval {
         $self->{facebook}
              ->query
@@ -156,8 +164,6 @@ sub poll_facebook {
              ->as_hashref()
     };
     $self->die_on_error($@);
-
-    #warn Dumper($updates);
 
     my $new_last_poll = $self->{last_poll};
     for my $post ( reverse @{$updates->{data}} ) {
@@ -172,10 +178,14 @@ sub poll_facebook {
         # There can be multiple recipients! Strange! Pick the first one.
         my $name    = $post->{to}{data}[0]{name} || $post->{from}{name};
         my $name_id = $post->{to}{data}[0]{id} || $post->{from}{id};
+        my $postid  = $post->{id};
 
         # Only handle post if it's new
         my $created_time = str2time($post->{created_time});
         if ($created_time >= $self->{last_poll}) {
+            my @keywords = keywords($post->{name} || $post->{message});
+            my $topic = $keywords[0] || 'personal';
+            $self->{topics}->{$postid} = $topic;
             # XXX indexing is fragile
             my $msg = BarnOwl::Message->new(
                 type      => 'Facebook',
@@ -185,7 +195,8 @@ sub poll_facebook {
                 name_id   => $name_id,
                 direction => 'in',
                 body      => $self->format_body($post),
-                postid    => $post->{id},
+                postid    => $postid,
+                topic     => $topic,
                 time      => asctime(localtime $created_time),
                 # XXX The intent is to get the 'Comment' link, which also
                 # serves as a canonical link to the post.  The {name}
@@ -193,6 +204,8 @@ sub poll_facebook {
                 zsig      => $post->{actions}[0]{link},
                );
             BarnOwl::queue_message($msg);
+        } else {
+            $self->{topics}->{$postid} = $old_topics->{$postid} || 'personal';
         }
 
         # This will have funky interleaving of times (they'll all be
@@ -213,7 +226,8 @@ sub poll_facebook {
                     name_id   => $name_id,
                     direction => 'in',
                     body      => $comment->{message},
-                    postid    => $post->{id},
+                    postid    => $postid,
+                    topic     => $self->get_topic($postid),
                     time      => asctime(localtime $comment_time),
                    );
                 BarnOwl::queue_message($msg);
@@ -223,6 +237,7 @@ sub poll_facebook {
             $new_last_poll = $updated_time + 1;
         }
     }
+    # old_topics gets GC'd
 
     $self->{last_poll} = $new_last_poll;
 }
@@ -305,6 +320,14 @@ sub facebook_do_auth {
         $self->sleep(0); # start polling
         return 1;
     }
+}
+
+sub get_topic {
+    my $self = shift;
+
+    my $postid = shift;
+
+    return $self->{topics}->{$postid} || 'personal';
 }
 
 1;
