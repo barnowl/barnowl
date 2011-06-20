@@ -257,7 +257,7 @@ sub facebook {
         return;
     }
     $self->{facebook}->add_post->set_message( $msg )->publish;
-    $self->poll_facebook;
+    $self->sleep(0);
 }
 
 sub facebook_comment {
@@ -267,7 +267,7 @@ sub facebook_comment {
     my $msg = shift;
 
     $self->{facebook}->add_comment( $postid )->set_message( $msg )->publish;
-    $self->poll_facebook;
+    $self->sleep(0);
 }
 
 sub facebook_auth {
