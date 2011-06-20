@@ -49,3 +49,9 @@ TECHNICAL NOTES
   If we decide to extend our permissions to include read_friendlists
   (for filtering) and rsvp_event (RSVP from BarnOwl), we will need
   to make sure the UI for upgrading is correct.
+
+  We'll be rolling our own version of Facebook::Graph, as the original
+  uses the synchronous LWP::UserAgent, and we'd like our web requests
+  not to block the user interface.  Furthermore, Facebook::Graph doesn't
+  actually use any of the features of LWP::UserAgent, so we may be able
+  to use a simpler module AnyEvent::HTTP.
