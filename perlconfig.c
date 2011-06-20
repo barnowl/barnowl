@@ -438,6 +438,88 @@ void owl_perlconfig_new_command(const char *name)
                 );
 }
 
+CALLER_OWN char *owl_perlconfig_perl_call(const char *method, int argc, const char *const *argv)
+{
+  SV *rv;
+  char *out = NULL;
+  int i;
+  OWL_PERL_CALL(call_pv(method, G_SCALAR|G_EVAL)
+                ,
+                OWL_PERL_PUSH_ARGS(i, argc, argv);
+                ,
+                "Perl Error: '%s'"
+                ,
+                false
+                ,
+                false
+                ,
+                rv = POPs;
+                if (rv && SvPOK(rv))
+                  out = g_strdup(SvPV_nolen(rv));
+                );
+  return out;
+}
+
+int owl_perlconfig_perl_call_int(const char *method, int argc, const char *const *argv)
+{
+  SV *rv;
+  int ret = -1;
+  int i;
+  OWL_PERL_CALL(call_pv(method, G_SCALAR|G_EVAL)
+                ,
+                OWL_PERL_PUSH_ARGS(i, argc, argv);
+                ,
+                "Perl Error: '%s'"
+                ,
+                false
+                ,
+                false
+                ,
+                rv = POPs;
+                if (rv && SvIOK(rv))
+                  ret = SvIV(rv);
+                );
+  return ret;
+}
+
+bool owl_perlconfig_perl_call_bool(const char *method, int argc, const char *const *argv)
+{
+  SV *rv;
+  bool ret = false;
+  int i;
+  OWL_PERL_CALL(call_pv(method, G_SCALAR|G_EVAL)
+                ,
+                OWL_PERL_PUSH_ARGS(i, argc, argv);
+                ,
+                "Perl Error: '%s'"
+                ,
+                false
+                ,
+                false
+                ,
+                rv = POPs;
+                if (rv)
+                  ret = SvTRUE(rv);
+                );
+  return ret;
+}
+
+void owl_perlconfig_perl_call_norv(const char *method, int argc, const char *const *argv)
+{
+  int i;
+  OWL_PERL_CALL(call_pv(method, G_DISCARD|G_EVAL)
+                ,
+                OWL_PERL_PUSH_ARGS(i, argc, argv);
+                ,
+                "Perl Error: '%s'"
+                ,
+                false
+                ,
+                true
+                ,
+                );
+}
+
 /* caller must free the result */
 CALLER_OWN char *owl_perlconfig_perlcmd(const owl_cmd *cmd, int argc, const char *const *argv)
 {
