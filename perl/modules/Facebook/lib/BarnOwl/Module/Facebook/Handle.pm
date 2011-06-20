@@ -178,14 +178,14 @@ sub poll_facebook {
         # There can be multiple recipients! Strange! Pick the first one.
         my $name    = $post->{to}{data}[0]{name} || $post->{from}{name};
         my $name_id = $post->{to}{data}[0]{id} || $post->{from}{id};
-        my $postid  = $post->{id};
+        my $post_id  = $post->{id};
 
         # Only handle post if it's new
         my $created_time = str2time($post->{created_time});
         if ($created_time >= $self->{last_poll}) {
             my @keywords = keywords($post->{name} || $post->{message});
             my $topic = $keywords[0] || 'personal';
-            $self->{topics}->{$postid} = $topic;
+            $self->{topics}->{$post_id} = $topic;
             # XXX indexing is fragile
             my $msg = BarnOwl::Message->new(
                 type      => 'Facebook',
@@ -195,7 +195,7 @@ sub poll_facebook {
                 name_id   => $name_id,
                 direction => 'in',
                 body      => $self->format_body($post),
-                postid    => $postid,
+                post_id    => $post_id,
                 topic     => $topic,
                 time      => asctime(localtime $created_time),
                 # XXX The intent is to get the 'Comment' link, which also
@@ -205,7 +205,7 @@ sub poll_facebook {
                );
             BarnOwl::queue_message($msg);
         } else {
-            $self->{topics}->{$postid} = $old_topics->{$postid} || 'personal';
+            $self->{topics}->{$post_id} = $old_topics->{$post_id} || 'personal';
         }
 
         # This will have funky interleaving of times (they'll all be
@@ -226,8 +226,8 @@ sub poll_facebook {
                     name_id   => $name_id,
                     direction => 'in',
                     body      => $comment->{message},
-                    postid    => $postid,
-                    topic     => $self->get_topic($postid),
+                    post_id    => $post_id,
+                    topic     => $self->get_topic($post_id),
                     time      => asctime(localtime $comment_time),
                    );
                 BarnOwl::queue_message($msg);
@@ -278,10 +278,10 @@ sub facebook {
 sub facebook_comment {
     my $self = shift;
 
-    my $postid = shift;
+    my $post_id = shift;
     my $msg = shift;
 
-    $self->{facebook}->add_comment( $postid )->set_message( $msg )->publish;
+    $self->{facebook}->add_comment( $post_id )->set_message( $msg )->publish;
     $self->sleep(0);
 }
 
@@ -325,9 +325,9 @@ sub facebook_do_auth {
 sub get_topic {
     my $self = shift;
 
-    my $postid = shift;
+    my $post_id = shift;
 
-    return $self->{topics}->{$postid} || 'personal';
+    return $self->{topics}->{$post_id} || 'personal';
 }
 
 1;
