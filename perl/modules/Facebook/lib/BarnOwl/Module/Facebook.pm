@@ -112,6 +112,12 @@ BarnOwl::new_command('facebook-auth' => \&cmd_facebook_auth, {
                 ."\nFacebook redirects you to after OAuth login."
 });
 
+BarnOwl::new_command('facebook-poll' => \&cmd_facebook_poll, {
+    summary     => 'Force a poll of Facebook.',
+    usage       => 'facebook-poll',
+    description => 'Get updates from Facebook.'
+});
+
 # XXX: UI: probably should bug out immediately if we're not logged in.
 
 sub cmd_facebook {
@@ -129,6 +135,13 @@ sub cmd_facebook_comment {
     # is being commented on
     BarnOwl::start_edit_win("Write a comment... ($postid)",
                             sub { $facebook_handle->facebook_comment($postid, shift) });
+}
+
+sub cmd_facebook_poll {
+    my $cmd = shift;
+
+    $facebook_handle->sleep(0);
+    return;
 }
 
 sub cmd_facebook_auth {
