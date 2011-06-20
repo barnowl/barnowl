@@ -214,6 +214,7 @@ owl_message * owl_perlconfig_hashref2message(SV *msg)
     } else if (!strcmp(key, "zwriteline")) {
       owl_message_set_zwriteline(m, val);
     } else if (!strcmp(key, "time")) {
+      g_free(m->timestr);
       m->timestr = g_strdup(val);
       strptime(val, "%a %b %d %T %Y", &tm);
       m->time = mktime(&tm);
