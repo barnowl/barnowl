@@ -129,11 +129,13 @@ sub cmd_facebook {
 
 sub cmd_facebook_comment {
     my $cmd  = shift;
-    my $postid   = shift;
+    my $postid = shift;
+
+    my $topic = $facebook_handle->get_topic($postid);
 
     # XXX UI should give some (better) indication /which/ conversation
     # is being commented on
-    BarnOwl::start_edit_win("Write a comment... ($postid)",
+    BarnOwl::start_edit_win("Write a comment on '$topic'...",
                             sub { $facebook_handle->facebook_comment($postid, shift) });
 }
 
