@@ -28,8 +28,9 @@ POLLING
   polling, you can unset the 'facebook:poll' variable in BarnOwl.
 
 TODO
-  * We support commenting on wall posts, but not /displaying/ comments
-    to a wall post.
+  * Polling Facebook is pretty slow (on order of a second or more),
+    and blocks the entire BarnOwl interface.  We need to confront
+    Perl's threading demon.
   * We currently expose the underlying post ID for disambiguating
     instances.  Use something more user-friendly.
   * No messaging support.

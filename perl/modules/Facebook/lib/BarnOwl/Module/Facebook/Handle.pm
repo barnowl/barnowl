@@ -16,6 +16,8 @@ package BarnOwl::Module::Facebook::Handle;
 use Facebook::Graph;
 use Data::Dumper;
 use JSON;
+use Date::Parse;
+use POSIX;
 
 use Scalar::Util qw(weaken);
 
@@ -23,6 +25,28 @@ use BarnOwl;
 use BarnOwl::Message::Facebook;
 
 our $app_id = 235537266461636; # for application 'barnowl'
+
+# Unfortunately, Facebook does not offer a comment stream, in the same
+# way we can get a post stream using the news feed.  This makes it a bit
+# difficult to de-duplicate comments we have already seen.  We use a
+# simple heuristic to fix this: we check if the comment's time is dated
+# from before our last update, and don't re-post if it's dated before.
+# Be somewhat forgiving, since it's better to duplicate a post than to
+# drop one.  Furthermore, we must use Facebook's idea of time, since the
+# server BarnOwl is running on may be desynchronized.  So we need to
+# utilize Facebook's idea of time, not ours.  We do this by looking at
+# all of the timestamps we see while processing an update, and take the
+# latest one and increment it by one second.
+#
+# What properties do we get with this setup?
+#
+#   - We get comment updates only for the latest N posts on a news feed.
+#   Any later ones, you have to use Facebook's usual mechanisms (e.g.
+#   email notifications).
+#
+#   - Processing a poll is relatively expensive, since we have to
+#   iterate over N new posts.  It might be worthwhile polling for new
+#   comments less frequently than polling for new posts.
 
 sub fail {
     my $self = shift;
@@ -38,16 +62,23 @@ sub new {
     my $self = {
         'cfg'  => $cfg,
         'facebook' => undef,
-        'last_poll' => time - 60 * 60 * 24,
-        'last_message_poll' => time,
+
+        # Initialized with our 'time', but will be synced to Facebook
+        # soon enough.
+        'last_poll' => time - 60 * 60 * 24 * 2,
         'timer' => undef,
-        'message_timer' => undef,
+
+        # Message polling not implemented yet
+        #'last_message_poll' => time,
+        #'message_timer' => undef,
+
         # yeah yeah, inelegant, I know.  You can try using
         # $fb->authorize, but at time of writing (1.0300) they didn't support
         # the response_type parameter.
         # 'login_url' => 'https://www.facebook.com/dialog/oauth?client_id=235537266461636&scope=read_stream,read_mailbox,publish_stream,offline_access&redirect_uri=http://www.facebook.com/connect/login_success.html&response_type=token',
         # minified to fit in most terminal windows.
         'login_url' => 'http://goo.gl/yA42G',
+
         'logged_in' => 0
     };
 
@@ -109,44 +140,91 @@ sub poll_facebook {
 
     #BarnOwl::message("Polling Facebook...");
 
-    # blah blah blah
+    # XXX Oh no! This blocks the user interface.  Not good.
+    # Ideally, we should have some worker thread for polling facebook.
+    # But BarnOwl is probably not thread-safe >_<
 
     my $updates = eval {
         $self->{facebook}
              ->query
              ->from("my_news")
-             # ->include_metadata()
-             # ->select_fields( ??? )
-             ->where_since( "@" . $self->{last_poll} )
+             # Not using this, because we want to pick up comment
+             # updates. We need to manually de-dup, though.
+             # ->where_since( "@" . $self->{last_poll} )
+             ->limit_results( 200 )
              ->request()
              ->as_hashref()
     };
-
-    $self->{last_poll} = time;
     $self->die_on_error($@);
 
     #warn Dumper($updates);
 
+    my $new_last_poll = $self->{last_poll};
     for my $post ( reverse @{$updates->{data}} ) {
-        # no app invites, thanks! (XXX make configurable)
+        # No app invites, thanks! (XXX make configurable)
         if ($post->{type} eq 'link' && $post->{application}) {
             next;
         }
-        # XXX need to somehow access Facebook's user hiding mechanism...
-        # indexing is fragile
-        my $msg = BarnOwl::Message->new(
-            type      => 'Facebook',
-            sender    => $post->{from}{name},
-            sender_id => $post->{from}{id},
-            name      => $post->{to}{data}[0]{name} || $post->{from}{name},
-            name_id   => $post->{to}{data}[0]{id} || $post->{from}{id},
-            direction => 'in',
-            body      => $self->format_body($post),
-            postid    => $post->{id},
-            zsig      => $post->{actions}[0]{link},
-           );
-        BarnOwl::queue_message($msg);
+
+        # XXX Need to somehow access Facebook's user hiding
+        # mechanism
+
+        # There can be multiple recipients! Strange! Pick the first one.
+        my $name    = $post->{to}{data}[0]{name} || $post->{from}{name};
+        my $name_id = $post->{to}{data}[0]{id} || $post->{from}{id};
+
+        # Only handle post if it's new
+        my $created_time = str2time($post->{created_time});
+        if ($created_time >= $self->{last_poll}) {
+            # XXX indexing is fragile
+            my $msg = BarnOwl::Message->new(
+                type      => 'Facebook',
+                sender    => $post->{from}{name},
+                sender_id => $post->{from}{id},
+                name      => $name,
+                name_id   => $name_id,
+                direction => 'in',
+                body      => $self->format_body($post),
+                postid    => $post->{id},
+                time      => asctime(localtime $created_time),
+                # XXX The intent is to get the 'Comment' link, which also
+                # serves as a canonical link to the post.  The {name}
+                # field should equal 'Comment'.
+                zsig      => $post->{actions}[0]{link},
+               );
+            BarnOwl::queue_message($msg);
+        }
+
+        # This will have funky interleaving of times (they'll all be
+        # sorted linearly), but since we don't expect too many updates between
+        # polls this is pretty acceptable.
+        my $updated_time = str2time($post->{updated_time});
+        if ($updated_time >= $self->{last_poll} && defined $post->{comments}{data}) {
+            for my $comment ( @{$post->{comments}{data}} ) {
+                my $comment_time = str2time($comment->{created_time});
+                if ($comment_time < $self->{last_poll}) {
+                    next;
+                }
+                my $msg = BarnOwl::Message->new(
+                    type      => 'Facebook',
+                    sender    => $comment->{from}{name},
+                    sender_id => $comment->{from}{id},
+                    name      => $name,
+                    name_id   => $name_id,
+                    direction => 'in',
+                    body      => $comment->{message},
+                    postid    => $post->{id},
+                    time      => asctime(localtime $comment_time),
+                   );
+                BarnOwl::queue_message($msg);
+            }
+        }
+        if ($updated_time + 1 > $new_last_poll) {
+            $new_last_poll = $updated_time + 1;
+        }
     }
+
+    $self->{last_poll} = $new_last_poll;
 }
 
 sub format_body {
