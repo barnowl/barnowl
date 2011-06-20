@@ -267,6 +267,7 @@ sub facebook_comment {
     my $msg = shift;
 
     $self->{facebook}->add_comment( $postid )->set_message( $msg )->publish;
+    $self->poll_facebook;
 }
 
 sub facebook_auth {
