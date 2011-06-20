@@ -186,6 +186,13 @@ sub poll_facebook {
             next;
         }
 
+        # XXX Filtering out interest groups for now
+        # A more reasonable strategy may be to show their
+        # posts, but not the comments.
+        if (defined $post->{from}{category}) {
+            next;
+        }
+
         # XXX Need to somehow access Facebook's user hiding
         # mechanism
 
