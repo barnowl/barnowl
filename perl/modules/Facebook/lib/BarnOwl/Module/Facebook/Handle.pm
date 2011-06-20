@@ -15,7 +15,21 @@ package BarnOwl::Module::Facebook::Handle;
 
 use Facebook::Graph;
 
-use Lingua::EN::Keywords;
+use List::Util qw(reduce);
+
+eval { require Lingua::EN::Keywords; };
+if ($@) {
+    *keywords = sub {
+        # stupidly pick the longest one, and only return one.
+        my $sentence = shift;
+        $sentence =~ s/[[:punct:]]//g;
+        my @words = split(' ', lc($sentence));
+        return () unless @words;
+        return (reduce{ length($a) > length($b) ? $a : $b } @words,);
+    };
+} else {
+    *keywords = \&Lingua::EN::Keywords::keywords;
+}
 
 use JSON;
 use Date::Parse;
