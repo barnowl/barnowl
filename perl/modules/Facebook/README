@@ -31,6 +31,8 @@ TODO
   * Polling Facebook is pretty slow (on order of a second or more),
     and blocks the entire BarnOwl interface.  We need to confront
     Perl's threading demon.
+  * Need to detect if you have two friends with the same name and
+    disambiguate if so.
   * No messaging support.
   * No auto-completion support.
   * No posting to an arbitrary user's wall.

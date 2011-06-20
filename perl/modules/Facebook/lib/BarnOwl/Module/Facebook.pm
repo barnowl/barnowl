@@ -101,7 +101,7 @@ BarnOwl::new_command('facebook' => \&cmd_facebook, {
 
 BarnOwl::new_command('facebook-comment' => \&cmd_facebook_comment, {
     summary     => 'Comment on a wall post.',
-    usage       => 'facebook-comment POSTID',
+    usage       => 'facebook-comment POST_ID',
     description => 'Comment on a friend\'s wall post.  Using r is recommended.'
 });
 
@@ -129,14 +129,14 @@ sub cmd_facebook {
 
 sub cmd_facebook_comment {
     my $cmd  = shift;
-    my $postid = shift;
+    my $post_id = shift;
 
-    my $topic = $facebook_handle->get_topic($postid);
+    my $topic = $facebook_handle->get_topic($post_id);
 
     # XXX UI should give some (better) indication /which/ conversation
     # is being commented on
     BarnOwl::start_edit_win("Write a comment on '$topic'...",
-                            sub { $facebook_handle->facebook_comment($postid, shift) });
+                            sub { $facebook_handle->facebook_comment($post_id, shift) });
 }
 
 sub cmd_facebook_poll {

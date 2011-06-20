@@ -21,7 +21,7 @@ sub replycmd {
     my $self = shift;
     # TODO: Support for direct messages
     # XXX: It seems that Facebook may not support this yet
-    return BarnOwl::quote('facebook-comment', $self->{postid});
+    return BarnOwl::quote('facebook-comment', $self->{post_id});
 }
 
 #sub replysendercmd {
@@ -34,10 +34,10 @@ sub smartfilter {
     my $filter;
     # XXX I hope $filter isn't used for anything besides display purposes
     if($inst) {
-        $filter = "facebook: " . $self->{name} . " " . $self->{postid};
+        $filter = "facebook: " . $self->{name} . " " . $self->{post_id};
         BarnOwl::command("filter", $filter,
                          qw{type ^facebook$ and name_id}, '^'.$self->{name_id}.'$',
-                         qw{and postid}, '^'.$self->{postid}.'$');
+                         qw{and post_id}, '^'.$self->{post_id}.'$');
     } else {
         $filter = "facebook: " . $self->{name};
         BarnOwl::command("filter", $filter,
