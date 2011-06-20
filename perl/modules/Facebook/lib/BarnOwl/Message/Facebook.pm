@@ -32,13 +32,16 @@ sub smartfilter {
     my $self = shift;
     my $inst = shift;
     my $filter;
+    # XXX I hope $filter isn't used for anything besides display purposes
     if($inst) {
-        # XXX I hope $filter isn't used for anything besides display purposes
+        $filter = "facebook: " . $self->{name} . " " . $self->{postid};
+        BarnOwl::command("filter", $filter,
+                         qw{type ^facebook$ and name_id}, '^'.$self->{name_id}.'$',
+                         qw{and postid}, '^'.$self->{postid}.'$');
+    } else {
         $filter = "facebook: " . $self->{name};
         BarnOwl::command("filter", $filter,
                          qw{type ^facebook$ and name_id}, '^'.$self->{name_id}.'$');
-    } else {
-        $filter = "facebook";
     }
     return $filter;
 }
