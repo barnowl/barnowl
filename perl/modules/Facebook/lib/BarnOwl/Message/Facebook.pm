@@ -13,7 +13,7 @@ package BarnOwl::Message::Facebook;
 use base qw(BarnOwl::Message);
 
 sub context { return shift->{"name"}; }
-sub subcontext { return shift->{"postid"}; }
+sub subcontext { return shift->{"topic"}; }
 sub service { return "http://www.facebook.com"; }
 sub long_sender { return shift->{"zsig"}; } # XXX hack, shouldn't be named zsig
 
