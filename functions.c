@@ -1227,17 +1227,18 @@ void owl_function_unsubscribe(const char *class, const char *inst, const char *r
   }
 }
 
-static void _dirty_everything(owl_window *w) {
+static void _dirty_everything(gpointer data, gpointer user_data) {
+  owl_window *w = data;
   if (!owl_window_is_realized(w))
     return;
   owl_window_dirty(w);
-  owl_window_children_foreach(w, (GFunc)_dirty_everything, NULL);
+  owl_window_children_foreach(w, _dirty_everything, NULL);
 }
 
 void owl_function_full_redisplay(void)
 {
   /* Ask every widget to redraw itself. */
-  _dirty_everything(owl_window_get_screen());
+  _dirty_everything(owl_window_get_screen(), NULL);
   /* Force ncurses to redisplay everything. */
   clearok(stdscr, TRUE);
 }
