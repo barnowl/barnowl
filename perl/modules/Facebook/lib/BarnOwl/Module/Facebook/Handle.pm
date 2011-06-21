@@ -22,7 +22,7 @@ if ($@) {
     *keywords = sub {
         # stupidly pick the longest one, and only return one.
         my $sentence = shift;
-        $sentence =~ s/[[:punct:]]//g;
+        $sentence =~ s/[[:punct:]]+/ /g;
         my @words = split(' ', lc($sentence));
         return () unless @words;
         return (reduce{ length($a) > length($b) ? $a : $b } @words,);
@@ -206,6 +206,7 @@ sub poll_facebook {
         if ($created_time >= $self->{last_poll}) {
             my @keywords = keywords($post->{name} || $post->{message});
             my $topic = $keywords[0] || 'personal';
+            $topic =~ s/ /-/g;
             $self->{topics}->{$post_id} = $topic;
             # XXX indexing is fragile
             my $msg = BarnOwl::Message->new(
