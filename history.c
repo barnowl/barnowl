@@ -4,7 +4,6 @@ void owl_history_init(owl_history *h)
 {
   owl_list_create(&(h->hist));
   h->cur=0;			/* current position in history */
-  h->touched=0;			/* whether we've gone into history */
   h->partial=0;			/* is the 0th element is partially composed? */
 }
 
@@ -12,7 +11,6 @@ const char *owl_history_get_prev(owl_history *h)
 {
 
   if (!h) return NULL;
-  h->touched=1;
 
   if (owl_list_get_size(&(h->hist))==0) return(NULL);
 
@@ -75,13 +73,11 @@ void owl_history_reset(owl_history *h)
 {
   if (!h) return;
   h->cur=0;
-  h->touched=0;
   h->partial=0;
 }
 
 int owl_history_is_touched(const owl_history *h)
 {
   if (!h) return(0);
-  if (h->touched) return(1);
-  return(0);
+  return h->cur > 0;
 }
