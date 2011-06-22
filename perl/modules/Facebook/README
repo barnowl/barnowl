@@ -31,12 +31,9 @@ TODO
   * Polling Facebook is pretty slow (on order of a second or more),
     and blocks the entire BarnOwl interface.  We need to confront
     Perl's threading demon.
-  * Need to detect if you have two friends with the same name and
-    disambiguate if so.
-  * No messaging support.
-  * No auto-completion support.
-  * No posting to an arbitrary user's wall.
-  * See code comments for more work items!
+  * No messaging support. (We'll add it when Facebook makes the new endpoint.)
+  * Smarter name de-duplication (see code comments for details.)
+  * Grep for XXX and TODO for more work items.
 
 TECHNICAL NOTES
   This module uses 100% undeprecated Facebook Graph API, and should be
