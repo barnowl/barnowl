@@ -458,7 +458,6 @@ typedef struct _owl_history {
   int cur;
   int touched;
   int partial;
-  int repeats;
 } owl_history;
 
 typedef struct _owl_mainpanel {
