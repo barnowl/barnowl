@@ -6,12 +6,6 @@ void owl_history_init(owl_history *h)
   h->cur=0;			/* current position in history */
   h->touched=0;			/* whether we've gone into history */
   h->partial=0;			/* is the 0th element is partially composed? */
-  h->repeats=1;                 /* by default we'll allow repeat entries */
-}
-
-void owl_history_set_norepeats(owl_history *h)
-{
-  h->repeats=0;
 }
 
 const char *owl_history_get_prev(owl_history *h)
@@ -56,7 +50,7 @@ void owl_history_store(owl_history *h, const char *line)
     owl_list_remove_element(&(h->hist), 0);
   }
 
-  /* if repeats are disallowed, check if the line is the same as the last */
+  /* check if the line is the same as the last */
   if (owl_list_get_size(&(h->hist))>0) {
     if (!strcmp(line, owl_list_get_element(&(h->hist), 0))) return;
   }
