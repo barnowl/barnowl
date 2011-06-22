@@ -269,13 +269,18 @@ sub poll_facebook {
         my $name_id = $post->{to}{data}[0]{id} || $post->{from}{id};
         my $post_id  = $post->{id};
 
-        # Only handle post if it's new
-        my $created_time = str2time($post->{created_time});
-        if ($created_time >= $self->{last_poll}) {
+        if (defined $old_topics->{$post_id}) {
+            $self->{topics}->{$post_id} = $old_topics->{$post_id};
+        } else {
             my @keywords = keywords($post->{name} || $post->{message});
             my $topic = $keywords[0] || 'personal';
             $topic =~ s/ /-/g;
             $self->{topics}->{$post_id} = $topic;
+        }
+
+        # Only handle post if it's new
+        my $created_time = str2time($post->{created_time});
+        if ($created_time >= $self->{last_poll}) {
             # XXX indexing is fragile
             my $msg = BarnOwl::Message->new(
                 type      => 'Facebook',
@@ -285,8 +290,8 @@ sub poll_facebook {
                 name_id   => $name_id,
                 direction => 'in',
                 body      => $self->format_body($post),
-                post_id    => $post_id,
-                topic     => $topic,
+                post_id   => $post_id,
+                topic     => $self->get_topic($post_id),
                 time      => asctime(localtime $created_time),
                 # XXX The intent is to get the 'Comment' link, which also
                 # serves as a canonical link to the post.  The {name}
@@ -294,8 +299,6 @@ sub poll_facebook {
                 zsig      => $post->{actions}[0]{link},
                );
             BarnOwl::queue_message($msg);
-        } else {
-            $self->{topics}->{$post_id} = $old_topics->{$post_id} || 'personal';
         }
 
         # This will have funky interleaving of times (they'll all be
