@@ -301,13 +301,14 @@ void owl_process_input_char(owl_input j)
   }
 }
 
-void owl_process_input(const owl_io_dispatch *d, void *data)
+gboolean owl_process_input(GIOChannel *source, GIOCondition condition, void *data)
 {
+  owl_global *g = data;
   owl_input j;
 
   while (1) {
-    j.ch = wgetch(g.input_pad);
-    if (j.ch == ERR) return;
+    j.ch = wgetch(g->input_pad);
+    if (j.ch == ERR) return TRUE;
 
     j.uch = '\0';
     if (j.ch >= KEY_MIN && j.ch <= KEY_MAX) {
@@ -329,7 +330,7 @@ void owl_process_input(const owl_io_dispatch *d, void *data)
       else bytes = 1;
       
       for (i = 1; i < bytes; i++) {
-        int tmp = wgetch(g.input_pad);
+        int tmp = wgetch(g->input_pad);
         /* If what we got was not a byte, or not a continuation byte */
         if (tmp > 0xff || !(tmp & 0x80 && ~tmp & 0x40)) {
           /* ill-formed UTF-8 code unit subsequence, put back the
@@ -356,6 +357,7 @@ void owl_process_input(const owl_io_dispatch *d, void *data)
 
     owl_process_input_char(j);
   }
+  return TRUE;
 }
 
 static void sig_handler_main_thread(void *data) {
@@ -447,30 +449,34 @@ int stderr_replace(void)
 }
 
 /* Sends stderr (read from rfd) messages to the error console */
-void stderr_redirect_handler(const owl_io_dispatch *d, void *data)
+gboolean stderr_redirect_handler(GIOChannel *source, GIOCondition condition, void *data)
 {
   int navail, bread;
   char buf[4096];
-  int rfd = d->fd;
+  int rfd = g_io_channel_unix_get_fd(source);
   char *err;
 
-  if (rfd<0) return;
+  /* TODO: Use g_io_channel_read_line? We'd have to be careful about
+   * blocking on the read. */
+
+  if (rfd<0) return TRUE;
   if (-1 == ioctl(rfd, FIONREAD, &navail)) {
-    return;
+    return TRUE;
   }
   /*owl_function_debugmsg("stderr_redirect: navail = %d\n", navail);*/
-  if (navail <= 0) return;
+  if (navail <= 0) return TRUE;
   if (navail > sizeof(buf)-1) {
     navail = sizeof(buf)-1;
   }
   bread = read(rfd, buf, navail);
   if (bread == -1)
-    return;
+    return TRUE;
 
   err = g_strdup_printf("[stderr]\n%.*s", bread, buf);
 
   owl_function_log_err(err);
   g_free(err);
+  return TRUE;
 }
 
 #endif /* OWL_STDERR_REDIR */
@@ -484,9 +490,7 @@ int main(int argc, char **argv, char **env)
   const char *dir;
   owl_options opts;
   GSource *source;
-
-  if (!GLIB_CHECK_VERSION (2, 12, 0))
-    g_error ("GLib version 2.12.0 or above is needed.");
+  GIOChannel *channel;
 
   argc_copy = argc;
   argv_copy = g_strdupv(argv);
@@ -512,13 +516,17 @@ int main(int argc, char **argv, char **env)
   owl_register_signal_handlers();
 
   /* register STDIN dispatch; throw away return, we won't need it */
-  owl_select_add_io_dispatch(STDIN_FILENO, OWL_IO_READ, &owl_process_input, NULL, NULL);
+  channel = g_io_channel_unix_new(STDIN_FILENO);
+  g_io_add_watch(channel, G_IO_IN | G_IO_HUP | G_IO_ERR, &owl_process_input, &g);
+  g_io_channel_unref(channel);
   owl_zephyr_initialize();
 
 #if OWL_STDERR_REDIR
   /* Do this only after we've started curses up... */
   owl_function_debugmsg("startup: doing stderr redirection");
-  owl_select_add_io_dispatch(stderr_replace(), OWL_IO_READ, &stderr_redirect_handler, NULL, NULL);
+  channel = g_io_channel_unix_new(stderr_replace());
+  g_io_add_watch(channel, G_IO_IN | G_IO_HUP | G_IO_ERR, &stderr_redirect_handler, NULL);
+  g_io_channel_unref(channel);
 #endif
 
   /* create the owl directory, in case it does not exist */

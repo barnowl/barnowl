@@ -325,12 +325,6 @@ wordwrap(in, cols)
 	CLEANUP:
 		g_free(rv);
 
-void
-remove_io_dispatch(fd)
-	int fd
-	CODE:
-	owl_select_remove_perl_io_dispatch(fd);
-
 AV*
 all_filters()
 	PREINIT:
@@ -505,46 +499,6 @@ new_variable_bool(name, ival, summ, desc)
 				      summ,
 				      desc,
 				      ival);
-
-void
-add_io_dispatch(fd, mode, cb)
-	int fd
-	int mode
-	SV * cb
-	CODE:
-	owl_select_add_perl_io_dispatch(fd, mode, newSVsv(cb));
-
-IV
-add_timer(after, interval, cb, name = NULL)
-	int after
-	int interval
-	SV *cb
-	const char *name
-	PREINIT:
-		SV *ref;
-		owl_timer *t;
-	CODE:
-		ref = sv_rvweaken(newSVsv(cb));
-		t = owl_select_add_timer(name,
-					 after,
-					 interval,
-					 owl_perlconfig_perl_timer,
-					 owl_perlconfig_perl_timer_destroy,
-					 ref);
-		owl_function_debugmsg("Created timer %s: %p", t->name ? t->name : "(unnamed)", t);
-	RETVAL = (IV)t;
-	OUTPUT:
-		RETVAL
-
-void
-remove_timer(timer)
-	IV timer
-	PREINIT:
-		owl_timer *t;
-	CODE:
-		t = (owl_timer*)timer;
-		owl_function_debugmsg("Freeing timer %s: %p", t->name ? t->name : "(unnamed)", t);
-		owl_select_remove_timer(t);
 
 MODULE = BarnOwl		PACKAGE = BarnOwl::Editwin
 

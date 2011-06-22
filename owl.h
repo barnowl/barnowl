@@ -121,10 +121,6 @@ typedef void HV;
 #define OWL_MESSAGE_DIRECTION_IN    1
 #define OWL_MESSAGE_DIRECTION_OUT   2
 
-#define OWL_IO_READ   1
-#define OWL_IO_WRITE  2
-#define OWL_IO_EXCEPT 4
-
 #define OWL_DIRECTION_NONE      0
 #define OWL_DIRECTION_DOWNWARDS 1
 #define OWL_DIRECTION_UPWARDS   2
@@ -516,15 +512,6 @@ typedef struct _owl_zbuddylist {
   owl_list zusers;
 } owl_zbuddylist;
 
-typedef struct _owl_timer {
-  time_t time;
-  int interval;
-  void (*callback)(struct _owl_timer *, void *);
-  void (*destroy)(struct _owl_timer *);
-  void *data;
-  char *name;
-} owl_timer;
-
 typedef struct _owl_errqueue {
   owl_list errlist;
 } owl_errqueue;
@@ -535,23 +522,12 @@ typedef struct _owl_colorpair_mgr {
   bool overflow;
 } owl_colorpair_mgr;
 
-typedef struct _owl_io_dispatch {
-  int fd;                                     /* FD to watch for dispatch. */
-  int mode;
-  bool valid;
-  int needs_gc;
-  void (*callback)(const struct _owl_io_dispatch *, void *); /* C function to dispatch to. */
-  void (*destroy)(const struct _owl_io_dispatch *);  /* Destructor */
-  void *data;
-  GPollFD pollfd;
-} owl_io_dispatch;
-
 typedef struct _owl_popexec {
   int refcount;
   owl_viewwin *vwin;
   int winactive;
   pid_t pid;			/* or 0 if it has terminated */
-  const owl_io_dispatch *dispatch;
+  guint io_watch;
 } owl_popexec;
 
 typedef struct _owl_global {
@@ -615,9 +591,7 @@ typedef struct _owl_global {
   GList *zaldlist;
   int pseudologin_notify;
   struct termios startup_tio;
-  owl_list io_dispatch_list;
-  GList *timerlist;
-  owl_timer *aim_nop_timer;
+  guint aim_nop_timer;
   int load_initial_subs;
   FILE *debug_file;
   char *kill_buffer;

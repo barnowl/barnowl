@@ -104,8 +104,6 @@ void owl_global_init(owl_global *g) {
   g->pseudologin_notify = 0;
 
   owl_message_init_fmtext_cache();
-  owl_list_create(&(g->io_dispatch_list));
-  g->timerlist = NULL;
   g->kill_buffer = NULL;
 
   g->interrupt_count = 0;
@@ -838,16 +836,6 @@ void owl_global_set_pseudologin_notify(owl_global *g, int notify)
 struct termios *owl_global_get_startup_tio(owl_global *g)
 {
   return(&(g->startup_tio));
-}
-
-owl_list *owl_global_get_io_dispatch_list(owl_global *g)
-{
-  return &(g->io_dispatch_list);
-}
-
-GList **owl_global_get_timerlist(owl_global *g)
-{
-  return &(g->timerlist);
 }
 
 void owl_global_setup_default_filters(owl_global *g)

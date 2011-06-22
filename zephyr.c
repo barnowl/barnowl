@@ -47,6 +47,7 @@ void owl_zephyr_initialize(void)
   struct servent *sp;
   struct sockaddr_in sin;
   ZNotice_t req;
+  GIOChannel *channel;
 
   /*
    * Code modified from libzephyr's ZhmStat.c
@@ -90,26 +91,27 @@ void owl_zephyr_initialize(void)
     return;
   }
 
-  owl_select_add_io_dispatch(ZGetFD(), OWL_IO_READ|OWL_IO_EXCEPT, &owl_zephyr_finish_initialization, NULL, NULL);
+  channel = g_io_channel_unix_new(ZGetFD());
+  g_io_add_watch(channel, G_IO_IN | G_IO_ERR | G_IO_HUP,
+		 &owl_zephyr_finish_initialization, NULL);
+  g_io_channel_unref(channel);
 }
 
-void owl_zephyr_finish_initialization(const owl_io_dispatch *d, void *data) {
+gboolean owl_zephyr_finish_initialization(GIOChannel *source, GIOCondition condition, void *data) {
   Code_t code;
   char *perl;
   GSource *event_source;
-
-  owl_select_remove_io_dispatch(d);
 
   ZClosePort();
 
   if ((code = ZInitialize()) != ZERR_NONE) {
     owl_function_error("Initializing Zephyr: %s", error_message(code));
-    return;
+    return FALSE;
   }
 
   if ((code = ZOpenPort(NULL)) != ZERR_NONE) {
     owl_function_error("Initializing Zephyr: %s", error_message(code));
-    return;
+    return FALSE;
   }
 
   event_source = owl_zephyr_event_source_new(ZGetFD());
@@ -142,6 +144,7 @@ void owl_zephyr_finish_initialization(const owl_io_dispatch *d, void *data) {
 
   perl = owl_perlconfig_execute("BarnOwl::Zephyr::_zephyr_startup()");
   g_free(perl);
+  return FALSE;
 }
 
 void owl_zephyr_load_initial_subs(void) {
@@ -1431,7 +1434,7 @@ void owl_zephyr_process_pseudologin(void *n)
 }
 #endif
 
-void owl_zephyr_buddycheck_timer(owl_timer *t, void *data)
+gboolean owl_zephyr_buddycheck_timer(void *data)
 {
   if (owl_global_is_pseudologins(&g)) {
     owl_function_debugmsg("Doing zephyr buddy check");
@@ -1439,6 +1442,7 @@ void owl_zephyr_buddycheck_timer(owl_timer *t, void *data)
   } else {
     owl_function_debugmsg("Warning: owl_zephyr_buddycheck_timer call pointless; timer should have been disabled");
   }
+  return TRUE;
 }
 
 /*
@@ -1509,7 +1513,7 @@ static GSource *owl_zephyr_event_source_new(int fd) {
   source = g_source_new(&zephyr_event_funcs, sizeof(owl_zephyr_event_source));
   event_source = (owl_zephyr_event_source*) source;
   event_source->poll_fd.fd = fd;
-  event_source->poll_fd.events = G_IO_IN | G_IO_HUP | G_IO_PRI | G_IO_ERR;
+  event_source->poll_fd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
   g_source_add_poll(source, &event_source->poll_fd);
 
   return source;
