@@ -143,13 +143,6 @@ sub sleep {
     # XXX implement message polling
 }
 
-sub die_on_error {
-    my $self = shift;
-    my $error = shift;
-
-    die "$error" if $error;
-}
-
 sub poll_facebook {
     my $self = shift;
 
@@ -177,7 +170,10 @@ sub poll_facebook {
              ->request()
              ->as_hashref()
     };
-    $self->die_on_error($@);
+    if ($@) {
+        warn "Poll failed $@";
+        return;
+    }
 
     my $new_last_poll = $self->{last_poll};
     for my $post ( reverse @{$updates->{data}} ) {
