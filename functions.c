@@ -1841,7 +1841,6 @@ void owl_function_reply(int type, int enter)
     if (enter) {
       owl_history *hist = owl_global_get_cmd_history(&g);
       owl_history_store(hist, buff);
-      owl_history_reset(hist);
       owl_function_command_norv(buff);
     } else {
       owl_function_start_command(buff);

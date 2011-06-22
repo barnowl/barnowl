@@ -48,6 +48,8 @@ void owl_history_store(owl_history *h, const char *line)
     owl_list_remove_element(&(h->hist), 0);
   }
 
+  owl_history_reset(h);
+
   /* check if the line is the same as the last */
   if (owl_list_get_size(&(h->hist))>0) {
     if (!strcmp(line, owl_list_get_element(&(h->hist), 0))) return;

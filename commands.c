@@ -2632,7 +2632,6 @@ char *owl_command_add_cmd_history(int argc, const char *const *argv, const char 
   ptr = skiptokens(buff, 1);
   hist = owl_global_get_cmd_history(&g);
   owl_history_store(hist, ptr);
-  owl_history_reset(hist);
   /* owl_function_makemsg("History '%s' stored successfully", ptr+1); */
   return NULL;
 }
@@ -2655,7 +2654,6 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_command_with_history(int argc, const char *c
 
   hist = owl_global_get_cmd_history(&g);
   owl_history_store(hist, ptr);
-  owl_history_reset(hist);
   return owl_function_command(ptr);
 }
 
@@ -2738,10 +2736,8 @@ void owl_command_edit_cancel(owl_editwin *e)
   owl_function_makemsg("Command cancelled.");
 
   hist = owl_editwin_get_history(e);
-  if (hist) {
+  if (hist)
     owl_history_store(hist, owl_editwin_get_text(e));
-    owl_history_reset(hist);
-  }
 
   owl_global_pop_context(&g);
 }
@@ -2795,10 +2791,8 @@ void owl_command_edit_done(owl_editwin *e)
 {
   owl_history *hist=owl_editwin_get_history(e);
 
-  if (hist) {
+  if (hist)
     owl_history_store(hist, owl_editwin_get_text(e));
-    owl_history_reset(hist);
-  }
 
   /* Take a reference to the editwin, so that it survives the pop
    * context. TODO: We should perhaps refcount or otherwise protect
