@@ -79,8 +79,15 @@ sub new {
         'cfg'  => $cfg,
         'facebook' => undef,
 
+        # Ideally this should be done using Facebook realtime updates,
+        # but we can't assume that the BarnOwl lives on a publically
+        # addressable server (XXX maybe we can setup an option for this.)
+        'last_friend_poll' => 0,
+        'friend_timer' => undef,
+
         # Initialized with our 'time', but will be synced to Facebook
-        # soon enough.
+        # soon enough. (Subtractive amount is just to preseed with some
+        # values.)
         'last_poll' => time - 60 * 60 * 24 * 2,
         'timer' => undef,
 
@@ -99,6 +106,9 @@ sub new {
 
         # would need another hash for topic de-dup
         'topics' => {},
+
+        # deduplicated map of names to user ids
+        'friends' => {},
     };
 
     bless($self, $class);
@@ -124,6 +134,10 @@ sub sleep {
     weaken($weak);
 
     # Stop any existing timers.
+    if (defined $self->{friend_timer}) {
+        $self->{friend_timer}->stop;
+        $self->{friend_timer} = undef;
+    }
     if (defined $self->{timer}) {
         $self->{timer}->stop;
         $self->{timer} = undef;
@@ -134,6 +148,12 @@ sub sleep {
         $self->{message_timer} = undef;
     }
 
+    $self->{friend_timer} = BarnOwl::Timer->new({
+        name     => "Facebook friend poll",
+        after    => $delay,
+        interval => 60 * 60 * 24,
+        cb       => sub { $weak->poll_friends if $weak }
+       });
     $self->{timer} = BarnOwl::Timer->new({
         name     => "Facebook poll",
         after    => $delay,
@@ -141,6 +161,58 @@ sub sleep {
         cb       => sub { $weak->poll_facebook if $weak }
        });
     # XXX implement message polling
+}
+
+sub poll_friends {
+    my $self = shift;
+
+    return unless BarnOwl::getvar('facebook:poll') eq 'on';
+    return unless $self->{logged_in};
+
+    my $friends = eval { $self->{facebook}->fetch('me/friends'); };
+    if ($@) {
+        warn "Poll failed $@";
+        return;
+    }
+
+    $self->{last_friend_poll} = time;
+    $self->{friends} = {};
+
+    for my $friend ( @{$friends->{data}} ) {
+        if (defined $self->{friends}{$friend->{name}}) {
+            # XXX We should try a little harder here, rather than just
+            # tacking on a number.  Ideally, we should be able to
+            # calculate some extra piece of information that the user
+            # needs to disambiguate between the two users.  An old
+            # version of Facebook used to disambiguate with your primary
+            # network (so you might have Edward Yang (MIT) and Edward
+            # Yang (Cambridge), the idea being that users in the same
+            # network would probably have already disambiguated
+            # themselves with middle names or nicknames.  We no longer
+            # get network information, since Facebook axed that
+            # information, but the Education/Work fields may still be
+            # a reasonable approximation (but which one do you pick?!
+            # The most recent one.)  Since getting this information
+            # involves extra queries, there are also caching and
+            # efficiency concerns.
+            #   We may want a facility for users to specify custom
+            # aliases for Facebook users, which are added into this
+            # hash.  See also username support.
+            warn "Duplicate friend name " . $friend->{name};
+            my $name = $friend->{name};
+            my $i = 2;
+            while (defined $self->{friends}{$friend->{name} . ' ' . $i}) { $i++; }
+            $self->{friends}{$friend->{name} . ' ' . $i} = $friend->{id};
+        } else {
+            $self->{friends}{$friend->{name}} = $friend->{id};
+        }
+    }
+
+    # XXX We should also have support for usernames, and not just real
+    # names. However, since this data is not returned by the friends
+    # query, it would require a rather expensive set of queries. We
+    # might try to preserve old data, but all-in-all it's a bit
+    # complicated, so we don't bother.
 }
 
 sub poll_facebook {
@@ -282,14 +354,19 @@ sub format_body {
 sub facebook {
     my $self = shift;
 
+    my $user = shift;
     my $msg = shift;
-    my $reply_to = shift;
 
     if (!defined $self->{facebook} || !$self->{logged_in}) {
         BarnOwl::admin_message('Facebook', 'You are not currently logged into Facebook.');
         return;
     }
-    $self->{facebook}->add_post->set_message( $msg )->publish;
+    if (defined $user) {
+        $user = $self->{friends}{$user} || $user;
+        $self->{facebook}->add_post( $user )->set_message( $msg )->publish;
+    } else {
+        $self->{facebook}->add_post->set_message( $msg )->publish;
+    }
     $self->sleep(0);
 }
 

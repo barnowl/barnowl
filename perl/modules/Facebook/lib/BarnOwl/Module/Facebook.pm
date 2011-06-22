@@ -122,9 +122,12 @@ BarnOwl::new_command('facebook-poll' => \&cmd_facebook_poll, {
 
 sub cmd_facebook {
     my $cmd = shift;
-    BarnOwl::start_edit_win("What's on your mind?", sub{ facebook(shift) });
-    # User prompt for other person's wall is "Write something..." which
-    # we will ostensibly check for soon.
+    my $user = shift;
+
+    BarnOwl::start_edit_win(
+        defined $user ? "Write something to $user..." : "What's on your mind?",
+        sub{ facebook($user, shift) }
+    );
 }
 
 sub cmd_facebook_comment {
@@ -154,5 +157,10 @@ sub cmd_facebook_auth {
 }
 
 BarnOwl::filter(qw{facebook type ^facebook$});
+
+# Autocompletion support
+
+sub complete_user { return keys %{$facebook_handle->{friends}}; }
+BarnOwl::Completion::register_completer(facebook => sub { complete_user(@_) });
 
 1;
