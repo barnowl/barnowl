@@ -456,7 +456,7 @@ typedef struct _owl_view {
 typedef struct _owl_history {
   owl_list hist;
   int cur;
-  int partial;
+  bool partial;
 } owl_history;
 
 typedef struct _owl_mainpanel {

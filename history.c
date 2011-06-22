@@ -4,7 +4,7 @@ void owl_history_init(owl_history *h)
 {
   owl_list_create(&(h->hist));
   h->cur=0;			/* current position in history */
-  h->partial=0;			/* is the 0th element is partially composed? */
+  h->partial = false;		/* is the 0th element is partially composed? */
 }
 
 const char *owl_history_get_prev(owl_history *h)
@@ -35,7 +35,7 @@ const char *owl_history_get_next(owl_history *h)
   return(owl_list_get_element(&(h->hist), h->cur));
 }
 
-void owl_history_store(owl_history *h, const char *line)
+void owl_history_store(owl_history *h, const char *line, bool partial)
 {
   int size;
 
@@ -57,12 +57,7 @@ void owl_history_store(owl_history *h, const char *line)
 
   /* add the new line */
   owl_list_prepend_element(&(h->hist), g_strdup(line));
-}
-
-void owl_history_set_partial(owl_history *h)
-{
-  if (!h) return;
-  h->partial=1;
+  h->partial = partial;
 }
 
 void owl_history_reset(owl_history *h)
@@ -73,7 +68,7 @@ void owl_history_reset(owl_history *h)
   if (h->partial) {
     g_free(owl_list_get_element(&(h->hist), 0));
     owl_list_remove_element(&(h->hist), 0);
-    h->partial = 0;
+    h->partial = false;
   }
 
   h->cur=0;
