@@ -454,8 +454,8 @@ typedef struct _owl_view {
 } owl_view;
 
 typedef struct _owl_history {
-  owl_list hist;
-  int cur;
+  GQueue hist;
+  GList *cur;
   bool partial;
 } owl_history;
 
