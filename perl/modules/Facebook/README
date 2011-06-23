@@ -1,0 +1,67 @@
+NAME
+  Facebook.par - Facebook support for BarnOwl
+
+DESCRIPTION
+  The Facebook module implements Facebook support for BarnOwl.
+
+SYNOPSIS
+  (1) Create an empty file ~/.owl/facebook (you can use the command
+  `touch ~/.owl/facebook`), in order to enable the module.
+
+  (2) Run ":reload-module Facebook" inside BarnOwl.
+
+  (3) Follow the instructions in the admin message.  BarnOwl will
+  ask you to log in via an OAuth URL, and run ':facebook-auth'
+  with the resulting URL.  It will then ask you to record the
+  resulting access token in your ~/.owl/facebook file, so you do
+  not have to login on subsequent BarnOwl sesions.
+
+  This token is valid until you change your
+  Facebook password or you revoke permissions for Barnowl at:
+    http://www.facebook.com/settings/?tab=applications&app_id=235537266461636
+
+  (4) Start receiving wall updates in Barnowl!
+  You can post updates with the ":facebook" command.
+
+INFELICITIES
+  * Polling Facebook is pretty slow (on order of a second or more),
+    and blocks the entire BarnOwl interface.  We have a plan for
+    fixing this, which involves creating an async version of
+    Facebook::Graph.  I have been in contact with the original
+    author JT Smith about this.
+
+  * BarnOwl will not receive all comments for news feed items, only
+    comments for items that were recently published.  There is not
+    currently a way to see starks for conversations that you did not
+    participate in, and the only way to see starks for conversations
+    you did participate in are Facebook's email notifications.  (This
+    is a deficiency of the Facebook API, see http://bugs.developers.facebook.net/show_bug.cgi?id=18594.)
+
+  * By default, BarnOwl will not display posts from organizations (such
+    as bands you have liked) or application invites.  This is a
+    judgment of taste from the original author.  This is not currently
+    configurable.
+
+  * Users and applications that you have hidden via the Facebook
+    web interface will show up in the BarnOwl stream.  (This appears to
+    be a deficiency of the Facebook API, see
+    http://stackoverflow.com/questions/6405364/facebook-api-access-hide-posts-from-settings).
+    Users are encouraged to work around this by using traditional Zephyr
+    filters.
+
+  * We are missing support for some notable features, including
+    messaging (Facebook has not publically released the API for this,
+    though we could sign up for the whitelist), events (seeing
+    unresponded to events requires a custom FQL query
+    http://stackoverflow.com/questions/4752967/facebook-api-only-returns-25-events-max),
+    notifications (not supported in Graph API yet).
+
+WISHLIST
+  * Smarter name de-duplication (see Facebook/Handle.pm for details.)
+  * URL minification.
+  * Multiple accounts.  (Does anyone do this? I don't think so...)
+  * Zephyr class mirroring.
+
+POLLING
+  Facebook.par polls for normal messages once a minute. To disable
+  polling, you can unset the 'facebook:poll' variable in BarnOwl.
