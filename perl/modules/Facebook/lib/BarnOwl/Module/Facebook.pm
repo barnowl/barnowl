@@ -23,76 +23,41 @@ use BarnOwl::Module::Facebook::Handle;
 
 our $facebook_handle = undef;
 
-# did not implement class monitoring
-# did not implement multiple accounts
-
 BarnOwl::new_variable_bool(
     'facebook:poll',
     {
         default => 1,
         summary => 'Poll Facebook for wall updates',
-        # TODO: Make this configurable
+        # XXX: Make poll time configurable
         description => "If set, will poll Facebook every minute for updates.\n"
      }
  );
 
-sub fail {
-    my $msg = shift;
-    # reset global state here
-    BarnOwl::admin_message('Facebook Error', $msg);
-    die("Facebook Error: $msg\n");
-}
+sub init {
+    my $conffile = BarnOwl::get_config_dir() . "/facebook";
+    my $cfg = {};
+    if (open(my $fh, "<", "$conffile")) {
+        my $raw_cfg = do {local $/; <$fh>};
+        close($fh);
 
-# We only load up when the conf file is present, to reduce resource
-# usage.  Though, probably not by very much, so maybe a 'facebook-init'
-# command would be more appropriate.
-
-my $conffile = BarnOwl::get_config_dir() . "/facebook";
-
-if (open(my $fh, "<", "$conffile")) {
-    read_config($fh);
-    close($fh);
-}
-
-sub read_config {
-    my $fh = shift;
-    my $raw_cfg = do {local $/; <$fh>};
-    close($fh);
-
-    my $cfg;
-    if ($raw_cfg) {
         eval { $cfg = from_json($raw_cfg); };
-        if($@) {
-            fail("Unable to parse $conffile: $@");
-        }
-    } else {
-        $cfg = {};
+        if ($@) { BarnOwl::admin_message('Facebook', "Unable to parse $conffile: $@"); }
     }
-
-    eval {
-        $facebook_handle = BarnOwl::Module::Facebook::Handle->new($cfg);
-    };
-    if ($@) {
-        BarnOwl::error($@);
-        next;
-    }
+    eval { $facebook_handle = BarnOwl::Module::Facebook::Handle->new($cfg); };
+    if ($@) { BarnOwl::error($@); }
 }
 
-# Ostensibly here as a convenient shortcut for Perl hackery
-sub facebook {
-    $facebook_handle->facebook(@_);
-}
+init();
 
 # Should also add support for posting to other people's walls (this
 # is why inline MESSAGE is not supported... yet).  However, see below:
 # specifying USER is UI problematic.
 BarnOwl::new_command('facebook' => \&cmd_facebook, {
     summary     => 'Post a status update to your wall from BarnOwl',
-    usage       => 'facebook',
-    description => 'Post a status update to your wall.'
+    usage       => 'facebook [USER]',
+    description => 'Post a status update to your wall, or post on another user\'s wall. Autocomplete is supported.'
 });
 
-# How do we allow people to specify the USER?
 #BarnOwl::new_command('facebook-message' => \&cmd_facebook_direct, {
 #    summary     => 'Send a Facebook message',
 #    usage       => 'twitter-direct USER',
@@ -102,7 +67,7 @@ BarnOwl::new_command('facebook' => \&cmd_facebook, {
 BarnOwl::new_command('facebook-comment' => \&cmd_facebook_comment, {
     summary     => 'Comment on a wall post.',
     usage       => 'facebook-comment POST_ID',
-    description => 'Comment on a friend\'s wall post.  Using r is recommended.'
+    description => 'Comment on a friend\'s wall post.'
 });
 
 BarnOwl::new_command('facebook-auth' => \&cmd_facebook_auth, {
@@ -115,18 +80,18 @@ BarnOwl::new_command('facebook-auth' => \&cmd_facebook_auth, {
 BarnOwl::new_command('facebook-poll' => \&cmd_facebook_poll, {
     summary     => 'Force a poll of Facebook.',
     usage       => 'facebook-poll',
-    description => 'Get updates from Facebook.'
+    description => 'Get updates (news, friends) from Facebook.'
 });
-
-# XXX: UI: probably should bug out immediately if we're not logged in.
 
 sub cmd_facebook {
     my $cmd = shift;
     my $user = shift;
 
+    return unless check_ready();
+
     BarnOwl::start_edit_win(
         defined $user ? "Write something to $user..." : "What's on your mind?",
-        sub{ facebook($user, shift) }
+        sub{ $facebook_handle->facebook($user, shift) }
     );
 }
 
@@ -134,16 +99,18 @@ sub cmd_facebook_comment {
     my $cmd  = shift;
     my $post_id = shift;
 
+    return unless check_ready();
+
     my $topic = $facebook_handle->get_topic($post_id);
 
-    # XXX UI should give some (better) indication /which/ conversation
-    # is being commented on
     BarnOwl::start_edit_win("Write a comment on '$topic'...",
                             sub { $facebook_handle->facebook_comment($post_id, shift) });
 }
 
 sub cmd_facebook_poll {
     my $cmd = shift;
+
+    return unless check_ready();
 
     $facebook_handle->sleep(0);
     return;
@@ -153,12 +120,23 @@ sub cmd_facebook_auth {
     my $cmd = shift;
     my $url = shift;
 
+    if ($facebook_handle->{logged_in}) {
+        BarnOwl::message("Already logged in. (To force, run ':reload-module Facebook', or deauthorize BarnOwl.)");
+        return;
+    }
+
     $facebook_handle->facebook_auth($url);
 }
 
-BarnOwl::filter(qw{facebook type ^facebook$});
+sub check_ready {
+    if (!$facebook_handle->{logged_in}) {
+        BarnOwl::message("Need to login to Facebook first with ':facebook-auth'.");
+        return 0;
+    }
+    return 1;
+}
 
-# Autocompletion support
+BarnOwl::filter(qw{facebook type ^facebook$});
 
 sub complete_user { return keys %{$facebook_handle->{friends}}; }
 BarnOwl::Completion::register_completer(facebook => sub { complete_user(@_) });
