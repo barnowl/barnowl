@@ -34,6 +34,7 @@ if ($@) {
 use JSON;
 use Date::Parse;
 use POSIX;
+use Ouch;
 
 use Scalar::Util qw(weaken);
 
@@ -64,13 +65,6 @@ our $app_id = 235537266461636; # for application 'barnowl'
 #   iterate over N new posts.  It might be worthwhile polling for new
 #   comments less frequently than polling for new posts.
 
-sub fail {
-    my $self = shift;
-    my $msg  = shift;
-    undef $self->{facebook};
-    die("[Facebook] Error: $msg\n");
-}
-
 sub new {
     my $class = shift;
     my $cfg = shift;
@@ -82,13 +76,12 @@ sub new {
         # Ideally this should be done using Facebook realtime updates,
         # but we can't assume that the BarnOwl lives on a publically
         # addressable server (XXX maybe we can setup an option for this.)
-        'last_friend_poll' => 0,
         'friend_timer' => undef,
 
         # Initialized with our 'time', but will be synced to Facebook
         # soon enough. (Subtractive amount is just to preseed with some
-        # values.)
-        'last_poll' => time - 60 * 60 * 24 * 2,
+        # values.) XXX Remove subtraction altogether.
+        'last_poll' => time - 60 * 60,
         'timer' => undef,
 
         # Message polling not implemented yet
@@ -98,9 +91,13 @@ sub new {
         # yeah yeah, inelegant, I know.  You can try using
         # $fb->authorize, but at time of writing (1.0300) they didn't support
         # the response_type parameter.
-        # 'login_url' => 'https://www.facebook.com/dialog/oauth?client_id=235537266461636&scope=read_stream,read_mailbox,publish_stream,offline_access&redirect_uri=http://www.facebook.com/connect/login_success.html&response_type=token',
+        # 'login_url' => 'https://www.facebook.com/dialog/oauth?client_id=235537266461636&scope=read_stream,read_mailbox,publish_stream,offline_access,read_friendlists,rsvp_event,user_events&redirect_uri=http://www.facebook.com/connect/login_success.html&response_type=token',
         # minified to fit in most terminal windows.
-        'login_url' => 'http://goo.gl/yA42G',
+        # Be careful about updating these values, since BarnOwl will not
+        # notice that it is missing necessary permissions until it
+        # attempt to perform an operation which fails due to lack of
+        # permissions.
+        'login_url' => 'http://goo.gl/rcM9s',
 
         'logged_in' => 0,
 
@@ -163,6 +160,22 @@ sub sleep {
     # XXX implement message polling
 }
 
+sub check_result {
+    my $self = shift;
+    if (kiss 400) {
+        # Ugh, no easy way of accessing the JSON error type
+        # which is OAuthException.
+        $self->{logged_in} = 0;
+        $self->facebook_do_auth;
+        return 0;
+    } elsif (hug) {
+        my $code = $@->code;
+        warn "Poll failed with $code: $@";
+        return 0;
+    }
+    return 1;
+}
+
 sub poll_friends {
     my $self = shift;
 
@@ -170,12 +183,8 @@ sub poll_friends {
     return unless $self->{logged_in};
 
     my $friends = eval { $self->{facebook}->fetch('me/friends'); };
-    if ($@) {
-        warn "Poll failed $@";
-        return;
-    }
+    return unless $self->check_result;
 
-    $self->{last_friend_poll} = time;
     $self->{friends} = {};
 
     for my $friend ( @{$friends->{data}} ) {
@@ -194,8 +203,11 @@ sub poll_friends {
             # a reasonable approximation (but which one do you pick?!
             # The most recent one.)  Since getting this information
             # involves extra queries, there are also caching and
-            # efficiency concerns.
-            #   We may want a facility for users to specify custom
+            # efficiency concerns (though hopefully you don't have too
+            # many friends with the same name).  Furthermore, accessing
+            # this information requires a pretty hefty extra set of
+            # permissions requests, which we don't currently ask for.
+            #   It may just be better to let users specify custom
             # aliases for Facebook users, which are added into this
             # hash.  See also username support.
             warn "Duplicate friend name " . $friend->{name};
@@ -212,17 +224,15 @@ sub poll_friends {
     # names. However, since this data is not returned by the friends
     # query, it would require a rather expensive set of queries. We
     # might try to preserve old data, but all-in-all it's a bit
-    # complicated, so we don't bother.
+    # complicated.  One possible way of fixing this is to construct a
+    # custom FQL query that joins the friends table and the users table.
 }
 
 sub poll_facebook {
     my $self = shift;
 
-    #return unless ( time - $self->{last_poll} ) >= 60;
     return unless BarnOwl::getvar('facebook:poll') eq 'on';
     return unless $self->{logged_in};
-
-    #BarnOwl::message("Polling Facebook...");
 
     # XXX Oh no! This blocks the user interface.  Not good.
     # Ideally, we should have some worker thread for polling facebook.
@@ -236,16 +246,15 @@ sub poll_facebook {
              ->query
              ->from("my_news")
              # Not using this, because we want to pick up comment
-             # updates. We need to manually de-dup, though.
+             # updates. We need to manually de-duplicate, though.
              # ->where_since( "@" . $self->{last_poll} )
+             # Facebook doesn't actually give us that many results.
+             # But it can't hurt to ask!
              ->limit_results( 200 )
-             ->request()
-             ->as_hashref()
+             ->request
+             ->as_hashref
     };
-    if ($@) {
-        warn "Poll failed $@";
-        return;
-    }
+    return unless $self->check_result;
 
     my $new_last_poll = $self->{last_poll};
     for my $post ( reverse @{$updates->{data}} ) {
@@ -261,19 +270,18 @@ sub poll_facebook {
             next;
         }
 
-        # XXX Need to somehow access Facebook's user hiding
-        # mechanism
-
         # There can be multiple recipients! Strange! Pick the first one.
         my $name    = $post->{to}{data}[0]{name} || $post->{from}{name};
         my $name_id = $post->{to}{data}[0]{id} || $post->{from}{id};
         my $post_id  = $post->{id};
 
+        my $topic;
         if (defined $old_topics->{$post_id}) {
-            $self->{topics}->{$post_id} = $old_topics->{$post_id};
+            $topic = $old_topics->{$post_id};
+            $self->{topics}->{$post_id} = $topic;
         } else {
             my @keywords = keywords($post->{name} || $post->{message});
-            my $topic = $keywords[0] || 'personal';
+            $topic = $keywords[0] || 'personal';
             $topic =~ s/ /-/g;
             $self->{topics}->{$post_id} = $topic;
         }
@@ -291,7 +299,7 @@ sub poll_facebook {
                 direction => 'in',
                 body      => $self->format_body($post),
                 post_id   => $post_id,
-                topic     => $self->get_topic($post_id),
+                topic     => $topic,
                 time      => asctime(localtime $created_time),
                 # XXX The intent is to get the 'Comment' link, which also
                 # serves as a canonical link to the post.  The {name}
@@ -301,8 +309,8 @@ sub poll_facebook {
             BarnOwl::queue_message($msg);
         }
 
-        # This will have funky interleaving of times (they'll all be
-        # sorted linearly), but since we don't expect too many updates between
+        # This will interleave times (they'll all be organized by parent
+        # post), but since we don't expect too many updates between
         # polls this is pretty acceptable.
         my $updated_time = str2time($post->{updated_time});
         if ($updated_time >= $self->{last_poll} && defined $post->{comments}{data}) {
@@ -319,8 +327,8 @@ sub poll_facebook {
                     name_id   => $name_id,
                     direction => 'in',
                     body      => $comment->{message},
-                    post_id    => $post_id,
-                    topic     => $self->get_topic($post_id),
+                    post_id   => $post_id,
+                    topic     => $topic,
                     time      => asctime(localtime $comment_time),
                    );
                 BarnOwl::queue_message($msg);
@@ -354,21 +362,23 @@ sub format_body {
     }
 }
 
+# Invariant: we don't become logged out between entering text field
+# and actually processing the request.  XXX I don't think this actually
+# holds, but such a case would rarely happen.
+
 sub facebook {
     my $self = shift;
 
     my $user = shift;
     my $msg = shift;
 
-    if (!defined $self->{facebook} || !$self->{logged_in}) {
-        BarnOwl::admin_message('Facebook', 'You are not currently logged into Facebook.');
-        return;
-    }
     if (defined $user) {
         $user = $self->{friends}{$user} || $user;
-        $self->{facebook}->add_post( $user )->set_message( $msg )->publish;
+        eval { $self->{facebook}->add_post( $user )->set_message( $msg )->publish; };
+        return unless $self->check_result;
     } else {
-        $self->{facebook}->add_post->set_message( $msg )->publish;
+        eval { $self->{facebook}->add_post->set_message( $msg )->publish; };
+        return unless $self->check_result;
     }
     $self->sleep(0);
 }
@@ -379,7 +389,8 @@ sub facebook_comment {
     my $post_id = shift;
     my $msg = shift;
 
-    $self->{facebook}->add_comment( $post_id )->set_message( $msg )->publish;
+    eval { $self->{facebook}->add_comment( $post_id )->set_message( $msg )->publish; };
+    return unless $self->check_result;
     $self->sleep(0);
 }
 
@@ -387,8 +398,14 @@ sub facebook_auth {
     my $self = shift;
 
     my $url = shift;
+
     # http://www.facebook.com/connect/login_success.html#access_token=TOKEN&expires_in=0
     $url =~ /access_token=([^&]+)/; # XXX Ew regex
+
+    if (!defined $1) {
+        BarnOwl::message("Invalid URL.");
+        return;
+    }
 
     $self->{cfg}->{token} = $1;
     if ($self->facebook_do_auth) {
@@ -401,12 +418,18 @@ sub facebook_do_auth {
     my $self = shift;
     if ( ! defined $self->{cfg}->{token} ) {
         BarnOwl::admin_message('Facebook', "Login to Facebook at ".$self->{login_url}
-            . "\nand run command ':facebook-auth URL' with the URL you are redirected to.");
+            . "\nand run command ':facebook-auth URL' with the URL you are redirected to."
+            . "\n\nWhat does Barnowl use these permissions for?  As a desktop"
+            . "\nmessaging application, we need persistent read/write access to your"
+            . "\nnews feed and your inbox.  Other permissions are for pending"
+            . "\nfeatures: we intend on adding support for event streaming, RSVP,"
+            . "\nand BarnOwl filtering on friend lists."
+        );
         return 0;
     }
     $self->{facebook}->access_token($self->{cfg}->{token});
     # Do a quick check to see if things are working
-    my $result = eval { $self->{facebook}->fetch('me'); };
+    my $result = eval { $self->{facebook}->query()->find('me')->select_fields('name')->request->as_hashref; };
     if ($@) {
         BarnOwl::admin_message('Facebook', "Failed to authenticate! Login to Facebook at ".$self->{login_url}
             . "\nand run command ':facebook-auth URL' with the URL you are redirected to.");
@@ -418,14 +441,6 @@ sub facebook_do_auth {
         $self->sleep(0); # start polling
         return 1;
     }
-}
-
-sub get_topic {
-    my $self = shift;
-
-    my $post_id = shift;
-
-    return $self->{topics}->{$post_id} || 'personal';
 }
 
 1;
