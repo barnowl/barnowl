@@ -21,34 +21,47 @@ SYNOPSIS
     http://www.facebook.com/settings/?tab=applications&app_id=235537266461636
 
   (4) Start receiving wall updates in Barnowl!
-      You can post updates with the ":facebook" command.
+  You can post updates with the ":facebook" command.
+
+INFELICITIES
+  * Polling Facebook is pretty slow (on order of a second or more),
+    and blocks the entire BarnOwl interface.  We have a plan for
+    fixing this, which involves creating an async version of
+    Facebook::Graph.  I have been in contact with the original
+    author JT Smith about this.
+
+  * BarnOwl will not receive all comments for news feed items, only
+    comments for items that were recently published.  There is not
+    currently a way to see starks for conversations that you did not
+    participate in, and the only way to see starks for conversations
+    you did participate in are Facebook's email notifications.  (This
+    is a deficiency of the Facebook API, see http://bugs.developers.facebook.net/show_bug.cgi?id=18594.)
+
+  * By default, BarnOwl will not display posts from organizations (such
+    as bands you have liked) or application invites.  This is a
+    judgment of taste from the original author.  This is not currently
+    configurable.
+
+  * Users and applications that you have hidden via the Facebook
+    web interface will show up in the BarnOwl stream.  (This appears to
+    be a deficiency of the Facebook API, see
+    http://stackoverflow.com/questions/6405364/facebook-api-access-hide-posts-from-settings).
+    Users are encouraged to work around this by using traditional Zephyr
+    filters.
+
+  * We are missing support for some notable features, including
+    messaging (Facebook has not publically released the API for this,
+    though we could sign up for the whitelist), events (seeing
+    unresponded to events requires a custom FQL query
+    http://stackoverflow.com/questions/4752967/facebook-api-only-returns-25-events-max),
+    notifications (not supported in Graph API yet).
+
+WISHLIST
+  * Smarter name de-duplication (see Facebook/Handle.pm for details.)
+  * URL minification.
+  * Multiple accounts.  (Does anyone do this? I don't think so...)
+  * Zephyr class mirroring.
 
 POLLING
   Facebook.par polls for normal messages once a minute. To disable
   polling, you can unset the 'facebook:poll' variable in BarnOwl.
-
-TODO
-  * Polling Facebook is pretty slow (on order of a second or more),
-    and blocks the entire BarnOwl interface.  We need to confront
-    Perl's threading demon.
-  * No messaging support. (We'll add it when Facebook makes the new endpoint.)
-  * Smarter name de-duplication (see code comments for details.)
-  * Grep for XXX and TODO for more work items.
-
-TECHNICAL NOTES
-  This module uses 100% undeprecated Facebook Graph API, and should be
-  an interesting case study of how to implement a desktop application in
-  the new Facebook world order.  In particular, we do not use the old
-  infinite session keys trick described in
-  <http://www.emcro.com/blog/2009/01/facebook-infinite-session-keys-no-more/>,
-  instead, we use offline_access to get non-expiring tokens.
-
-  If we decide to extend our permissions to include read_friendlists
-  (for filtering) and rsvp_event (RSVP from BarnOwl), we will need
-  to make sure the UI for upgrading is correct.
-
-  We'll be rolling our own version of Facebook::Graph, as the original
-  uses the synchronous LWP::UserAgent, and we'd like our web requests
-  not to block the user interface.  Furthermore, Facebook::Graph doesn't
-  actually use any of the features of LWP::UserAgent, so we may be able
-  to use a simpler module AnyEvent::HTTP.
