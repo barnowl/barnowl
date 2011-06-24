@@ -111,7 +111,9 @@ sub new {
     bless($self, $class);
 
     $self->{facebook} = Facebook::Graph->new( app_id => $app_id );
-    $self->facebook_do_auth;
+    if ( defined $self->{cfg}->{token} ) {
+        $self->facebook_do_auth;
+    }
 
     return $self;
 }
@@ -398,6 +400,11 @@ sub facebook_auth {
     my $self = shift;
 
     my $url = shift;
+
+    if (!defined $url) {
+        $self->facebook_do_auth;
+        return;
+    }
 
     # http://www.facebook.com/connect/login_success.html#access_token=TOKEN&expires_in=0
     $url =~ /access_token=([^&]+)/; # XXX Ew regex

@@ -5,22 +5,21 @@ DESCRIPTION
   The Facebook module implements Facebook support for BarnOwl.
 
 SYNOPSIS
-  (1) Create an empty file ~/.owl/facebook (you can use the command
-  `touch ~/.owl/facebook`), in order to enable the module.
+  (1) Run ":reload-module Facebook" inside BarnOwl, if the module has
+  not been loaded already.
 
-  (2) Run ":reload-module Facebook" inside BarnOwl.
-
-  (3) Follow the instructions in the admin message.  BarnOwl will
-  ask you to log in via an OAuth URL, and run ':facebook-auth'
-  with the resulting URL.  It will then ask you to record the
-  resulting access token in your ~/.owl/facebook file, so you do
-  not have to login on subsequent BarnOwl sesions.
+  (2) Run ':facebook-auth'.  Follow the instructions in the admin
+  message.  BarnOwl will ask you to log in via an OAuth URL, and run
+  ':facebook-auth $URL' where $URL is the URL you were redirected to.
+  It will then ask you to record the resulting access token in an
+  ~/.owl/facebook file, so you do not have to login on subsequent
+  BarnOwl sesions.
 
   This token is valid until you change your
   Facebook password or you revoke permissions for Barnowl at:
     http://www.facebook.com/settings/?tab=applications&app_id=235537266461636
 
-  (4) Start receiving wall updates in Barnowl!
+  (3) Start receiving wall updates in Barnowl!
   You can post updates with the ":facebook" command.
 
 INFELICITIES
