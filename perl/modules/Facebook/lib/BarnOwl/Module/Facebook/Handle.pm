@@ -438,7 +438,8 @@ sub facebook_do_auth {
     # Do a quick check to see if things are working
     my $result = eval { $self->{facebook}->query()->find('me')->select_fields('name')->request->as_hashref; };
     if ($@) {
-        BarnOwl::admin_message('Facebook', "Failed to authenticate! Login to Facebook at ".$self->{login_url}
+        BarnOwl::admin_message('Facebook', "Failed to authenticate with '$@'!"
+            . "\nLogin to Facebook at ".$self->{login_url}
             . "\nand run command ':facebook-auth URL' with the URL you are redirected to.");
         return 0;
     } else {
