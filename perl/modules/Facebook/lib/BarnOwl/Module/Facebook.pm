@@ -72,9 +72,10 @@ BarnOwl::new_command('facebook-comment' => \&cmd_facebook_comment, {
 
 BarnOwl::new_command('facebook-auth' => \&cmd_facebook_auth, {
     summary     => 'Authenticate as a Facebook user.',
-    usage       => 'facebook-auth URL',
+    usage       => 'facebook-auth [URL]',
     description => 'Authenticate as a Facebook user.  URL should be the page'
-                ."\nFacebook redirects you to after OAuth login."
+                ."\nFacebook redirects you to after OAuth login.  If no URL"
+                ."\nis specified, output instructions for logging in."
 });
 
 BarnOwl::new_command('facebook-poll' => \&cmd_facebook_poll, {
