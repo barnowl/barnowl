@@ -110,8 +110,8 @@ sub new {
 
     bless($self, $class);
 
-    $self->{facebook} = Facebook::Graph->new( app_id => $app_id );
-    if ( defined $self->{cfg}->{token} ) {
+    $self->{facebook} = Facebook::Graph->new(app_id => $app_id);
+    if (defined $self->{cfg}->{token}) {
         $self->facebook_do_auth;
     }
 
@@ -189,7 +189,7 @@ sub poll_friends {
 
     $self->{friends} = {};
 
-    for my $friend ( @{$friends->{data}} ) {
+    for my $friend (@{$friends->{data}}) {
         if (defined $self->{friends}{$friend->{name}}) {
             # XXX We should try a little harder here, rather than just
             # tacking on a number.  Ideally, we should be able to
@@ -249,17 +249,17 @@ sub poll_facebook {
              ->from("my_news")
              # Not using this, because we want to pick up comment
              # updates. We need to manually de-duplicate, though.
-             # ->where_since( "@" . $self->{last_poll} )
+             # ->where_since("@" . $self->{last_poll})
              # Facebook doesn't actually give us that many results.
              # But it can't hurt to ask!
-             ->limit_results( 200 )
+             ->limit_results(200)
              ->request
              ->as_hashref
     };
     return unless $self->check_result;
 
     my $new_last_poll = $self->{last_poll};
-    for my $post ( reverse @{$updates->{data}} ) {
+    for my $post (reverse @{$updates->{data}}) {
         # No app invites, thanks! (XXX make configurable)
         if ($post->{type} eq 'link' && $post->{application}) {
             next;
@@ -316,7 +316,7 @@ sub poll_facebook {
         # polls this is pretty acceptable.
         my $updated_time = str2time($post->{updated_time});
         if ($updated_time >= $self->{last_poll} && defined $post->{comments}{data}) {
-            for my $comment ( @{$post->{comments}{data}} ) {
+            for my $comment (@{$post->{comments}{data}}) {
                 my $comment_time = str2time($comment->{created_time});
                 if ($comment_time < $self->{last_poll}) {
                     next;
@@ -376,10 +376,10 @@ sub facebook {
 
     if (defined $user) {
         $user = $self->{friends}{$user} || $user;
-        eval { $self->{facebook}->add_post( $user )->set_message( $msg )->publish; };
+        eval { $self->{facebook}->add_post($user)->set_message($msg)->publish; };
         return unless $self->check_result;
     } else {
-        eval { $self->{facebook}->add_post->set_message( $msg )->publish; };
+        eval { $self->{facebook}->add_post->set_message($msg)->publish; };
         return unless $self->check_result;
     }
     $self->sleep(0);
@@ -391,7 +391,7 @@ sub facebook_comment {
     my $post_id = shift;
     my $msg = shift;
 
-    eval { $self->{facebook}->add_comment( $post_id )->set_message( $msg )->publish; };
+    eval { $self->{facebook}->add_comment($post_id)->set_message($msg)->publish; };
     return unless $self->check_result;
     $self->sleep(0);
 }
@@ -423,7 +423,7 @@ sub facebook_auth {
 
 sub facebook_do_auth {
     my $self = shift;
-    if ( ! defined $self->{cfg}->{token} ) {
+    if (!defined $self->{cfg}->{token}) {
         BarnOwl::admin_message('Facebook', "Login to Facebook at ".$self->{login_url}
             . "\nand run command ':facebook-auth URL' with the URL you are redirected to."
             . "\n\nWhat does Barnowl use these permissions for?  As a desktop"
