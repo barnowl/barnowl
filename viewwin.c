@@ -157,8 +157,9 @@ typedef struct _owl_viewwin_search_data { /*noproto*/
   int direction;
 } owl_viewwin_search_data;
 
-static void owl_viewwin_callback_search(owl_editwin *e)
+static void owl_viewwin_callback_search(owl_editwin *e, bool success)
 {
+  if (!success) return;
   int consider_current = false;
   const char *line = owl_editwin_get_text(e);
   owl_viewwin_search_data *data = owl_editwin_get_cbdata(e);
