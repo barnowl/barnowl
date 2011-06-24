@@ -15,15 +15,14 @@ use base qw(BarnOwl::Message);
 sub context { return shift->{"name"}; }
 sub subcontext { return shift->{"topic"}; }
 sub service { return "http://www.facebook.com"; }
-sub long_sender { return shift->{"zsig"}; } # XXX hack, shouldn't be named zsig
+sub long_sender { return shift->{"permalink"}; }
 
 sub replycmd {
     my $self = shift;
-    # TODO: Support for direct messages
-    # XXX: It seems that Facebook may not support this yet
     return BarnOwl::quote('facebook-comment', $self->{post_id});
 }
 
+# XXX Messaging not supported yet.
 #sub replysendercmd {
 #    my $self = shift;
 #}
