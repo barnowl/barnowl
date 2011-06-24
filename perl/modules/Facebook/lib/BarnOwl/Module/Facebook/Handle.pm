@@ -306,7 +306,7 @@ sub poll_facebook {
                 # XXX The intent is to get the 'Comment' link, which also
                 # serves as a canonical link to the post.  The {name}
                 # field should equal 'Comment'.
-                zsig      => $post->{actions}[0]{link},
+                permalink => $post->{actions}[0]{link},
                );
             BarnOwl::queue_message($msg);
         }
