@@ -101,9 +101,7 @@ sub cmd_facebook_comment {
 
     return unless check_ready();
 
-    my $topic = $facebook_handle->get_topic($post_id);
-
-    BarnOwl::start_edit_win("Write a comment on '$topic'...",
+    BarnOwl::start_edit_win("Write a comment...",
                             sub { $facebook_handle->facebook_comment($post_id, shift) });
 }
 
