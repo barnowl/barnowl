@@ -426,7 +426,7 @@ sub facebook_do_auth {
     if (!defined $self->{cfg}->{token}) {
         BarnOwl::admin_message('Facebook', "Login to Facebook at ".$self->{login_url}
             . "\nand run command ':facebook-auth URL' with the URL you are redirected to."
-            . "\n\nWhat does Barnowl use these permissions for?  As a desktop"
+            . "\n\nWhat does BarnOwl use these permissions for?  As a desktop"
             . "\nmessaging application, we need persistent read/write access to your"
             . "\nnews feed and your inbox.  Other permissions are for pending"
             . "\nfeatures: we intend on adding support for event streaming, RSVP,"
