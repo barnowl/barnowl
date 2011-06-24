@@ -720,40 +720,62 @@ void owl_function_undeletecur(int move_after)
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
 
-void owl_function_expunge(void)
+/* returns the current message id, if it exists.  Otherwise returns
+ * -1 if we are past the end of the message list, and 0 otherwise. */
+int owl_function_get_curmsg_id(const owl_view *v)
+{
+  int curmsg = owl_global_get_curmsg(&g);
+  const owl_message *m = owl_view_get_element(v, curmsg);
+  if (m)
+    return owl_message_get_id(m);
+  if (curmsg > 0) /* past the end of the message list (probably) */
+    return -1;
+  return 0;
+}
+
+/* redisplays the view to the nearest message to the id given.
+ * if msgid < 0, redisplay to past the end of the message list */
+void owl_function_redisplay_to_nearest(int msgid, owl_view *v)
 {
   int curmsg;
-  const owl_message *m;
-  owl_messagelist *ml;
-  owl_view *v;
-  int lastmsgid=0;
+  /* update all views (we only have one right now) */
+  owl_view_recalculate(v);
 
-  curmsg=owl_global_get_curmsg(&g);
-  v=owl_global_get_current_view(&g);
-  ml=owl_global_get_msglist(&g);
+  /* find where the new position should be */
+  if (msgid < 0) {
+    /* If already at the end, blank the screen and move curmsg
+     * past the end of the messages. */
+    curmsg = owl_view_get_size(v);
+    owl_global_set_topmsg(&g, curmsg);
+    owl_global_set_curmsg(&g, curmsg);
+  } else {
+    curmsg = owl_view_get_nearest_to_msgid(v, msgid);
+    if (curmsg > owl_view_get_size(v) - 1)
+      curmsg = owl_view_get_size(v) - 1;
+    if (curmsg < 0)
+      curmsg = 0;
+    owl_global_set_curmsg(&g, curmsg);
+    owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
+  }
+  /* if there are no messages set the direction to down in case we
+   * delete everything upwards */
+  owl_global_set_direction_downwards(&g);
 
-  m=owl_view_get_element(v, curmsg);
-  if (m) lastmsgid = owl_message_get_id(m);
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+}
+
+void owl_function_expunge(void)
+{
+  owl_messagelist *ml = owl_global_get_msglist(&g);
+  owl_view *v = owl_global_get_current_view(&g);
+  int lastmsgid = owl_function_get_curmsg_id(v);
 
   /* expunge the message list */
   owl_messagelist_expunge(ml);
 
-  /* update all views (we only have one right now) */
-  owl_view_recalculate(v);
-
-  /* find where the new position should be
-     (as close as possible to where we last where) */
-  curmsg = owl_view_get_nearest_to_msgid(v, lastmsgid);
-  if (curmsg>owl_view_get_size(v)-1) curmsg = owl_view_get_size(v)-1;
-  if (curmsg<0) curmsg = 0;
-  owl_global_set_curmsg(&g, curmsg);
-  owl_function_calculate_topmsg(OWL_DIRECTION_NONE);
-  /* if there are no messages set the direction to down in case we
-     delete everything upwards */
-  owl_global_set_direction_downwards(&g);
+  owl_function_redisplay_to_nearest(lastmsgid, v);
   
   owl_function_makemsg("Messages expunged");
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
 
 void owl_function_firstmsg(void)
