@@ -149,6 +149,9 @@ input.
 =item callback
 
 A Perl subroutine that is called when the user closes the edit_win.
+C<CALLBACK> gets called with two parameters: the text the user entered,
+and a C<SUCCESS> boolean parameter which is false if the user canceled
+the edit_win and true otherwise.
 
 =back
 
@@ -158,7 +161,11 @@ A Perl subroutine that is called when the user closes the edit_win.
 
 =head2 start_edit_win PROMPT CALLBACK
 
-Equivalent to C<start_edit> called with the appropriate parameters.
+Roughly equivalent to C<start_edit> called with the appropriate parameters.
+C<CALLBACK> is only called on success.
+
+These are deprecated wrappers around L<BarnOwl::start_edit>, and should not
+be uesd in new code.
 
 =cut
 
@@ -169,17 +176,26 @@ sub start_edit {
 
 sub start_question {
     my ($prompt, $callback) = @_;
-    BarnOwl::start_edit(type => 'question', prompt => $prompt, callback => $callback);
+    BarnOwl::start_edit(type => 'question', prompt => $prompt, callback => sub {
+            my ($text, $success) = @_;
+            $callback->($text) if $success;
+        });
 }
 
 sub start_password {
     my ($prompt, $callback) = @_;
-    BarnOwl::start_edit(type => 'password', prompt => $prompt, callback => $callback);
+    BarnOwl::start_edit(type => 'password', prompt => $prompt, callback => sub {
+            my ($text, $success) = @_;
+            $callback->($text) if $success;
+        });
 }
 
 sub start_edit_win {
     my ($prompt, $callback) = @_;
-    BarnOwl::start_edit(type => 'edit_win', prompt => $prompt, callback => $callback);
+    BarnOwl::start_edit(type => 'edit_win', prompt => $prompt, callback => sub {
+            my ($text, $success) = @_;
+            $callback->($text) if $success;
+        });
 }
 
 =head2 get_data_dir
