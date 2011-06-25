@@ -55,7 +55,7 @@ int owl_cmddict_add_cmd(owl_cmddict *cd, const owl_cmd * cmd) {
 }
 
 /* caller must free the return */
-G_GNUC_WARN_UNUSED_RESULT char *_owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const char *const *argv, int argc, const char *buff)
+CALLER_OWN char *_owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const char *const *argv, int argc, const char *buff)
 {
   char *retval = NULL;
   const owl_cmd *cmd;
@@ -72,7 +72,7 @@ G_GNUC_WARN_UNUSED_RESULT char *_owl_cmddict_execute(const owl_cmddict *cd, cons
 }
 
 /* caller must free the return */
-G_GNUC_WARN_UNUSED_RESULT char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const char *cmdbuff)
+CALLER_OWN char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *ctx, const char *cmdbuff)
 {
   char **argv;
   int argc;
@@ -96,7 +96,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_cmddict_execute(const owl_cmddict *cd, const
 }
 
 /* caller must free the return */
-G_GNUC_WARN_UNUSED_RESULT char *owl_cmddict_execute_argv(const owl_cmddict *cd, const owl_context *ctx, const char *const *argv, int argc)
+CALLER_OWN char *owl_cmddict_execute_argv(const owl_cmddict *cd, const owl_context *ctx, const char *const *argv, int argc)
 {
   char *buff;
   char *retval = NULL;
@@ -153,7 +153,7 @@ int owl_cmd_is_context_valid(const owl_cmd *cmd, const owl_context *ctx) {
 }
 
 /* caller must free the result */
-G_GNUC_WARN_UNUSED_RESULT char *owl_cmd_execute(const owl_cmd *cmd, const owl_cmddict *cd, const owl_context *ctx, int argc, const char *const *argv, const char *cmdbuff)
+CALLER_OWN char *owl_cmd_execute(const owl_cmd *cmd, const owl_cmddict *cd, const owl_context *ctx, int argc, const char *const *argv, const char *cmdbuff)
 {
   static int alias_recurse_depth = 0;
   int ival=0;
@@ -227,7 +227,7 @@ const char *owl_cmd_get_summary(const owl_cmd *cmd) {
 }
 
 /* returns a summary line describing this keymap.  the caller must free. */
-G_GNUC_WARN_UNUSED_RESULT char *owl_cmd_describe(const owl_cmd *cmd)
+CALLER_OWN char *owl_cmd_describe(const owl_cmd *cmd)
 {
   if (!cmd || !cmd->name || !cmd->summary) return NULL;
   return g_strdup_printf("%-25s - %s", cmd->name, cmd->summary);

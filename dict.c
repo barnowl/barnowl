@@ -106,7 +106,7 @@ int owl_dict_insert_element(owl_dict *d, const char *k, void *v, void (*delete_o
 
 /* Doesn't free the value of the element, but does
  * return it so the caller can free it. */
-G_GNUC_WARN_UNUSED_RESULT void *owl_dict_remove_element(owl_dict *d, const char *k)
+CALLER_OWN void *owl_dict_remove_element(owl_dict *d, const char *k)
 {
   int i;
   int pos, found;

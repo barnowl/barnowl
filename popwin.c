@@ -1,6 +1,6 @@
 #include "owl.h"
 
-G_GNUC_WARN_UNUSED_RESULT owl_popwin *owl_popwin_new(void)
+CALLER_OWN owl_popwin *owl_popwin_new(void)
 {
   owl_popwin *pw = g_new0(owl_popwin, 1);
 

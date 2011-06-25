@@ -199,7 +199,7 @@ int owl_filter_message_match(const owl_filter *f, const owl_message *m)
 }
 
 
-char G_GNUC_WARN_UNUSED_RESULT *owl_filter_print(const owl_filter *f)
+char CALLER_OWN *owl_filter_print(const owl_filter *f)
 {
   GString *out = g_string_new("");
 

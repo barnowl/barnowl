@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "owl.h"
 
-G_GNUC_WARN_UNUSED_RESULT owl_zwrite *owl_zwrite_new(const char *line)
+CALLER_OWN owl_zwrite *owl_zwrite_new(const char *line)
 {
   owl_zwrite *z = g_new(owl_zwrite, 1);
   if (owl_zwrite_create_from_line(z, line) < 0) {
@@ -320,7 +320,7 @@ const char *owl_zwrite_get_recip_n(const owl_zwrite *z, int n)
 }
 
 /* Caller must free the result. */
-G_GNUC_WARN_UNUSED_RESULT char *owl_zwrite_get_recip_n_with_realm(const owl_zwrite *z, int n)
+CALLER_OWN char *owl_zwrite_get_recip_n_with_realm(const owl_zwrite *z, int n)
 {
   if (z->realm[0]) {
     return g_strdup_printf("%s@%s", owl_zwrite_get_recip_n(z, n), z->realm);
@@ -369,7 +369,7 @@ void owl_zwrite_cleanup(owl_zwrite *z)
  *
  * If not a CC, only the recip_index'th user will be replied to.
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_zwrite_get_replyline(const owl_zwrite *z, int recip_index)
+CALLER_OWN char *owl_zwrite_get_replyline(const owl_zwrite *z, int recip_index)
 {
   /* Match ordering in zwrite help. */
   GString *buf = g_string_new("");

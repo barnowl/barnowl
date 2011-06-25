@@ -199,6 +199,10 @@ typedef void HV;
 #define OWL_ENABLE_ZCRYPT 1
 #endif
 
+/* Annotate functions in which the caller owns the return value and is
+ * responsible for ensuring it is freed. */
+#define CALLER_OWN G_GNUC_WARN_UNUSED_RESULT
+
 #define OWL_META(key) ((key)|010000)
 /* OWL_CTRL is definied in kepress.c */
 
@@ -250,7 +254,7 @@ typedef struct _owl_variable {
 				/* returns a reference to the current value.
 				 * WARNING:  this approach is hard to make
 				 * thread-safe... */
-  char G_GNUC_WARN_UNUSED_RESULT *(*get_tostring_fn)(const struct _owl_variable *v, const void *val);
+  char CALLER_OWN *(*get_tostring_fn)(const struct _owl_variable *v, const void *val);
                                 /* converts val to a string;
 				 * caller must free the result */
   void (*delete_fn)(struct _owl_variable *v);
@@ -312,14 +316,14 @@ typedef struct _owl_cmd {	/* command */
   char *cmd_aliased_to;		/* what this command is aliased to... */
   
   /* These don't take any context */
-  char G_GNUC_WARN_UNUSED_RESULT *(*cmd_args_fn)(int argc, const char *const *argv, const char *buff);
+  char CALLER_OWN *(*cmd_args_fn)(int argc, const char *const *argv, const char *buff);
 				/* takes argv and the full command as buff.
 				 * caller must free return value if !NULL */
   void (*cmd_v_fn)(void);	/* takes no args */
   void (*cmd_i_fn)(int i);	/* takes an int as an arg */
 
   /* The following also take the active context if it's valid */
-  char G_GNUC_WARN_UNUSED_RESULT *(*cmd_ctxargs_fn)(void *ctx, int argc, const char *const *argv, const char *buff);
+  char CALLER_OWN *(*cmd_ctxargs_fn)(void *ctx, int argc, const char *const *argv, const char *buff);
 				/* takes argv and the full command as buff.
 				 * caller must free return value if !NULL */
   void (*cmd_ctxv_fn)(void *ctx);	        /* takes no args */

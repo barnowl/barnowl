@@ -13,7 +13,7 @@
 static int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq);
 
 /* sets up a new keybinding for a command */
-G_GNUC_WARN_UNUSED_RESULT owl_keybinding *owl_keybinding_new(const char *keyseq, const char *command, void (*function_fn)(void), const char *desc)
+CALLER_OWN owl_keybinding *owl_keybinding_new(const char *keyseq, const char *command, void (*function_fn)(void), const char *desc)
 {
   owl_keybinding *kb = g_new(owl_keybinding, 1);
 
@@ -84,7 +84,7 @@ void owl_keybinding_execute(const owl_keybinding *kb, int j)
   }
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_keybinding_stack_tostring(int *j, int len)
+CALLER_OWN char *owl_keybinding_stack_tostring(int *j, int len)
 {
   GString *string;
   int  i;
@@ -99,7 +99,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_keybinding_stack_tostring(int *j, int len)
   return g_string_free(string, false);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_keybinding_tostring(const owl_keybinding *kb)
+CALLER_OWN char *owl_keybinding_tostring(const owl_keybinding *kb)
 {
   return owl_keybinding_stack_tostring(kb->keys, kb->len);
 }

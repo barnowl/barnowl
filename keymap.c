@@ -79,7 +79,7 @@ int owl_keymap_remove_binding(owl_keymap *km, const char *keyseq)
 
 
 /* returns a summary line describing this keymap.  the caller must free. */
-G_GNUC_WARN_UNUSED_RESULT char *owl_keymap_summary(const owl_keymap *km)
+CALLER_OWN char *owl_keymap_summary(const owl_keymap *km)
 {
   if (!km || !km->name || !km->desc) return NULL;
   return g_strdup_printf("%-15s - %s", km->name, km->desc);

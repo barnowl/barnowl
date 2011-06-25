@@ -79,7 +79,7 @@ int owl_log_shouldlog_message(const owl_message *m) {
   return(1);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_log_zephyr(const owl_message *m)
+CALLER_OWN char *owl_log_zephyr(const owl_message *m)
 {
     char *tmp = NULL;
     GString *buffer = NULL;
@@ -103,7 +103,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_log_zephyr(const owl_message *m)
     return g_string_free(buffer, FALSE);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_log_aim(const owl_message *m)
+CALLER_OWN char *owl_log_aim(const owl_message *m)
 {
     GString *buffer = NULL;
     buffer = g_string_new("");
@@ -121,7 +121,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_log_aim(const owl_message *m)
     return g_string_free(buffer, FALSE);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_log_jabber(const owl_message *m)
+CALLER_OWN char *owl_log_jabber(const owl_message *m)
 {
     GString *buffer = NULL;
     buffer = g_string_new("");
@@ -134,7 +134,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_log_jabber(const owl_message *m)
     return g_string_free(buffer, FALSE);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_log_generic(const owl_message *m)
+CALLER_OWN char *owl_log_generic(const owl_message *m)
 {
     GString *buffer;
     buffer = g_string_new("");

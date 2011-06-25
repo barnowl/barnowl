@@ -5,7 +5,7 @@
 #define SET_MODE(ctx, new) ctx->mode = ((ctx->mode)&~OWL_CTX_MODE_BITS)|new
 
 /* TODO: dependency from owl_context -> owl_window is annoying. */
-G_GNUC_WARN_UNUSED_RESULT owl_context *owl_context_new(int mode, void *data, const char *keymap, owl_window *cursor)
+CALLER_OWN owl_context *owl_context_new(int mode, void *data, const char *keymap, owl_window *cursor)
 {
   owl_context *c;
   if (!(mode & OWL_CTX_MODE_BITS))

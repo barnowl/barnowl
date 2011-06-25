@@ -568,7 +568,7 @@ static GSourceFuncs redraw_funcs = {
   NULL
 };
 
-G_GNUC_WARN_UNUSED_RESULT GSource *owl_window_redraw_source_new(void)
+CALLER_OWN GSource *owl_window_redraw_source_new(void)
 {
   GSource *source;
   source = g_source_new(&redraw_funcs, sizeof(GSource));
