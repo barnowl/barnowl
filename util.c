@@ -36,65 +36,44 @@ const char *skiptokens(const char *buff, int n) {
  */
 CALLER_OWN char *owl_util_makepath(const char *in)
 {
-  int i, j, x;
-  char *out, user[MAXPATHLEN];
-  struct passwd *pw;
+  char *out;
+  int i, j;
+  if (in[0] == '~') {
+    /* Attempt tilde-expansion of the first component. Get the
+       tilde-prefix, which goes up to the next slash. */
+    struct passwd *pw;
+    const char *end = strchr(in + 1, '/');
+    if (end == NULL)
+      end = in + strlen(in);
 
-  out=g_new(char, MAXPATHLEN+1);
-  out[0]='\0';
-  j=strlen(in);
-  x=0;
-  for (i=0; i<j; i++) {
-    if (in[i]=='~') {
-      if ( (i==(j-1)) ||          /* last character */
-	   (in[i+1]=='/') ) {     /* ~/ */
-	/* use my homedir */
-	pw=getpwuid(getuid());
-	if (!pw) {
-	  out[x]=in[i];
-	} else {
-	  out[x]='\0';
-	  strcat(out, pw->pw_dir);
-	  x+=strlen(pw->pw_dir);
-	}
-      } else {
-	/* another user homedir */
-	int a, b;
-	b=0;
-	for (a=i+1; i<j; a++) {
-	  if (in[a]==' ' || in[a]=='/') {
-	    break;
-	  } else {
-	    user[b]=in[a];
-	    i++;
-	    b++;
-	  }
-	}
-	user[b]='\0';
-	pw=getpwnam(user);
-	if (!pw) {
-	  out[x]=in[i];
-	} else {
-	  out[x]='\0';
-	  strcat(out, pw->pw_dir);
-	  x+=strlen(pw->pw_dir);
-	}
-      }
-    } else if (in[i]=='/') {
-      /* check for a double / */
-      if (i<(j-1) && (in[i+1]=='/')) {
-	/* do nothing */
-      } else {
-	out[x]=in[i];
-	x++;
-      }
+    if (end == in + 1) {
+      /* My home directory. */
+      pw = getpwuid(getuid());
     } else {
-      out[x]=in[i];
-      x++;
+      /* Someone else's home directory. */
+      char *user = g_strndup(in + 1, end - (in + 1));
+      pw = getpwnam(user);
+      g_free(user);
     }
+
+    /* Patch together a new path. Replace the ~ and tilde-prefix with
+       the homedir. */
+    if (pw) {
+      out = g_strconcat(pw->pw_dir, end, NULL);
+    } else {
+      out = g_strdup(in);
+    }
+  } else {
+      out = g_strdup(in);
   }
-  out[x]='\0';
-  return(out);
+
+  /* And a quick pass to remove duplicate slashes. */
+  for (i = j = 0; out[i] != '\0'; i++) {
+    if (out[i] != '/' || i == 0 || out[i-1] != '/')
+      out[j++] = out[i];
+  }
+  out[j] = '\0';
+  return out;
 }
 
 void owl_ptr_array_free(GPtrArray *array, GDestroyNotify element_free_func)
