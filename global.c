@@ -723,7 +723,7 @@ void owl_global_messagequeue_addmsg(owl_global *g, owl_message *m)
  * is empty.  The caller should free the message after using it, if
  * necessary.
  */
-owl_message CALLER_OWN *owl_global_messagequeue_popmsg(owl_global *g)
+CALLER_OWN owl_message *owl_global_messagequeue_popmsg(owl_global *g)
 {
   owl_message *out;
 

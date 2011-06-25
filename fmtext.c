@@ -170,7 +170,7 @@ void owl_fmtext_append_spaces(owl_fmtext *f, int nspaces)
 /* Return a plain version of the fmtext.  Caller is responsible for
  * freeing the return
  */
-char CALLER_OWN *owl_fmtext_print_plain(const owl_fmtext *f)
+CALLER_OWN char *owl_fmtext_print_plain(const owl_fmtext *f)
 {
   return owl_strip_format_chars(f->buff->str);
 }
