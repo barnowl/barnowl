@@ -128,7 +128,7 @@ int owl_regtest(void) {
 
 #define FAIL_UNLESS(desc,pred) do { int __pred = (pred);                \
     numtests++;                                                         \
-    printf("%s %s", (__pred)?"ok":(numfailed++,"not ok"), desc);        \
+    printf("%s %d %s", (__pred) ? "ok" : (numfailed++, "not ok"), numtests, desc); \
     if(!(__pred)) printf("\t(%s:%d)", __FILE__, __LINE__); printf("%c", '\n'); } while(0)
 
 
