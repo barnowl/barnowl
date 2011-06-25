@@ -7,7 +7,7 @@ Module::Install::BarnOwl
 
 =head1 DESCRIPTION
 
-Module::Install::BarnOwl is a M::I module to help building barnowl
+Module::Install::BarnOwl is a M::I module to help building BarnOwl
 modules,
 
 =head1 SYNOPSIS
@@ -27,7 +27,7 @@ This is roughly equivalent to:
     WriteAll;
 
 As well as make rules to generate Jabber.par, and to put some
-additional barnowl-specific information into META.yml
+additional BarnOwl-specific information into META.yml
 
 =cut
 

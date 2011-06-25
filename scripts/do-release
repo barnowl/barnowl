@@ -8,7 +8,7 @@ die() {
 usage() {
     cat >&2 <<EOF
 Usage: $0 [options]
-Generate a barnowl release tarball.
+Generate a BarnOwl release tarball.
 
 OPTIONS:
   -f            Don't require a changelog entry for the new release.
@@ -36,7 +36,7 @@ if [ "$git" ]; then
     VERS=$(git describe --match='barnowl-*' HEAD | sed s,^barnowl-,,)
 else
     VERS=$(perl -ne 'print $1 if m{^AC_INIT\(\[[^\]]+\],\s*\[([^\]]+)\]}' configure.ac) \
-        || die "Unable to parse barnowl version"
+        || die "Unable to parse BarnOwl version"
 fi
 TAG=barnowl-$VERS
 TGZ="$TAG-src"

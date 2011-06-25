@@ -192,7 +192,7 @@ sub handle_message {
 }
 
 sub poll_messages {
-    # If we are reloaded into a barnowl with the old
+    # If we are reloaded into a BarnOwl with the old
     # BarnOwl::Module::Twitter loaded, it still has a main loop hook
     # that will call this function every second. If we just delete it,
     # it will get the old version, which will call poll on each of our
