@@ -7,6 +7,12 @@ void owl_history_init(owl_history *h)
   h->partial = false;		/* is the 0th element is partially composed? */
 }
 
+void owl_history_cleanup(owl_history *h)
+{
+  g_queue_foreach(&h->hist, (GFunc)g_free, NULL);
+  g_queue_clear(&h->hist);
+}
+
 const char *owl_history_get_prev(owl_history *h)
 {
   if (!h) return NULL;
@@ -39,7 +45,7 @@ void owl_history_store(owl_history *h, const char *line, bool partial)
     return;
 
   /* if we've reached the max history size, pop off the last element */
-  if (g_queue_get_length(&h->hist) > OWL_HISTORYSIZE)
+  if (g_queue_get_length(&h->hist) >= OWL_HISTORYSIZE)
     g_free(g_queue_pop_head(&h->hist));
 
   /* add the new line */

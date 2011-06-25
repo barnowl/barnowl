@@ -22,6 +22,7 @@ int owl_obarray_regtest(void);
 int owl_editwin_regtest(void);
 int owl_fmtext_regtest(void);
 int owl_smartfilter_regtest(void);
+int owl_history_regtest(void);
 
 extern void owl_perl_xs_init(pTHX);
 
@@ -111,6 +112,7 @@ int owl_regtest(void) {
   numfailures += owl_editwin_regtest();
   numfailures += owl_fmtext_regtest();
   numfailures += owl_smartfilter_regtest();
+  numfailures += owl_history_regtest();
   if (numfailures) {
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
@@ -800,5 +802,93 @@ int owl_smartfilter_regtest(void) {
 
   printf("# END testing owl_smartfilter (%d failures)\n", numfailed);
 
+  return numfailed;
+}
+
+int owl_history_regtest(void)
+{
+  int numfailed = 0;
+  int i;
+  owl_history h;
+
+  printf("# BEGIN testing owl_history\n");
+  owl_history_init(&h);
+
+  /* Operations on empty history. */
+  FAIL_UNLESS("prev NULL", owl_history_get_prev(&h) == NULL);
+  FAIL_UNLESS("next NULL", owl_history_get_next(&h) == NULL);
+  FAIL_UNLESS("untouched", !owl_history_is_touched(&h));
+
+  /* Insert a few records. */
+  owl_history_store(&h, "a", false);
+  owl_history_store(&h, "b", false);
+  owl_history_store(&h, "c", false);
+  owl_history_store(&h, "d", true);
+
+  /* Walk up and down the history a bit. */
+  FAIL_UNLESS("untouched", !owl_history_is_touched(&h));
+  FAIL_UNLESS("prev c", strcmp(owl_history_get_prev(&h), "c") == 0);
+  FAIL_UNLESS("touched", owl_history_is_touched(&h));
+  FAIL_UNLESS("next d", strcmp(owl_history_get_next(&h), "d") == 0);
+  FAIL_UNLESS("untouched", !owl_history_is_touched(&h));
+  FAIL_UNLESS("next NULL", owl_history_get_next(&h) == NULL);
+  FAIL_UNLESS("prev c", strcmp(owl_history_get_prev(&h), "c") == 0);
+  FAIL_UNLESS("prev b", strcmp(owl_history_get_prev(&h), "b") == 0);
+  FAIL_UNLESS("prev a", strcmp(owl_history_get_prev(&h), "a") == 0);
+  FAIL_UNLESS("prev NULL", owl_history_get_prev(&h) == NULL);
+
+  /* Now insert something. It should reset and blow away 'd'. */
+  owl_history_store(&h, "e", false);
+  FAIL_UNLESS("untouched", !owl_history_is_touched(&h));
+  FAIL_UNLESS("next NULL", owl_history_get_next(&h) == NULL);
+  FAIL_UNLESS("prev c", strcmp(owl_history_get_prev(&h), "c") == 0);
+  FAIL_UNLESS("touched", owl_history_is_touched(&h));
+  FAIL_UNLESS("next e", strcmp(owl_history_get_next(&h), "e") == 0);
+  FAIL_UNLESS("untouched", !owl_history_is_touched(&h));
+
+  /* Lines get de-duplicated on insert. */
+  owl_history_store(&h, "e", false);
+  owl_history_store(&h, "e", false);
+  owl_history_store(&h, "e", false);
+  FAIL_UNLESS("prev c", strcmp(owl_history_get_prev(&h), "c") == 0);
+  FAIL_UNLESS("next e", strcmp(owl_history_get_next(&h), "e") == 0);
+
+  /* But a partial is not deduplicated, as it'll go away soon. */
+  owl_history_store(&h, "e", true);
+  FAIL_UNLESS("prev e", strcmp(owl_history_get_prev(&h), "e") == 0);
+  FAIL_UNLESS("prev c", strcmp(owl_history_get_prev(&h), "c") == 0);
+  FAIL_UNLESS("next e", strcmp(owl_history_get_next(&h), "e") == 0);
+  FAIL_UNLESS("next e", strcmp(owl_history_get_next(&h), "e") == 0);
+
+  /* Reset moves to the front... */
+  owl_history_store(&h, "f", true);
+  FAIL_UNLESS("prev e", strcmp(owl_history_get_prev(&h), "e") == 0);
+  FAIL_UNLESS("prev c", strcmp(owl_history_get_prev(&h), "c") == 0);
+  owl_history_reset(&h);
+  FAIL_UNLESS("untouched", !owl_history_is_touched(&h));
+  /* ...and destroys any pending partial entry... */
+  FAIL_UNLESS("prev c", strcmp(owl_history_get_prev(&h), "c") == 0);
+  FAIL_UNLESS("prev b", strcmp(owl_history_get_prev(&h), "b") == 0);
+  /* ...but not non-partial ones. */
+  owl_history_reset(&h);
+  FAIL_UNLESS("untouched", !owl_history_is_touched(&h));
+
+  /* Finally, check we are bounded by OWL_HISTORYSIZE. */
+  for (i = 0; i < OWL_HISTORYSIZE; i++) {
+    char *string = g_strdup_printf("mango%d", i);
+    owl_history_store(&h, string, false);
+    g_free(string);
+  }
+  /* The OWL_HISTORYSIZE'th prev gets NULL. */
+  for (i = OWL_HISTORYSIZE - 2; i >= 0; i--) {
+    char *string = g_strdup_printf("mango%d", i);
+    FAIL_UNLESS("prev mango_N", strcmp(owl_history_get_prev(&h), string) == 0);
+    g_free(string);
+  }
+  FAIL_UNLESS("prev NULL", owl_history_get_prev(&h) == NULL);
+
+  owl_history_cleanup(&h);
+
+  printf("# END testing owl_history (%d failures)\n", numfailed);
   return numfailed;
 }
