@@ -42,12 +42,6 @@ void owl_history_store(owl_history *h, const char *line)
   if (!h) return;
   size=owl_list_get_size(&(h->hist));
 
-  /* if partial is set, remove the first entry first */
-  if (h->partial) {
-    g_free(owl_list_get_element(&(h->hist), 0));
-    owl_list_remove_element(&(h->hist), 0);
-  }
-
   owl_history_reset(h);
 
   /* check if the line is the same as the last */
@@ -74,8 +68,15 @@ void owl_history_set_partial(owl_history *h)
 void owl_history_reset(owl_history *h)
 {
   if (!h) return;
+
+  /* if partial is set, remove the first entry first */
+  if (h->partial) {
+    g_free(owl_list_get_element(&(h->hist), 0));
+    owl_list_remove_element(&(h->hist), 0);
+    h->partial = 0;
+  }
+
   h->cur=0;
-  h->partial=0;
 }
 
 int owl_history_is_touched(const owl_history *h)
