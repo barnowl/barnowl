@@ -3,8 +3,13 @@
 #include "owl.h"
 #undef WINDOW
 
+#include <errno.h>
 #include <unistd.h>
+#include <pwd.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
 
 #undef instr
 #include <curses.h>
@@ -130,7 +135,9 @@ int owl_regtest(void) {
 int owl_util_regtest(void)
 {
   int numfailed=0;
-  char *s;
+  const char *home;
+  char *s, *path;
+  struct passwd *pw;
 
   printf("# BEGIN testing owl_util\n");
 
@@ -252,6 +259,58 @@ int owl_util_regtest(void)
   g_free(s);
 
 
+  s = owl_util_makepath("foo/bar");
+  FAIL_UNLESS("makepath foo/bar", !strcmp("foo/bar", s));
+  g_free(s);
+  s = owl_util_makepath("//foo///bar");
+  FAIL_UNLESS("makepath //foo///bar", !strcmp("/foo/bar", s));
+  g_free(s);
+  s = owl_util_makepath("foo/~//bar/");
+  FAIL_UNLESS("makepath foo/~//bar/", !strcmp("foo/~/bar/", s));
+  g_free(s);
+  s = owl_util_makepath("~thisuserhadreallybetternotexist/foobar/");
+  FAIL_UNLESS("makepath ~thisuserhadreallybetternotexist/foobar/",
+              !strcmp("~thisuserhadreallybetternotexist/foobar/", s));
+  g_free(s);
+
+  errno = 0;
+  pw = getpwuid(getuid());
+  if (pw) {
+    home = pw->pw_dir;
+  } else {
+    /* Just make some noise so we notice. */
+    home = "<WHAT>";
+    fprintf(stderr, "getpwuid: %s", errno ? strerror(errno) : "No such user");
+  }
+  s = owl_util_makepath("~");
+  FAIL_UNLESS("makepath ~", !strcmp(home, s));
+  g_free(s);
+
+  path = g_strconcat(home, "/foo/bar/baz", NULL);
+  s = owl_util_makepath("~///foo/bar//baz");
+  FAIL_UNLESS("makepath ~///foo/bar//baz", !strcmp(path, s));
+  g_free(s);
+  g_free(path);
+
+  errno = 0;
+  pw = getpwnam("root");
+  if (pw) {
+    home = pw->pw_dir;
+  } else {
+    /* Just make some noise so we notice. */
+    home = "<WHAT>";
+    fprintf(stderr, "getpwnam: %s", errno ? strerror(errno) : "No such user");
+  }
+
+  s = owl_util_makepath("~root");
+  FAIL_UNLESS("makepath ~root", !strcmp(home, s));
+  g_free(s);
+
+  path = g_strconcat(home, "/foo/bar/baz", NULL);
+  s = owl_util_makepath("~root///foo/bar//baz");
+  FAIL_UNLESS("makepath ~root///foo/bar//baz", !strcmp(path, s));
+  g_free(s);
+  g_free(path);
 
   /* if (numfailed) printf("*** WARNING: failures encountered with owl_util\n"); */
   printf("# END testing owl_util (%d failures)\n", numfailed);
