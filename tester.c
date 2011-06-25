@@ -130,6 +130,7 @@ int owl_regtest(void) {
 int owl_util_regtest(void)
 {
   int numfailed=0;
+  char *s;
 
   printf("# BEGIN testing owl_util\n");
 
@@ -223,6 +224,34 @@ int owl_util_regtest(void)
   FAIL_UNLESS("owl_string_appendf",
               !strcmp(g->str, "hello foo 'world is'\"can't\" %s %"));
   g_string_free(g, true);
+
+
+  s = owl_util_baseclass("barnowl");
+  FAIL_UNLESS("baseclass barnowl", !strcmp("barnowl", s));
+  g_free(s);
+  s = owl_util_baseclass("unbarnowl");
+  FAIL_UNLESS("baseclass unbarnowl", !strcmp("barnowl", s));
+  g_free(s);
+  s = owl_util_baseclass("unununbarnowl.d.d");
+  FAIL_UNLESS("baseclass unununbarnowl.d.d", !strcmp("barnowl", s));
+  g_free(s);
+  s = owl_util_baseclass("ununun.d.d");
+  FAIL_UNLESS("baseclass ununun.d.d", !strcmp("", s));
+  g_free(s);
+  s = owl_util_baseclass("d.d.d.d");
+  FAIL_UNLESS("baseclass d.d.d.d", !strcmp("d", s));
+  g_free(s);
+  s = owl_util_baseclass("n.d.d.d");
+  FAIL_UNLESS("baseclass n.d.d.d", !strcmp("n", s));
+  g_free(s);
+  s = owl_util_baseclass("ununun.");
+  FAIL_UNLESS("baseclass ununun.", !strcmp(".", s));
+  g_free(s);
+  s = owl_util_baseclass("unununu");
+  FAIL_UNLESS("baseclass unununu", !strcmp("u", s));
+  g_free(s);
+
+
 
   /* if (numfailed) printf("*** WARNING: failures encountered with owl_util\n"); */
   printf("# END testing owl_util (%d failures)\n", numfailed);
