@@ -22,7 +22,7 @@ void owl_perl_xs_init(pTHX) /* noproto */
 }
 
 
-G_GNUC_WARN_UNUSED_RESULT SV *owl_new_sv(const char * str)
+CALLER_OWN SV *owl_new_sv(const char * str)
 {
   SV *ret = newSVpv(str, 0);
   if (is_utf8_string((const U8 *)str, strlen(str))) {
@@ -35,7 +35,7 @@ G_GNUC_WARN_UNUSED_RESULT SV *owl_new_sv(const char * str)
   return ret;
 }
 
-G_GNUC_WARN_UNUSED_RESULT AV *owl_new_av(const owl_list *l, SV *(*to_sv)(const void *))
+CALLER_OWN AV *owl_new_av(const GPtrArray *l, SV *(*to_sv)(const void *))
 {
   AV *ret;
   int i;
@@ -43,18 +43,18 @@ G_GNUC_WARN_UNUSED_RESULT AV *owl_new_av(const owl_list *l, SV *(*to_sv)(const v
 
   ret = newAV();
 
-  for (i = 0; i < owl_list_get_size(l); i++) {
-    element = owl_list_get_element(l, i);
+  for (i = 0; i < l->len; i++) {
+    element = l->pdata[i];
     av_push(ret, to_sv(element));
   }
 
   return ret;
 }
 
-G_GNUC_WARN_UNUSED_RESULT HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const void *))
+CALLER_OWN HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const void *))
 {
   HV *ret;
-  owl_list l;
+  GPtrArray *keys;
   const char *key;
   void *element;
   int i;
@@ -62,19 +62,18 @@ G_GNUC_WARN_UNUSED_RESULT HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const v
   ret = newHV();
 
   /* TODO: add an iterator-like interface to owl_dict */
-  owl_list_create(&l);
-  owl_dict_get_keys(d, &l);
-  for (i = 0; i < owl_list_get_size(&l); i++) {
-    key = owl_list_get_element(&l, i);
+  keys = owl_dict_get_keys(d);
+  for (i = 0; i < keys->len; i++) {
+    key = keys->pdata[i];
     element = owl_dict_find_element(d, key);
     (void)hv_store(ret, key, strlen(key), to_sv(element), 0);
   }
-  owl_list_cleanup(&l, g_free);
+  owl_ptr_array_free(keys, g_free);
 
   return ret;
 }
 
-G_GNUC_WARN_UNUSED_RESULT SV *owl_perlconfig_message2hashref(const owl_message *m)
+CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
 {
   HV *h, *stash;
   SV *hr;
@@ -114,9 +113,8 @@ G_GNUC_WARN_UNUSED_RESULT SV *owl_perlconfig_message2hashref(const owl_message *
                    owl_new_sv(owl_zephyr_get_authstr(owl_message_get_notice(m))),0);
   }
 
-  j=owl_list_get_size(&(m->attributes));
-  for(i=0; i<j; i++) {
-    pair=owl_list_get_element(&(m->attributes), i);
+  for (i = 0; i < m->attributes->len; i++) {
+    pair = m->attributes->pdata[i];
     (void)hv_store(h, owl_pair_get_key(pair), strlen(owl_pair_get_key(pair)),
                    owl_new_sv(owl_pair_get_value(pair)),0);
   }
@@ -164,7 +162,7 @@ G_GNUC_WARN_UNUSED_RESULT SV *owl_perlconfig_message2hashref(const owl_message *
   return hr;
 }
 
-G_GNUC_WARN_UNUSED_RESULT SV *owl_perlconfig_curmessage2hashref(void)
+CALLER_OWN SV *owl_perlconfig_curmessage2hashref(void)
 {
   int curmsg;
   const owl_view *v;
@@ -182,7 +180,7 @@ G_GNUC_WARN_UNUSED_RESULT SV *owl_perlconfig_curmessage2hashref(void)
 
    This has been somewhat addressed, but is still not lossless.
  */
-G_GNUC_WARN_UNUSED_RESULT owl_message *owl_perlconfig_hashref2message(SV *msg)
+CALLER_OWN owl_message *owl_perlconfig_hashref2message(SV *msg)
 {
   owl_message * m;
   HE * ent;
@@ -250,7 +248,7 @@ G_GNUC_WARN_UNUSED_RESULT owl_message *owl_perlconfig_hashref2message(SV *msg)
 
 /* Calls in a scalar context, passing it a hash reference.
    If return value is non-null, caller must free. */
-G_GNUC_WARN_UNUSED_RESULT char *owl_perlconfig_call_with_message(const char *subname, const owl_message *m)
+CALLER_OWN char *owl_perlconfig_call_with_message(const char *subname, const owl_message *m)
 {
   dSP ;
   int count;
@@ -299,7 +297,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_perlconfig_call_with_message(const char *sub
 /* Calls a method on a perl object representing a message.
    If the return value is non-null, the caller must free it.
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_perlconfig_message_call_method(const owl_message *m, const char *method, int argc, const char **argv)
+CALLER_OWN char *owl_perlconfig_message_call_method(const owl_message *m, const char *method, int argc, const char **argv)
 {
   dSP;
   unsigned int count, i;
@@ -349,7 +347,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_perlconfig_message_call_method(const owl_mes
 }
 
 /* caller must free result, if not NULL */
-G_GNUC_WARN_UNUSED_RESULT char *owl_perlconfig_initperl(const char *file, int *Pargc, char ***Pargv, char ***Penv)
+CALLER_OWN char *owl_perlconfig_initperl(const char *file, int *Pargc, char ***Pargv, char ***Penv)
 {
   int ret;
   PerlInterpreter *p;
@@ -435,7 +433,7 @@ int owl_perlconfig_is_function(const char *fn) {
 }
 
 /* caller is responsible for freeing returned string */
-G_GNUC_WARN_UNUSED_RESULT char *owl_perlconfig_execute(const char *line)
+CALLER_OWN char *owl_perlconfig_execute(const char *line)
 {
   STRLEN len;
   SV *response;
@@ -505,7 +503,7 @@ void owl_perlconfig_new_command(const char *name)
 }
 
 /* caller must free the result */
-G_GNUC_WARN_UNUSED_RESULT char *owl_perlconfig_perlcmd(const owl_cmd *cmd, int argc, const char *const *argv)
+CALLER_OWN char *owl_perlconfig_perlcmd(const owl_cmd *cmd, int argc, const char *const *argv)
 {
   int i, count;
   char * ret = NULL;

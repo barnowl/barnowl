@@ -46,7 +46,7 @@ void owl_global_init(owl_global *g) {
 
   owl_dict_create(&(g->filters));
   g->filterlist = NULL;
-  owl_list_create(&(g->puntlist));
+  g->puntlist = g_ptr_array_new();
   g->messagequeue = g_queue_new();
   owl_dict_create(&(g->styledict));
   g->curmsg_vert_offset=0;
@@ -171,7 +171,7 @@ void owl_global_push_context_obj(owl_global *g, owl_context *c)
 
 /* Pops the current context from the context stack and returns it. Caller is
  * responsible for freeing. */
-G_GNUC_WARN_UNUSED_RESULT owl_context *owl_global_pop_context_no_delete(owl_global *g)
+CALLER_OWN owl_context *owl_global_pop_context_no_delete(owl_global *g)
 {
   owl_context *c;
   if (!g->context_stack)
@@ -578,20 +578,19 @@ owl_colorpair_mgr *owl_global_get_colorpair_mgr(owl_global *g) {
 
 /* puntlist */
 
-owl_list *owl_global_get_puntlist(owl_global *g) {
-  return(&(g->puntlist));
+GPtrArray *owl_global_get_puntlist(owl_global *g) {
+  return g->puntlist;
 }
 
 int owl_global_message_is_puntable(owl_global *g, const owl_message *m) {
-  const owl_list *pl;
-  int i, j;
+  const GPtrArray *pl;
+  int i;
 
-  pl=owl_global_get_puntlist(g);
-  j=owl_list_get_size(pl);
-  for (i=0; i<j; i++) {
-    if (owl_filter_message_match(owl_list_get_element(pl, i), m)) return(1);
+  pl = owl_global_get_puntlist(g);
+  for (i = 0; i < pl->len; i++) {
+    if (owl_filter_message_match(pl->pdata[i], m)) return 1;
   }
-  return(0);
+  return 0;
 }
 
 int owl_global_should_followlast(owl_global *g) {
@@ -724,7 +723,7 @@ void owl_global_messagequeue_addmsg(owl_global *g, owl_message *m)
  * is empty.  The caller should free the message after using it, if
  * necessary.
  */
-owl_message G_GNUC_WARN_UNUSED_RESULT *owl_global_messagequeue_popmsg(owl_global *g)
+CALLER_OWN owl_message *owl_global_messagequeue_popmsg(owl_global *g)
 {
   owl_message *out;
 
@@ -753,8 +752,9 @@ const owl_style *owl_global_get_style_by_name(const owl_global *g, const char *n
   return owl_dict_find_element(&(g->styledict), name);
 }
 
-void owl_global_get_style_names(const owl_global *g, owl_list *l) {
-  owl_dict_get_keys(&(g->styledict), l);
+CALLER_OWN GPtrArray *owl_global_get_style_names(const owl_global *g)
+{
+  return owl_dict_get_keys(&g->styledict);
 }
 
 void owl_global_add_style(owl_global *g, owl_style *s)

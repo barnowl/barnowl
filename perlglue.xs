@@ -328,14 +328,13 @@ wordwrap(in, cols)
 AV*
 all_filters()
 	PREINIT:
-		owl_list fl;
+		GPtrArray *fl;
 	CODE:
 	{
-		owl_list_create(&fl);
-		owl_dict_get_keys(&g.filters, &fl);
-		RETVAL = owl_new_av(&fl, (SV*(*)(const void*))owl_new_sv);
+		fl = owl_dict_get_keys(&g.filters);
+		RETVAL = owl_new_av(fl, (SV*(*)(const void*))owl_new_sv);
 		sv_2mortal((SV*)RETVAL);
-		owl_list_cleanup(&fl, g_free);
+		owl_ptr_array_free(fl, g_free);
 	}
 	OUTPUT:
 		RETVAL
@@ -343,54 +342,51 @@ all_filters()
 AV*
 all_styles()
 	PREINIT:
-		owl_list l;
+		GPtrArray *l;
 	CODE:
 	{
-		owl_list_create(&l);
-		owl_global_get_style_names(&g, &l);
-		RETVAL = owl_new_av(&l, (SV*(*)(const void*))owl_new_sv);
+		l = owl_global_get_style_names(&g);
+		RETVAL = owl_new_av(l, (SV*(*)(const void*))owl_new_sv);
 		sv_2mortal((SV*)RETVAL);
 	}
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		owl_list_cleanup(&l, g_free);
+		owl_ptr_array_free(l, g_free);
 
 
 AV*
 all_variables()
 	PREINIT:
-		owl_list l;
+		GPtrArray *l;
 	CODE:
 	{
-		owl_list_create(&l);
-		owl_dict_get_keys(owl_global_get_vardict(&g), &l);
-		RETVAL = owl_new_av(&l, (SV*(*)(const void*))owl_new_sv);
+		l = owl_dict_get_keys(owl_global_get_vardict(&g));
+		RETVAL = owl_new_av(l, (SV*(*)(const void*))owl_new_sv);
 		sv_2mortal((SV*)RETVAL);
 	}
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		owl_list_cleanup(&l, g_free);
+		owl_ptr_array_free(l, g_free);
 
 
 AV*
 all_keymaps()
 	PREINIT:
-		owl_list l;
+		GPtrArray *l;
 		const owl_keyhandler *kh;
 	CODE:
 	{
 		kh = owl_global_get_keyhandler(&g);
-		owl_list_create(&l);
-		owl_keyhandler_get_keymap_names(kh, &l);
-		RETVAL = owl_new_av(&l, (SV*(*)(const void*))owl_new_sv);
+		l = owl_keyhandler_get_keymap_names(kh);
+		RETVAL = owl_new_av(l, (SV*(*)(const void*))owl_new_sv);
 		sv_2mortal((SV*)RETVAL);
 	}
 	OUTPUT:
 		RETVAL
 	CLEANUP:
-		owl_list_cleanup(&l, g_free);
+		owl_ptr_array_free(l, g_free);
 
 void
 redisplay()

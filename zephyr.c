@@ -523,7 +523,7 @@ int owl_zephyr_unsub(const char *class, const char *inst, const char *recip)
  * definition).  Caller must free the return.
  */
 #ifdef HAVE_LIBZEPHYR
-G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_field(const ZNotice_t *n, int j)
+CALLER_OWN char *owl_zephyr_get_field(const ZNotice_t *n, int j)
 {
   int i, count, save;
 
@@ -551,7 +551,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_field(const ZNotice_t *n, int j)
   return(g_strdup(""));
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
+CALLER_OWN char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
 {
   int i, count, save;
 
@@ -583,11 +583,11 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n,
   return(g_strdup(""));
 }
 #else
-G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_field(void *n, int j)
+CALLER_OWN char *owl_zephyr_get_field(void *n, int j)
 {
   return(g_strdup(""));
 }
-G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_field_as_utf8(void *n, int j)
+CALLER_OWN char *owl_zephyr_get_field_as_utf8(void *n, int j)
 {
   return owl_zephyr_get_field(n, j);
 }
@@ -620,7 +620,7 @@ int owl_zephyr_get_num_fields(const void *n)
 /* return a pointer to the message, place the message length in k
  * caller must free the return
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
+CALLER_OWN char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m)
 {
 #define OWL_NFIELDS	5
   int i;
@@ -837,8 +837,8 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
       zw.realm = g_strdup("");
       zw.opcode = g_strdup(retnotice->z_opcode);
       zw.zsig   = g_strdup("");
-      owl_list_create(&(zw.recips));
-      owl_list_append_element(&(zw.recips), g_strdup(retnotice->z_recipient));
+      zw.recips = g_ptr_array_new();
+      g_ptr_array_add(zw.recips, g_strdup(retnotice->z_recipient));
 
       owl_log_outgoing_zephyr_error(&zw, buff);
 
@@ -941,7 +941,7 @@ void owl_zephyr_hackaway_cr(ZNotice_t *n)
 }
 #endif
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_zlocate(const char *user, int auth)
+CALLER_OWN char *owl_zephyr_zlocate(const char *user, int auth)
 {
 #ifdef HAVE_LIBZEPHYR
   int ret, numlocs;
@@ -1041,7 +1041,7 @@ void owl_zephyr_delsub(const char *filename, const char *class, const char *inst
 }
 
 /* caller must free the return */
-G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_makesubline(const char *class, const char *inst, const char *recip)
+CALLER_OWN char *owl_zephyr_makesubline(const char *class, const char *inst, const char *recip)
 {
   return g_strdup_printf("%s,%s,%s\n", class, inst, !strcmp(recip, "") ? "*" : recip);
 }
@@ -1121,7 +1121,7 @@ const char *owl_zephyr_get_authstr(const void *n)
 /* Returns a buffer of subscriptions or an error message.  Caller must
  * free the return.
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_getsubs(void)
+CALLER_OWN char *owl_zephyr_getsubs(void)
 {
 #ifdef HAVE_LIBZEPHYR
   Code_t ret;
@@ -1241,7 +1241,7 @@ int owl_zephyr_set_exposure(const char *exposure)
 /* Strip a local realm fron the zephyr user name.
  * The caller must free the return
  */
-G_GNUC_WARN_UNUSED_RESULT char *short_zuser(const char *in)
+CALLER_OWN char *short_zuser(const char *in)
 {
   char *ptr = strrchr(in, '@');
   if (ptr && (ptr[1] == '\0' || !strcasecmp(ptr+1, owl_zephyr_get_realm()))) {
@@ -1253,7 +1253,7 @@ G_GNUC_WARN_UNUSED_RESULT char *short_zuser(const char *in)
 /* Append a local realm to the zephyr user name if necessary.
  * The caller must free the return.
  */
-G_GNUC_WARN_UNUSED_RESULT char *long_zuser(const char *in)
+CALLER_OWN char *long_zuser(const char *in)
 {
   char *ptr = strrchr(in, '@');
   if (ptr) {
@@ -1281,7 +1281,7 @@ const char *zuser_realm(const char *in)
  * alone. Also leave rcmd. and daemon. krb4 principals alone. The
  * caller must free the return.
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_smartstripped_user(const char *in)
+CALLER_OWN char *owl_zephyr_smartstripped_user(const char *in)
 {
   char *slash, *dot, *realm, *out;
 
@@ -1323,16 +1323,16 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_zephyr_smartstripped_user(const char *in)
   return(out);
 }
 
-/* read the list of users in 'filename' as a .anyone file, and put the
- * names of the zephyr users in the list 'in'.  If 'filename' is NULL,
- * use the default .anyone file in the users home directory.  Returns
- * -1 on failure, 0 on success.
+/* Read the list of users in 'filename' as a .anyone file, and return as a
+ * GPtrArray of strings.  If 'filename' is NULL, use the default .anyone file
+ * in the users home directory.  Returns NULL on failure.
  */
-int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
+GPtrArray *owl_zephyr_get_anyone_list(const char *filename)
 {
 #ifdef HAVE_LIBZEPHYR
   char *ourfile, *tmp, *s = NULL;
   FILE *f;
+  GPtrArray *list;
 
   ourfile = owl_zephyr_dotfile(".anyone", filename);
 
@@ -1340,10 +1340,11 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
   if (!f) {
     owl_function_error("Error opening file %s: %s", ourfile, strerror(errno) ? strerror(errno) : "");
     g_free(ourfile);
-    return -1;
+    return NULL;
   }
   g_free(ourfile);
 
+  list = g_ptr_array_new();
   while (owl_getline_chomp(&s, f)) {
     /* ignore comments, blank lines etc. */
     if (s[0] == '#' || s[0] == '\0')
@@ -1359,13 +1360,13 @@ int owl_zephyr_get_anyone_list(owl_list *in, const char *filename)
     if (tmp)
       tmp[0] = '\0';
 
-    owl_list_append_element(in, long_zuser(s));
+    g_ptr_array_add(list, long_zuser(s));
   }
   g_free(s);
   fclose(f);
-  return 0;
+  return list;
 #else
-  return -1;
+  return NULL;
 #endif
 }
 

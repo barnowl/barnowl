@@ -436,7 +436,7 @@ int owl_aim_chat_sendmsg(const char *chatroom, const char *msg)
 }
 
 /* caller must free the return */
-G_GNUC_WARN_UNUSED_RESULT char *owl_aim_normalize_screenname(const char *in)
+CALLER_OWN char *owl_aim_normalize_screenname(const char *in)
 {
   char *out;
   int i, j, k;
@@ -1438,7 +1438,7 @@ static int faimtest_parse_searchreply(aim_session_t *sess, aim_frame_t *fr, ...)
   va_list ap;
   const char *address, *SNs;
   int num, i;
-  owl_list list;
+  GPtrArray *list;
   
   va_start(ap, fr);
   address = va_arg(ap, const char *);
@@ -1446,16 +1446,16 @@ static int faimtest_parse_searchreply(aim_session_t *sess, aim_frame_t *fr, ...)
   SNs = va_arg(ap, const char *);
   va_end(ap);
 
-  owl_list_create(&list);
+  list = g_ptr_array_new();
   
   owl_function_debugmsg("faimtest_parse_searchreply: E-Mail Search Results for %s: ", address);
   for (i=0; i<num; i++) {
     owl_function_debugmsg("  %s", &SNs[i*(MAXSNLEN+1)]);
-    owl_list_append_element(&list, (void *)&SNs[i*(MAXSNLEN+1)]);
+    g_ptr_array_add(list, (void *)&SNs[i*(MAXSNLEN+1)]);
   }
-  owl_function_aimsearch_results(address, &list);
-  owl_list_cleanup(&list, NULL);
-  return(1);
+  owl_function_aimsearch_results(address, list);
+  g_ptr_array_free(list, true);
+  return 1;
 }
 
 static int faimtest_parse_searcherror(aim_session_t *sess, aim_frame_t *fr, ...)

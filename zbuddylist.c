@@ -2,40 +2,36 @@
 
 void owl_zbuddylist_create(owl_zbuddylist *zb)
 {
-  owl_list_create(&(zb->zusers));
+  zb->zusers = g_ptr_array_new();
 }
 
 int owl_zbuddylist_adduser(owl_zbuddylist *zb, const char *name)
 {
-  int i, j;
+  int i;
   char *user;
 
   user=long_zuser(name);
 
-  j=owl_list_get_size(&(zb->zusers));
-  for (i=0; i<j; i++) {
-    if (!strcasecmp(user, owl_list_get_element(&(zb->zusers), i))) {
+  for (i = 0; i < zb->zusers->len; i++) {
+    if (!strcasecmp(user, zb->zusers->pdata[i])) {
       g_free(user);
       return(-1);
     }
   }
-  owl_list_append_element(&(zb->zusers), user);
+  g_ptr_array_add(zb->zusers, user);
   return(0);
 }
 
 int owl_zbuddylist_deluser(owl_zbuddylist *zb, const char *name)
 {
-  int i, j;
-  char *user, *ptr;
+  int i;
+  char *user;
 
   user=long_zuser(name);
 
-  j=owl_list_get_size(&(zb->zusers));
-  for (i=0; i<j; i++) {
-    ptr=owl_list_get_element(&(zb->zusers), i);
-    if (!strcasecmp(user, ptr)) {
-      owl_list_remove_element(&(zb->zusers), i);
-      g_free(ptr);
+  for (i = 0; i < zb->zusers->len; i++) {
+    if (!strcasecmp(user, zb->zusers->pdata[i])) {
+      g_free(g_ptr_array_remove_index(zb->zusers, i));
       g_free(user);
       return(0);
     }
@@ -46,14 +42,13 @@ int owl_zbuddylist_deluser(owl_zbuddylist *zb, const char *name)
 
 int owl_zbuddylist_contains_user(const owl_zbuddylist *zb, const char *name)
 {
-  int i, j;
+  int i;
   char *user;
 
   user=long_zuser(name);
 
-  j=owl_list_get_size(&(zb->zusers));
-  for (i=0; i<j; i++) {
-    if (!strcasecmp(user, owl_list_get_element(&(zb->zusers), i))) {
+  for (i = 0; i < zb->zusers->len; i++) {
+    if (!strcasecmp(user, zb->zusers->pdata[i])) {
       g_free(user);
       return(1);
     }

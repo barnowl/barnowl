@@ -55,13 +55,15 @@ void *owl_dict_find_element(const owl_dict *d, const char *k) {
   return(d->els[pos].v);
 }
 
-/* Appends dictionary keys to a list.  Duplicates the keys,
- * so they will need to be freed by the caller. */
-void owl_dict_get_keys(const owl_dict *d, owl_list *l) {
+/* Returns a GPtrArray of dictionary keys. Duplicates the keys, so
+ * they will need to be freed by the caller with g_free. */
+CALLER_OWN GPtrArray *owl_dict_get_keys(const owl_dict *d) {
+  GPtrArray *keys = g_ptr_array_sized_new(d->size);
   int i;
-  for (i=0; i<d->size; i++) {
-    owl_list_append_element(l, g_strdup(d->els[i].k));
+  for (i = 0; i < d->size; i++) {
+    g_ptr_array_add(keys, g_strdup(d->els[i].k));
   }
+  return keys;
 }
 
 void owl_dict_noop_delete(void *x)
@@ -106,7 +108,7 @@ int owl_dict_insert_element(owl_dict *d, const char *k, void *v, void (*delete_o
 
 /* Doesn't free the value of the element, but does
  * return it so the caller can free it. */
-G_GNUC_WARN_UNUSED_RESULT void *owl_dict_remove_element(owl_dict *d, const char *k)
+CALLER_OWN void *owl_dict_remove_element(owl_dict *d, const char *k)
 {
   int i;
   int pos, found;

@@ -42,7 +42,7 @@ void owl_message_init(owl_message *m)
   m->delete=0;
 
   owl_message_set_hostname(m, "");
-  owl_list_create(&(m->attributes));
+  m->attributes = g_ptr_array_new();
   
   /* save the time */
   m->time=time(NULL);
@@ -57,15 +57,14 @@ void owl_message_init(owl_message *m)
  */
 void owl_message_set_attribute(owl_message *m, const char *attrname, const char *attrvalue)
 {
-  int i, j;
+  int i;
   owl_pair *p = NULL, *pair = NULL;
 
   attrname = g_intern_string(attrname);
 
   /* look for an existing pair with this key, */
-  j=owl_list_get_size(&(m->attributes));
-  for (i=0; i<j; i++) {
-    p=owl_list_get_element(&(m->attributes), i);
+  for (i = 0; i < m->attributes->len; i++) {
+    p = m->attributes->pdata[i];
     if (owl_pair_get_key(p) == attrname) {
       g_free(owl_pair_get_value(p));
       pair = p;
@@ -76,7 +75,7 @@ void owl_message_set_attribute(owl_message *m, const char *attrname, const char 
   if(pair ==  NULL) {
     pair = g_new(owl_pair, 1);
     owl_pair_create(pair, attrname, NULL);
-    owl_list_append_element(&(m->attributes), pair);
+    g_ptr_array_add(m->attributes, pair);
   }
   owl_pair_set_value(pair, owl_validate_or_convert(attrvalue));
 }
@@ -86,7 +85,7 @@ void owl_message_set_attribute(owl_message *m, const char *attrname, const char 
  */
 const char *owl_message_get_attribute_value(const owl_message *m, const char *attrname)
 {
-  int i, j;
+  int i;
   owl_pair *p;
   GQuark quark;
 
@@ -96,9 +95,8 @@ const char *owl_message_get_attribute_value(const owl_message *m, const char *at
     return NULL;
   attrname = g_quark_to_string(quark);
 
-  j=owl_list_get_size(&(m->attributes));
-  for (i=0; i<j; i++) {
-    p=owl_list_get_element(&(m->attributes), i);
+  for (i = 0; i < m->attributes->len; i++) {
+    p = m->attributes->pdata[i];
     if (owl_pair_get_key(p) == attrname) {
       return(owl_pair_get_value(p));
     }
@@ -117,15 +115,14 @@ const char *owl_message_get_attribute_value(const owl_message *m, const char *at
  * function to indent fmtext.
  */
 void owl_message_attributes_tofmtext(const owl_message *m, owl_fmtext *fm) {
-  int i, j;
+  int i;
   owl_pair *p;
   char *buff, *tmpbuff;
 
   owl_fmtext_init_null(fm);
 
-  j=owl_list_get_size(&(m->attributes));
-  for (i=0; i<j; i++) {
-    p=owl_list_get_element(&(m->attributes), i);
+  for (i = 0; i < m->attributes->len; i++) {
+    p = m->attributes->pdata[i];
 
     tmpbuff = g_strdup(owl_pair_get_value(p));
     g_strdelimit(tmpbuff, "\n", '~');
@@ -579,7 +576,7 @@ int owl_message_is_mail(const owl_message *m)
 }
 
 /* caller must free return value. */
-G_GNUC_WARN_UNUSED_RESULT char *owl_message_get_cc(const owl_message *m)
+CALLER_OWN char *owl_message_get_cc(const owl_message *m)
 {
   const char *cur;
   char *out, *end;
@@ -596,7 +593,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_message_get_cc(const owl_message *m)
 }
 
 /* caller must free return value */
-G_GNUC_WARN_UNUSED_RESULT GList *owl_message_get_cc_without_recipient(const owl_message *m)
+CALLER_OWN GList *owl_message_get_cc_without_recipient(const owl_message *m)
 {
   char *cc, *shortuser, *recip;
   const char *user;
@@ -1003,7 +1000,7 @@ void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const c
 
 void owl_message_cleanup(owl_message *m)
 {
-  int i, j;
+  int i;
   owl_pair *p;
 #ifdef HAVE_LIBZEPHYR    
   if (owl_message_is_type_zephyr(m) && owl_message_is_direction_in(m)) {
@@ -1013,14 +1010,13 @@ void owl_message_cleanup(owl_message *m)
   if (m->timestr) g_free(m->timestr);
 
   /* free all the attributes */
-  j=owl_list_get_size(&(m->attributes));
-  for (i=0; i<j; i++) {
-    p=owl_list_get_element(&(m->attributes), i);
+  for (i = 0; i < m->attributes->len; i++) {
+    p = m->attributes->pdata[i];
     g_free(owl_pair_get_value(p));
     g_free(p);
   }
 
-  owl_list_cleanup(&(m->attributes), NULL);
+  g_ptr_array_free(m->attributes, true);
  
   owl_message_invalidate_format(m);
 }

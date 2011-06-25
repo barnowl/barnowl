@@ -7,7 +7,7 @@ bool owl_is_editcontext(const owl_context *ctx)
   return owl_context_matches(ctx, OWL_CTX_TYPWIN);
 }
 
-G_GNUC_WARN_UNUSED_RESULT owl_context *owl_editcontext_new(int mode, owl_editwin *e, const char *keymap, void (*deactivate_cb)(owl_context*), void *cbdata)
+CALLER_OWN owl_context *owl_editcontext_new(int mode, owl_editwin *e, const char *keymap, void (*deactivate_cb)(owl_context*), void *cbdata)
 {
   owl_context *ctx = owl_context_new(mode, owl_editwin_ref(e), keymap,
 				     owl_editwin_get_window(e));

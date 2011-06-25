@@ -13,14 +13,14 @@
 #include "owl.h"
 #include "filterproc.h"
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_command(const char *cmdbuff)
+CALLER_OWN char *owl_function_command(const char *cmdbuff)
 {
   owl_function_debugmsg("executing command: %s", cmdbuff);
   return owl_cmddict_execute(owl_global_get_cmddict(&g), 
 			     owl_global_get_context(&g), cmdbuff);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_command_argv(const char *const *argv, int argc)
+CALLER_OWN char *owl_function_command_argv(const char *const *argv, int argc)
 {
   return owl_cmddict_execute_argv(owl_global_get_cmddict(&g),
                                   owl_global_get_context(&g),
@@ -46,18 +46,17 @@ const owl_cmd *owl_function_get_cmd(const char *name)
 
 void owl_function_show_commands(void)
 {
-  owl_list l;
+  GPtrArray *l;
   owl_fmtext fm;
 
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_bold(&fm, "Commands:  ");
   owl_fmtext_append_normal(&fm, "(use 'show command <name>' for details)\n");
-  owl_list_create(&l);
-  owl_cmddict_get_names(owl_global_get_cmddict(&g), &l);
-  owl_fmtext_append_list(&fm, &l, "\n", owl_function_cmd_describe);
+  l = owl_cmddict_get_names(owl_global_get_cmddict(&g));
+  owl_fmtext_append_list(&fm, l, "\n", owl_function_cmd_describe);
   owl_fmtext_append_normal(&fm, "\n");
   owl_function_popless_fmtext(&fm);
-  owl_list_cleanup(&l, g_free);
+  owl_ptr_array_free(l, g_free);
   owl_fmtext_cleanup(&fm);
 }
 
@@ -80,21 +79,20 @@ void owl_function_show_view(const char *viewname)
 }
 
 void owl_function_show_styles(void) {
-  owl_list l;
+  GPtrArray *l;
   owl_fmtext fm;
 
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_bold(&fm, "Styles:\n");
-  owl_list_create(&l);
-  owl_global_get_style_names(&g, &l);
-  owl_fmtext_append_list(&fm, &l, "\n", owl_function_style_describe);
+  l = owl_global_get_style_names(&g);
+  owl_fmtext_append_list(&fm, l, "\n", owl_function_style_describe);
   owl_fmtext_append_normal(&fm, "\n");
   owl_function_popless_fmtext(&fm);
-  owl_list_cleanup(&l, g_free);
+  owl_ptr_array_free(l, g_free);
   owl_fmtext_cleanup(&fm);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_style_describe(const char *name)
+CALLER_OWN char *owl_function_style_describe(const char *name)
 {
   const char *desc;
   char *s;
@@ -111,7 +109,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_function_style_describe(const char *name)
   return s;
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_cmd_describe(const char *name)
+CALLER_OWN char *owl_function_cmd_describe(const char *name)
 {
   const owl_cmd *cmd = owl_cmddict_find(owl_global_get_cmddict(&g), name);
   if (cmd) return owl_cmd_describe(cmd);
@@ -249,7 +247,7 @@ void owl_function_add_outgoing_zephyrs(const owl_zwrite *z)
  * create the message).  Does not put it on the global queue.  Use
  * owl_global_messagequeue_addmsg() for that.
  */
-G_GNUC_WARN_UNUSED_RESULT owl_message *owl_function_make_outgoing_aim(const char *body, const char *to)
+CALLER_OWN owl_message *owl_function_make_outgoing_aim(const char *body, const char *to)
 {
   owl_message *m;
 
@@ -270,7 +268,7 @@ G_GNUC_WARN_UNUSED_RESULT owl_message *owl_function_make_outgoing_aim(const char
  * Does not append it to the global queue, use
  * owl_global_messagequeue_addmsg() for that.
  */
-G_GNUC_WARN_UNUSED_RESULT owl_message *owl_function_make_outgoing_loopback(const char *body)
+CALLER_OWN owl_message *owl_function_make_outgoing_loopback(const char *body)
 {
   owl_message *m;
 
@@ -1575,17 +1573,15 @@ void owl_function_printallvars(void)
 {
   const char *name;
   char *var;
-  owl_list varnames;
-  int i, numvarnames;
+  GPtrArray *varnames;
+  int i;
   GString *str   = g_string_new("");
 
   g_string_append_printf(str, "%-20s = %s\n", "VARIABLE", "VALUE");
   g_string_append_printf(str, "%-20s   %s\n",  "--------", "-----");
-  owl_list_create(&varnames);
-  owl_variable_dict_get_names(owl_global_get_vardict(&g), &varnames);
-  numvarnames = owl_list_get_size(&varnames);
-  for (i=0; i<numvarnames; i++) {
-    name = owl_list_get_element(&varnames, i);
+  varnames = owl_variable_dict_get_names(owl_global_get_vardict(&g));
+  for (i = 0; i < varnames->len; i++) {
+    name = varnames->pdata[i];
     if (name && name[0]!='_') {
       g_string_append_printf(str, "\n%-20s = ", name);
       var = owl_variable_get_tostring(owl_global_get_vardict(&g), name);
@@ -1596,7 +1592,7 @@ void owl_function_printallvars(void)
     }
   }
   g_string_append(str, "\n");
-  owl_list_cleanup(&varnames, g_free);
+  owl_ptr_array_free(varnames, g_free);
 
   owl_function_popless_text(str->str);
   g_string_free(str, true);
@@ -1604,24 +1600,22 @@ void owl_function_printallvars(void)
 
 void owl_function_show_variables(void)
 {
-  owl_list varnames;
+  GPtrArray *varnames;
   owl_fmtext fm;  
-  int i, numvarnames;
+  int i;
   const char *varname;
 
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_bold(&fm, 
       "Variables: (use 'show variable <name>' for details)\n");
-  owl_list_create(&varnames);
-  owl_variable_dict_get_names(owl_global_get_vardict(&g), &varnames);
-  numvarnames = owl_list_get_size(&varnames);
-  for (i=0; i<numvarnames; i++) {
-    varname = owl_list_get_element(&varnames, i);
+  varnames = owl_variable_dict_get_names(owl_global_get_vardict(&g));
+  for (i = 0; i < varnames->len; i++) {
+    varname = varnames->pdata[i];
     if (varname && varname[0]!='_') {
       owl_variable_describe(owl_global_get_vardict(&g), varname, &fm);
     }
   }
-  owl_list_cleanup(&varnames, g_free);
+  owl_ptr_array_free(varnames, g_free);
   owl_function_popless_fmtext(&fm);
   owl_fmtext_cleanup(&fm);
 }
@@ -1899,7 +1893,7 @@ void owl_function_start_command(const char *line)
   owl_editwin_set_callback(tw, owl_callback_command);
 }
 
-G_GNUC_WARN_UNUSED_RESULT owl_editwin *owl_function_start_question(const char *line)
+CALLER_OWN owl_editwin *owl_function_start_question(const char *line)
 {
   owl_editwin *tw;
   owl_context *ctx;
@@ -1914,7 +1908,7 @@ G_GNUC_WARN_UNUSED_RESULT owl_editwin *owl_function_start_question(const char *l
   return tw;
 }
 
-G_GNUC_WARN_UNUSED_RESULT owl_editwin *owl_function_start_password(const char *line)
+CALLER_OWN owl_editwin *owl_function_start_password(const char *line)
 {
   owl_editwin *tw;
   owl_context *ctx;
@@ -1931,7 +1925,7 @@ G_GNUC_WARN_UNUSED_RESULT owl_editwin *owl_function_start_password(const char *l
   return tw;
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_exec(int argc, const char *const *argv, const char *buff, int type)
+CALLER_OWN char *owl_function_exec(int argc, const char *const *argv, const char *buff, int type)
 {
   /* if type == 1 display in a popup
    * if type == 2 display an admin messages
@@ -1974,7 +1968,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_function_exec(int argc, const char *const *a
   return NULL;
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_perl(int argc, const char *const *argv, const char *buff, int type)
+CALLER_OWN char *owl_function_perl(int argc, const char *const *argv, const char *buff, int type)
 {
   /* if type == 1 display in a popup
    * if type == 2 display an admin messages
@@ -2144,7 +2138,7 @@ void owl_function_create_filter(int argc, const char *const *argv)
  *
  * Returns the name of the negated filter, which the caller must free.
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_create_negative_filter(const char *filtername)
+CALLER_OWN char *owl_function_create_negative_filter(const char *filtername)
 {
   char *newname;
   const owl_filter *tmpfilt;
@@ -2214,19 +2208,18 @@ void owl_function_show_filter(const char *name)
 void owl_function_show_zpunts(void)
 {
   const owl_filter *f;
-  const owl_list *fl;
+  const GPtrArray *fl;
   char *tmp;
   owl_fmtext fm;
-  int i, j;
+  int i;
 
   owl_fmtext_init_null(&fm);
 
   fl=owl_global_get_puntlist(&g);
-  j=owl_list_get_size(fl);
   owl_fmtext_append_bold(&fm, "Active zpunt filters:\n");
 
-  for (i=0; i<j; i++) {
-    f=owl_list_get_element(fl, i);
+  for (i = 0; i < fl->len; i++) {
+    f = fl->pdata[i];
     owl_fmtext_appendf_normal(&fm, "[% 2d] ", i+1);
     tmp = owl_filter_print(f);
     owl_fmtext_append_normal(&fm, tmp);
@@ -2241,7 +2234,7 @@ void owl_function_show_zpunts(void)
  * name of the filter or null.  The caller must free this name.
  * If 'related' is nonzero, encompass unclasses and .d classes as well.
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_classinstfilt(const char *c, const char *i, int related) 
+CALLER_OWN char *owl_function_classinstfilt(const char *c, const char *i, int related) 
 {
   owl_filter *f;
   char *filtname;
@@ -2328,7 +2321,7 @@ done:
  * the configuration to override this function.  Returns the name of
  * the filter, which the caller must free.
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_zuserfilt(const char *longuser)
+CALLER_OWN char *owl_function_zuserfilt(const char *longuser)
 {
   owl_filter *f;
   char *argbuff, *esclonguser, *shortuser, *filtname;
@@ -2374,7 +2367,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_function_zuserfilt(const char *longuser)
  * created.  This allows the configuration to override this function.
  * Returns the name of the filter, which the caller must free.
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_aimuserfilt(const char *user)
+CALLER_OWN char *owl_function_aimuserfilt(const char *user)
 {
   owl_filter *f;
   char *argbuff, *filtname;
@@ -2412,7 +2405,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_function_aimuserfilt(const char *user)
   return(filtname);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_typefilt(const char *type)
+CALLER_OWN char *owl_function_typefilt(const char *type)
 {
   owl_filter *f;
   char *argbuff, *filtname, *esctype;
@@ -2468,7 +2461,7 @@ void owl_function_delete_curview_msgs(int flag)
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));  
 }
 
-static G_GNUC_WARN_UNUSED_RESULT char *owl_function_smartfilter_cc(const owl_message *m)
+static CALLER_OWN char *owl_function_smartfilter_cc(const owl_message *m)
 {
   const char *ccs;
   char *ccs_quoted;
@@ -2520,7 +2513,7 @@ static G_GNUC_WARN_UNUSED_RESULT char *owl_function_smartfilter_cc(const owl_mes
  * If the curmsg is a personal AIM message returna  filter
  *    name to the AIM conversation with that user 
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_smartfilter(int type, int invert_related)
+CALLER_OWN char *owl_function_smartfilter(int type, int invert_related)
 {
   const owl_view *v;
   const owl_message *m;
@@ -2779,15 +2772,14 @@ void owl_function_zpunt(const char *class, const char *inst, const char *recip, 
   }
 
   owl_function_punt(argv->len, (const char *const*) argv->pdata, direction);
-  g_ptr_array_foreach(argv, (GFunc)g_free, NULL);
-  g_ptr_array_free(argv, true);
+  owl_ptr_array_free(argv, g_free);
 }
 
 void owl_function_punt(int argc, const char *const *argv, int direction)
 {
   owl_filter *f;
-  owl_list *fl;
-  int i, j;
+  GPtrArray *fl;
+  int i;
   fl=owl_global_get_puntlist(&g);
 
   /* first, create the filter */
@@ -2798,9 +2790,8 @@ void owl_function_punt(int argc, const char *const *argv, int direction)
   }
 
   /* Check for an identical filter */
-  j=owl_list_get_size(fl);
-  for (i=0; i<j; i++) {
-    if (owl_filter_equiv(f, owl_list_get_element(fl, i))) {
+  for (i = 0; i < fl->len; i++) {
+    if (owl_filter_equiv(f, fl->pdata[i])) {
       owl_function_debugmsg("found an equivalent punt filter");
       /* if we're punting, then just silently bow out on this duplicate */
       if (direction==0) {
@@ -2810,8 +2801,7 @@ void owl_function_punt(int argc, const char *const *argv, int direction)
 
       /* if we're unpunting, then remove this filter from the puntlist */
       if (direction==1) {
-	owl_filter_delete(owl_list_get_element(fl, i));
-	owl_list_remove_element(fl, i);
+	owl_filter_delete(g_ptr_array_remove_index(fl, i));
 	owl_filter_delete(f);
 	return;
       }
@@ -2821,7 +2811,7 @@ void owl_function_punt(int argc, const char *const *argv, int direction)
   if (direction == 0) {
     owl_function_debugmsg("punting");
     /* If we're punting, add the filter to the global punt list */
-    owl_list_append_element(fl, f);
+    g_ptr_array_add(fl, f);
   } else if (direction == 1) {
     owl_function_makemsg("No matching punt filter");
  }
@@ -2829,25 +2819,23 @@ void owl_function_punt(int argc, const char *const *argv, int direction)
 
 void owl_function_show_keymaps(void)
 {
-  owl_list l;
+  GPtrArray *l;
   owl_fmtext fm;
   const owl_keymap *km;
   const owl_keyhandler *kh;
-  int i, numkm;
+  int i;
   const char *kmname;
 
   kh = owl_global_get_keyhandler(&g);
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_bold(&fm, "Keymaps:   ");
   owl_fmtext_append_normal(&fm, "(use 'show keymap <name>' for details)\n");
-  owl_list_create(&l);
-  owl_keyhandler_get_keymap_names(kh, &l);
-  owl_fmtext_append_list(&fm, &l, "\n", owl_function_keymap_summary);
+  l = owl_keyhandler_get_keymap_names(kh);
+  owl_fmtext_append_list(&fm, l, "\n", owl_function_keymap_summary);
   owl_fmtext_append_normal(&fm, "\n");
 
-  numkm = owl_list_get_size(&l);
-  for (i=0; i<numkm; i++) {
-    kmname = owl_list_get_element(&l, i);
+  for (i = 0; i < l->len; i++) {
+    kmname = l->pdata[i];
     km = owl_keyhandler_get_keymap(kh, kmname);
     owl_fmtext_append_bold(&fm, "\n\n----------------------------------------------------------------------------------------------------\n\n");
     owl_keymap_get_details(km, &fm, 0);
@@ -2855,11 +2843,11 @@ void owl_function_show_keymaps(void)
   owl_fmtext_append_normal(&fm, "\n");
   
   owl_function_popless_fmtext(&fm);
-  owl_list_cleanup(&l, g_free);
+  owl_ptr_array_free(l, g_free);
   owl_fmtext_cleanup(&fm);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_keymap_summary(const char *name)
+CALLER_OWN char *owl_function_keymap_summary(const char *name)
 {
   const owl_keymap *km 
     = owl_keyhandler_get_keymap(owl_global_get_keyhandler(&g), name);
@@ -2973,7 +2961,7 @@ void owl_function_search_helper(int consider_current, int direction)
 
 /* strips formatting from ztext and returns the unformatted text. 
  * caller is responsible for freeing. */
-G_GNUC_WARN_UNUSED_RESULT char *owl_function_ztext_stylestrip(const char *zt)
+CALLER_OWN char *owl_function_ztext_stylestrip(const char *zt)
 {
   owl_fmtext fm;
   char *plaintext;
@@ -2996,7 +2984,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
   char *timestr;
 #ifdef HAVE_LIBZEPHYR
   int x;
-  owl_list anyone;
+  GPtrArray *anyone;
   const char *user;
   char *tmp;
   ZLocations_t location[200];
@@ -3031,9 +3019,8 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
       owl_function_error("Zephyr currently not available.");
     } else {
       owl_fmtext_append_bold(&fm, "Zephyr users logged in:\n");
-      owl_list_create(&anyone);
-      ret=owl_zephyr_get_anyone_list(&anyone, filename);
-      if (ret) {
+      anyone = owl_zephyr_get_anyone_list(filename);
+      if (anyone == NULL) {
         if (errno == ENOENT) {
           owl_fmtext_append_normal(&fm, " You have not added any zephyr buddies.  Use the\n");
           owl_fmtext_append_normal(&fm, " command ':addbuddy zephyr ");
@@ -3043,9 +3030,8 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
           owl_fmtext_append_normal(&fm, " Could not read zephyr buddies from the .anyone file.\n");
         }
       } else {
-        j=owl_list_get_size(&anyone);
-        for (i=0; i<j; i++) {
-          user=owl_list_get_element(&anyone, i);
+        for (i = 0; i < anyone->len; i++) {
+          user = anyone->pdata[i];
           ret=ZLocateUser(zstr(user), &numlocs, ZAUTH);
 
 	  if (owl_global_take_interrupt(&g)) {
@@ -3077,7 +3063,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
           }
         }
       }
-      owl_list_cleanup(&anyone, g_free);
+      owl_ptr_array_free(anyone, g_free);
     }
   }
 #endif
@@ -3389,8 +3375,8 @@ void G_GNUC_PRINTF(1, 2) owl_function_makemsg(const char *fmt, ...)
 void owl_function_zephyr_buddy_check(int notify)
 {
 #ifdef HAVE_LIBZEPHYR
-  int i, j;
-  owl_list anyone;
+  int i;
+  GPtrArray *anyone;
   GList **zaldlist;
   GList *zaldptr;
   ZAsyncLocateData_t *zald;
@@ -3410,11 +3396,9 @@ void owl_function_zephyr_buddy_check(int notify)
   g_list_free(*zaldlist);
   *zaldlist = NULL;
 
-  owl_list_create(&anyone);
-  owl_zephyr_get_anyone_list(&anyone, NULL);
-  j = owl_list_get_size(&anyone);
-  for (i = 0; i < j; i++) {
-    user = owl_list_get_element(&anyone, i);
+  anyone = owl_zephyr_get_anyone_list(NULL);
+  for (i = 0; i < anyone->len; i++) {
+    user = anyone->pdata[i];
     zald = g_new(ZAsyncLocateData_t, 1);
     if (ZRequestLocations(zstr(user), zald, UNACKED, ZAUTH) == ZERR_NONE) {
       *zaldlist = g_list_append(*zaldlist, zald);
@@ -3423,24 +3407,23 @@ void owl_function_zephyr_buddy_check(int notify)
     }
   }
 
-  owl_list_cleanup(&anyone, g_free);
+  owl_ptr_array_free(anyone, g_free);
 #endif
 }
 
-void owl_function_aimsearch_results(const char *email, owl_list *namelist)
+void owl_function_aimsearch_results(const char *email, GPtrArray *namelist)
 {
   owl_fmtext fm;
-  int i, j;
+  int i;
 
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_normal(&fm, "AIM screennames associated with ");
   owl_fmtext_append_normal(&fm, email);
   owl_fmtext_append_normal(&fm, ":\n");
 
-  j=owl_list_get_size(namelist);
-  for (i=0; i<j; i++) {
+  for (i = 0; i < namelist->len; i++) {
     owl_fmtext_append_normal(&fm, "  ");
-    owl_fmtext_append_normal(&fm, owl_list_get_element(namelist, i));
+    owl_fmtext_append_normal(&fm, namelist->pdata[i]);
     owl_fmtext_append_normal(&fm, "\n");
   }
 

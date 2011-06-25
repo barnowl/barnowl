@@ -1372,7 +1372,7 @@ done:
   return NULL;
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_command_smartfilter(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_smartfilter(int argc, const char *const *argv, const char *buff)
 {
   char *filtname = NULL;
 
@@ -1412,7 +1412,7 @@ void owl_command_redisplay(void)
   owl_function_full_redisplay();
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_command_get_shift(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_get_shift(int argc, const char *const *argv, const char *buff)
 {
   if(argc != 1)
   {
@@ -1643,37 +1643,37 @@ char *owl_command_print(int argc, const char *const *argv, const char *buff)
 }
 
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_command_exec(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_exec(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_exec(argc, argv, buff, OWL_OUTPUT_RETURN);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_command_pexec(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_pexec(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_exec(argc, argv, buff, OWL_OUTPUT_POPUP);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_command_aexec(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_aexec(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_exec(argc, argv, buff, OWL_OUTPUT_ADMINMSG);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_command_perl(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_perl(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_perl(argc, argv, buff, OWL_OUTPUT_RETURN);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_command_pperl(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_pperl(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_perl(argc, argv, buff, OWL_OUTPUT_POPUP);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_command_aperl(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_aperl(int argc, const char *const *argv, const char *buff)
 {
   return owl_function_perl(argc, argv, buff, OWL_OUTPUT_ADMINMSG);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_command_multi(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_multi(int argc, const char *const *argv, const char *buff)
 {
   char *lastrv = NULL, *newbuff;
   char **commands;
@@ -2466,8 +2466,7 @@ char *owl_command_unpunt(int argc, const char *const *argv, const char *buff)
 
 void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buff, int unpunt)
 {
-  owl_list * fl;
-  owl_filter * f;
+  GPtrArray * fl;
   int i;
 
   fl = owl_global_get_puntlist(&g);
@@ -2477,10 +2476,8 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
     /* Handle :unpunt <number> */
     if(unpunt && (i=atoi(argv[1])) !=0) {
       i--;      /* Accept 1-based indexing */
-      if(i < owl_list_get_size(fl)) {
-        f = owl_list_get_element(fl, i);
-        owl_list_remove_element(fl, i);
-        owl_filter_delete(f);
+      if (i < fl->len) {
+        owl_filter_delete(g_ptr_array_remove_index(fl, i));
         return;
       } else {
         owl_function_makemsg("No such filter number: %d.", i+1);
@@ -2593,7 +2590,7 @@ char *owl_command_aimlogout(int argc, const char *const *argv, const char *buff)
   return(NULL);
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_command_getstyle(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_getstyle(int argc, const char *const *argv, const char *buff)
 {
   const char *stylename;
   if (argc != 1) {
@@ -2636,7 +2633,7 @@ char *owl_command_add_cmd_history(int argc, const char *const *argv, const char 
   return NULL;
 }
 
-G_GNUC_WARN_UNUSED_RESULT char *owl_command_with_history(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_with_history(int argc, const char *const *argv, const char *buff)
 {
   owl_history *hist;
   const char *ptr;

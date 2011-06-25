@@ -170,7 +170,7 @@ void owl_fmtext_append_spaces(owl_fmtext *f, int nspaces)
 /* Return a plain version of the fmtext.  Caller is responsible for
  * freeing the return
  */
-char G_GNUC_WARN_UNUSED_RESULT *owl_fmtext_print_plain(const owl_fmtext *f)
+CALLER_OWN char *owl_fmtext_print_plain(const owl_fmtext *f)
 {
   return owl_strip_format_chars(f->buff->str);
 }
@@ -754,15 +754,14 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
  * joins the elements together with join_with. 
  * If format_fn is specified, passes it the list element value
  * and it will return a string which this needs to free. */
-void owl_fmtext_append_list(owl_fmtext *f, const owl_list *l, const char *join_with, char *(format_fn)(const char *))
+void owl_fmtext_append_list(owl_fmtext *f, const GPtrArray *l, const char *join_with, char *(format_fn)(const char *))
 {
-  int i, size;
+  int i;
   const char *elem;
   char *text;
 
-  size = owl_list_get_size(l);
-  for (i=0; i<size; i++) {
-    elem = owl_list_get_element(l,i);
+  for (i = 0; i < l->len; i++) {
+    elem = l->pdata[i];
     if (elem && format_fn) {
       text = format_fn(elem);
       if (text) {
@@ -772,7 +771,7 @@ void owl_fmtext_append_list(owl_fmtext *f, const owl_list *l, const char *join_w
     } else if (elem) {
       owl_fmtext_append_normal(f, elem);
     }
-    if ((i < size-1) && join_with) {
+    if ((i < l->len - 1) && join_with) {
       owl_fmtext_append_normal(f, join_with);
     }
   }

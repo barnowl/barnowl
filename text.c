@@ -6,7 +6,7 @@
 
 /* Returns a copy of 'in' with each line indented 'n'
  * characters. Result must be freed with g_free. */
-G_GNUC_WARN_UNUSED_RESULT char *owl_text_indent(const char *in, int n)
+CALLER_OWN char *owl_text_indent(const char *in, int n)
 {
   const char *ptr1, *ptr2, *last;
   GString *out = g_string_new("");
@@ -47,7 +47,7 @@ int owl_text_num_lines(const char *in)
 
 
 /* caller must free the return */
-G_GNUC_WARN_UNUSED_RESULT char *owl_text_htmlstrip(const char *in)
+CALLER_OWN char *owl_text_htmlstrip(const char *in)
 {
   const char *ptr1, *end, *ptr2, *ptr3;
   char *out, *out2;
@@ -128,7 +128,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_text_htmlstrip(const char *in)
 }
 
 /* Caller must free return */
-G_GNUC_WARN_UNUSED_RESULT char *owl_text_expand_tabs(const char *in)
+CALLER_OWN char *owl_text_expand_tabs(const char *in)
 {
   int len = 0;
   const char *p = in;
@@ -187,7 +187,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_text_expand_tabs(const char *in)
 }
 
 /* caller must free the return */
-G_GNUC_WARN_UNUSED_RESULT char *owl_text_wordwrap(const char *in, int col)
+CALLER_OWN char *owl_text_wordwrap(const char *in, int col)
 {
   char *out;
   int cur, lastspace, len, lastnewline;
@@ -268,7 +268,7 @@ int only_whitespace(const char *s)
 /* Return a string with any occurances of 'from' replaced with 'to'.
  * Caller must free returned string.
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_text_substitute(const char *in, const char *from, const char *to)
+CALLER_OWN char *owl_text_substitute(const char *in, const char *from, const char *to)
 {
   char **split = g_strsplit(in, from, 0), *out;
   out = g_strjoinv(to, split);
@@ -283,7 +283,7 @@ G_GNUC_WARN_UNUSED_RESULT char *owl_text_substitute(const char *in, const char *
  * permissable for a character in 'quotestr' to be in 'toquote'.
  * On success returns the string, on error returns NULL.
  */
-G_GNUC_WARN_UNUSED_RESULT char *owl_text_quote(const char *in, const char *toquote, const char *quotestr)
+CALLER_OWN char *owl_text_quote(const char *in, const char *toquote, const char *quotestr)
 {
   int i, x, r, place, escape;
   int in_len, toquote_len, quotestr_len;

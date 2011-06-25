@@ -199,6 +199,10 @@ typedef void HV;
 #define OWL_ENABLE_ZCRYPT 1
 #endif
 
+/* Annotate functions in which the caller owns the return value and is
+ * responsible for ensuring it is freed. */
+#define CALLER_OWN G_GNUC_WARN_UNUSED_RESULT
+
 #define OWL_META(key) ((key)|010000)
 /* OWL_CTRL is definied in kepress.c */
 
@@ -250,7 +254,7 @@ typedef struct _owl_variable {
 				/* returns a reference to the current value.
 				 * WARNING:  this approach is hard to make
 				 * thread-safe... */
-  char G_GNUC_WARN_UNUSED_RESULT *(*get_tostring_fn)(const struct _owl_variable *v, const void *val);
+  CALLER_OWN char *(*get_tostring_fn)(const struct _owl_variable *v, const void *val);
                                 /* converts val to a string;
 				 * caller must free the result */
   void (*delete_fn)(struct _owl_variable *v);
@@ -265,12 +269,6 @@ typedef struct _owl_input {
 typedef struct _owl_fmtext {
   GString *buff;
 } owl_fmtext;
-
-typedef struct _owl_list {
-  int size;
-  int avail;
-  void **list;
-} owl_list;
 
 typedef struct _owl_dict_el {
   char *k;			/* key   */
@@ -312,14 +310,14 @@ typedef struct _owl_cmd {	/* command */
   char *cmd_aliased_to;		/* what this command is aliased to... */
   
   /* These don't take any context */
-  char G_GNUC_WARN_UNUSED_RESULT *(*cmd_args_fn)(int argc, const char *const *argv, const char *buff);
+  CALLER_OWN char *(*cmd_args_fn)(int argc, const char *const *argv, const char *buff);
 				/* takes argv and the full command as buff.
 				 * caller must free return value if !NULL */
   void (*cmd_v_fn)(void);	/* takes no args */
   void (*cmd_i_fn)(int i);	/* takes an int as an arg */
 
   /* The following also take the active context if it's valid */
-  char G_GNUC_WARN_UNUSED_RESULT *(*cmd_ctxargs_fn)(void *ctx, int argc, const char *const *argv, const char *buff);
+  CALLER_OWN char *(*cmd_ctxargs_fn)(void *ctx, int argc, const char *const *argv, const char *buff);
 				/* takes argv and the full command as buff.
 				 * caller must free return value if !NULL */
   void (*cmd_ctxv_fn)(void *ctx);	        /* takes no args */
@@ -337,7 +335,7 @@ typedef struct _owl_zwrite {
   char *opcode;
   char *zsig;
   char *message;
-  owl_list recips;
+  GPtrArray *recips;
   int cc;
   int noping;
 } owl_zwrite;
@@ -358,7 +356,7 @@ typedef struct _owl_message {
   struct _owl_fmtext_cache * fmtext;
   int delete;
   const char *hostname;
-  owl_list attributes;            /* this is a list of pairs */
+  GPtrArray *attributes;          /* this is a list of pairs */
   char *timestr;
   time_t time;
 } owl_message;
@@ -417,7 +415,7 @@ typedef struct _owl_msgwin {
 } owl_msgwin;
 
 typedef struct _owl_messagelist {
-  owl_list list;
+  GPtrArray *list;
 } owl_messagelist;
 
 typedef struct _owl_regex {
@@ -480,7 +478,7 @@ typedef struct _owl_keybinding {
 typedef struct _owl_keymap {
   char     *name;		/* name of keymap */
   char     *desc;		/* description */
-  owl_list  bindings;		/* key bindings */
+  GPtrArray *bindings;		/* key bindings */
   const struct _owl_keymap *parent;	/* parent */
   void (*default_fn)(owl_input j);	/* default action (takes a keypress) */
   void (*prealways_fn)(owl_input  j);	/* always called before a keypress is received */
@@ -503,15 +501,15 @@ typedef struct _owl_buddy {
 } owl_buddy;
 
 typedef struct _owl_buddylist {
-  owl_list buddies;
+  GPtrArray *buddies;
 } owl_buddylist;
 
 typedef struct _owl_zbuddylist {
-  owl_list zusers;
+  GPtrArray *zusers;
 } owl_zbuddylist;
 
 typedef struct _owl_errqueue {
-  owl_list errlist;
+  GPtrArray *errlist;
 } owl_errqueue;
 
 typedef struct _owl_colorpair_mgr {
@@ -537,7 +535,7 @@ typedef struct _owl_global {
   owl_keyhandler kh;
   owl_dict filters;
   GList *filterlist;
-  owl_list puntlist;
+  GPtrArray *puntlist;
   owl_vardict vars;
   owl_cmddict cmds;
   GList *context_stack;
