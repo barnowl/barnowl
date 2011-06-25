@@ -7,8 +7,8 @@ BarnOwl::Module::Jabber::ConnectionManager
 
 =head1 DESCRIPTION
 
-A class to keep track of all the active connection in the barnowl
-jabber module
+A class to keep track of all the active connection in the BarnOwl
+Jabber module
 
 =cut
 

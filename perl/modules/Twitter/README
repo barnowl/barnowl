@@ -117,7 +117,7 @@ behavior of Twitter.par when using multiple accounts:
     username, regardless of whether or not this account is following
     the sender. Has no effect if poll_for_tweets is false.
 
-* oauth_key, oauth_secret (strings, default barnowl's consumer credentials)
+* oauth_key, oauth_secret (strings, default BarnOwl's consumer credentials)
     These are the OAuth consumer key and secret to use to negotiate an
     OAuth connection to Twitter. These credentials must be enabled for
     "xAuth".

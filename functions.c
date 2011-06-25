@@ -126,7 +126,7 @@ void owl_function_show_license(void)
   const char *text;
 
   text=""
-    "barnowl version " OWL_VERSION_STRING "\n"
+    "BarnOwl version " OWL_VERSION_STRING "\n"
     "Copyright (c) 2006-2011 The BarnOwl Developers. All rights reserved.\n"
     "Copyright (c) 2004 James Kretchmar. All rights reserved.\n"
     "\n"
@@ -1304,8 +1304,8 @@ void owl_function_popless_file(const char *filename)
 void owl_function_about(void)
 {
   owl_function_popless_text(
-    "This is barnowl version " OWL_VERSION_STRING ".\n\n"
-    "barnowl is a fork of the Owl zephyr client, written and\n"
+    "This is BarnOwl version " OWL_VERSION_STRING ".\n\n"
+    "BarnOwl is a fork of the Owl zephyr client, written and\n"
     "maintained by Alejandro Sedeno and Nelson Elhage at the\n"
     "Massachusetts Institute of Technology. \n"
     "\n"
@@ -1314,7 +1314,7 @@ void owl_function_about(void)
     "\n"
     "The name 'owl' was chosen in reference to the owls in the\n"
     "Harry Potter novels, who are tasked with carrying messages\n"
-    "between Witches and Wizards. The name 'barnowl' was chosen\n"
+    "between Witches and Wizards. The name 'BarnOwl' was chosen\n"
     "because we feel our owls should live closer to our ponies.\n"
     "\n"
     "Copyright (c) 2006-2011 The BarnOwl Developers. All rights reserved.\n"

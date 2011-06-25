@@ -220,7 +220,7 @@ void owl_string_append_quoted_arg(GString *buf, const char *arg)
 
 /*
  * Appends 'tmpl' to 'buf', replacing any instances of '%q' with arguments from
- * the varargs provided, quoting them to be safe for placing in a barnowl
+ * the varargs provided, quoting them to be safe for placing in a BarnOwl
  * command line.
  */
 void owl_string_appendf_quoted(GString *buf, const char *tmpl, ...)
