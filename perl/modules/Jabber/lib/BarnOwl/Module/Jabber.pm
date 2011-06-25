@@ -9,7 +9,7 @@ BarnOwl::Module::Jabber
 
 =head1 DESCRIPTION
 
-This module implements Jabber support for barnowl.
+This module implements Jabber support for BarnOwl.
 
 =cut
 
@@ -35,7 +35,7 @@ BEGIN {
     if(eval {require IO::Socket::SSL;}) {
         if($IO::Socket::SSL::VERSION eq "0.97") {
             BarnOwl::error("You are using IO::Socket:SSL 0.97, which \n" .
-                           "contains bugs causing it not to work with barnowl's\n" .
+                           "contains bugs causing it not to work with BarnOwl's\n" .
                            "Jabber support. We recommend updating to the latest\n" .
                            "IO::Socket::SSL from CPAN. \n");
             die("Not loading Jabber.par\n");

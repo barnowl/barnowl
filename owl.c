@@ -88,7 +88,7 @@ void owl_parse_options(int argc, char *argv[], owl_options *opts) {
       opts->debug = 1;
       break;
     case 'v':
-      printf("This is barnowl version %s\n", OWL_VERSION_STRING);
+      printf("This is BarnOwl version %s\n", OWL_VERSION_STRING);
       exit(0);
     case 'h':
     default:
@@ -583,7 +583,7 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: creating splash message");
   owl_function_adminmsg("",
     "-----------------------------------------------------------------------\n"
-    "Welcome to barnowl version " OWL_VERSION_STRING ".\n"
+    "Welcome to BarnOwl version " OWL_VERSION_STRING ".\n"
     "To see a quick introduction, type ':show quickstart'.                  \n"
     "Press 'h' for on-line help.                                            \n"
     "                                                                       \n"

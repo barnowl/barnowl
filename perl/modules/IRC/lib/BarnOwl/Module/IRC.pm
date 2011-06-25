@@ -9,7 +9,7 @@ BarnOwl::Module::IRC
 
 =head1 DESCRIPTION
 
-This module implements IRC support for barnowl.
+This module implements IRC support for BarnOwl.
 
 =cut
 

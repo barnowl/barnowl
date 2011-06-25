@@ -51,7 +51,7 @@ BarnOwl
 
 The BarnOwl module contains the core of BarnOwl's perl
 bindings. Source in this module is also run at startup to bootstrap
-barnowl by defining things like the default style.
+BarnOwl by defining things like the default style.
 
 =for NOTE
 These following functions are defined in perlglue.xs. Keep the
@@ -79,11 +79,11 @@ seconds.
 
 =head2 zephyr_getrealm
 
-Returns the zephyr realm barnowl is running in
+Returns the zephyr realm BarnOwl is running in
 
 =head2 zephyr_getsender
 
-Returns the fully-qualified name of the zephyr sender barnowl is
+Returns the fully-qualified name of the zephyr sender BarnOwl is
 running as, e.g. C<nelhage@ATHENA.MIT.EDU>
 
 =head2 zephyr_zwrite COMMAND MESSAGE
@@ -238,7 +238,7 @@ sub remove_io_dispatch {
 
 =head2 create_style NAME OBJECT
 
-Creates a new barnowl style with the given NAME defined by the given
+Creates a new BarnOwl style with the given NAME defined by the given
 object. The object must have a C<description> method which returns a
 string description of the style, and a and C<format_message> method
 which accepts a C<BarnOwl::Message> object and returns a string that
