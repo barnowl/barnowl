@@ -454,11 +454,9 @@ typedef struct _owl_view {
 } owl_view;
 
 typedef struct _owl_history {
-  owl_list hist;
-  int cur;
-  int touched;
-  int partial;
-  int repeats;
+  GQueue hist;
+  GList *cur;
+  bool partial;
 } owl_history;
 
 typedef struct _owl_mainpanel {
