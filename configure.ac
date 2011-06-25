@@ -16,7 +16,7 @@ AC_ARG_WITH([stack-protector],
   [with_stack_protector=check])
 
 AS_IF([test "x$with_stack_protector" != xno],
-  [AX_C_CHECK_FLAG([-fstack-protector],[],[],
+  [AX_CHECK_COMPILE_FLAG([-fstack-protector],
     [AM_CFLAGS="$AM_CFLAGS -fstack-protector"],
     [if test "x$with_stack_protector" != xcheck; then
        AC_MSG_FAILURE([--with-stack-protector selected, but gcc does support it.])
@@ -128,16 +128,13 @@ fi
 dnl Checks for typedefs, structures, and compiler characteristics.
 
 AX_CFLAGS_WARN_ALL([AM_CFLAGS])
-AX_C_CHECK_FLAG([-Wstrict-prototypes],[],[],[AM_CFLAGS="$AM_CFLAGS -Wstrict-prototypes"])
-AX_C_CHECK_FLAG([-Wwrite-strings],[],[],[AM_CFLAGS="$AM_CFLAGS -Wwrite-strings"])
+AX_APPEND_COMPILE_FLAGS([-Wstrict-prototypes -Wwrite-strings],[AM_CFLAGS])
 
 dnl Shut gcc up about zero-length format strings; the warning's apparently for
 dnl efficiency reasons, which is bogus for custom functions.
-AX_C_CHECK_FLAG([-Wno-format-zero-length],[],[],[AM_CFLAGS="$AM_CFLAGS -Wno-format-zero-length"])
+AX_APPEND_COMPILE_FLAGS([-Wno-format-zero-length],[AM_CFLAGS])
 
-m4_foreach([myflag],
-  [[-Wno-pointer-sign],[-Wno-empty-body],[-Wno-unused-value]],
-  [AX_C_CHECK_FLAG([myflag],[],[],[LIBFAIM_CFLAGS="$LIBFAIM_CFLAGS myflag"])])
+AX_APPEND_COMPILE_FLAGS([-Wno-pointer-sign -Wno-empty-body -Wno-unused-value],[LIBFAIM_CFLAGS])
 
 AM_CONDITIONAL([ENABLE_ZCRYPT], [test "$HAVE_DES_STRING_TO_KEY" && dnl
                                  test "$HAVE_DES_KEY_SCHED" && dnl
