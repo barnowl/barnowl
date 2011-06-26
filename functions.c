@@ -271,7 +271,7 @@ CALLER_OWN owl_message *owl_function_make_outgoing_loopback(const char *body)
   return(m);
 }
 
-void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin *), void *data, void (*cleanup)(void *))
+owl_editwin *owl_function_start_edit_win(const char *line)
 {
   owl_editwin *e;
   owl_context *ctx;
@@ -285,12 +285,10 @@ void owl_function_start_edit_win(const char *line, void (*callback)(owl_editwin 
   owl_editwin_set_locktext(e, s);
   g_free(s);
 
-  owl_editwin_set_cbdata(e, data, cleanup);
-  owl_editwin_set_callback(e, callback);
   ctx = owl_editcontext_new(OWL_CTX_EDITMULTI, e, "editmulti",
                             owl_global_deactivate_editcontext, &g);
   owl_global_push_context_obj(&g, ctx);
-
+  return e;
 }
 
 static void owl_function_write_setup(const char *noun)
@@ -308,6 +306,7 @@ static void owl_function_write_setup(const char *noun)
 
 void owl_function_zwrite_setup(owl_zwrite *z)
 {
+  owl_editwin *e;
   /* send a ping if necessary */
   if (owl_global_is_txping(&g)) {
     owl_zwrite_send_ping(z);
@@ -315,30 +314,30 @@ void owl_function_zwrite_setup(owl_zwrite *z)
 
 
   owl_function_write_setup("zephyr");
-  owl_function_start_edit_win(z->zwriteline,
-                              &owl_callback_zwrite,
-                              z, (void(*)(void*))owl_zwrite_delete);
+  e = owl_function_start_edit_win(z->zwriteline);
+  owl_editwin_set_cbdata(e, z, (void (*)(void *))owl_zwrite_delete);
+  owl_editwin_set_callback(e, &owl_callback_zwrite);
 }
 
 void owl_function_aimwrite_setup(const char *to)
 {
+  owl_editwin *e;
   /* TODO: We probably actually want an owl_aimwrite object like
    * owl_zwrite. */
   char *line = g_strdup_printf("aimwrite %s", to);
   owl_function_write_setup("message");
-  owl_function_start_edit_win(line,
-                              &owl_callback_aimwrite,
-                              g_strdup(to),
-                              g_free);
+  e = owl_function_start_edit_win(line);
+  owl_editwin_set_cbdata(e, g_strdup(to), g_free);
+  owl_editwin_set_callback(e, &owl_callback_aimwrite);
   g_free(line);
 }
 
 void owl_function_loopwrite_setup(void)
 {
+  owl_editwin *e;
   owl_function_write_setup("message");
-  owl_function_start_edit_win("loopwrite",
-                              &owl_callback_loopwrite,
-                              NULL, NULL);
+  e = owl_function_start_edit_win("loopwrite");
+  owl_editwin_set_callback(e, &owl_callback_loopwrite);
 }
 
 void owl_callback_zwrite(owl_editwin *e) {
@@ -1945,7 +1944,7 @@ void owl_callback_command(owl_editwin *e)
   }
 }
 
-void owl_function_start_command(const char *line)
+owl_editwin *owl_function_start_command(const char *line)
 {
   owl_editwin *tw;
   owl_context *ctx;
@@ -1960,9 +1959,10 @@ void owl_function_start_command(const char *line)
                             owl_global_deactivate_editcontext, &g);
   owl_global_push_context_obj(&g, ctx);
   owl_editwin_set_callback(tw, owl_callback_command);
+  return tw;
 }
 
-CALLER_OWN owl_editwin *owl_function_start_question(const char *line)
+owl_editwin *owl_function_start_question(const char *line)
 {
   owl_editwin *tw;
   owl_context *ctx;
@@ -1977,7 +1977,7 @@ CALLER_OWN owl_editwin *owl_function_start_question(const char *line)
   return tw;
 }
 
-CALLER_OWN owl_editwin *owl_function_start_password(const char *line)
+owl_editwin *owl_function_start_password(const char *line)
 {
   owl_editwin *tw;
   owl_context *ctx;

@@ -208,15 +208,18 @@ void
 start_edit_win(line, callback)
 	const char *line
 	SV *callback
+	PREINIT:
+		owl_editwin *e;
 	CODE:
 	{
 		if(!SV_IS_CODEREF(callback))
 			croak("Callback must be a subref");
 
-		owl_function_start_edit_win(line,
-					    owl_perlconfig_edit_callback,
-					    newSVsv(callback),
-					    owl_perlconfig_dec_refcnt);
+		e = owl_function_start_edit_win(line);
+		owl_editwin_set_cbdata(e,
+				       newSVsv(callback),
+				       owl_perlconfig_dec_refcnt);
+		owl_editwin_set_callback(e, &owl_perlconfig_edit_callback);
 	}
 
 
