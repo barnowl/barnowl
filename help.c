@@ -3,6 +3,7 @@
 
 void owl_help(void)
 {
+  const owl_variable *v;
   owl_fmtext fm;
   const char *varname;
   GPtrArray *varnames;
@@ -132,7 +133,8 @@ void owl_help(void)
   for (i = 0; i < varnames->len; i++) {
     varname = varnames->pdata[i];
     if (varname && varname[0]!='_') {
-      owl_variable_describe(owl_global_get_vardict(&g), varname, &fm);
+      v = owl_variable_get_var(owl_global_get_vardict(&g), varname);
+      owl_variable_describe(v, &fm);
     }
   }
   owl_ptr_array_free(varnames, g_free);

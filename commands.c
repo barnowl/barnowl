@@ -1571,6 +1571,7 @@ char *owl_command_set(int argc, const char *const *argv, const char *buff)
   const char *var, *val;
   int  silent=0;
   int requirebool=0;
+  owl_variable *v;
 
   if (argc == 1) {
     owl_function_printallvars();
@@ -1593,12 +1594,21 @@ char *owl_command_set(int argc, const char *const *argv, const char *buff)
     owl_function_makemsg("Wrong number of arguments for set command");
     return NULL;
   }
-  owl_variable_set_fromstring(owl_global_get_vardict(&g), var, val, !silent, requirebool);
+
+  v = owl_variable_get_var(owl_global_get_vardict(&g), var);
+  if (v == NULL) {
+    if (!silent) owl_function_error("Unknown variable '%s'", var);
+  } else if (requirebool && owl_variable_get_type(v) != OWL_VARIABLE_BOOL) {
+    if (!silent) owl_function_error("Variable '%s' is not a boolean", var);
+  } else {
+    owl_variable_set_fromstring(v, val, !silent);
+  }
   return NULL;
 }
 
 char *owl_command_unset(int argc, const char *const *argv, const char *buff)
 {
+  owl_variable *v;
   const char *var, *val;
   int  silent=0;
 
@@ -1613,7 +1623,15 @@ char *owl_command_unset(int argc, const char *const *argv, const char *buff)
     owl_function_makemsg("Wrong number of arguments for unset command");
     return NULL;
   }
-  owl_variable_set_fromstring(owl_global_get_vardict(&g), var, val, !silent, 1);
+
+  v = owl_variable_get_var(owl_global_get_vardict(&g), var);
+  if (v == NULL) {
+    if (!silent) owl_function_error("Unknown variable '%s'", var);
+  } else if (owl_variable_get_type(v) != OWL_VARIABLE_BOOL) {
+    if (!silent) owl_function_error("Variable '%s' is not a boolean", var);
+  } else {
+    owl_variable_set_fromstring(v, val, !silent);
+  }
   return NULL;
 }
 
@@ -1621,6 +1639,7 @@ char *owl_command_print(int argc, const char *const *argv, const char *buff)
 {
   const char *var;
   char *value;
+  const owl_variable *v;
 
   if (argc==1) {
     owl_function_printallvars();
@@ -1632,8 +1651,9 @@ char *owl_command_print(int argc, const char *const *argv, const char *buff)
 
   var=argv[1];
     
-  value = owl_variable_get_tostring(owl_global_get_vardict(&g), var);
-  if (value) {
+  v = owl_variable_get_var(owl_global_get_vardict(&g), var);
+  if (v) {
+    value = owl_variable_get_tostring(v);
     owl_function_makemsg("%s = '%s'", var, value);
     g_free(value);
   } else {
@@ -2504,13 +2524,16 @@ char *owl_command_getview(int argc, const char *const *argv, const char *buff)
   return NULL;
 }
 
-char *owl_command_getvar(int argc, const char *const *argv, const char *buff)
+CALLER_OWN char *owl_command_getvar(int argc, const char *const *argv, const char *buff)
 {
+  const owl_variable *v;
   if (argc != 2) {
     owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
     return NULL;
   }
-  return owl_variable_get_tostring(owl_global_get_vardict(&g), argv[1]);
+  v = owl_variable_get_var(owl_global_get_vardict(&g), argv[1]);
+  if (v == NULL) return NULL;
+  return owl_variable_get_tostring(v);
 }
 
 char *owl_command_getfilter(int argc, const char *const *argv, const char *buf)
