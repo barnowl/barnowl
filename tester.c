@@ -339,6 +339,14 @@ int owl_variable_regtest(void) {
   owl_variable_set_bool_off(var);
   FAIL_UNLESS("update bool val", !owl_variable_get_bool(var));
 
+  owl_variable_dict_newvar_string(&vd, "nullstringvar", "", "", NULL);
+  FAIL_UNLESS("get new string (NULL) var", NULL != (var = owl_variable_get_var(&vd, "nullstringvar")));
+  FAIL_UNLESS("get string (NULL)", NULL == (value = owl_variable_get_tostring(var)));
+  g_free(value);
+  var = owl_variable_get_var(&vd, "zsigproc");
+  FAIL_UNLESS("get string (NULL) 2", NULL == (value = owl_variable_get_tostring(var)));
+  g_free(value);
+
   owl_variable_dict_cleanup(&vd);
 
   /* if (numfailed) printf("*** WARNING: failures encountered with owl_variable\n"); */
