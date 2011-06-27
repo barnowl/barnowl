@@ -315,19 +315,19 @@ int owl_variable_regtest(void) {
   FAIL_UNLESS("get int 7", 9==owl_variable_get_int(&vd,"typewinsize"));
 
   owl_variable_dict_newvar_string(&vd, "stringvar", "", "", "testval");
-  FAIL_UNLESS("get new string var", NULL != (v = owl_variable_get(&vd, "stringvar", OWL_VARIABLE_STRING)));
+  FAIL_UNLESS("get new string var", NULL != (v = owl_variable_get(&vd, "stringvar")));
   FAIL_UNLESS("get new string val", !strcmp("testval", owl_variable_get_string(&vd, "stringvar")));
   owl_variable_set_string(&vd, "stringvar", "new val");
   FAIL_UNLESS("update string val", !strcmp("new val", owl_variable_get_string(&vd, "stringvar")));
 
   owl_variable_dict_newvar_int(&vd, "intvar", "", "", 47);
-  FAIL_UNLESS("get new int var", NULL != (v = owl_variable_get(&vd, "intvar", OWL_VARIABLE_INT)));
+  FAIL_UNLESS("get new int var", NULL != (v = owl_variable_get(&vd, "intvar")));
   FAIL_UNLESS("get new int val", 47 == owl_variable_get_int(&vd, "intvar"));
   owl_variable_set_int(&vd, "intvar", 17);
   FAIL_UNLESS("update bool val", 17 == owl_variable_get_int(&vd, "intvar"));
 
   owl_variable_dict_newvar_bool(&vd, "boolvar", "", "", 1);
-  FAIL_UNLESS("get new bool var", NULL != (v = owl_variable_get(&vd, "boolvar", OWL_VARIABLE_BOOL)));
+  FAIL_UNLESS("get new bool var", NULL != (v = owl_variable_get(&vd, "boolvar")));
   FAIL_UNLESS("get new bool val", owl_variable_get_bool(&vd, "boolvar"));
   owl_variable_set_bool_off(&vd, "boolvar");
   FAIL_UNLESS("update string val", !owl_variable_get_bool(&vd, "boolvar"));

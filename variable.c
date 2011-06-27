@@ -661,9 +661,10 @@ void owl_variable_update(owl_variable *var, const char *summary, const char *des
   var->description = g_strdup(desc);
 }
 
-void owl_variable_dict_newvar_string(owl_vardict * vd, const char *name, const char *summ, const char * desc, const char * initval) {
-  owl_variable *old = owl_variable_get_var(vd, name, OWL_VARIABLE_STRING);
-  if(old) {
+void owl_variable_dict_newvar_string(owl_vardict *vd, const char *name, const char *summ, const char *desc, const char *initval)
+{
+  owl_variable *old = owl_variable_get_var(vd, name);
+  if (old && old->type == OWL_VARIABLE_STRING) {
     owl_variable_update(old, summ, desc);
     g_free(old->pval_default);
     old->pval_default = g_strdup(initval);
@@ -681,9 +682,10 @@ void owl_variable_dict_newvar_string(owl_vardict * vd, const char *name, const c
   }
 }
 
-void owl_variable_dict_newvar_int(owl_vardict * vd, const char *name, const char *summ, const char * desc, int initval) {
-  owl_variable *old = owl_variable_get_var(vd, name, OWL_VARIABLE_INT);
-  if(old) {
+void owl_variable_dict_newvar_int(owl_vardict *vd, const char *name, const char *summ, const char *desc, int initval)
+{
+  owl_variable *old = owl_variable_get_var(vd, name);
+  if (old && old->type == OWL_VARIABLE_INT) {
     owl_variable_update(old, summ, desc);
     old->ival_default = initval;
   } else {
@@ -702,9 +704,10 @@ void owl_variable_dict_newvar_int(owl_vardict * vd, const char *name, const char
   }
 }
 
-void owl_variable_dict_newvar_bool(owl_vardict * vd, const char *name, const char *summ, const char * desc, int initval) {
-  owl_variable *old = owl_variable_get_var(vd, name, OWL_VARIABLE_BOOL);
-  if(old) {
+void owl_variable_dict_newvar_bool(owl_vardict *vd, const char *name, const char *summ, const char *desc, bool initval)
+{
+  owl_variable *old = owl_variable_get_var(vd, name);
+  if (old && old->type == OWL_VARIABLE_BOOL) {
     owl_variable_update(old, summ, desc);
     old->ival_default = initval;
   } else {
@@ -846,43 +849,47 @@ CALLER_OWN char *owl_variable_get_default_tostring(const owl_vardict *d, const c
   }
 }
 
-owl_variable *owl_variable_get_var(const owl_vardict *d, const char *name, int require_type) {
+owl_variable *owl_variable_get_var(const owl_vardict *d, const char *name)
+{
   owl_variable *v;
   if (!name) return(NULL);
   v = owl_dict_find_element(d, name);
-  if (v == NULL || !v->get_fn || v->type != require_type) return(NULL);
+  if (v == NULL || !v->get_fn) return NULL;
   return v;
 }
 
 /* returns a reference */
-const void *owl_variable_get(const owl_vardict *d, const char *name, int require_type) {
-  owl_variable *v = owl_variable_get_var(d, name, require_type);
+const void *owl_variable_get(const owl_vardict *d, const char *name)
+{
+  const owl_variable *v = owl_variable_get_var(d, name);
   if(v == NULL) return NULL;
   return v->get_fn(v);
 }
 
 /* returns a reference */
 const char *owl_variable_get_string(const owl_vardict *d, const char *name) {
-  return owl_variable_get(d,name, OWL_VARIABLE_STRING);
+  /* TODO: (Decide whether or not to) type check? */
+  return owl_variable_get(d, name);
 }
 
 /* returns a reference */
 const void *owl_variable_get_other(const owl_vardict *d, const char *name) {
-  return owl_variable_get(d,name, OWL_VARIABLE_OTHER);
+  /* TODO: (Decide whether or not to) type check? */
+  return owl_variable_get(d, name);
 }
 
 int owl_variable_get_int(const owl_vardict *d, const char *name) {
-  const int *pi;
-  pi = owl_variable_get(d,name,OWL_VARIABLE_INT);
-  if (!pi) return(-1);
-  return(*pi);
+  /* TODO: (Decide whether or not to) type check? */
+  const int *pi = owl_variable_get(d, name);
+  if (!pi) return -1;
+  return *pi;
 }
 
 int owl_variable_get_bool(const owl_vardict *d, const char *name) {
-  const int *pi;
-  pi = owl_variable_get(d,name,OWL_VARIABLE_BOOL);
-  if (!pi) return(-1);
-  return(*pi);
+  /* TODO: (Decide whether or not to) type check? */
+  const int *pi = owl_variable_get(d, name);
+  if (!pi) return -1;
+  return *pi;
 }
 
 void owl_variable_describe(const owl_vardict *d, const char *name, owl_fmtext *fm) {
