@@ -769,11 +769,7 @@ const char *owl_variable_get_summary(const owl_variable *v) {
 }
 
 const char *owl_variable_get_validsettings(const owl_variable *v) {
-  if (v->validsettings) {
-    return v->validsettings;
-  } else {
-    return "";
-  }
+  return v->validsettings;
 }
 
 int owl_variable_get_type(const owl_variable *v)
@@ -795,7 +791,7 @@ int owl_variable_set_fromstring(owl_variable *v, const char *value, int msg) {
                                 owl_variable_get_validsettings(v));
     return -1;
   }
-  if (msg && v->get_tostring_fn) {
+  if (msg) {
     tostring = v->get_tostring_fn(v, v->get_fn(v));
     if (tostring)
       owl_function_makemsg("%s = '%s'", owl_variable_get_name(v), tostring);
@@ -846,11 +842,7 @@ CALLER_OWN char *owl_variable_get_default_tostring(const owl_variable *v)
 
 owl_variable *owl_variable_get_var(const owl_vardict *d, const char *name)
 {
-  owl_variable *v;
-  if (!name) return(NULL);
-  v = owl_dict_find_element(d, name);
-  if (v == NULL || !v->get_fn) return NULL;
-  return v;
+  return owl_dict_find_element(d, name);
 }
 
 /* returns a reference */
