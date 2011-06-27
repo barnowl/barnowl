@@ -813,41 +813,45 @@ CALLER_OWN char *owl_variable_get_default_tostring(const owl_vardict *d, const c
   }
 }
 
-owl_variable *owl_variable_get_var(const owl_vardict *d, const char *name, int require_type) {
+owl_variable *owl_variable_get_var(const owl_vardict *d, const char *name)
+{
   owl_variable *v;
   if (!name) return(NULL);
   v = owl_dict_find_element(d, name);
-  if (v == NULL || !v->get_fn || v->type != require_type) return(NULL);
+  if (v == NULL || !v->get_fn) return NULL;
   return v;
 }
 
 /* returns a reference */
-const void *owl_variable_get(const owl_vardict *d, const char *name, int require_type) {
-  owl_variable *v = owl_variable_get_var(d, name, require_type);
+const void *owl_variable_get(const owl_vardict *d, const char *name)
+{
+  const owl_variable *v = owl_variable_get_var(d, name);
   if(v == NULL) return NULL;
   return v->get_fn(v);
 }
 
 /* returns a reference */
 const char *owl_variable_get_string(const owl_vardict *d, const char *name) {
-  return owl_variable_get(d,name, OWL_VARIABLE_STRING);
+  /* XXX TODO: Put type checking back in */
+  return owl_variable_get(d, name);
 }
 
 /* returns a reference */
 const void *owl_variable_get_other(const owl_vardict *d, const char *name) {
-  return owl_variable_get(d,name, OWL_VARIABLE_OTHER);
+  /* XXX TODO: Put type checking back in */
+  return owl_variable_get(d, name);
 }
 
 int owl_variable_get_int(const owl_vardict *d, const char *name) {
-  const int *pi;
-  pi = owl_variable_get(d,name,OWL_VARIABLE_INT);
+  /* XXX TODO: Put type checking back in */
+  const int *pi = owl_variable_get(d, name);
   if (!pi) return(-1);
   return(*pi);
 }
 
 int owl_variable_get_bool(const owl_vardict *d, const char *name) {
-  const int *pi;
-  pi = owl_variable_get(d,name,OWL_VARIABLE_BOOL);
+  /* XXX TODO: Put type checking back in */
+  const int *pi = owl_variable_get(d, name);
   if (!pi) return(-1);
   return(*pi);
 }
