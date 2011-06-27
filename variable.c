@@ -794,7 +794,10 @@ int owl_variable_set_fromstring(owl_variable *v, const char *value, int msg) {
   }
   if (msg && v->get_tostring_fn) {
     tostring = v->get_tostring_fn(v, v->get_fn(v));
-    owl_function_makemsg("%s = '%s'", owl_variable_get_name(v), tostring);
+    if (tostring)
+      owl_function_makemsg("%s = '%s'", owl_variable_get_name(v), tostring);
+    else
+      owl_function_makemsg("%s = <null>", owl_variable_get_name(v));
     g_free(tostring);
   }    
   return 0;
@@ -896,12 +899,18 @@ int owl_variable_get_bool(const owl_variable *v)
 
 void owl_variable_describe(const owl_variable *v, owl_fmtext *fm)
 {
-  char *default_buf = owl_variable_get_default_tostring(v);
+  char *tostring = owl_variable_get_default_tostring(v);
+  char *default_buf;
 
-  owl_fmtext_appendf_normal(fm, OWL_TABSTR "%-20s - %s (default: '%s')\n",
-			    owl_variable_get_name(v),
-			    owl_variable_get_summary(v), default_buf);
+  if (tostring)
+    default_buf = g_strdup_printf("'%s'", tostring);
+  else
+    default_buf = g_strdup("<null>");
+  owl_fmtext_appendf_normal(fm, OWL_TABSTR "%-20s - %s (default: %s)\n",
+                            owl_variable_get_name(v),
+                            owl_variable_get_summary(v), default_buf);
   g_free(default_buf);
+  g_free(tostring);
 }
 
 void owl_variable_get_help(const owl_variable *v, owl_fmtext *fm) {
@@ -916,14 +925,14 @@ void owl_variable_get_help(const owl_variable *v, owl_fmtext *fm) {
 
   owl_fmtext_append_normal(fm, "Current:        ");
   tostring = owl_variable_get_tostring(v);
-  owl_fmtext_append_normal(fm, tostring);
+  owl_fmtext_append_normal(fm, (tostring ? tostring : "<null>"));
   g_free(tostring);
   owl_fmtext_append_normal(fm, "\n\n");
 
 
   tostring = owl_variable_get_default_tostring(v);
   owl_fmtext_append_normal(fm, "Default:        ");
-  owl_fmtext_append_normal(fm, tostring);
+  owl_fmtext_append_normal(fm, (tostring ? tostring : "<null>"));
   owl_fmtext_append_normal(fm, "\n\n");
 
   owl_fmtext_append_normal(fm, "Valid Settings: ");
@@ -983,7 +992,7 @@ int owl_variable_bool_set_fromstring_default(owl_variable *v, const char *newval
 CALLER_OWN char *owl_variable_bool_get_tostring_default(const owl_variable *v, const void *val)
 {
   if (val == NULL) {
-    return g_strdup("<null>");
+    return NULL;
   } else if (*(const int*)val == 0) {
     return g_strdup("off");
   } else if (*(const int*)val == 1) {
@@ -1019,7 +1028,7 @@ int owl_variable_int_set_fromstring_default(owl_variable *v, const char *newval)
 CALLER_OWN char *owl_variable_int_get_tostring_default(const owl_variable *v, const void *val)
 {
   if (val == NULL) {
-    return g_strdup("<null>");
+    return NULL;
   } else {
     return g_strdup_printf("%d", *(const int*)val);
   } 
@@ -1063,7 +1072,7 @@ CALLER_OWN char *owl_variable_enum_get_tostring(const owl_variable *v, const voi
   char *tostring;
 
   if (val == NULL) {
-    return g_strdup("<null>");
+    return NULL;
   }
   enums = g_strsplit_set(v->validsettings, ",", 0);
   nenums = g_strv_length(enums);
@@ -1099,10 +1108,6 @@ int owl_variable_string_set_fromstring_default(owl_variable *v, const char *newv
 
 CALLER_OWN char *owl_variable_string_get_tostring_default(const owl_variable *v, const void *val)
 {
-  if (val == NULL) {
-    return g_strdup("<null>");
-  } else {
-    return g_strdup((const char*)val);
-  }
+  return g_strdup((const char*)val);
 }
 

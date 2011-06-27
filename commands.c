@@ -1654,7 +1654,10 @@ char *owl_command_print(int argc, const char *const *argv, const char *buff)
   v = owl_variable_get_var(owl_global_get_vardict(&g), var);
   if (v) {
     value = owl_variable_get_tostring(v);
-    owl_function_makemsg("%s = '%s'", var, value);
+    if (value == NULL)
+      owl_function_makemsg("%s = <null>", var);
+    else
+      owl_function_makemsg("%s = '%s'", var, value);
     g_free(value);
   } else {
     owl_function_makemsg("Unknown variable '%s'.", var);

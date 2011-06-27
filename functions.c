@@ -1588,8 +1588,10 @@ void owl_function_printallvars(void)
       v = owl_variable_get_var(owl_global_get_vardict(&g), name);
       var = owl_variable_get_tostring(v);
       if (var) {
-	g_string_append(str, var);
-	g_free(var);
+        g_string_append(str, var);
+        g_free(var);
+      } else {
+        g_string_append(str, "<null>");
       }
     }
   }
