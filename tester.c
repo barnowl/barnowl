@@ -396,6 +396,22 @@ int owl_variable_regtest(void) {
   owl_variable_set_string(var, "new val");
   FAIL_UNLESS("update string val", !strcmp("new val", owl_variable_get_string(var)));
 
+  owl_variable_dict_newvar_enum(&vd, "enumvar", "", "", 0, "foo,bar,baz");
+  FAIL_UNLESS("get new enum var", NULL != (var = owl_variable_get_var(&vd, "enumvar")));
+  FAIL_UNLESS("get new enum var", NULL != (v = owl_variable_get(var)));
+  FAIL_UNLESS("get new enum val tostring", !strcmp("foo", value = owl_variable_get_tostring(var)));
+  g_free(value);
+  FAIL_UNLESS("valid update enum var", 0 == owl_variable_set_int(var, 1));
+  FAIL_UNLESS("update int enum val tostring", !strcmp("bar", value = owl_variable_get_tostring(var)));
+  g_free(value);
+  FAIL_UNLESS("update int enum val", 1 == owl_variable_get_int(var));
+  FAIL_UNLESS("invalid update enum var", -1 == owl_variable_set_int(var, 5));
+  FAIL_UNLESS("no update int enum val", 1 == owl_variable_get_int(var));
+  FAIL_UNLESS("valid update enum var fromstring", 0 == owl_variable_set_fromstring(var, "baz", 0));
+  FAIL_UNLESS("update int enum val fromstring", 2 == owl_variable_get_int(var));
+  FAIL_UNLESS("invalid update enum var fromstring", -1 == owl_variable_set_fromstring(var, "xxx", 0));
+  FAIL_UNLESS("no update int enum val fromstring", 2 == owl_variable_get_int(var));
+
   owl_variable_dict_newvar_int(&vd, "intvar", "", "", 47, 0);
   FAIL_UNLESS("get new int var", NULL != (var = owl_variable_get_var(&vd, "intvar")));
   FAIL_UNLESS("get new int var", NULL != (v = owl_variable_get(var)));
