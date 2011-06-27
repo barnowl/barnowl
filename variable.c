@@ -725,11 +725,7 @@ const char *owl_variable_get_summary(const owl_variable *v) {
 }
 
 const char *owl_variable_get_validsettings(const owl_variable *v) {
-  if (v->validsettings) {
-    return v->validsettings;
-  } else {
-    return "";
-  }
+  return v->validsettings;
 }
 
 /* functions for getting and setting variable values */
@@ -757,7 +753,7 @@ int owl_variable_set_fromstring(owl_vardict *d, const char *name, const char *va
 				  owl_variable_get_validsettings(v));
     return -1;
   }
-  if (msg && v->get_tostring_fn) {
+  if (msg) {
     tostring = v->get_tostring_fn(v, v->get_fn(v));
     owl_function_makemsg("%s = '%s'", name, tostring);
     g_free(tostring);
@@ -796,7 +792,7 @@ CALLER_OWN char *owl_variable_get_tostring(const owl_vardict *d, const char *nam
   owl_variable *v;
   if (!name) return NULL;
   v = owl_dict_find_element(d, name);
-  if (v == NULL || !v->get_tostring_fn) return NULL;
+  if (v == NULL) return NULL;
   return v->get_tostring_fn(v, v->get_fn(v));
 }
 
@@ -805,7 +801,7 @@ CALLER_OWN char *owl_variable_get_default_tostring(const owl_vardict *d, const c
   owl_variable *v;
   if (!name) return NULL;
   v = owl_dict_find_element(d, name);
-  if (v == NULL || !v->get_tostring_fn) return NULL;
+  if (v == NULL) return NULL;
   if (v->type == OWL_VARIABLE_INT || v->type == OWL_VARIABLE_BOOL) {
     return v->get_tostring_fn(v, &(v->ival_default));
   } else {
@@ -818,7 +814,7 @@ owl_variable *owl_variable_get_var(const owl_vardict *d, const char *name)
   owl_variable *v;
   if (!name) return(NULL);
   v = owl_dict_find_element(d, name);
-  if (v == NULL || !v->get_fn) return NULL;
+  if (v == NULL) return NULL;
   return v;
 }
 
@@ -861,8 +857,7 @@ void owl_variable_describe(const owl_vardict *d, const char *name, owl_fmtext *f
   owl_variable *v;
 
   if (!name
-      || (v = owl_dict_find_element(d, name)) == NULL 
-      || !v->get_fn) {
+      || (v = owl_dict_find_element(d, name)) == NULL) {
     owl_fmtext_appendf_normal(fm, "     No such variable '%s'\n", name);
     return;
   }
@@ -882,8 +877,7 @@ void owl_variable_get_help(const owl_vardict *d, const char *name, owl_fmtext *f
   owl_variable *v;
 
   if (!name
-      || (v = owl_dict_find_element(d, name)) == NULL 
-      || !v->get_fn) {
+      || (v = owl_dict_find_element(d, name)) == NULL) { 
     owl_fmtext_append_normal(fm, "No such variable...\n");
     return;
   }
