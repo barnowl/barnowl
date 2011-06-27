@@ -671,6 +671,7 @@ void owl_variable_dict_newvar_string(owl_vardict *vd, const char *name, const ch
   } else {
     owl_variable * var = owl_variable_newvar(name, summ, desc);
     var->type = OWL_VARIABLE_STRING;
+    var->validsettings = "<string>";
     var->pval_default = g_strdup(initval);
     var->set_fn = owl_variable_string_set_default;
     var->set_fromstring_fn = owl_variable_string_set_fromstring_default;
@@ -691,6 +692,7 @@ void owl_variable_dict_newvar_int(owl_vardict *vd, const char *name, const char 
   } else {
     owl_variable * var = owl_variable_newvar(name, summ, desc);
     var->type = OWL_VARIABLE_INT;
+    var->validsettings = "<int>";
     var->ival_default = initval;
     var->validate_fn = owl_variable_int_validate_default;
     var->set_fn = owl_variable_int_set_default;
@@ -713,6 +715,7 @@ void owl_variable_dict_newvar_bool(owl_vardict *vd, const char *name, const char
   } else {
     owl_variable * var = owl_variable_newvar(name, summ, desc);
     var->type = OWL_VARIABLE_BOOL;
+    var->validsettings = "on,off";
     var->ival_default = initval;
     var->validate_fn = owl_variable_bool_validate_default;
     var->set_fn = owl_variable_bool_set_default;
