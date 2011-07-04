@@ -21,6 +21,7 @@ int owl_messagelist_get_size(const owl_messagelist *ml)
 
 void *owl_messagelist_get_element(const owl_messagelist *ml, int n)
 {
+  if (n >= ml->list->len) return NULL;
   return ml->list->pdata[n];
 }
 
