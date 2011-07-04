@@ -1571,6 +1571,7 @@ void owl_function_getsubs(void)
 
 void owl_function_printallvars(void)
 {
+  const owl_variable *v;
   const char *name;
   char *var;
   GPtrArray *varnames;
@@ -1584,10 +1585,13 @@ void owl_function_printallvars(void)
     name = varnames->pdata[i];
     if (name && name[0]!='_') {
       g_string_append_printf(str, "\n%-20s = ", name);
-      var = owl_variable_get_tostring(owl_global_get_vardict(&g), name);
+      v = owl_variable_get_var(owl_global_get_vardict(&g), name);
+      var = owl_variable_get_tostring(v);
       if (var) {
-	g_string_append(str, var);
-	g_free(var);
+        g_string_append(str, var);
+        g_free(var);
+      } else {
+        g_string_append(str, "<null>");
       }
     }
   }
@@ -1600,6 +1604,7 @@ void owl_function_printallvars(void)
 
 void owl_function_show_variables(void)
 {
+  const owl_variable *v;
   GPtrArray *varnames;
   owl_fmtext fm;  
   int i;
@@ -1612,7 +1617,8 @@ void owl_function_show_variables(void)
   for (i = 0; i < varnames->len; i++) {
     varname = varnames->pdata[i];
     if (varname && varname[0]!='_') {
-      owl_variable_describe(owl_global_get_vardict(&g), varname, &fm);
+      v = owl_variable_get_var(owl_global_get_vardict(&g), varname);
+      owl_variable_describe(v, &fm);
     }
   }
   owl_ptr_array_free(varnames, g_free);
@@ -1622,10 +1628,15 @@ void owl_function_show_variables(void)
 
 void owl_function_show_variable(const char *name)
 {
+  const owl_variable *v;
   owl_fmtext fm;  
 
   owl_fmtext_init_null(&fm);
-  owl_variable_get_help(owl_global_get_vardict(&g), name, &fm);
+  v = owl_variable_get_var(owl_global_get_vardict(&g), name);
+  if (v)
+    owl_variable_get_help(v, &fm);
+  else
+    owl_fmtext_append_normal(&fm, "No such variable...\n");
   owl_function_popless_fmtext(&fm);
   owl_fmtext_cleanup(&fm);
 }
