@@ -21,6 +21,11 @@ int owl_messagelist_get_size(const owl_messagelist *ml)
 
 void *owl_messagelist_get_element(const owl_messagelist *ml, int n)
 {
+  /* we assume things like owl_view_get_element(v, owl_global_get_curmsg(&g))
+   * work even when there are no messages in the message list.  So don't
+   * segfault if someone asks for the zeroth element of an empty list.
+   */
+  if (n >= ml->list->len) return NULL;
   return ml->list->pdata[n];
 }
 

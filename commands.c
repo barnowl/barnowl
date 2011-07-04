@@ -2497,7 +2497,7 @@ void owl_command_punt_unpunt(int argc, const char *const * argv, const char *buf
     owl_function_show_zpunts();
   } else if(argc == 2) {
     /* Handle :unpunt <number> */
-    if(unpunt && (i=atoi(argv[1])) !=0) {
+    if (unpunt && (i = atoi(argv[1])) > 0) {
       i--;      /* Accept 1-based indexing */
       if (i < fl->len) {
         owl_filter_delete(g_ptr_array_remove_index(fl, i));
