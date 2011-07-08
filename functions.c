@@ -143,8 +143,8 @@ void owl_function_show_license(void)
     "     distribution.\n"
     "\n"
     "   * Redistributions in any form must be accompanied by information on\n"
-    "     how to obtain complete source code for the Owl software and any\n"
-    "     accompanying software that uses the Owl software. The source code\n"
+    "     how to obtain complete source code for the BarnOwl software and any\n"
+    "     accompanying software that uses the BarnOwl software. The source code\n"
     "     must either be included in the distribution or be available for no\n"
     "     more than the cost of distribution plus a nominal fee, and must be\n"
     "     freely redistributable under reasonable conditions. For an\n"
@@ -971,7 +971,7 @@ void owl_function_quit(void)
     owl_aim_logout();
   }
 
-  owl_function_debugmsg("Quitting Owl");
+  owl_function_debugmsg("Quitting BarnOwl");
   owl_select_quit_loop();
 }
 
@@ -1438,7 +1438,7 @@ void owl_function_info(void)
 #endif
   }
 
-  owl_fmtext_append_bold(&fm, "\nOwl Message Attributes:\n");
+  owl_fmtext_append_bold(&fm, "\nBarnOwl Message Attributes:\n");
   owl_message_attributes_tofmtext(m, &attrfm);
   owl_fmtext_append_fmtext(&fm, &attrfm);
   

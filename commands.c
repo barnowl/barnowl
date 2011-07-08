@@ -49,16 +49,16 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "zlog in [tty]\nzlog out",
 	      "zlog in will send a login notification, zlog out will send a\n"
 	      "logout notification.  By default a login notification is sent\n"
-	      "when owl is started and a logout notification is sent when owl\n"
+	      "when BarnOwl is started and a logout notification is sent when owl\n"
 	      "is exited.  This behavior can be changed with the 'startuplogin'\n"
 	      "and 'shutdownlogout' variables.  If a tty is specified for zlog in\n"
-	      "then the owl variable 'tty' will be set to that string, causing\n"
+	      "then the BarnOwl variable 'tty' will be set to that string, causing\n"
 	      "it to be used as the zephyr location tty.\n"),
 
   OWLCMD_VOID("quit", owl_command_quit, OWL_CTX_ANY,
-	      "exit owl",
+	      "exit BarnOwl",
 	      "",
-	      "Exit owl and run any shutdown activities."),
+	      "Exit BarnOwl and run any shutdown activities."),
   OWLCMD_ALIAS("exit", "quit"),
   OWLCMD_ALIAS("q",    "quit"),
 
@@ -179,20 +179,20 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "are used print the value of all variables.\n"),
 
   OWLCMD_ARGS("startup", owl_command_startup, OWL_CTX_ANY,
-	      "run a command and set it to be run at every Owl startup",
+	      "run a command and set it to be run at every BarnOwl startup",
 	      "startup <commands> ...",
 	      "Everything on the command line after the startup command\n"
-	      "is executed as a normal owl command and is also placed in\n"
-	      "a file so that the command is executed every time owl\n"
+	      "is executed as a normal BarnOwl command and is also placed in\n"
+	      "a file so that the command is executed every time BarnOwl\n"
 	      "is started"),
 
   OWLCMD_ARGS("unstartup", owl_command_unstartup, OWL_CTX_ANY,
-	      "remove a command from the list of those to be run at Owl startup",
+	      "remove a command from the list of those to be run at BarnOwl startup",
 	      "unstartup <commands> ...",
 	      ""),
 
   OWLCMD_VOID("version", owl_command_version, OWL_CTX_ANY,
-	      "print the version of the running owl", "", ""),
+	      "print the version of the running BarnOwl", "", ""),
 
   OWLCMD_ARGS("subscribe", owl_command_subscribe, OWL_CTX_ANY,
 	      "subscribe to a zephyr class, instance, recipient",
@@ -203,7 +203,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "If the -t option is present the subscription will\n"
 	      "only be temporary, i.e., it will not be written to\n"
 	      "the subscription file and will therefore not be\n"
-	      "present the next time owl is started.\n"),
+	      "present the next time BarnOwl is started.\n"),
   OWLCMD_ALIAS("sub", "subscribe"),
 
   OWLCMD_ARGS("unsubscribe", owl_command_unsubscribe, OWL_CTX_ANY,
@@ -215,7 +215,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "If the -t option is present the unsubscription will\n"
 	      "only be temporary, i.e., it will not be updated in\n"
 	      "the subscription file and will therefore not be\n"
-	      "in effect the next time owl is started.\n"),
+	      "in effect the next time BarnOwl is started.\n"),
   OWLCMD_ALIAS("unsub", "unsubscribe"),
 
   OWLCMD_VOID("unsuball", owl_command_unsuball, OWL_CTX_ANY,
@@ -233,9 +233,9 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "Dump messages in current view to the named file."),
 
   OWLCMD_ARGS("source", owl_command_source, OWL_CTX_ANY,
-	      "execute owl commands from a file",
+	      "execute BarnOwl commands from a file",
 	      "source <filename>",
-	      "Execute the owl commands in <filename>.\n"),
+	      "Execute the BarnOwl commands in <filename>.\n"),
 
   OWLCMD_ARGS("aim", owl_command_aim, OWL_CTX_INTERACTIVE,
 	      "AIM specific commands",
@@ -304,7 +304,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "", ""),
   
   OWLCMD_ARGS("help", owl_command_help, OWL_CTX_INTERACTIVE,
-	      "display help on using owl",
+	      "display help on using BarnOwl",
 	      "help [command]", ""),
 
   OWLCMD_ARGS("zlist", owl_command_zlist, OWL_CTX_INTERACTIVE,
@@ -417,7 +417,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "redraw the entire window", "", ""),
 
   OWLCMD_VOID("suspend", owl_command_suspend, OWL_CTX_ANY,
-	      "suspend owl", "", ""),
+	      "suspend BarnOwl", "", ""),
 
   OWLCMD_ARGS("echo", owl_command_echo, OWL_CTX_ANY,
 	      "pops up a message in popup window",
@@ -508,10 +508,10 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "The file should contain a list of usernames, one per line."),
 
   OWLCMD_VOID("about", owl_command_about, OWL_CTX_INTERACTIVE,
-	      "print information about owl", "", ""),
+	      "print information about BarnOwl", "", ""),
 
   OWLCMD_VOID("status", owl_command_status, OWL_CTX_ANY,
-	      "print status information about the running owl", "", ""),
+	      "print status information about the running BarnOwl", "", ""),
   
   OWLCMD_ARGS("zlocate", owl_command_zlocate, OWL_CTX_INTERACTIVE,
 	      "locate a user",
@@ -589,7 +589,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "\n"
 	      "The other usages listed above are abbreviated forms that simply set\n"
 	      "the filter of the current view. The -d option allows you to write a\n"
-              "filter expression that will be dynamically created by owl and then\n"
+              "filter expression that will be dynamically created by BarnOwl and then\n"
               "applied as the view's filter\n"
 	      "SEE ALSO: filter, viewclass, viewuser\n"),
 
@@ -675,7 +675,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "Show styles will list the names of all styles available\n"
 	      "for formatting messages.\n\n"
 	      "Show variables will list the names of all variables.\n\n"
-	      "Show errors will show a list of errors encountered by Owl.\n\n"
+	      "Show errors will show a list of errors encountered by BarnOwl.\n\n"
 	      "SEE ALSO: filter, view, alias, bindkey, help\n"),
   
   OWLCMD_ARGS("delete", owl_command_delete, OWL_CTX_INTERACTIVE,
