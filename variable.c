@@ -159,7 +159,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 
   OWLVAR_BOOL( "loglogins" /* %OwlVarStub */, 0,
 	       "Enable logging of login notifications",
-	       "When this is enabled, Owl will login login and logout notifications\n"
+	       "When this is enabled, Owl will log login and logout notifications\n"
 	       "for AIM, zephyr, or other protocols.  If disabled Owl will not print\n"
 	       "login or logout notifications.\n"),
 

@@ -103,7 +103,7 @@ static int owl_filterelement_match_group(const owl_filterelement *fe, const owl_
   return owl_filterelement_match(fe->left, m);
 }
 
-/* XXX: Our boolea operators short-circuit here. The original owl did
+/* XXX: Our boolean operators short-circuit here. The original owl did
    not. Do we care?
 */
 
