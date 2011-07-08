@@ -69,10 +69,10 @@ int owl_variable_add_defaults(owl_vardict *vd)
 		    NULL, owl_variable_debug_set, NULL),
 
   OWLVAR_BOOL( "startuplogin" /* %OwlVarStub */, 1,
-	       "send a login message when owl starts", "" ),
+	       "send a login message when BarnOwl starts", "" ),
 
   OWLVAR_BOOL( "shutdownlogout" /* %OwlVarStub */, 1,
-	       "send a logout message when owl exits", "" ),
+	       "send a logout message when BarnOwl exits", "" ),
 
   OWLVAR_BOOL( "rxping" /* %OwlVarStub */, 0,
 	       "display received pings", "" ),
@@ -136,7 +136,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 
   OWLVAR_BOOL_FULL( "pseudologins" /* %OwlVarStub */, 0,
 		    "Enable zephyr pseudo logins",
-		    "When this is enabled, Owl will periodically check the zephyr\n"
+		    "When this is enabled, BarnOwl will periodically check the zephyr\n"
 		    "location of users in your .anyone file.  If a user is present\n"
 		    "but sent no login message, or a user is not present that sent no\n"
 		    "logout message, a pseudo login or logout message will be created\n",
@@ -144,8 +144,8 @@ int owl_variable_add_defaults(owl_vardict *vd)
 
   OWLVAR_BOOL( "ignorelogins" /* %OwlVarStub */, 0,
 	       "Enable printing of login notifications",
-	       "When this is enabled, Owl will print login and logout notifications\n"
-	       "for AIM, zephyr, or other protocols.  If disabled Owl will not print\n"
+	       "When this is enabled, BarnOwl will print login and logout notifications\n"
+	       "for AIM, zephyr, or other protocols.  If disabled BarnOwl will not print\n"
 	       "login or logout notifications.\n"),
 
   OWLVAR_STRING( "logfilter" /* %OwlVarStub */, "",
@@ -159,7 +159,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 
   OWLVAR_BOOL( "loglogins" /* %OwlVarStub */, 0,
 	       "Enable logging of login notifications",
-	       "When this is enabled, Owl will log login and logout notifications\n"
+	       "When this is enabled, BarnOwl will log login and logout notifications\n"
 	       "for AIM, zephyr, or other protocols.  If disabled Owl will not print\n"
 	       "login or logout notifications.\n"),
 
@@ -200,7 +200,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 
   OWLVAR_PATH( "newmsgproc" /* %OwlVarStub:newmsgproc */, NULL,
 	       "name of a program to run when new messages are present",
-	       "The named program will be run when owl receives new\n"
+	       "The named program will be run when BarnOwl receives new\n"
 	       "messages.  It will not be run again until the first\n"
 	       "instance exits"),
 
@@ -228,7 +228,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
   OWLVAR_STRING( "appendtosepbar" /* %OwlVarStub */, "",
 	         "string to append to the end of the sepbar",
 		 "The sepbar is the bar separating the top and bottom\n"
-		 "of the owl screen.  Any string specified here will\n"
+		 "of the BarnOwl screen.  Any string specified here will\n"
 		 "be displayed on the right of the sepbar\n"),
 
   OWLVAR_BOOL( "zaway" /* %OwlVarStub */, 0,
@@ -264,7 +264,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 		 "" ),
 
   OWLVAR_STRING( "alert_action" /* %OwlVarStub */, "nop",
-		 "owl command to execute for alert actions",
+		 "BarnOwl command to execute for alert actions",
 		 "" ),
 
   OWLVAR_STRING_FULL( "tty" /* %OwlVarStub */, "", "<string>", "tty name for zephyr location", "",
@@ -275,7 +275,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 		 "This sets the default message formatting style.\n"
 		 "Styles may be created with the 'style' command.\n"
 		 "Some built-in styles include:\n"
-		 "   default  - the default owl formatting\n"
+		 "   default  - the default BarnOwl formatting\n"
 		 "   oneline  - one line per-message\n"
 		 "   perl     - legacy perl interface\n"
 		 "\nSEE ALSO: style, show styles, view -s <style>\n"
@@ -332,7 +332,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 	       "This controls how the screen is scrolled as the\n"
 	       "cursor moves between messages being displayed.\n"
 	       "The following modes are supported:\n\n"
-	       "   normal      - This is the owl default.  Scrolling happens\n"
+	       "   normal      - This is the BarnOwl default.  Scrolling happens\n"
 	       "                 when it needs to, and an attempt is made to\n"
 	       "                 keep the current message roughly near\n"
 	       "                 the middle of the screen.\n"
