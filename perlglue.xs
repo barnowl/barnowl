@@ -142,7 +142,7 @@ zephyr_getsubs()
     CLEANUP:
 		g_free(rv);
 
-void
+SV *
 queue_message(msg)
 	SV *msg
 	PREINIT:
@@ -156,7 +156,11 @@ queue_message(msg)
 		m = owl_perlconfig_hashref2message(msg);
 
 		owl_global_messagequeue_addmsg(&g, m);
+
+		RETVAL = owl_perlconfig_message2hashref(m);
 	}
+	OUTPUT:
+		RETVAL
 
 void
 admin_message(header, body)

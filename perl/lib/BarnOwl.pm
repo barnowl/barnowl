@@ -104,7 +104,8 @@ separated by newlines.
 
 Enqueue a message in the BarnOwl message list, logging it and
 processing it appropriately. C<MESSAGE> should be an instance of
-BarnOwl::Message or a subclass.
+BarnOwl::Message or a subclass.  Returns the queued message.  This
+is useful for, e.g., deleting a message from the message list.
 
 =head2 admin_message HEADER BODY
 

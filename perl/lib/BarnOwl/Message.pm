@@ -80,6 +80,11 @@ sub personal_context { return ""; }
 # (eg, the oneline style)
 sub short_personal_context { return ""; }
 
+sub delete_and_expunge {
+    my ($m) = @_;
+    &BarnOwl::command("delete-and-expunge --quiet --id " . $m->id);
+}
+
 sub delete {
     my ($m) = @_;
     &BarnOwl::command("delete --id ".$m->id);
