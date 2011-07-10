@@ -322,13 +322,13 @@ sub touch {
     system("touch", "$path");
 }
 
-mkpath("$tmpdir/.owl/",
-       "$tmpdir/.owl/modules/",
-       "$tmpdir/Public/",
-       "$tmpdir/Private/",
-       "$tmpdir/.ours",
-       "$tmpdir/www",
-     {mode => 0700});
+mkpath(["$tmpdir/.owl/",
+        "$tmpdir/.owl/modules/",
+        "$tmpdir/Public/",
+        "$tmpdir/Private/",
+        "$tmpdir/.ours",
+        "$tmpdir/www"],
+       0, 0700);
 touch("$tmpdir/.zephyr.subs");
 touch("$tmpdir/wheee");
 touch("$tmpdir/.owl/startup");
