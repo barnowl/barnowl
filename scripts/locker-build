@@ -84,6 +84,7 @@ $TAR -C "$TMPDIR" -xzf "$SRC_TGZ" || die "Unable to untar"
 
     BARNOWL="/afs/sipb.mit.edu/project/barnowl/arch/$ATHENA_SYS"
     export PKG_CONFIG_PATH="$BARNOWL/lib/pkgconfig"
+    eval $("$BARNOWL/bin/barnowl-perl-config")
 
     SUFFIX=
     case $ATHENA_SYS in
