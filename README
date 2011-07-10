@@ -37,6 +37,11 @@ Authen::SASL::Perl
 IO::Socket::SSL
 Digest::SHA1
 
+The Twitter module requires:
+
+HTML::Entities
+Net::Twitter::Lite
+
 The WordWrap module requires:
 
 Text::Autoformat
