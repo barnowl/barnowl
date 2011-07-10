@@ -31,6 +31,31 @@ const char *skiptokens(const char *buff, int n) {
   return buff;
 }
 
+CALLER_OWN char *owl_util_homedir_for_user(const char *name)
+{
+  int err;
+  struct passwd pw_buf;
+  struct passwd *pw;
+
+  char *pw_strbuf, *ret;
+  long pw_strbuf_len = sysconf(_SC_GETPW_R_SIZE_MAX);
+  if (pw_strbuf_len < 0) {
+    /* If we really hate ourselves, we can be fancy and loop until we stop
+     * getting ERANGE. For now just pick a random number. */
+    owl_function_error("owl_util_homedir_for_user: Could not get _SC_GETPW_R_SIZE_MAX");
+    pw_strbuf_len = 16384;
+  }
+  pw_strbuf = g_new0(char, pw_strbuf_len);
+  err = getpwnam_r(name, &pw_buf, pw_strbuf, pw_strbuf_len, &pw);
+  if (err) {
+    owl_function_error("getpwuid_r: %s", strerror(err));
+    /* Fall through; pw will be NULL. */
+  }
+  ret = pw ? g_strdup(pw->pw_dir) : NULL;
+  g_free(pw_strbuf);
+  return ret;
+}
+
 /* Return a "nice" version of the path.  Tilde expansion is done, and
  * duplicate slashes are removed.  Caller must free the return.
  */
@@ -54,13 +79,14 @@ CALLER_OWN char *owl_util_makepath(const char *in)
     } else {
       /* Someone else's home directory. */
       char *user = g_strndup(in + 1, end - (in + 1));
-      struct passwd *pw = getpwnam(user);
-      g_free(user);
-      if (pw) {
-        out = g_strconcat(pw->pw_dir, end, NULL);
+      char *home = owl_util_homedir_for_user(user);
+      if (home) {
+        out = g_strconcat(home, end, NULL);
       } else {
         out = g_strdup(in);
       }
+      g_free(home);
+      g_free(user);
     }
   } else {
     out = g_strdup(in);
