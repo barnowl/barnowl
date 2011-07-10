@@ -41,30 +41,29 @@ CALLER_OWN char *owl_util_makepath(const char *in)
   if (in[0] == '~') {
     /* Attempt tilde-expansion of the first component. Get the
        tilde-prefix, which goes up to the next slash. */
-    struct passwd *pw;
     const char *end = strchr(in + 1, '/');
     if (end == NULL)
       end = in + strlen(in);
 
+    /* Patch together a new path. Replace the ~ and tilde-prefix with
+       the homedir, if available. */
     if (end == in + 1) {
-      /* My home directory. */
-      pw = getpwuid(getuid());
+      /* My home directory. Use the one in owl_global for consistency with
+       * owl_zephyr_dotfile. */
+      out = g_strconcat(owl_global_get_homedir(&g), end, NULL);
     } else {
       /* Someone else's home directory. */
       char *user = g_strndup(in + 1, end - (in + 1));
-      pw = getpwnam(user);
+      struct passwd *pw = getpwnam(user);
       g_free(user);
-    }
-
-    /* Patch together a new path. Replace the ~ and tilde-prefix with
-       the homedir. */
-    if (pw) {
-      out = g_strconcat(pw->pw_dir, end, NULL);
-    } else {
-      out = g_strdup(in);
+      if (pw) {
+        out = g_strconcat(pw->pw_dir, end, NULL);
+      } else {
+        out = g_strdup(in);
+      }
     }
   } else {
-      out = g_strdup(in);
+    out = g_strdup(in);
   }
 
   /* And a quick pass to remove duplicate slashes. */

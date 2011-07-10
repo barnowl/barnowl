@@ -226,11 +226,11 @@ int owl_util_regtest(void)
 		"\"'\"'\""
 		"\"");
 
-  GString *g = g_string_new("");
-  owl_string_appendf_quoted(g, "%q foo %q%q %s %", "hello", "world is", "can't");
+  GString *quoted = g_string_new("");
+  owl_string_appendf_quoted(quoted, "%q foo %q%q %s %", "hello", "world is", "can't");
   FAIL_UNLESS("owl_string_appendf",
-              !strcmp(g->str, "hello foo 'world is'\"can't\" %s %"));
-  g_string_free(g, true);
+              !strcmp(quoted->str, "hello foo 'world is'\"can't\" %s %"));
+  g_string_free(quoted, true);
 
 
   s = owl_util_baseclass("barnowl");
@@ -274,14 +274,7 @@ int owl_util_regtest(void)
   g_free(s);
 
   errno = 0;
-  pw = getpwuid(getuid());
-  if (pw) {
-    home = pw->pw_dir;
-  } else {
-    /* Just make some noise so we notice. */
-    home = "<WHAT>";
-    fprintf(stderr, "getpwuid: %s", errno ? strerror(errno) : "No such user");
-  }
+  home = owl_global_get_homedir(&g);
   s = owl_util_makepath("~");
   FAIL_UNLESS("makepath ~", !strcmp(home, s));
   g_free(s);
