@@ -108,8 +108,12 @@ AC_MSG_NOTICE([Adding perl LIBS ${FOO}])
 LIBS=${LIBS}\ ${FOO}
 AC_CHECK_LIB([perl], [perl_alloc],, AC_MSG_ERROR([No libperl found]))
 
+AX_PROG_PERL_MODULES([AnyEvent],,
+                     [AC_MSG_ERROR([cannot find perl module AnyEvent.])])
 AX_PROG_PERL_MODULES([Class::Accessor::Fast],,
                      [AC_MSG_ERROR([cannot find perl module Class::Accessor::Fast.])])
+AX_PROG_PERL_MODULES([Glib],,
+                     [AC_MSG_ERROR([cannot find perl module Glib.])])
 AX_PROG_PERL_MODULES([PAR],,
                      [AC_MSG_WARN([PAR.pm not found. Loadable modules will be disabled.])])
 
