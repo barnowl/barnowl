@@ -3225,7 +3225,7 @@ void owl_function_do_newmsgproc(void)
                               owl_global_get_newmsgproc(&g));
       } else if (myargc > 0) {
         /* Spawn the child. */
-        pid_t pid;
+        GPid pid;
         GError *error = NULL;
         owl_function_debugmsg("About to exec \"%s\" with %d arguments", argv[0], myargc);
         if (g_spawn_async(NULL, argv, NULL,
