@@ -1,0 +1,32 @@
+=head1 NAME
+
+Facebook::Graph::Cookbook - A cookbook for Facebook::Graph
+
+=head1 VERSION
+
+version 1.0300
+
+=head1 DESCRIPTION
+
+The goal of this document is to provide a set of common recipies for success. The L<Facebook::Graph> API is relatively easy to use, but there are just enough tricks to it that it can throw you off if you don't have a little insider information. Hopefully this document will help you overcome those hurdles.
+
+=head1 RECIPIES
+
+=over
+
+=item L<Facebook::Graph::Cookbook::Recipe1>
+
+Shows you how to set up a privileged application using nothing more than L<Plack>. This is very much a step by step tutorial.
+
+=item L<Facebook::Graph::Cookbook::Recipe2>
+
+A fully functional Facebook::Graph app that publishes data to Facebook and reads data from it. Uses a full application server and lots of other modules. This is a working example, without a lot of explaination.
+
+=back
+
+
+=head1 LEGAL
+
+Facebook::Graph is Copyright 2010 Plain Black Corporation (L<http://www.plainblack.com>) and is licensed under the same terms as Perl itself.
+
+=cut
