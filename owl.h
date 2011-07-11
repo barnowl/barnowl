@@ -17,8 +17,8 @@
 
 #ifndef OWL_PERL
 #define NCURSES_ENABLE_STDBOOL_H 1
-#include <curses.h>
-#include <panel.h>
+#include <ncursesw/curses.h>
+#include <ncursesw/panel.h>
 #endif
 #include <sys/param.h>
 #include <EXTERN.h>

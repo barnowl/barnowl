@@ -9,7 +9,7 @@
 #include <string.h>
 
 #undef instr
-#include <curses.h>
+#include <ncursesw/curses.h>
 
 owl_global g;
 
