@@ -7,7 +7,7 @@ SRCDIR=`dirname "${0}"`
 EXE="$0.bin"
 
 if test ! -x "$EXE"; then
-    echo "Cannot find barnowl.bin" >&2
+    echo "Cannot find $EXE" >&2
     exit 1
 fi
 
