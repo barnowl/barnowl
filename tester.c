@@ -273,7 +273,7 @@ int owl_util_regtest(void)
   FAIL_UNLESS("makepath ~", !strcmp(home, s));
   g_free(s);
 
-  path = g_strconcat(home, "/foo/bar/baz", NULL);
+  path = g_build_filename(home, "foo/bar/baz", NULL);
   s = owl_util_makepath("~///foo/bar//baz");
   FAIL_UNLESS("makepath ~///foo/bar//baz", !strcmp(path, s));
   g_free(s);
@@ -291,7 +291,7 @@ int owl_util_regtest(void)
   FAIL_UNLESS("makepath ~root", !strcmp(home, s));
   g_free(s);
 
-  path = g_strconcat(home, "/foo/bar/baz", NULL);
+  path = g_build_filename(home, "foo/bar/baz", NULL);
   s = owl_util_makepath("~root///foo/bar//baz");
   FAIL_UNLESS("makepath ~root///foo/bar//baz", !strcmp(path, s));
   g_free(s);
