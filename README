@@ -6,7 +6,7 @@ Based on owl 2.1.11, by James Kretchmar (http://www.ktools.org)
 
 Notes:
 -----
-This project's perl/lib/ contains the lib directories from the
+This project's perl/modules/ contains the lib directories from the
 following CPAN modules:
 
 Net::Jabber
