@@ -52,7 +52,6 @@ void owl_global_init(owl_global *g) {
   g->curmsg_vert_offset=0;
   g->resizepending=0;
   g->direction=OWL_DIRECTION_DOWNWARDS;
-  g->zaway=0;
   owl_fmtext_init_colorpair_mgr(&(g->cpmgr));
   g->debug=OWL_DEBUG;
   owl_regex_init(&g->search_re);
