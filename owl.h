@@ -555,8 +555,6 @@ typedef struct _owl_global {
   char *confdir;
   char *startupfile;
   int direction;
-  int zaway;
-  char *cur_zaway_msg;
   int haveconfig;
   int config_format;
   owl_editwin *tw;

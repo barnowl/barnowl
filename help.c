@@ -65,7 +65,7 @@ void owl_help(void)
      "    !             Invert the current view\n"
      "\n"
      "    l             Print a zephyr/AIM buddy listing\n"
-     "    A             Toggle zaway\n"
+     "    A             Toggle away\n"
      "    o             Toggle one-line display mode\n"
      "    w             Open a URL in the current message\n"
      "    C-l           Refresh the screen\n"
