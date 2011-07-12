@@ -34,6 +34,50 @@ our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 use File::Spec;
 
 $BarnOwl::Hooks::newMessage->add("BarnOwl::Logging::log");
+$BarnOwl::Hooks::startup->add("BarnOwl::Logging::_register_variables");
+
+sub _register_variables {
+    BarnOwl::new_variable_bool('logging',
+        {
+            default     => 0,
+            summary     => 'turn personal logging on or off',
+            description => "If this is set to on, personal messages are\n"
+                         . "logged in the directory specified\n"
+                         . "by the 'logpath' variable.  The filename in that\n"
+                         . "directory is derived from the sender of the message."
+        });
+
+    BarnOwl::new_variable_bool('classlogging',
+        {
+            default     => 0,
+            summary     => 'turn class logging on or off',
+            description => "If this is set to on, class messages are\n"
+                         . "logged in the directory specified by the\n"
+                         . "'classpath' variable.  The filename in that\n"
+                         . "directory is derived from the class to which\n"
+                         . "the message was sent."
+        });
+
+    BarnOwl::new_variable_string('logfilter',
+        {
+            default     => '',
+            summary     => 'name of a filter controlling which messages to log',
+            description => "If non empty, any messages matching the given filter will be logged.\n"
+                         . "This is a completely separate mechanism from the other logging\n"
+                         . "variables like logging, classlogging, loglogins, loggingdirection,\n"
+                         . "etc.  If you want this variable to control all logging, make sure\n"
+                         . "all other logging variables are in their default state."
+        });
+
+    BarnOwl::new_variable_bool('loglogins',
+        {
+            default     => 0,
+            summary     => 'enable logging of login notifications',
+            description => "When this is enabled, BarnOwl will log login and logout notifications\n"
+                         . "for AIM, zephyr, or other protocols.  If disabled BarnOwl will not print\n"
+                         . "login or logout notifications."
+        });
+}
 
 =head2 sanitize_filename BASE_PATH FILENAME
 
