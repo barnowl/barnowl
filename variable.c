@@ -135,21 +135,6 @@ void owl_variable_add_defaults(owl_vardict *vd)
   OWLVAR_BOOL( "loginsubs" /* %OwlVarStub */, 1,
 	       "load logins from .anyone on startup", "" );
 
-  OWLVAR_BOOL( "logging" /* %OwlVarStub */, 0,
-	       "turn personal logging on or off", 
-	       "If this is set to on, personal messages are\n"
-	       "logged in the directory specified\n"
-	       "by the 'logpath' variable.  The filename in that\n"
-	       "directory is derived from the sender of the message.\n" );
-
-  OWLVAR_BOOL( "classlogging" /* %OwlVarStub */, 0,
-	       "turn class logging on or off",
-	       "If this is set to on, class messages are\n"
-	       "logged in the directory specified\n"
-	       "by the 'classlogpath' variable.\n" 
-	       "The filename in that directory is derived from\n"
-	       "the name of the class to which the message was sent.\n" );
-
   OWLVAR_ENUM( "loggingdirection" /* %OwlVarStub */, OWL_LOGGING_DIRECTION_BOTH,
 	       "specifies which kind of messages should be logged",
 	       "Can be one of 'both', 'in', or 'out'.  If 'in' is\n"
@@ -184,21 +169,6 @@ void owl_variable_add_defaults(owl_vardict *vd)
   OWLVAR_BOOL( "ignorelogins" /* %OwlVarStub */, 0,
 	       "Enable printing of login notifications",
 	       "When this is enabled, BarnOwl will print login and logout notifications\n"
-	       "for AIM, zephyr, or other protocols.  If disabled BarnOwl will not print\n"
-	       "login or logout notifications.\n");
-
-  OWLVAR_STRING( "logfilter" /* %OwlVarStub */, "",
-		 "name of a filter controlling which messages to log",
-
-		 "If non empty, any messages matching the given filter will be logged.\n"
-		 "This is a completely separate mechanism from the other logging\n"
-		 "variables like logging, classlogging, loglogins, loggingdirection,\n"
-		 "etc.  If you want this variable to control all logging, make sure\n"
-		 "all other logging variables are in their default state.\n");
-
-  OWLVAR_BOOL( "loglogins" /* %OwlVarStub */, 0,
-	       "Enable logging of login notifications",
-	       "When this is enabled, BarnOwl will log login and logout notifications\n"
 	       "for AIM, zephyr, or other protocols.  If disabled BarnOwl will not print\n"
 	       "login or logout notifications.\n");
 
