@@ -35,15 +35,7 @@ void owl_log_message(const owl_message *m) {
     return;
   }
 
-  /* handle incmoing messages */
-  if (owl_message_is_direction_in(m)) {
-    owl_log_incoming(m);
-    owl_function_debugmsg("owl_log_message: leaving");
-    return;
-  }
-
-  /* handle outgoing messages */
-  owl_log_outgoing(m);
+  owl_log_perl(m);
 
   owl_function_debugmsg("owl_log_message: leaving");
 }
@@ -315,57 +307,6 @@ void owl_log_append(const owl_message *m, const char *filename) {
   g_free(buffer);
 }
 
-void owl_log_outgoing(const owl_message *m)
-{
-  char *filename, *logpath;
-  char *to, *temp;
-  GList *cc;
-
-  /* expand ~ in path names */
-  logpath = owl_util_makepath(owl_global_get_logpath(&g));
-
-  /* Figure out what path to log to */
-  if (owl_message_is_type_zephyr(m)) {
-    /* If this has CC's, do all but the "recipient" which we'll do below */
-    cc = owl_message_get_cc_without_recipient(m);
-    while (cc != NULL) {
-      temp = short_zuser(cc->data);
-      filename = g_build_filename(logpath, temp, NULL);
-      owl_log_append(m, filename);
-
-      g_free(filename);
-      g_free(temp);
-      g_free(cc->data);
-      cc = g_list_delete_link(cc, cc);
-    }
-
-    to = short_zuser(owl_message_get_recipient(m));
-  } else if (owl_message_is_type_jabber(m)) {
-    to = g_strdup_printf("jabber:%s", owl_message_get_recipient(m));
-    g_strdelimit(to, "/", '_');
-  } else if (owl_message_is_type_aim(m)) {
-    char *temp2;
-    temp = owl_aim_normalize_screenname(owl_message_get_recipient(m));
-    temp2 = g_utf8_strdown(temp,-1);
-    to = g_strdup_printf("aim:%s", temp2);
-    g_free(temp2);
-    g_free(temp);
-  } else {
-    to = g_strdup("loopback");
-  }
-
-  filename = g_build_filename(logpath, to, NULL);
-  owl_log_append(m, filename);
-  g_free(to);
-  g_free(filename);
-
-  filename = g_build_filename(logpath, "all", NULL);
-  owl_log_append(m, filename);
-  g_free(logpath);
-  g_free(filename);
-}
-
-
 void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
 {
   char *filename, *logpath;
@@ -413,127 +354,18 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   g_free(tobuff);
 }
 
-void owl_log_incoming(const owl_message *m)
+void owl_log_perl(const owl_message *m)
 {
-  char *filename, *allfilename, *logpath;
-  const char *from=NULL;
-  char *frombuff=NULL;
-  int len, ch, i, personal;
+  char *filenames_string = owl_perlconfig_call_with_message("BarnOwl::Logging::get_filenames_as_string", m);
+  char **filenames = g_strsplit(filenames_string, "\n", 0);
+  char **filename_ptr;
+  g_free(filenames_string);
 
-  /* figure out if it's a "personal" message or not */
-  if (owl_message_is_type_zephyr(m)) {
-    if (owl_message_is_personal(m)) {
-      personal = 1;
-    } else {
-      personal = 0;
-    }
-  } else if (owl_message_is_type_jabber(m)) {
-    /* This needs to be fixed to handle groupchat */
-    const char* msgtype = owl_message_get_attribute_value(m,"jtype");
-    if (msgtype && !strcmp(msgtype,"groupchat")) {
-      personal = 0;
-    } else {
-      personal = 1;
-    }
-  } else {
-    if (owl_message_is_private(m) || owl_message_is_loginout(m)) {
-      personal = 1;
-    } else {
-      personal = 0;
-    }
+  for (filename_ptr = filenames; *filename_ptr != NULL; filename_ptr++) {
+    owl_log_append(m, *filename_ptr);
   }
 
-
-  if (owl_message_is_type_zephyr(m)) {
-    if (personal) {
-      from=frombuff=short_zuser(owl_message_get_sender(m));
-    } else {
-      from=frombuff=g_strdup(owl_message_get_class(m));
-    }
-  } else if (owl_message_is_type_aim(m)) {
-    /* we do not yet handle chat rooms */
-    char *normalto, *temp;
-    temp = owl_aim_normalize_screenname(owl_message_get_sender(m));
-    normalto = g_utf8_strdown(temp, -1);
-    from=frombuff=g_strdup_printf("aim:%s", normalto);
-    g_free(normalto);
-    g_free(temp);
-  } else if (owl_message_is_type_loopback(m)) {
-    from=frombuff=g_strdup("loopback");
-  } else if (owl_message_is_type_jabber(m)) {
-    if (personal) {
-      from=frombuff=g_strdup_printf("jabber:%s", 
-				    owl_message_get_sender(m));
-    } else {
-      from=frombuff=g_strdup_printf("jabber:%s", 
-				    owl_message_get_recipient(m));
-    }
-  } else {
-    from=frombuff=g_strdup("unknown");
-  }
-  
-  /* check for malicious sender formats */
-  len=strlen(frombuff);
-  if (len<1 || len>35) from="weird";
-  if (strchr(frombuff, '/')) from="weird";
-
-  ch=frombuff[0];
-  if (!g_ascii_isalnum(ch)) from="weird";
-
-  for (i=0; i<len; i++) {
-    if (frombuff[i]<'!' || frombuff[i]>='~') from="weird";
-  }
-
-  if (!strcmp(frombuff, ".") || !strcasecmp(frombuff, "..")) from="weird";
-
-  if (!personal) {
-    if (strcmp(from, "weird")) {
-      char* temp = g_utf8_strdown(frombuff, -1);
-      if (temp) {
-	g_free(frombuff);
-	from = frombuff = temp;
-      }
-    }
-  }
-
-  /* create the filename (expanding ~ in path names) */
-  if (personal) {
-    logpath = owl_util_makepath(owl_global_get_logpath(&g));
-    filename = g_build_filename(logpath, from, NULL);
-    allfilename = g_build_filename(logpath, "all", NULL);
-    owl_log_append(m, allfilename);
-    g_free(allfilename);
-  } else {
-    logpath = owl_util_makepath(owl_global_get_classlogpath(&g));
-    filename = g_build_filename(logpath, from, NULL);
-  }
-
-  owl_log_append(m, filename);
-  g_free(filename);
-
-  if (personal && owl_message_is_type_zephyr(m)) {
-    /* We want to log to all of the CC'd people who were not us, or
-     * the sender, as well.
-     */
-    char *temp;
-    GList *cc;
-    cc = owl_message_get_cc_without_recipient(m);
-    while (cc != NULL) {
-      temp = short_zuser(cc->data);
-      if (strcasecmp(temp, frombuff) != 0) {
-	filename = g_build_filename(logpath, temp, NULL);
-        owl_log_append(m, filename);
-	g_free(filename);
-      }
-
-      g_free(temp);
-      g_free(cc->data);
-      cc = g_list_delete_link(cc, cc);
-    }
-  }
-
-  g_free(frombuff);
-  g_free(logpath);
+  g_strfreev(filenames);
 }
 
 static gpointer owl_log_thread_func(gpointer data)

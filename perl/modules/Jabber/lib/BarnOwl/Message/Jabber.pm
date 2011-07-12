@@ -14,6 +14,7 @@ A subclass of BarnOwl::Message for Jabber messages
 package BarnOwl::Message::Jabber;
 
 use base qw( BarnOwl::Message );
+use Unicode::Normalize qw( NFKC );
 
 sub jtype { shift->{jtype} };
 sub from { shift->{from} };
@@ -169,6 +170,10 @@ sub jwrite_cmd {
     } else {
         return undef;
     }
+}
+
+sub log_filenames {
+    return map { lc(NFKC($_)) } BarnOwl::Message::log_filenames(@_);
 }
 
 =head1 SEE ALSO

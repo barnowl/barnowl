@@ -23,5 +23,14 @@ sub replysendercmd {
     return shift->replycmd;
 }
 
+sub normalize_screenname {
+    my ($screenname) = @_;
+    $screenname =~ s/\s+//g;
+    return lc($screenname);
+}
+
+sub log_filenames {
+    return map { normalize_screenname($_) } BarnOwl::Message::log_filenames(@_);
+}
 
 1;

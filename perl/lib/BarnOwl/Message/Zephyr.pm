@@ -8,6 +8,7 @@ use constant WEBZEPHYR_CLASS     => "webzephyr";
 use constant WEBZEPHYR_OPCODE    => "webzephyr";
 
 use base qw( BarnOwl::Message );
+use Unicode::Normalize qw( NFKC );
 
 sub strip_realm {
     my $sender = shift;
@@ -133,6 +134,14 @@ sub zephyr_cc {
     return undef;
 }
 
+sub zephyr_cc_without_recipient {
+    my $self = shift;
+    my $recipient = lc(strip_realm($self->recipient));
+    my $cc = $self->zephyr_cc;
+    return grep { lc(strip_realm($_)) ne $recipient } split(/\s+/, $cc) if defined $cc;
+    return ();
+}
+
 sub replycmd {
     my $self = shift;
     my $sender = shift;
@@ -237,6 +246,38 @@ sub log_header {
     $rtn .= "\nTime: $timestr Host: $host"
           . "\nFrom: $zsig <$sender>";
     return $rtn;
+}
+
+sub log_filenames {
+    my ($m) = @_;
+    my @filenames = ();
+    if ($m->is_personal) {
+        @filenames = $m->zephyr_cc_without_recipient;
+    }
+    if ($m->is_incoming) {
+        if ($m->is_personal) {
+            push @filenames, $m->sender;
+        } else {
+            return (lc(NFKC($m->class)));
+        }
+    } else {
+        push @filenames, $m->recipient;
+    }
+    return map { lc(NFKC(strip_realm($_))) } @filenames;
+}
+
+sub log_to_class_file {
+    my ($m) = @_;
+    return !$m->is_personal;
+}
+
+sub log_base_path {
+    my ($m) = @_;
+    if ($m->log_to_class_file) {
+        return BarnOwl::getvar('classlogpath');
+    } else {
+        return BarnOwl::getvar('logpath');
+    }
 }
 
 1;

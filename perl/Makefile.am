@@ -13,6 +13,7 @@ nobase_dist_pkgdata_DATA = \
 	lib/BarnOwl/Help.pm \
 	lib/BarnOwl/Hook.pm \
 	lib/BarnOwl/Hooks.pm \
+	lib/BarnOwl/Logging.pm \
 	lib/BarnOwl/MainLoopCompatHook.pm \
 	lib/BarnOwl/Message.pm \
 	lib/BarnOwl/Message/AIM.pm \

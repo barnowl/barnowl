@@ -161,6 +161,56 @@ sub log_body {
     }
 }
 
+=head2 log_filenames MESSAGE
+
+Returns a list of filenames to which this message should be logged.
+The filenames should be relative to the path returned by
+C<log_base_path>.  See L<BarnOwl::Logging::get_filenames> for the
+specification of valid filenames, and for what happens if this
+method returns an invalid filename.
+
+=cut
+
+sub log_filenames {
+    my ($m) = @_;
+    my $filename = lc($m->type);
+    $filename = "unknown" if !defined $filename || $filename eq '';
+    if ($m->is_incoming && $m->pretty_sender) {
+        $filename .= ":" . $m->pretty_sender;
+    } elsif ($m->is_outgoing && $m->pretty_recipient) {
+        $filename .= ":" . $m->pretty_recipient;
+    }
+    return ($filename);
+}
+
+=head2 log_to_all_file MESSAGE
+
+There is an C<all> file.  This method determines if C<MESSAGE>
+should get logged to it, in addition to any files returned by
+C<log_filenames>.
+
+It defaults to returning true if and only if C<MESSAGE> is outgoing.
+
+=cut
+
+sub log_to_all_file {
+    my ($m) = @_;
+    return $m->is_outgoing;
+}
+
+=head2 log_base_path MESSAGE
+
+Returns the base path for logging, the folder in which all messages
+of this class get logged.
+
+Defaults to the BarnOwl variable C<logpath>.
+
+=cut
+
+sub log_base_path {
+    return BarnOwl::getvar('logpath');
+}
+
 # Populate the annoying legacy global variables
 sub legacy_populate_global {
     my ($m) = @_;
