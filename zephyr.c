@@ -37,7 +37,7 @@ static char *owl_zephyr_dotfile(const char *name, const char *input)
   if (input != NULL)
     return g_strdup(input);
   else
-    return g_strdup_printf("%s/%s", owl_global_get_homedir(&g), name);
+    return g_build_filename(owl_global_get_homedir(&g), name, NULL);
 }
 
 #ifdef HAVE_LIBZEPHYR

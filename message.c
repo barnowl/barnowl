@@ -883,7 +883,7 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
     int status;
     char *zcrypt;
 
-    zcrypt = g_strdup_printf("%s/zcrypt", owl_get_bindir());
+    zcrypt = g_build_filename(owl_get_bindir(), "zcrypt", NULL);
 
     rv = call_filter(zcrypt, argv, owl_message_get_body(m), &out, &status);
     g_free(zcrypt);

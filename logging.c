@@ -223,7 +223,7 @@ void owl_log_outgoing(const owl_message *m)
     cc = owl_message_get_cc_without_recipient(m);
     while (cc != NULL) {
       temp = short_zuser(cc->data);
-      filename = g_strdup_printf("%s/%s", logpath, temp);
+      filename = g_build_filename(logpath, temp, NULL);
       owl_log_append(m, filename);
 
       g_free(filename);
@@ -247,12 +247,12 @@ void owl_log_outgoing(const owl_message *m)
     to = g_strdup("loopback");
   }
 
-  filename = g_strdup_printf("%s/%s", logpath, to);
+  filename = g_build_filename(logpath, to, NULL);
   owl_log_append(m, filename);
   g_free(to);
   g_free(filename);
 
-  filename = g_strdup_printf("%s/all", logpath);
+  filename = g_build_filename(logpath, "all", NULL);
   owl_log_append(m, filename);
   g_free(logpath);
   g_free(filename);
@@ -284,7 +284,7 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
 
   /* expand ~ in path names */
   logpath = owl_util_makepath(owl_global_get_logpath(&g));
-  filename = g_strdup_printf("%s/%s", logpath, tobuff);
+  filename = g_build_filename(logpath, tobuff, NULL);
   msgbuf = g_string_new("");
   g_string_printf(msgbuf, "ERROR (owl): %s\n%s\n", tobuff, text);
   if (text[strlen(text)-1] != '\n') {
@@ -293,7 +293,7 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   owl_log_enqueue_message(msgbuf->str, filename);
   g_string_free(msgbuf, TRUE);
 
-  filename = g_strdup_printf("%s/all", logpath);
+  filename = g_build_filename(logpath, "all", NULL);
   g_free(logpath);
   msgbuf = g_string_new("");
   g_string_printf(msgbuf, "ERROR (owl): %s\n%s\n", tobuff, text);
@@ -392,13 +392,13 @@ void owl_log_incoming(const owl_message *m)
   /* create the filename (expanding ~ in path names) */
   if (personal) {
     logpath = owl_util_makepath(owl_global_get_logpath(&g));
-    filename = g_strdup_printf("%s/%s", logpath, from);
-    allfilename = g_strdup_printf("%s/all", logpath);
+    filename = g_build_filename(logpath, from, NULL);
+    allfilename = g_build_filename(logpath, "all", NULL);
     owl_log_append(m, allfilename);
     g_free(allfilename);
   } else {
     logpath = owl_util_makepath(owl_global_get_classlogpath(&g));
-    filename = g_strdup_printf("%s/%s", logpath, from);
+    filename = g_build_filename(logpath, from, NULL);
   }
 
   owl_log_append(m, filename);
@@ -414,7 +414,7 @@ void owl_log_incoming(const owl_message *m)
     while (cc != NULL) {
       temp = short_zuser(cc->data);
       if (strcasecmp(temp, frombuff) != 0) {
-	filename = g_strdup_printf("%s/%s", logpath, temp);
+	filename = g_build_filename(logpath, temp, NULL);
         owl_log_append(m, filename);
 	g_free(filename);
       }
