@@ -664,13 +664,13 @@ CALLER_OWN owl_variable *owl_variable_newvar(const char *name, const char *summa
   return var;
 }
 
-void owl_variable_dict_newvar_string(owl_vardict *vd, const char *name, const char *summ, const char *desc, const char *initval)
+void owl_variable_dict_newvar_string(owl_vardict *vd, const char *name, const char *summ, const char *desc, const char *initval, const char *validsettings)
 {
   owl_variable *old = owl_variable_get_var(vd, name);
   char *oldval = NULL;
   if (old && owl_variable_get_type(old) == OWL_VARIABLE_STRING)
     oldval = owl_variable_get_tostring(old);
-  owl_variable *var = owl_variable_newvar(name, summ, desc, "<string>", OWL_VARIABLE_STRING);
+  owl_variable *var = owl_variable_newvar(name, summ, desc, validsettings, OWL_VARIABLE_STRING);
   var->pval_default = g_strdup(initval);
   owl_variable_init_defaults(var);
   if (old && owl_variable_get_type(old) == OWL_VARIABLE_STRING)
@@ -679,13 +679,13 @@ void owl_variable_dict_newvar_string(owl_vardict *vd, const char *name, const ch
   owl_variable_dict_add_variable(vd, var);
 }
 
-void owl_variable_dict_newvar_int(owl_vardict *vd, const char *name, const char *summ, const char *desc, int initval)
+void owl_variable_dict_newvar_int(owl_vardict *vd, const char *name, const char *summ, const char *desc, int initval, const char *validsettings)
 {
   owl_variable *old = owl_variable_get_var(vd, name);
   int oldval;
   if (old && owl_variable_get_type(old) == OWL_VARIABLE_INT)
     oldval = owl_variable_get_int(old);
-  owl_variable *var = owl_variable_newvar(name, summ, desc, "<int>", OWL_VARIABLE_INT);
+  owl_variable *var = owl_variable_newvar(name, summ, desc, validsettings, OWL_VARIABLE_INT);
   var->ival_default = initval;
   owl_variable_init_defaults(var);
   if (old && owl_variable_get_type(old) == OWL_VARIABLE_INT)

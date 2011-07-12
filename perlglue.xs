@@ -404,38 +404,45 @@ new_command(name, func, summary, usage, description)
 	   }
 
 void
-new_variable_string(name, ival, summ, desc)
+new_variable_string(name, ival, summ, desc, validset)
 	const char * name
 	const char * ival
 	const char * summ
 	const char * desc
+	const char * validset
 	CODE:
 	owl_variable_dict_newvar_string(owl_global_get_vardict(&g),
 					name,
 					summ,
 					desc,
-					ival);
+					ival,
+					validset);
 
 void
-new_variable_int(name, ival, summ, desc)
+new_variable_int(name, ival, summ, desc, validset)
 	const char * name
 	int ival
 	const char * summ
 	const char * desc
+	const char * validset
 	CODE:
 	owl_variable_dict_newvar_int(owl_global_get_vardict(&g),
 				     name,
 				     summ,
 				     desc,
-				     ival);
+				     ival,
+				     validset);
 
 void
-new_variable_bool(name, ival, summ, desc)
+new_variable_bool(name, ival, summ, desc, validset)
 	const char * name
 	int ival
 	const char * summ
 	const char * desc
+	const char * validset
 	CODE:
+	if (strcmp(validset, "on,off")) /* gcc complains if we don't do anything with it, but the perl code isn't nice enough to let us get rid of it */
+		croak("Invalid bool variable valid settings: %s", validset);
 	owl_variable_dict_newvar_bool(owl_global_get_vardict(&g),
 				      name,
 				      summ,

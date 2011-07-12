@@ -412,26 +412,25 @@ A longer description of the function of the variable
 
 =item valid_settings
 
-A listref of valid setttings for the enum variable.
-The settings must not contain any commas.
+A listref of valid setttings for the enum variable, or a string describing
+the valid settings for any other type of variable.  The settings for an enum
+variable may not contain any commas.  You should not specify valid settings
+for boolean variables.
 
 =back
 
 =cut
 
 sub new_variable_int {
-    unshift @_, \&BarnOwl::Internal::new_variable_int, 0;
-    goto \&_new_variable;
+    _new_variable(\&BarnOwl::Internal::new_variable_int, 0, "<int>", @_);
 }
 
 sub new_variable_bool {
-    unshift @_, \&BarnOwl::Internal::new_variable_bool, 0;
-    goto \&_new_variable;
+    _new_variable(\&BarnOwl::Internal::new_variable_bool, 0, "on,off", @_);
 }
 
 sub new_variable_string {
-    unshift @_, \&BarnOwl::Internal::new_variable_string, "";
-    goto \&_new_variable;
+    _new_variable(\&BarnOwl::Internal::new_variable_string, "", "<string>", @_);
 }
 
 sub new_variable_enum {
@@ -456,14 +455,16 @@ sub new_variable_enum {
 sub _new_variable {
     my $func = shift;
     my $default_default = shift;
+    my $default_valid_settings = shift;
     my $name = shift;
     my $args = shift || {};
     my %args = (
-        summary     => "",
-        description => "",
-        default     => $default_default,
+        summary        => "",
+        description    => "",
+        default        => $default_default,
+        valid_settings => $default_valid_settings,
         %{$args});
-    $func->($name, $args{default}, $args{summary}, $args{description});
+    $func->($name, $args{default}, $args{summary}, $args{description}, $args{valid_settings});
 }
 
 =head2 quote LIST
