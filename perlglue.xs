@@ -682,3 +682,12 @@ mark()
 		}
 	OUTPUT:
 		RETVAL
+
+MODULE = BarnOwl		PACKAGE = BarnOwl::Logging
+
+void
+enqueue_text(log_text, filename)
+	const char * log_text
+	const char * filename
+	CODE:
+		owl_log_enqueue_message(log_text, filename);
