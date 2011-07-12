@@ -17,23 +17,6 @@ static GThread *logging_thread;
 static bool defer_logs; /* to be accessed only on the disk-writing thread */
 static GQueue *deferred_entry_queue;
 
-/* This is now the one function that should be called to log a
- * message.  It will do all the work necessary by calling the other
- * functions in this file as necessary.
- */
-void owl_log_message(const owl_message *m) {
-  owl_function_debugmsg("owl_log_message: entering");
-
-  if (m == NULL) {
-    owl_function_debugmsg("owl_log_message: passed null message");
-    return;
-  }
-
-  g_free(owl_perlconfig_call_with_message("BarnOwl::Logging::log", m));
-
-  owl_function_debugmsg("owl_log_message: leaving");
-}
-
 static void owl_log_error_main_thread(gpointer data)
 {
   owl_function_error("%s", (const char*)data);

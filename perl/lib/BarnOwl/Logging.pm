@@ -33,6 +33,8 @@ our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 
 use File::Spec;
 
+$BarnOwl::Hooks::newMessage->add("BarnOwl::Logging::log");
+
 =head2 sanitize_filename BASE_PATH FILENAME
 
 Sanitizes C<FILENAME> and concatenates it with C<BASE_PATH>.
@@ -115,6 +117,7 @@ L<BarnOwl::Message::log_filenames>.
 
 sub log {
     my ($m) = @_;
+    return unless defined $m;
     return unless BarnOwl::Logging::should_log_message($m);
     my $log_text = $m->log;
     foreach my $filename (BarnOwl::Logging::get_filenames($m)) {
