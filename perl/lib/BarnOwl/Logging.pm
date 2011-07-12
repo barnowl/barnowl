@@ -77,6 +77,36 @@ sub _register_variables {
                          . "for AIM, zephyr, or other protocols.  If disabled BarnOwl will not print\n"
                          . "login or logout notifications."
         });
+
+    BarnOwl::new_variable_enum('loggingdirection',
+        {
+            default       => 'both',
+            validsettings => [qw(in out both)],
+            summary       => "specifies which kind of messages should be logged",
+            description   => "Can be one of 'both', 'in', or 'out'.  If 'in' is\n"
+                           . "selected, only incoming messages are logged, if 'out'\n"
+                           . "is selected only outgoing messages are logged.  If 'both'\n"
+                           . "is selected both incoming and outgoing messages are\n"
+                           . "logged."
+        });
+
+    BarnOwl::new_variable_string('logpath',
+        {
+            default       => '~/zlog/people',
+            validsettings => '<path>',
+            summary       => 'path for logging personal messages',
+            description   => "Specifies a directory which must exist.\n"
+                            . "Files will be created in the directory for each sender."
+        });
+
+    BarnOwl::new_variable_string('classlogpath',
+        {
+            default       => '~/zlog/class',
+            validsettings => '<path>',
+            summary       => 'path for logging class zephyrs',
+            description   => "Specifies a directory which must exist.\n"
+                           . "Files will be created in the directory for each class."
+        });
 }
 
 =head2 sanitize_filename BASE_PATH FILENAME

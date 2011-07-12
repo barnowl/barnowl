@@ -356,8 +356,8 @@ int owl_variable_regtest(void) {
   FAIL_UNLESS("get bool 6", 0 == owl_variable_get_bool(var));
 
 
-  FAIL_UNLESS("get string var", NULL != (var = owl_variable_get_var(&vd, "logpath")));
-  FAIL_UNLESS("get string", 0 == strcmp("~/zlog/people", owl_variable_get_string(var)));
+  FAIL_UNLESS("get string var", NULL != (var = owl_variable_get_var(&vd, "personalbell")));
+  FAIL_UNLESS("get string", 0 == strcmp("off", owl_variable_get_string(var)));
   FAIL_UNLESS("set string 7", 0 == owl_variable_set_string(var, "whee"));
   FAIL_UNLESS("get string", !strcmp("whee", owl_variable_get_string(var)));
 

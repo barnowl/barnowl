@@ -135,15 +135,6 @@ void owl_variable_add_defaults(owl_vardict *vd)
   OWLVAR_BOOL( "loginsubs" /* %OwlVarStub */, 1,
 	       "load logins from .anyone on startup", "" );
 
-  OWLVAR_ENUM( "loggingdirection" /* %OwlVarStub */, OWL_LOGGING_DIRECTION_BOTH,
-	       "specifies which kind of messages should be logged",
-	       "Can be one of 'both', 'in', or 'out'.  If 'in' is\n"
-	       "selected, only incoming messages are logged, if 'out'\n"
-	       "is selected only outgoing messages are logged.  If 'both'\n"
-	       "is selected both incoming and outgoing messages are\n"
-	       "logged.",
-	       "both,in,out");
-
   OWLVAR_BOOL_FULL( "colorztext" /* %OwlVarStub */, 1,
                     "allow @color() in zephyrs to change color",
                     "", NULL, owl_variable_colorztext_set, NULL);
@@ -183,16 +174,6 @@ void owl_variable_add_defaults(owl_vardict *vd)
 		    "in the editmulti keymap.\n",
 		    "off,middle,on",
 		    NULL, owl_variable_disable_ctrl_d_set, NULL);
-
-  OWLVAR_PATH( "logpath" /* %OwlVarStub */, "~/zlog/people",
-	       "path for logging personal zephyrs", 
-	       "Specifies a directory which must exist.\n"
-	       "Files will be created in the directory for each sender.\n");
-
-  OWLVAR_PATH( "classlogpath" /* %OwlVarStub:classlogpath */, "~/zlog/class",
-	       "path for logging class zephyrs",
-	       "Specifies a directory which must exist.\n"
-	       "Files will be created in the directory for each class.\n");
 
   OWLVAR_PATH( "debug_file" /* %OwlVarStub */, OWL_DEBUG_FILE,
 	       "path for logging debug messages when debugging is enabled",
