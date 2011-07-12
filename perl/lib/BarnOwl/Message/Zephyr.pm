@@ -280,4 +280,13 @@ sub log_base_path {
     }
 }
 
+sub should_log {
+    my ($m) = @_;
+    if ($m->log_to_class_file) {
+        return BarnOwl::getvar('classlogging') eq 'on';
+    } else {
+        return BarnOwl::getvar('logging') eq 'on';
+    }
+}
+
 1;

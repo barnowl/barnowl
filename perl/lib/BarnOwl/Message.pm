@@ -226,6 +226,26 @@ sub log_outgoing_error {
     return "ERROR (BarnOwl): $recipient\n$body\n\n";
 }
 
+=head2 should_log MESSAGE
+
+Returns true if we should log C<MESSAGE>.  This does not override
+user settings; if the BarnOwl variable C<loggingdirection> is in,
+and C<MESSAGE> is outgoing and does not match the C<logfilter>, it
+will not get logged regardless of what this method returns.
+
+Note that this method I<does> override the BarnOwl C<logging>
+variable; if a derived class overrides this method and does not
+provide an alternative BarnOwl variable (such as C<classlogging>),
+the overriding method should check the BarnOwl C<logging> variable.
+
+Defaults to returning the value of the BarnOwl variable C<logging>.
+
+=cut
+
+sub should_log {
+    return BarnOwl::getvar('logging') eq 'on';
+}
+
 # Populate the annoying legacy global variables
 sub legacy_populate_global {
     my ($m) = @_;

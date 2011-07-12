@@ -15,6 +15,10 @@ to logging should be done in the appropriate subclass of L<BarnOwl::Message>.
 Modules wishing to customize how messages are logged should override the
 relevant subroutines in the appropriate subclass of L<BarnOwl::Message>.
 
+Modules wishing to log errors sending outgoing messages should call
+L<BarnOwl::Logging::log_outgoing_error> with the message that failed
+to be sent.
+
 =head2 EXPORTS
 
 None by default.
@@ -75,14 +79,70 @@ sub get_filenames {
     return map { sanitize_filename($m->log_base_path, $_) } @filenames;
 }
 
-# For ease of use in C
-sub get_filenames_as_string {
-    my @rtn;
-    foreach my $filename (BarnOwl::Logging::get_filenames(@_)) {
-        $filename =~ s/\n/_/g;
-        push @rtn, $filename;
+=head2 should_log_message MESSAGE
+
+Determines whether or not the passed message should be logged.
+
+To customize the behavior of this method, override
+L<BarnOwl::Message::should_log>.
+
+=cut
+
+sub should_log_message {
+    my ($m) = @_;
+    # If there's a logfilter and this message matches it, log.
+    # pass quiet=1, because we don't care if the filter doesn't exist
+    return 1 if BarnOwl::message_matches_filter($m, BarnOwl::getvar('logfilter'), 1);
+    # otherwise we do things based on the logging variables
+    # skip login/logout messages if appropriate
+    return 0 if $m->is_loginout && BarnOwl::getvar('loglogins') eq 'off';
+    # check direction
+    return 0 if $m->is_outgoing && BarnOwl::getvar('loggingdirection') eq 'in';
+    return 0 if $m->is_incoming && BarnOwl::getvar('loggingdirection') eq 'out';
+    return $m->should_log;
+}
+
+=head2 log MESSAGE
+
+Call this method to (potentially) log a message.
+
+To customize the behavior of this method for your messages, override
+L<BarnOwl::Message::log>, L<BarnOwl::Message::should_log>,
+L<BarnOwl::Message::log_base_path>, and/or
+L<BarnOwl::Message::log_filenames>.
+
+=cut
+
+sub log {
+    my ($m) = @_;
+    return unless BarnOwl::Logging::should_log_message($m);
+    my $log_text = $m->log;
+    foreach my $filename (BarnOwl::Logging::get_filenames($m)) {
+        BarnOwl::Logging::enqueue_text($log_text, $filename);
     }
-    return join("\n", @rtn);
+}
+
+=head2 log_outgoing_error MESSAGE
+
+Call this method to (potentially) log an error in sending an
+outgoing message.  Errors get logged to the same file(s) as
+successful messages.
+
+To customize the behavior of this method for your messages, override
+L<BarnOwl::Message::log_outgoing_error>,
+L<BarnOwl::Message::should_log>,
+L<BarnOwl::Message::log_base_path>, and/or
+L<BarnOwl::Message::log_filenames>.
+
+=cut
+
+sub log_outgoing_error {
+    my ($m) = @_;
+    return unless BarnOwl::Logging::should_log_message($m);
+    my $log_text = $m->log_outgoing_error;
+    foreach my $filename (BarnOwl::Logging::get_filenames($m)) {
+        BarnOwl::Logging::enqueue_text($log_text, $filename);
+    }
 }
 
 1;
