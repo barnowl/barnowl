@@ -1,2 +1,2 @@
 #!/bin/sh
-HARNESS_PERL=./tester exec prove --failures t/
+exec env HARNESS_PERL=./tester prove --failures t/
