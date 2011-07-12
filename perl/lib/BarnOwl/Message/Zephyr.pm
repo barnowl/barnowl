@@ -222,5 +222,21 @@ sub replysendercmd {
     return $self->replycmd(1);
 }
 
+# Logging
+sub log_header {
+    my ($m) = @_;
+    my $class = $m->class;
+    my $instance = $m->instance;
+    my $opcode = $m->opcode;
+    my $timestr = $m->time;
+    my $host = $m->host;
+    my $sender = $m->pretty_sender;
+    my $zsig = $m->zsig;
+    my $rtn = "Class: $class Instance: $instance";
+    $rtn .= " Opcode: $opcode" unless !defined $opcode || $opcode eq '';
+    $rtn .= "\nTime: $timestr Host: $host"
+          . "\nFrom: $zsig <$sender>";
+    return $rtn;
+}
 
 1;
