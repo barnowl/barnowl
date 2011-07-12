@@ -387,10 +387,7 @@ CALLER_OWN gchar *owl_util_recursive_resolve_link(const char *filename)
      * is racy. Whatever. */
     if (!g_path_is_absolute(link_path)) {
       char *last_dir = g_path_get_dirname(last_path);
-      char *tmp = g_build_path(G_DIR_SEPARATOR_S,
-			       last_dir,
-			       link_path,
-			       NULL);
+      char *tmp = g_build_filename(last_dir, link_path, NULL);
       g_free(last_dir);
       g_free(link_path);
       link_path = tmp;
