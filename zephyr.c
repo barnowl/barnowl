@@ -1230,7 +1230,15 @@ int owl_zephyr_set_exposure(const char *exposure)
   if (exposure == NULL)
     return -1;
   ret = ZSetLocation(zstr(exposure));
-  if (ret != ZERR_NONE) {
+  if (ret != ZERR_NONE
+#ifdef ZCONST
+      /* Before zephyr 3.0, ZSetLocation had a bug where, if you were subscribed
+       * to your own logins, it could wait for the wrong notice and return
+       * ZERR_INTERNAL when found neither SERVACK nor SERVNAK. Suppress it when
+       * building against the old ABI. */
+      && ret != ZERR_INTERNAL
+#endif
+     ) {
     owl_function_error("Unable to set exposure level: %s.", error_message(ret));
     return -1;
   }
