@@ -211,6 +211,21 @@ sub log_base_path {
     return BarnOwl::getvar('logpath');
 }
 
+=head2 log_outgoing_error MESSAGE
+
+Returns the string that should be logged if there is an error sending
+an outgoing message.
+
+=cut
+
+sub log_outgoing_error {
+    my ($m) = @_;
+    my $recipient = $m->pretty_recipient;
+    my $body = $m->body;
+    chomp $body;
+    return "ERROR (BarnOwl): $recipient\n$body\n\n";
+}
+
 # Populate the annoying legacy global variables
 sub legacy_populate_global {
     my ($m) = @_;

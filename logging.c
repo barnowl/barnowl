@@ -309,10 +309,7 @@ void owl_log_append(const owl_message *m, const char *filename) {
 
 void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
 {
-  char *filename, *logpath;
-  char *tobuff, *recip;
   owl_message *m;
-  GString *msgbuf;
   /* create a present message so we can pass it to
    * owl_log_shouldlog_message(void)
    */
@@ -323,35 +320,18 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
     owl_message_delete(m);
     return;
   }
+  char *buffer = owl_perlconfig_message_call_method(m, "log_outgoing_error", 0, NULL);
+  char *filenames_string = owl_perlconfig_call_with_message("BarnOwl::Logging::get_filenames_as_string", m);
+  char **filenames = g_strsplit(filenames_string, " ", 0);
+  char **filename_ptr;
+
+  for (filename_ptr = filenames; *filename_ptr != NULL; filename_ptr++) {
+    owl_log_enqueue_message(buffer, *filename_ptr);
+  }
+
+  g_free(filenames_string);
+  g_strfreev(filenames);
   owl_message_delete(m);
-
-  /* chop off a local realm */
-  recip = owl_zwrite_get_recip_n_with_realm(zw, 0);
-  tobuff = short_zuser(recip);
-  g_free(recip);
-
-  /* expand ~ in path names */
-  logpath = owl_util_makepath(owl_global_get_logpath(&g));
-  filename = g_build_filename(logpath, tobuff, NULL);
-  msgbuf = g_string_new("");
-  g_string_printf(msgbuf, "ERROR (owl): %s\n%s\n", tobuff, text);
-  if (text[strlen(text)-1] != '\n') {
-    g_string_append_printf(msgbuf, "\n");
-  }
-  owl_log_enqueue_message(msgbuf->str, filename);
-  g_string_free(msgbuf, TRUE);
-
-  filename = g_build_filename(logpath, "all", NULL);
-  g_free(logpath);
-  msgbuf = g_string_new("");
-  g_string_printf(msgbuf, "ERROR (owl): %s\n%s\n", tobuff, text);
-  if (text[strlen(text)-1] != '\n') {
-    g_string_append_printf(msgbuf, "\n");
-  }
-  owl_log_enqueue_message(msgbuf->str, filename);
-  g_string_free(msgbuf, TRUE);
-
-  g_free(tobuff);
 }
 
 void owl_log_perl(const owl_message *m)
