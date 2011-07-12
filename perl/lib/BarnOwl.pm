@@ -38,6 +38,7 @@ use AnyEvent;
 
 use BarnOwl::Hook;
 use BarnOwl::Hooks;
+use BarnOwl::Logging;
 use BarnOwl::Message;
 use BarnOwl::Style;
 use BarnOwl::Zephyr;
