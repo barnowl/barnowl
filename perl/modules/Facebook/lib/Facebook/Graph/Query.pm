@@ -6,7 +6,7 @@ BEGIN {
 use Any::Moose;
 use Facebook::Graph::Response;
 with 'Facebook::Graph::Role::Uri';
-use LWP::UserAgent;
+use AnyEvent::HTTP;
 use URI::Encode qw(uri_decode);
 
 has secret => (
@@ -182,14 +182,20 @@ sub uri_as_string {
 }
 
 sub request {
-    my ($self, $uri) = @_;
-    $uri ||= $self->uri_as_string;
-    my $response = LWP::UserAgent->new->get($uri);
-    my %params = (response => $response);
-    if ($self->has_secret) {
-        $params{secret} = $self->secret;
-    }
-    return Facebook::Graph::Response->new(%params);
+    my ($self, $cb) = @_;
+    my $uri = $self->uri_as_string;
+    http_get $uri, sub {
+        my ($response, $headers) = @_;
+        my %params = (
+            response => $response,
+            headers => $headers,
+            uri => $uri
+        );
+        if ($self->has_secret) {
+            $params{secret} = $self->secret;
+        }
+        $cb->(Facebook::Graph::Response->new(%params));
+    };
 }
 
 no Any::Moose;

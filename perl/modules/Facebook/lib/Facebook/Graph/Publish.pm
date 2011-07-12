@@ -6,7 +6,9 @@ BEGIN {
 use Any::Moose;
 use Facebook::Graph::Response;
 with 'Facebook::Graph::Role::Uri';
-use LWP::UserAgent;
+use AnyEvent::HTTP;
+use LWP::UserAgent; # XXX blegh
+use HTTP::Request::Common;
 use URI::Encode qw(uri_decode);
 
 has secret => (
@@ -41,15 +43,24 @@ sub get_post_params {
 }
 
 sub publish {
-    my ($self) = @_;
+    my ($self, $cb) = @_;
     my $uri = $self->uri;
     $uri->path($self->object_name.$self->object_path);
-    my $response = LWP::UserAgent->new->post($uri, $self->get_post_params);
-    my %params = (response => $response);
-    if ($self->has_secret) {
-        $params{secret} = $self->secret;
+    # XXX blegh
+    my $request = LWP::UserAgent->new->request(POST $uri->as_string, $self->get_post_params);
+    http_post $uri->as_string, $request->content, sub {
+        warn "whooo";
+        my ($response, $headers) = @_;
+        my %params = (
+            response => $response,
+            headers  => $headers,
+            uri      => $uri->as_string
+        );
+        if ($self->has_secret) {
+            $params{secret} = $self->secret;
+        }
+        $cb->(Facebook::Graph::Response->new(%params));
     }
-    return Facebook::Graph::Response->new(%params);
 }
 
 no Any::Moose;

@@ -61,26 +61,26 @@ sub parse_signed_request {
 }
 
 sub request_access_token {
-    my ($self, $code) = @_;
-    my $token = Facebook::Graph::AccessToken->new(
+    my ($self, $code, $cb) = @_;
+    Facebook::Graph::AccessToken->new(
         code            => $code,
         postback        => $self->postback,
         secret          => $self->secret,
         app_id          => $self->app_id,
-    )->request;
-    $self->access_token($token->token);
-    return $token;
+    )->request(sub {
+        my ($response) = @_;
+        $self->access_token($response->token);
+        $cb->($response);
+    });
 }
 
 sub convert_sessions {
-    my ($self, $sessions) = @_;
-    return Facebook::Graph::Session->new(
+    my ($self, $sessions, $cb) = @_;
+    Facebook::Graph::Session->new(
         secret          => $self->secret,
         app_id          => $self->app_id,
         sessions        => $sessions,
-        )
-        ->request
-        ->as_hashref;
+    )->request($cb); # API change
 }
 
 sub authorize { 
@@ -91,10 +91,14 @@ sub authorize {
     );
 }
 
-sub fetch {
-    my ($self, $object_name) = @_;
-    return $self->query->find($object_name)->request->as_hashref;
-}
+# XXX error handling
+#sub fetch {
+#    my ($self, $object_name, $cb) = @_;
+#    $self->query->find($object_name)->request(sub {
+#        my ($result) = @_;
+#        $cb->($result->as_hashref);
+#    });
+#}
 
 sub query {
     my ($self) = @_;
@@ -539,8 +543,7 @@ I still need to add publishing albums/photos, deleting of content, impersonation
 
 L<Any::Moose>
 L<JSON>
-L<LWP>
-L<LWP::Protocol::https>
+L<AnyEvent::HTTP>
 L<Mozilla::CA>
 L<URI>
 L<DateTime>

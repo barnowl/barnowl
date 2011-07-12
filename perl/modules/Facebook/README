@@ -23,12 +23,6 @@ SYNOPSIS
   You can post updates with the ":facebook" command.
 
 INFELICITIES
-  * Polling Facebook is pretty slow (on order of a second or more),
-    and blocks the entire BarnOwl interface.  We have a plan for
-    fixing this, which involves creating an async version of
-    Facebook::Graph.  I have been in contact with the original
-    author JT Smith about this.
-
   * BarnOwl will not receive all comments for news feed items, only
     comments for items that were recently published.  There is not
     currently a way to see starks for conversations that you did not
