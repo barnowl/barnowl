@@ -164,9 +164,7 @@ sub sleep {
 
 sub check_result {
     my $self = shift;
-    if (kiss 400) {
-        # Ugh, no easy way of accessing the JSON error type
-        # which is OAuthException.
+    if (kiss "OAuthException") {
         $self->{logged_in} = 0;
         $self->facebook_do_auth;
         return 0;
@@ -184,50 +182,53 @@ sub poll_friends {
     return unless BarnOwl::getvar('facebook:poll') eq 'on';
     return unless $self->{logged_in};
 
-    my $friends = eval { $self->{facebook}->fetch('me/friends'); };
-    return unless $self->check_result;
+    $self->{facebook}->query->find('me/friends')->request(sub {
+        my $response = shift;
+        my $friends = eval { $response->as_hashref };
+        return unless $self->check_result;
 
-    $self->{friends} = {};
+        $self->{friends} = {};
 
-    for my $friend (@{$friends->{data}}) {
-        if (defined $self->{friends}{$friend->{name}}) {
-            # XXX We should try a little harder here, rather than just
-            # tacking on a number.  Ideally, we should be able to
-            # calculate some extra piece of information that the user
-            # needs to disambiguate between the two users.  An old
-            # version of Facebook used to disambiguate with your primary
-            # network (so you might have Edward Yang (MIT) and Edward
-            # Yang (Cambridge), the idea being that users in the same
-            # network would probably have already disambiguated
-            # themselves with middle names or nicknames.  We no longer
-            # get network information, since Facebook axed that
-            # information, but the Education/Work fields may still be
-            # a reasonable approximation (but which one do you pick?!
-            # The most recent one.)  Since getting this information
-            # involves extra queries, there are also caching and
-            # efficiency concerns (though hopefully you don't have too
-            # many friends with the same name).  Furthermore, accessing
-            # this information requires a pretty hefty extra set of
-            # permissions requests, which we don't currently ask for.
-            #   It may just be better to let users specify custom
-            # aliases for Facebook users, which are added into this
-            # hash.  See also username support.
-            warn "Duplicate friend name " . $friend->{name};
-            my $name = $friend->{name};
-            my $i = 2;
-            while (defined $self->{friends}{$friend->{name} . ' ' . $i}) { $i++; }
-            $self->{friends}{$friend->{name} . ' ' . $i} = $friend->{id};
-        } else {
-            $self->{friends}{$friend->{name}} = $friend->{id};
+        for my $friend (@{$friends->{data}}) {
+            if (defined $self->{friends}{$friend->{name}}) {
+                # XXX We should try a little harder here, rather than just
+                # tacking on a number.  Ideally, we should be able to
+                # calculate some extra piece of information that the user
+                # needs to disambiguate between the two users.  An old
+                # version of Facebook used to disambiguate with your primary
+                # network (so you might have Edward Yang (MIT) and Edward
+                # Yang (Cambridge), the idea being that users in the same
+                # network would probably have already disambiguated
+                # themselves with middle names or nicknames.  We no longer
+                # get network information, since Facebook axed that
+                # information, but the Education/Work fields may still be
+                # a reasonable approximation (but which one do you pick?!
+                # The most recent one.)  Since getting this information
+                # involves extra queries, there are also caching and
+                # efficiency concerns (though hopefully you don't have too
+                # many friends with the same name).  Furthermore, accessing
+                # this information requires a pretty hefty extra set of
+                # permissions requests, which we don't currently ask for.
+                #   It may just be better to let users specify custom
+                # aliases for Facebook users, which are added into this
+                # hash.  See also username support.
+                warn "Duplicate friend name " . $friend->{name};
+                my $name = $friend->{name};
+                my $i = 2;
+                while (defined $self->{friends}{$friend->{name} . ' ' . $i}) { $i++; }
+                $self->{friends}{$friend->{name} . ' ' . $i} = $friend->{id};
+            } else {
+                $self->{friends}{$friend->{name}} = $friend->{id};
+            }
         }
-    }
 
-    # XXX We should also have support for usernames, and not just real
-    # names. However, since this data is not returned by the friends
-    # query, it would require a rather expensive set of queries. We
-    # might try to preserve old data, but all-in-all it's a bit
-    # complicated.  One possible way of fixing this is to construct a
-    # custom FQL query that joins the friends table and the users table.
+        # XXX We should also have support for usernames, and not just real
+        # names. However, since this data is not returned by the friends
+        # query, it would require a rather expensive set of queries. We
+        # might try to preserve old data, but all-in-all it's a bit
+        # complicated.  One possible way of fixing this is to construct a
+        # custom FQL query that joins the friends table and the users table.
+    });
 }
 
 sub poll_facebook {
@@ -243,106 +244,107 @@ sub poll_facebook {
     my $old_topics = $self->{topics};
     $self->{topics} = {};
 
-    my $updates = eval {
-        $self->{facebook}
-             ->query
-             ->from("my_news")
-             # Not using this, because we want to pick up comment
-             # updates. We need to manually de-duplicate, though.
-             # ->where_since("@" . $self->{last_poll})
-             # Facebook doesn't actually give us that many results.
-             # But it can't hurt to ask!
-             ->limit_results(200)
-             ->request
-             ->as_hashref
-    };
-    return unless $self->check_result;
+    $self->{facebook}
+         ->query
+         ->from("my_news")
+         # Not using this, because we want to pick up comment
+         # updates. We need to manually de-duplicate, though.
+         # ->where_since("@" . $self->{last_poll})
+         # Facebook doesn't actually give us that many results.
+         # But it can't hurt to ask!
+         ->limit_results(200)
+         ->request(sub {
 
-    my $new_last_poll = $self->{last_poll};
-    for my $post (reverse @{$updates->{data}}) {
-        # No app invites, thanks! (XXX make configurable)
-        if ($post->{type} eq 'link' && $post->{application}) {
-            next;
-        }
+        my $updates = eval { shift->as_hashref };
+        return unless $self->check_result;
 
-        # XXX Filtering out interest groups for now
-        # A more reasonable strategy may be to show their
-        # posts, but not the comments.
-        if (defined $post->{from}{category}) {
-            next;
-        }
+        my $new_last_poll = $self->{last_poll};
+        for my $post (reverse @{$updates->{data}}) {
+            # No app invites, thanks! (XXX make configurable)
+            if ($post->{type} eq 'link' && $post->{application}) {
+                next;
+            }
 
-        # There can be multiple recipients! Strange! Pick the first one.
-        my $name    = $post->{to}{data}[0]{name} || $post->{from}{name};
-        my $name_id = $post->{to}{data}[0]{id} || $post->{from}{id};
-        my $post_id  = $post->{id};
+            # XXX Filtering out interest groups for now
+            # A more reasonable strategy may be to show their
+            # posts, but not the comments.
+            if (defined $post->{from}{category}) {
+                next;
+            }
 
-        my $topic;
-        if (defined $old_topics->{$post_id}) {
-            $topic = $old_topics->{$post_id};
-            $self->{topics}->{$post_id} = $topic;
-        } else {
-            my @keywords = keywords($post->{name} || $post->{message});
-            $topic = $keywords[0] || 'personal';
-            $topic =~ s/ /-/g;
-            $self->{topics}->{$post_id} = $topic;
-        }
+            # There can be multiple recipients! Strange! Pick the first one.
+            my $name    = $post->{to}{data}[0]{name} || $post->{from}{name};
+            my $name_id = $post->{to}{data}[0]{id} || $post->{from}{id};
+            my $post_id  = $post->{id};
 
-        # Only handle post if it's new
-        my $created_time = str2time($post->{created_time});
-        if ($created_time >= $self->{last_poll}) {
-            # XXX indexing is fragile
-            my $msg = BarnOwl::Message->new(
-                type      => 'Facebook',
-                sender    => $post->{from}{name},
-                sender_id => $post->{from}{id},
-                name      => $name,
-                name_id   => $name_id,
-                direction => 'in',
-                body      => $self->format_body($post),
-                post_id   => $post_id,
-                topic     => $topic,
-                time      => asctime(localtime $created_time),
-                # XXX The intent is to get the 'Comment' link, which also
-                # serves as a canonical link to the post.  The {name}
-                # field should equal 'Comment'.
-                permalink => $post->{actions}[0]{link},
-               );
-            BarnOwl::queue_message($msg);
-        }
+            my $topic;
+            if (defined $old_topics->{$post_id}) {
+                $topic = $old_topics->{$post_id};
+                $self->{topics}->{$post_id} = $topic;
+            } else {
+                my @keywords = keywords($post->{name} || $post->{message});
+                $topic = $keywords[0] || 'personal';
+                $topic =~ s/ /-/g;
+                $self->{topics}->{$post_id} = $topic;
+            }
 
-        # This will interleave times (they'll all be organized by parent
-        # post), but since we don't expect too many updates between
-        # polls this is pretty acceptable.
-        my $updated_time = str2time($post->{updated_time});
-        if ($updated_time >= $self->{last_poll} && defined $post->{comments}{data}) {
-            for my $comment (@{$post->{comments}{data}}) {
-                my $comment_time = str2time($comment->{created_time});
-                if ($comment_time < $self->{last_poll}) {
-                    next;
-                }
+            # Only handle post if it's new
+            my $created_time = str2time($post->{created_time});
+            if ($created_time >= $self->{last_poll}) {
+                # XXX indexing is fragile
                 my $msg = BarnOwl::Message->new(
                     type      => 'Facebook',
-                    sender    => $comment->{from}{name},
-                    sender_id => $comment->{from}{id},
+                    sender    => $post->{from}{name},
+                    sender_id => $post->{from}{id},
                     name      => $name,
                     name_id   => $name_id,
                     direction => 'in',
-                    body      => $comment->{message},
+                    body      => $self->format_body($post),
                     post_id   => $post_id,
                     topic     => $topic,
-                    time      => asctime(localtime $comment_time),
+                    time      => asctime(localtime $created_time),
+                    # XXX The intent is to get the 'Comment' link, which also
+                    # serves as a canonical link to the post.  The {name}
+                    # field should equal 'Comment'.
+                    permalink => $post->{actions}[0]{link},
                    );
                 BarnOwl::queue_message($msg);
             }
-        }
-        if ($updated_time + 1 > $new_last_poll) {
-            $new_last_poll = $updated_time + 1;
-        }
-    }
-    # old_topics gets GC'd
 
-    $self->{last_poll} = $new_last_poll;
+            # This will interleave times (they'll all be organized by parent
+            # post), but since we don't expect too many updates between
+            # polls this is pretty acceptable.
+            my $updated_time = str2time($post->{updated_time});
+            if ($updated_time >= $self->{last_poll} && defined $post->{comments}{data}) {
+                for my $comment (@{$post->{comments}{data}}) {
+                    my $comment_time = str2time($comment->{created_time});
+                    if ($comment_time < $self->{last_poll}) {
+                        next;
+                    }
+                    my $msg = BarnOwl::Message->new(
+                        type      => 'Facebook',
+                        sender    => $comment->{from}{name},
+                        sender_id => $comment->{from}{id},
+                        name      => $name,
+                        name_id   => $name_id,
+                        direction => 'in',
+                        body      => $comment->{message},
+                        post_id   => $post_id,
+                        topic     => $topic,
+                        time      => asctime(localtime $comment_time),
+                        permalink => "",
+                       );
+                    BarnOwl::queue_message($msg);
+                }
+            }
+            if ($updated_time + 1 > $new_last_poll) {
+                $new_last_poll = $updated_time + 1;
+            }
+        }
+        # old_topics gets GC'd
+
+        $self->{last_poll} = $new_last_poll;
+    });
 }
 
 sub format_body {
@@ -374,15 +376,14 @@ sub facebook {
     my $user = shift;
     my $msg = shift;
 
+    my $cont = sub { $self->sleep(0); };
+
     if (defined $user) {
         $user = $self->{friends}{$user} || $user;
-        eval { $self->{facebook}->add_post($user)->set_message($msg)->publish; };
-        return unless $self->check_result;
+        $self->{facebook}->add_post($user)->set_message($msg)->publish($cont);
     } else {
-        eval { $self->{facebook}->add_post->set_message($msg)->publish; };
-        return unless $self->check_result;
+        $self->{facebook}->add_post->set_message($msg)->publish($cont);
     }
-    $self->sleep(0);
 }
 
 sub facebook_comment {
@@ -391,9 +392,7 @@ sub facebook_comment {
     my $post_id = shift;
     my $msg = shift;
 
-    eval { $self->{facebook}->add_comment($post_id)->set_message($msg)->publish; };
-    return unless $self->check_result;
-    $self->sleep(0);
+    $self->{facebook}->add_comment($post_id)->set_message($msg)->publish(sub { $self->sleep(0); });
 }
 
 sub facebook_auth {
@@ -415,14 +414,16 @@ sub facebook_auth {
     }
 
     $self->{cfg}->{token} = $1;
-    if ($self->facebook_do_auth) {
+    $self->facebook_do_auth(sub {
         my $raw_cfg = to_json($self->{cfg});
         BarnOwl::admin_message('Facebook', "Add this as the contents of your ~/.owl/facebook file:\n$raw_cfg");
-    }
+    });
+    return;
 }
 
 sub facebook_do_auth {
     my $self = shift;
+    my $success = shift || sub {};
     if (!defined $self->{cfg}->{token}) {
         BarnOwl::admin_message('Facebook', "Login to Facebook at ".$self->{login_url}
             . "\nand run command ':facebook-auth URL' with the URL you are redirected to."
@@ -436,19 +437,20 @@ sub facebook_do_auth {
     }
     $self->{facebook}->access_token($self->{cfg}->{token});
     # Do a quick check to see if things are working
-    my $result = eval { $self->{facebook}->query()->find('me')->select_fields('name')->request->as_hashref; };
-    if ($@) {
-        BarnOwl::admin_message('Facebook', "Failed to authenticate with '$@'!"
-            . "\nLogin to Facebook at ".$self->{login_url}
-            . "\nand run command ':facebook-auth URL' with the URL you are redirected to.");
-        return 0;
-    } else {
-        my $name = $result->{'name'};
-        BarnOwl::admin_message('Facebook', "Successfully logged in to Facebook as $name!");
-        $self->{logged_in} = 1;
-        $self->sleep(0); # start polling
-        return 1;
-    }
+    $self->{facebook}->query()->find('me')->select_fields('name')->request(sub {
+        my $result = eval { shift->as_hashref };
+        if ($@) {
+            BarnOwl::admin_message('Facebook', "Failed to authenticate with '$@'!"
+                . "\nLogin to Facebook at ".$self->{login_url}
+                . "\nand run command ':facebook-auth URL' with the URL you are redirected to.");
+        } else {
+            my $name = $result->{'name'};
+            BarnOwl::admin_message('Facebook', "Successfully logged in to Facebook as $name!");
+            $self->{logged_in} = 1;
+            $self->sleep(0); # start polling
+            $success->();
+        }
+    });
 }
 
 1;

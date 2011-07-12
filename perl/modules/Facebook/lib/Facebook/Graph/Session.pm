@@ -6,7 +6,7 @@ BEGIN {
 use Any::Moose;
 use Facebook::Graph::Response;
 with 'Facebook::Graph::Role::Uri';
-use LWP::UserAgent;
+use AnyEvent::HTTP;
 
 has app_id => (
     is      => 'ro',
@@ -37,9 +37,15 @@ sub uri_as_string {
 }
 
 sub request {
-    my ($self) = @_;
-    my $response = LWP::UserAgent->new->get($self->uri_as_string);
-    return Facebook::Graph::Response->new(response => $response);
+    my ($self, $cb) = @_;
+    http_get $self->uri_as_string, sub {
+        my ($response, $headers) = @_;
+        $cb->(Facebook::Graph::Response->new(
+            response => $response,
+            headers  => $headers,
+            uri      => $self->uri_as_string
+        ));
+    };
 }
 
 no Any::Moose;

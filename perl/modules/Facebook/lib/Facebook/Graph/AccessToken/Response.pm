@@ -17,14 +17,12 @@ has token => (
     is      => 'ro',
     lazy    => 1,
     default => sub {
+        # LOL error handling
         my $self = shift;
-        my $response = $self->response;
-        if ($response->is_success) {
-            return URI->new('?'.$response->content)->query_param('access_token');
-        }
-        else {
-            ouch $response->code, 'Could not fetch access token: '.$response->message, $response->request->uri->as_string;
-        }
+        return URI->new('?'.$self->response)->query_param('access_token');
+        #else {
+        #    ouch $response->code, 'Could not fetch access token: '.$response->message, $response->request->uri->as_string;
+        #}
     }
 );
 
@@ -32,14 +30,12 @@ has expires => (
     is      => 'ro',
     lazy    => 1,
     default => sub {
+        # LOL error handling
         my $self = shift;
-        my $response = $self->response;
-        if ($response->is_success) {
-            return URI->new('?'.$response->content)->query_param('expires');
-        }
-        else {
-            ouch $response->code, 'Could not fetch access token: '.$response->message, $response->request->uri->as_string;
-        }
+        return URI->new('?'.$self->response)->query_param('expires');
+        #else {
+        #    ouch $response->code, 'Could not fetch access token: '.$response->message, $response->request->uri->as_string;
+        #}
     }
 );
 

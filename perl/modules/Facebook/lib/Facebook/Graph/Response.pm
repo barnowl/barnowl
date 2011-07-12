@@ -12,12 +12,35 @@ has response => (
     required=> 1,
 );
 
+has headers => (
+    is      => 'ro',
+    required=> 1,
+);
+
+has uri => (
+    is      => 'ro',
+    required=> 1,
+);
+
 has as_string => (
     is      => 'ro',
     lazy    => 1,
     default => sub {
         my $self = shift;
-        return $self->response->content;
+        if (!defined $self->response) {
+            ouch $self->headers->{Status}, $self->headers->{Reason}, $self->uri;
+        }
+        if ($self->headers->{Status} < 200 || $self->headers->{Status} >= 300) {
+            my $type = $self->headers->{Status};
+            my $message = $self->response;
+            my $error = eval { JSON->new->decode($self->response) };
+            unless ($@) {
+                $type = $error->{error}{type};
+                $message = $error->{error}{message};
+            }
+            ouch $type, 'Could not execute request ('.$self->uri.'): '.$message, $self->uri;
+        }
+        return $self->response;
     },
 );
 
@@ -26,18 +49,7 @@ has as_json => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        my $response = $self->response;
-        if ($response->is_success) {
-            return $response->content;
-        }
-        else {
-            my $message = $response->message;
-            my $error = eval { JSON->new->decode($response->content) };
-            unless ($@) {
-                $message = $error->{error}{type} . ' - ' . $error->{error}{message};
-            }
-            ouch $response->code, 'Could not execute request ('.$response->request->uri->as_string.'): '.$message, $response->request->uri->as_string;
-        }
+        return $self->as_string;
     },
 );
 
