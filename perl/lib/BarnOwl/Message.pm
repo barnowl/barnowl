@@ -116,6 +116,51 @@ sub serialize {
     return $s;
 }
 
+=head2 log MESSAGE
+
+Returns the text that should be written to a file to log C<MESSAGE>.
+
+=cut
+
+sub log {
+    my ($m) = @_;
+    return $m->log_header . "\n\n" . $m->log_body . "\n\n";
+}
+
+=head2 log_header MESSAGE
+
+Returns the header of the message, for logging purposes.
+If you override L<BarnOwl::Message::log>, this method is not called.
+
+=cut
+
+sub log_header {
+    my ($m) = @_;
+    my $sender = $m->sender;
+    my $recipient = $m->recipient;
+    my $timestr = $m->time;
+    return "From: <$sender> To: <$recipient>\n"
+         . "Time: $timestr";
+}
+
+=head2 log_body MESSAGE
+
+Returns the body of the message, for logging purposes.
+If you override L<BarnOwl::Message::log>, this method is not called.
+
+=cut
+
+sub log_body {
+    my ($m) = @_;
+    if ($m->is_loginout) {
+        return uc($m->login)
+            . $m->login_type
+            . ($m->login_extra ? ' at ' . $m->login_extra : '');
+    } else {
+        return $m->body;
+    }
+}
+
 # Populate the annoying legacy global variables
 sub legacy_populate_global {
     my ($m) = @_;
