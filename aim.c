@@ -1890,8 +1890,11 @@ static gboolean owl_aim_event_source_dispatch(GSource *source, GSourceFunc callb
 static void owl_aim_event_source_finalize(GSource *source)
 {
   owl_aim_event_source *event_source = (owl_aim_event_source*)source;
-  truncate_pollfd_list(event_source, 0);
-  g_ptr_array_free(event_source->fds, TRUE);
+  /* Don't remove the GPollFDs. We are being finalized, so they'll be removed
+   * for us. Moreover, glib will fire asserts if g_source_remove_poll is called
+   * on a source which has been destroyed (which occurs when g_source_remove is
+   * called on it). */
+  owl_ptr_array_free(event_source->fds, g_free);
 }
 
 static GSourceFuncs aim_event_funcs = {
