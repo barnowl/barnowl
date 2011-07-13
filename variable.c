@@ -160,7 +160,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
   OWLVAR_BOOL( "loglogins" /* %OwlVarStub */, 0,
 	       "Enable logging of login notifications",
 	       "When this is enabled, BarnOwl will log login and logout notifications\n"
-	       "for AIM, zephyr, or other protocols.  If disabled Owl will not print\n"
+	       "for AIM, zephyr, or other protocols.  If disabled BarnOwl will not print\n"
 	       "login or logout notifications.\n"),
 
   OWLVAR_ENUM_FULL( "disable-ctrl-d" /* %OwlVarStub:lockout_ctrld */, 1,
