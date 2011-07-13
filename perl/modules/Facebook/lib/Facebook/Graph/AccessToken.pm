@@ -51,6 +51,7 @@ sub request {
             uri => $self->uri_as_string
         ));
     };
+    () # return nothing
 }
 
 no Any::Moose;

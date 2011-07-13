@@ -196,6 +196,7 @@ sub request {
         }
         $cb->(Facebook::Graph::Response->new(%params));
     };
+    () # return nothing
 }
 
 no Any::Moose;
