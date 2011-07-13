@@ -60,7 +60,8 @@ sub publish {
             $params{secret} = $self->secret;
         }
         $cb->(Facebook::Graph::Response->new(%params));
-    }
+    };
+    () # return nothing
 }
 
 no Any::Moose;
