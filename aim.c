@@ -1811,14 +1811,15 @@ static void truncate_pollfd_list(owl_aim_event_source *event_source, int len)
 {
   GPollFD *fd;
   int i;
-  if (len < event_source->fds->len)
+  if (len < event_source->fds->len) {
     owl_function_debugmsg("Truncating AIM PollFDs to %d, was %d", len, event_source->fds->len);
-  for (i = len; i < event_source->fds->len; i++) {
-    fd = event_source->fds->pdata[i];
-    g_source_remove_poll(&event_source->source, fd);
-    g_free(fd);
+    for (i = len; i < event_source->fds->len; i++) {
+      fd = event_source->fds->pdata[i];
+      g_source_remove_poll(&event_source->source, fd);
+      g_free(fd);
+    }
+    g_ptr_array_remove_range(event_source->fds, len, event_source->fds->len - len);
   }
-  g_ptr_array_remove_range(event_source->fds, len, event_source->fds->len - len);
 }
 
 static gboolean owl_aim_event_source_prepare(GSource *source, int *timeout)
