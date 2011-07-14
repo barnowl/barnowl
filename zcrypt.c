@@ -410,6 +410,7 @@ CALLER_OWN char *GetZephyrVarKeyFile(const char *whoami, const char *class, cons
   char *varname[MAX_SEARCH];
   int length[MAX_SEARCH], i;
   char buffer[MAX_BUFF];
+  const char *home;
   char *filename;
   char result[MAX_SEARCH][MAX_BUFF];
   int numsearch = 0;
@@ -432,7 +433,10 @@ CALLER_OWN char *GetZephyrVarKeyFile(const char *whoami, const char *class, cons
   }
 
   /* Open~/.crypt-table */
-  filename = g_strdup_printf("%s/.crypt-table", getenv("HOME"));
+  home = getenv("HOME");
+  if (home == NULL)
+    home = g_get_home_dir();
+  filename = g_build_filename(home, ".crypt-table", NULL);
   fsearch = fopen(filename, "r");
   if (fsearch)
   {
