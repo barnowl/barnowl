@@ -379,7 +379,8 @@ sub facebook {
     my $cont = sub {
         eval { shift->as_hashref };
         return unless $self->check_result;
-        $self->sleep(0);
+        BarnOwl::message("Submitted!");
+        $self->sleep(1); # give a bit of time to quiesce
     };
 
     if (defined $user) {
@@ -388,7 +389,7 @@ sub facebook {
     } else {
         $self->{facebook}->add_post->set_message($msg)->publish($cont);
     }
-    # XXX MESSAGE PLZ
+    BarnOwl::message("Submitting Facebook post...");
 }
 
 sub facebook_comment {
@@ -400,9 +401,10 @@ sub facebook_comment {
     $self->{facebook}->add_comment($post_id)->set_message($msg)->publish(sub {
         eval { shift->as_hashref };
         return unless $self->check_result;
-        $self->sleep(0);
+        BarnOwl::message("Submitted!");
+        $self->sleep(1); # give a bit of time to quiesce
     });
-    # XXX MESSAGE PLZ
+    BarnOwl::message("Submitting Facebook comment...");
 }
 
 sub facebook_auth {
@@ -448,6 +450,7 @@ sub facebook_do_auth {
     $self->{facebook}->access_token($self->{cfg}->{token});
     # Do a quick check to see if things are working
     #$self->{facebook}->query()->find('me')->select_fields('name')->request(sub {
+    # Added 'localtime time' to avoid duplicate checks.
     $self->{facebook}->add_post->set_message("Logged in to BarnOwl at " . localtime time)->set_privacy('CUSTOM', {friends => 'SELF'})->publish(sub {
         my $result = eval { shift->as_hashref };
         if ($@) {
