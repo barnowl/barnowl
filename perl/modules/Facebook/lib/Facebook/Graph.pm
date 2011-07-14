@@ -6,6 +6,7 @@ BEGIN {
 use Any::Moose;
 use MIME::Base64::URLSafe;
 use JSON;
+with 'Facebook::Graph::Role::Uri';
 use Facebook::Graph::AccessToken;
 use Facebook::Graph::Authorize;
 use Facebook::Graph::Query;
@@ -20,6 +21,8 @@ use Facebook::Graph::Publish::Event;
 use Facebook::Graph::Publish::RSVPMaybe;
 use Facebook::Graph::Publish::RSVPAttending;
 use Facebook::Graph::Publish::RSVPDeclined;
+use URI::Encode qw(uri_decode);
+use AnyEvent::HTTP;
 use Ouch;
 
 has app_id => (
@@ -110,6 +113,30 @@ sub query {
         $params{secret} = $self->secret;
     }
     return Facebook::Graph::Query->new(%params);
+}
+
+sub delete {
+    my ($self, $id, $cb) = @_;
+    my %query;
+    if ($self->has_access_token) {
+        $query{access_token} = uri_decode($self->access_token);
+    }
+    my $uri = $self->uri;
+    $uri->path($id);
+    $uri->query_form(%query);
+    http_request(DELETE => $uri->as_string, sub {
+        my ($response, $headers) = @_;
+        my %params = (
+            response => $response,
+            headers => $headers,
+            uri => $uri
+        );
+        if ($self->has_secret) {
+            $params{secret} = $self->secret;
+        }
+        $cb->(Facebook::Graph::Response->new(%params));
+    });
+    () # return nothing
 }
 
 sub picture {

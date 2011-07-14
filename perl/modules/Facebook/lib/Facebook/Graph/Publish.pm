@@ -9,7 +9,7 @@ with 'Facebook::Graph::Role::Uri';
 use AnyEvent::HTTP;
 use LWP::UserAgent; # XXX blegh
 use HTTP::Request::Common;
-use URI::Encode qw(uri_decode);
+use URI::Encode qw(uri_decode uri_encode);
 
 has secret => (
     is          => 'ro',
@@ -46,10 +46,9 @@ sub publish {
     my ($self, $cb) = @_;
     my $uri = $self->uri;
     $uri->path($self->object_name.$self->object_path);
-    # XXX blegh
-    my $request = LWP::UserAgent->new->request(POST $uri->as_string, $self->get_post_params);
+    my $request = POST($uri->as_string,$self->get_post_params);
+    # XXX Do this more elegantly
     http_post $uri->as_string, $request->content, sub {
-        warn "whooo";
         my ($response, $headers) = @_;
         my %params = (
             response => $response,

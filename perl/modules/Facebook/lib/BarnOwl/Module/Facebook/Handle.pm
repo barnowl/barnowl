@@ -376,7 +376,11 @@ sub facebook {
     my $user = shift;
     my $msg = shift;
 
-    my $cont = sub { $self->sleep(0); };
+    my $cont = sub {
+        eval { shift->as_hashref };
+        return unless $self->check_result;
+        $self->sleep(0);
+    };
 
     if (defined $user) {
         $user = $self->{friends}{$user} || $user;
@@ -384,6 +388,7 @@ sub facebook {
     } else {
         $self->{facebook}->add_post->set_message($msg)->publish($cont);
     }
+    # XXX MESSAGE PLZ
 }
 
 sub facebook_comment {
@@ -392,7 +397,12 @@ sub facebook_comment {
     my $post_id = shift;
     my $msg = shift;
 
-    $self->{facebook}->add_comment($post_id)->set_message($msg)->publish(sub { $self->sleep(0); });
+    $self->{facebook}->add_comment($post_id)->set_message($msg)->publish(sub {
+        eval { shift->as_hashref };
+        return unless $self->check_result;
+        $self->sleep(0);
+    });
+    # XXX MESSAGE PLZ
 }
 
 sub facebook_auth {
@@ -437,18 +447,20 @@ sub facebook_do_auth {
     }
     $self->{facebook}->access_token($self->{cfg}->{token});
     # Do a quick check to see if things are working
-    $self->{facebook}->query()->find('me')->select_fields('name')->request(sub {
+    #$self->{facebook}->query()->find('me')->select_fields('name')->request(sub {
+    $self->{facebook}->add_post->set_message("Logged in to BarnOwl at " . localtime time)->set_privacy('CUSTOM', {friends => 'SELF'})->publish(sub {
         my $result = eval { shift->as_hashref };
         if ($@) {
             BarnOwl::admin_message('Facebook', "Failed to authenticate with '$@'!"
                 . "\nLogin to Facebook at ".$self->{login_url}
                 . "\nand run command ':facebook-auth URL' with the URL you are redirected to.");
         } else {
-            my $name = $result->{'name'};
-            BarnOwl::admin_message('Facebook', "Successfully logged in to Facebook as $name!");
-            $self->{logged_in} = 1;
-            $self->sleep(0); # start polling
-            $success->();
+            $self->{facebook}->delete($result->{id}, sub {
+                BarnOwl::admin_message('Facebook', "Successfully logged in to Facebook.");
+                $self->{logged_in} = 1;
+                $self->sleep(0); # start polling
+                $success->();
+            });
         }
     });
 }
