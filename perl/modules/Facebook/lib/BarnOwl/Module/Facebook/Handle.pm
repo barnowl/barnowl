@@ -288,6 +288,8 @@ sub poll_facebook {
                 $self->{topics}->{$post_id} = $topic;
             }
 
+            my $link = $post->{actions}[0]{link};
+
             # Only handle post if it's new
             my $created_time = str2time($post->{created_time});
             if ($created_time >= $self->{last_poll}) {
@@ -306,7 +308,7 @@ sub poll_facebook {
                     # XXX The intent is to get the 'Comment' link, which also
                     # serves as a canonical link to the post.  The {name}
                     # field should equal 'Comment'.
-                    permalink => $post->{actions}[0]{link},
+                    permalink => $link,
                    );
                 BarnOwl::queue_message($msg);
             }
@@ -332,7 +334,7 @@ sub poll_facebook {
                         post_id   => $post_id,
                         topic     => $topic,
                         time      => asctime(localtime $comment_time),
-                        permalink => "",
+                        permalink => $link,
                        );
                     BarnOwl::queue_message($msg);
                 }
