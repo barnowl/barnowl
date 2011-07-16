@@ -7,7 +7,6 @@ use Any::Moose;
 use Facebook::Graph::Response;
 with 'Facebook::Graph::Role::Uri';
 use AnyEvent::HTTP;
-use LWP::UserAgent; # XXX blegh
 use HTTP::Request::Common;
 use URI::Encode qw(uri_decode uri_encode);
 
