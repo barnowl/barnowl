@@ -31,6 +31,31 @@ const char *skiptokens(const char *buff, int n) {
   return buff;
 }
 
+CALLER_OWN char *owl_util_homedir_for_user(const char *name)
+{
+  int err;
+  struct passwd pw_buf;
+  struct passwd *pw;
+
+  char *pw_strbuf, *ret;
+  long pw_strbuf_len = sysconf(_SC_GETPW_R_SIZE_MAX);
+  if (pw_strbuf_len < 0) {
+    /* If we really hate ourselves, we can be fancy and loop until we stop
+     * getting ERANGE. For now just pick a random number. */
+    owl_function_error("owl_util_homedir_for_user: Could not get _SC_GETPW_R_SIZE_MAX");
+    pw_strbuf_len = 16384;
+  }
+  pw_strbuf = g_new0(char, pw_strbuf_len);
+  err = getpwnam_r(name, &pw_buf, pw_strbuf, pw_strbuf_len, &pw);
+  if (err) {
+    owl_function_error("getpwuid_r: %s", strerror(err));
+    /* Fall through; pw will be NULL. */
+  }
+  ret = pw ? g_strdup(pw->pw_dir) : NULL;
+  g_free(pw_strbuf);
+  return ret;
+}
+
 /* Return a "nice" version of the path.  Tilde expansion is done, and
  * duplicate slashes are removed.  Caller must free the return.
  */
@@ -41,30 +66,30 @@ CALLER_OWN char *owl_util_makepath(const char *in)
   if (in[0] == '~') {
     /* Attempt tilde-expansion of the first component. Get the
        tilde-prefix, which goes up to the next slash. */
-    struct passwd *pw;
     const char *end = strchr(in + 1, '/');
     if (end == NULL)
       end = in + strlen(in);
 
+    /* Patch together a new path. Replace the ~ and tilde-prefix with
+       the homedir, if available. */
     if (end == in + 1) {
-      /* My home directory. */
-      pw = getpwuid(getuid());
+      /* My home directory. Use the one in owl_global for consistency with
+       * owl_zephyr_dotfile. */
+      out = g_strconcat(owl_global_get_homedir(&g), end, NULL);
     } else {
       /* Someone else's home directory. */
       char *user = g_strndup(in + 1, end - (in + 1));
-      pw = getpwnam(user);
+      char *home = owl_util_homedir_for_user(user);
+      if (home) {
+        out = g_strconcat(home, end, NULL);
+      } else {
+        out = g_strdup(in);
+      }
+      g_free(home);
       g_free(user);
     }
-
-    /* Patch together a new path. Replace the ~ and tilde-prefix with
-       the homedir. */
-    if (pw) {
-      out = g_strconcat(pw->pw_dir, end, NULL);
-    } else {
-      out = g_strdup(in);
-    }
   } else {
-      out = g_strdup(in);
+    out = g_strdup(in);
   }
 
   /* And a quick pass to remove duplicate slashes. */

@@ -4,9 +4,9 @@ use warnings;
 use utf8;
 use Encode;
 
-BEGIN { bootstrap BarnOwl; };
-
 use Test::More qw(no_plan);
+
+use BarnOwl;
 
 my $unicode = "“hello”";
 

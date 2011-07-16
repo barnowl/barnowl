@@ -3,13 +3,10 @@
 #include "owl.h"
 #undef WINDOW
 
-#include <errno.h>
 #include <unistd.h>
-#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 
 #undef instr
 #include <curses.h>
@@ -135,9 +132,7 @@ int owl_regtest(void) {
 int owl_util_regtest(void)
 {
   int numfailed=0;
-  const char *home;
-  char *s, *path;
-  struct passwd *pw;
+  char *s, *path, *home;
 
   printf("# BEGIN testing owl_util\n");
 
@@ -226,11 +221,11 @@ int owl_util_regtest(void)
 		"\"'\"'\""
 		"\"");
 
-  GString *g = g_string_new("");
-  owl_string_appendf_quoted(g, "%q foo %q%q %s %", "hello", "world is", "can't");
+  GString *quoted = g_string_new("");
+  owl_string_appendf_quoted(quoted, "%q foo %q%q %s %", "hello", "world is", "can't");
   FAIL_UNLESS("owl_string_appendf",
-              !strcmp(g->str, "hello foo 'world is'\"can't\" %s %"));
-  g_string_free(g, true);
+              !strcmp(quoted->str, "hello foo 'world is'\"can't\" %s %"));
+  g_string_free(quoted, true);
 
 
   s = owl_util_baseclass("barnowl");
@@ -273,44 +268,35 @@ int owl_util_regtest(void)
               !strcmp("~thisuserhadreallybetternotexist/foobar/", s));
   g_free(s);
 
-  errno = 0;
-  pw = getpwuid(getuid());
-  if (pw) {
-    home = pw->pw_dir;
-  } else {
-    /* Just make some noise so we notice. */
-    home = "<WHAT>";
-    fprintf(stderr, "getpwuid: %s", errno ? strerror(errno) : "No such user");
-  }
+  home = g_strdup(owl_global_get_homedir(&g));
   s = owl_util_makepath("~");
   FAIL_UNLESS("makepath ~", !strcmp(home, s));
   g_free(s);
 
-  path = g_strconcat(home, "/foo/bar/baz", NULL);
+  path = g_build_filename(home, "foo/bar/baz", NULL);
   s = owl_util_makepath("~///foo/bar//baz");
   FAIL_UNLESS("makepath ~///foo/bar//baz", !strcmp(path, s));
   g_free(s);
   g_free(path);
+  g_free(home);
 
-  errno = 0;
-  pw = getpwnam("root");
-  if (pw) {
-    home = pw->pw_dir;
-  } else {
+  home = owl_util_homedir_for_user("root");
+  if (home == NULL) {
     /* Just make some noise so we notice. */
-    home = "<WHAT>";
-    fprintf(stderr, "getpwnam: %s", errno ? strerror(errno) : "No such user");
+    home = g_strdup("<WHAT>");
+    fprintf(stderr, "owl_util_homedir_for_user failed");
   }
 
   s = owl_util_makepath("~root");
   FAIL_UNLESS("makepath ~root", !strcmp(home, s));
   g_free(s);
 
-  path = g_strconcat(home, "/foo/bar/baz", NULL);
+  path = g_build_filename(home, "foo/bar/baz", NULL);
   s = owl_util_makepath("~root///foo/bar//baz");
   FAIL_UNLESS("makepath ~root///foo/bar//baz", !strcmp(path, s));
   g_free(s);
   g_free(path);
+  g_free(home);
 
   /* if (numfailed) printf("*** WARNING: failures encountered with owl_util\n"); */
   printf("# END testing owl_util (%d failures)\n", numfailed);
