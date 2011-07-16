@@ -102,8 +102,10 @@ sub cmd_facebook_comment {
 
     return unless check_ready();
 
-    BarnOwl::start_edit_win("Write a comment...",
-                            sub { $facebook_handle->facebook_comment($post_id, shift) });
+    BarnOwl::start_edit_win(
+        "Write a comment...",
+        sub { $facebook_handle->facebook_comment($post_id, shift) }
+    );
 }
 
 sub cmd_facebook_poll {
