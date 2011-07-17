@@ -731,7 +731,9 @@ int owl_util_get_colorpairs(void) {
    * ncurses is compiled without ext-color. */
   return MIN(COLOR_PAIRS, 256);
 #else
-  return COLOR_PAIRS;
+  /* TODO: Fix the rest of our code to handle color pairs past 256 and
+   * ext-color. */
+  return MIN(COLOR_PAIRS, 256);
 #endif
 }
 
