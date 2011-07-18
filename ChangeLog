@@ -1,4 +1,10 @@
+1.7.1
+ * Append sender's realm to CC'd unqualified names when replying. -adam@crossproduct.net
+ * Don't reset ncurses colorpairs in the middle of drawing. -davidben@mit.edu
+ * Fix viewuser when an unqualified name is given. -davidben@mit.edu
+
 1.7
+ * Fix quoting bugs in smartfilter, zpunt, and numerous other commands. -davidben@mit.edu
  * Download Twitter consumer keys from barnowl.mit.edu. -nelhage@MIT.EDU
  * Fix unsub when .zephyr.subs is a symlink. -jgross@MIT.EDU
  * Display subject as XMPP personal context (if set). -adehnert@mit.edu
