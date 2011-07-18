@@ -1,3 +1,55 @@
+1.8
+ * Compute the home directory in zcrypt consistently with BarnOwl -davidben@mit.edu
+ * Make help show the correct keybinding for A -jgross@mit.edu
+ * Add a delete-and-expunge command. -jgross@mit.edu
+ * Fix a bug in the expunge command -jgross@mit.edu
+ * Replace 'Owl' with 'BarnOwl' in user visible places -jgross@mit.edu
+ * Allow zsigs to be '0' -jgross@mit.edu
+ * Reformat the man page to look more like others -davidben@mit.edu
+ * Consistently use BarnOwl or barnowl -davidben@mit.edu
+ * Update autoconf macros -andersk@mit.edu
+ * history: Do not deduplicate a partial entry -andersk@mit.edu
+ * Drop show timers feature -davidben@mit.edu
+ * Add new dependencies, AnyEvent and perl-Glib -davidben@mit.edu
+ * Bump required glib version to 2.16 -davidben@mit.edu
+ * Don't leak timestr when setting time in a perl message -asedeno@mit.edu
+ * Build with -Wwrite-strings -andersk@mit.edu
+ * Build with C99 -davidben@mit.edu
+ * Jabber: Handle nicks with leading dashes (e.g. Facebook XMPP) -ezyang@mit.edu
+ * Move log-writing onto a background thread. -adam@crossproduct.net
+ * Remove the length limit on field values in :info -jgross@mit.edu
+ * Show how far you are in a long message -jgross@mit.edu
+ * stderr_redirect_handler: Handle partial or failed reads -andersk@mit.edu
+ * Inform the user when an unpunt command does nothing -davidben@mit.edu
+ * Replace custom event loop with GLib's GMainLoop -davidben@mit.edu
+ * Encode glib version requirements in pkg-config check -asedeno@mit.edu
+ * Fix color pair usage on ncurses builds without ext-color -davidben@mit.edu
+ * IRC: Fix reconnect behavior. -nelhage@mit.edu
+ * IRC: Make nick-change events LOGIN messages instead of ADMIN. -nelhage@mit.edu
+ * IRC: Port module to AnyEvent::IRC. -asedeno@mit.edu, nelhage@nelhage.com
+ * Ability to set exposure arbitrarily (like "zctl set exposure") -jgross@mit.edu
+ * Kill --remove-debug option -davidben@mit.edu
+ * exec: Fix input redirection of multistatement commands -andersk@mit.edu
+ * Correctly set the realm in outgoing zwrite errors -davidben@mit.edu
+ * Correctly compute the realm for outgoing messages -davidben@mit.edu
+ * In duplicated outgoing zephyrs only reply on the relevant recipient -davidben@mit.edu
+ * Create per-recipient copies of outgoing messages for non-CC'd personals -liudi@mit.edu
+ * Add black to :show colors -andersk@mit.edu
+ * Fix reporting of errors from libzephyr -kcr@1ts.org
+ * Load Encode module for IRC. -timhill@alum.mit.edu
+ * IRC: Sort the output of :irc-names -nelhage@mit.edu
+ * Prepend "UNAUTH: " to displayed sender for unauthenticated zephyrs -adam@crossproduct.net
+ * For ‘punt’ with one argument, quote the filter name -andersk@mit.edu
+ * Fix spurious error running ‘punt’ with no arguments -andersk@mit.edu
+ * Only handle CCs in messages sent directly to you. -davidben@mit.edu
+ * Update copyright notices for 2011 -davidben@mit.edu
+ * If a smartfilter fails to parse, handle the error -davidben@mit.edu
+ * Replace per-editwin killbuf with a global one. -adam@crossproduct.net
+ * Don't use error_message if we are building without Zephyr. -nelhage@mit.edu
+ * Fix replying to outgoing zwrite when -m is passed -davidben@mit.edu
+ * Fix a number of quoting bugs -davidben@mit.edu
+ * Check passwd entries to determine home dir -davidben@mit.edu
+
 1.7.1
  * Append sender's realm to CC'd unqualified names when replying. -adam@crossproduct.net
  * Don't reset ncurses colorpairs in the middle of drawing. -davidben@mit.edu
