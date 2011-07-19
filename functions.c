@@ -2454,7 +2454,7 @@ CALLER_OWN char *owl_function_aimuserfilt(const char *user)
 
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
-    return(g_strdup(filtname));
+    return filtname;
   }
 
   /* create the new-internal filter */
