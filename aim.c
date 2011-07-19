@@ -1063,34 +1063,11 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
   g_free(stripmsg);
   g_free(wrapmsg);
   g_free(nz_screenname);
-
-  return(1);
-
-  owl_function_debugmsg("faimtest_parse_incoming_im_chan1: icbm: message: %s\n", realmsg);
-  
-  if (args->icbmflags & AIM_IMFLAGS_MULTIPART) {
-    aim_mpmsg_section_t *sec;
-    int z;
-
-    owl_function_debugmsg("faimtest_parse_incoming_im_chan1: icbm: multipart: this message has %d parts\n", args->mpmsg.numparts);
-    
-    for (sec = args->mpmsg.parts, z = 0; sec; sec = sec->next, z++) {
-      if ((sec->charset == 0x0000) || (sec->charset == 0x0003) || (sec->charset == 0xffff)) {
-	owl_function_debugmsg("faimtest_parse_incoming_im_chan1: icbm: multipart:   part %d: charset 0x%04x, subset 0x%04x, msg = %s\n", z, sec->charset, sec->charsubset, sec->data);
-      } else {
-	owl_function_debugmsg("faimtest_parse_incoming_im_chan1: icbm: multipart:   part %d: charset 0x%04x, subset 0x%04x, binary or UNICODE data\n", z, sec->charset, sec->charsubset);
-      }
-    }
-  }
-  
-  if (args->icbmflags & AIM_IMFLAGS_HASICON) {
-    /* aim_send_im(sess, userinfo->sn, AIM_IMFLAGS_BUDDYREQ, "You have an icon"); */
-    owl_function_debugmsg("faimtest_parse_incoming_im_chan1: icbm: their icon: iconstamp = %ld, iconlen = 0x%08x, iconsum = 0x%04x\n", args->iconstamp, args->iconlen, args->iconsum);
-  }
-
   g_free(realmsg);
 
   return(1);
+
+  /* TODO: Multipart? See history from before 1.8 release. */
 }
 
 /*
