@@ -706,7 +706,7 @@ void owl_variable_dict_newvar_int(owl_vardict *vd, const char *name, const char 
   }
 }
 
-void owl_variable_dict_newvar_bool(owl_vardict *vd, const char *name, const char *summ, const char *desc, bool initval)
+void owl_variable_dict_newvar_bool(owl_vardict *vd, const char *name, const char *summ, const char *desc, int initval)
 {
   owl_variable *old = owl_variable_get_var(vd, name);
   if (old && owl_variable_get_type(old) == OWL_VARIABLE_BOOL) {
