@@ -64,7 +64,7 @@ void owl_style_get_formattext(const owl_style *s, owl_fmtext *fm, const owl_mess
   }
 
   /* indent and ensure ends with a newline */
-  indent = owl_text_indent(body, OWL_TAB);
+  indent = owl_text_indent(body, OWL_TAB, true);
   curlen = strlen(indent);
   if (curlen == 0 || indent[curlen-1] != '\n') {
     char *tmp = indent;

@@ -6,18 +6,22 @@
 
 /* Returns a copy of 'in' with each line indented 'n'
  * characters. Result must be freed with g_free. */
-CALLER_OWN char *owl_text_indent(const char *in, int n)
+CALLER_OWN char *owl_text_indent(const char *in, int n, bool indent_first_line)
 {
   const char *ptr1, *ptr2, *last;
   GString *out = g_string_new("");
   int i;
+  bool indent_this_line = indent_first_line;
 
   last=in+strlen(in)-1;
   ptr1=in;
   while (ptr1<=last) {
-    for (i=0; i<n; i++) {
-      g_string_append_c(out, ' ');
+    if (indent_this_line) {
+      for (i = 0; i < n; i++) {
+        g_string_append_c(out, ' ');
+      }
     }
+    indent_this_line = true;
     ptr2=strchr(ptr1, '\n');
     if (!ptr2) {
       g_string_append(out, ptr1);
