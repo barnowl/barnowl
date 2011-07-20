@@ -1429,7 +1429,7 @@ void owl_function_info(void)
     owl_fmtext_appendf_normal(&fm, "  Opcode    : %s\n", owl_message_get_opcode(m));
 #ifdef HAVE_LIBZEPHYR
     if (owl_message_is_direction_in(m)) {
-      char *tmpbuff;
+      char *tmpbuff, *tmpbuff2;
       int i, fields;
 
       n=owl_message_get_notice(m);
@@ -1475,15 +1475,15 @@ void owl_function_info(void)
 	owl_fmtext_appendf_normal(&fm, "  Fields    : %i\n", fields);
 
 	for (i = 0; i < fields; i++) {
-	  tmpbuff = owl_zephyr_get_field_as_utf8(n, i + 1);
-
-	  g_strdelimit(tmpbuff, "\n", '~');
-	  g_strdelimit(tmpbuff, "\r", '!');
-
-	  owl_fmtext_appendf_normal(&fm, "  Field %i   : %s\n", i + 1, tmpbuff);
-	  g_free(tmpbuff);
+          tmpbuff = owl_zephyr_get_field_as_utf8(n, i + 1);
+          tmpbuff2 = owl_text_indent(tmpbuff, 14, false);
+          owl_fmtext_appendf_normal(&fm, "  Field %i   : %s\n", i + 1, tmpbuff2);
+          g_free(tmpbuff2);
+          g_free(tmpbuff);
 	}
-	owl_fmtext_appendf_normal(&fm, "  Default Fm: %s\n", n->z_default_format);
+        tmpbuff = owl_text_indent(n->z_default_format, 14, false);
+        owl_fmtext_appendf_normal(&fm, "  Default Fm: %s\n", tmpbuff);
+        g_free(tmpbuff);
       }
 
     }
