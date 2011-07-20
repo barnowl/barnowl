@@ -124,11 +124,13 @@ void owl_message_attributes_tofmtext(const owl_message *m, owl_fmtext *fm) {
   for (i = 0; i < m->attributes->len; i++) {
     p = m->attributes->pdata[i];
 
-    tmpbuff = g_strdup(owl_pair_get_value(p));
-    g_strdelimit(tmpbuff, "\n", '~');
-    g_strdelimit(tmpbuff, "\r", '!');
-    buff = g_strdup_printf("  %-15.15s: %s\n", owl_pair_get_key(p), tmpbuff);
-    g_free(tmpbuff);
+    buff = g_strdup(owl_pair_get_value(p));
+    if (buff) {
+      tmpbuff = owl_text_indent(buff, 19, false);
+      g_free(buff);
+      buff = g_strdup_printf("  %-15.15s: %s\n", owl_pair_get_key(p), tmpbuff);
+      g_free(tmpbuff);
+    }
 
     if(buff == NULL) {
       buff = g_strdup_printf("  %-15.15s: %s\n", owl_pair_get_key(p), "<error>");
