@@ -126,6 +126,8 @@ AX_PROG_PERL_MODULES([Glib],,
                      [AC_MSG_ERROR([cannot find perl module Glib.])])
 AX_PROG_PERL_MODULES([PAR],,
                      [AC_MSG_WARN([PAR.pm not found. Loadable modules will be disabled.])])
+AX_PROG_PERL_MODULES([ExtUtils::Depends],,
+                     [AC_MSG_ERROR([cannot find perl module ExtUtils::Depends])])
 
 dnl Add CFLAGS and LIBS for glib-2.0
 PKG_CHECK_MODULES(GLIB,[glib-2.0 >= 2.16 gobject-2.0 gthread-2.0])
@@ -138,6 +140,11 @@ LIBS="${GLIB_LIBS} ${LIBS}"
 if test "x${prefix}" = "xNONE"; then
    prefix="${ac_default_prefix}"
 fi
+
+dnl Add CFLAGS for glib-perl
+GLIB_PERL_CFLAGS=`perl -MExtUtils::Depends -e 'my $e = ExtUtils::Depends->new("BarnOwl","Glib"); my %h = $e->get_makefile_vars; print $h{"INC"}'`
+AC_MSG_NOTICE([Adding glib-perl CFLAGS ${GLIB_PERL_CFLAGS}])
+AM_CFLAGS="${GLIB_PERL_CFLAGS} ${AM_CFLAGS}"
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 

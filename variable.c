@@ -1,54 +1,59 @@
 #include "owl.h"
 #include <stdio.h>
+#include "gmarshal_funcs.h"
+
+static const GType owl_variable_gtype_map[] = {G_TYPE_POINTER, 
+					       G_TYPE_INT, G_TYPE_BOOLEAN,
+					       G_TYPE_STRING };
 
 #define OWLVAR_BOOL(name,default,summary,description) \
         { g_strdup(name), OWL_VARIABLE_BOOL, NULL, default, "on,off", g_strdup(summary), g_strdup(description), NULL, \
-        NULL, NULL, NULL, NULL, NULL, NULL }
+	    NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
 #define OWLVAR_BOOL_FULL(name,default,summary,description,validate,set,get) \
         { g_strdup(name), OWL_VARIABLE_BOOL, NULL, default, "on,off", g_strdup(summary), g_strdup(description), NULL, \
-        validate, set, NULL, get, NULL, NULL }
+	    G_CALLBACK(validate), G_CALLBACK(set), NULL, G_CALLBACK(get), NULL, NULL, NULL }
 
 #define OWLVAR_INT(name,default,summary,description) \
         { g_strdup(name), OWL_VARIABLE_INT, NULL, default, "<int>", g_strdup(summary), g_strdup(description), NULL, \
-        NULL, NULL, NULL, NULL, NULL, NULL }
+	    NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
 #define OWLVAR_INT_FULL(name,default,summary,description,validset,validate,set,get) \
         { g_strdup(name), OWL_VARIABLE_INT, NULL, default, validset, g_strdup(summary), g_strdup(description), NULL, \
-        validate, set, NULL, get, NULL, NULL }
+	    G_CALLBACK(validate), G_CALLBACK(set), NULL, G_CALLBACK(get), NULL, NULL, NULL }
 
 #define OWLVAR_PATH(name,default,summary,description) \
         { g_strdup(name), OWL_VARIABLE_STRING, g_strdup(default), 0, "<path>", g_strdup(summary), g_strdup(description),  NULL, \
-        NULL, NULL, NULL, NULL, NULL, NULL }
+	    NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
 #define OWLVAR_STRING(name,default,summary,description) \
         { g_strdup(name), OWL_VARIABLE_STRING, g_strdup(default), 0, "<string>", g_strdup(summary), g_strdup(description), NULL, \
-        NULL, NULL, NULL, NULL, NULL, NULL }
+	    NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
 #define OWLVAR_STRING_FULL(name,default,validset,summary,description,validate,set,get) \
         { g_strdup(name), OWL_VARIABLE_STRING, g_strdup(default), 0, validset, g_strdup(summary), g_strdup(description), NULL, \
-        validate, set, NULL, get, NULL, NULL }
+	    G_CALLBACK(validate), G_CALLBACK(set), NULL, G_CALLBACK(get), NULL, NULL, NULL }
 
 /* enums are really integers, but where validset is a comma-separated
  * list of strings which can be specified.  The tokens, starting at 0,
  * correspond to the values that may be specified. */
 #define OWLVAR_ENUM(name,default,summary,description,validset) \
         { g_strdup(name), OWL_VARIABLE_INT, NULL, default, validset, g_strdup(summary), g_strdup(description), NULL, \
-        owl_variable_enum_validate, \
-        NULL, owl_variable_enum_set_fromstring, \
-        NULL, owl_variable_enum_get_tostring, \
-        NULL }
+	    G_CALLBACK(owl_variable_enum_validate),			\
+	    NULL, G_CALLBACK(owl_variable_enum_set_fromstring),		\
+	    NULL, G_CALLBACK(owl_variable_enum_get_tostring),		\
+	    NULL, NULL }
 
 #define OWLVAR_ENUM_FULL(name,default,summary,description,validset,validate, set, get) \
         { g_strdup(name), OWL_VARIABLE_INT, NULL, default, validset, g_strdup(summary), g_strdup(description), NULL, \
-        validate, \
-        set, owl_variable_enum_set_fromstring, \
-        get, owl_variable_enum_get_tostring, \
-        NULL }
+	    G_CALLBACK(validate),					\
+	    G_CALLBACK(set), G_CALLBACK(owl_variable_enum_set_fromstring), \
+	    G_CALLBACK(get), G_CALLBACK(owl_variable_enum_get_tostring), \
+	    NULL, NULL }
 
 int owl_variable_add_defaults(owl_vardict *vd)
 {
-  owl_variable variables_to_init[] = {
+  owl_variable_init_params variables_to_init[] = {
 
   OWLVAR_STRING( "personalbell" /* %OwlVarStub */, "off",
 		 "ring the terminal bell when personal messages are received",
@@ -438,9 +443,9 @@ int owl_variable_add_defaults(owl_vardict *vd)
   };
 
   int ret = owl_variable_dict_add_from_list(vd, variables_to_init);
-  owl_variable *var;
+  owl_variable_init_params *var;
   for (var = variables_to_init; var->name != NULL; var++)
-    owl_variable_cleanup(var);
+    owl_variable_cleanup_initializer(var);
   return ret;
 }
 
@@ -451,54 +456,48 @@ int owl_variable_add_defaults(owl_vardict *vd)
 
 /* commonly useful */
 
-int owl_variable_int_validate_gt0(const owl_variable *v, const void *newval)
+int owl_variable_int_validate_gt0(const owl_variable *v, const int newval, void *dummy)
 {
-  if (newval == NULL) return(0);
-  else if (*(const int*)newval < 1) return(0);
-  else return (1);
+  return !(newval < 1);
 }
 
-int owl_variable_int_validate_positive(const owl_variable *v, const void *newval)
+int owl_variable_int_validate_positive(const owl_variable *v, const int newval, void *dummy)
 {
-  if (newval == NULL) return(0);
-  else if (*(const int*)newval < 0) return(0);
-  else return (1);
+  return !(newval < 0);
 }
 
 /* typewinsize */
-int owl_variable_typewinsize_set(owl_variable *v, const void *newval)
+int owl_variable_typewinsize_set(owl_variable *v, const int newval, void *dummy)
 {
   int rv;
-  rv = owl_variable_int_set_default(v, newval);
+  rv = owl_variable_int_set_default(v, newval, dummy);
   if (0 == rv) owl_mainpanel_layout_contents(&g.mainpanel);
   return(rv);
 }
 
 /* debug (cache value in g->debug) */
-int owl_variable_debug_set(owl_variable *v, const void *newval)
+int owl_variable_debug_set(owl_variable *v, const int newval, void *dummy)
 {
-  if (newval && (*(const int*)newval == 1 || *(const int*)newval == 0)) {
-    g.debug = *(const int*)newval;
+  if (newval == 1 || newval == 0) {
+    g.debug = newval;
   }
-  return owl_variable_bool_set_default(v, newval);
+  return owl_variable_bool_set_default(v, newval, dummy);
 }
 
 /* When 'aaway' is changed, need to notify the AIM server */
-int owl_variable_aaway_set(owl_variable *v, const void *newval)
+int owl_variable_aaway_set(owl_variable *v, const gboolean newval, void *dummy)
 {
-  if (newval) {
-    if (*(const int*)newval == 1) {
-      owl_aim_set_awaymsg(owl_global_get_aaway_msg(&g));
-    } else if (*(const int*)newval == 0) {
-      owl_aim_set_awaymsg("");
-    }
+  if (newval == 1) {
+    owl_aim_set_awaymsg(owl_global_get_aaway_msg(&g));
+  } else if (newval == 0) {
+    owl_aim_set_awaymsg("");
   }
-  return owl_variable_bool_set_default(v, newval);
+  return owl_variable_bool_set_default(v, newval, dummy);
 }
 
-int owl_variable_colorztext_set(owl_variable *v, const void *newval)
+int owl_variable_colorztext_set(owl_variable *v, const void *newval, void *dummy)
 {
-  int ret = owl_variable_bool_set_default(v, newval);
+  int ret = owl_variable_bool_set_default(v, newval, dummy);
   /* flush the format cache so that we see the update, but only if we're done initializing BarnOwl */
   if (owl_global_get_msglist(&g) != NULL)
     owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
@@ -509,63 +508,61 @@ int owl_variable_colorztext_set(owl_variable *v, const void *newval)
   return ret;
 }
 
-int owl_variable_pseudologins_set(owl_variable *v, const void *newval)
+int owl_variable_pseudologins_set(owl_variable *v, const int newval, void *dummy)
 {
   static guint timer = 0;
-  if (newval) {
-    if (*(const int*)newval == 1) {
-      owl_function_zephyr_buddy_check(0);
-      if (timer == 0) {
-        timer = g_timeout_add_seconds(180, owl_zephyr_buddycheck_timer, NULL);
-      }
-    } else {
-      if (timer != 0) {
-        g_source_remove(timer);
-        timer = 0;
-      }
+  if (newval == 1) {
+    owl_function_zephyr_buddy_check(0);
+    if (timer == 0) {
+      timer = g_timeout_add_seconds(180, owl_zephyr_buddycheck_timer, NULL);
+    }
+  } else {
+    if (timer != 0) {
+      g_source_remove(timer);
+      timer = 0;
     }
   }
-  return owl_variable_bool_set_default(v, newval);
+  return owl_variable_bool_set_default(v, newval, dummy);
 }
 
 /* note that changing the value of this will clobber 
  * any user setting of this */
-int owl_variable_disable_ctrl_d_set(owl_variable *v, const void *newval)
+int owl_variable_disable_ctrl_d_set(owl_variable *v, const int newval, void *dummy)
 {
-  if (newval && !owl_context_is_startup(owl_global_get_context(&g))) {
-    if (*(const int*)newval == 2) {
+  if (!owl_context_is_startup(owl_global_get_context(&g))) {
+    if (newval == 2) {
       owl_function_command_norv("bindkey editmulti C-d command edit:delete-next-char");
-    } else if (*(const int*)newval == 1) {
+    } else if (newval == 1) {
       owl_function_command_norv("bindkey editmulti C-d command edit:done-or-delete");
     } else {
       owl_function_command_norv("bindkey editmulti C-d command edit:done");
     }
   }  
-  return owl_variable_int_set_default(v, newval);  
+  return owl_variable_int_set_default(v, newval, dummy);  
 }
 
-int owl_variable_tty_set(owl_variable *v, const void *newval)
+int owl_variable_tty_set(owl_variable *v, const char *newval, void *dummy)
 {
   owl_zephyr_set_locationinfo(g_get_host_name(), newval);
-  return(owl_variable_string_set_default(v, newval));
+  return(owl_variable_string_set_default(v, newval, dummy));
 }
 
-int owl_variable_default_exposure_set(owl_variable *v, const void *newval)
+int owl_variable_default_exposure_set(owl_variable *v, const char *newval, void *dummy)
 {
   return owl_zephyr_set_default_exposure(newval);
 }
 
-const void *owl_variable_default_exposure_get(const owl_variable *v)
+const char *owl_variable_default_exposure_get(const owl_variable *v, void *dummy)
 {
   return owl_zephyr_get_default_exposure();
 }
 
-int owl_variable_exposure_set(owl_variable *v, const void *newval)
+int owl_variable_exposure_set(owl_variable *v, const char *newval, void *dummy)
 {
   int ret = owl_zephyr_set_exposure(newval);
   if (ret != 0)
     return ret;
-  return owl_variable_string_set_default(v, owl_zephyr_normalize_exposure(newval));
+  return owl_variable_string_set_default(v, owl_zephyr_normalize_exposure(newval), dummy);
 }
 
 /**************************************************************************/
@@ -577,73 +574,131 @@ int owl_variable_dict_setup(owl_vardict *vd) {
   return owl_variable_add_defaults(vd);
 }
 
-int owl_variable_dict_add_from_list(owl_vardict *vd, owl_variable *variables_to_init)
+CALLER_OWN GClosure *owl_variable_make_closure(owl_variable *v,
+                                                      GCallback fn,
+                                                      GClosureMarshal marshal) {
+  GClosure *closure = g_cclosure_new(fn, NULL, NULL);
+  g_closure_set_marshal(closure,marshal);
+  g_closure_ref(closure);
+  g_closure_sink(closure);
+  return closure;
+}
+
+#define OWL_VARIABLE_SETUP_FUNC(variable, initializer, func_name, default_func, marshal_func, temp) do { \
+  if(initializer->func_name) { \
+    temp = initializer->func_name; \
+  } else { \
+    temp = default_func; \
+  } \
+  variable->func_name = owl_variable_make_closure(variable, G_CALLBACK(temp), \
+						  marshal_func);	\
+  } while(0)
+  
+
+int owl_variable_dict_add_from_list(owl_vardict *vd, owl_variable_init_params *variables_to_init)
 {
-  owl_variable *var, *cur;
-  for (var = variables_to_init; var->name != NULL; var++) {
-    cur = g_new(owl_variable, 1);
-    *cur = *var;
+  owl_variable *newvar = NULL;
+  owl_variable_init_params *init_params = NULL;
+  for (init_params = variables_to_init; init_params->name; init_params++) {
+    newvar = g_new0(owl_variable, 1);
+    newvar->type = init_params->type;
     /* strdup all the strings so we can delete them consistently. */
-    cur->name = g_strdup(var->name);
-    cur->summary = g_strdup(var->summary);
-    cur->description = g_strdup(var->description);
-    switch (cur->type) {
-    case OWL_VARIABLE_OTHER:
-      cur->set_fn(cur, cur->pval_default);
-      break;
+    newvar->name = g_strdup(init_params->name);
+    newvar->summary = g_strdup(init_params->summary);
+    newvar->description = g_strdup(init_params->description);
+    newvar->validsettings = init_params->validsettings;
+    GValue values[] = {{0}, {0}};
+    GValue *value = values+1;
+    GValue ret = {0};
+    GCallback fn = NULL;
+    switch (init_params->type) {
     case OWL_VARIABLE_STRING:
-      if (!cur->validate_fn) 
-	cur->validate_fn = owl_variable_string_validate_default;
-      if (!cur->set_fn) 
-	cur->set_fn = owl_variable_string_set_default;
-      if (!cur->set_fromstring_fn) 
-	cur->set_fromstring_fn = owl_variable_string_set_fromstring_default;
-      if (!cur->get_fn) 
-	cur->get_fn = owl_variable_get_default;
-      if (!cur->get_tostring_fn) 
-	cur->get_tostring_fn = owl_variable_string_get_tostring_default;      
-      if (!cur->delete_fn)
-	cur->delete_fn = owl_variable_delete_default;
-      cur->pval_default = g_strdup(var->pval_default);
-      cur->set_fn(cur, cur->pval_default);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, get_fn, 
+                              G_CALLBACK(owl_variable_string_get_default), 
+                              g_cclosure_user_marshal_STRING__VOID, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, set_fn, 
+                              G_CALLBACK(owl_variable_string_set_default), 
+                              g_cclosure_user_marshal_INT__STRING, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, validate_fn,
+                              G_CALLBACK(owl_variable_string_validate_default),
+                              g_cclosure_user_marshal_INT__STRING, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, set_fromstring_fn,
+                              G_CALLBACK(owl_variable_string_set_fromstring_default),
+                              g_cclosure_user_marshal_INT__STRING, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, get_tostring_fn,
+                              G_CALLBACK(owl_variable_string_get_tostring_default),
+                              g_cclosure_user_marshal_STRING__STRING, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, get_default_fn, 
+                              G_CALLBACK(owl_variable_string_get_default_default), 
+                              g_cclosure_user_marshal_STRING__VOID, fn);
+
+      g_value_init(value,G_TYPE_STRING);
+      g_value_set_string(value, init_params->pval_default);
       break;
     case OWL_VARIABLE_BOOL:
-      if (!cur->validate_fn) 
-	cur->validate_fn = owl_variable_bool_validate_default;
-      if (!cur->set_fn) 
-	cur->set_fn = owl_variable_bool_set_default;
-      if (!cur->set_fromstring_fn) 
-	cur->set_fromstring_fn = owl_variable_bool_set_fromstring_default;
-      if (!cur->get_fn) 
-	cur->get_fn = owl_variable_get_default;
-      if (!cur->get_tostring_fn) 
-	cur->get_tostring_fn = owl_variable_bool_get_tostring_default;      
-      if (!cur->delete_fn)
-	cur->delete_fn = owl_variable_delete_default;
-      cur->val = g_new(int, 1);
-      cur->set_fn(cur, &cur->ival_default);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, get_fn, 
+                              G_CALLBACK(owl_variable_bool_get_default), 
+                              g_cclosure_user_marshal_BOOLEAN__VOID, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, set_fn, 
+                              G_CALLBACK(owl_variable_bool_set_default), 
+                              g_cclosure_user_marshal_INT__BOOLEAN, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, validate_fn,
+                              G_CALLBACK(owl_variable_bool_validate_default),
+                              g_cclosure_user_marshal_INT__BOOLEAN, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, set_fromstring_fn,
+                              G_CALLBACK(owl_variable_bool_set_fromstring_default),
+                              g_cclosure_user_marshal_INT__STRING, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, get_tostring_fn,
+                              G_CALLBACK(owl_variable_bool_get_tostring_default),
+                              g_cclosure_user_marshal_STRING__BOOLEAN, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, get_default_fn,
+                              G_CALLBACK(owl_variable_bool_get_default_default),
+                              g_cclosure_user_marshal_BOOLEAN__VOID, fn);
+
+      g_value_init(value,G_TYPE_BOOLEAN);
+      g_value_set_boolean(value, !!(init_params->ival_default));
       break;
     case OWL_VARIABLE_INT:
-      if (!cur->validate_fn) 
-	cur->validate_fn = owl_variable_int_validate_default;
-      if (!cur->set_fn) 
-	cur->set_fn = owl_variable_int_set_default;
-      if (!cur->set_fromstring_fn) 
-	cur->set_fromstring_fn = owl_variable_int_set_fromstring_default;
-      if (!cur->get_fn) 
-	cur->get_fn = owl_variable_get_default;
-      if (!cur->get_tostring_fn) 
-	cur->get_tostring_fn = owl_variable_int_get_tostring_default;      
-      if (!cur->delete_fn)
-	cur->delete_fn = owl_variable_delete_default;
-      cur->val = g_new(int, 1);
-      cur->set_fn(cur, &cur->ival_default);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, get_fn, 
+                              G_CALLBACK(owl_variable_int_get_default), 
+                              g_cclosure_user_marshal_INT__VOID, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, set_fn, 
+                              G_CALLBACK(owl_variable_int_set_default), 
+                              g_cclosure_user_marshal_INT__INT, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, validate_fn,
+                              G_CALLBACK(owl_variable_int_validate_default),
+                              g_cclosure_user_marshal_INT__INT, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, set_fromstring_fn,
+                              G_CALLBACK(owl_variable_int_set_fromstring_default),
+                              g_cclosure_user_marshal_INT__STRING, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, get_tostring_fn,
+                              G_CALLBACK(owl_variable_int_get_tostring_default),
+                              g_cclosure_user_marshal_STRING__INT, fn);
+      OWL_VARIABLE_SETUP_FUNC(newvar, init_params, get_default_fn, 
+                              G_CALLBACK(owl_variable_int_get_default_default), 
+                              g_cclosure_user_marshal_INT__VOID, fn);
+
+      g_value_init(value,G_TYPE_INT);
+      g_value_set_int(value, init_params->ival_default);
       break;
     default:
       fprintf(stderr, "owl_variable_setup: invalid variable type\n");
       return(-2);
     }
-    owl_dict_insert_element(vd, cur->name, cur, NULL);
+    OWL_VARIABLE_SETUP_FUNC(newvar, init_params, delete_fn, 
+                            G_CALLBACK(owl_variable_delete_default),
+                            g_cclosure_marshal_VOID__VOID, fn);
+    
+    g_value_init(&(newvar->gval_default), G_VALUE_TYPE(value));
+    g_value_init(&(newvar->val), G_VALUE_TYPE(value));
+    g_value_copy(value, &(newvar->gval_default));
+    /* we have the value boxed up already *anyway*, so... */
+    g_value_init(values, G_TYPE_POINTER);
+    g_value_set_pointer(values, newvar);
+    g_value_init(&ret, G_TYPE_INT);
+    g_closure_invoke(newvar->set_fn, &ret, 2, values, NULL);
+    g_value_unset(value);
+    owl_dict_insert_element(vd, newvar->name, newvar, NULL);
   }
   return 0;
 }
@@ -655,7 +710,7 @@ void owl_variable_dict_add_variable(owl_vardict * vardict,
 
 CALLER_OWN owl_variable *owl_variable_newvar(const char *name, const char *summary, const char *description)
 {
-  owl_variable * var = g_new0(owl_variable, 1);
+  owl_variable *var = g_new0(owl_variable, 1);
   var->name = g_strdup(name);
   var->summary = g_strdup(summary);
   var->description = g_strdup(description);
@@ -669,70 +724,107 @@ void owl_variable_update(owl_variable *var, const char *summary, const char *des
   var->description = g_strdup(desc);
 }
 
+#define OWL_VARIABLE_SETUP_DEFAULT_FUNCS(variable, type, gtype) do { \
+  variable->set_fn = owl_variable_make_closure(variable, \
+    G_CALLBACK(owl_variable_##type##_set_default), \
+    g_cclosure_user_marshal_INT__##gtype); \
+  variable->get_fn = owl_variable_make_closure(variable, \
+    G_CALLBACK(owl_variable_##type##_get_default), \
+    g_cclosure_user_marshal_##gtype##__##VOID); \
+  variable->validate_fn = owl_variable_make_closure(variable, \
+    G_CALLBACK(owl_variable_##type##_validate_default), \
+    g_cclosure_user_marshal_INT__##gtype); \
+  variable->set_fromstring_fn = owl_variable_make_closure(variable, \
+    G_CALLBACK(owl_variable_##type##_set_fromstring_default), \
+    g_cclosure_user_marshal_INT__STRING); \
+  variable->get_tostring_fn = owl_variable_make_closure(variable, \
+    G_CALLBACK(owl_variable_##type##_get_tostring_default), \
+    g_cclosure_user_marshal_STRING__##gtype); \
+  variable->get_default_fn = owl_variable_make_closure(variable, \
+    G_CALLBACK(owl_variable_##type##_get_default_default), \
+    g_cclosure_user_marshal_##gtype##__##VOID); \
+  } while(0);
+
 void owl_variable_dict_newvar_string(owl_vardict *vd, const char *name, const char *summ, const char *desc, const char *initval)
 {
+  GValue default_gvals[] = {{0}, {0}};
+  GValue *default_gval = default_gvals+1;
+  GValue retval = {0}; 
+  g_value_init(default_gval, G_TYPE_STRING);
+  g_value_init(&retval, G_TYPE_INT);
+  g_value_set_static_string(default_gval, initval);
   owl_variable *old = owl_variable_get_var(vd, name);
   if (old && owl_variable_get_type(old) == OWL_VARIABLE_STRING) {
     owl_variable_update(old, summ, desc);
-    g_free(old->pval_default);
-    old->pval_default = g_strdup(initval);
+    g_value_copy(default_gval, &(old->gval_default));
   } else {
     owl_variable * var = owl_variable_newvar(name, summ, desc);
     var->type = OWL_VARIABLE_STRING;
     var->validsettings = "<string>";
-    var->pval_default = g_strdup(initval);
-    var->set_fn = owl_variable_string_set_default;
-    var->set_fromstring_fn = owl_variable_string_set_fromstring_default;
-    var->get_fn = owl_variable_get_default;
-    var->get_tostring_fn = owl_variable_string_get_tostring_default;
-    var->delete_fn = owl_variable_delete_default;
-    var->set_fn(var, initval);
+    g_value_init(&(var->val), G_TYPE_STRING);
+    g_value_init(default_gvals, G_TYPE_POINTER);
+    g_value_set_pointer(default_gvals, var);
+    g_value_init(&(var->gval_default), G_TYPE_STRING);
+    g_value_set_string(&(var->gval_default), initval);
+    OWL_VARIABLE_SETUP_DEFAULT_FUNCS(var, string, STRING);
+
+    g_closure_invoke(var->set_fn, &retval, 2, default_gvals, NULL);
     owl_variable_dict_add_variable(vd, var);
   }
 }
 
 void owl_variable_dict_newvar_int(owl_vardict *vd, const char *name, const char *summ, const char *desc, int initval)
 {
+  GValue default_gvals[] = {{0}, {0}};
+  GValue *default_gval = default_gvals+1;
+  GValue retval = {0}; 
+  g_value_init(default_gval, G_TYPE_INT);
+  g_value_init(&retval, G_TYPE_INT);
+  g_value_set_int(default_gval, initval);
   owl_variable *old = owl_variable_get_var(vd, name);
   if (old && owl_variable_get_type(old) == OWL_VARIABLE_INT) {
     owl_variable_update(old, summ, desc);
-    old->ival_default = initval;
+    g_value_copy(default_gval, &(old->gval_default));
   } else {
     owl_variable * var = owl_variable_newvar(name, summ, desc);
     var->type = OWL_VARIABLE_INT;
     var->validsettings = "<int>";
-    var->ival_default = initval;
-    var->validate_fn = owl_variable_int_validate_default;
-    var->set_fn = owl_variable_int_set_default;
-    var->set_fromstring_fn = owl_variable_int_set_fromstring_default;
-    var->get_fn = owl_variable_get_default;
-    var->get_tostring_fn = owl_variable_int_get_tostring_default;
-    var->delete_fn = owl_variable_delete_default;
-    var->val = g_new(int, 1);
-    var->set_fn(var, &initval);
+    g_value_init(&(var->val), G_TYPE_INT);
+    g_value_init(&(var->gval_default), G_TYPE_INT);
+    OWL_VARIABLE_SETUP_DEFAULT_FUNCS(var, int, INT);
+    g_value_init(default_gvals, G_TYPE_POINTER);
+    g_value_set_pointer(default_gvals, var);
+    g_value_set_int(&(var->gval_default), initval);
+    g_closure_invoke(var->set_fn, &retval, 2, default_gvals, NULL);
+    /*    g_value_unset(&retval); */
     owl_variable_dict_add_variable(vd, var);
   }
 }
 
-void owl_variable_dict_newvar_bool(owl_vardict *vd, const char *name, const char *summ, const char *desc, int initval)
+void owl_variable_dict_newvar_bool(owl_vardict *vd, const char *name, const char *summ, const char *desc, gboolean initval)
 {
+  GValue default_gvals[] = {{0}, {0}};
+  GValue *default_gval = default_gvals+1;
+  GValue retval = {0}; 
+  g_value_init(default_gval, G_TYPE_BOOLEAN);
+  g_value_init(&retval, G_TYPE_INT);
+  g_value_set_boolean(default_gval, initval);
   owl_variable *old = owl_variable_get_var(vd, name);
   if (old && owl_variable_get_type(old) == OWL_VARIABLE_BOOL) {
     owl_variable_update(old, summ, desc);
-    old->ival_default = initval;
+    g_value_copy(default_gval, &(old->gval_default));
   } else {
     owl_variable * var = owl_variable_newvar(name, summ, desc);
     var->type = OWL_VARIABLE_BOOL;
     var->validsettings = "on,off";
-    var->ival_default = initval;
-    var->validate_fn = owl_variable_bool_validate_default;
-    var->set_fn = owl_variable_bool_set_default;
-    var->set_fromstring_fn = owl_variable_bool_set_fromstring_default;
-    var->get_fn = owl_variable_get_default;
-    var->get_tostring_fn = owl_variable_bool_get_tostring_default;
-    var->delete_fn = owl_variable_delete_default;
-    var->val = g_new(int, 1);
-    var->set_fn(var, &initval);
+    g_value_init(&(var->val), G_TYPE_BOOLEAN);
+    g_value_init(&(var->gval_default), G_TYPE_BOOLEAN);
+    OWL_VARIABLE_SETUP_DEFAULT_FUNCS(var, bool, BOOLEAN);
+
+    g_value_init(default_gvals, G_TYPE_POINTER);
+    g_value_set_pointer(default_gvals, var);
+    g_value_set_int(&(var->gval_default), initval);
+    g_closure_invoke(var->set_fn, &retval, 2, default_gvals, NULL);  
     owl_variable_dict_add_variable(vd, var);
   }
 }
@@ -748,13 +840,32 @@ CALLER_OWN GPtrArray *owl_variable_dict_get_names(const owl_vardict *d) {
 
 void owl_variable_cleanup(owl_variable *v)
 {
-  if (v->delete_fn) v->delete_fn(v);
+  GValue val = {0};
+  if (v->delete_fn) {
+    g_value_init(&val, G_TYPE_POINTER);
+    g_value_set_pointer(&val, v);
+    g_closure_invoke(v->delete_fn, NULL, 1, &val, NULL);
+  }
+  g_free(v->name);
+  g_free(v->summary);
+  g_free(v->description);
+  if (v->type == OWL_VARIABLE_STRING) {
+    g_value_unset(&v->gval_default);
+  }
+  g_closure_unref(v->get_fn);
+  g_closure_unref(v->set_fn);
+  g_closure_unref(v->validate_fn);
+  g_closure_unref(v->get_tostring_fn);
+  g_closure_unref(v->set_fromstring_fn);
+}
+ 
+void owl_variable_cleanup_initializer(owl_variable_init_params *v) {
   g_free(v->name);
   g_free(v->summary);
   g_free(v->description);
   if (v->type == OWL_VARIABLE_STRING)
     g_free(v->pval_default);
-}
+ }
 
 void owl_variable_delete(owl_variable *v)
 {
@@ -787,65 +898,153 @@ int owl_variable_get_type(const owl_variable *v)
 
 /* functions for getting and setting variable values */
 
+static CALLER_OWN  char *owl_variable_invoke_tostring(const owl_variable *v,
+						     const GValue *value) 
+{
+  GValue values[] = { {0}, {0}};
+  GValue *value_box = values+1;
+  GValue tostring_box = {0};
+  char *ret = NULL;
+  gboolean need_to_free = false;
+
+  g_value_init(values, G_TYPE_POINTER);
+  g_value_set_pointer(values, (gpointer)v);
+  g_value_init(&tostring_box, G_TYPE_STRING);
+  if(value) {
+    g_value_init(value_box, G_VALUE_TYPE(value));
+    g_value_copy(value, value_box);
+    need_to_free = true;
+  } else {
+    g_value_init(value_box, owl_variable_gtype_map[v->type]);
+    g_closure_invoke(v->get_fn, value_box, 1, values, NULL);
+  }
+  g_closure_invoke(v->get_tostring_fn,&tostring_box, 2, values, NULL);
+
+  ret = g_value_dup_string(&tostring_box);
+  g_value_unset(&tostring_box);
+  if(need_to_free) {
+    g_value_unset(value_box);
+  }
+
+  return ret;
+}
+
 /* returns 0 on success, prints a status msg if msg is true */
 int owl_variable_set_fromstring(owl_variable *v, const char *value, int msg) {
   char *tostring;
+  GValue values[] = {{0},{0},{0}};
+  GValue *value_box = values+1;
+  GValue return_box = {0};
+  int set_successfully = -1;
   if (!v->set_fromstring_fn) {
     if (msg) owl_function_error("Variable %s is read-only", owl_variable_get_name(v));
     return -1;   
   }
-  if (0 != v->set_fromstring_fn(v, value)) {
+  g_value_init(value_box, G_TYPE_STRING);
+  g_value_init(values, G_TYPE_POINTER);
+  g_value_set_pointer(values, v);
+  g_value_init(&return_box, G_TYPE_INT);
+  g_value_set_static_string(value_box, value);
+  g_closure_invoke(v->set_fromstring_fn, &return_box, 2, values, NULL);
+  set_successfully = g_value_get_int(&return_box);
+  if (0 != set_successfully) {
     if (msg) owl_function_error("Unable to set %s (must be %s)", owl_variable_get_name(v),
                                 owl_variable_get_validsettings(v));
-    return -1;
   }
-  if (msg) {
-    tostring = v->get_tostring_fn(v, v->get_fn(v));
-    if (tostring)
+  if (msg && (0 != set_successfully)) {
+    tostring = owl_variable_invoke_tostring(v, NULL);
+    if (tostring) {
       owl_function_makemsg("%s = '%s'", owl_variable_get_name(v), tostring);
-    else
+    } else {
       owl_function_makemsg("%s = <null>", owl_variable_get_name(v));
+    }
     g_free(tostring);
-  }    
-  return 0;
+  }
+  g_value_unset(value_box);
+  return set_successfully;
+}
+
+static int owl_variable_invoke_setter(owl_variable *v, const GValue *value) {
+  GValue values[] = {{0},{0}};
+  GValue return_box = {0};
+  int ret = -1;
+  g_value_init(&return_box, G_TYPE_INT);
+  g_value_init(values, G_TYPE_POINTER);
+  g_value_set_pointer(values, v);
+  g_value_init(values+1, G_VALUE_TYPE(value));
+  g_value_copy(value, values+1);
+  g_closure_invoke(v->set_fn, &return_box, 2, values, NULL);
+  ret = g_value_get_int(&return_box);
+  /*  g_value_unset(&return_box); */
+  g_value_unset(values+1);
+  return ret;
 }
  
 int owl_variable_set_string(owl_variable *v, const char *newval)
 {
+  int ret = -1;
+  GValue value_box = {0};
   if (v->type != OWL_VARIABLE_STRING) return -1;
-  return v->set_fn(v, newval);
+  g_value_init(&value_box, G_TYPE_STRING);
+  g_value_set_static_string(&value_box, newval);
+  ret = owl_variable_invoke_setter(v, &value_box);
+  g_value_unset(&value_box);
+  return ret;
 }
- 
+
 int owl_variable_set_int(owl_variable *v, int newval)
 {
+  int ret = -1;
+  GValue value_box = {0};
   if (v->type != OWL_VARIABLE_INT && v->type != OWL_VARIABLE_BOOL) return -1;
-  return v->set_fn(v, &newval);
+  g_value_init(&value_box, G_TYPE_INT);
+  g_value_set_int(&value_box, newval);
+  ret = owl_variable_invoke_setter(v, &value_box);
+  /* g_value_unset(&value_box); */
+  return ret;
 }
- 
+
+int owl_variable_set_bool(owl_variable *v, gboolean newval) {
+  int ret = -1;
+  GValue value_box = {0};
+  if (v->type != OWL_VARIABLE_BOOL) return -1;
+  g_value_init(&value_box, G_TYPE_BOOLEAN);
+  g_value_set_int(&value_box, newval);
+  ret = owl_variable_invoke_setter(v, &value_box);
+  /* g_value_unset(&value_box); */
+  return ret;
+}
+
 int owl_variable_set_bool_on(owl_variable *v)
 {
   if (v->type != OWL_VARIABLE_BOOL) return -1;
-  return owl_variable_set_int(v, true);
+  return owl_variable_set_bool(v, true);
 }
 
 int owl_variable_set_bool_off(owl_variable *v)
 {
   if (v->type != OWL_VARIABLE_BOOL) return -1;
-  return owl_variable_set_int(v, false);
+  return owl_variable_set_bool(v, false);
 }
 
 CALLER_OWN char *owl_variable_get_tostring(const owl_variable *v)
 {
-  return v->get_tostring_fn(v, v->get_fn(v));
+  return owl_variable_invoke_tostring(v, NULL);
 }
 
 CALLER_OWN char *owl_variable_get_default_tostring(const owl_variable *v)
 {
-  if (v->type == OWL_VARIABLE_INT || v->type == OWL_VARIABLE_BOOL) {
-    return v->get_tostring_fn(v, &(v->ival_default));
-  } else {
-    return v->get_tostring_fn(v, v->pval_default);
-  }
+  char *ret = NULL;
+  GValue default_value_box = {0};
+  GValue variable_box = {0};
+  g_value_init(&variable_box, G_TYPE_POINTER);
+  g_value_init(&default_value_box, owl_variable_gtype_map[v->type]);
+  g_value_set_pointer(&variable_box, (gpointer)v);
+  g_closure_invoke(v->get_default_fn, &default_value_box, 1, 
+		   &variable_box, NULL);  
+  ret = owl_variable_invoke_tostring(v, &default_value_box);
+  g_value_unset(&default_value_box);
+  return ret;
 }
 
 owl_variable *owl_variable_get_var(const owl_vardict *d, const char *name)
@@ -853,51 +1052,47 @@ owl_variable *owl_variable_get_var(const owl_vardict *d, const char *name)
   return owl_dict_find_element(d, name);
 }
 
-/* returns a reference */
-const void *owl_variable_get(const owl_variable *v)
+const GValue *owl_variable_get(const owl_variable *v, GValue *val)
 {
-  return v->get_fn(v);
+  GValue variable_box = {0};
+  g_value_init(&variable_box, G_TYPE_POINTER);
+  g_value_set_pointer(&variable_box,(gpointer)v);
+  g_closure_invoke(v->get_fn, val, 1, &variable_box, NULL);  
+  return val;
 }
 
 const char *owl_variable_get_string(const owl_variable *v)
 {
+  GValue value = {0};
   if (owl_variable_get_type(v) != OWL_VARIABLE_STRING) {
     owl_function_error("Variable '%s' is not a string.", owl_variable_get_name(v));
     return NULL;
   }
-  return owl_variable_get(v);
-}
-
-/* returns a reference */
-const void *owl_variable_get_other(const owl_variable *v)
-{
-  if (owl_variable_get_type(v) != OWL_VARIABLE_OTHER) {
-    owl_function_error("Variable '%s' is not type other.", owl_variable_get_name(v));
-    return NULL;
-  }
-  return owl_variable_get(v);
+  g_value_init(&value, G_TYPE_STRING);
+  /* not a leak, since we don't own the underlying string */
+  return g_value_get_string(owl_variable_get(v,&value));
 }
 
 int owl_variable_get_int(const owl_variable *v)
 {
+  GValue value = {0};
   if (owl_variable_get_type(v) != OWL_VARIABLE_INT) {
     owl_function_error("Variable '%s' is an int.", owl_variable_get_name(v));
     return -1;
   }
-  const int *pi = owl_variable_get(v);
-  if (!pi) return -1;
-  return *pi;
+  g_value_init(&value, G_TYPE_INT);
+  return g_value_get_int(owl_variable_get(v,&value));
 }
 
 int owl_variable_get_bool(const owl_variable *v)
 {
+  GValue value = {0};
   if (owl_variable_get_type(v) != OWL_VARIABLE_BOOL) {
     owl_function_error("Variable '%s' is a boolean.", owl_variable_get_name(v));
     return -1;
   }
-  const int *pi = owl_variable_get(v);
-  if (!pi) return -1;
-  return *pi;
+  g_value_init(&value, G_TYPE_BOOLEAN);
+  return g_value_get_boolean(owl_variable_get(v,&value));
 }
 
 void owl_variable_describe(const owl_variable *v, owl_fmtext *fm)
@@ -932,11 +1127,11 @@ void owl_variable_get_help(const owl_variable *v, owl_fmtext *fm) {
   g_free(tostring);
   owl_fmtext_append_normal(fm, "\n\n");
 
-
   tostring = owl_variable_get_default_tostring(v);
   owl_fmtext_append_normal(fm, "Default:        ");
   owl_fmtext_append_normal(fm, (tostring ? tostring : "<null>"));
   owl_fmtext_append_normal(fm, "\n\n");
+  g_free(tostring);
 
   owl_fmtext_append_normal(fm, "Valid Settings: ");
   owl_fmtext_append_normal(fm, owl_variable_get_validsettings(v));
@@ -947,7 +1142,6 @@ void owl_variable_get_help(const owl_variable *v, owl_fmtext *fm) {
     owl_fmtext_append_normal(fm, owl_variable_get_description(v));
     owl_fmtext_append_normal(fm, "\n\n");
   }
-  g_free(tostring);
 }
 
 
@@ -959,46 +1153,91 @@ void owl_variable_get_help(const owl_variable *v, owl_fmtext *fm) {
 
 /* default common functions */
 
-const void *owl_variable_get_default(const owl_variable *v) {
-  return v->val;
+const char *owl_variable_string_get_default(const owl_variable *v, void *dummy) {
+  return g_value_get_string(&(v->val));
 }
 
-void owl_variable_delete_default(owl_variable *v)
+const char *owl_variable_string_get_default_default(const owl_variable *v, void *dummy) {
+  return g_value_get_string(&(v->gval_default));
+}
+
+
+const int owl_variable_int_get_default(const owl_variable *v, void *dummy) {
+  return g_value_get_int(&(v->val));
+}
+
+const int owl_variable_int_get_default_default(const owl_variable *v, void *dummy) {
+  return g_value_get_int(&(v->gval_default));
+}
+
+
+const gboolean owl_variable_bool_get_default(const owl_variable *v, void *dummy) {
+  return g_value_get_boolean(&(v->val));
+}
+
+const gboolean owl_variable_bool_get_default_default(const owl_variable *v, void *dummy) {
+  return g_value_get_boolean(&(v->gval_default));
+}
+
+
+void owl_variable_delete_default(owl_variable *v, void *dummy)
 {
-  g_free(v->val);
+  g_value_unset(&(v->val));
 }
 
 /* default functions for booleans */
 
-int owl_variable_bool_validate_default(const owl_variable *v, const void *newval) {
-  if (newval == NULL) return(0);
-  else if (*(const int*)newval==1 || *(const int*)newval==0) return(1);
-  else return (0);
+int owl_variable_bool_validate_default(const owl_variable *v, const gboolean newval, void *dummy) {
+  return (newval == 1) || (newval == 0);
 }
 
-int owl_variable_bool_set_default(owl_variable *v, const void *newval) {
+static int owl_variable_invoke_validator(owl_variable *v, const GValue *newval)
+{
+  GValue values[] = {{0},{0}};
+  GValue ret = {0};
+  g_value_init(&ret, G_TYPE_INT);
+  g_value_init(values, G_TYPE_POINTER);
+  g_value_set_pointer(values, v);
+  g_value_init(values+1, G_VALUE_TYPE(newval));
+  g_value_copy(newval, values+1);
+  g_closure_invoke(v->validate_fn, &ret, 2, values, NULL);
+  g_value_unset(values+1);
+  return g_value_get_int(&ret);
+}
+
+int owl_variable_bool_set_default(owl_variable *v, const bool newval, void *dummy) {
+  GValue value = {0};
+  g_value_init(&value, G_TYPE_BOOLEAN);
+  g_value_set_boolean(&value, newval);
   if (v->validate_fn) {
-    if (!v->validate_fn(v, newval)) return(-1);
+    if (!owl_variable_invoke_validator(v,&value)) {
+      return(-1);
+    }
   }
-  *(int*)v->val = *(const int*)newval;
+  g_value_set_boolean(&(v->val), newval);
   return(0);
 }
 
-int owl_variable_bool_set_fromstring_default(owl_variable *v, const char *newval) {
-  int i;
-  if (!strcmp(newval, "on")) i=1;
-  else if (!strcmp(newval, "off")) i=0;
-  else return(-1);
-  return (v->set_fn(v, &i));
+int owl_variable_bool_set_fromstring_default(owl_variable *v, const char *newval, void *dummy) {
+  gboolean i;
+  GValue value = {0};
+  if (!strcmp(newval, "on")) {
+    i=1;
+  } else if (!strcmp(newval, "off")) {
+    i=0;
+  } else {
+    return(-1);
+  }
+  g_value_init(&value, G_TYPE_BOOLEAN);
+  g_value_set_boolean(&value, i);
+  return owl_variable_invoke_setter(v,&value);
 }
 
-CALLER_OWN char *owl_variable_bool_get_tostring_default(const owl_variable *v, const void *val)
+CALLER_OWN char *owl_variable_bool_get_tostring_default(const owl_variable *v, const bool val, void *dummy)
 {
-  if (val == NULL) {
-    return NULL;
-  } else if (*(const int*)val == 0) {
+  if (val == 0) {
     return g_strdup("off");
-  } else if (*(const int*)val == 1) {
+  } else if (val == 1) {
     return g_strdup("on");
   } else {
     return g_strdup("<invalid>");
@@ -1007,55 +1246,59 @@ CALLER_OWN char *owl_variable_bool_get_tostring_default(const owl_variable *v, c
 
 /* default functions for integers */
 
-int owl_variable_int_validate_default(const owl_variable *v, const void *newval) {
-  if (newval == NULL) return(0);
-  else return (1);
+int owl_variable_int_validate_default(const owl_variable *v, const int newval, void *dummy)
+{
+  return (1);
 }
 
-int owl_variable_int_set_default(owl_variable *v, const void *newval) {
+int owl_variable_int_set_default(owl_variable *v, const int newval, void *dummy) {
+  GValue value = {0};
+  g_value_init(&value, G_TYPE_INT);
+  g_value_set_int(&value, newval);
   if (v->validate_fn) {
-    if (!v->validate_fn(v, newval)) return(-1);
+    if (!owl_variable_invoke_validator(v,&value)) {
+      return(-1);
+    }
   }
-  *(int*)v->val = *(const int*)newval;
+  g_value_set_int(&(v->val), newval);
   return(0);
 }
 
-int owl_variable_int_set_fromstring_default(owl_variable *v, const char *newval) {
+int owl_variable_int_set_fromstring_default(owl_variable *v, const char *newval, void *dummy) {
   int i;
   char *ep;
+  GValue value = {0};
   i = strtol(newval, &ep, 10);
   if (*ep || ep==newval) return(-1);
-  return (v->set_fn(v, &i));
+  g_value_init(&value, G_TYPE_INT);
+  g_value_set_int(&value, i);
+  return owl_variable_invoke_setter(v, &value);
 }
 
-CALLER_OWN char *owl_variable_int_get_tostring_default(const owl_variable *v, const void *val)
+CALLER_OWN char *owl_variable_int_get_tostring_default(const owl_variable *v, const int val, void *dummy)
 {
-  if (val == NULL) {
-    return NULL;
-  } else {
-    return g_strdup_printf("%d", *(const int*)val);
-  } 
+  return g_strdup_printf("%d", val);
 }
 
 /* default functions for enums (a variant of integers) */
 
-int owl_variable_enum_validate(const owl_variable *v, const void *newval) {  
+int owl_variable_enum_validate(const owl_variable *v, const int newval, void *dummy) {  
   char **enums;
   int nenums, val;
-  if (newval == NULL) return(0);
   enums = g_strsplit_set(v->validsettings, ",", 0);
   nenums = g_strv_length(enums);
   g_strfreev(enums);
-  val = *(const int*)newval;
+  val = newval;
   if (val < 0 || val >= nenums) {
     return(0);
   }
   return(1);
 }
 
-int owl_variable_enum_set_fromstring(owl_variable *v, const char *newval) {
+int owl_variable_enum_set_fromstring(owl_variable *v, const char *newval, void *dummy) {
   char **enums;
   int i, val=-1;
+  GValue box = {0};
   if (newval == NULL) return(-1);
   enums = g_strsplit_set(v->validsettings, ",", 0);
   for (i = 0; enums[i] != NULL; i++) {
@@ -1065,21 +1308,20 @@ int owl_variable_enum_set_fromstring(owl_variable *v, const char *newval) {
   }
   g_strfreev(enums);
   if (val == -1) return(-1);
-  return (v->set_fn(v, &val));
+  g_value_init(&box, G_TYPE_INT);
+  g_value_set_int(&box, val);
+  return owl_variable_invoke_setter(v, &box);
 }
 
-CALLER_OWN char *owl_variable_enum_get_tostring(const owl_variable *v, const void *val)
+CALLER_OWN char *owl_variable_enum_get_tostring(const owl_variable *v, const int val, void *dummy)
 {
   char **enums;
   int nenums, i;
   char *tostring;
 
-  if (val == NULL) {
-    return NULL;
-  }
   enums = g_strsplit_set(v->validsettings, ",", 0);
   nenums = g_strv_length(enums);
-  i = *(const int*)val;
+  i = val;
   if (i<0 || i>=nenums) {
     g_strfreev(enums);
     return g_strdup_printf("<invalid:%d>", i);
@@ -1091,26 +1333,44 @@ CALLER_OWN char *owl_variable_enum_get_tostring(const owl_variable *v, const voi
 
 /* default functions for stringeans */
 
-int owl_variable_string_validate_default(const struct _owl_variable *v, const void *newval) {
+int owl_variable_string_validate_default(const struct _owl_variable *v, const char *newval, void *dummy) {
   if (newval == NULL) return(0);
   else return (1);
 }
 
-int owl_variable_string_set_default(owl_variable *v, const void *newval) {
+int owl_variable_string_set_default(owl_variable *v, const char *newval, void *dummy) {
+  GValue value = {0};
+  g_value_init(&value, G_TYPE_STRING);
+  g_value_set_static_string(&value, newval);
   if (v->validate_fn) {
-    if (!v->validate_fn(v, newval)) return(-1);
+    if (!owl_variable_invoke_validator(v,&value)) {
+      return(-1);
+    }
   }
-  g_free(v->val);
-  v->val = g_strdup(newval);
+
+  /* set_string dups the string for us */
+  g_value_set_string(&(v->val), newval);
   return(0);
 }
 
-int owl_variable_string_set_fromstring_default(owl_variable *v, const char *newval) {
-  return (v->set_fn(v, newval));
+int owl_variable_string_set_fromstring_default(owl_variable *v, const char *newval, void *dummy) 
+{
+  GValue val = {0};
+  int ret = -1;
+  g_value_init(&val, G_TYPE_STRING);
+  /* we don't need to dup the string because we don't own it and the setter function we invoke will DTRT */
+  g_value_set_static_string(&val, newval);
+  ret = owl_variable_invoke_setter(v, &val);
+  g_value_unset(&val);
+  return ret;
 }
 
-CALLER_OWN char *owl_variable_string_get_tostring_default(const owl_variable *v, const void *val)
+CALLER_OWN char *owl_variable_string_get_tostring_default(const owl_variable *v, const char *val, void *dummy)
 {
-  return g_strdup((const char*)val);
+  if(val) {
+    return g_strdup(val);
+  } else {
+    return g_strdup("");
+  }
 }
 

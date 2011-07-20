@@ -1,0 +1,16 @@
+# set_fn
+INT:STRING
+INT:INT
+INT:BOOL
+# get_fn
+INT:VOID
+BOOL:VOID
+STRING:VOID
+# validate_fn has same signature as set_fn
+# set_fromstring_fn
+INT:STRING
+# get_tostring_fn
+STRING:BOOL
+STRING:INT
+STRING:STRING
+

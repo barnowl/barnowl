@@ -401,6 +401,79 @@ new_command(name, func, summary, usage, description)
 		owl_cmddict_add_cmd(owl_global_get_cmddict(&g), &cmd);
 	   }
 
+
+MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
+
+void
+new_variable_full(name, summary, desc, type, data, default_val, get_fn, get_default_fn, tostring_fn, validate_fn, set_fn, fromstring_fn)
+    const char *name
+    const char *summary
+    const char *desc
+    int type
+    SV *data
+    SV *default_val
+    SV *get_fn
+    SV *get_default_fn
+    SV *tostring_fn
+    SV *validate_fn
+    SV *set_fn
+    SV *fromstring_fn
+    CODE:
+{
+	owl_variable *variable = NULL;
+	int count = 0;
+	int res = -1;
+	GClosure *delete_fn = NULL;
+	if(!SV_IS_CODEREF(get_fn)) {
+		croak("Get function must be a coderef!");
+	}
+	if(!SV_IS_CODEREF(tostring_fn)) {
+		croak("To-string function must be a coderef!");
+	}
+	if(!SV_IS_CODEREF(validate_fn)) {
+		croak("Validation function must be a coderef!");
+	}
+	if(!SV_IS_CODEREF(set_fn)) {
+		croak("Set function must be a coderef!");
+	}
+	if(!SV_IS_CODEREF(fromstring_fn)) {
+		croak("From-string function must be a coderef!");
+	}
+	if(!SV_IS_CODEREF(get_default_fn)) {
+		croak("Get-default function must be a coderef!");
+	}
+	variable = owl_variable_newvar(name, summary, desc);
+	variable->type = type;
+	variable->get_fn = perl_closure_new(get_fn, data, false);
+	variable->get_tostring_fn = perl_closure_new(tostring_fn, data, false);
+	variable->validate_fn = perl_closure_new(validate_fn, data, false);
+	variable->set_fn = perl_closure_new(set_fn, data, false);
+	variable->set_fromstring_fn = perl_closure_new(set_fn, data, false);
+	variable->get_default_fn = perl_closure_new(get_default_fn, 
+						    data, false);
+	delete_fn = g_cclosure_new(G_CALLBACK(owl_perl_delete_perl_variable),
+					   data, NULL);
+	g_closure_set_marshal(delete_fn,g_cclosure_marshal_VOID__VOID);
+	g_closure_ref(delete_fn);
+	g_closure_sink(delete_fn);
+	variable->delete_fn = delete_fn;
+
+	SvREFCNT_inc(data);
+
+	PUSHMARK(SP);
+	XPUSHs(sv_2mortal(newSViv(PTR2IV(variable))));
+	XPUSHs(default_val);
+	XPUSHs(data);
+	PUTBACK;
+	count = call_sv(set_fn, G_SCALAR | G_EVAL);
+	SPAGAIN;
+	
+	res = POPi;
+	owl_dict_insert_element(owl_global_get_vardict(&g),
+				variable->name, variable, NULL);
+	PUTBACK;
+}
+
 void
 new_variable_string(name, ival, summ, desc)
 	const char * name
