@@ -5,6 +5,7 @@ package BarnOwl;
 
 use base qw(Exporter);
 our @EXPORT_OK = qw(command getcurmsg getnumcols getnumlines getidletime
+                    register_idle_watcher unregister_idle_watcher
                     zephyr_getsender zephyr_getrealm zephyr_zwrite
                     zephyr_stylestrip zephyr_smartstrip_user zephyr_getsubs
                     queue_message admin_message
@@ -45,6 +46,7 @@ use BarnOwl::Completion;
 use BarnOwl::Help;
 
 use List::Util qw(max);
+use Tie::RefHash;
 
 =head1 NAME
 
@@ -790,6 +792,87 @@ sub random_zephyr_signature
     my $zsig = "$lines[int(rand(scalar @lines))]";
     chomp $zsig;
     return $zsig;
+}
+
+=head3 register_idle_watcher %ARGS
+
+Call a callback whenever the amount of time the user becomes idle or comes
+back from being idle.
+
+You must include the following parameters:
+
+=over 4
+
+=item name
+
+The name given to the idle watcher
+
+=item after
+
+How long the user must be idle, in seconds, before the callback is called.
+If the value is too small, you may have spurious or inaccurate calls.
+(The current lower limit is about 1 second.)
+
+=item callback
+
+The Perl subroutine that gets called when the user has been idle for C<AFTER>
+seconds, or comes back from being idle.  The subroutine is passed one parameter,
+which is true if the user is currently idle, and false otherwise.
+
+=back
+
+This method returns a unique identifier which may be passed to
+L<BarnOwl::unregister_idle_watcher>.
+
+=cut
+
+=head3 unregister_idle_watcher UNIQUE_ID [...]
+
+Removed and returns the idle watcher specified by C<UNIQUE_ID>.
+You may specify multiple unique ids.
+
+=cut
+
+my %idle_watchers;
+tie %idle_watchers, 'Tie::RefHash';
+
+$BarnOwl::Hooks::wakeup->add(sub {
+        foreach my $idle_watcher (values %idle_watchers) {
+            _wakeup_idle_watcher($idle_watcher);
+        }
+    });
+
+sub _wakeup_idle_watcher {
+    my ($idle_watcher, $offset) = @_;
+    $offset = 0 unless defined $offset;
+    # go unidle
+    $idle_watcher->{idle_timer}->stop if $idle_watcher->{idle_timer};
+    undef $idle_watcher->{idle_timer};
+    $idle_watcher->{callback}->(0) if $idle_watcher->{is_idle};
+    $idle_watcher->{is_idle} = 0;
+
+    # queue going idle
+    $idle_watcher->{idle_timer} = BarnOwl::Timer->new({
+        name  => $idle_watcher->{name},
+        after => $idle_watcher->{after} - $offset,
+        cb    => sub {
+            $idle_watcher->{is_idle} = 1;
+            $idle_watcher->{callback}->(1);
+        }
+    });
+}
+
+sub register_idle_watcher {
+    my %args = (@_);
+    $idle_watchers{\%args} = \%args;
+    _wakeup_idle_watcher(\%args, BarnOwl::getidletime); # make sure to queue up the idle/unidle events from this idle watcher
+    return \%args;
+}
+
+sub unregister_idle_watcher {
+    my ($id) = @_;
+    $idle_watchers{$id}->{idle_timer}->stop if $idle_watchers{$id}->{idle_timer};
+    return delete $idle_watchers{$id};
 }
 
 # Stub for owl::startup / BarnOwl::startup, so it isn't bound to the
