@@ -388,9 +388,9 @@ static void sig_handler(const siginfo_t *siginfo, void *data) {
 		       NULL, g_main_context_default());
 }
 
-#define CHECK_RESULT(s, syscall) \
+#define OR_DIE(s, syscall)       \
   G_STMT_START {		 \
-    if ((syscall) != 0) {	 \
+    if ((syscall) == -1) {	 \
       perror((s));		 \
       exit(1);			 \
     }				 \
@@ -401,30 +401,30 @@ void owl_register_signal_handlers(void) {
   struct sigaction sig_default = { .sa_handler = SIG_DFL };
   sigset_t sigset;
   int ret, i;
-  const int signals[] = { SIGABRT, SIGBUS, SIGCHLD, SIGFPE, SIGHUP, SIGILL,
-                          SIGINT, SIGQUIT, SIGSEGV, SIGTERM, SIGWINCH };
+  const int reset_signals[] = { SIGABRT, SIGBUS, SIGCHLD, SIGFPE, SIGILL,
+                                SIGQUIT, SIGSEGV, };
+  /* Don't bother resetting watched ones because owl_signal_init will. */
+  const int watch_signals[] = { SIGWINCH, SIGTERM, SIGHUP, SIGINT, };
 
   /* Sanitize our signals; the mask and dispositions from our parent
    * aren't really useful. Signal list taken from equivalent code in
    * Chromium. */
-  CHECK_RESULT("sigemptyset", sigemptyset(&sigset));
+  OR_DIE("sigemptyset", sigemptyset(&sigset));
   if ((ret = pthread_sigmask(SIG_SETMASK, &sigset, NULL)) != 0) {
     errno = ret;
     perror("pthread_sigmask");
+    exit(1);
   }
-  for (i = 0; i < G_N_ELEMENTS(signals); i++) {
-    CHECK_RESULT("sigaction", sigaction(signals[i], &sig_default, NULL));
+  for (i = 0; i < G_N_ELEMENTS(reset_signals); i++) {
+    OR_DIE("sigaction", sigaction(reset_signals[i], &sig_default, NULL));
   }
 
   /* Turn off SIGPIPE; we check the return value of write. */
-  CHECK_RESULT("sigaction", sigaction(SIGPIPE, &sig_ignore, NULL));
+  OR_DIE("sigaction", sigaction(SIGPIPE, &sig_ignore, NULL));
 
   /* Register some signals with the signal thread. */
-  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGWINCH));
-  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGTERM));
-  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGHUP));
-  CHECK_RESULT("sigaddset", sigaddset(&sigset, SIGINT));
-  owl_signal_init(&sigset, sig_handler, NULL);
+  owl_signal_init(watch_signals, G_N_ELEMENTS(watch_signals),
+                  sig_handler, NULL);
 }
 
 #if OWL_STDERR_REDIR
