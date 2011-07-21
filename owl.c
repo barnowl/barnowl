@@ -288,6 +288,7 @@ void owl_process_input_char(owl_input j)
   int ret;
 
   owl_global_set_lastinputtime(&g, time(NULL));
+  owl_global_wakeup(&g);
   ret = owl_keyhandler_process(owl_global_get_keyhandler(&g), j);
   if (ret!=0 && ret!=1) {
     owl_function_makemsg("Unable to handle keypress");

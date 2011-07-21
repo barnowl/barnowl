@@ -55,6 +55,7 @@ void owl_global_init(owl_global *g) {
   owl_regex_init(&g->search_re);
   g->starttime=time(NULL); /* assumes we call init only a start time */
   g->lastinputtime=g->starttime;
+  g->last_wakeup_time = g->starttime;
   g->newmsgproc_pid=0;
   
   owl_global_set_config_format(g, 0);
@@ -481,6 +482,14 @@ void owl_global_set_lastinputtime(owl_global *g, time_t time) {
 
 time_t owl_global_get_idletime(const owl_global *g) {
   return(time(NULL)-g->lastinputtime);
+}
+
+void owl_global_wakeup(owl_global *g)
+{
+  if (time(NULL) - g->last_wakeup_time >= 1) {
+    g_free(owl_perlconfig_execute("BarnOwl::Hooks::_wakeup()"));
+    g->last_wakeup_time = time(NULL);
+  }
 }
 
 /* viewwin */
