@@ -263,7 +263,7 @@ sub log_filenames {
     } else {
         push @filenames, $m->recipient;
     }
-    return map { lc(NFKC(strip_realm($_))) } @filenames;
+    return map { lc(NFKC(BarnOwl::zephyr_smartstrip_user(strip_realm($_)))) } @filenames;
 }
 
 sub log_to_class_file {
