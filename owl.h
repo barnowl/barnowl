@@ -570,6 +570,7 @@ typedef struct _owl_global {
   int debug;
   time_t starttime;
   time_t lastinputtime;
+  time_t last_wakeup_time;
   char *startupargs;
   int nextmsgid;
   owl_colorpair_mgr cpmgr;
