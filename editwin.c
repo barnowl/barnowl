@@ -1150,7 +1150,8 @@ int owl_editwin_current_column(owl_editwin *e)
 void owl_editwin_fill_paragraph(owl_editwin *e)
 {
   oe_excursion x;
-  gunichar ch;
+  gunichar ch = 0;
+  gunichar last_ch;
   int sentence;
 
   if (e->fillcol < 0)
@@ -1183,6 +1184,7 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
       break;
     }
 
+    last_ch = ch;
     ch = owl_editwin_get_char_at_point(e);
 
     if (owl_util_can_break_after(ch) || ch == '\n') {
@@ -1200,7 +1202,8 @@ void owl_editwin_fill_paragraph(owl_editwin *e)
       }
     }
 
-    if(ch == '.' || ch == '!' || ch == '?')
+    if (ch == '.' || ch == '!' || ch == '?' ||
+        (ch == '"' && (last_ch == '.' || last_ch == '!' || last_ch == '?')))
       sentence = 1;
     else
       sentence = 0;
