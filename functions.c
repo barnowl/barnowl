@@ -1222,6 +1222,7 @@ void owl_function_resize(void)
 
 void G_GNUC_PRINTF(1, 2) owl_function_debugmsg(const char *fmt, ...)
 {
+  char *tmpbuff;
   FILE *file;
   time_t now;
   va_list ap;
@@ -1236,8 +1237,10 @@ void G_GNUC_PRINTF(1, 2) owl_function_debugmsg(const char *fmt, ...)
 
   now = time(NULL);
 
-  fprintf(file, "[%d -  %.24s - %lds]: ",
-	  (int) getpid(), ctime(&now), now - owl_global_get_starttime(&g));
+  tmpbuff = owl_util_time_to_timestr(localtime(&now));
+  fprintf(file, "[%d -  %s - %lds]: ",
+          (int) getpid(), tmpbuff, now - owl_global_get_starttime(&g));
+  g_free(tmpbuff);
   vfprintf(file, fmt, ap);
   putc('\n', file);
   fflush(file);
@@ -1760,6 +1763,7 @@ void owl_function_delete_automsgs(void)
 
 void owl_function_status(void)
 {
+  char *tmpbuff;
   char buff[MAXPATHLEN+1];
   time_t start;
   int up, days, hours, minutes;
@@ -1787,7 +1791,9 @@ void owl_function_status(void)
   }
   owl_fmtext_append_normal(&fm, "\n");
 
-  owl_fmtext_appendf_normal(&fm, "  Startup Time: %s", ctime(&start));
+  tmpbuff = owl_util_time_to_timestr(localtime(&start));
+  owl_fmtext_appendf_normal(&fm, "  Startup Time: %s\n", tmpbuff);
+  g_free(tmpbuff);
 
   up=owl_global_get_runtime(&g);
   days=up/86400;
@@ -3408,9 +3414,8 @@ void owl_function_log_err(const char *string)
   time_t now;
   char *buff;
 
-  now=time(NULL);
-  date=g_strdup(ctime(&now));
-  date[strlen(date)-1]='\0';
+  now = time(NULL);
+  date = owl_util_time_to_timestr(localtime(&now));
 
   buff = g_strdup_printf("%s %s", date, string);
 
