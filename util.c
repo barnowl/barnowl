@@ -295,6 +295,19 @@ CALLER_OWN char *owl_util_minutes_to_timestr(int in)
   return(out);
 }
 
+CALLER_OWN char *owl_util_time_to_timestr(const struct tm *time)
+{
+  /* 32 chosen for first attempt because timestr will end up being
+   * something like "Www Mmm dd hh:mm:ss AM yyyy UTC\0" */ 
+  size_t timestr_size = 16;
+  char *timestr = NULL;
+  do {
+    timestr_size *= 2;
+    timestr = g_realloc(timestr, sizeof(char) * timestr_size);
+  } while (strftime(timestr, timestr_size, "%c", time) == 0);
+  return timestr;
+}
+
 /* These are in order of their value in owl.h */
 static const struct {
   int number;
