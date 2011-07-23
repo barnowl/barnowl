@@ -2125,9 +2125,9 @@ void owl_function_change_currentview_filter(const char *filtname)
 }
 
 /* Create a new filter, or replace an existing one
- * with a new definition.
+ * with a new definition. Returns true on success.
  */
-void owl_function_create_filter(int argc, const char *const *argv)
+bool owl_function_create_filter(int argc, const char *const *argv)
 {
   owl_filter *f;
   const owl_view *v;
@@ -2135,7 +2135,7 @@ void owl_function_create_filter(int argc, const char *const *argv)
 
   if (argc < 2) {
     owl_function_error("Wrong number of arguments to filter command");
-    return;
+    return false;
   }
 
   owl_function_debugmsg("owl_function_create_filter: starting to create filter named %s", argv[1]);
@@ -2145,7 +2145,7 @@ void owl_function_create_filter(int argc, const char *const *argv)
   /* don't touch the all filter */
   if (!strcmp(argv[1], "all")) {
     owl_function_error("You may not change the 'all' filter.");
-    return;
+    return false;
   }
 
   /* deal with the case of trying change the filter color */
@@ -2153,36 +2153,36 @@ void owl_function_create_filter(int argc, const char *const *argv)
     f=owl_global_get_filter(&g, argv[1]);
     if (!f) {
       owl_function_error("The filter '%s' does not exist.", argv[1]);
-      return;
+      return false;
     }
     if (owl_util_string_to_color(argv[3])==OWL_COLOR_INVALID) {
       owl_function_error("The color '%s' is not available.", argv[3]);
-      return;
+      return false;
     }
     owl_filter_set_fgcolor(f, owl_util_string_to_color(argv[3]));
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-    return;
+    return false;
   }
   if (argc==4 && !strcmp(argv[2], "-b")) {
     f=owl_global_get_filter(&g, argv[1]);
     if (!f) {
       owl_function_error("The filter '%s' does not exist.", argv[1]);
-      return;
+      return false;
     }
     if (owl_util_string_to_color(argv[3])==OWL_COLOR_INVALID) {
       owl_function_error("The color '%s' is not available.", argv[3]);
-      return;
+      return false;
     }
     owl_filter_set_bgcolor(f, owl_util_string_to_color(argv[3]));
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-    return;
+    return true;
   }
 
   /* create the filter and check for errors */
   f = owl_filter_new(argv[1], argc-2, argv+2);
   if (f == NULL) {
     owl_function_error("Invalid filter");
-    return;
+    return false;
   }
 
   /* if the named filter is in use by the current view, remember it */
@@ -2203,6 +2203,7 @@ void owl_function_create_filter(int argc, const char *const *argv)
     owl_function_change_currentview_filter(argv[1]);
   }
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  return true;
 }
 
 /* If 'filtername' does not start with 'not-' create a filter named
