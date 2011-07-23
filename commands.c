@@ -2164,8 +2164,9 @@ char *owl_command_view(int argc, const char *const *argv, const char *buff)
     for (i=2; i<argc; i++) {
       myargv[i]=argv[i];
     }
-    owl_function_create_filter(argc, myargv);
-    owl_function_change_currentview_filter("owl-dynamic");
+    if (owl_function_create_filter(argc, myargv)) {
+      owl_function_change_currentview_filter("owl-dynamic");
+    }
     g_free(myargv);
     return NULL;
   }
