@@ -205,8 +205,6 @@ typedef void HV;
 #define OWL_META(key) ((key)|010000)
 /* OWL_CTRL is definied in kepress.c */
 
-#define LINE 2048
-
 #ifdef HAVE_LIBZEPHYR
 /* libzephyr doesn't use const, so we appease the type system with this kludge.
  * This just casts const char * to char * in a way that doesn't yield a warning
