@@ -165,8 +165,8 @@ int owl_variable_add_defaults(owl_vardict *vd)
 
   OWLVAR_ENUM_FULL( "disable-ctrl-d" /* %OwlVarStub:lockout_ctrld */, 1,
 		    "don't send zephyrs on C-d",
-		    "If set to 'off', C-d won't send a zephyr from the edit\n"
-		    "window.  If set to 'on', C-d will always send a zephyr\n"
+		    "If set to 'on', C-d won't send a zephyr from the edit\n"
+		    "window.  If set to 'off', C-d will always send a zephyr\n"
 		    "being composed in the edit window.  If set to 'middle',\n"
 		    "C-d will only ever send a zephyr if the cursor is at\n"
 		    "the end of the message being composed.\n\n"
