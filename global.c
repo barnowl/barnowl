@@ -108,7 +108,7 @@ static void _owl_global_init_windows(owl_global *g)
   owl_mainpanel_init(&(g->mainpanel));
 
   /* Create the widgets */
-  owl_mainwin_init(&(g->mw), g->mainpanel.recwin);
+  g->mw = owl_mainwin_new(g->mainpanel.recwin);
   owl_msgwin_init(&(g->msgwin), g->mainpanel.msgwin);
   owl_sepbar_init(g->mainpanel.sepwin);
 
@@ -240,8 +240,9 @@ void owl_global_set_markedmsgid(owl_global *g, int i) {
 
 /* windows */
 
-owl_mainwin *owl_global_get_mainwin(owl_global *g) {
-  return(&(g->mw));
+owl_mainwin *owl_global_get_mainwin(owl_global *g)
+{
+  return g->mw;
 }
 
 owl_popwin *owl_global_get_popwin(owl_global *g) {

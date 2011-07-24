@@ -532,7 +532,7 @@ typedef struct _owl_popexec {
 } owl_popexec;
 
 typedef struct _owl_global {
-  owl_mainwin mw;
+  owl_mainwin *mw;
   owl_popwin *pw;
   owl_msgwin msgwin;
   owl_history cmdhist;		/* command history */
