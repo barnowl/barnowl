@@ -185,14 +185,9 @@ static void _owl_fmtext_wattrset(WINDOW *w, int attrs)
 
 static void _owl_fmtext_wcolor_set(WINDOW *w, short pair)
 {
-  cchar_t background;
-  wchar_t blank[2] = { ' ', 0 };
   if (has_colors()) {
-      wcolor_set(w, pair, NULL);
-      /* Set the background with wbkgrndset so that we can handle color-pairs
-       * past 256 on ncurses ABI 6 and later. */
-      setcchar(&background, blank, 0, pair, NULL);
-      wbkgrndset(w, &background);
+      wcolor_set(w,pair,NULL);
+      wbkgdset(w, COLOR_PAIR(pair));
   }
 }
 

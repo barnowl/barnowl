@@ -731,7 +731,11 @@ int owl_util_get_colorpairs(void) {
    * ncurses is compiled without ext-color. */
   return MIN(COLOR_PAIRS, 256);
 #else
-  return COLOR_PAIRS;
+  /* In theory ext-color support should allow for 256 color pairs, but there's
+   * a bug in ncurses. The fix is now upstreamed. The commit which introduced
+   * this change (and simultaneously reverted the wbkgrndset change to fix the
+   * build on Solaris) should be reverted when we ship a new locker ncurses. */
+  return MIN(COLOR_PAIRS, 256);
 #endif
 }
 
