@@ -74,7 +74,6 @@ typedef void HV;
 #define OWL_DEBUG_FILE "/var/tmp/barnowl-debug"
 
 #define OWL_CONFIG_DIR "/.owl"             /* this is relative to the user's home directory */
-#define OWL_STARTUP_FILE "/.owl/startup"   /* this is relative to the user's home directory */
 
 #define OWL_FMTEXT_ATTR_NONE      0
 #define OWL_FMTEXT_ATTR_BOLD      1
@@ -205,8 +204,6 @@ typedef void HV;
 
 #define OWL_META(key) ((key)|010000)
 /* OWL_CTRL is definied in kepress.c */
-
-#define LINE 2048
 
 #ifdef HAVE_LIBZEPHYR
 /* libzephyr doesn't use const, so we appease the type system with this kludge.
