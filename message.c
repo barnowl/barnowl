@@ -45,9 +45,8 @@ void owl_message_init(owl_message *m)
   m->attributes = g_ptr_array_new();
   
   /* save the time */
-  m->time=time(NULL);
-  m->timestr=g_strdup(ctime(&(m->time)));
-  m->timestr[strlen(m->timestr)-1]='\0';
+  m->time = time(NULL);
+  m->timestr = owl_util_time_to_timestr(localtime(&m->time));
 
   m->fmtext = NULL;
 }
@@ -795,9 +794,8 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   
   /* save the time, we need to nuke the string saved by message_init */
   if (m->timestr) g_free(m->timestr);
-  m->time=n->z_time.tv_sec;
-  m->timestr=g_strdup(ctime(&(m->time)));
-  m->timestr[strlen(m->timestr)-1]='\0';
+  m->time = n->z_time.tv_sec;
+  m->timestr = owl_util_time_to_timestr(localtime(&m->time));
 
   /* set other info */
   owl_message_set_sender(m, n->z_sender);

@@ -28,7 +28,7 @@ use Scalar::Util qw(weaken);
 
 use BarnOwl;
 use BarnOwl::Message::Twitter;
-use POSIX qw(asctime);
+use POSIX qw(strftime);
 
 use LWP::UserAgent;
 use URI;
@@ -246,7 +246,7 @@ sub twitter_error {
         BarnOwl::error("Twitter" .
                        ($self->{cfg}->{account_nickname} ?
                         "[$self->{cfg}->{account_nickname}]" : "") .
-                        ": ratelimited until " . asctime(localtime($timeout)));
+                        ": ratelimited until " . strftime('%c', localtime($timeout)));
     } elsif(exists($ratelimit->{error})) {
         $self->sleep(60*20);
         die("Twitter: ". $ratelimit->{error} . "\n");
