@@ -49,6 +49,8 @@ INFELICITIES
     http://stackoverflow.com/questions/4752967/facebook-api-only-returns-25-events-max),
     notifications (not supported in Graph API yet).
 
+  * Apparently Facebook now has a 'music' post type. Handle it.
+
 WISHLIST
   * Smarter name de-duplication (see Facebook/Handle.pm for details.)
   * URL minification.
