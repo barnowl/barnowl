@@ -1828,10 +1828,9 @@ static gboolean owl_aim_event_source_prepare(GSource *source, int *timeout)
       }
       fd = event_source->fds->pdata[i];
       fd->fd = cur->fd;
-      fd->events |= G_IO_IN | G_IO_HUP | G_IO_ERR;
+      fd->events = G_IO_IN | G_IO_HUP | G_IO_ERR;
       if (cur->status & AIM_CONN_STATUS_INPROGRESS) {
-        /* Yes, we're checking writable sockets here. Without it, AIM
-           login is really slow. */
+        /* AIM login requires checking writable sockets. See aim_select. */
 	fd->events |= G_IO_OUT;
       }
       i++;
