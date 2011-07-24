@@ -3473,17 +3473,18 @@ void owl_function_zephyr_buddy_check(int notify)
   *zaldlist = NULL;
 
   anyone = owl_zephyr_get_anyone_list(NULL);
-  for (i = 0; i < anyone->len; i++) {
-    user = anyone->pdata[i];
-    zald = g_new(ZAsyncLocateData_t, 1);
-    if (ZRequestLocations(zstr(user), zald, UNACKED, ZAUTH) == ZERR_NONE) {
-      *zaldlist = g_list_append(*zaldlist, zald);
-    } else {
-      g_free(zald);
+  if (anyone != NULL) {
+    for (i = 0; i < anyone->len; i++) {
+      user = anyone->pdata[i];
+      zald = g_new(ZAsyncLocateData_t, 1);
+      if (ZRequestLocations(zstr(user), zald, UNACKED, ZAUTH) == ZERR_NONE) {
+        *zaldlist = g_list_append(*zaldlist, zald);
+      } else {
+        g_free(zald);
+      }
     }
+    owl_ptr_array_free(anyone, g_free);
   }
-
-  owl_ptr_array_free(anyone, g_free);
 #endif
 }
 
