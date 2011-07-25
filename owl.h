@@ -355,6 +355,7 @@ typedef struct _owl_message {
   int id;
   int direction;
 #ifdef HAVE_LIBZEPHYR
+  bool has_notice;
   ZNotice_t notice;
 #endif
   struct _owl_fmtext_cache * fmtext;

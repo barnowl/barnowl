@@ -33,6 +33,10 @@ void owl_message_init(owl_message *m)
   owl_message_set_direction_none(m);
   m->delete=0;
 
+#ifdef HAVE_LIBZEPHYR
+  m->has_notice = false;
+#endif
+
   owl_message_set_hostname(m, "");
   m->attributes = g_ptr_array_new();
   
@@ -489,7 +493,7 @@ int owl_message_is_delete(const owl_message *m)
 #ifdef HAVE_LIBZEPHYR
 const ZNotice_t *owl_message_get_notice(const owl_message *m)
 {
-  return(&(m->notice));
+  return m->has_notice ? &m->notice : NULL;
 }
 #else
 void *owl_message_get_notice(const owl_message *m)
@@ -780,6 +784,7 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   
   /* first save the full notice */
   m->notice = *n;
+  m->has_notice = true;
 
   /* a little gross, we'll replace \r's with ' ' for now */
   owl_zephyr_hackaway_cr(&(m->notice));
@@ -995,7 +1000,7 @@ void owl_message_cleanup(owl_message *m)
   int i;
   owl_pair *p;
 #ifdef HAVE_LIBZEPHYR    
-  if (owl_message_is_type_zephyr(m) && owl_message_is_direction_in(m)) {
+  if (m->has_notice) {
     ZFreeNotice(&(m->notice));
   }
 #endif
