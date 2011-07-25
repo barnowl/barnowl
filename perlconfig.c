@@ -90,8 +90,7 @@ CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
 #define MSG2H(h,field) (void)hv_store(h, #field, strlen(#field),        \
                                       owl_new_sv(owl_message_get_##field(m)), 0)
 
-  if (owl_message_is_type_zephyr(m)
-      && owl_message_is_direction_in(m)) {
+  if (owl_message_get_notice(m)) {
     /* Handle zephyr-specific fields... */
     AV *av_zfields;
 
@@ -172,8 +171,6 @@ CALLER_OWN SV *owl_perlconfig_curmessage2hashref(void)
 /* XXX TODO: Messages should round-trip properly between
    message2hashref and hashref2message. Currently we lose
    zephyr-specific properties stored in the ZNotice_t
-
-   This has been somewhat addressed, but is still not lossless.
  */
 CALLER_OWN owl_message *owl_perlconfig_hashref2message(SV *msg)
 {
@@ -219,25 +216,6 @@ CALLER_OWN owl_message *owl_perlconfig_hashref2message(SV *msg)
     if(!owl_message_get_attribute_value(m, "adminheader"))
       owl_message_set_attribute(m, "adminheader", "");
   }
-#ifdef HAVE_LIBZEPHYR
-  if (owl_message_is_type_zephyr(m)) {
-    ZNotice_t *n = &(m->notice);
-    n->z_kind = ACKED;
-    n->z_port = 0;
-    n->z_auth = ZAUTH_NO;
-    n->z_checked_auth = 0;
-    n->z_class = zstr(owl_message_get_class(m));
-    n->z_class_inst = zstr(owl_message_get_instance(m));
-    n->z_opcode = zstr(owl_message_get_opcode(m));
-    n->z_sender = zstr(owl_message_get_sender(m));
-    n->z_recipient = zstr(owl_message_get_recipient(m));
-    n->z_default_format = zstr("[zephyr created from perl]");
-    n->z_multinotice = zstr("[zephyr created from perl]");
-    n->z_num_other_fields = 0;
-    n->z_message = g_strdup_printf("%s%c%s", owl_message_get_zsig(m), '\0', owl_message_get_body(m));
-    n->z_message_len = strlen(owl_message_get_zsig(m)) + strlen(owl_message_get_body(m)) + 1;
-  }
-#endif
   return m;
 }
 

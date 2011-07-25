@@ -1422,11 +1422,10 @@ void owl_function_info(void)
     owl_fmtext_appendf_normal(&fm, "  Instance  : %s\n", owl_message_get_instance(m));
     owl_fmtext_appendf_normal(&fm, "  Opcode    : %s\n", owl_message_get_opcode(m));
 #ifdef HAVE_LIBZEPHYR
-    if (owl_message_is_direction_in(m)) {
+    n = owl_message_get_notice(m);
+    if (n != NULL) {
       char *tmpbuff, *tmpbuff2;
       int i, fields;
-
-      n=owl_message_get_notice(m);
 
       if (!owl_message_is_pseudo(m)) {
 	owl_fmtext_append_normal(&fm, "  Kind      : ");

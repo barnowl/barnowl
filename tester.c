@@ -512,6 +512,8 @@ int owl_filter_regtest(void) {
   FAIL_UNLESS("DAG", (f5 = owl_filter_new_fromstring("dag", "filter f1 or filter f1")) != NULL);
   owl_filter_delete(f5);
 
+  owl_message_cleanup(&m);
+
   return 0;
 }
 
