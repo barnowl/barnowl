@@ -1,4 +1,3 @@
-#include <string.h>
 #include "owl.h"
 
 #define SET_ACTIVE(ctx, new) ctx->mode = ((ctx->mode)&~OWL_CTX_ACTIVE_BITS)|new

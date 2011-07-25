@@ -1,6 +1,8 @@
 #ifndef INC_BARNOWL_OWL_PERL_H
 #define INC_BARNOWL_OWL_PERL_H
 
+#include <stdio.h>
+
 #define OWL_PERL_VOID_CALL (void)POPs;
 
 /*

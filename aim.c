@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdio.h>
-#include <sys/stat.h>
 #include "owl.h"
 
 /**********************************************************************/

@@ -1,7 +1,3 @@
-#include <string.h>
-#include <pwd.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include "owl.h"
 
 CALLER_OWN owl_zwrite *owl_zwrite_new(const char *line)

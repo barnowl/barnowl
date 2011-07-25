@@ -1,8 +1,4 @@
 #include "owl.h"
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <ctype.h>
 
 #define VALID_EXCURSION	(0x9a2b4729)
 

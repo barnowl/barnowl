@@ -1,4 +1,3 @@
-#include <string.h>
 #include "owl.h"
 
 owl_filter *owl_filter_new_fromstring(const char *name, const char *string)

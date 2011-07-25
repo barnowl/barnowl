@@ -1,6 +1,4 @@
 #include "owl.h"
-#include <stdlib.h>
-#include <string.h>
 
 void owl_messagelist_create(owl_messagelist *ml)
 {

@@ -5,11 +5,7 @@
  * O(log n) on searches
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 #include "owl.h"
-
 
 #define INITSIZE 30
 #define GROWBY 3 / 2

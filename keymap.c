@@ -1,4 +1,3 @@
-#include <string.h>
 #include "owl.h"
 
 static void _owl_keymap_format_bindings(const owl_keymap *km, owl_fmtext *fm);
