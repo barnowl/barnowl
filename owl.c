@@ -6,21 +6,11 @@
  *  file included with the distribution for more information.
  */
 
+#include "owl.h"
 #include <stdio.h>
-#include <unistd.h>
 #include <getopt.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <time.h>
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <termios.h>
 #include <sys/stat.h>
 #include <locale.h>
-#include "owl.h"
-
 
 #if OWL_STDERR_REDIR
 #ifdef HAVE_SYS_IOCTL_H

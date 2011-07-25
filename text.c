@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include "owl.h"
 
 /* Returns a copy of 'in' with each line indented 'n'

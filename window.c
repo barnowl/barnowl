@@ -1,7 +1,5 @@
 #include "owl.h"
 
-#include <assert.h>
-
 struct _owl_window { /*noproto*/
   GObject object;
   /* hierarchy information */

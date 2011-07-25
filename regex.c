@@ -1,4 +1,3 @@
-#include <string.h>
 #include "owl.h"
 
 void owl_regex_init(owl_regex *re)

@@ -3,10 +3,7 @@
 #include "owl.h"
 #undef WINDOW
 
-#include <unistd.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #undef instr
 #include <ncursesw/curses.h>

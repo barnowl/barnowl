@@ -1,13 +1,6 @@
-#include <signal.h>
-#include <unistd.h>
-#include <sys/select.h>
-#include <sys/types.h>
+#include "owl.h"
 #include <sys/wait.h>
 #include <poll.h>
-#include <fcntl.h>
-#include <string.h>
-
-#include <glib.h>
 
 int send_receive(int rfd, int wfd, const char *out, char **in)
 {

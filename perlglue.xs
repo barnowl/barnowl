@@ -1,9 +1,4 @@
 /* -*- mode: c; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-#ifdef HAVE_LIBZEPHYR
-#include <zephyr/zephyr.h>
-#endif
-#include <EXTERN.h>
-
 #define OWL_PERL
 #include "owl.h"
 

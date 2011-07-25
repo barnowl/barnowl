@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "owl.h"
 
 void owl_view_create(owl_view *v, const char *name, owl_filter *f, const owl_style *s)

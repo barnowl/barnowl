@@ -1,10 +1,6 @@
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#include <string.h>
 #include "owl.h"
+#include <stdio.h>
+#include <sys/stat.h>
 
 #ifdef HAVE_LIBZEPHYR
 static GSource *owl_zephyr_event_source_new(int fd);

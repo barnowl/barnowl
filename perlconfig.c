@@ -1,11 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
 #define OWL_PERL
 #include "owl.h"
+#include <stdio.h>
 
 extern XS(boot_BarnOwl);
 extern XS(boot_DynaLoader);

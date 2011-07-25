@@ -1,4 +1,3 @@
-#include <string.h>
 #include "owl.h"
 
 #define BOTTOM_OFFSET 1

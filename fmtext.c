@@ -1,6 +1,4 @@
 #include "owl.h"
-#include <stdlib.h>
-#include <string.h>
 
 /* initialize an fmtext with no data */
 void owl_fmtext_init_null(owl_fmtext *f)

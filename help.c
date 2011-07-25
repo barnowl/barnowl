@@ -1,5 +1,4 @@
 #include "owl.h"
-#include <string.h>
 
 void owl_help(void)
 {

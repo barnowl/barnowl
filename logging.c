@@ -1,8 +1,5 @@
 #include "owl.h"
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <sys/param.h>
+#include <stdio.h>
 
 typedef struct _owl_log_entry { /* noproto */
   char *filename;

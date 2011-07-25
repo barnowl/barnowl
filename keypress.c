@@ -1,5 +1,3 @@
-#include <ctype.h>
-#include <string.h>
 #include "owl.h"
 
 static const struct _owl_keypress_specialmap {

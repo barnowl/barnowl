@@ -1,9 +1,5 @@
-#include <getopt.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 #include "owl.h"
+#include <getopt.h>
 
 /* fn is "char *foo(int argc, const char *const *argv, const char *buff)" */
 #define OWLCMD_ARGS(name, fn, ctx, summary, usage, description) \

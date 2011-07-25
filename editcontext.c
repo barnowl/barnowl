@@ -1,5 +1,4 @@
 #include "owl.h"
-
 #include <assert.h>
 
 bool owl_is_editcontext(const owl_context *ctx)
