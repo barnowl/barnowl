@@ -60,8 +60,8 @@ BarnOwl::new_command('facebook' => \&cmd_facebook, {
 
 #BarnOwl::new_command('facebook-message' => \&cmd_facebook_direct, {
 #    summary     => 'Send a Facebook message',
-#    usage       => 'twitter-direct USER',
-#    description => 'Send a private Facebook Message to USER.'
+#    usage       => 'facebook-message USER',
+#    description => 'Send a private Facebook message to USER.'
 #});
 
 BarnOwl::new_command('facebook-comment' => \&cmd_facebook_comment, {
@@ -92,7 +92,7 @@ sub cmd_facebook {
 
     BarnOwl::start_edit_win(
         defined $user ? "Write something to $user..." : "What's on your mind?",
-        sub{ $facebook_handle->facebook($user, shift) }
+        sub { $facebook_handle->facebook($user, shift) }
     );
 }
 
@@ -131,13 +131,14 @@ sub cmd_facebook_auth {
 
 sub check_ready {
     if (!$facebook_handle->{logged_in}) {
-        BarnOwl::message("Need to login to Facebook first with ':facebook-auth'.");
+        BarnOwl::message("You need to login to Facebook first with ':facebook-auth'.");
         return 0;
     }
     return 1;
 }
 
 BarnOwl::filter(qw{facebook type ^facebook$});
+BarnOwl::bindkey(qw(recv f command facebook));
 
 sub complete_user { return keys %{$facebook_handle->{friends}}; }
 BarnOwl::Completion::register_completer(facebook => sub { complete_user(@_) });

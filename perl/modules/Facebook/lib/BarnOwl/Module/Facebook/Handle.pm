@@ -25,7 +25,7 @@ if ($@) {
         $sentence =~ s/[[:punct:]]+/ /g;
         my @words = split(' ', lc($sentence));
         return () unless @words;
-        return (reduce{ length($a) > length($b) ? $a : $b } @words,);
+        return (reduce { length($a) > length($b) ? $a : $b } @words);
     };
 } else {
     *keywords = \&Lingua::EN::Keywords::keywords;
@@ -70,7 +70,7 @@ sub new {
     my $cfg = shift;
 
     my $self = {
-        'cfg'  => $cfg,
+        'cfg' => $cfg,
         'facebook' => undef,
 
         # Ideally this should be done using Facebook realtime updates,
@@ -237,10 +237,6 @@ sub poll_facebook {
     return unless BarnOwl::getvar('facebook:poll') eq 'on';
     return unless $self->{logged_in};
 
-    # XXX Oh no! This blocks the user interface.  Not good.
-    # Ideally, we should have some worker thread for polling facebook.
-    # But BarnOwl is probably not thread-safe >_<
-
     my $old_topics = $self->{topics};
     $self->{topics} = {};
 
@@ -288,12 +284,15 @@ sub poll_facebook {
                 $self->{topics}->{$post_id} = $topic;
             }
 
+            # XXX The intent is to get the 'Comment' link, which also
+            # serves as a canonical link to the post.  The {name}
+            # field should equal 'Comment'.  But we don't check
+            # this, we assume that the first element is the right one.
             my $link = $post->{actions}[0]{link};
 
             # Only handle post if it's new
             my $created_time = str2time($post->{created_time});
             if ($created_time >= $self->{last_poll}) {
-                # XXX indexing is fragile
                 my $msg = BarnOwl::Message->new(
                     type      => 'Facebook',
                     sender    => $post->{from}{name},
@@ -301,13 +300,10 @@ sub poll_facebook {
                     name      => $name,
                     name_id   => $name_id,
                     direction => 'in',
-                    body      => $self->format_body($post),
+                    body      => wordwrap($self->format_body($post)),
                     post_id   => $post_id,
                     topic     => $topic,
                     time      => asctime(localtime $created_time),
-                    # XXX The intent is to get the 'Comment' link, which also
-                    # serves as a canonical link to the post.  The {name}
-                    # field should equal 'Comment'.
                     permalink => $link,
                    );
                 BarnOwl::queue_message($msg);
@@ -330,7 +326,7 @@ sub poll_facebook {
                         name      => $name,
                         name_id   => $name_id,
                         direction => 'in',
-                        body      => $comment->{message},
+                        body      => wordwrap($comment->{message}),
                         post_id   => $post_id,
                         topic     => $topic,
                         time      => asctime(localtime $comment_time),
@@ -347,6 +343,11 @@ sub poll_facebook {
 
         $self->{last_poll} = $new_last_poll;
     });
+}
+
+sub wordwrap {
+    my $text = shift;
+    return BarnOwl::wordwrap($text, BarnOwl::getvar('edit:maxwrapcols'));
 }
 
 sub format_body {
@@ -430,7 +431,14 @@ sub facebook_auth {
     $self->{cfg}->{token} = $1;
     $self->facebook_do_auth(sub {
         my $raw_cfg = to_json($self->{cfg});
-        BarnOwl::admin_message('Facebook', "Add this as the contents of your ~/.owl/facebook file:\n$raw_cfg");
+        my $cfg_file;
+        unless (open($cfg_file, ">", BarnOwl::get_config_dir() . "/facebook")) {
+          BarnOwl::admin_message('Facebook', "Add this as the contents of your ~/.owl/facebook file:\n$raw_cfg");
+          return;
+        }
+        print $cfg_file $raw_cfg;
+        close $cfg_file;
+        BarnOwl::admin_message('Facebook', "Saved your login credentials to ~/.owl/facebook.");
     });
     return;
 }
