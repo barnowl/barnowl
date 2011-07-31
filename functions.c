@@ -203,7 +203,7 @@ void owl_function_adminmsg(const char *header, const char *body)
   owl_view_consider_message(owl_global_get_current_view(&g), m);
 
   /* do followlast if necessary */
-  if (owl_global_should_followlast(&g)) owl_function_lastmsg_noredisplay();
+  if (owl_global_should_followlast(&g)) owl_function_lastmsg();
 
   /* redisplay etc. */
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
@@ -807,7 +807,7 @@ void owl_function_firstmsg(void)
   owl_global_set_direction_downwards(&g);
 }
 
-void owl_function_lastmsg_noredisplay(void)
+void owl_function_lastmsg(void)
 {
   int oldcurmsg, curmsg;
   const owl_view *v;
@@ -825,14 +825,8 @@ void owl_function_lastmsg_noredisplay(void)
     owl_global_set_topmsg(&g, curmsg+1);
     owl_global_set_curmsg(&g, curmsg+1);
   } 
-  /* owl_mainwin_redisplay(owl_global_get_mainwin(&g)); */
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_global_set_direction_downwards(&g);
-}
-
-void owl_function_lastmsg(void)
-{
-  owl_function_lastmsg_noredisplay();
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));  
 }
 
 void owl_function_shift_right(void)
