@@ -261,7 +261,7 @@ static gboolean owl_process_messages_dispatch(GSource *source, GSourceFunc callb
   if (newmsgs) {
     /* follow the last message if we're supposed to */
     if (followlast)
-      owl_function_lastmsg_noredisplay();
+      owl_function_lastmsg();
 
     /* do the newmsgproc thing */
     owl_function_do_newmsgproc();
