@@ -1222,7 +1222,7 @@ void G_GNUC_PRINTF(1, 2) owl_function_debugmsg(const char *fmt, ...)
 
   now = time(NULL);
 
-  tmpbuff = owl_util_time_to_timestr(localtime(&now));
+  tmpbuff = owl_util_format_time(localtime(&now));
   fprintf(file, "[%d -  %s - %lds]: ",
           (int) getpid(), tmpbuff, now - owl_global_get_starttime(&g));
   g_free(tmpbuff);
@@ -1372,6 +1372,7 @@ void owl_function_info(void)
   const owl_message *m;
   owl_fmtext fm, attrfm;
   const owl_view *v;
+  char *time;
 #ifdef HAVE_LIBZEPHYR
   const ZNotice_t *n;
 #endif
@@ -1402,7 +1403,9 @@ void owl_function_info(void)
     owl_fmtext_append_normal(&fm, "  Direction : unknown\n");
   }
 
-  owl_fmtext_appendf_normal(&fm, "  Time      : %s\n", owl_message_get_timestr(m));
+  time = owl_message_format_time(m);
+  owl_fmtext_appendf_normal(&fm, "  Time      : %s\n", time);
+  g_free(time);
 
   if (!owl_message_is_type_admin(m)) {
     owl_fmtext_appendf_normal(&fm, "  Sender    : %s\n", owl_message_get_sender(m));
@@ -1775,7 +1778,7 @@ void owl_function_status(void)
   }
   owl_fmtext_append_normal(&fm, "\n");
 
-  tmpbuff = owl_util_time_to_timestr(localtime(&start));
+  tmpbuff = owl_util_format_time(localtime(&start));
   owl_fmtext_appendf_normal(&fm, "  Startup Time: %s\n", tmpbuff);
   g_free(tmpbuff);
 
@@ -3071,7 +3074,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
       b=owl_buddylist_get_buddy_n(bl, i);
       idle=owl_buddy_get_idle_time(b);
       if (idle!=0) {
-	timestr=owl_util_minutes_to_timestr(idle);
+	timestr=owl_util_format_minutes(idle);
       } else {
 	timestr=g_strdup("");
       }
@@ -3400,7 +3403,7 @@ void owl_function_log_err(const char *string)
   char *buff;
 
   now = time(NULL);
-  date = owl_util_time_to_timestr(localtime(&now));
+  date = owl_util_format_time(localtime(&now));
 
   buff = g_strdup_printf("%s %s", date, string);
 

@@ -267,7 +267,7 @@ CALLER_OWN char *owl_arg_quote(const char *arg)
 }
 
 /* caller must free the return */
-CALLER_OWN char *owl_util_minutes_to_timestr(int in)
+CALLER_OWN char *owl_util_format_minutes(int in)
 {
   int days, hours;
   long run;
@@ -288,7 +288,7 @@ CALLER_OWN char *owl_util_minutes_to_timestr(int in)
   return(out);
 }
 
-CALLER_OWN char *owl_util_time_to_timestr(const struct tm *time)
+CALLER_OWN char *owl_util_format_time(const struct tm *time)
 {
   /* 32 chosen for first attempt because timestr will end up being
    * something like "Www Mmm dd hh:mm:ss AM yyyy UTC\0" */ 

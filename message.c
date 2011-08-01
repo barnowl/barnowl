@@ -42,7 +42,8 @@ void owl_message_init(owl_message *m)
   
   /* save the time */
   m->time = time(NULL);
-  m->timestr = owl_util_time_to_timestr(localtime(&m->time));
+  m->timestr = g_strdup(ctime(&m->time));
+  m->timestr[strlen(m->timestr)-1] = '\0';
 
   m->fmtext = NULL;
 }
@@ -343,6 +344,11 @@ const char *owl_message_get_timestr(const owl_message *m)
 {
   if (m->timestr) return(m->timestr);
   return("");
+}
+
+CALLER_OWN char *owl_message_format_time(const owl_message *m)
+{
+  return owl_util_format_time(localtime(&m->time));
 }
 
 void owl_message_set_type_admin(owl_message *m)
@@ -792,7 +798,8 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   /* save the time, we need to nuke the string saved by message_init */
   if (m->timestr) g_free(m->timestr);
   m->time = n->z_time.tv_sec;
-  m->timestr = owl_util_time_to_timestr(localtime(&m->time));
+  m->timestr = g_strdup(ctime(&m->time));
+  m->timestr[strlen(m->timestr)-1] = '\0';
 
   /* set other info */
   owl_message_set_sender(m, n->z_sender);
