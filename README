@@ -9,11 +9,15 @@ Notes:
 This project's perl/modules/ contains the lib directories from the
 following CPAN modules:
 
+AnyEvent::HTTP
+Facebook::Graph
 Net::Jabber
 Net::XMPP
+Ouch
+URI::Encode
 XML::Stream
 
-They have been modified slightly for the needs of this project.
+Some have been modified slightly for the needs of this project.
 
 BarnOwl currently requires the following perl modules off of CPAN:
 
