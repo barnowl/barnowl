@@ -204,7 +204,8 @@ BarnOwl::Completion::register_completer(show    => \&complete_show);
 BarnOwl::Completion::register_completer(getvar  => \&complete_getvar);
 BarnOwl::Completion::register_completer(set     => \&complete_set);
 BarnOwl::Completion::register_completer(unset   => \&complete_set);
-BarnOwl::Completion::register_completer(startup => \&complete_startup);
+BarnOwl::Completion::register_completer(startup   => \&complete_startup);
+BarnOwl::Completion::register_completer(unstartup => \&complete_startup);
 BarnOwl::Completion::register_completer(bindkey => \&complete_bindkey);
 BarnOwl::Completion::register_completer(print   => \&complete_print);
 
