@@ -33,7 +33,7 @@ if ($@) {
 
 use JSON;
 use Date::Parse;
-use POSIX;
+use POSIX qw(asctime);
 use Ouch;
 
 use Scalar::Util qw(weaken);
