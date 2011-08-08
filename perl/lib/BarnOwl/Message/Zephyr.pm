@@ -258,7 +258,9 @@ sub log_filenames {
         if ($m->is_personal) {
             push @filenames, $m->sender;
         } else {
-            return (lc(NFKC($m->class)));
+            my $realm = '';
+            $realm .= '@' . $m->realm if $m->realm ne BarnOwl::zephyr_getrealm();
+            return (lc(NFKC($m->class)) . $realm);
         }
     } else {
         push @filenames, $m->recipient;
