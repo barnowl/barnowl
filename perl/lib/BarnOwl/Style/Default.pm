@@ -112,6 +112,9 @@ sub chat_header {
             $header .= "UNAUTH: ";
         }
         $header .= '@b{' . maybe($m->pretty_sender) . '}';
+        if (defined($m->realm) && $m->realm ne BarnOwl::zephyr_getrealm()) {
+            $header .= ' {' . $self->humanize($m->realm, 1) . '}';
+        }
     }
 
     if($m->opcode) {
