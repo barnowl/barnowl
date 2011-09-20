@@ -218,7 +218,7 @@ CALLER_OWN char *owl_filter_print(const owl_filter *f)
       g_string_append(out, owl_util_color_to_string(f->bgcolor));
     }
     else {
-      g_string_append_printf(out, "%i",f->fgcolor);
+      g_string_append_printf(out, "%i",f->bgcolor);
     }
     g_string_append(out, " ");
   }
