@@ -22,14 +22,14 @@ const char *owl_style_get_name(const owl_style *s)
 const char *owl_style_get_description(const owl_style *s)
 {
   SV *sv = NULL;
-  OWL_PERL_CALL_METHOD(s->perlobj,
-                       "description",
-                       ;,
-                       "Error in style_get_description: %s",
-                       0,
-                       sv = SvREFCNT_inc(POPs);
-                       );
-  if(sv) {
+  OWL_PERL_CALL(call_method("description", G_SCALAR|G_EVAL),
+                XPUSHs(s->perlobj);,
+                "Error in style_get_description: %s",
+                0,
+                false,
+                sv = SvREFCNT_inc(POPs);
+                );
+  if (sv) {
     return SvPV_nolen(sv_2mortal(sv));
   } else {
     return "[error getting description]";
@@ -49,15 +49,16 @@ void owl_style_get_formattext(const owl_style *s, owl_fmtext *fm, const owl_mess
   SV *sv = NULL;
   
   /* Call the perl object */
-  OWL_PERL_CALL_METHOD(s->perlobj,
-                       "format_message",
-                       XPUSHs(sv_2mortal(owl_perlconfig_message2hashref(m)));,
-                       "Error in format_message: %s",
-                       0,
-                       sv = SvREFCNT_inc(POPs);
-                       );
+  OWL_PERL_CALL(call_method("format_message", G_SCALAR|G_EVAL),
+                XPUSHs(s->perlobj);
+                XPUSHs(sv_2mortal(owl_perlconfig_message2hashref(m)));,
+                "Error in format_message: %s",
+                0,
+                false,
+                sv = SvREFCNT_inc(POPs);
+                );
 
-  if(sv) {
+  if (sv) {
     body = SvPV_nolen(sv);
   } else {
     body = "<unformatted message>";

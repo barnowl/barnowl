@@ -227,46 +227,25 @@ CALLER_OWN owl_message *owl_perlconfig_hashref2message(SV *msg)
    If return value is non-null, caller must free. */
 CALLER_OWN char *owl_perlconfig_call_with_message(const char *subname, const owl_message *m)
 {
-  dSP ;
-  int count;
-  SV *msgref, *srv;
-  char *out;
-  
-  ENTER ;
-  SAVETMPS;
-  
-  PUSHMARK(SP) ;
+  SV *msgref, *rv;
+  char *out = NULL;
+
   msgref = owl_perlconfig_message2hashref(m);
-  XPUSHs(sv_2mortal(msgref));
-  PUTBACK ;
-  
-  count = call_pv(subname, G_SCALAR|G_EVAL);
-  
-  SPAGAIN ;
 
-  if (SvTRUE(ERRSV)) {
-    owl_function_error("Perl Error: '%s'", SvPV_nolen(ERRSV));
-    /* and clear the error */
-    sv_setsv (ERRSV, &PL_sv_undef);
-  }
-
-  if (count != 1) {
-    fprintf(stderr, "bad perl!  no biscuit!  returned wrong count!\n");
-    abort();
-  }
-
-  srv = POPs;
-
-  if (srv) {
-    out = g_strdup(SvPV_nolen(srv));
-  } else {
-    out = NULL;
-  }
-  
-  PUTBACK ;
-  FREETMPS ;
-  LEAVE ;
-
+  OWL_PERL_CALL((call_pv(subname, G_SCALAR|G_EVAL))
+                ,
+                XPUSHs(sv_2mortal(msgref));
+                ,
+                "Perl Error: '%s'"
+                ,
+                false
+                ,
+                false
+                ,
+                rv = POPs;
+                if (rv && SvPOK(rv))
+                  out = g_strdup(SvPV_nolen(rv));
+                );
   return out;
 }
 
@@ -276,50 +255,27 @@ CALLER_OWN char *owl_perlconfig_call_with_message(const char *subname, const owl
  */
 CALLER_OWN char *owl_perlconfig_message_call_method(const owl_message *m, const char *method, int argc, const char **argv)
 {
-  dSP;
-  unsigned int count, i;
-  SV *msgref, *srv;
-  char *out;
+  SV *msgref, *rv;
+  char *out = NULL;
+  int i;
 
   msgref = owl_perlconfig_message2hashref(m);
 
-  ENTER;
-  SAVETMPS;
-
-  PUSHMARK(SP);
-  XPUSHs(sv_2mortal(msgref));
-  for(i=0;i<argc;i++) {
-    XPUSHs(sv_2mortal(owl_new_sv(argv[i])));
-  }
-  PUTBACK;
-
-  count = call_method(method, G_SCALAR|G_EVAL);
-
-  SPAGAIN;
-
-  if(count != 1) {
-    fprintf(stderr, "perl returned wrong count %u\n", count);
-    abort();
-  }
-
-  if (SvTRUE(ERRSV)) {
-    owl_function_error("Error: '%s'", SvPV_nolen(ERRSV));
-    /* and clear the error */
-    sv_setsv (ERRSV, &PL_sv_undef);
-  }
-
-  srv = POPs;
-
-  if (srv) {
-    out = g_strdup(SvPV_nolen(srv));
-  } else {
-    out = NULL;
-  }
-
-  PUTBACK;
-  FREETMPS;
-  LEAVE;
-
+  OWL_PERL_CALL(call_method(method, G_SCALAR|G_EVAL)
+                ,
+                XPUSHs(sv_2mortal(msgref));
+                OWL_PERL_PUSH_ARGS(i, argc, argv);
+                ,
+                "Perl Error: '%s'"
+                ,
+                false
+                ,
+                false
+                ,
+                rv = POPs;
+                if (rv && SvPOK(rv))
+                  out = g_strdup(SvPV_nolen(rv));
+                );
   return out;
 }
 
@@ -469,64 +425,41 @@ void owl_perlconfig_newmsg(const owl_message *m, const char *subname)
 
 void owl_perlconfig_new_command(const char *name)
 {
-  dSP;
-
-  ENTER;
-  SAVETMPS;
-
-  PUSHMARK(SP);
-  XPUSHs(sv_2mortal(owl_new_sv(name)));
-  PUTBACK;
-
-  call_pv("BarnOwl::Hooks::_new_command", G_VOID|G_EVAL);
-
-  SPAGAIN;
-
-  if(SvTRUE(ERRSV)) {
-    owl_function_error("%s", SvPV_nolen(ERRSV));
-  }
-
-  FREETMPS;
-  LEAVE;
+  OWL_PERL_CALL(call_pv("BarnOwl::Hooks::_new_command", G_VOID|G_EVAL);
+                ,
+                XPUSHs(sv_2mortal(owl_new_sv(name)));
+                ,
+                "Perl Error: '%s'"
+                ,
+                false
+                ,
+                true
+                ,
+                );
 }
 
 /* caller must free the result */
 CALLER_OWN char *owl_perlconfig_perlcmd(const owl_cmd *cmd, int argc, const char *const *argv)
 {
-  int i, count;
-  char * ret = NULL;
-  SV *rv;
-  dSP;
+  int i;
+  SV* rv;
+  char *out = NULL;
 
-  ENTER;
-  SAVETMPS;
-
-  PUSHMARK(SP);
-  for(i=0;i<argc;i++) {
-    XPUSHs(sv_2mortal(owl_new_sv(argv[i])));
-  }
-  PUTBACK;
-
-  count = call_sv(cmd->cmd_perl, G_SCALAR|G_EVAL);
-
-  SPAGAIN;
-
-  if(SvTRUE(ERRSV)) {
-    owl_function_error("%s", SvPV_nolen(ERRSV));
-    (void)POPs;
-  } else {
-    if(count != 1)
-      croak("Perl command %s returned more than one value!", cmd->name);
-    rv = POPs;
-    if(SvTRUE(rv)) {
-      ret = g_strdup(SvPV_nolen(rv));
-    }
-  }
-
-  FREETMPS;
-  LEAVE;
-
-  return ret;
+  OWL_PERL_CALL(call_sv(cmd->cmd_perl, G_SCALAR|G_EVAL)
+                ,
+                OWL_PERL_PUSH_ARGS(i, argc, argv);
+                ,
+                "Perl Error: '%s'"
+                ,
+                false
+                ,
+                false
+                ,
+                rv = POPs;
+                if (rv && SvPOK(rv))
+                  out = g_strdup(SvPV_nolen(rv));
+                );
+  return out;
 }
 
 void owl_perlconfig_cmd_cleanup(owl_cmd *cmd)
@@ -537,31 +470,25 @@ void owl_perlconfig_cmd_cleanup(owl_cmd *cmd)
 void owl_perlconfig_edit_callback(owl_editwin *e, bool success)
 {
   SV *cb = owl_editwin_get_cbdata(e);
-  SV *text;
-  dSP;
+  SV *text = owl_new_sv(owl_editwin_get_text(e));
 
-  if(cb == NULL) {
+  if (cb == NULL) {
     owl_function_error("Perl callback is NULL!");
     return;
   }
-  text = owl_new_sv(owl_editwin_get_text(e));
 
-  ENTER;
-  SAVETMPS;
-
-  PUSHMARK(SP);
-  XPUSHs(sv_2mortal(text));
-  XPUSHs(sv_2mortal(newSViv(success)));
-  PUTBACK;
-  
-  call_sv(cb, G_DISCARD|G_EVAL);
-
-  if(SvTRUE(ERRSV)) {
-    owl_function_error("%s", SvPV_nolen(ERRSV));
-  }
-
-  FREETMPS;
-  LEAVE;
+  OWL_PERL_CALL(call_sv(cb, G_DISCARD|G_EVAL)
+                ,
+                XPUSHs(sv_2mortal(text));
+                XPUSHs(sv_2mortal(newSViv(success)));
+                ,
+                "Perl Error: '%s'"
+                ,
+                false
+                ,
+                true
+                ,
+                );
 }
 
 void owl_perlconfig_dec_refcnt(void *data)
