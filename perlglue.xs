@@ -166,59 +166,6 @@ admin_message(header, body)
 		owl_function_adminmsg(header, body);		
 	}
 
-void
-start_question(line, callback)
-	const char *line
-	SV *callback
-	PREINIT:
-		owl_editwin *e;
-	CODE:
-	{
-		if(!SV_IS_CODEREF(callback))
-			croak("Callback must be a subref");
-
-		e = owl_function_start_question(line);
-
-		owl_editwin_set_cbdata(e,
-				       newSVsv(callback),
-				       owl_perlconfig_dec_refcnt);
-		owl_editwin_set_callback(e, owl_perlconfig_edit_callback);
-	}
-
-void
-start_password(line, callback)
-	const char *line
-	SV *callback
-	PREINIT:
-		owl_editwin *e;
-	CODE:
-	{
-		if(!SV_IS_CODEREF(callback))
-			croak("Callback must be a subref");
-
-		e = owl_function_start_password(line);
-
-		owl_editwin_set_cbdata(e,
-				       newSVsv(callback),
-				       owl_perlconfig_dec_refcnt);
-		owl_editwin_set_callback(e, owl_perlconfig_edit_callback);
-	}
-
-void
-start_edit_win(line, callback)
-	const char *line
-	SV *callback
-	CODE:
-	{
-		if(!SV_IS_CODEREF(callback))
-			croak("Callback must be a subref");
-
-		owl_function_start_edit_win(line,
-					    owl_perlconfig_edit_callback,
-					    newSVsv(callback),
-					    owl_perlconfig_dec_refcnt);
-	}
-
 
 const char * 
 get_data_dir ()
@@ -494,6 +441,31 @@ new_variable_bool(name, ival, summ, desc)
 				      summ,
 				      desc,
 				      ival);
+
+void
+start_edit(edit_type, line, callback)
+	const char *edit_type
+	const char *line
+	SV *callback
+	PREINIT:
+		owl_editwin *e;
+	CODE:
+	{
+		if (!SV_IS_CODEREF(callback))
+			croak("Callback must be a subref");
+
+		if (!strcmp(edit_type, "question"))
+			e = owl_function_start_question(line);
+		else if (!strcmp(edit_type, "password"))
+			e = owl_function_start_password(line);
+		else if (!strcmp(edit_type, "edit_win"))
+			e = owl_function_start_edit_win(line);
+		else
+			croak("edit_type must be one of 'password', 'question', 'edit_win', not '%s'", edit_type);
+
+		owl_editwin_set_cbdata(e, newSVsv(callback), owl_perlconfig_dec_refcnt);
+		owl_editwin_set_callback(e, owl_perlconfig_edit_callback);
+	}
 
 MODULE = BarnOwl		PACKAGE = BarnOwl::Editwin
 

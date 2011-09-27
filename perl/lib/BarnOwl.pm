@@ -8,6 +8,7 @@ our @EXPORT_OK = qw(command getcurmsg getnumcols getidletime
                     zephyr_getsender zephyr_getrealm zephyr_zwrite
                     zephyr_stylestrip zephyr_smartstrip_user zephyr_getsubs
                     queue_message admin_message
+                    start_edit
                     start_question start_password start_edit_win
                     get_data_dir get_config_dir popless_text popless_ztext
                     error debug
@@ -104,29 +105,98 @@ separated by newlines.
 
 Enqueue a message in the BarnOwl message list, logging it and
 processing it appropriately. C<MESSAGE> should be an instance of
-BarnOwl::Message or a subclass.  Returns the queued message.  This
-is useful for, e.g., deleting a message from the message list.
+BarnOwl::Message or a subclass.
 
 =head2 admin_message HEADER BODY
 
 Display a BarnOwl B<Admin> message, with the given header and body.
 
-=head2 start_question PROMPT CALLBACK
+=head2 start_edit %ARGS
 
-Displays C<PROMPT> on the screen and lets the user enter a line of
-text, and calls C<CALLBACK>, which must be a perl subroutine
-reference, with the text the user entered
+Displays a prompt on the screen and lets the user enter text,
+and calls a callback when the editwin is closed.
+
+C<%ARGS> must contain the following keys:
+
+=over 4
+
+=item prompt
+
+The line to display on the screen
+
+=item type
+
+One of:
+
+=over 4
+
+=item edit_win
+
+Displays the prompt on a line of its own and opens the edit_win.
+
+=item question
+
+Displays prompt on the screen and lets the user enter a line of
+text.
+
+=item password
+
+Like question, but echoes the user's input as C<*>s when they
+input.
+
+=back
+
+=item callback
+
+A Perl subroutine that is called when the user closes the edit_win.
+C<CALLBACK> gets called with two parameters: the text the user entered,
+and a C<SUCCESS> boolean parameter which is false if the user canceled
+the edit_win and true otherwise.
+
+=back
+
+=head2 start_question PROMPT CALLBACK
 
 =head2 start_password PROMPT CALLBACK
 
-Like C<start_question>, but echoes the user's input as C<*>s when they
-input.
-
 =head2 start_edit_win PROMPT CALLBACK
 
-Like C<start_question>, but displays C<PROMPT> on a line of its own
-and opens the editwin. If the user cancels the edit win, C<CALLBACK>
-is not invoked.
+Roughly equivalent to C<start_edit> called with the appropriate parameters.
+C<CALLBACK> is only called on success.
+
+These are deprecated wrappers around L<BarnOwl::start_edit>, and should not
+be uesd in new code.
+
+=cut
+
+sub start_edit {
+    my %args = (@_);
+    BarnOwl::Internal::start_edit($args{type}, $args{prompt}, $args{callback});
+}
+
+sub start_question {
+    my ($prompt, $callback) = @_;
+    BarnOwl::start_edit(type => 'question', prompt => $prompt, callback => sub {
+            my ($text, $success) = @_;
+            $callback->($text) if $success;
+        });
+}
+
+sub start_password {
+    my ($prompt, $callback) = @_;
+    BarnOwl::start_edit(type => 'password', prompt => $prompt, callback => sub {
+            my ($text, $success) = @_;
+            $callback->($text) if $success;
+        });
+}
+
+sub start_edit_win {
+    my ($prompt, $callback) = @_;
+    BarnOwl::start_edit(type => 'edit_win', prompt => $prompt, callback => sub {
+            my ($text, $success) = @_;
+            $callback->($text) if $success;
+        });
+}
 
 =head2 get_data_dir
 
