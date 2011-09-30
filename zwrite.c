@@ -1,6 +1,6 @@
 #include "owl.h"
 
-CALLER_OWN owl_zwrite *owl_zwrite_new(const char *line)
+CALLER_OWN owl_zwrite *owl_zwrite_new_from_line(const char *line)
 {
   owl_zwrite *z = g_new(owl_zwrite, 1);
   if (owl_zwrite_create_from_line(z, line) < 0) {
