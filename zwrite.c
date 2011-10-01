@@ -3,8 +3,8 @@
 CALLER_OWN owl_zwrite *owl_zwrite_new_from_line(const char *line)
 {
   owl_zwrite *z = g_new(owl_zwrite, 1);
-  if (owl_zwrite_create_from_line(z, line) < 0) {
-    owl_zwrite_delete(z);
+  if (owl_zwrite_create_from_line(z, line) != 0) {
+    g_free(z);
     return NULL;
   }
   return z;
@@ -13,8 +13,8 @@ CALLER_OWN owl_zwrite *owl_zwrite_new_from_line(const char *line)
 CALLER_OWN owl_zwrite *owl_zwrite_new(int argc, const char *const *argv)
 {
   owl_zwrite *z = g_new(owl_zwrite, 1);
-  if (owl_zwrite_create(z, argc, argv) < 0) {
-    owl_zwrite_delete(z);
+  if (owl_zwrite_create(z, argc, argv) != 0) {
+    g_free(z);
     return NULL;
   }
   return z;
@@ -134,6 +134,7 @@ G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create(owl_zwrite *z, int argc, const c
   }
 
   if (badargs) {
+    owl_zwrite_cleanup(z);
     return(-1);
   }
 
@@ -141,6 +142,7 @@ G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create(owl_zwrite *z, int argc, const c
       z->inst == NULL &&
       z->recips->len == 0) {
     owl_function_error("You must specify a recipient for zwrite");
+    owl_zwrite_cleanup(z);
     return(-1);
   }
 
@@ -266,8 +268,8 @@ int owl_zwrite_create_and_send_from_line(const char *cmd, const char *msg)
 {
   owl_zwrite z;
   int rv;
-  rv=owl_zwrite_create_from_line(&z, cmd);
-  if (rv) return(rv);
+  rv = owl_zwrite_create_from_line(&z, cmd);
+  if (rv != 0) return rv;
   if (!owl_zwrite_is_message_set(&z)) {
     owl_zwrite_set_message(&z, msg);
   }
