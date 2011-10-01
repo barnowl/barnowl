@@ -261,8 +261,22 @@ CALLER_OWN char *owl_string_build_quoted(const char *tmpl, ...)
  * command-line. Result should be freed with g_free. */
 CALLER_OWN char *owl_arg_quote(const char *arg)
 {
-  GString *buf = g_string_new("");;
+  GString *buf = g_string_new("");
   owl_string_append_quoted_arg(buf, arg);
+  return g_string_free(buf, false);
+}
+
+/* Returns a quoted version of argv. owl_parseline on the result should give
+ * back the input. */
+CALLER_OWN char *owl_argv_quote(int argc, const char *const *argv)
+{
+  int i;
+  GString *buf = g_string_new("");
+  for (i = 0; i < argc; i++) {
+    if (i > 0)
+      g_string_append_c(buf, ' ');
+    owl_string_append_quoted_arg(buf, argv[i]);
+  }
   return g_string_free(buf, false);
 }
 
