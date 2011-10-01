@@ -1984,7 +1984,7 @@ char *owl_command_zwrite(int argc, const char *const *argv, const char *buff)
     return(NULL);
   }
   /* check for a zwrite -m */
-  z = owl_zwrite_new_from_line(buff);
+  z = owl_zwrite_new(argc, argv);
   if (!z) {
     owl_function_error("Error in zwrite arguments");
     return NULL;
