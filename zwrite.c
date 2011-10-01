@@ -10,14 +10,37 @@ CALLER_OWN owl_zwrite *owl_zwrite_new_from_line(const char *line)
   return z;
 }
 
+CALLER_OWN owl_zwrite *owl_zwrite_new(int argc, const char *const *argv)
+{
+  owl_zwrite *z = g_new(owl_zwrite, 1);
+  if (owl_zwrite_create(z, argc, argv) < 0) {
+    owl_zwrite_delete(z);
+    return NULL;
+  }
+  return z;
+}
+
 G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
 {
-  int argc, badargs, myargc;
+  int argc;
   char **argv;
-  const char *const *myargv;
-  char *msg = NULL;
+  int ret;
 
-  badargs=0;
+  /* parse the command line for options */
+  argv = owl_parseline(line, &argc);
+  if (argc < 0) {
+    owl_function_error("Unbalanced quotes in zwrite");
+    return -1;
+  }
+  ret = owl_zwrite_create(z, argc, strs(argv));
+  g_strfreev(argv);
+  return ret;
+}
+
+G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create(owl_zwrite *z, int argc, const char *const *argv)
+{
+  int badargs = 0;
+  char *msg = NULL;
   
   /* start with null entries */
   z->cmd=NULL;
@@ -30,64 +53,56 @@ G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create_from_line(owl_zwrite *z, const c
   z->cc=0;
   z->noping=0;
   z->recips = g_ptr_array_new();
-  z->zwriteline = g_strdup(line);
+  z->zwriteline = owl_argv_quote(argc, argv);
 
-  /* parse the command line for options */
-  argv=owl_parseline(line, &argc);
-  myargv=strs(argv);
-  if (argc<0) {
-    owl_function_error("Unbalanced quotes in zwrite");
-    return(-1);
+  if (argc && *(argv[0])!='-') {
+    z->cmd=g_strdup(argv[0]);
+    argc--;
+    argv++;
   }
-  myargc=argc;
-  if (myargc && *(myargv[0])!='-') {
-    z->cmd=g_strdup(myargv[0]);
-    myargc--;
-    myargv++;
-  }
-  while (myargc) {
-    if (!strcmp(myargv[0], "-c")) {
-      if (myargc<2) {
+  while (argc) {
+    if (!strcmp(argv[0], "-c")) {
+      if (argc<2) {
 	badargs=1;
 	break;
       }
-      z->class=owl_validate_utf8(myargv[1]);
-      myargv+=2;
-      myargc-=2;
-    } else if (!strcmp(myargv[0], "-i")) {
-      if (myargc<2) {
+      z->class=owl_validate_utf8(argv[1]);
+      argv+=2;
+      argc-=2;
+    } else if (!strcmp(argv[0], "-i")) {
+      if (argc<2) {
 	badargs=1;
 	break;
       }
-      z->inst=owl_validate_utf8(myargv[1]);
-      myargv+=2;
-      myargc-=2;
-    } else if (!strcmp(myargv[0], "-r")) {
-      if (myargc<2) {
+      z->inst=owl_validate_utf8(argv[1]);
+      argv+=2;
+      argc-=2;
+    } else if (!strcmp(argv[0], "-r")) {
+      if (argc<2) {
 	badargs=1;
 	break;
       }
-      z->realm=owl_validate_utf8(myargv[1]);
-      myargv+=2;
-      myargc-=2;
-    } else if (!strcmp(myargv[0], "-s")) {
-      if (myargc<2) {
+      z->realm=owl_validate_utf8(argv[1]);
+      argv+=2;
+      argc-=2;
+    } else if (!strcmp(argv[0], "-s")) {
+      if (argc<2) {
 	badargs=1;
 	break;
       }
-      z->zsig=owl_validate_utf8(myargv[1]);
-      myargv+=2;
-      myargc-=2;
-    } else if (!strcmp(myargv[0], "-O")) {
-      if (myargc<2) {
+      z->zsig=owl_validate_utf8(argv[1]);
+      argv+=2;
+      argc-=2;
+    } else if (!strcmp(argv[0], "-O")) {
+      if (argc<2) {
 	badargs=1;
 	break;
       }
-      z->opcode=owl_validate_utf8(myargv[1]);
-      myargv+=2;
-      myargc-=2;
-    } else if (!strcmp(myargv[0], "-m")) {
-      if (myargc<2) {
+      z->opcode=owl_validate_utf8(argv[1]);
+      argv+=2;
+      argc-=2;
+    } else if (!strcmp(argv[0], "-m")) {
+      if (argc<2) {
 	badargs=1;
 	break;
       }
@@ -98,27 +113,25 @@ G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create_from_line(owl_zwrite *z, const c
       }
 
       /* Once we have -m, gobble up everything else on the line */
-      myargv++;
-      myargc--;
-      msg = g_strjoinv(" ", (char**)myargv);
+      argv++;
+      argc--;
+      msg = g_strjoinv(" ", (char**)argv);
       break;
-    } else if (!strcmp(myargv[0], "-C")) {
+    } else if (!strcmp(argv[0], "-C")) {
       z->cc=1;
-      myargv++;
-      myargc--;
-    } else if (!strcmp(myargv[0], "-n")) {
+      argv++;
+      argc--;
+    } else if (!strcmp(argv[0], "-n")) {
       z->noping=1;
-      myargv++;
-      myargc--;
+      argv++;
+      argc--;
     } else {
       /* anything unattached is a recipient */
-      g_ptr_array_add(z->recips, owl_validate_utf8(myargv[0]));
-      myargv++;
-      myargc--;
+      g_ptr_array_add(z->recips, owl_validate_utf8(argv[0]));
+      argv++;
+      argc--;
     }
   }
-
-  g_strfreev(argv);
 
   if (badargs) {
     return(-1);
