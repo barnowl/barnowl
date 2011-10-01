@@ -1,6 +1,6 @@
 #include "owl.h"
 
-CALLER_OWN owl_zwrite *owl_zwrite_new(const char *line)
+CALLER_OWN owl_zwrite *owl_zwrite_new_from_line(const char *line)
 {
   owl_zwrite *z = g_new(owl_zwrite, 1);
   if (owl_zwrite_create_from_line(z, line) < 0) {
@@ -10,10 +10,36 @@ CALLER_OWN owl_zwrite *owl_zwrite_new(const char *line)
   return z;
 }
 
+CALLER_OWN owl_zwrite *owl_zwrite_new(int argc, const char *const *argv)
+{
+  owl_zwrite *z = g_new(owl_zwrite, 1);
+  if (owl_zwrite_create(z, argc, argv) < 0) {
+    owl_zwrite_delete(z);
+    return NULL;
+  }
+  return z;
+}
+
 G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create_from_line(owl_zwrite *z, const char *line)
 {
-  int argc, badargs, myargc;
+  int argc;
   char **argv;
+  int ret;
+
+  /* parse the command line for options */
+  argv = owl_parseline(line, &argc);
+  if (argc < 0) {
+    owl_function_error("Unbalanced quotes in zwrite");
+    return -1;
+  }
+  ret = owl_zwrite_create(z, argc, strs(argv));
+  g_strfreev(argv);
+  return ret;
+}
+
+G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create(owl_zwrite *z, int argc, const char *const *argv)
+{
+  int badargs, myargc;
   const char *const *myargv;
   char *msg = NULL;
 
@@ -30,16 +56,10 @@ G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create_from_line(owl_zwrite *z, const c
   z->cc=0;
   z->noping=0;
   z->recips = g_ptr_array_new();
-  z->zwriteline = g_strdup(line);
+  z->zwriteline = owl_argv_quote(argc, argv);
 
-  /* parse the command line for options */
-  argv=owl_parseline(line, &argc);
-  myargv=strs(argv);
-  if (argc<0) {
-    owl_function_error("Unbalanced quotes in zwrite");
-    return(-1);
-  }
-  myargc=argc;
+  myargc = argc;
+  myargv = argv;
   if (myargc && *(myargv[0])!='-') {
     z->cmd=g_strdup(myargv[0]);
     myargc--;
@@ -117,8 +137,6 @@ G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create_from_line(owl_zwrite *z, const c
       myargc--;
     }
   }
-
-  g_strfreev(argv);
 
   if (badargs) {
     return(-1);

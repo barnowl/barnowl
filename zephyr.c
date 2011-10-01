@@ -908,7 +908,7 @@ void owl_zephyr_zaway(const owl_message *m)
   g_free(myuser);
   g_free(to);
 
-  z = owl_zwrite_new(tmpbuff);
+  z = owl_zwrite_new_from_line(tmpbuff);
   g_free(tmpbuff);
   if (z == NULL) {
     owl_function_error("Error creating outgoing zephyr.");
