@@ -126,6 +126,10 @@ sub reload_module_cmd {
     $class->reload_module($module);
 }
 
+sub complete_module_name {
+    return sort(keys %modules);
+}
+
 sub register_keybindings {
     BarnOwl::new_command('reload-modules', sub {BarnOwl::ModuleLoader->reload}, {
                            summary => 'Reload all modules',
@@ -137,6 +141,8 @@ sub register_keybindings {
                            usage   => 'reload-module [MODULE]',
                            description => q{Reloads a single module located in ~/.owl/modules or the system modules directory}
                           });
+
+    BarnOwl::Completion::register_completer('reload-module', \&complete_module_name);
 }
 
 sub reload {
