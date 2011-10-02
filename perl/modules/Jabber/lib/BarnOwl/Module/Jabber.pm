@@ -1481,6 +1481,16 @@ sub complete_jwrite {
         );
 }
 
+sub complete_jabberlogout {
+    my $ctx = shift;
+    if($ctx->word == 1) {
+        return ("-A", complete_account() );
+    } else {
+        return ();
+    }
+}
+
 BarnOwl::Completion::register_completer(jwrite => sub { BarnOwl::Module::Jabber::complete_jwrite(@_) });
+BarnOwl::Completion::register_completer(jabberlogout => sub { BarnOwl::Module::Jabber::complete_jabberlogout(@_) });
 
 1;
