@@ -97,6 +97,23 @@ zephyr_zwrite(cmd,msg)
 	CODE:
 		i = owl_zwrite_create_and_send_from_line(cmd, msg);
 
+int
+zephyr_zcrypt(cmd,msg)
+	const char *cmd
+	const char *msg
+	PREINIT:
+		owl_zwrite z;
+		int rv;
+	CODE:
+		rv=owl_zwrite_create_from_line(&z, cmd);
+		if (rv) {
+		} else {
+			owl_function_zcrypt(&z, msg);
+		}
+		RETVAL = rv;
+	OUTPUT:
+		RETVAL
+
 const utf8 *
 ztext_stylestrip(ztext)
 	const char *ztext
