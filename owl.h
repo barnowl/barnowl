@@ -236,7 +236,7 @@ typedef struct _owl_variable {
   int   type;  /* OWL_VARIABLE_* */
   void *pval_default;  /* for types other and string */
   int   ival_default;  /* for types int and bool     */
-  const char *validsettings;	/* documentation of valid settings */
+  char *validsettings;          /* documentation of valid settings */
   char *summary;		/* summary of usage */
   char *description;		/* detailed description */
   void *val;                    /* current value */
