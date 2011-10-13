@@ -721,7 +721,7 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   notice.z_class=zstr(class);
   notice.z_class_inst=zstr(instance);
   notice.z_sender=NULL;
-  if (!strcmp(recipient, "*") || !strcmp(recipient, "@")) {
+  if (!strcmp(recipient, "@")) {
     notice.z_recipient=zstr("");
     if (*owl_global_get_zsender(&g))
         notice.z_sender=zstr(owl_global_get_zsender(&g));
