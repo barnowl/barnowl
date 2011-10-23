@@ -326,6 +326,11 @@ CALLER_OWN char *owl_zwrite_get_recip_n_with_realm(const owl_zwrite *z, int n)
   }
 }
 
+bool owl_zwrite_recip_is_personal(const char *recipient)
+{
+  return recipient[0] && recipient[0] != '@';
+}
+
 int owl_zwrite_is_personal(const owl_zwrite *z)
 {
   /* return true if at least one of the recipients is personal */

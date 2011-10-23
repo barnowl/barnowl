@@ -831,10 +831,8 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   }
 
   
-  /* set the "isprivate" attribute if it's a private zephyr.
-   ``private'' means recipient is non-empty and doesn't start wit 
-   `@' */
-  if (*n->z_recipient && *n->z_recipient != '@') {
+  /* set the "isprivate" attribute if it's a private zephyr. */
+  if (owl_zwrite_recip_is_personal(n->z_recipient)) {
     owl_message_set_isprivate(m);
   }
 
