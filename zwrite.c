@@ -170,11 +170,10 @@ void owl_zwrite_send_ping(const owl_zwrite *z)
     return;
   }
 
-  /* if there are no recipients we won't send a ping, which
-     is what we want */
   for (i = 0; i < z->recips->len; i++) {
     to = owl_zwrite_get_recip_n_with_realm(z, i);
-    send_ping(to, z->class, z->inst);
+    if (owl_zwrite_recip_is_personal(to))
+      send_ping(to, z->class, z->inst);
     g_free(to);
   }
 
