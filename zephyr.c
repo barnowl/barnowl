@@ -788,8 +788,7 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
     }
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
     if (retnotice->z_recipient == NULL
-        || *retnotice->z_recipient == 0
-        || *retnotice->z_recipient == '@') {
+        || !owl_zwrite_recip_is_personal(retnotice->z_recipient)) {
       char *buff;
       owl_function_error("No one subscribed to class %s", retnotice->z_class);
       buff = g_strdup_printf("Could not send message to class %s: no one subscribed.\n", retnotice->z_class);
