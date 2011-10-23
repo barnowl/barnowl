@@ -194,7 +194,7 @@ void owl_zwrite_set_message(owl_zwrite *z, const char *msg)
 
   g_free(z->message);
 
-  if (z->recips->len > 0 && z->cc) {
+  if (z->cc && owl_zwrite_is_personal(z)) {
     message = g_string_new("CC: ");
     for (i = 0; i < z->recips->len; i++) {
       tmp = owl_zwrite_get_recip_n_with_realm(z, i);
