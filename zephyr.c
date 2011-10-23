@@ -696,6 +696,7 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
 #ifdef HAVE_LIBZEPHYR
   Code_t ret;
   ZNotice_t notice;
+  char *zsender = NULL;
     
   memset(&notice, 0, sizeof(notice));
 
@@ -707,11 +708,10 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   notice.z_port=0;
   notice.z_class=zstr(class);
   notice.z_class_inst=zstr(instance);
-  notice.z_sender=NULL;
   if (!strcmp(recipient, "@")) {
     notice.z_recipient=zstr("");
     if (*owl_global_get_zsender(&g))
-        notice.z_sender=zstr(owl_global_get_zsender(&g));
+      notice.z_sender = zsender = long_zuser(owl_global_get_zsender(&g));
   } else {
     notice.z_recipient=zstr(recipient);
   }
@@ -729,6 +729,7 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   /* free then check the return */
   g_free(notice.z_message);
   ZFreeNotice(&notice);
+  g_free(zsender);
   if (ret != ZERR_NONE) {
     owl_function_error("Error sending zephyr: %s", error_message(ret));
     return(ret);
