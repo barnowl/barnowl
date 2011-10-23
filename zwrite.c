@@ -342,17 +342,15 @@ bool owl_zwrite_recip_is_personal(const char *recipient)
   return recipient[0] && recipient[0] != '@';
 }
 
-int owl_zwrite_is_personal(const owl_zwrite *z)
+bool owl_zwrite_is_personal(const owl_zwrite *z)
 {
   /* return true if at least one of the recipients is personal */
   int i;
-  char *recip;
 
-  for (i = 0; i < z->recips->len; i++) {
-    recip = z->recips->pdata[i];
-    if (recip[0] != '@') return 1;
-  }
-  return(0);
+  for (i = 0; i < z->recips->len; i++)
+    if (owl_zwrite_recip_is_personal(z->recips->pdata[i]))
+      return true;
+  return false;
 }
 
 void owl_zwrite_delete(owl_zwrite *z)
