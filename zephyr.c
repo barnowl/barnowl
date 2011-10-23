@@ -710,11 +710,11 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   notice.z_class_inst=zstr(instance);
   if (!strcmp(recipient, "@")) {
     notice.z_recipient=zstr("");
-    if (*owl_global_get_zsender(&g))
-      notice.z_sender = zsender = long_zuser(owl_global_get_zsender(&g));
   } else {
     notice.z_recipient=zstr(recipient);
   }
+  if (!owl_zwrite_recip_is_personal(recipient) && *owl_global_get_zsender(&g))
+    notice.z_sender = zsender = long_zuser(owl_global_get_zsender(&g));
   notice.z_default_format=zstr("Class $class, Instance $instance:\nTo: @bold($recipient) at $time $date\nFrom: @bold{$1 <$sender>}\n\n$2");
   if (opcode) notice.z_opcode=zstr(opcode);
 
