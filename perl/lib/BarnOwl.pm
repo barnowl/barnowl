@@ -328,10 +328,15 @@ our $configfile;
 
 our @all_commands;
 
-if(!$configfile && -f $ENV{HOME} . "/.barnowlconf") {
-    $configfile = $ENV{HOME} . "/.barnowlconf";
+if(!$configfile) {
+    if (-f get_config_dir() . "/init.pl") {
+        $configfile = get_config_dir() . "/init.pl";
+    } elsif (-f $ENV{HOME} . "/.barnowlconf") {
+        $configfile = $ENV{HOME} . "/.barnowlconf";
+    } else {
+        $configfile = $ENV{HOME}."/.owlconf";
+    }
 }
-$configfile ||= $ENV{HOME}."/.owlconf";
 
 # populate global variable space for legacy owlconf files
 sub _receive_msg_legacy_wrap {

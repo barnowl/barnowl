@@ -40,8 +40,8 @@ void usage(void)
   fprintf(stderr, "  -d,--debug          enable debugging\n");
   fprintf(stderr, "  -v,--version        print the Barnowl version number and exit\n");
   fprintf(stderr, "  -h,--help           print this help message\n");
-  fprintf(stderr, "  -c,--config-file    specify an alternate config file\n");
   fprintf(stderr, "  -s,--config-dir     specify an alternate config dir (default ~/.owl)\n");
+  fprintf(stderr, "  -c,--config-file    specify an alternate config file (default ~/.owl/init.pl)\n");
   fprintf(stderr, "  -t,--tty            set the tty name\n");
 }
 
