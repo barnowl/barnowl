@@ -1430,6 +1430,7 @@ void owl_function_info(void)
     if (n != NULL) {
       char *tmpbuff, *tmpbuff2;
       int i, fields;
+      const char *f;
 
       if (!owl_message_is_pseudo(m)) {
 	owl_fmtext_append_normal(&fm, "  Kind      : ");
@@ -1471,8 +1472,9 @@ void owl_function_info(void)
 	fields=owl_zephyr_get_num_fields(n);
 	owl_fmtext_appendf_normal(&fm, "  Fields    : %i\n", fields);
 
-	for (i = 0; i < fields; i++) {
-          tmpbuff = owl_zephyr_get_field_as_utf8(n, i + 1);
+	for (i = 0, f = owl_zephyr_first_raw_field(n); f != NULL;
+	     i++, f = owl_zephyr_next_raw_field(n, f)) {
+          tmpbuff = owl_zephyr_field_as_utf8(n, f);
           tmpbuff2 = owl_text_indent(tmpbuff, 14, false);
           owl_fmtext_appendf_normal(&fm, "  Field %i   : %s\n", i + 1, tmpbuff2);
           g_free(tmpbuff2);
