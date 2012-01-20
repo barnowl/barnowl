@@ -519,77 +519,91 @@ int owl_zephyr_unsub(const char *class, const char *inst, const char *recip)
 #endif
 }
 
-/* return a pointer to the data in the Jth field, (NULL terminated by
- * definition).  Caller must free the return.
- */
 #ifdef HAVE_LIBZEPHYR
+const char *owl_zephyr_first_raw_field(const ZNotice_t *n)
+{
+  if (n->z_message_len == 0)
+    return NULL;
+  return n->z_message;
+}
+
+const char *owl_zephyr_next_raw_field(const ZNotice_t *n, const char *f)
+{
+  const char *end = n->z_message + n->z_message_len;
+  f = memchr(f, '\0', end - f);
+  if (f == NULL)
+    return NULL;
+  return f + 1;
+}
+
+const char *owl_zephyr_get_raw_field(const ZNotice_t *n, int j)
+{
+  int i;
+  const char *f;
+  for (i = 1, f = owl_zephyr_first_raw_field(n); i < j && f != NULL;
+       i++, f = owl_zephyr_next_raw_field(n, f))
+    ;
+  return f;
+}
+
+CALLER_OWN char *owl_zephyr_field(const ZNotice_t *n, const char *f)
+{
+  if (f == NULL)
+    return g_strdup("");
+  return g_strndup(f, n->z_message + n->z_message_len - f);
+}
+
+CALLER_OWN char *owl_zephyr_field_as_utf8(const ZNotice_t *n, const char *f)
+{
+  char *tmp = owl_zephyr_field(n, f);
+  char *out = owl_validate_or_convert(tmp);
+  g_free(tmp);
+  return out;
+}
+
 CALLER_OWN char *owl_zephyr_get_field(const ZNotice_t *n, int j)
 {
-  int i, count, save;
-
-  /* If there's no message here, just run along now */
-  if (n->z_message_len == 0)
-    return(g_strdup(""));
-
-  count=save=0;
-  for (i=0; i<n->z_message_len; i++) {
-    if (n->z_message[i]=='\0') {
-      count++;
-      if (count==j) {
-	/* just found the end of the field we're looking for */
-	return(g_strdup(n->z_message+save));
-      } else {
-	save=i+1;
-      }
-    }
-  }
-  /* catch the last field, which might not be null terminated */
-  if (count==j-1) {
-    return g_strndup(n->z_message + save, n->z_message_len - save);
-  }
-
-  return(g_strdup(""));
+  return owl_zephyr_field(n, owl_zephyr_get_raw_field(n, j));
 }
 
 CALLER_OWN char *owl_zephyr_get_field_as_utf8(const ZNotice_t *n, int j)
 {
-  int i, count, save;
-
-  /* If there's no message here, just run along now */
-  if (n->z_message_len == 0)
-    return(g_strdup(""));
-
-  count=save=0;
-  for (i = 0; i < n->z_message_len; i++) {
-    if (n->z_message[i]=='\0') {
-      count++;
-      if (count == j) {
-	/* just found the end of the field we're looking for */
-	return(owl_validate_or_convert(n->z_message + save));
-      } else {
-	save = i + 1;
-      }
-    }
-  }
-  /* catch the last field, which might not be null terminated */
-  if (count == j - 1) {
-    char *tmp, *out;
-    tmp = g_strndup(n->z_message + save, n->z_message_len - save);
-    out = owl_validate_or_convert(tmp);
-    g_free(tmp);
-    return out;
-  }
-
-  return(g_strdup(""));
+  return owl_zephyr_field_as_utf8(n, owl_zephyr_get_raw_field(n, j));
 }
 #else
-CALLER_OWN char *owl_zephyr_get_field(void *n, int j)
+const char *owl_zephyr_first_raw_field(const void *n)
 {
-  return(g_strdup(""));
+  return NULL;
 }
-CALLER_OWN char *owl_zephyr_get_field_as_utf8(void *n, int j)
+
+const char *owl_zephyr_next_raw_field(const void *n, const char *f)
 {
-  return owl_zephyr_get_field(n, j);
+  return NULL;
+}
+
+const char *owl_zephyr_get_raw_field(const void *n, int j)
+{
+  return NULL;
+}
+
+CALLER_OWN char *owl_zephyr_field(const void *n, const char *f)
+{
+  return g_strdup("");
+}
+
+CALLER_OWN char *owl_zephyr_field_as_utf8(const void *n, const char *f)
+{
+  return g_strdup("");
+}
+
+CALLER_OWN char *owl_zephyr_get_field(const void *n, int j)
+{
+  return g_strdup("");
+}
+
+CALLER_OWN char *owl_zephyr_get_field_as_utf8(const void *n, int j)
+{
+  return owl_zephyr_field(n, owl_zephyr_get_raw_field(n, j));
 }
 #endif
 
@@ -597,17 +611,12 @@ CALLER_OWN char *owl_zephyr_get_field_as_utf8(void *n, int j)
 #ifdef HAVE_LIBZEPHYR
 int owl_zephyr_get_num_fields(const ZNotice_t *n)
 {
-  int i, fields;
-
-  if(n->z_message_len == 0)
-    return 0;
-
-  fields=1;
-  for (i=0; i<n->z_message_len; i++) {
-    if (n->z_message[i]=='\0') fields++;
-  }
-  
-  return(fields);
+  int i;
+  const char *f;
+  for (i = 0, f = owl_zephyr_first_raw_field(n); f != NULL;
+       i++, f = owl_zephyr_next_raw_field(n, f))
+    ;
+  return i;
 }
 #else
 int owl_zephyr_get_num_fields(const void *n)
