@@ -79,7 +79,8 @@ CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
   SV *hr;
   const char *type;
   char *ptr, *utype, *blessas;
-  int i, j;
+  const char *f;
+  int i;
   const owl_pair *pair;
   const owl_filter *wrap;
 
@@ -101,9 +102,9 @@ CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
     AV *av_zfields;
 
     av_zfields = newAV();
-    j=owl_zephyr_get_num_fields(owl_message_get_notice(m));
-    for (i=0; i<j; i++) {
-      ptr=owl_zephyr_get_field_as_utf8(owl_message_get_notice(m), i+1);
+    for (f = owl_zephyr_first_raw_field(owl_message_get_notice(m)); f != NULL;
+	 f = owl_zephyr_next_raw_field(owl_message_get_notice(m), f)) {
+      ptr=owl_zephyr_field_as_utf8(owl_message_get_notice(m), f);
       av_push(av_zfields, owl_new_sv(ptr));
       g_free(ptr);
     }

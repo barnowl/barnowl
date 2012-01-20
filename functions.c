@@ -1431,6 +1431,7 @@ void owl_function_info(void)
     if (owl_message_is_direction_in(m)) {
       char *tmpbuff;
       int i, fields;
+      const char *f;
 
       n=owl_message_get_notice(m);
 
@@ -1474,8 +1475,9 @@ void owl_function_info(void)
 	fields=owl_zephyr_get_num_fields(n);
 	owl_fmtext_appendf_normal(&fm, "  Fields    : %i\n", fields);
 
-	for (i = 0; i < fields; i++) {
-	  tmpbuff = owl_zephyr_get_field_as_utf8(n, i + 1);
+	for (i = 0, f = owl_zephyr_first_raw_field(n); f != NULL;
+	     i++, f = owl_zephyr_next_raw_field(n, f)) {
+          tmpbuff = owl_zephyr_field_as_utf8(n, f);
 
 	  g_strdelimit(tmpbuff, "\n", '~');
 	  g_strdelimit(tmpbuff, "\r", '!');
