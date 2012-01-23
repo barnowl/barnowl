@@ -433,8 +433,9 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
     owl_function_add_outgoing_zephyrs(z);
   }
 
-  /* free the zwrite */
+  /* Clean up. */
   g_free(cryptmsg);
+  g_free(old_msg);
 }
 
 void owl_callback_aimwrite(owl_editwin *e, bool success)
