@@ -992,6 +992,13 @@ void owl_function_aaway_off(void)
   owl_function_makemsg("AIM away off");
 }
 
+bool owl_function_is_away(void)
+{
+  return owl_global_is_zaway(&g) ||
+         owl_global_is_aaway(&g) ||
+         owl_perlconfig_perl_call_bool("BarnOwl::Hooks::_get_is_away", 0, NULL);
+}
+
 void owl_function_quit(void)
 {
   char *ret;
