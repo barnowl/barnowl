@@ -18,6 +18,12 @@ int send_receive(int rfd, int wfd, const char *out, char **in)
   fds[1].fd = wfd;
   fds[1].events = POLLOUT;
 
+  if(!out || !*out) {
+    /* Nothing to write. Close our end so the child doesn't hang waiting. */
+    close(wfd);
+    out = NULL;
+  }
+
   while(1) {
     if(out && *out) {
       nfds = 2;
