@@ -115,10 +115,9 @@ int owl_variable_add_defaults(owl_vardict *vd)
 	       "logged.",
 	       "both,in,out"),
 
-  OWLVAR_BOOL( "colorztext" /* %OwlVarStub */, 1,
-	       "allow @color() in zephyrs to change color",
-	       "Note that only messages received after this variable\n"
-	       "is set will be affected." ),
+  OWLVAR_BOOL_FULL( "colorztext" /* %OwlVarStub */, 1,
+                    "allow @color() in zephyrs to change color",
+                    NULL, NULL, owl_variable_colorztext_set, NULL),
 
   OWLVAR_BOOL( "fancylines" /* %OwlVarStub */, 1,
 	       "Use 'nice' line drawing on the terminal.",
@@ -495,6 +494,19 @@ int owl_variable_aaway_set(owl_variable *v, const void *newval)
     }
   }
   return owl_variable_bool_set_default(v, newval);
+}
+
+int owl_variable_colorztext_set(owl_variable *v, const void *newval)
+{
+  int ret = owl_variable_bool_set_default(v, newval);
+  /* flush the format cache so that we see the update, but only if we're done initializing BarnOwl */
+  if (owl_global_get_msglist(&g) != NULL)
+    owl_messagelist_invalidate_formats(owl_global_get_msglist(&g));
+  if (owl_global_get_mainwin(&g) != NULL) {
+    owl_function_calculate_topmsg(OWL_DIRECTION_DOWNWARDS);
+    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
+  }
+  return ret;
 }
 
 int owl_variable_pseudologins_set(owl_variable *v, const void *newval)

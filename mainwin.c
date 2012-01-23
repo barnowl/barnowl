@@ -3,8 +3,9 @@
 static void owl_mainwin_redraw(owl_window *w, WINDOW *recwin, void *user_data);
 static void owl_mainwin_resized(owl_window *w, void *user_data);
 
-void owl_mainwin_init(owl_mainwin *mw, owl_window *window)
+CALLER_OWN owl_mainwin *owl_mainwin_new(owl_window *window)
 {
+  owl_mainwin *mw = g_new(owl_mainwin, 1);
   mw->curtruncated=0;
   mw->lastdisplayed=-1;
   mw->window = g_object_ref(window);
@@ -15,6 +16,8 @@ void owl_mainwin_init(owl_mainwin *mw, owl_window *window)
 
   /* For now, we do not bother with connecting up dependencies; that'll be a
    * future refactor of the mainwin */
+
+  return mw;
 }
 
 static void owl_mainwin_resized(owl_window *w, void *user_data)

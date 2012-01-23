@@ -451,7 +451,7 @@ typedef struct _owl_filter {
 typedef struct _owl_view {
   char *name;
   owl_filter *filter;
-  owl_messagelist ml;
+  owl_messagelist *ml;
   const owl_style *style;
   int cachedmsgid;
 } owl_view;
@@ -532,7 +532,7 @@ typedef struct _owl_popexec {
 } owl_popexec;
 
 typedef struct _owl_global {
-  owl_mainwin mw;
+  owl_mainwin *mw;
   owl_popwin *pw;
   owl_msgwin msgwin;
   owl_history cmdhist;		/* command history */
@@ -550,7 +550,7 @@ typedef struct _owl_global {
   int markedmsgid;              /* for finding the marked message when it has moved. */
   int curmsg_vert_offset;
   owl_view current_view;
-  owl_messagelist msglist;
+  owl_messagelist *msglist;
   WINDOW *input_pad;
   owl_mainpanel mainpanel;
   gulong typwin_erase_id;
