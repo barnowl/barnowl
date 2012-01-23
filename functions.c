@@ -410,13 +410,13 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
   old_msg = g_strdup(owl_zwrite_get_message(z));
 
   zcrypt = g_build_filename(owl_get_bindir(), "zcrypt", NULL);
-  argv[0] = "zcrypt";
+  argv[0] = zcrypt;
   argv[1] = "-E";
   argv[2] = "-c"; argv[3] = owl_zwrite_get_class(z);
   argv[4] = "-i"; argv[5] = owl_zwrite_get_instance(z);
   argv[6] = NULL;
 
-  rv = call_filter(zcrypt, argv, owl_zwrite_get_message(z), &cryptmsg, &status);
+  rv = call_filter(argv, owl_zwrite_get_message(z), &cryptmsg, &status);
 
   g_free(zcrypt);
 

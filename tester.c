@@ -2,6 +2,7 @@
 #define WINDOW FAKE_WINDOW
 #include "owl.h"
 #undef WINDOW
+#include "filterproc.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -25,6 +26,7 @@ int owl_editwin_regtest(void);
 int owl_fmtext_regtest(void);
 int owl_smartfilter_regtest(void);
 int owl_history_regtest(void);
+int call_filter_regtest(void);
 
 extern void owl_perl_xs_init(pTHX);
 
@@ -115,6 +117,7 @@ int owl_regtest(void) {
   numfailures += owl_fmtext_regtest();
   numfailures += owl_smartfilter_regtest();
   numfailures += owl_history_regtest();
+  numfailures += call_filter_regtest();
   if (numfailures) {
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
@@ -979,5 +982,37 @@ int owl_history_regtest(void)
   owl_history_cleanup(&h);
 
   printf("# END testing owl_history (%d failures)\n", numfailed);
+  return numfailed;
+}
+
+int call_filter_regtest(void)
+{
+  int numfailed = 0;
+  int ret;
+  char *out = NULL;
+  int status;
+
+  printf("# BEGIN testing call_filter\n");
+
+  const char *cat_argv[] = { "cat", NULL };
+  ret = call_filter(cat_argv, "Mangos!", &out, &status);
+  FAIL_UNLESS("call_filter cat", (ret == 0 &&
+                                  status == 0 &&
+                                  strcmp(out, "Mangos!") == 0));
+  g_free(out); out = NULL;
+
+  ret = call_filter(cat_argv, "", &out, &status);
+  FAIL_UNLESS("call_filter cat", (ret == 0 &&
+                                  status == 0 &&
+                                  strcmp(out, "") == 0));
+  g_free(out); out = NULL;
+
+  ret = call_filter(cat_argv, NULL, &out, &status);
+  FAIL_UNLESS("call_filter cat", (ret == 0 &&
+                                  status == 0 &&
+                                  strcmp(out, "") == 0));
+  g_free(out); out = NULL;
+
+  printf("# END testing call_filter (%d failures)\n", numfailed);
   return numfailed;
 }

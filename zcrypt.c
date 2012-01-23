@@ -773,7 +773,7 @@ int do_encrypt_aes(const char *keyfile, const char *in, int length, FILE *outfil
     "--passphrase-file", keyfile,
     NULL
   };
-  err = call_filter("gpg", argv, in, &out, &status);
+  err = call_filter(argv, in, &out, &status);
   if(err || status) {
     g_free(out);
     return FALSE;
@@ -856,7 +856,7 @@ int do_decrypt_aes(const char *keyfile) {
   in = slurp_stdin(TRUE, &length);
   if(!in) return FALSE;
 
-  err = call_filter("gpg", argv, in, &out, &status);
+  err = call_filter(argv, in, &out, &status);
   if(err || status) {
     g_free(out);
     return FALSE;
