@@ -2,7 +2,9 @@
 #include <sys/wait.h>
 #include <poll.h>
 
-int send_receive(int rfd, int wfd, const char *out, char **in)
+/* Even in case of error, send_receive is responsible for closing wfd
+ * (to EOF the child) and rfd (for consistency). */
+static int send_receive(int rfd, int wfd, const char *out, char **in)
 {
   GString *str = g_string_new("");
   char buf[1024];
@@ -20,7 +22,7 @@ int send_receive(int rfd, int wfd, const char *out, char **in)
 
   if(!out || !*out) {
     /* Nothing to write. Close our end so the child doesn't hang waiting. */
-    close(wfd);
+    close(wfd); wfd = -1;
     out = NULL;
   }
 
@@ -45,7 +47,7 @@ int send_receive(int rfd, int wfd, const char *out, char **in)
         }
       }
       if(!out || !*out || fds[1].revents & (POLLERR | POLLHUP)) {
-        close(wfd);
+        close(wfd); wfd = -1;
         out = NULL;
       }
     }
@@ -61,53 +63,29 @@ int send_receive(int rfd, int wfd, const char *out, char **in)
     }
   }
 
+  if (wfd >= 0) close(wfd);
+  close(rfd);
   *in = g_string_free(str, err < 0);
   return err;
 }
 
-int call_filter(const char *prog, const char *const *argv, const char *in, char **out, int *status)
+int call_filter(const char *const *argv, const char *in, char **out, int *status)
 {
-  int err = 0;
-  pid_t pid;
-  int rfd[2];
-  int wfd[2];
+  int err;
+  GPid child_pid;
+  int child_stdin, child_stdout;
 
-  if((err = pipe(rfd))) goto out;
-  if((err = pipe(wfd))) goto out_close_rfd;
-
-  pid = fork();
-  if(pid < 0) {
-    err = pid;
-    goto out_close_all;
-  }
-  if(pid) {
-    /* parent */
-    close(rfd[1]);
-    close(wfd[0]);
-    err = send_receive(rfd[0], wfd[1], in, out);
-    if(err == 0) {
-      waitpid(pid, status, 0);
-    }
-  } else {
-    /* child */
-    close(rfd[0]);
-    close(wfd[1]);
-    dup2(rfd[1], 1);
-    dup2(wfd[0], 0);
-    close(rfd[1]);
-    close(wfd[0]);
-
-    if(execvp(prog, (char *const *)argv)) {
-      _exit(-1);
-    }
+  if (!g_spawn_async_with_pipes(NULL, (char**)argv, NULL,
+                                G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
+                                NULL, NULL,
+                                &child_pid, &child_stdin, &child_stdout, NULL,
+                                NULL)) {
+    return 1;
   }
 
- out_close_all:
-  close(wfd[0]);
-  close(wfd[1]);
- out_close_rfd:
-  close(rfd[0]);
-  close(rfd[1]);
- out:
+  err = send_receive(child_stdout, child_stdin, in, out);
+  if (err == 0) {
+    waitpid(child_pid, status, 0);
+  }
   return err;
 }

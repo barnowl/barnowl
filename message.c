@@ -874,7 +874,7 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   /* if zcrypt is enabled try to decrypt the message */
   if (owl_global_is_zcrypt(&g) && !strcasecmp(n->z_opcode, "crypt")) {
     const char *argv[] = {
-      "zcrypt",
+      NULL,
       "-D",
       "-c", owl_message_get_class(m),
       "-i", owl_message_get_instance(m),
@@ -886,8 +886,9 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
     char *zcrypt;
 
     zcrypt = g_build_filename(owl_get_bindir(), "zcrypt", NULL);
+    argv[0] = zcrypt;
 
-    rv = call_filter(zcrypt, argv, owl_message_get_body(m), &out, &status);
+    rv = call_filter(argv, owl_message_get_body(m), &out, &status);
     g_free(zcrypt);
 
     if(!rv && !status) {
