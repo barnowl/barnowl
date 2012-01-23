@@ -696,6 +696,7 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
 #ifdef HAVE_LIBZEPHYR
   Code_t ret;
   ZNotice_t notice;
+  char *zsender = NULL;
     
   memset(&notice, 0, sizeof(notice));
 
@@ -707,14 +708,13 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   notice.z_port=0;
   notice.z_class=zstr(class);
   notice.z_class_inst=zstr(instance);
-  notice.z_sender=NULL;
-  if (!strcmp(recipient, "*") || !strcmp(recipient, "@")) {
+  if (!strcmp(recipient, "@")) {
     notice.z_recipient=zstr("");
-    if (*owl_global_get_zsender(&g))
-        notice.z_sender=zstr(owl_global_get_zsender(&g));
   } else {
     notice.z_recipient=zstr(recipient);
   }
+  if (!owl_zwrite_recip_is_personal(recipient) && *owl_global_get_zsender(&g))
+    notice.z_sender = zsender = long_zuser(owl_global_get_zsender(&g));
   notice.z_default_format=zstr("Class $class, Instance $instance:\nTo: @bold($recipient) at $time $date\nFrom: @bold{$1 <$sender>}\n\n$2");
   if (opcode) notice.z_opcode=zstr(opcode);
 
@@ -729,6 +729,7 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   /* free then check the return */
   g_free(notice.z_message);
   ZFreeNotice(&notice);
+  g_free(zsender);
   if (ret != ZERR_NONE) {
     owl_function_error("Error sending zephyr: %s", error_message(ret));
     return(ret);
@@ -788,8 +789,7 @@ void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
     }
   } else if (!strcmp(retnotice->z_message, ZSRVACK_NOTSENT)) {
     if (retnotice->z_recipient == NULL
-        || *retnotice->z_recipient == 0
-        || *retnotice->z_recipient == '@') {
+        || !owl_zwrite_recip_is_personal(retnotice->z_recipient)) {
       char *buff;
       owl_function_error("No one subscribed to class %s", retnotice->z_class);
       buff = g_strdup_printf("Could not send message to class %s: no one subscribed.\n", retnotice->z_class);

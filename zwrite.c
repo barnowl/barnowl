@@ -181,11 +181,10 @@ void owl_zwrite_send_ping(const owl_zwrite *z)
     return;
   }
 
-  /* if there are no recipients we won't send a ping, which
-     is what we want */
   for (i = 0; i < z->recips->len; i++) {
     to = owl_zwrite_get_recip_n_with_realm(z, i);
-    send_ping(to, z->class, z->inst);
+    if (owl_zwrite_recip_is_personal(to))
+      send_ping(to, z->class, z->inst);
     g_free(to);
   }
 
@@ -206,7 +205,7 @@ void owl_zwrite_set_message(owl_zwrite *z, const char *msg)
 
   g_free(z->message);
 
-  if (z->recips->len > 0 && z->cc) {
+  if (z->cc && owl_zwrite_is_personal(z)) {
     message = g_string_new("CC: ");
     for (i = 0; i < z->recips->len; i++) {
       tmp = owl_zwrite_get_recip_n_with_realm(z, i);
@@ -337,17 +336,20 @@ CALLER_OWN char *owl_zwrite_get_recip_n_with_realm(const owl_zwrite *z, int n)
   }
 }
 
-int owl_zwrite_is_personal(const owl_zwrite *z)
+bool owl_zwrite_recip_is_personal(const char *recipient)
+{
+  return recipient[0] && recipient[0] != '@';
+}
+
+bool owl_zwrite_is_personal(const owl_zwrite *z)
 {
   /* return true if at least one of the recipients is personal */
   int i;
-  char *recip;
 
-  for (i = 0; i < z->recips->len; i++) {
-    recip = z->recips->pdata[i];
-    if (recip[0] != '@') return 1;
-  }
-  return(0);
+  for (i = 0; i < z->recips->len; i++)
+    if (owl_zwrite_recip_is_personal(z->recips->pdata[i]))
+      return true;
+  return false;
 }
 
 void owl_zwrite_delete(owl_zwrite *z)

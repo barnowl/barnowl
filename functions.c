@@ -215,7 +215,7 @@ void owl_function_adminmsg(const char *header, const char *body)
  */
 void owl_function_add_outgoing_zephyrs(const owl_zwrite *z)
 {
-  if (z->cc || owl_zwrite_get_numrecips(z) == 0) {
+  if (z->cc && owl_zwrite_is_personal(z)) {
     /* create the message */
     owl_message *m = g_new(owl_message, 1);
     owl_message_create_from_zwrite(m, z, owl_zwrite_get_message(z), 0);
@@ -224,8 +224,13 @@ void owl_function_add_outgoing_zephyrs(const owl_zwrite *z)
   } else {
     int i;
     for (i = 0; i < owl_zwrite_get_numrecips(z); i++) {
+      owl_message *m;
+
+      if (!owl_zwrite_recip_is_personal(owl_zwrite_get_recip_n(z, i)))
+        continue;
+
       /* create the message */
-      owl_message *m = g_new(owl_message, 1);
+      m = g_new(owl_message, 1);
       owl_message_create_from_zwrite(m, z, owl_zwrite_get_message(z), i);
 
       owl_global_messagequeue_addmsg(&g, m);
@@ -372,11 +377,8 @@ void owl_function_zwrite(owl_zwrite *z, const char *msg)
   }
   owl_function_makemsg("Waiting for ack...");
 
-  /* If it's personal */
-  if (owl_zwrite_is_personal(z)) {
-    /* create the outgoing message */
-    owl_function_add_outgoing_zephyrs(z);
-  }
+  /* create the outgoing message */
+  owl_function_add_outgoing_zephyrs(z);
 }
 #else
 void owl_function_zwrite(owl_zwrite *z, const char *msg) {
@@ -426,12 +428,9 @@ void owl_function_zcrypt(owl_zwrite *z, const char *msg)
   owl_zwrite_send_message(z);
   owl_function_makemsg("Waiting for ack...");
 
-  /* If it's personal */
-  if (owl_zwrite_is_personal(z)) {
-    /* Create the outgoing message. Restore the un-crypted message for display. */
-    owl_zwrite_set_message_raw(z, old_msg);
-    owl_function_add_outgoing_zephyrs(z);
-  }
+  /* Create the outgoing message. Restore the un-crypted message for display. */
+  owl_zwrite_set_message_raw(z, old_msg);
+  owl_function_add_outgoing_zephyrs(z);
 
   /* Clean up. */
   g_free(cryptmsg);

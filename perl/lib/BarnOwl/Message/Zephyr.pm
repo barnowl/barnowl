@@ -170,9 +170,7 @@ sub replycmd {
     } else {
         $class = $self->class;
         $instance = $self->instance;
-        if ($self->recipient eq '*' || $self->recipient eq '') {
-            $to = '';
-        } elsif ($self->recipient =~ /^@/) {
+        if ($self->recipient eq '' || $self->recipient =~ /^@/) {
             $to = $self->recipient;
         } else {
             $to = $self->sender;
