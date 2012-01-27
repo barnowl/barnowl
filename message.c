@@ -397,12 +397,6 @@ int owl_message_is_type_aim(const owl_message *m)
   return owl_message_is_type(m, "aim");
 }
 
-/* XXX TODO: deprecate this */
-int owl_message_is_type_jabber(const owl_message *m)
-{
-  return owl_message_is_type(m, "jabber");
-}
-
 int owl_message_is_type_loopback(const owl_message *m)
 {
   return owl_message_is_type(m, "loopback");
