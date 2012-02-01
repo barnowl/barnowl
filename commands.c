@@ -99,7 +99,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 
   OWLCMD_ARGS("unbindkey", owl_command_unbindkey, OWL_CTX_ANY,
 	      "removes a binding in a keymap",
-	      "bindkey <keymap> <keyseq>",
+	      "unbindkey <keymap> <keyseq>",
 	      "Removes a binding of a key sequence within a keymap.\n"
 	      "Use 'show keymaps' to see the existing keymaps.\n"
 	      "Ex.: unbindkey recv H\n\n"
@@ -1781,7 +1781,7 @@ char *owl_command_unbindkey(int argc, const char *const *argv, const char *buf)
   int ret;
 
   if (argc < 3) {
-    owl_function_makemsg("Usage: bindkey <keymap> <binding>");
+    owl_function_makemsg("Usage: unbindkey <keymap> <binding>");
     return NULL;
   }
   km = owl_keyhandler_get_keymap(owl_global_get_keyhandler(&g), argv[1]);
