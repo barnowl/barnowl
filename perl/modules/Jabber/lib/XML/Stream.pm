@@ -2111,16 +2111,26 @@ sub SASLClient
     my $mechanisms = $self->GetStreamFeature($sid,"xmpp-sasl");
 
     return unless defined($mechanisms);
+
+    # Here we assume that if 'to' is available, then a domain is being
+    # specified that does not match the hostname of the jabber server
+    # and that we should use that to form the bare JID for SASL auth.
+    my $domain .=  $self->{SIDS}->{$sid}->{to}
+        ? $self->{SIDS}->{$sid}->{to}
+        : $self->{SIDS}->{$sid}->{hostname};
+
+    my $authname = $username . '@' . $domain;
     
     my $sasl = new Authen::SASL(mechanism=>join(" ",@{$mechanisms}),
                                 callback=>{
-#                                           authname => $username."@".$self->{SIDS}->{$sid}->{hostname},
+                                           authname => $authname,
+
                                            user     => $username,
                                            pass     => $password
                                           }
                                );
 
-    $self->{SIDS}->{$sid}->{sasl}->{client} = $sasl->client_new('xmpp', $self->{SIDS}->{$sid}->{hostname});
+    $self->{SIDS}->{$sid}->{sasl}->{client} = $sasl->client_new('xmpp', $domain);
     $self->{SIDS}->{$sid}->{sasl}->{username} = $username;
     $self->{SIDS}->{$sid}->{sasl}->{password} = $password;
     $self->{SIDS}->{$sid}->{sasl}->{authed} = 0;
