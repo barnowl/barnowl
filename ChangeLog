@@ -1,3 +1,18 @@
+1.8.1
+ * Only add outgoing messages for personal part of half-personal messages -andersk@mit.edu
+ * Don’t write CC: line on zwrite -C '' -andersk@mit.edu
+ * Don’t send public pings on zwrite '' or zwrite @REALM -andersk@mit.edu
+ * Don’t treat zwrite '' as personal -andersk@mit.edu
+ * Stop pretending to support zwrite * -andersk@mit.edu
+ * Show foreign realms on non-personal zephyrs like Owl did -andersk@mit.edu
+ * Fix memory leak in zcrypt -davidben@mit.edu
+ * Don't attempt to switch filters in :view -d if invalid -davidben@mit.edu
+ * Fixed typo in unbindkey usage error -rileyb@mit.edu
+ * Fix bug generating filter text in 256-color mode -asedeno@mit.edu
+ * Remove ^noc from reply-lockout -geofft@mit.edu
+ * Avoid quadratic loops when receiving zephyrs -andersk@mit.edu
+ * Fix hang on empty zcrypt messages -adehnert@MIT.EDU
+
 1.8
  * Compute the home directory in zcrypt consistently with BarnOwl -davidben@mit.edu
  * Make help show the correct keybinding for A -jgross@mit.edu
