@@ -145,7 +145,7 @@ sub OwlProcess {
     my $jid = shift || $self->{SESSION}->{FULLJID};
     my $status = $self->Process(0);
     if ( !defined($status) ) {
-        $BarnOwl::Module::Jabber::conn->scheduleReconnect($jid);
+        $BarnOwl::Module::Jabber::Impl::conn->scheduleReconnect($jid);
     }
 }
 
@@ -190,17 +190,17 @@ sub onConnect {
     for my $buddy ( $roster->jids('all') ) {
         my %jq  = $roster->query($buddy);
         my $name = $jq{name} || $buddy->GetUserID();
-        $BarnOwl::Module::Jabber::completion_jids{$name} = 1;
-        $BarnOwl::Module::Jabber::completion_jids{$buddy->GetJID()} = 1;
+        $BarnOwl::Module::Jabber::Impl::completion_jids{$name} = 1;
+        $BarnOwl::Module::Jabber::Impl::completion_jids{$buddy->GetJID()} = 1;
     }
-    $BarnOwl::Module::Jabber::vars{idletime} |= BarnOwl::getidletime();
-    unless (exists $BarnOwl::Module::Jabber::vars{keepAliveTimer}) {
-        $BarnOwl::Module::Jabber::vars{keepAliveTimer} =
+    $BarnOwl::Module::Jabber::Impl::vars{idletime} |= BarnOwl::getidletime();
+    unless (exists $BarnOwl::Module::Jabber::Impl::vars{keepAliveTimer}) {
+        $BarnOwl::Module::Jabber::Impl::vars{keepAliveTimer} =
             BarnOwl::Timer->new({
                 'name' => "Jabber ($fullJid) keepAliveTimer",
                 'after' => 5,
                 'interval' => 5,
-                'cb' => sub { BarnOwl::Module::Jabber::do_keep_alive_and_auto_away(@_) }
+                'cb' => sub { BarnOwl::Module::Jabber::Impl::do_keep_alive_and_auto_away(@_) }
                                 });
     }
 }
