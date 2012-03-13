@@ -15,11 +15,22 @@ This module implements Jabber support for BarnOwl.
 
 use BarnOwl;
 use BarnOwl::Hooks;
-use BarnOwl::Module::Jabber::Impl;
 
 use utf8;
 
 our $VERSION = 0.1;
+
+our $impl_loaded;
+$impl_loaded = 0 unless defined($impl_loaded);
+
+sub _load_impl {
+    unless ($impl_loaded) {
+        BarnOwl::debug("_load_impl");
+        require BarnOwl::Module::Jabber::Impl;
+        $impl_loaded = 1;
+        BarnOwl::Module::Jabber::Impl::onStart();
+    }
+}
 
 sub onStart {
     if ( *BarnOwl::queue_message{CODE} ) {
@@ -50,7 +61,11 @@ sub onStart {
 				    summary => 'Auto-reconnect when disconnected from servers.'
 				});
 
-        BarnOwl::Module::Jabber::Impl::onStart();
+        # If we're called as part of module reload, let Impl's reload
+        # code run too.
+        if ($impl_loaded) {
+            BarnOwl::Module::Jabber::Impl::onStart();
+        }
     } else {
         # Our owl doesn't support queue_message. Unfortunately, this
         # means it probably *also* doesn't support BarnOwl::error. So just
@@ -63,6 +78,7 @@ $BarnOwl::Hooks::startup->add("BarnOwl::Module::Jabber::onStart");
 sub _make_stub {
     my $func = shift;
     return sub {
+        _load_impl();
         no strict 'refs';
         &{"BarnOwl::Module::Jabber::Impl::$func"};
     }

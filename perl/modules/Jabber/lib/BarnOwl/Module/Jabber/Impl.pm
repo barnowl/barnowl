@@ -45,6 +45,8 @@ BEGIN {
 
 no warnings 'redefine';
 
+BarnOwl::debug("BarnOwl::Module::Jabber::Impl loaded");
+
 ################################################################################
 # owl perl jabber support
 #
