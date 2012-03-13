@@ -64,49 +64,19 @@ $conn ||= BarnOwl::Module::Jabber::ConnectionManager->new;
 our %vars;
 our %completion_jids;
 
+# Called by BarnOwl::Module::Jabber.
 sub onStart {
-    if ( *BarnOwl::queue_message{CODE} ) {
-        register_owl_commands();
-        register_keybindings();
-        register_filters();
-        $BarnOwl::Hooks::getBuddyList->add("BarnOwl::Module::Jabber::Impl::onGetBuddyList");
-        $BarnOwl::Hooks::getQuickstart->add("BarnOwl::Module::Jabber::Impl::onGetQuickstart");
-        $vars{show} = '';
-	BarnOwl::new_variable_bool("jabber:show_offline_buddies",
-				   { default => 1,
-				     summary => 'Show offline or pending buddies.'});
-	BarnOwl::new_variable_bool("jabber:show_logins",
-				   { default => 0,
-				     summary => 'Show login/logout messages.'});
-	BarnOwl::new_variable_bool("jabber:spew",
-				   { default => 0,
-				     summary => 'Display unrecognized Jabber messages.'});
-	BarnOwl::new_variable_int("jabber:auto_away_timeout",
-				  { default => 5,
-				    summary => 'After minutes idle, auto away.',
-				  });
-	BarnOwl::new_variable_int("jabber:auto_xa_timeout",
-				  { default => 15,
-				    summary => 'After minutes idle, auto extended away.'
-				});
-	BarnOwl::new_variable_bool("jabber:reconnect",
-				  { default => 1,
-				    summary => 'Auto-reconnect when disconnected from servers.'
-				});
-        # Force these. Reload can screw them up.
-        # Taken from Net::Jabber::Protocol.
-        $Net::XMPP::Protocol::NEWOBJECT{'iq'}       = "Net::Jabber::IQ";
-        $Net::XMPP::Protocol::NEWOBJECT{'message'}  = "Net::Jabber::Message";
-        $Net::XMPP::Protocol::NEWOBJECT{'presence'} = "Net::Jabber::Presence";
-        $Net::XMPP::Protocol::NEWOBJECT{'jid'}      = "Net::Jabber::JID";
-    } else {
-        # Our owl doesn't support queue_message. Unfortunately, this
-        # means it probably *also* doesn't support BarnOwl::error. So just
-        # give up silently.
-    }
-}
+    $BarnOwl::Hooks::getBuddyList->add("BarnOwl::Module::Jabber::Impl::onGetBuddyList");
 
-$BarnOwl::Hooks::startup->add("BarnOwl::Module::Jabber::Impl::onStart");
+    $vars{show} = '';
+
+    # Force these. Reload can screw them up.
+    # Taken from Net::Jabber::Protocol.
+    $Net::XMPP::Protocol::NEWOBJECT{'iq'}       = "Net::Jabber::IQ";
+    $Net::XMPP::Protocol::NEWOBJECT{'message'}  = "Net::Jabber::Message";
+    $Net::XMPP::Protocol::NEWOBJECT{'presence'} = "Net::Jabber::Presence";
+    $Net::XMPP::Protocol::NEWOBJECT{'jid'}      = "Net::Jabber::JID";
+}
 
 sub do_keep_alive_and_auto_away {
     if ( !$conn->connected() ) {
@@ -252,118 +222,8 @@ sub onGetBuddyList {
     return $blist;
 }
 
-sub onGetQuickstart {
-    return <<'EOF'
-@b(Jabber:)
-Type ':jabberlogin @b(username@mit.edu)' to log in to Jabber. The command
-':jroster sub @b(somebody@gmail.com)' will request that they let you message
-them. Once you get a message saying you are subscribed, you can message
-them by typing ':jwrite @b(somebody@gmail.com)' or just 'j @b(somebody)'.
-EOF
-}
-
 ################################################################################
 ### Owl Commands
-sub register_owl_commands() {
-    BarnOwl::new_command(
-        jabberlogin => \&cmd_login,
-        {
-            summary => "Log in to Jabber",
-            usage   => "jabberlogin <jid> [<password>]"
-        }
-    );
-    BarnOwl::new_command(
-        jabberlogout => \&cmd_logout,
-        {
-            summary => "Log out of Jabber",
-            usage   => "jabberlogout [-A|<jid>]",
-            description => "jabberlogout logs you out of Jabber.\n\n"
-              . "If you are connected to one account, no further arguments are necessary.\n\n"
-              . "-A            Log out of all accounts.\n"
-              . "<jid>         Which account to log out of.\n"
-        }
-    );
-    BarnOwl::new_command(
-        jwrite => \&cmd_jwrite,
-        {
-            summary => "Send a Jabber Message",
-            usage   => "jwrite <jid> [-t <thread>] [-s <subject>] [-a <account>] [-m <message>]"
-        }
-    );
-    BarnOwl::new_command(
-        jaway => \&cmd_jaway,
-        {
-            summary => "Set Jabber away / presence information",
-            usage   => "jaway [-s online|dnd|...] [<message>]"
-        }
-    );
-    BarnOwl::new_command(
-        jlist => \&cmd_jlist,
-        {
-            summary => "Show your Jabber roster.",
-            usage   => "jlist"
-        }
-    );
-    BarnOwl::new_command(
-        jmuc => \&cmd_jmuc,
-        {
-            summary     => "Jabber MUC related commands.",
-            description => "jmuc sends Jabber commands related to MUC.\n\n"
-              . "The following commands are available\n\n"
-              . "join <muc>[/<nick>]\n"
-              . "            Join a MUC (with a given nickname, or otherwise your JID).\n\n"
-              . "part <muc>  Part a MUC.\n"
-              . "            The MUC is taken from the current message if not supplied.\n\n"
-              . "invite <jid> [<muc>]\n"
-              . "            Invite <jid> to <muc>.\n"
-              . "            The MUC is taken from the current message if not supplied.\n\n"
-              . "configure [<muc>]\n"
-              . "            Configures a MUC.\n"
-              . "            Necessary to initalize a new MUC.\n"
-              . "            At present, only the default configuration is supported.\n"
-              . "            The MUC is taken from the current message if not supplied.\n\n"
-              . "presence [<muc>]\n"
-              . "            Shows the roster for <muc>.\n"
-              . "            The MUC is taken from the current message if not supplied.\n\n"
-              . "presence -a\n"
-              . "            Shows rosters for all MUCs you're participating in.\n\n",
-            usage => "jmuc <command> [<args>]"
-        }
-    );
-    BarnOwl::new_command(
-        jroster => \&cmd_jroster,
-        {
-            summary     => "Jabber roster related commands.",
-            description => "jroster sends Jabber commands related to rosters.\n\n"
-              . "The following commands are available\n\n"
-              . "sub <jid>     Subscribe to <jid>'s presence. (implicit add)\n\n"
-              . "add <jid>     Adds <jid> to your roster.\n\n"
-              . "unsub <jid>   Unsubscribe from <jid>'s presence.\n\n"
-              . "remove <jid>  Removes <jid> from your roster. (implicit unsub)\n\n"
-              . "auth <jid>    Authorizes <jid> to subscribe to your presence.\n\n"
-              . "deauth <jid>  De-authorizes <jid>'s subscription to your presence.\n\n"
-              . "The following arguments are supported for all commands\n\n"
-              . "-a <jid>      Specify which account to make the roster changes on.\n"
-              . "              Required if you're signed into more than one account.\n\n"
-              . "The following arguments only work with the add and sub commands.\n\n"
-              . "-g <group>    Add <jid> to group <group>.\n"
-              . "              May be specified more than once, will not remove <jid> from any groups.\n\n"
-              . "-p            Purge. Removes <jid> from all groups.\n"
-              . "              May be combined with -g.\n\n"
-              . "-n <name>     Sets <name> as <jid>'s short name.\n\n"
-              . "Note: Unless -n is used, you can specify multiple <jid> arguments.\n",
-            usage       => "jroster <command> <args>"
-        }
-    );
-}
-
-sub register_keybindings {
-    BarnOwl::bindkey(qw(recv j command start-command), 'jwrite ');
-}
-
-sub register_filters {
-    BarnOwl::filter(qw(jabber type ^jabber$));
-}
 
 sub cmd_login {
     my $cmd = shift;
