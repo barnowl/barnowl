@@ -396,10 +396,12 @@ void owl_window_set_default_cursor(owl_window *w)
   owl_window_dirty(owl_window_get_screen());
 }
 
-static owl_window *_get_cursor(void)
+static owl_window *_get_cursor(bool *is_default)
 {
+  *is_default = false;
   if (cursor_owner && owl_window_is_realized(cursor_owner))
     return cursor_owner;
+  *is_default = true;
   if (default_cursor && owl_window_is_realized(default_cursor))
     return default_cursor;
   return owl_window_get_screen();
@@ -485,13 +487,16 @@ void owl_window_redraw_scheduled(void)
 {
   owl_window *cursor;
   owl_window *screen = owl_window_get_screen();
+  bool default_cursor;
 
   if (!screen->dirty_subtree)
     return;
   _owl_window_redraw_subtree(screen);
   update_panels();
-  cursor = _get_cursor();
+  cursor = _get_cursor(&default_cursor);
   if (cursor && cursor->win) {
+    /* If supported, hide the default cursor. */
+    curs_set(default_cursor ? 0 : 1);
     /* untouch it to avoid drawing; window should be clean now, but we must
      * clean up in case there was junk left over on a subwin (cleaning up after
      * subwin drawing isn't sufficient because a wsyncup messes up subwin
