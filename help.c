@@ -72,7 +72,7 @@ void owl_help(void)
      "    h             Print this help message\n"
      "    : , M-x       Enter command mode\n"
      "\n"
-     "    /             Foward search\n"
+     "    /             Forward search\n"
      "    ?             Reverse search\n"
      "\n\n"
      );
