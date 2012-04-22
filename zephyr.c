@@ -715,6 +715,9 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   
   notice.z_kind=ACKED;
   notice.z_port=0;
+#ifdef ZCHARSET_UTF_8
+  notice.z_charset = ZCHARSET_UTF_8;
+#endif
   notice.z_class=zstr(class);
   notice.z_class_inst=zstr(instance);
   if (!strcmp(recipient, "@")) {
