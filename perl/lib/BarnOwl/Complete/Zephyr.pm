@@ -63,6 +63,8 @@ BarnOwl::Completion::register_completer(viewclass => \&complete_viewclass);
 BarnOwl::Completion::register_completer(vc        => \&complete_viewclass);
 BarnOwl::Completion::register_completer(viewuser  => \&complete_viewuser);
 BarnOwl::Completion::register_completer(vu        => \&complete_viewuser);
+BarnOwl::Completion::register_completer(viewperson => \&complete_viewuser);
+BarnOwl::Completion::register_completer(vp        => \&complete_viewuser);
 
 BarnOwl::Completion::register_completer(unsub     => \&complete_unsub);
 
