@@ -1,16 +1,12 @@
 *.a
 *.o
 *.par
-*~
-.#*
-.*.swp
 .deps
 META.yml
 Makefile
 Makefile.in
 Makefile.old
 TAGS
-\#*#
 aclocal.m4
 autom4te.cache
 barnowl.bin
