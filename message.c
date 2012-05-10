@@ -880,7 +880,7 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
       "-i", owl_message_get_instance(m),
       NULL
     };
-    char *out;
+    char *out = NULL;
     int rv;
     int status;
     char *zcrypt;
@@ -897,10 +897,12 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
         out[len - 8] = 0;
       }
       owl_message_set_body(m, out);
-      g_free(out);
-    } else if(out) {
-      g_free(out);
+    } else {
+      /* Replace the opcode. Otherwise the UI and other bits of code think the
+       * message was encrypted. */
+      owl_message_set_opcode(m, "failed-decrypt");
     }
+    g_free(out);
   }
 
   owl_message_save_ccs(m);
