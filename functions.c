@@ -2185,7 +2185,7 @@ bool owl_function_create_filter(int argc, const char *const *argv)
   /* create the filter and check for errors */
   f = owl_filter_new(argv[1], argc-2, argv+2);
   if (f == NULL) {
-    owl_function_error("Invalid filter");
+    owl_function_error("Invalid filter: %s", argv[1]);
     return false;
   }
 
