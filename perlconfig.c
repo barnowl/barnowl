@@ -558,11 +558,3 @@ void owl_perlconfig_dec_refcnt(void *data)
   SV *v = data;
   SvREFCNT_dec(v);
 }
-
-void owl_perl_delete_perl_variable(owl_variable *variable, void *data)
-{
-  g_closure_unref(variable->delete_fn);
-  variable->delete_fn = NULL;
-  SvREFCNT_dec((SV*)data);
-  owl_variable_delete(variable);
-}

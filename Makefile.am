@@ -38,7 +38,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/ \
            $(GIT_FLAGS)
 
 CODELIST_SRCS=message.c mainwin.c popwin.c zephyr.c messagelist.c \
-     commands.c global.c text.c fmtext.c gmarshal_funcs.c editwin.c \
+     commands.c global.c text.c fmtext.c editwin.c \
      util.c logging.c \
      perlconfig.c keys.c functions.c zwrite.c viewwin.c help.c filter.c \
      regex.c history.c view.c dict.c variable.c filterelement.c pair.c \
@@ -51,8 +51,8 @@ NORMAL_SRCS = filterproc.c window.c windowcb.c
 
 BASE_SRCS = $(CODELIST_SRCS) $(NORMAL_SRCS)
 
-GEN_C = varstubs.c perlglue.c
-GEN_H = owl_prototypes.h
+GEN_C = varstubs.c perlglue.c gmarshal_funcs.c
+GEN_H = owl_prototypes.h gmarshal_funcs.h
 
 BUILT_SOURCES = $(GEN_C) $(GEN_H)
 
@@ -73,6 +73,11 @@ varstubs.c: stubgen.pl variable.c
 
 owl_prototypes.h.new: codelist.pl varstubs.c $(CODELIST_SRCS)
 	$(AM_V_GEN)perl $< $(sort $(filter-out $<,$+)) > $@
+
+gmarshal_funcs.h: marshal_types
+	glib-genmarshal --header $< > $@
+gmarshal_funcs.c: marshal_types
+	glib-genmarshal --body $< > $@
 
 # For emacs flymake-mode
 check-syntax: proto

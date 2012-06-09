@@ -336,7 +336,6 @@ int owl_variable_regtest(void) {
   owl_variable *var;
   int numfailed=0;
   char *value;
-  const void *v;
 
   printf("# BEGIN testing owl_variable\n");
   FAIL_UNLESS("setup", 0==owl_variable_dict_setup(&vd));
@@ -378,21 +377,18 @@ int owl_variable_regtest(void) {
 
   owl_variable_dict_newvar_string(&vd, "stringvar", "", "", "testval");
   FAIL_UNLESS("get new string var", NULL != (var = owl_variable_get_var(&vd, "stringvar")));
-  FAIL_UNLESS("get new string var", NULL != (v = owl_variable_get(var)));
   FAIL_UNLESS("get new string val", !strcmp("testval", owl_variable_get_string(var)));
   owl_variable_set_string(var, "new val");
   FAIL_UNLESS("update string val", !strcmp("new val", owl_variable_get_string(var)));
 
   owl_variable_dict_newvar_int(&vd, "intvar", "", "", 47);
   FAIL_UNLESS("get new int var", NULL != (var = owl_variable_get_var(&vd, "intvar")));
-  FAIL_UNLESS("get new int var", NULL != (v = owl_variable_get(var)));
   FAIL_UNLESS("get new int val", 47 == owl_variable_get_int(var));
   owl_variable_set_int(var, 17);
   FAIL_UNLESS("update int val", 17 == owl_variable_get_int(var));
 
   owl_variable_dict_newvar_bool(&vd, "boolvar", "", "", 1);
   FAIL_UNLESS("get new bool var", NULL != (var = owl_variable_get_var(&vd, "boolvar")));
-  FAIL_UNLESS("get new bool var", NULL != (v = owl_variable_get(var)));
   FAIL_UNLESS("get new bool val", owl_variable_get_bool(var));
   owl_variable_set_bool_off(var);
   FAIL_UNLESS("update bool val", !owl_variable_get_bool(var));

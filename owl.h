@@ -234,47 +234,44 @@ static inline const char *const *strs(char *const *pstr)
 typedef struct _owl_variable {
   char *name;
   int   type;  /* OWL_VARIABLE_* */
-  GValue gval_default;
+  char *default_str;            /* the default value as a string */
   const char *validsettings;	/* documentation of valid settings */
   char *summary;		/* summary of usage */
   char *description;		/* detailed description */
   GValue val;                    /* current value */
-  GClosure *validate_fn;
-                                /* returns 1 if newval is valid */
-  GClosure *set_fn;
-                                /* sets the variable to a value
-				 * of the appropriate type.
-				 * unless documented, this 
-				 * should make a copy. 
-				 * returns 0 on success. */
   GClosure *set_fromstring_fn;
                                 /* sets the variable to a value
 				 * of the appropriate type.
 				 * unless documented, this 
 				 * should make a copy. 
 				 * returns 0 on success. */
-  GClosure *get_fn;
-				/* returns a reference to the current value.
-				 * WARNING:  this approach is hard to make
-				 * thread-safe... */
   GClosure *get_tostring_fn;
                                 /* converts val to a string;
 				 * caller must free the result */
-  GClosure *delete_fn;
-				/* frees val as needed */
-  GClosure *get_default_fn;
-                               /* return the default value, as set at creation time */
-  
+
+  /* These are only valid for OWL_VARIABLE_{INT,BOOL,STRING} */
+  GCallback get_fn;
+				/* returns a reference to the current value.
+				 * WARNING:  this approach is hard to make
+				 * thread-safe... */
+  GCallback validate_fn;
+                                /* returns 1 if newval is valid */
+  GCallback set_fn;
+                                /* sets the variable to a value
+				 * of the appropriate type.
+				 * unless documented, this 
+				 * should make a copy. 
+				 * returns 0 on success. */
 } owl_variable;
 
 typedef struct _owl_variable_init_params {
-  char *name;
+  const char *name;
   int   type;  /* OWL_VARIABLE_* */
-  void *pval_default;  /* for types other and string */
-  int   ival_default;  /* for types int and bool     */
+  const char *pval_default;     /* for string */
+  int   ival_default;           /* for types int and bool     */
   const char *validsettings;	/* documentation of valid settings */
-  char *summary;		/* summary of usage */
-  char *description;		/* detailed description */
+  const char *summary;		/* summary of usage */
+  const char *description;	/* detailed description */
   void *val;                    /* current value */
   GCallback validate_fn;
                                 /* returns 1 if newval is valid */
@@ -297,10 +294,6 @@ typedef struct _owl_variable_init_params {
   GCallback get_tostring_fn;
                                 /* converts val to a string;
 				 * caller must free the result */
-  GCallback delete_fn;
-				/* frees val as needed */
-  GCallback get_default_fn;
-				/* return the default value as set at creation time */
 } owl_variable_init_params;
 
 

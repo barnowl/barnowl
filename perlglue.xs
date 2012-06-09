@@ -404,6 +404,7 @@ new_command(name, func, summary, usage, description)
 
 MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 
+/* TODO: Revise this after churn is done.
 void
 new_variable_full(name, summary, desc, type, data, default_val, get_fn, get_default_fn, tostring_fn, validate_fn, set_fn, fromstring_fn)
     const char *name
@@ -473,6 +474,7 @@ new_variable_full(name, summary, desc, type, data, default_val, get_fn, get_defa
 				variable->name, variable, NULL);
 	PUTBACK;
 }
+*/
 
 void
 new_variable_string(name, ival, summ, desc)
