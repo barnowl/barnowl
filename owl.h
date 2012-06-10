@@ -238,7 +238,6 @@ typedef struct _owl_variable {
   char *validsettings;	        /* documentation of valid settings */
   char *summary;		/* summary of usage */
   char *description;		/* detailed description */
-  GValue val;                   /* current value */
   GClosure *set_fromstring_fn;
                                 /* sets the variable to a value
 				 * of the appropriate type.
@@ -250,6 +249,8 @@ typedef struct _owl_variable {
 				 * caller must free the result */
 
   /* These are only valid for OWL_VARIABLE_{INT,BOOL,STRING} */
+  GValue val;                   /* current value, if default get_fn/set_fn */
+
   GCallback get_fn;
 				/* returns a reference to the current value.
 				 * WARNING:  this approach is hard to make

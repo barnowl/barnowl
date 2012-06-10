@@ -425,23 +425,33 @@ A longer description of the function of the variable
 =cut
 
 sub new_variable_int {
-    unshift @_, \&BarnOwl::Internal::new_variable_int, 0;
+    unshift @_, 0, "<int>", sub { "$_[0]" }, # to string
+                            sub { $_[0] =~ /^-?[0-9]+$/ }, # validate
+                            sub { 0 + $_[0] }; # from string
     goto \&_new_variable;
 }
 
 sub new_variable_bool {
-    unshift @_, \&BarnOwl::Internal::new_variable_bool, 0;
+    unshift @_, 0, "on,off", sub { $_[0] ? "on" : "off" }, # to string
+                             sub { $_[0] eq "on" || $_[0] eq "off" }, # validate
+                             sub { $_[0] eq "on" }; # from string
     goto \&_new_variable;
 }
 
 sub new_variable_string {
-    unshift @_, \&BarnOwl::Internal::new_variable_string, "";
+    unshift @_, "", "<string>", sub { $_[0] }, # to string
+                                sub { 1 }, # validate
+                                sub { $_[0] }; # from string
     goto \&_new_variable;
 }
 
 sub _new_variable {
-    my $func = shift;
     my $default_default = shift;
+    my $validsettings = shift;
+    my $tostring_fn = shift;
+    my $validate_fn = shift;
+    my $fromstring_fn = shift;
+
     my $name = shift;
     my $args = shift || {};
     my %args = (
@@ -449,7 +459,20 @@ sub _new_variable {
         description => "",
         default     => $default_default,
         %{$args});
-    $func->($name, $args{default}, $args{summary}, $args{description});
+
+    # Store the value in a closure.
+    my $value = $args{default};
+
+    my $get_tostring_fn = sub { $tostring_fn->($value) };
+    my $set_fromstring_fn = sub {
+      my ($dummy, $newval) = @_;
+      return -1 unless $validate_fn->($newval);
+      $value = $fromstring_fn->($newval);
+      return 0;
+    };
+
+    BarnOwl::Internal::new_variable($name, $args{summary}, $args{description}, $validsettings,
+                                    $get_tostring_fn, $set_fromstring_fn, undef);
 }
 
 =head2 quote LIST

@@ -404,116 +404,31 @@ new_command(name, func, summary, usage, description)
 
 MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 
-/* TODO: Revise this after churn is done.
 void
-new_variable_full(name, summary, desc, type, data, default_val, get_fn, get_default_fn, tostring_fn, validate_fn, set_fn, fromstring_fn)
+new_variable(name, summary, description, validsettings, get_tostring_fn, set_fromstring_fn, data)
     const char *name
     const char *summary
-    const char *desc
-    int type
+    const char *description
+    const char *validsettings
+    SV *get_tostring_fn
+    SV *set_fromstring_fn
     SV *data
-    SV *default_val
-    SV *get_fn
-    SV *get_default_fn
-    SV *tostring_fn
-    SV *validate_fn
-    SV *set_fn
-    SV *fromstring_fn
     CODE:
 {
-	owl_variable *variable = NULL;
-	int count = 0;
-	int res = -1;
-	GClosure *delete_fn = NULL;
-	if(!SV_IS_CODEREF(get_fn)) {
-		croak("Get function must be a coderef!");
-	}
-	if(!SV_IS_CODEREF(tostring_fn)) {
+        /* data is somewhat redundant given we can create closures, but oh
+         * well. Might be convenient sometimes. */
+	if(!SV_IS_CODEREF(get_tostring_fn)) {
 		croak("To-string function must be a coderef!");
 	}
-	if(!SV_IS_CODEREF(validate_fn)) {
-		croak("Validation function must be a coderef!");
-	}
-	if(!SV_IS_CODEREF(set_fn)) {
-		croak("Set function must be a coderef!");
-	}
-	if(!SV_IS_CODEREF(fromstring_fn)) {
+	if(!SV_IS_CODEREF(set_fromstring_fn)) {
 		croak("From-string function must be a coderef!");
 	}
-	if(!SV_IS_CODEREF(get_default_fn)) {
-		croak("Get-default function must be a coderef!");
-	}
-	variable = owl_variable_newvar(name, summary, desc);
-	variable->type = type;
-	variable->get_fn = perl_closure_new(get_fn, data, false);
-	variable->get_tostring_fn = perl_closure_new(tostring_fn, data, false);
-	variable->validate_fn = perl_closure_new(validate_fn, data, false);
-	variable->set_fn = perl_closure_new(set_fn, data, false);
-	variable->set_fromstring_fn = perl_closure_new(set_fn, data, false);
-	variable->get_default_fn = perl_closure_new(get_default_fn, 
-						    data, false);
-	delete_fn = g_cclosure_new(G_CALLBACK(owl_perl_delete_perl_variable),
-					   data, NULL);
-	g_closure_set_marshal(delete_fn,g_cclosure_marshal_VOID__VOID);
-	g_closure_ref(delete_fn);
-	g_closure_sink(delete_fn);
-	variable->delete_fn = delete_fn;
 
-	SvREFCNT_inc(data);
-
-	PUSHMARK(SP);
-	XPUSHs(sv_2mortal(newSViv(PTR2IV(variable))));
-	XPUSHs(default_val);
-	XPUSHs(data);
-	PUTBACK;
-	count = call_sv(set_fn, G_SCALAR | G_EVAL);
-	SPAGAIN;
-	
-	res = POPi;
-	owl_dict_insert_element(owl_global_get_vardict(&g),
-				variable->name, variable, NULL);
-	PUTBACK;
+        owl_variable_dict_newvar_other(owl_global_get_vardict(&g),
+                                       name, summary, description, validsettings,
+                                       perl_closure_new(get_tostring_fn, data, false),
+                                       perl_closure_new(set_fromstring_fn, data, false));
 }
-*/
-
-void
-new_variable_string(name, ival, summ, desc)
-	const char * name
-	const char * ival
-	const char * summ
-	const char * desc
-	CODE:
-	owl_variable_dict_newvar_string(owl_global_get_vardict(&g),
-					name,
-					summ,
-					desc,
-					ival);
-
-void
-new_variable_int(name, ival, summ, desc)
-	const char * name
-	int ival
-	const char * summ
-	const char * desc
-	CODE:
-	owl_variable_dict_newvar_int(owl_global_get_vardict(&g),
-				     name,
-				     summ,
-				     desc,
-				     ival);
-
-void
-new_variable_bool(name, ival, summ, desc)
-	const char * name
-	int ival
-	const char * summ
-	const char * desc
-	CODE:
-	owl_variable_dict_newvar_bool(owl_global_get_vardict(&g),
-				      name,
-				      summ,
-				      desc,
-				      ival);
 
 void
 start_edit(edit_type, line, callback)

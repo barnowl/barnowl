@@ -679,104 +679,25 @@ void owl_variable_dict_add_variable(owl_vardict * vardict,
   owl_dict_insert_element(vardict, var->name, var, (void (*)(void *))owl_variable_delete);
 }
 
-CALLER_OWN owl_variable *owl_variable_newvar(const char *name, const char *summary, const char *description)
+void owl_variable_dict_newvar_other(owl_vardict *vd, const char *name, const char *summary, const char *description, const char *validsettings, GClosure *get_tostring_fn, GClosure *set_fromstring_fn)
 {
   owl_variable *var = g_new0(owl_variable, 1);
   var->name = g_strdup(name);
   var->summary = g_strdup(summary);
   var->description = g_strdup(description);
-  return var;
-}
+  var->validsettings = g_strdup(validsettings);
 
-void owl_variable_update(owl_variable *var, const char *summary, const char *desc) {
-  g_free(var->summary);
-  var->summary = g_strdup(summary);
-  g_free(var->description);
-  var->description = g_strdup(desc);
-}
+  var->get_tostring_fn = g_closure_ref(get_tostring_fn);
+  g_closure_sink(get_tostring_fn);
 
-#define OWL_VARIABLE_SETUP_DEFAULT_FUNCS(variable, type, gtype) do { \
-  variable->set_fn = G_CALLBACK(owl_variable_##type##_set_default); \
-  variable->get_fn = G_CALLBACK(owl_variable_##type##_get_default); \
-  variable->validate_fn = G_CALLBACK(owl_variable_##type##_validate_default); \
-  variable->set_fromstring_fn = owl_variable_make_closure(variable, \
-    G_CALLBACK(owl_variable_##type##_set_fromstring_default), \
-    g_cclosure_user_marshal_INT__STRING); \
-  variable->get_tostring_fn = owl_variable_make_closure(variable, \
-    G_CALLBACK(owl_variable_##type##_get_tostring_default), \
-    g_cclosure_user_marshal_STRING__VOID); \
-  } while(0)
+  var->set_fromstring_fn = g_closure_ref(set_fromstring_fn);
+  g_closure_sink(set_fromstring_fn);
 
-void owl_variable_dict_newvar_string(owl_vardict *vd, const char *name, const char *summ, const char *desc, const char *initval)
-{
-  owl_variable *old = owl_variable_get_var(vd, name);
-  if (old && owl_variable_get_type(old) == OWL_VARIABLE_STRING) {
-    owl_variable_update(old, summ, desc);
-    /* g_value_copy(default_gval, &(old->gval_default)); */
-    /* TODO: Resolve this after churn; this function is only called from perl
-     * anyway. */
-  } else {
-    owl_variable * var = owl_variable_newvar(name, summ, desc);
-    var->type = OWL_VARIABLE_STRING;
-    var->validsettings = g_strdup("<string>");
-    g_value_init(&var->val, G_TYPE_STRING);
-    OWL_VARIABLE_SETUP_DEFAULT_FUNCS(var, string, STRING);
+  var->default_str = owl_variable_get_tostring(var);
 
-    owl_variable_set_string(var, initval);
-
-    /* record the initial value as a string */
-    var->default_str = owl_variable_get_tostring(var);
-
-    owl_variable_dict_add_variable(vd, var);
-  }
-}
-
-void owl_variable_dict_newvar_int(owl_vardict *vd, const char *name, const char *summ, const char *desc, int initval)
-{
-  owl_variable *old = owl_variable_get_var(vd, name);
-  if (old && owl_variable_get_type(old) == OWL_VARIABLE_INT) {
-    owl_variable_update(old, summ, desc);
-    /* g_value_copy(default_gval, &(old->gval_default)); */
-    /* TODO: Resolve this after churn; this function is only called from perl
-     * anyway. */
-  } else {
-    owl_variable * var = owl_variable_newvar(name, summ, desc);
-    var->type = OWL_VARIABLE_INT;
-    var->validsettings = g_strdup("<int>");
-    g_value_init(&var->val, G_TYPE_INT);
-    OWL_VARIABLE_SETUP_DEFAULT_FUNCS(var, int, INT);
-
-    owl_variable_set_int(var, initval);
-
-    /* record the initial value as a string */
-    var->default_str = owl_variable_get_tostring(var);
-
-    owl_variable_dict_add_variable(vd, var);
-  }
-}
-
-void owl_variable_dict_newvar_bool(owl_vardict *vd, const char *name, const char *summ, const char *desc, gboolean initval)
-{
-  owl_variable *old = owl_variable_get_var(vd, name);
-  if (old && owl_variable_get_type(old) == OWL_VARIABLE_BOOL) {
-    owl_variable_update(old, summ, desc);
-    /* g_value_copy(default_gval, &(old->gval_default)); */
-    /* TODO: Resolve this after churn; this function is only called from perl
-     * anyway. */
-  } else {
-    owl_variable * var = owl_variable_newvar(name, summ, desc);
-    var->type = OWL_VARIABLE_BOOL;
-    var->validsettings = g_strdup("on,off");
-    g_value_init(&var->val, G_TYPE_BOOLEAN);
-    OWL_VARIABLE_SETUP_DEFAULT_FUNCS(var, bool, BOOLEAN);
-
-    owl_variable_set_bool(var, initval);
-
-    /* record the initial value as a string */
-    var->default_str = owl_variable_get_tostring(var);
-
-    owl_variable_dict_add_variable(vd, var);
-  }
+  /* Note: this'll overwrite any existing variable of that name, even a C one,
+     but it's consistent with previous behavior and commands. */
+  owl_variable_dict_add_variable(vd, var);
 }
 
 void owl_variable_dict_cleanup(owl_vardict *d)
