@@ -850,8 +850,7 @@ int owl_variable_set_fromstring(owl_variable *v, const char *value, int msg) {
   if (0 != set_successfully) {
     if (msg) owl_function_error("Unable to set %s (must be %s)", owl_variable_get_name(v),
                                 owl_variable_get_validsettings(v));
-  }
-  if (msg && (0 != set_successfully)) {
+  } else if (msg) {
     tostring = owl_variable_get_tostring(v);
     if (tostring) {
       owl_function_makemsg("%s = '%s'", owl_variable_get_name(v), tostring);
