@@ -770,7 +770,7 @@ CALLER_OWN GPtrArray *owl_variable_dict_get_names(const owl_vardict *d) {
   return owl_dict_get_keys(d);
 }
 
-void owl_variable_cleanup(owl_variable *v)
+void owl_variable_delete(owl_variable *v)
 {
   g_free(v->name);
   g_free(v->summary);
@@ -780,11 +780,7 @@ void owl_variable_cleanup(owl_variable *v)
   g_value_unset(&(v->val));
   g_closure_unref(v->get_tostring_fn);
   g_closure_unref(v->set_fromstring_fn);
-}
 
-void owl_variable_delete(owl_variable *v)
-{
-  owl_variable_cleanup(v);
   g_free(v);
 }
 
