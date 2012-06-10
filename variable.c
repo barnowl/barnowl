@@ -622,7 +622,7 @@ int owl_variable_dict_add_from_list(owl_vardict *vd, owl_variable_init_params *v
     newvar->name = g_strdup(init_params->name);
     newvar->summary = g_strdup(init_params->summary);
     newvar->description = g_strdup(init_params->description);
-    newvar->validsettings = init_params->validsettings;
+    newvar->validsettings = g_strdup(init_params->validsettings);
     GCallback fn = NULL;
     switch (init_params->type) {
     case OWL_VARIABLE_STRING:
@@ -718,7 +718,7 @@ void owl_variable_dict_newvar_string(owl_vardict *vd, const char *name, const ch
   } else {
     owl_variable * var = owl_variable_newvar(name, summ, desc);
     var->type = OWL_VARIABLE_STRING;
-    var->validsettings = "<string>";
+    var->validsettings = g_strdup("<string>");
     g_value_init(&var->val, G_TYPE_STRING);
     OWL_VARIABLE_SETUP_DEFAULT_FUNCS(var, string, STRING);
 
@@ -742,7 +742,7 @@ void owl_variable_dict_newvar_int(owl_vardict *vd, const char *name, const char 
   } else {
     owl_variable * var = owl_variable_newvar(name, summ, desc);
     var->type = OWL_VARIABLE_INT;
-    var->validsettings = "<int>";
+    var->validsettings = g_strdup("<int>");
     g_value_init(&var->val, G_TYPE_INT);
     OWL_VARIABLE_SETUP_DEFAULT_FUNCS(var, int, INT);
 
@@ -766,7 +766,7 @@ void owl_variable_dict_newvar_bool(owl_vardict *vd, const char *name, const char
   } else {
     owl_variable * var = owl_variable_newvar(name, summ, desc);
     var->type = OWL_VARIABLE_BOOL;
-    var->validsettings = "on,off";
+    var->validsettings = g_strdup("on,off");
     g_value_init(&var->val, G_TYPE_BOOLEAN);
     OWL_VARIABLE_SETUP_DEFAULT_FUNCS(var, bool, BOOLEAN);
 
@@ -794,6 +794,7 @@ void owl_variable_cleanup(owl_variable *v)
   g_free(v->summary);
   g_free(v->description);
   g_free(v->default_str);
+  g_free(v->validsettings);
   g_value_unset(&(v->val));
   g_closure_unref(v->get_tostring_fn);
   g_closure_unref(v->set_fromstring_fn);

@@ -235,10 +235,10 @@ typedef struct _owl_variable {
   char *name;
   int   type;  /* OWL_VARIABLE_* */
   char *default_str;            /* the default value as a string */
-  const char *validsettings;	/* documentation of valid settings */
+  char *validsettings;	        /* documentation of valid settings */
   char *summary;		/* summary of usage */
   char *description;		/* detailed description */
-  GValue val;                    /* current value */
+  GValue val;                   /* current value */
   GClosure *set_fromstring_fn;
                                 /* sets the variable to a value
 				 * of the appropriate type.
