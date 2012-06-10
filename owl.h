@@ -266,38 +266,6 @@ typedef struct _owl_variable {
 				 * returns 0 on success. */
 } owl_variable;
 
-typedef struct _owl_variable_init_params {
-  const char *name;
-  int   type;  /* OWL_VARIABLE_* */
-  const char *pval_default;     /* for string */
-  int   ival_default;           /* for types int and bool     */
-  const char *validsettings;	/* documentation of valid settings */
-  const char *summary;		/* summary of usage */
-  const char *description;	/* detailed description */
-  void *val;                    /* current value */
-  GCallback validate_fn;
-                                /* returns 1 if newval is valid */
-  GCallback set_fn;
-                                /* sets the variable to a value
-				 * of the appropriate type.
-				 * unless documented, this 
-				 * should make a copy. 
-				 * returns 0 on success. */
-  GCallback set_fromstring_fn;
-                                /* sets the variable to a value
-				 * of the appropriate type.
-				 * unless documented, this 
-				 * should make a copy. 
-				 * returns 0 on success. */
-  GCallback get_fn;
-				/* returns a reference to the current value.
-				 * WARNING:  this approach is hard to make
-				 * thread-safe... */
-  GCallback get_tostring_fn;
-                                /* converts val to a string;
-				 * caller must free the result */
-} owl_variable_init_params;
-
 
 typedef struct _owl_input {
   int ch;
