@@ -238,6 +238,7 @@ typedef struct _owl_variable {
   char *validsettings;	        /* documentation of valid settings */
   char *summary;		/* summary of usage */
   char *description;		/* detailed description */
+  bool takes_on_off;            /* allow passing on/off in argument-less set/unset */
   GClosure *set_fromstring_fn;
                                 /* sets the variable to a value
 				 * of the appropriate type.

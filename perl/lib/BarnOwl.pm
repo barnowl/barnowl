@@ -425,29 +425,30 @@ A longer description of the function of the variable
 =cut
 
 sub new_variable_int {
-    unshift @_, 0, "<int>", sub { "$_[0]" }, # to string
-                            sub { $_[0] =~ /^-?[0-9]+$/ }, # validate
-                            sub { 0 + $_[0] }; # from string
+    unshift @_, 0, "<int>", 0, sub { "$_[0]" }, # to string
+                               sub { $_[0] =~ /^-?[0-9]+$/ }, # validate
+                               sub { 0 + $_[0] }; # from string
     goto \&_new_variable;
 }
 
 sub new_variable_bool {
-    unshift @_, 0, "on,off", sub { $_[0] ? "on" : "off" }, # to string
-                             sub { $_[0] eq "on" || $_[0] eq "off" }, # validate
-                             sub { $_[0] eq "on" }; # from string
+    unshift @_, 0, "on,off", 1, sub { $_[0] ? "on" : "off" }, # to string
+                                sub { $_[0] eq "on" || $_[0] eq "off" }, # validate
+                                sub { $_[0] eq "on" }; # from string
     goto \&_new_variable;
 }
 
 sub new_variable_string {
-    unshift @_, "", "<string>", sub { $_[0] }, # to string
-                                sub { 1 }, # validate
-                                sub { $_[0] }; # from string
+    unshift @_, "", "<string>", 0, sub { $_[0] }, # to string
+                                   sub { 1 }, # validate
+                                   sub { $_[0] }; # from string
     goto \&_new_variable;
 }
 
 sub _new_variable {
     my $default_default = shift;
     my $validsettings = shift;
+    my $takes_on_off = shift;
     my $tostring_fn = shift;
     my $validate_fn = shift;
     my $fromstring_fn = shift;
@@ -472,7 +473,7 @@ sub _new_variable {
     };
 
     BarnOwl::Internal::new_variable($name, $args{summary}, $args{description}, $validsettings,
-                                    $get_tostring_fn, $set_fromstring_fn, undef);
+                                    $takes_on_off, $get_tostring_fn, $set_fromstring_fn, undef);
 }
 
 =head2 quote LIST

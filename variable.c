@@ -618,6 +618,7 @@ int owl_variable_dict_add_from_list(owl_vardict *vd, owl_variable_init_params *v
   for (init_params = variables_to_init; init_params->name; init_params++) {
     newvar = g_new0(owl_variable, 1);
     newvar->type = init_params->type;
+    newvar->takes_on_off = (newvar->type == OWL_VARIABLE_BOOL);
     /* strdup all the strings so we can delete them consistently. */
     newvar->name = g_strdup(init_params->name);
     newvar->summary = g_strdup(init_params->summary);
@@ -679,13 +680,14 @@ void owl_variable_dict_add_variable(owl_vardict * vardict,
   owl_dict_insert_element(vardict, var->name, var, (void (*)(void *))owl_variable_delete);
 }
 
-void owl_variable_dict_newvar_other(owl_vardict *vd, const char *name, const char *summary, const char *description, const char *validsettings, GClosure *get_tostring_fn, GClosure *set_fromstring_fn)
+void owl_variable_dict_newvar_other(owl_vardict *vd, const char *name, const char *summary, const char *description, const char *validsettings, bool takes_on_off, GClosure *get_tostring_fn, GClosure *set_fromstring_fn)
 {
   owl_variable *var = g_new0(owl_variable, 1);
   var->name = g_strdup(name);
   var->summary = g_strdup(summary);
   var->description = g_strdup(description);
   var->validsettings = g_strdup(validsettings);
+  var->takes_on_off = takes_on_off;
 
   var->get_tostring_fn = g_closure_ref(get_tostring_fn);
   g_closure_sink(get_tostring_fn);

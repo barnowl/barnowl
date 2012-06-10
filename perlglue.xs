@@ -405,11 +405,12 @@ new_command(name, func, summary, usage, description)
 MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 
 void
-new_variable(name, summary, description, validsettings, get_tostring_fn, set_fromstring_fn, data)
+new_variable(name, summary, description, validsettings, takes_on_off, get_tostring_fn, set_fromstring_fn, data)
     const char *name
     const char *summary
     const char *description
     const char *validsettings
+    int takes_on_off
     SV *get_tostring_fn
     SV *set_fromstring_fn
     SV *data
@@ -425,7 +426,7 @@ new_variable(name, summary, description, validsettings, get_tostring_fn, set_fro
 	}
 
         owl_variable_dict_newvar_other(owl_global_get_vardict(&g),
-                                       name, summary, description, validsettings,
+                                       name, summary, description, validsettings, takes_on_off,
                                        perl_closure_new(get_tostring_fn, data, false),
                                        perl_closure_new(set_fromstring_fn, data, false));
 }
