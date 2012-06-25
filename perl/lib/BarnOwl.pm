@@ -4,7 +4,7 @@ use warnings;
 package BarnOwl;
 
 use base qw(Exporter);
-our @EXPORT_OK = qw(command getcurmsg getnumcols getidletime
+our @EXPORT_OK = qw(command getcurmsg getnumcols getnumlines getidletime
                     zephyr_getsender zephyr_getrealm zephyr_zwrite
                     zephyr_stylestrip zephyr_smartstrip_user zephyr_getsubs
                     queue_message admin_message

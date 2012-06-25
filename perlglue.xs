@@ -66,7 +66,14 @@ getnumcols()
 		RETVAL = owl_global_get_cols(&g);
 	OUTPUT:
 		RETVAL
-		
+
+int
+getnumlines()
+	CODE:
+		RETVAL = owl_global_get_lines(&g);
+	OUTPUT:
+		RETVAL
+
 time_t
 getidletime()
 	CODE:
