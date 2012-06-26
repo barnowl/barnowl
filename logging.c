@@ -435,8 +435,13 @@ static gpointer owl_log_thread_func(gpointer data)
 
 void owl_log_init(void) 
 {
-  GError *error = NULL;
   log_context = g_main_context_new();
+#if GLIB_CHECK_VERSION(2, 31, 0)
+  logging_thread = g_thread_new("logging",
+				owl_log_thread_func,
+				NULL);
+#else
+  GError *error = NULL;
   logging_thread = g_thread_create(owl_log_thread_func,
                                    NULL,
                                    TRUE,
@@ -447,6 +452,7 @@ void owl_log_init(void)
     fflush(stderr);
     exit(1);
   }
+#endif
   
 }
 
