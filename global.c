@@ -898,21 +898,26 @@ void owl_global_set_kill_buffer(owl_global *g, const char *kill, int len) {
   g->kill_buffer = g_strndup(kill, len);
 }
 
+static GMutex *owl_global_get_interrupt_lock(owl_global *g)
+{
+  return g->interrupt_lock;
+}
+
 void owl_global_add_interrupt(owl_global *g) {
   /* TODO: This can almost certainly be done with atomic
    * operations. Whatever. */
-  g_mutex_lock(g->interrupt_lock);
+  g_mutex_lock(owl_global_get_interrupt_lock(g));
   g->interrupt_count++;
-  g_mutex_unlock(g->interrupt_lock);
+  g_mutex_unlock(owl_global_get_interrupt_lock(g));
 }
 
 bool owl_global_take_interrupt(owl_global *g) {
   bool ans = false;
-  g_mutex_lock(g->interrupt_lock);
+  g_mutex_lock(owl_global_get_interrupt_lock(g));
   if (g->interrupt_count > 0) {
     ans = true;
     g->interrupt_count--;
   }
-  g_mutex_unlock(g->interrupt_lock);
+  g_mutex_unlock(owl_global_get_interrupt_lock(g));
   return ans;
 }
