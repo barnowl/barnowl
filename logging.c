@@ -428,7 +428,6 @@ void owl_log_incoming(const owl_message *m)
 
 static gpointer owl_log_thread_func(gpointer data)
 {
-  log_context = g_main_context_new();
   log_loop = g_main_loop_new(log_context, FALSE);
   g_main_loop_run(log_loop);
   return NULL;
@@ -437,6 +436,7 @@ static gpointer owl_log_thread_func(gpointer data)
 void owl_log_init(void) 
 {
   GError *error = NULL;
+  log_context = g_main_context_new();
   logging_thread = g_thread_create(owl_log_thread_func,
                                    NULL,
                                    TRUE,
