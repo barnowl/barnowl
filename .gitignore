@@ -3,6 +3,7 @@
 *.par
 .deps
 META.yml
+MYMETA.yml
 Makefile
 Makefile.in
 Makefile.old
