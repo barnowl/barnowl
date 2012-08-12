@@ -11,6 +11,7 @@
 #include <getopt.h>
 #include <sys/stat.h>
 #include <locale.h>
+#include <unistd.h>
 
 #if OWL_STDERR_REDIR
 #ifdef HAVE_SYS_IOCTL_H
@@ -426,12 +427,12 @@ int stderr_replace(void)
   int pipefds[2];
   if (0 != pipe(pipefds)) {
     perror("pipe");
-    owl_function_debugmsg("stderr_replace: pipe FAILED\n");
+    owl_function_debugmsg("stderr_replace: pipe FAILED");
     return -1;
   }
-    owl_function_debugmsg("stderr_replace: pipe: %d,%d\n", pipefds[0], pipefds[1]);
-  if (-1 == dup2(pipefds[1], 2 /*stderr*/)) {
-    owl_function_debugmsg("stderr_replace: dup2 FAILED (%s)\n", strerror(errno));
+    owl_function_debugmsg("stderr_replace: pipe: %d,%d", pipefds[0], pipefds[1]);
+  if (-1 == dup2(pipefds[1], STDERR_FILENO)) {
+    owl_function_debugmsg("stderr_replace: dup2 FAILED (%s)", strerror(errno));
     perror("dup2");
     return -1;
   }
@@ -513,10 +514,12 @@ int main(int argc, char **argv, char **env)
 
 #if OWL_STDERR_REDIR
   /* Do this only after we've started curses up... */
-  owl_function_debugmsg("startup: doing stderr redirection");
-  channel = g_io_channel_unix_new(stderr_replace());
-  g_io_add_watch(channel, G_IO_IN | G_IO_HUP | G_IO_ERR, &stderr_redirect_handler, NULL);
-  g_io_channel_unref(channel);
+  if (isatty(STDERR_FILENO)) {
+    owl_function_debugmsg("startup: doing stderr redirection");
+    channel = g_io_channel_unix_new(stderr_replace());
+    g_io_add_watch(channel, G_IO_IN | G_IO_HUP | G_IO_ERR, &stderr_redirect_handler, NULL);
+    g_io_channel_unref(channel);
+  }
 #endif
 
   /* create the owl directory, in case it does not exist */
