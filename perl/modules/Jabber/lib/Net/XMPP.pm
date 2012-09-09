@@ -212,7 +212,7 @@ use strict;
 use XML::Stream 1.22 qw( Node );
 use Time::Local;
 use Carp;
-use Digest::SHA1;
+use Digest::SHA;
 use Authen::SASL;
 use MIME::Base64;
 use POSIX;

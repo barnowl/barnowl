@@ -219,7 +219,7 @@ sub _auth
     
     $self->{STREAM}->SetCallBacks(node=>undef);
 
-    $self->Send("<handshake>".Digest::SHA1::sha1_hex($self->{SESSION}->{id}.$args{secret})."</handshake>");
+    $self->Send("<handshake>".Digest::SHA::sha1_hex($self->{SESSION}->{id}.$args{secret})."</handshake>");
     my $handshake = $self->Process();
 
     if (!defined($handshake) ||
