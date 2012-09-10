@@ -490,6 +490,13 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "\n"
 	      "SEE ALSO: aaway, zaway"),
 
+  OWLCMD_VOID("flush-logs", owl_command_flushlogs, OWL_CTX_ANY,
+               "flush the queue of messages waiting to be logged",
+               "",
+               "If BarnOwl failed to log a file, this command tells\n"
+               "BarnOwl to try logging the messages that have since\n"
+               "come in, and to resume logging normally."),
+
   OWLCMD_ARGS("load-subs", owl_command_loadsubs, OWL_CTX_ANY,
 	      "load subscriptions from a file",
 	      "load-subs <file>\n", ""),
@@ -1435,6 +1442,11 @@ void owl_command_set_shift(int shift)
 void owl_command_unsuball(void)
 {
   owl_function_unsuball();
+}
+
+void owl_command_flushlogs(void)
+{
+  owl_log_flush_logs();
 }
 
 char *owl_command_loadsubs(int argc, const char *const *argv, const char *buff)
