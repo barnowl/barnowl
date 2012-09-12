@@ -39,7 +39,7 @@ The Jabber module requires:
 Net::DNS
 Authen::SASL::Perl
 IO::Socket::SSL
-Digest::SHA1
+Digest::SHA
 
 The Twitter module requires:
 

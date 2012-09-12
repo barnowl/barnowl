@@ -103,14 +103,14 @@ sub new
     
     $self->{CACHE} = {};
 
-    if (eval "require Digest::SHA1")
+    if (eval "require Digest::SHA")
     {
         $self->{DIGEST} = 1;
-        Digest::SHA1->import(qw(sha1 sha1_hex sha1_base64));
+        Digest::SHA->import(qw(sha1 sha1_hex sha1_base64));
     }
     else
     {
-        print "ERROR:  You cannot use Key.pm unless you have Digest::SHA1 installed.\n";
+        print "ERROR:  You cannot use Key.pm unless you have Digest::SHA installed.\n";
         exit(0);
     }
 
@@ -131,7 +131,7 @@ sub Generate
     my $self = shift;
 
     my $string = $$.time.rand(1000000);
-    $string = Digest::SHA1::sha1_hex($string);
+    $string = Digest::SHA::sha1_hex($string);
     $self->{DEBUG}->Log1("Generate: key($string)");
     return $string;
 }
