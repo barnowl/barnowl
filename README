@@ -30,6 +30,11 @@ PAR
 We plan to soon add targets to the Makefile to check for and install
 these for you.
 
+The Facebook module requires:
+
+Any::Moose
+MIME::Base64::URLSafe
+
 The IRC module requires:
 
 AnyEvent::IRC
