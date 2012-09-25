@@ -33,7 +33,11 @@ these for you.
 The Facebook module requires:
 
 Any::Moose
+DateTime
+DateTime::Format::Strptime
+JSON
 MIME::Base64::URLSafe
+URI
 
 The IRC module requires:
 
