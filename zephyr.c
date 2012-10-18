@@ -727,7 +727,7 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   }
   if (!owl_zwrite_recip_is_personal(recipient) && *owl_global_get_zsender(&g))
     notice.z_sender = zsender = long_zuser(owl_global_get_zsender(&g));
-  notice.z_default_format=zstr("Class $class, Instance $instance:\nTo: @bold($recipient) at $time $date\nFrom: @bold{$1 <$sender>}\n\n$2");
+  notice.z_default_format=zstr("http://zephyr.1ts.org/wiki/df");
   if (opcode) notice.z_opcode=zstr(opcode);
 
   notice.z_message_len=strlen(zsig)+1+strlen(message);
