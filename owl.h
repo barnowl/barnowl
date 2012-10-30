@@ -595,7 +595,11 @@ typedef struct _owl_global {
   FILE *debug_file;
   char *kill_buffer;
   int interrupt_count;
+#if GLIB_CHECK_VERSION(2, 31, 0)
+  GMutex interrupt_lock;
+#else
   GMutex *interrupt_lock;
+#endif
 } owl_global;
 
 /* globals */
