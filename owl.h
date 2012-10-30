@@ -46,8 +46,8 @@
 
 /* Perl and curses don't play nice. */
 #ifdef OWL_PERL
-typedef void WINDOW;
-typedef void PANEL;
+typedef struct _owl_fake_WINDOW WINDOW;
+typedef struct _owl_fake_PANEL PANEL;
 /* logout is defined in FreeBSD. */
 #define logout logout_
 #define HAS_BOOL
@@ -56,9 +56,9 @@ typedef void PANEL;
 #undef logout
 #include "XSUB.h"
 #else
-typedef void SV;
-typedef void AV;
-typedef void HV;
+typedef struct _owl_fake_SV SV;
+typedef struct _owl_fake_AV AV;
+typedef struct _owl_fake_HV HV;
 #endif
 
 #include "window.h"
