@@ -542,9 +542,8 @@ That's all there is to it!
 
 ======================================================================
 
-Files under perl/modules/Facebook/lib/Facebook and
-perl/modules/Facebook/lib/Ouch.pm are copyright (c) 2010 Plain Black
-Corporation.
+Files under perl/modules/Facebook/lib/Facebook are copyright (c) 2010 Plain
+Black Corporation.
 
 This software is copyright (c) 2010 by Plain Black Corporation.
 
@@ -924,18 +923,3 @@ WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
 MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 The End
-
-======================================================================
-
-The file perl/modules/Facebook/lib/AnyEvent/HTTP.pm is copyright (c)
-Marc Lehmann.
-
-This module is licensed under the same terms as perl itself.
-
-======================================================================
-
-The file perl/modules/Facebook/lib/URI/Encode.pm is copyright (c)
-2010, Mithun Ayachit ``<mithun@cpan.org>''. All rights reserved.
-
-This module is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself. See perlartistic.

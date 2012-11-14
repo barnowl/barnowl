@@ -9,12 +9,9 @@ Notes:
 This project's perl/modules/ contains the lib directories from the
 following CPAN modules:
 
-AnyEvent::HTTP
 Facebook::Graph
 Net::Jabber
 Net::XMPP
-Ouch
-URI::Encode
 XML::Stream
 
 Some have been modified slightly for the needs of this project.
@@ -33,11 +30,14 @@ these for you.
 The Facebook module requires:
 
 Any::Moose
+AnyEvent::HTTP
 DateTime
 DateTime::Format::Strptime
 JSON
 MIME::Base64::URLSafe
+Ouch
 URI
+URI::Encode
 
 The IRC module requires:
 
