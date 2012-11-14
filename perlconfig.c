@@ -91,21 +91,24 @@ CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
 #define MSG2H(h,field) (void)hv_store(h, #field, strlen(#field),        \
                                       owl_new_sv(owl_message_get_##field(m)), 0)
 
-  if (owl_message_get_notice(m)) {
+  if (owl_message_is_type_zephyr(m) && owl_message_is_direction_in(m)) {
     /* Handle zephyr-specific fields... */
-    AV *av_zfields;
-
-    av_zfields = newAV();
-    for (f = owl_zephyr_first_raw_field(owl_message_get_notice(m)); f != NULL;
-	 f = owl_zephyr_next_raw_field(owl_message_get_notice(m), f)) {
-      ptr=owl_zephyr_field_as_utf8(owl_message_get_notice(m), f);
-      av_push(av_zfields, owl_new_sv(ptr));
-      g_free(ptr);
+    AV *av_zfields = newAV();
+    if (owl_message_get_notice(m)) {
+      for (f = owl_zephyr_first_raw_field(owl_message_get_notice(m)); f != NULL;
+           f = owl_zephyr_next_raw_field(owl_message_get_notice(m), f)) {
+        ptr = owl_zephyr_field_as_utf8(owl_message_get_notice(m), f);
+        av_push(av_zfields, owl_new_sv(ptr));
+        g_free(ptr);
+      }
+      (void)hv_store(h, "auth", strlen("auth"),
+                     owl_new_sv(owl_zephyr_get_authstr(owl_message_get_notice(m))), 0);
+    } else {
+      /* Incoming zephyrs without a ZNotice_t are pseudo-logins. To appease
+       * existing styles, put in bogus 'auth' and 'fields' keys. */
+      (void)hv_store(h, "auth", strlen("auth"), owl_new_sv("NO"), 0);
     }
     (void)hv_store(h, "fields", strlen("fields"), newRV_noinc((SV*)av_zfields), 0);
-
-    (void)hv_store(h, "auth", strlen("auth"), 
-                   owl_new_sv(owl_zephyr_get_authstr(owl_message_get_notice(m))),0);
   }
 
   for (i = 0; i < m->attributes->len; i++) {

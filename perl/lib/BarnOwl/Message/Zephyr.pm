@@ -50,12 +50,14 @@ sub subcontext {
 sub login_tty {
     my ($m) = @_;
     return undef if (!$m->is_loginout);
+    return undef if (!defined($m->fields));
     return $m->fields->[2];
 }
 
 sub login_host {
     my ($m) = @_;
     return undef if (!$m->is_loginout);
+    return undef if (!defined($m->fields));
     return $m->fields->[0];
 }
 
