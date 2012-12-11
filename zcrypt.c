@@ -16,7 +16,7 @@
 #include <sys/wait.h>
 #include <ctype.h>
 
-#include "config.h"
+#include <config.h>
 
 #ifdef HAVE_KERBEROS_IV
 #include <kerberosIV/des.h>
