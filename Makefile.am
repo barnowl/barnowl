@@ -52,7 +52,7 @@ NORMAL_SRCS = filterproc.c window.c windowcb.c
 BASE_SRCS = $(CODELIST_SRCS) $(NORMAL_SRCS)
 
 GEN_C = varstubs.c perlglue.c gmarshal_funcs.c
-GEN_H = owl_prototypes.h gmarshal_funcs.h
+GEN_H = owl_prototypes.h owl_prototypes.h.new gmarshal_funcs.h
 
 BUILT_SOURCES = $(GEN_C) $(GEN_H)
 
@@ -91,5 +91,7 @@ do_transform = $(shell echo '$(1)' | sed '$(transform)')
 install-exec-hook:
 	mv -f $(DESTDIR)$(bindir)/$(call do_transform,barnowl.bin) \
 	      $(DESTDIR)$(bindir)/$(call do_transform,barnowl)
+
+CLEANFILES = $(BUILT_SOURCES)
 
 SUBDIRS = compat libfaim perl

@@ -13,7 +13,8 @@ $(MODULES_MAKEFILE): %/Makefile: %/Makefile.PL
 MODULES_CLEAN = $(MODULES:%=clean_%)
 clean-local: $(MODULES_CLEAN)
 $(MODULES_CLEAN): clean_%:
-	(cd $* && (test ! -f Makefile || $(MAKE) clean))
+	cd $* && { test ! -f Makefile || $(MAKE) realclean; }
+	rm -f $*/$*.par
 
 MODULES_INSTALL = $(MODULES:%=module_install_%)
 install-data-local: $(MODULES_INSTALL)
