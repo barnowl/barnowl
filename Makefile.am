@@ -14,6 +14,13 @@ check_PROGRAMS = tester.bin
 dist_check_DATA = t
 dist_check_SCRIPTS = runtests.sh
 
+bin_SCRIPTS = barnowl
+check_SCRIPTS = tester
+
+barnowl tester: %: barnowl-wrapper.in %.bin
+	cp $< $@
+	chmod +x $@
+
 barnowl_bin_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h config.h \
      owl.c \
@@ -93,10 +100,10 @@ install-exec-hook:
 uninstall-local:
 	rm -f $(DESTDIR)$(bindir)/$(call do_transform,barnowl)
 
-CLEANFILES = $(BUILT_SOURCES)
+CLEANFILES = $(BUILT_SOURCES) $(bin_SCRIPTS) $(check_SCRIPTS)
 EXTRA_DIST = \
     autogen.sh \
-    barnowl \
+    barnowl-wrapper.in \
     codelist.pl \
     doc \
     examples \
@@ -104,7 +111,6 @@ EXTRA_DIST = \
     perlglue.xs \
     scripts \
     stubgen.pl \
-    tester \
     typemap
 
 SUBDIRS = compat libfaim perl
