@@ -17,8 +17,11 @@ dist_check_SCRIPTS = runtests.sh
 bin_SCRIPTS = barnowl
 check_SCRIPTS = tester
 
-barnowl tester: %: barnowl-wrapper.in %.bin
-	cp $< $@
+barnowl tester: %: barnowl-wrapper.in %.bin Makefile
+	sed \
+	    -e 's,[@]abs_srcdir[@],$(abs_srcdir),g' \
+	    -e 's,[@]abs_builddir[@],$(abs_builddir),g' \
+	    $< > $@
 	chmod +x $@
 
 barnowl_bin_SOURCES = $(BASE_SRCS) \
