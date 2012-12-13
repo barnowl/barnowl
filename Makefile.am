@@ -83,14 +83,13 @@ gmarshal_funcs.c: marshal_types
 check-syntax: proto
 	$(COMPILE) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES)
 
-install-data-local:
-	$(mkinstalldirs) ${DESTDIR}${pkgdatadir}/lib
-	(cd perl/lib && tar -cf - . ) | (cd ${DESTDIR}${pkgdatadir}/lib && tar -xf - )
-
 do_transform = $(shell echo '$(1)' | sed '$(transform)')
 install-exec-hook:
 	mv -f $(DESTDIR)$(bindir)/$(call do_transform,barnowl.bin) \
 	      $(DESTDIR)$(bindir)/$(call do_transform,barnowl)
+
+uninstall-local:
+	rm -f $(DESTDIR)$(bindir)/$(call do_transform,barnowl)
 
 CLEANFILES = $(BUILT_SOURCES)
 
