@@ -33,7 +33,7 @@ tester_bin_LDADD = compat/libcompat.a libfaim/libfaim.a
 
 TESTS=runtests.sh
 
-AM_CPPFLAGS = -I$(top_srcdir)/ \
+AM_CPPFLAGS = \
            -I$(top_srcdir)/libfaim/ \
            -DDATADIR='"$(pkgdatadir)"' \
            -DBINDIR='"$(bindir)"' \
