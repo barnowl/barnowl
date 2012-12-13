@@ -1,6 +1,10 @@
 MODULES = Jabber IRC WordWrap Twitter Facebook
 
 EXTRA_DIST = $(MODULES:=/Makefile.PL) $(MODULES:=/inc) $(MODULES:=/lib)
+EXTRA_DIST += \
+    Facebook/README \
+    Twitter/README \
+    Twitter/twitter.example
 
 all-local: $(MODULES)
 $(MODULES): %: %/Makefile

@@ -12,3 +12,5 @@ libfaim_a_SOURCES = admin.c \
 libfaim_a_CFLAGS = $(LIBFAIM_CFLAGS)
 libfaim_a_CPPFLAGS = -DAIM_BUILDDATE=\"x\" -DAIM_BUILDTIME=\"x\" \
                      -I${top_srcdir}/libfaim
+
+EXTRA_DIST = oscar.c

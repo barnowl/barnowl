@@ -11,14 +11,16 @@ endif
 zcrypt_SOURCES = zcrypt.c filterproc.c
 
 check_PROGRAMS = tester.bin
+dist_check_DATA = t
+dist_check_SCRIPTS = runtests.sh
 
 barnowl_bin_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h config.h \
      owl.c \
      $(GEN_C) $(GEN_H)
 
-man_MANS = doc/barnowl.1
-doc_DATA = doc/intro.txt doc/advanced.txt
+dist_man_MANS = doc/barnowl.1
+dist_doc_DATA = doc/intro.txt doc/advanced.txt
 
 barnowl_bin_LDADD = compat/libcompat.a libfaim/libfaim.a
 
@@ -47,7 +49,7 @@ CODELIST_SRCS=message.c mainwin.c popwin.c zephyr.c messagelist.c \
      zbuddylist.c popexec.c select.c wcwidth.c \
      mainpanel.c msgwin.c sepbar.c editcontext.c signal.c closures.c
 
-NORMAL_SRCS = filterproc.c window.c windowcb.c
+NORMAL_SRCS = filterproc.c filterproc.h window.c window.h windowcb.c
 
 BASE_SRCS = $(CODELIST_SRCS) $(NORMAL_SRCS)
 
@@ -92,5 +94,17 @@ uninstall-local:
 	rm -f $(DESTDIR)$(bindir)/$(call do_transform,barnowl)
 
 CLEANFILES = $(BUILT_SOURCES)
+EXTRA_DIST = \
+    autogen.sh \
+    barnowl \
+    codelist.pl \
+    doc \
+    examples \
+    marshal_types \
+    perlglue.xs \
+    scripts \
+    stubgen.pl \
+    tester \
+    typemap
 
 SUBDIRS = compat libfaim perl
