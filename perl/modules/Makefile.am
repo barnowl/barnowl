@@ -12,13 +12,18 @@ $(MODULES): %: %/Makefile
 
 MODULES_MAKEFILE = $(MODULES:=/Makefile)
 $(MODULES_MAKEFILE): %/Makefile: %/Makefile.PL
+	[ $(srcdir) = . ] || cp -srf --no-preserve=mode -- $(abs_srcdir)/$*/. $*
 	$(AM_V_GEN)(cd $* && perl -I../../lib Makefile.PL)
 
 MODULES_CLEAN = $(MODULES:%=clean_%)
 clean-local: $(MODULES_CLEAN)
 $(MODULES_CLEAN): clean_%:
-	cd $* && { test ! -f Makefile || $(MAKE) realclean; }
-	rm -f $*/$*.par
+	if [ $(srcdir) = . ]; then \
+	    (cd $* && { test ! -f Makefile || $(MAKE) realclean; }) && \
+	    rm -f $*/$*.par; \
+	else \
+	    rm -rf $*; \
+	fi
 
 MODULES_INSTALL = $(MODULES:%=module_install_%)
 install-data-local: $(MODULES_INSTALL)

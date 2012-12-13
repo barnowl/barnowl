@@ -68,7 +68,7 @@ BUILT_SOURCES = $(GEN_C) $(GEN_H)
 proto: owl_prototypes.h
 
 perlglue.c: perlglue.xs typemap
-	$(AM_V_GEN)perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes perlglue.xs > perlglue.c
+	$(AM_V_GEN)perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes $< > $@
 
 varstubs.c: stubgen.pl variable.c
 	$(AM_V_GEN)perl $< $(sort $(filter-out $<,$+)) > $@

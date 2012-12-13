@@ -99,7 +99,7 @@ AM_CFLAGS="${AM_CFLAGS} ${PERL_CFLAGS}"
 
 dnl Find the location of perl XSUBPP
 AC_MSG_CHECKING(for the perl xsubpp precompiler)
-XSUBPPDIR="`(perl -MExtUtils::MakeMaker -e 'print ExtUtils::MakeMaker->new({NAME => qw(owl)})->tool_xsubpp;') | grep \^XSUBPPDIR | sed -e 's/XSUBPPDIR = //g;'`"
+XSUBPPDIR="`cd "$srcdir" && perl -MExtUtils::MakeMaker -e 'print ExtUtils::MakeMaker->new({NAME => qw(owl)})->tool_xsubpp;' | grep \^XSUBPPDIR | sed -e 's/XSUBPPDIR = //g;'`"
 if test -n "${XSUBPPDIR}"; then
    AC_MSG_RESULT(${XSUBPPDIR})
 else
