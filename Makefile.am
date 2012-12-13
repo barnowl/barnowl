@@ -65,7 +65,7 @@ BUILT_SOURCES = $(GEN_C) $(GEN_H)
 
 proto: owl_prototypes.h
 
-perlglue.c: perlglue.xs $(TYPEMAP)
+perlglue.c: perlglue.xs typemap
 	$(AM_V_GEN)perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes perlglue.xs > perlglue.c
 
 varstubs.c: stubgen.pl variable.c
