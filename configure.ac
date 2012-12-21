@@ -59,7 +59,11 @@ AS_IF([test "x$with_zephyr" != xno],
      [PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto],
         [AM_CFLAGS="${AM_CFLAGS} ${LIBCRYPTO_CFLAGS}"
          LIBS="${LIBS} ${LIBCRYPTO_LIBS}"
-        ])])
+        ],
+        [PKG_CHECK_MODULES([OPENSSL], [openssl],
+           [AM_CFLAGS="${AM_CFLAGS} ${OPENSSL_CFLAGS}"
+            LIBS="${LIBS} ${OPENSSL_LIBS}"
+           ])])])
 
    AC_CHECK_LIB([zephyr], [ZGetSender],
    [LIBS="$LIBS -lzephyr"
