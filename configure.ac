@@ -56,10 +56,10 @@ AS_IF([test "x$with_zephyr" != xno],
              [AC_MSG_ERROR([Kerberos IV requested but not found])])])])
 
    AS_IF([test "x$have_krb4" != xyes],
-     [PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
-      AM_CFLAGS="${AM_CFLAGS} ${LIBCRYPTO_CFLAGS}"
-      LIBS="${LIBS} ${LIBCRYPTO_LIBS}"
-     ])
+     [PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto],
+        [AM_CFLAGS="${AM_CFLAGS} ${LIBCRYPTO_CFLAGS}"
+         LIBS="${LIBS} ${LIBCRYPTO_LIBS}"
+        ])])
 
    AC_CHECK_LIB([zephyr], [ZGetSender],
    [LIBS="$LIBS -lzephyr"
