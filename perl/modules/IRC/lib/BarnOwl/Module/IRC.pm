@@ -128,6 +128,11 @@ second argument to alter the behavior of the returned commands:
 This command accepts the name of a channel. Pass in the C<CHANNEL>
 argument listed above, and die if no channel argument can be found.
 
+=item C<CHANNEL_OR_USER>
+
+Pass the channel argument, but accept it if it's a username (e.g.
+has no hash).  Only relevant with C<CHANNEL_ARG>.
+
 =item C<CHANNEL_OPTIONAL>
 
 Pass the channel argument, but don't die if not present. Only relevant
@@ -144,8 +149,9 @@ currently pending a reconnect.
 
 use constant CHANNEL_ARG        => 1;
 use constant CHANNEL_OPTIONAL   => 2;
+use constant CHANNEL_OR_USER    => 4;
 
-use constant ALLOW_DISCONNECTED => 4;
+use constant ALLOW_DISCONNECTED => 8;
 
 sub register_commands {
     BarnOwl::new_command(
@@ -187,7 +193,7 @@ END_DESCR
     );
 
     BarnOwl::new_command(
-        'irc-msg' => mk_irc_command( \&cmd_msg ),
+        'irc-msg' => mk_irc_command( \&cmd_msg, CHANNEL_OR_USER|CHANNEL_ARG|CHANNEL_OPTIONAL ),
         {
             summary => 'Send an IRC message',
             usage   => 'irc-msg [-a ALIAS] DESTINATION MESSAGE',
@@ -590,6 +596,8 @@ sub mk_irc_command {
                     shift @ARGV;
                     $conn ||= $c;
                 }
+            } elsif (defined($channel) && ($flags & CHANNEL_OR_USER)) {
+                shift @ARGV;
             } elsif ($m && $m->type eq 'IRC' && !$m->is_private) {
                 $channel = $m->channel;
             } else {
