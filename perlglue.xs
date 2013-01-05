@@ -397,6 +397,16 @@ have_zephyr()
 MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 
 
+int
+file_deleteline(filename, line, backup)
+	const char *filename
+	const char *line
+	int backup
+	CODE:
+		RETVAL = owl_util_file_deleteline(filename, line, backup);
+	OUTPUT:
+		RETVAL
+
 void
 new_command(name, func, summary, usage, description)
 	char *name
