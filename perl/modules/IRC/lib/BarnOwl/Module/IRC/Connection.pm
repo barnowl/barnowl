@@ -38,7 +38,8 @@ sub new {
     my $conn = AnyEvent::IRC::Client->new();
     my $self = bless({}, $class);
     $self->conn($conn);
-    $self->autoconnect_channels([]);
+    # TODO(jgross): use // when we move to requiring perl 5.10
+    $self->autoconnect_channels(defined $args->{autoconnect_channels} ? $args->{autoconnect_channels} : []);
     $self->alias($alias);
     $self->server($host);
     $self->motd("");
@@ -411,7 +412,7 @@ sub schedule_reconnect {
     if (defined $self->{reconnect_timer}) {
         $self->{reconnect_timer}->stop;
     }
-    $self->{reconnect_timer} = 
+    $self->{reconnect_timer} =
         BarnOwl::Timer->new( {
             name  => 'IRC (' . $self->alias . ') reconnect_timer',
             after => $interval,
@@ -444,7 +445,6 @@ sub connected {
         for my $c (@{$self->autoconnect_channels}) {
             $self->conn->send_msg(join => $c);
         }
-        $self->autoconnect_channels([]);
     }
     $self->conn->enable_ping(60, sub {
                                  $self->on_disconnect("Connection timed out.");
@@ -457,7 +457,6 @@ sub reconnect {
     my $self = shift;
     my $backoff = $self->backoff;
 
-    $self->autoconnect_channels([keys(%{$self->{channel_list}})]);
     $self->conn->connect(@{$self->connect_args});
 }
 
