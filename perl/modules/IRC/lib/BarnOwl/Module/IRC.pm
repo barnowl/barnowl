@@ -168,7 +168,7 @@ sub register_commands {
         {
             summary => 'Connect to an IRC server',
             usage =>
-'irc-connect [-a ALIAS ] [-s] [-p PASSWORD] [-n NICK] SERVER [port]',
+'irc-connect [-a ALIAS] [-s] [-p PASSWORD] [-n NICK] SERVER [port]',
             description => <<END_DESCR
 Connect to an IRC server. Supported options are:
 
