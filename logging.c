@@ -10,6 +10,8 @@ typedef struct _owl_log_entry { /* noproto */
 static GMainContext *log_context;
 static GMainLoop *log_loop;
 static GThread *logging_thread;
+bool defer_logs;
+static GQueue *deferred_entry_queue;
 
 /* This is now the one function that should be called to log a
  * message.  It will do all the work necessary by calling the other
@@ -54,7 +56,7 @@ int owl_log_shouldlog_message(const owl_message *m) {
 
   /* skip login/logout messages if appropriate */
   if (!owl_global_is_loglogins(&g) && owl_message_is_loginout(m)) return(0);
-      
+
   /* check direction */
   if ((owl_global_get_loggingdirection(&g)==OWL_LOGGING_DIRECTION_IN) && owl_message_is_direction_out(m)) {
     return(0);
@@ -82,18 +84,18 @@ CALLER_OWN char *owl_log_zephyr(const owl_message *m)
     GString *buffer = NULL;
     buffer = g_string_new("");
     tmp = short_zuser(owl_message_get_sender(m));
-    g_string_append_printf(buffer, "Class: %s Instance: %s", 
-                           owl_message_get_class(m), 
+    g_string_append_printf(buffer, "Class: %s Instance: %s",
+                           owl_message_get_class(m),
                            owl_message_get_instance(m));
     if (strcmp(owl_message_get_opcode(m), "")) {
-      g_string_append_printf(buffer, " Opcode: %s", 
+      g_string_append_printf(buffer, " Opcode: %s",
                              owl_message_get_opcode(m));
     }
     g_string_append_printf(buffer, "\n");
-    g_string_append_printf(buffer, "Time: %s Host: %s\n", 
-                           owl_message_get_timestr(m), 
+    g_string_append_printf(buffer, "Time: %s Host: %s\n",
+                           owl_message_get_timestr(m),
                            owl_message_get_hostname(m));
-    g_string_append_printf(buffer, "From: %s <%s>\n\n", 
+    g_string_append_printf(buffer, "From: %s <%s>\n\n",
                            owl_message_get_zsig(m), tmp);
     g_string_append_printf(buffer, "%s\n\n", owl_message_get_body(m));
     g_free(tmp);
@@ -104,9 +106,9 @@ CALLER_OWN char *owl_log_aim(const owl_message *m)
 {
     GString *buffer = NULL;
     buffer = g_string_new("");
-    g_string_append_printf(buffer, "From: <%s> To: <%s>\n", 
+    g_string_append_printf(buffer, "From: <%s> To: <%s>\n",
                            owl_message_get_sender(m), owl_message_get_recipient(m));
-    g_string_append_printf(buffer, "Time: %s\n\n", 
+    g_string_append_printf(buffer, "Time: %s\n\n",
                            owl_message_get_timestr(m));
     if (owl_message_is_login(m)) {
         g_string_append_printf(buffer, "LOGIN\n\n");
@@ -123,9 +125,9 @@ CALLER_OWN char *owl_log_jabber(const owl_message *m)
     GString *buffer = NULL;
     buffer = g_string_new("");
     g_string_append_printf(buffer, "From: <%s> To: <%s>\n",
-                           owl_message_get_sender(m), 
+                           owl_message_get_sender(m),
                            owl_message_get_recipient(m));
-    g_string_append_printf(buffer, "Time: %s\n\n", 
+    g_string_append_printf(buffer, "Time: %s\n\n",
                            owl_message_get_timestr(m));
     g_string_append_printf(buffer, "%s\n\n", owl_message_get_body(m));
     return g_string_free(buffer, FALSE);
@@ -135,12 +137,12 @@ CALLER_OWN char *owl_log_generic(const owl_message *m)
 {
     GString *buffer;
     buffer = g_string_new("");
-    g_string_append_printf(buffer, "From: <%s> To: <%s>\n", 
-                           owl_message_get_sender(m), 
+    g_string_append_printf(buffer, "From: <%s> To: <%s>\n",
+                           owl_message_get_sender(m),
                            owl_message_get_recipient(m));
-    g_string_append_printf(buffer, "Time: %s\n\n", 
+    g_string_append_printf(buffer, "Time: %s\n\n",
                            owl_message_get_timestr(m));
-    g_string_append_printf(buffer, "%s\n\n", 
+    g_string_append_printf(buffer, "%s\n\n",
                            owl_message_get_body(m));
     return g_string_free(buffer, FALSE);
 }
@@ -157,17 +159,32 @@ static void owl_log_error(const char *message)
 		       data, g_free, g_main_context_default());
 }
 
-static void owl_log_write_entry(gpointer data)
+static CALLER_OWN owl_log_entry *owl_log_new_entry(const char *buffer, const char *filename)
 {
-  owl_log_entry *msg = (owl_log_entry*)data;
+  owl_log_entry *log_msg = g_new(owl_log_entry, 1);
+  log_msg->message = g_strdup(buffer);
+  log_msg->filename = g_strdup(filename);
+  return log_msg;
+}
+
+static void owl_log_deferred_enqueue_message(const char *buffer, const char *filename)
+{
+  g_queue_push_tail(deferred_entry_queue, owl_log_new_entry(buffer, filename));
+}
+
+/* write out the entry if possible
+ * return 0 on success, errno on failure to open
+ */
+static int owl_log_try_write_entry(owl_log_entry *msg)
+{
   FILE *file = NULL;
   file = fopen(msg->filename, "a");
   if (!file) {
-    owl_log_error("Unable to open file for logging");
-    return;
+    return errno;
   }
   fprintf(file, "%s", msg->message);
   fclose(file);
+  return 0;
 }
 
 static void owl_log_entry_free(void *data)
@@ -180,13 +197,64 @@ static void owl_log_entry_free(void *data)
   }
 }
 
+static void owl_log_entry_free_gfunc(gpointer data, gpointer user_data)
+{
+  owl_log_entry_free(data);
+}
+
+/* If we are deferring log messages, enqueue this entry for
+ * writing.  Otherwise, try to write this log message, and,
+ * if it fails with EPERM or EACCES, go into deferred logging
+ * mode and queue an admin message.  If it fails with anything
+ * else, display an error message, but do not go into deferred
+ * logging mode. */
+static void owl_log_eventually_write_entry(gpointer data)
+{
+  int ret;
+  gchar *errmsg;
+  owl_log_entry *msg = (owl_log_entry*)data;
+  if (defer_logs) {
+    owl_log_deferred_enqueue_message(msg->message, msg->filename);
+  } else {
+    ret = owl_log_try_write_entry(msg);
+    if (ret == EPERM || ret == EACCES) {
+      defer_logs = true;
+      owl_log_error("Unable to open file for logging; you do not have \n"
+                    "permission.  Consider renewing your tickets.  \n"
+                    "Logging has been suspended, and your messages \n"
+                    "will be saved.  To resume logging, use the \n"
+                    "command :flush-logs.\n\n");
+      owl_log_deferred_enqueue_message(msg->message, msg->filename);
+    } else if (ret != 0) {
+      errmsg = g_strdup_printf("Unable to open file for logging: %s", g_strerror(ret));
+      owl_log_error(errmsg);
+      g_free(errmsg);
+    }
+  }
+}
+
+/* tries to the deferred log entries */
+static void owl_log_write_deferred_entries(gpointer data)
+{
+  owl_log_entry *entry;
+
+  defer_logs = false;
+  while (!g_queue_is_empty(deferred_entry_queue) && !defer_logs) {
+    entry = (owl_log_entry*)g_queue_pop_head(deferred_entry_queue);
+    owl_log_eventually_write_entry(entry);
+    owl_log_entry_free(entry);
+  }
+}
+
+void owl_log_flush_logs(void)
+{
+  owl_select_post_task(owl_log_write_deferred_entries, NULL, NULL, log_context);
+}
+
 void owl_log_enqueue_message(const char *buffer, const char *filename)
 {
-  owl_log_entry *log_msg = NULL; 
-  log_msg = g_new(owl_log_entry,1);
-  log_msg->message = g_strdup(buffer);
-  log_msg->filename = g_strdup(filename);
-  owl_select_post_task(owl_log_write_entry, log_msg, 
+  owl_log_entry *log_msg = owl_log_new_entry(buffer, filename);
+  owl_select_post_task(owl_log_eventually_write_entry, log_msg,
 		       owl_log_entry_free, log_context);
 }
 
@@ -352,16 +420,16 @@ void owl_log_incoming(const owl_message *m)
     from=frombuff=g_strdup("loopback");
   } else if (owl_message_is_type_jabber(m)) {
     if (personal) {
-      from=frombuff=g_strdup_printf("jabber:%s", 
+      from=frombuff=g_strdup_printf("jabber:%s",
 				    owl_message_get_sender(m));
     } else {
-      from=frombuff=g_strdup_printf("jabber:%s", 
+      from=frombuff=g_strdup_printf("jabber:%s",
 				    owl_message_get_recipient(m));
     }
   } else {
     from=frombuff=g_strdup("unknown");
   }
-  
+
   /* check for malicious sender formats */
   len=strlen(frombuff);
   if (len<1 || len>35) from="weird";
@@ -428,12 +496,13 @@ void owl_log_incoming(const owl_message *m)
 
 static gpointer owl_log_thread_func(gpointer data)
 {
+  log_context = g_main_context_new();
   log_loop = g_main_loop_new(log_context, FALSE);
   g_main_loop_run(log_loop);
   return NULL;
 }
 
-void owl_log_init(void) 
+void owl_log_init(void)
 {
   log_context = g_main_context_new();
 #if GLIB_CHECK_VERSION(2, 31, 0)
@@ -453,11 +522,22 @@ void owl_log_init(void)
     exit(1);
   }
 #endif
-  
+
+  deferred_entry_queue = g_queue_new();
 }
 
 static void owl_log_quit_func(gpointer data)
 {
+  /* flush the deferred logs queue, trying to write the
+   * entries to the disk one last time */
+  owl_log_write_deferred_entries(NULL);
+#if GLIB_CHECK_VERSION(2, 32, 0)
+  g_queue_free_full(deferred_entry_queue, owl_log_entry_free_gfunc);
+#else
+  g_queue_foreach(deferred_entry_queue, owl_log_entry_free_gfunc, NULL);
+  g_queue_free(deferred_entry_queue);
+#endif
+
   g_main_loop_quit(log_loop);
 }
 
