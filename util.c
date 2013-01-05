@@ -94,12 +94,14 @@ CALLER_OWN char *owl_util_makepath(const char *in)
   return out;
 }
 
-void owl_ptr_array_free(GPtrArray *array, GDestroyNotify element_free_func)
-{
-  /* TODO: when we move to requiring glib 2.22+, use
-   * g_ptr_array_new_with_free_func instead. */
-  if (element_free_func)
+void owl_ptr_array_free(GPtrArray *array, GDestroyNotify element_free_func) {
+  if (element_free_func) {
+#if GLIB_CHECK_VERSION(2, 22, 0)
+    g_ptr_array_set_free_func(array, element_free_func);
+#else
     g_ptr_array_foreach(array, (GFunc)element_free_func, NULL);
+#endif
+  }
   g_ptr_array_free(array, true);
 }
 
@@ -115,7 +117,7 @@ CALLER_OWN char **owl_parseline(const char *line, int *argc)
   char quote;
 
   argv = g_ptr_array_new();
-  len=strlen(line);
+  len = strlen(line);
   curarg = g_string_new("");
   quote='\0';
   if (argc) *argc=0;
