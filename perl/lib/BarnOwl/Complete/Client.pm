@@ -19,7 +19,6 @@ my @all_colors = qw(default
                     yellow);
 
 my %show = (
-    information => undef,
     colors      => undef,
     commands    => undef,
     command     => \&complete_command,
