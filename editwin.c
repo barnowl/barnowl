@@ -618,7 +618,7 @@ int owl_editwin_replace(owl_editwin *e, int replace, const char *s)
   const char *p;
 
   if (!g_utf8_validate(s, -1, NULL)) {
-    owl_function_debugmsg("owl_editwin_insert_string: received non-utf-8 string.");
+    owl_function_debugmsg("owl_editwin_insert_string: received non-UTF-8 string.");
     return 0;
   }
 

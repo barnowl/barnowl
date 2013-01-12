@@ -319,7 +319,7 @@ sub register_owl_commands() {
               . "            The MUC is taken from the current message if not supplied.\n\n"
               . "configure [<muc>]\n"
               . "            Configures a MUC.\n"
-              . "            Necessary to initalize a new MUC.\n"
+              . "            Necessary to initialize a new MUC.\n"
               . "            At present, only the default configuration is supported.\n"
               . "            The MUC is taken from the current message if not supplied.\n\n"
               . "presence [<muc>]\n"

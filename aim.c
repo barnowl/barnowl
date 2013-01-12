@@ -706,7 +706,7 @@ static int conninitdone_bos(aim_session_t *sess, aim_frame_t *fr, ...)
 static int conninitdone_admin(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   aim_clientready(sess, fr->conn);
-  owl_function_debugmsg("conninitdone_admin: initializtion done for admin connection");
+  owl_function_debugmsg("conninitdone_admin: initialization done for admin connection");
   return(1);
 }
 
@@ -836,7 +836,7 @@ static int faimtest_icbmparaminfo(aim_session_t *sess, aim_frame_t *fr, ...)
   params = va_arg(ap, struct aim_icbmparameters *);
   va_end(ap);
 
-  owl_function_debugmsg("faimtest_icbmparaminfo: ICBM Parameters: maxchannel = %d, default flags = 0x%08x, max msg len = %d, max sender evil = %f, max reciever evil = %f, min msg interval = %u",
+  owl_function_debugmsg("faimtest_icbmparaminfo: ICBM Parameters: maxchannel = %d, default flags = 0x%08x, max msg len = %d, max sender evil = %f, max receiver evil = %f, min msg interval = %u",
 		       params->maxchan, params->flags, params->maxmsglen, ((float)params->maxsenderwarn)/10.0, ((float)params->maxrecverwarn)/10.0, params->minmsginterval);
 
   /*
