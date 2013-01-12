@@ -36,22 +36,22 @@ sub new
 
     bless($self,$proto);
 
-    $self->{TOKENS} = [ '/','[',']','@','"',"'",'=','!','(',')',':',' ',',']; 
+    $self->{TOKENS} = [ '/','[',']','@','"',"'",'=','!','(',')',':',' ',','];
     $self->{QUERY} = shift;
-    
+
     if (!defined($self->{QUERY}) || ($self->{QUERY} eq ""))
     {
         confess("No query string specified");
     }
-    
+
     $self->parseQuery();
-    
+
     return $self;
 }
 
 
 sub getNextToken
-{ 
+{
     my $self = shift;
     my $pos = shift;
 
@@ -103,7 +103,7 @@ sub getOp
 
         my $token_start = ++$$pos;
         my $ident;
-     
+
         if (defined($token))
         {
 
@@ -192,7 +192,7 @@ sub getOp
                         confess("Nothing in the []");
                         return;
                     }
-                    
+
                     $$pos = $token_start;
                     my $val = $self->getNextIdentifier($pos);
                     if ($val =~ /^\d+$/)
@@ -233,14 +233,14 @@ sub getOp
                 my $op_pos = $#{$self->{OPS}} + 1;
 
                 $self->getOp($pos,$token);
-                
+
                 foreach my $arg ($op_pos..$#{$self->{OPS}})
                 {
                     $ret_op->addArg($self->{OPS}->[$arg]);
                 }
 
                 splice(@{$self->{OPS}},$op_pos);
-                
+
             }
             elsif ($token eq ")")
             {
@@ -260,7 +260,7 @@ sub getOp
                 {
                     confess("Found ',' but not in a function");
                 }
-  
+
             }
             elsif ($token eq "=")
             {
@@ -279,7 +279,7 @@ sub getOp
                     confess("Badly formed !=");
                 }
                 $$pos++;
-                
+
                 my $tmp_op;
                 while(!defined($tmp_op))
                 {
@@ -306,7 +306,7 @@ sub getOp
         {
             confess("Token undefined");
         }
-        
+
         $loop = 0 unless $in_context;
     }
 

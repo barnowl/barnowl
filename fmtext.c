@@ -25,7 +25,7 @@ int owl_fmtext_is_format_char(gunichar c)
 void owl_fmtext_append_attr(owl_fmtext *f, const char *text, char attr, short fgcolor, short bgcolor)
 {
   int a = 0, fg = 0, bg = 0;
-  
+
   if (attr != OWL_FMTEXT_ATTR_NONE) a=1;
   if (fgcolor != OWL_COLOR_DEFAULT) fg=1;
   if (bgcolor != OWL_COLOR_DEFAULT) bg=1;
@@ -120,7 +120,7 @@ static void _owl_fmtext_scan_attributes(const owl_fmtext *f, int start, char *at
     _owl_fmtext_update_attributes(g_utf8_get_char(p), attr, fgcolor, bgcolor);
     p = strchr(p+1, OWL_FMTEXT_UC_STARTBYTE_UTF8);
   }
-}  
+}
 
 /* Internal function.  Append text from 'in' between index 'start'
  * inclusive and 'stop' exclusive, to the end of 'f'. This function
@@ -204,7 +204,7 @@ static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_sear
   char *s, *p;
   char attr;
   short fg, bg, pair = 0;
-  
+
   if (w==NULL) {
     owl_function_debugmsg("Hit a null window in owl_fmtext_curs_waddstr.");
     return;
@@ -225,7 +225,7 @@ static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_sear
     if (owl_fmtext_is_format_char(g_utf8_get_char(p))) {
       /* Deal with all text from last insert to here. */
       char tmp;
-   
+
       tmp = p[0];
       p[0] = '\0';
       if (do_search && owl_global_is_search_active(&g)) {
@@ -242,7 +242,7 @@ static void _owl_fmtext_curs_waddstr(const owl_fmtext *f, WINDOW *w, int do_sear
 
 	  _owl_fmtext_wattrset(w, attr ^ OWL_FMTEXT_ATTR_REVERSE);
 	  _owl_fmtext_wcolor_set(w, pair);
-	  
+
 	  waddnstr(w, s + start, end - start);
 
 	  _owl_fmtext_wattrset(w, attr);
@@ -331,7 +331,7 @@ int owl_fmtext_truncate_lines(const owl_fmtext *in, int aline, int lines, owl_fm
 {
   const char *ptr1, *ptr2;
   int i, offset;
-  
+
   /* find the starting line */
   ptr1 = in->buff->str;
   for (i = 0; i < aline; i++) {
@@ -339,7 +339,7 @@ int owl_fmtext_truncate_lines(const owl_fmtext *in, int aline, int lines, owl_fm
     if (!ptr1) return(-1);
     ptr1++;
   }
-  
+
   /* ptr1 now holds the starting point */
 
   /* copy in the next 'lines' lines */
@@ -374,7 +374,7 @@ void _owl_fmtext_truncate_cols_internal(const owl_fmtext *in, int acol, int bcol
       /* but this shouldn't happen if we end in a \n */
       break;
     }
-    
+
     if (ptr_e == ptr_s) {
       owl_fmtext_append_normal(out, "\n");
       ++ptr_s;
@@ -391,7 +391,7 @@ void _owl_fmtext_truncate_cols_internal(const owl_fmtext *in, int acol, int bcol
       if (!owl_fmtext_is_format_char(c)) {
 	chwidth = mk_wcwidth(c);
 	if (col + chwidth > bcol) break;
-	
+
 	if (col >= acol) {
 	  if (st == 0) {
 	    ptr_s = ptr_c;
@@ -595,7 +595,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
         txtptr+=2;
         continue;
       }
-        
+
       /* if there's no opener, print the @ and continue */
       tmpptr=strpbrk(txtptr, "(<[{ ");
       if (!tmpptr || tmpptr[0]==' ') {
@@ -656,7 +656,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
 
         /* if it's a color read the color, set the current color and
            continue */
-      } else if (!strcasecmp(buff, "@color") 
+      } else if (!strcasecmp(buff, "@color")
                  && owl_global_is_colorztext(&g)) {
         g_free(buff);
         txtptr+=7;
@@ -755,7 +755,7 @@ void owl_fmtext_append_ztext(owl_fmtext *f, const char *text)
 }
 
 /* requires that the list values are strings or NULL.
- * joins the elements together with join_with. 
+ * joins the elements together with join_with.
  * If format_fn is specified, passes it the list element value
  * and it will return a string which this needs to free. */
 void owl_fmtext_append_list(owl_fmtext *f, const GPtrArray *l, const char *join_with, char *(format_fn)(const char *))
@@ -836,7 +836,7 @@ short owl_fmtext_get_colorpair(int fg, int bg)
   /* Sanity (Bounds) Check */
   if (fg > COLORS || fg < OWL_COLOR_DEFAULT) fg = OWL_COLOR_DEFAULT;
   if (bg > COLORS || bg < OWL_COLOR_DEFAULT) bg = OWL_COLOR_DEFAULT;
-	    
+
 #ifdef HAVE_USE_DEFAULT_COLORS
   if (fg == OWL_COLOR_DEFAULT) fg = -1;
 #else

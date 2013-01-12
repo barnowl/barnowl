@@ -254,7 +254,7 @@ CALLER_OWN char *owl_string_build_quoted(const char *tmpl, ...)
   va_start(ap, tmpl);
   owl_string_vappendf_quoted(buf, tmpl, ap);
   va_end(ap);
-  return g_string_free(buf, false);  
+  return g_string_free(buf, false);
 }
 
 /* Returns a quoted version of arg suitable for placing in a
@@ -305,7 +305,7 @@ CALLER_OWN char *owl_util_format_minutes(int in)
 CALLER_OWN char *owl_util_format_time(const struct tm *time)
 {
   /* 32 chosen for first attempt because timestr will end up being
-   * something like "Www Mmm dd hh:mm:ss AM yyyy UTC\0" */ 
+   * something like "Www Mmm dd hh:mm:ss AM yyyy UTC\0" */
   size_t timestr_size = 16;
   char *timestr = NULL;
   do {
@@ -384,7 +384,7 @@ CALLER_OWN char *owl_util_get_default_tty(void)
  */
 CALLER_OWN char *owl_util_stripnewlines(const char *in)
 {
-  
+
   char  *tmp, *ptr1, *ptr2, *out;
 
   ptr1=tmp=g_strdup(in);
@@ -642,7 +642,7 @@ CALLER_OWN char *owl_validate_utf8(const char *in)
 /* This is based on _extract() and _isCJ() from perl's Text::WrapI18N */
 int owl_util_can_break_after(gunichar c)
 {
-  
+
   if (c == ' ') return 1;
   if (c >= 0x3000 && c <= 0x312f) {
     /* CJK punctuations, Hiragana, Katakana, Bopomofo */
@@ -802,7 +802,7 @@ gulong owl_signal_connect_object(gpointer sender, const gchar *detailed_signal, 
 
 /*
  * There are three ways the signal could come to an end:
- * 
+ *
  * 1. The user explicitly disconnects it with the returned signal_id.
  *    - In that case, the disconnection unref's the closure, causing it
  *      to first be invalidated. The handler's already disconnected, so

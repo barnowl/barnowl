@@ -141,7 +141,7 @@ sub _handle_cdata
         $self->debug(2,"_handle_cdata: new cdata");
         push @{$self->{SIDS}->{$sid}->{tree}[$#{$self->{SIDS}->{$sid}->{tree}}]}, 0;
         push @{$self->{SIDS}->{$sid}->{tree}[$#{$self->{SIDS}->{$sid}->{tree}}]}, $cdata;
-    }  
+    }
 }
 
 
@@ -186,7 +186,7 @@ sub _handle_close
 
             if(defined($self->{SIDS}->{$sid}->{tree}->[0]) &&
                ($self->{SIDS}->{$sid}->{tree}->[0] =~ /^${stream_prefix}\:/))
-            { 
+            {
                 my @tree = @{$self->{SIDS}->{$sid}->{tree}};
                 $self->{SIDS}->{$sid}->{tree} = [];
                 $self->ProcessStreamPacket($sid,\@tree);
@@ -195,7 +195,7 @@ sub _handle_close
             {
                 my @tree = @{$self->{SIDS}->{$sid}->{tree}};
                 $self->{SIDS}->{$sid}->{tree} = [];
-                
+
                 my @special =
                     &XML::Stream::XPath(
                         \@tree,
@@ -383,7 +383,7 @@ sub GetXMLData
                 {
                     return 1;
                 }
-                
+
                 #---------------------------------------------------------------------
                 # Return the raw CDATA value without mark ups, or the value of the
                 # requested attribute.
@@ -591,7 +591,7 @@ sub BuildXML
     return "" if $#{$parseTree} == -1;
 
     my $str = "";
-    if (ref($parseTree->[0]) eq "") 
+    if (ref($parseTree->[0]) eq "")
     {
         if ($parseTree->[0] eq "0")
         {
@@ -607,7 +607,7 @@ sub BuildXML
         if (($#{$parseTree->[1]} > 0) || (defined($rawXML) && ($rawXML ne "")))
         {
             $str .= ">";
-            
+
             my $index = 1;
             while($index <= $#{$parseTree->[1]})
             {
@@ -615,7 +615,7 @@ sub BuildXML
                 $str .= &XML::Stream::Tree::BuildXML(\@newTree);
                 $index += 2;
             }
-            
+
             $str .= $rawXML if defined($rawXML);
             $str .= "</".$parseTree->[0].">";
         }

@@ -23,8 +23,8 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 	fu16_t maxpermits = 0, maxdenies = 0;
 	int ret = 0;
 
-	/* 
-	 * TLVs follow 
+	/*
+	 * TLVs follow
 	 */
 	tlvlist = aim_tlvlist_read(bs);
 
@@ -37,7 +37,7 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 	/*
 	 * TLV type 0x0002: Maximum number of buddies on deny list.
 	 */
-	if (aim_tlv_gettlv(tlvlist, 0x0002, 1)) 
+	if (aim_tlv_gettlv(tlvlist, 0x0002, 1))
 		maxdenies = aim_tlv_get16(tlvlist, 0x0002, 1);
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
@@ -45,10 +45,10 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 
 	aim_tlvlist_free(&tlvlist);
 
-	return ret;  
+	return ret;
 }
 
-/* 
+/*
  * Subtype 0x0004 - Set group permisson mask.
  *
  * Normally 0x1f (all classes).
@@ -73,18 +73,18 @@ faim_export int aim_bos_setgroupperm(aim_session_t *sess, aim_conn_t *conn, fu32
  *  AIM_VISIBILITYCHANGE_DENYADD: Hides you from provided list of names
  *  AIM_VISIBILITYCHANGE_DENYREMOVE: Lets list see you again
  *
- * list should be a list of 
+ * list should be a list of
  * screen names in the form "Screen Name One&ScreenNameTwo&" etc.
  *
  * Equivelents to options in WinAIM:
  *   - Allow all users to contact me: Send an AIM_VISIBILITYCHANGE_DENYADD
  *      with only your name on it.
- *   - Allow only users on my Buddy List: Send an 
+ *   - Allow only users on my Buddy List: Send an
  *      AIM_VISIBILITYCHANGE_PERMITADD with the list the same as your
  *      buddy list
- *   - Allow only the uesrs below: Send an AIM_VISIBILITYCHANGE_PERMITADD 
+ *   - Allow only the uesrs below: Send an AIM_VISIBILITYCHANGE_PERMITADD
  *      with everyone listed that you want to see you.
- *   - Block all users: Send an AIM_VISIBILITYCHANGE_PERMITADD with only 
+ *   - Block all users: Send an AIM_VISIBILITYCHANGE_PERMITADD with only
  *      yourself in the list
  *   - Block the users below: Send an AIM_VISIBILITYCHANGE_DENYADD with
  *      the list of users to be blocked

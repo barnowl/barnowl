@@ -660,7 +660,7 @@ sub default_zephyr_signature
 
 =head3 random_zephyr_signature
 
-Retrieve a random line from ~/.zsigs (except those beginning with '#') 
+Retrieve a random line from ~/.zsigs (except those beginning with '#')
 and use it as the zephyr signature.
 
 =cut

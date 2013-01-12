@@ -11,7 +11,7 @@ void owl_buddylist_add_aim_buddy(owl_buddylist *bl, const char *screenname)
 {
   owl_buddy *b;
   b=g_new(owl_buddy, 1);
-  
+
   owl_buddy_create(b, OWL_PROTOCOL_AIM, screenname);
   g_ptr_array_add(bl->buddies, b);
 }

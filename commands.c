@@ -68,7 +68,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "do nothing",
 	      "",
 	      ""),
-  
+
   OWLCMD_ARGS("start-command", owl_command_start_command, OWL_CTX_INTERACTIVE,
 	      "prompts the user to enter a command",
 	      "start-command [initial-value]",
@@ -124,7 +124,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
   OWLCMD_ARGS("aimwrite", owl_command_aimwrite, OWL_CTX_INTERACTIVE,
 	      "send an AIM message",
 	      "aimwrite <user> [-m <message...>]",
-	      "Send an aim message to a user.\n\n" 
+	      "Send an aim message to a user.\n\n"
               "The following options are available:\n\n"
               "-m    Specifies a message to send without prompting.\n"),
 
@@ -138,7 +138,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "zcrypt [-n] [-C] [-c class] [-i instance] [-r realm] [-O opcode] [-m <message...>]\n",
 	      "Behaves like zwrite but uses encryption.  Not for use with\n"
 	      "personal messages\n"),
-  
+
   OWLCMD_ARGS("reply", owl_command_reply,  OWL_CTX_INTERACTIVE,
 	      "reply to the current message",
 	      "reply [-e] [ sender | all | zaway ]",
@@ -216,7 +216,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 
   OWLCMD_VOID("unsuball", owl_command_unsuball, OWL_CTX_ANY,
 	      "unsubscribe from all zephyrs", "", ""),
-  
+
   OWLCMD_VOID("getsubs", owl_command_getsubs, OWL_CTX_ANY,
 	      "print all current subscriptions",
 	      "getsubs",
@@ -298,7 +298,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
   OWLCMD_VOID("info", owl_command_info, OWL_CTX_INTERACTIVE,
 	      "display detailed information about the current message",
 	      "", ""),
-  
+
   OWLCMD_ARGS("help", owl_command_help, OWL_CTX_INTERACTIVE,
 	      "display help on using BarnOwl",
 	      "help [command]", ""),
@@ -329,7 +329,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
   OWLCMD_INT("recv:setshift", owl_command_set_shift, OWL_CTX_INTERACTIVE,
 	      "scrolls receive window to specified position", "", ""),
 
-  OWLCMD_VOID("recv:pagedown", owl_function_mainwin_pagedown, 
+  OWLCMD_VOID("recv:pagedown", owl_function_mainwin_pagedown,
 	      OWL_CTX_INTERACTIVE,
 	      "scrolls down by a page", "", ""),
 
@@ -345,8 +345,8 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "swap the positions of the pointer and the mark", "", ""),
 
   OWLCMD_INT ("recv:scroll", owl_function_page_curmsg, OWL_CTX_INTERACTIVE,
-	      "scrolls current message up or down", 
-	      "recv:scroll <numlines>", 
+	      "scrolls current message up or down",
+	      "recv:scroll <numlines>",
 	      "Scrolls the current message up or down by <numlines>.\n"
 	      "Scrolls up if <numlines> is negative, else scrolls down.\n"),
 
@@ -395,7 +395,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
   OWLCMD_ALIAS("recv:first", "first"),
 
   OWLCMD_VOID("last", owl_command_last, OWL_CTX_INTERACTIVE,
-	      "move the pointer to the last message", "", 
+	      "move the pointer to the last message", "",
 	      "Moves the pointer to the last message in the view.\n"
 	      "If we are already at the last message in the view,\n"
 	      "blanks the screen and moves just past the end of the view\n"
@@ -508,14 +508,14 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 
   OWLCMD_VOID("status", owl_command_status, OWL_CTX_ANY,
 	      "print status information about the running BarnOwl", "", ""),
-  
+
   OWLCMD_ARGS("zlocate", owl_command_zlocate, OWL_CTX_INTERACTIVE,
 	      "locate a user",
-	      "zlocate [-d] <user> ...", 
+	      "zlocate [-d] <user> ...",
 	      "Performs a zlocate on one ore more users and puts the result\n"
 	      "int a popwin.  If -d is specified, does not authenticate\n"
 	      "the lookup request.\n"),
-  
+
   OWLCMD_ARGS("filter", owl_command_filter, OWL_CTX_ANY,
 	      "create a message filter",
 	      "filter <name> [ -c fgcolor ] [ -b bgcolor ] [ <expression> ... ]",
@@ -673,7 +673,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "Show variables will list the names of all variables.\n\n"
 	      "Show errors will show a list of errors encountered by BarnOwl.\n\n"
 	      "SEE ALSO: filter, view, alias, bindkey, help\n"),
-  
+
   OWLCMD_ARGS("delete", owl_command_delete, OWL_CTX_INTERACTIVE,
 	      "mark a message for deletion",
 	      "delete [ -id msgid ] [ --no-move ]\n"
@@ -798,12 +798,12 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
   /************************* EDIT-SPECIFIC ************************/
   /****************************************************************/
 
-  OWLCMD_VOID_CTX("edit:move-next-word", owl_editwin_move_to_nextword, 
+  OWLCMD_VOID_CTX("edit:move-next-word", owl_editwin_move_to_nextword,
 		  OWL_CTX_EDIT,
 		  "moves cursor forward a word",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:move-prev-word", owl_editwin_move_to_previousword, 
+  OWLCMD_VOID_CTX("edit:move-prev-word", owl_editwin_move_to_previousword,
 		  OWL_CTX_EDIT,
 		  "moves cursor backwards a word",
 		  "", ""),
@@ -813,22 +813,22 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 		  "moves cursor to the top left (start) of the buffer",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:move-to-buffer-end", owl_editwin_move_to_end, 
+  OWLCMD_VOID_CTX("edit:move-to-buffer-end", owl_editwin_move_to_end,
 		  OWL_CTX_EDIT,
 		  "moves cursor to the bottom right (end) of the buffer",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:move-to-line-end", owl_editwin_move_to_line_end, 
+  OWLCMD_VOID_CTX("edit:move-to-line-end", owl_editwin_move_to_line_end,
 		  OWL_CTX_EDIT,
 		  "moves cursor to the end of the line",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:move-to-line-start", owl_editwin_move_to_line_start, 
+  OWLCMD_VOID_CTX("edit:move-to-line-start", owl_editwin_move_to_line_start,
 		  OWL_CTX_EDIT,
 		  "moves cursor to the beginning of the line",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:move-left", owl_editwin_key_left, 
+  OWLCMD_VOID_CTX("edit:move-left", owl_editwin_key_left,
 		  OWL_CTX_EDIT,
 		  "moves the cursor left by a character",
 		  "", ""),
@@ -853,7 +853,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 		  "deletes the character to the left of the cursor",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:delete-next-char", owl_editwin_delete_char, 
+  OWLCMD_VOID_CTX("edit:delete-next-char", owl_editwin_delete_char,
 		  OWL_CTX_EDIT,
 		  "deletes the character to the right of the cursor",
 		  "", ""),
@@ -863,7 +863,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 		  "deletes from the cursor to the end of the line",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:delete-all", owl_editwin_clear, 
+  OWLCMD_VOID_CTX("edit:delete-all", owl_editwin_clear,
 		  OWL_CTX_EDIT,
 		  "deletes all of the contents of the buffer",
 		  "", ""),
@@ -873,32 +873,32 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 		  "Interchange characters around point, moving forward one character.",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:fill-paragraph", owl_editwin_fill_paragraph, 
+  OWLCMD_VOID_CTX("edit:fill-paragraph", owl_editwin_fill_paragraph,
 		  OWL_CTX_EDIT,
 		  "fills the current paragraph to line-wrap well",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:recenter", owl_editwin_recenter, 
+  OWLCMD_VOID_CTX("edit:recenter", owl_editwin_recenter,
 		  OWL_CTX_EDIT,
 		  "recenters the buffer",
 		  "", ""),
 
-  OWLCMD_ARGS_CTX("edit:insert-text", owl_command_edit_insert_text, 
+  OWLCMD_ARGS_CTX("edit:insert-text", owl_command_edit_insert_text,
 		  OWL_CTX_EDIT,
 		  "inserts text into the buffer",
 		  "edit:insert-text <text>", ""),
 
-  OWLCMD_VOID_CTX("edit:cancel", owl_command_edit_cancel, 
+  OWLCMD_VOID_CTX("edit:cancel", owl_command_edit_cancel,
 		  OWL_CTX_EDIT,
 		  "cancels the current command",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:history-next", owl_command_edit_history_next, 
+  OWLCMD_VOID_CTX("edit:history-next", owl_command_edit_history_next,
 		  OWL_CTX_EDIT,
 		  "replaces the text with the next history",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:history-prev", owl_command_edit_history_prev, 
+  OWLCMD_VOID_CTX("edit:history-prev", owl_command_edit_history_prev,
 		  OWL_CTX_EDIT,
 		  "replaces the text with the previous history",
 		  "", ""),
@@ -931,25 +931,25 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
   OWLCMD_ALIAS   ("editline:done", "edit:done"),
   OWLCMD_ALIAS   ("editresponse:done", "edit:done"),
 
-  OWLCMD_VOID_CTX("edit:move-up-line", owl_editwin_key_up, 
+  OWLCMD_VOID_CTX("edit:move-up-line", owl_editwin_key_up,
 		  OWL_CTX_EDITMULTI,
 		  "moves the cursor up one line",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:move-down-line", owl_editwin_key_down, 
+  OWLCMD_VOID_CTX("edit:move-down-line", owl_editwin_key_down,
 		  OWL_CTX_EDITMULTI,
 		  "moves the cursor down one line",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:done", owl_command_edit_done, 
+  OWLCMD_VOID_CTX("edit:done", owl_command_edit_done,
 		  OWL_CTX_EDIT,
 		  "Finishes entering text in the editwin.",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("edit:done-or-delete", owl_command_edit_done_or_delete, 
+  OWLCMD_VOID_CTX("edit:done-or-delete", owl_command_edit_done_or_delete,
 		  OWL_CTX_EDITMULTI,
 		  "completes the command, but only if at end of message",
-		  "", 
+		  "",
 		  "If only whitespace is to the right of the cursor,\n"
 		  "runs 'edit:done'.\n"\
 		  "Otherwise runs 'edit:delete-next-char'\n"),
@@ -970,47 +970,47 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
   /********************** POPLESS-SPECIFIC ************************/
   /****************************************************************/
 
-  OWLCMD_VOID_CTX("popless:scroll-down-page", owl_viewwin_pagedown, 
+  OWLCMD_VOID_CTX("popless:scroll-down-page", owl_viewwin_pagedown,
 		  OWL_CTX_POPLESS,
 		  "scrolls down one page",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("popless:scroll-down-line", owl_viewwin_linedown, 
+  OWLCMD_VOID_CTX("popless:scroll-down-line", owl_viewwin_linedown,
 		  OWL_CTX_POPLESS,
 		  "scrolls down one line",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("popless:scroll-up-page", owl_viewwin_pageup, 
+  OWLCMD_VOID_CTX("popless:scroll-up-page", owl_viewwin_pageup,
 		  OWL_CTX_POPLESS,
 		  "scrolls up one page",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("popless:scroll-up-line", owl_viewwin_lineup, 
+  OWLCMD_VOID_CTX("popless:scroll-up-line", owl_viewwin_lineup,
 		  OWL_CTX_POPLESS,
 		  "scrolls up one line",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("popless:scroll-to-top", owl_viewwin_top, 
+  OWLCMD_VOID_CTX("popless:scroll-to-top", owl_viewwin_top,
 		  OWL_CTX_POPLESS,
 		  "scrolls to the top of the buffer",
 		  "", ""),
 
-  OWLCMD_VOID_CTX("popless:scroll-to-bottom", owl_viewwin_bottom, 
+  OWLCMD_VOID_CTX("popless:scroll-to-bottom", owl_viewwin_bottom,
 		  OWL_CTX_POPLESS,
 		  "scrolls to the bottom of the buffer",
 		  "", ""),
 
-  OWLCMD_INT_CTX ("popless:scroll-right", owl_viewwin_right, 
+  OWLCMD_INT_CTX ("popless:scroll-right", owl_viewwin_right,
 		  OWL_CTX_POPLESS,
 		  "scrolls right in the buffer",
 		  "popless:scroll-right <num-chars>", ""),
 
-  OWLCMD_INT_CTX ("popless:scroll-left", owl_viewwin_left, 
+  OWLCMD_INT_CTX ("popless:scroll-left", owl_viewwin_left,
 		  OWL_CTX_POPLESS,
 		  "scrolls left in the buffer",
 		  "popless:scroll-left <num-chars>", ""),
 
-  OWLCMD_VOID_CTX("popless:quit", owl_command_popless_quit, 
+  OWLCMD_VOID_CTX("popless:quit", owl_command_popless_quit,
 		  OWL_CTX_POPLESS,
 		  "exits the popless window",
 		  "", ""),
@@ -1065,7 +1065,7 @@ char *owl_command_help(int argc, const char *const *argv, const char *buff)
     owl_help();
     return NULL;
   }
-  
+
   owl_function_help_for_command(argv[1]);
   return NULL;
 }
@@ -1251,7 +1251,7 @@ char *owl_command_unstartup(int argc, const char *const *argv, const char *buff)
 char *owl_command_dump(int argc, const char *const *argv, const char *buff)
 {
   char *filename;
-  
+
   if (argc!=2) {
     owl_function_makemsg("usage: dump <filename>");
     return(NULL);
@@ -1280,19 +1280,19 @@ char *owl_command_next(int argc, const char *const *argv, const char *buff)
   while (argc>1) {
     if (argc>=1 && !strcmp(argv[1], "--skip-deleted")) {
       skip_deleted=1;
-      argc-=1; argv+=1; 
+      argc-=1; argv+=1;
     } else if (argc>=1 && !strcmp(argv[1], "--last-if-none")) {
       last_if_none=1;
-      argc-=1; argv+=1; 
+      argc-=1; argv+=1;
     } else if (argc>=2 && !strcmp(argv[1], "--filter")) {
       filter = g_strdup(argv[2]);
-      argc-=2; argv+=2; 
+      argc-=2; argv+=2;
     } else if (argc>=2 && !strcmp(argv[1], "--smart-filter")) {
       filter = owl_function_smartfilter(0, 0);
-      argc-=2; argv+=2; 
+      argc-=2; argv+=2;
     } else if (argc>=2 && !strcmp(argv[1], "--smart-filter-instance")) {
       filter = owl_function_smartfilter(1, 0);
-      argc-=2; argv+=2; 
+      argc-=2; argv+=2;
     } else {
       owl_function_makemsg("Invalid arguments to command 'next'.");
       return(NULL);
@@ -1310,19 +1310,19 @@ char *owl_command_prev(int argc, const char *const *argv, const char *buff)
   while (argc>1) {
     if (argc>=1 && !strcmp(argv[1], "--skip-deleted")) {
       skip_deleted=1;
-      argc-=1; argv+=1; 
+      argc-=1; argv+=1;
     } else if (argc>=1 && !strcmp(argv[1], "--first-if-none")) {
       first_if_none=1;
-      argc-=1; argv+=1; 
+      argc-=1; argv+=1;
     } else if (argc>=2 && !strcmp(argv[1], "--filter")) {
       filter = g_strdup(argv[2]);
-      argc-=2; argv+=2; 
+      argc-=2; argv+=2;
     } else if (argc>=2 && !strcmp(argv[1], "--smart-filter")) {
       filter = owl_function_smartfilter(0, 0);
-      argc-=2; argv+=2; 
+      argc-=2; argv+=2;
     } else if (argc>=2 && !strcmp(argv[1], "--smart-filter-instance")) {
       filter = owl_function_smartfilter(1, 0);
-      argc-=2; argv+=2;  
+      argc-=2; argv+=2;
    } else {
       owl_function_makemsg("Invalid arguments to command 'prev'.");
       return(NULL);
@@ -1386,7 +1386,7 @@ CALLER_OWN char *owl_command_smartfilter(int argc, const char *const *argv, cons
   } else if (argc == 2 && (!strcmp(argv[1], "-i") || !strcmp(argv[1], "--instance"))) {
     filtname = owl_function_smartfilter(1, 0);
   } else {
-    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);    
+    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
   }
   return filtname;
 }
@@ -1581,7 +1581,7 @@ char *owl_command_set(int argc, const char *const *argv, const char *buff)
   if (argc == 1) {
     owl_function_printallvars();
     return NULL;
-  } 
+  }
 
   if (argc > 1 && !strcmp("-q",argv[1])) {
     silent = 1;
@@ -1655,7 +1655,7 @@ char *owl_command_print(int argc, const char *const *argv, const char *buff)
   }
 
   var=argv[1];
-    
+
   v = owl_variable_get_var(owl_global_get_vardict(&g), var);
   if (v) {
     value = owl_variable_get_tostring(v);
@@ -1707,7 +1707,7 @@ CALLER_OWN char *owl_command_multi(int argc, const char *const *argv, const char
   char **commands;
   int  i;
   if (argc < 2) {
-    owl_function_makemsg("Invalid arguments to 'multi' command.");    
+    owl_function_makemsg("Invalid arguments to 'multi' command.");
     return NULL;
   }
   newbuff = g_strdup(skiptokens(buff, 1));
@@ -1717,7 +1717,7 @@ CALLER_OWN char *owl_command_multi(int argc, const char *const *argv, const char
 	newbuff[i] = '\0';
 	break;
       } else if (newbuff[i] != ' ') {
-	owl_function_makemsg("Invalid arguments to 'multi' command.");    
+	owl_function_makemsg("Invalid arguments to 'multi' command.");
 	g_free(newbuff);
 	return NULL;
       }
@@ -2011,7 +2011,7 @@ char *owl_command_aimwrite(int argc, const char *const *argv, const char *buff)
   GString *recip = g_string_new("");
   const char *const *myargv;
   int myargc;
-  
+
   if (!owl_global_is_aimloggedin(&g)) {
     owl_function_error("You are not logged in to AIM.");
     goto err;
@@ -2063,21 +2063,21 @@ char *owl_command_loopwrite(int argc, const char *const *argv, const char *buff)
 char *owl_command_reply(int argc, const char *const *argv, const char *buff)
 {
   int edit=0;
-  
+
   if (argc>=2 && !strcmp("-e", argv[1])) {
     edit=1;
     argv++;
     argc--;
   }
 
-  if ((argc==1) || (argc==2 && !strcmp(argv[1], "all"))) {    
+  if ((argc==1) || (argc==2 && !strcmp(argv[1], "all"))) {
     owl_function_reply(0, !edit);
   } else if (argc==2 && !strcmp(argv[1], "sender")) {
     owl_function_reply(1, !edit);
   } else if (argc==2 && !strcmp(argv[1], "zaway")) {
     const owl_message *m;
     const owl_view    *v;
-    v = owl_global_get_current_view(&g);    
+    v = owl_global_get_current_view(&g);
     m = owl_view_get_element(v, owl_global_get_curmsg(&g));
     if (m) owl_zephyr_zaway(m);
   } else {
@@ -2095,7 +2095,7 @@ char *owl_command_filter(int argc, const char *const *argv, const char *buff)
 char *owl_command_zlocate(int argc, const char *const *argv, const char *buff)
 {
   int auth;
-  
+
   if (argc<2) {
     owl_function_makemsg("Too few arguments for zlocate command");
     return NULL;
@@ -2211,7 +2211,7 @@ char *owl_command_view(int argc, const char *const *argv, const char *buff)
       owl_function_makemsg("Too few argments to the view command");
       return(NULL);
     }
-    
+
   }
   return(NULL);
 }
@@ -2229,7 +2229,7 @@ char *owl_command_show(int argc, const char *const *argv, const char *buff)
     } else {
       owl_function_show_filter(argv[2]);
     }
-  } else if (argc==2 
+  } else if (argc==2
 	     && (!strcmp(argv[1], "zpunts") || !strcmp(argv[1], "zpunted"))) {
     owl_function_show_zpunts();
   } else if (!strcmp(argv[1], "command") || !strcmp(argv[1], "commands")) {
@@ -2274,7 +2274,7 @@ char *owl_command_show(int argc, const char *const *argv, const char *buff)
     owl_function_show_quickstart();
   } else if (!strcmp(argv[1], "startup")) {
     const char *filename;
-    
+
     filename=owl_global_get_startupfile(&g);
     owl_function_popless_file(filename);
   } else if (!strcmp(argv[1], "errors")) {
@@ -2331,7 +2331,7 @@ char *owl_command_delete(int argc, const char *const *argv, const char *buff)
 
   if (argc>1 && !strcmp(argv[1], "--no-move")) {
     move_after = 0;
-    argc--; 
+    argc--;
     argv++;
   }
 
@@ -2392,7 +2392,7 @@ char *owl_command_undelete(int argc, const char *const *argv, const char *buff)
 
   if (argc>1 && !strcmp(argv[1], "--no-move")) {
     move_after = 0;
-    argc--; 
+    argc--;
     argv++;
   }
 
@@ -2433,7 +2433,7 @@ char *owl_command_colorview(int argc, const char *const *argv, const char *buff)
 char *owl_command_colorclass(int argc, const char *const *argv, const char *buff)
 {
   char *filtname;
-  
+
   if (argc < 3 || argc > 4) {
     owl_function_makemsg("Wrong number of arguments to colorclass command");
     return NULL;
@@ -2503,7 +2503,7 @@ char *owl_command_smartzpunt(int argc, const char *const *argv, const char *buff
   } else if (argc == 2 && (!strcmp(argv[1], "-i") || !strcmp(argv[1], "--instance"))) {
     owl_function_smartzpunt(1);
   } else {
-    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);    
+    owl_function_makemsg("Wrong number of arguments for %s", argv[0]);
   }
   return NULL;
 }
@@ -2597,7 +2597,7 @@ char *owl_command_search(int argc, const char *const *argv, const char *buff)
     direction=OWL_DIRECTION_UPWARDS;
     buffstart=skiptokens(buff, 2);
   }
-    
+
   if (argc==1 || (argc==2 && !strcmp(argv[1], "-r"))) {
     /* When continuing a search, don't consider the current message. */
     owl_function_search_helper(false, direction);
@@ -2605,7 +2605,7 @@ char *owl_command_search(int argc, const char *const *argv, const char *buff)
     owl_function_set_search(buffstart);
     owl_function_search_helper(true, direction);
   }
-  
+
   return(NULL);
 }
 
@@ -2615,7 +2615,7 @@ char *owl_command_setsearch(int argc, const char *const *argv, const char *buff)
 
   buffstart=skiptokens(buff, 1);
   owl_function_set_search(*buffstart ? buffstart : NULL);
-  
+
   return(NULL);
 }
 

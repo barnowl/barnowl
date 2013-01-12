@@ -455,7 +455,7 @@
    * Remove options for libcurses and libncurses. This really only works with
      libncursesw. - asedeno
    * text entry:
-    first pass at utf-8 text entry. 
+    first pass at utf-8 text entry.
    * Change wcwidth() calls to mk_wcwidth() - asedeno
    * First pass at outbound zephyr -> iso-8859-1 sanitizing.
      Not that we can input anything other than ascii yet...
@@ -729,11 +729,11 @@ BarnOwl r657 (2007-03-06)
  * Use libncursesw when available - asedeno
 
 2.1.12pre
-        Don't crash when sending/logging outgoing 
+        Don't crash when sending/logging outgoing
 	   AIM message and not logged in [BZ 90]
 	Don't crash when senging to someone not on AIM buddy list [BZ 94]
 	   (patch from Alex Vandiver)
-	
+
 2.1.11
 	Don't crash doing zlocate with bad tickets. [BZ 12]
 	Metion the path for the owlconf in intro.txt [BZ 54]
@@ -761,22 +761,22 @@ BarnOwl r657 (2007-03-06)
 	In 'sub' command, create .zephyr.subs if it doesn't exist [BZ 15]
 	A fix for certain resize crashes (partly from alexmv) [BZ 55]
 	Turn off ISTRIP (gildea)
-	
+
 2.1.9
 	Include /usr/include/kerberosIV if it's found
-	
+
 2.1.8
 	Do OLC formatting for anything coming from olc.matisse
 	Improvements to popup size algorithm (from gildea)
 	Improved 'show colors' with non-colored labels
-	
+
 2.1.7
 	The colorclass command is added, to make colorization easy
 	Handle MIT Athena OLC zephyrs correctly
 	Updated ktools website / bug address
 	Do ntohs() when printing zephyr port in zephyr info
 	Updated man page
-	
+
 2.1.6
         Fixed three bugs found by Valgrind.
         Fixed a case where doing "aim addbuddy" instead of "addbuddy aim"
@@ -791,7 +791,7 @@ BarnOwl r657 (2007-03-06)
 	Print C-\ correctly (from gildea)
 	Dropped first brace in muxevents functions for consistency
 	Catch SIGHUP and SIGTERM and do a proper logout
-	
+
 2.1.5
 	Added a licence
 	The 'personalbell' variable can now be set to 'on' 'off' or
@@ -801,7 +801,7 @@ BarnOwl r657 (2007-03-06)
 	  affects only AIM messages, later zephyr login/logout messages
 	  will also be logged if this is set to 'on'
 	Added 'show license'
-	
+
 2.1.4
 	Normalize and downcase AIM names for logging
 	Fixed a bug where sending a null zsig could cause a crash
@@ -817,11 +817,11 @@ BarnOwl r657 (2007-03-06)
 	  .zephyr.subs
 	Do the initial zephyr_buddy_check when pseduologin set to true.
 	Updated man page
-	
+
 2.1.2
 	removed unused filter_depth variable
 	Fixed memory bug on receiving pings
-	
+
 2.1.1
 	Filters of filters now work.
 	Removed the "possibly not readable" part of the config parsing
@@ -864,7 +864,7 @@ BarnOwl r657 (2007-03-06)
 	new attributes 'pseudo' 'logintty' and 'loginhost'
 	Don't print extra new lines in popless_file
 	New zephyr_get_field function
-	
+
 2.0.14
 	Fixed missing word in startup message
 	Better 'status' command
@@ -875,13 +875,13 @@ BarnOwl r657 (2007-03-06)
 	Do ~ expansion in 'dump' command.
 	Current directory added to 'status' command
 	Massive changes to libfaim and aim
-	
+
 2.0.13
 	Changed startup message for new mailing list
 	blist now prints AIM info even if .anyone is unreadable
 	Catch SIGPIPE and print an error rather than crashing.
-	        [It's possible that this may have some portability 
-		issues under Solaris and we may need to add some 
+	        [It's possible that this may have some portability
+		issues under Solaris and we may need to add some
 		configure stuff around SA_SIGINFO...]
 	Handle the case in aim_bstream_send where aim_send returns -1,
 	        although there is likely an underlying problem here
@@ -890,7 +890,7 @@ BarnOwl r657 (2007-03-06)
 	        the password.  ;)
 	Un-word-wrap text when sending AIM messages.
 	Replace the main loop continue in the keyboard handler with an else.
-	
+
 2.0.12
 	Command history now doesn't allow the last entry
 	   to be repeated
@@ -908,7 +908,7 @@ BarnOwl r657 (2007-03-06)
 	All loopback messages log to 'loopback' now
 	Print an error message if trying an invalid color for a filter
 	Fixed bug causing > not to go to end of editwin every time
-	
+
 2.0.11
 	Updated basic help
 	Display CC: in outgoing CC messages
@@ -919,14 +919,14 @@ BarnOwl r657 (2007-03-06)
 	Added a timestamp to the default style
 	Zpunt now works with weird regex characters
 	Smart filters now work with weird regex characters
-	
+
 2.0.10
 	Allow 'hostname' in filters.
 	Fixed bug in reporting when no one is subbed to a class
 	Added an extral newline in logging incoming zephyrs
 	An admin message is displayed when you are logged out of AIM
 	Print an error message and admin message if an AIM send fails
-	
+
 2.0.9
 	Added the 'fancylines' variable.
 	Added the 'show startup' command.
@@ -940,7 +940,7 @@ BarnOwl r657 (2007-03-06)
 	Added errqueue
 	Added command "show errors"
 	Fixed bug removing newlines in backup files
-	
+
 2.0.8
 	Increased size of screen name field in buddy listing
 	Fixed bug with idle times causing broken pipes.
@@ -950,13 +950,13 @@ BarnOwl r657 (2007-03-06)
 	        returned by perl style formatting functions.
 	Add owl::login and owl::auth to legacy variables populated for format_msg.
 	Additions to intro.txt and advanced.txt documents.  (Still in progress.)
-	Add base methods for login_host and login_tty 
+	Add base methods for login_host and login_tty
 	        and others that return undef.
-	New API for perl message formatting functions.  
+	New API for perl message formatting functions.
 		Legacy variables are still supported for owl::format_msg
-	        and owl::receive_msg, but these functions are now also 
+	        and owl::receive_msg, but these functions are now also
 	        passed an owl::Message object which contains methods
-	        for accessing the contents of the message.  See perlwrap.pm 
+	        for accessing the contents of the message.  See perlwrap.pm
 		(and docs TBD) for the available methods.
 		*** WARNING:  The exact API for owl::Message has
 		*** not yet stabilized.
@@ -969,16 +969,16 @@ BarnOwl r657 (2007-03-06)
 	        to take into account the width of the window.
 	When perl throws an error, the message is put in the msgwin
 	        if possible.
-	Added perl functions for:	
+	Added perl functions for:
 	        owl::getcurmsg() -- returns an owl::Message object for
 		                    the active message
 		                    in the current view.
 	        owl::getnumcols() -- returns the column width of the window
 		owl::zephyr_getrealm() -- returns the zephyr realm
 	        owl::zephyr_getsender() -- returns the zephyr sender
-	Made owl::COMMAND("foo"); be syntactic sugar for 
+	Made owl::COMMAND("foo"); be syntactic sugar for
 	        owl::command("COMMAND foo");
-	Added perlwrap.pm to contain perl code to be compiled into 
+	Added perlwrap.pm to contain perl code to be compiled into
 	        the binary.  This is transformed into perlwrap.c by
 		encapsulate.pl.
 	Renamed readconfig.c to perlconfig.c and changed variables accordingly.
@@ -997,7 +997,7 @@ BarnOwl r657 (2007-03-06)
 	Fixed bug that can cause response stuff to crash
 	Improved status command
 	Fixed bug in buddy stuff
-	
+
 2.0.6
 	aimlogin will now accept the screenname without a password and ask
 	   for the password such that it is not echo'd to the terminal
@@ -1008,7 +1008,7 @@ BarnOwl r657 (2007-03-06)
 	Fix in autoconf for des425
 	Reformatted editwin.c and added capability of doing password-style
 	   echoing
-	
+
 2.0.5
 	Fix in finding des for building zcrypt
 	Fixed description for alert_action variable
@@ -1020,7 +1020,7 @@ BarnOwl r657 (2007-03-06)
 	Fixed bug causing view -d not to work.
 	Added hostname and tty name to LOGIN/LOGOUT zephyrs on oneline
 	  style
-	
+
 2.0.4
 	Made command line option -n actually work
 	Implemented styles, including the 'default' 'basic' and 'oneline'
@@ -1055,14 +1055,14 @@ BarnOwl r657 (2007-03-06)
 	  ingorelogin timer
 	Translate &lt; &gt; &amp; &quot; &nbsp; &ensp, &emsp, &endash and
 	   &emdash
-	
+
 2.0.3
 	Don't ring the terminal bell on mail messages.
 	Nuke <FONT>
 	Make the build work a little better on OSX
 	Fixed a bug in fmtext
 	Expanded the size of the hostname buffer
-	
+
 2.0.2
 	Fixed bug in 'startup' command.
 
@@ -1158,11 +1158,11 @@ BarnOwl r657 (2007-03-06)
 	AIM logging (both in and out) now works
 	Disabled 'addbuddy' and 'delbuddy' for aim since it doesn't work yet
 	Hacked the Perl build stuff not to link with iconv
-	
+
 1.2.8
 	Class pings are displayed differently now
 	Updated owlconf.simple example to format outgoing messages.
-	
+
 1.2.7
 	Outgoing messages now go through the config for formatting
 	Zaway now makes an outgoing message, instead of an admin message
@@ -1178,7 +1178,7 @@ BarnOwl r657 (2007-03-06)
 	'reply' is disabled for zcrypt until sending zcrypt works
 	Started implementing zcrypt command
 	More updates to the intro doc
-	
+
 1.2.6
 	Started adding code for newmsgproc.  It doesn't fully work yet!
 	  Don't use it.
@@ -1192,7 +1192,7 @@ BarnOwl r657 (2007-03-06)
 	Removed old zlog functions from zephyr.c
 	Implemented the dump command
 	New startup message
-	
+
 1.2.5
 	Patch to fix memory bug in replying to CC messages
 	If we're on Athena and have static krb (or other) libraries, use
@@ -1200,7 +1200,7 @@ BarnOwl r657 (2007-03-06)
 	Added "athstatic" program to the release, which handles the above
 	Cast to an int for isspace, to make gcc -Wall quiet
 	Added 'zlist' and 'l' to basic help.
-	
+
 1.2.4
 	'zlog in' will now take an optional thrid argument to set the
 	     'tty' variable before setting the zlocation
@@ -1227,7 +1227,7 @@ BarnOwl r657 (2007-03-06)
 	  messages
 	Made daemon.webzephyr a special case for smartstrip
 	Added 'out' as a default filter for outgoing messages
-	
+
 1.2.3
 	Added filters "ping", "auto" and "login" by default.
 	Added "body" as a valid field to match on in a filter.
@@ -1246,7 +1246,7 @@ BarnOwl r657 (2007-03-06)
 	Moved zsig generation to the zwrite object
 	Print the zsig used for outgoing messages
 	The tty variable now controls the zephyr location tty name
-	
+
 1.2.2
 	Added the 'search' command.
 	'/' is a keybinding for 'search'
@@ -1257,7 +1257,7 @@ BarnOwl r657 (2007-03-06)
 	Attempts to stay near the current message when switching views.
 	     When switching from an empty view to one we've previously
 	     been in, the new current message position will attempt
-	     to be close to the current position from the last 
+	     to be close to the current position from the last
 	     time we visited that view.
 	Fixed bug in readconfig.c that prevented building under perl 5.005.
 	Switched "C-x C-x" to only "startcommand quit"
@@ -1275,10 +1275,10 @@ BarnOwl r657 (2007-03-06)
 1.2.1
         New framework for command handling.
         New framework for keymap handling.
-        Added commands for everything that is bound 
+        Added commands for everything that is bound
              to a key (do 'show commands' to get the full list).
         Added 'multi' and '(' commands to allow multiple commands
-             to be specified on a line.              
+             to be specified on a line.
         Added user keybindings with bindkey command.
         Added command aliases (eg, "alias foo bar").
         Added undelete command that parallels the delete command.
@@ -1297,7 +1297,7 @@ BarnOwl r657 (2007-03-06)
 	Bug in page down fixed
 	C-t will transpose characters
         Fix the scrolling bug where we would sometimes fail to scroll
-             the screen down, leaving the current message off 
+             the screen down, leaving the current message off
              the bottom of the screen.
         Refixed 'login or login' typo in help
         Fixed M-u description
@@ -1341,14 +1341,14 @@ BarnOwl r657 (2007-03-06)
                            the cursor will be near the center.
         Added owl_sprintf which returns the formatted string, or NULL.
                 The caller must free this string.
-                This will allocate enough memory and thus 
+                This will allocate enough memory and thus
                 avoid potential some buffer overrun situations.
         Simple implementation of 'zwrite -m' (doesn't yet log an outgoing
                 message as having been sent.)
-        The "Not logged in or subscribing to messages" error 
+        The "Not logged in or subscribing to messages" error
                 now includes the name of the recipient.
         The "disable-ctrl-d" variable may also be set to "middle"
-                which will result in ctrl-d only sending at the 
+                which will result in ctrl-d only sending at the
                 end of the message.  This is now the default.
                 This also added a command "editmulti:done-or-delete".
         Fixed a bug in the "reply -e" command.
@@ -1358,14 +1358,14 @@ BarnOwl r657 (2007-03-06)
         Added history for multiline edit windows (eg, for zephyr composition).
                 The M-n and M-p keys will cycle through the history ring.
                 In particular, it is now possible to edit the command line
-                of a zephyr being composed:  C-c it and restart it 
+                of a zephyr being composed:  C-c it and restart it
                 and then M-p to get the aborted composition back.
         Added owl::send_zwrite(command, message) to the perl glue
                 to allow for the direct sending of multi-line messages.
-                For example:  owl::send_zwrite("-c foo -i bar", "hello"); 
-        Changed owl_fmtext_print_plain to return an alloc'd string to 
+                For example:  owl::send_zwrite("-c foo -i bar", "hello");
+        Changed owl_fmtext_print_plain to return an alloc'd string to
                 avoid buffer overrun risks.
-        Added owl::ztext_stylestrip("...") function to perlglue 
+        Added owl::ztext_stylestrip("...") function to perlglue
                  which returns the ztext with formatting stripped out.
         Added colorztext variable which can be used to disable @color()
                  strings arriving in messages after it is set.
@@ -1379,7 +1379,7 @@ BarnOwl r657 (2007-03-06)
                  sane on admin messages.
         Added opera to the allowed options to the webbrowser variable.
         Fixed some buffer overruns in the "reply" command.
-        When repying to "all" on a message that begins with "CC:" (eg, sent 
+        When repying to "all" on a message that begins with "CC:" (eg, sent
                  with "zwrite -C", the reply line will be constructed
                  from the sender and the usernames on the CC: line
                  of the message being replied to.
@@ -1390,47 +1390,47 @@ BarnOwl r657 (2007-03-06)
         'show keymaps' shows details of all keymaps after summary list.
         Added --no-move option to delete command.
                 In particular, delete-and-always-move-down may now
-                be implemented with 
+                be implemented with
                 '( delete --no-move ; next --skip-deleted )'.
-        Folded the nextmsg and prevmsg commands and functions together into 
+        Folded the nextmsg and prevmsg commands and functions together into
                 one command which takes arguments.
                 Added '--filter <name>' option (eg, for next_personal),
                 '--skip-deleted' option, and
                 '--last-if-none'/'--first-if-none' options.
-                Help updated accordingly.  
-                In particular, the 'personal' filter is now used 
-                for 'next personal'.  
-	        Added --smart-filter and --smart-filter-instance options 
+                Help updated accordingly.
+                In particular, the 'personal' filter is now used
+                for 'next personal'.
+	        Added --smart-filter and --smart-filter-instance options
                 to the next and prev commands.
         Updated examples/owlconf.erik with the above.
-        Made owl_function_fast*filt return a string and not do the 
+        Made owl_function_fast*filt return a string and not do the
                 narrowing, to make it more general.
         Added a smartfilter command that creates a filter
                 based on the current message and returns the name
                 of the filter.
-        Added M-C-n and M-C-p keybindings to "move to next message 
-                matching current" and "move to previous message 
+        Added M-C-n and M-C-p keybindings to "move to next message
+                matching current" and "move to previous message
                 matching current"
-        Added variables edit:maxfillcols and edit:maxwrapcols which 
+        Added variables edit:maxfillcols and edit:maxwrapcols which
                 will limit how wide editing paragraphs may get before
                 they get wrapped.  This is a max and may be narrower
                 depending on the current size of the window.
                 If 0, the max is unlimited.  Default is 70 columns for
                 edit:maxfillcols and unlimited for edit:maxwrapcols.
         Added smartzpunt command with key binding of "C-x k".
-                This starts a zpunt command filled in with 
+                This starts a zpunt command filled in with
                 the proposed zpunt.
         Fixed a memory reference bug in delete and undelete commands.
         Added support for perl to call directly back into owl.
         Changed the implementation of owl::command("...") to immediately
                 call back into owl.  This allows perl to get the return
                 value of strings returned by owl commands.
-        Added the getview command which returns the name of the current 
-                view's filter.  
+        Added the getview command which returns the name of the current
+                view's filter.
         Added the getvar command which returns the value of a variable.
-        Added an example to examples/owlconf.erik which uses TAB to 
-                narrow and restore the view.  
-        Added an example to examples/owlconf.erik which uses M-c to 
+        Added an example to examples/owlconf.erik which uses TAB to
+                narrow and restore the view.
+        Added an example to examples/owlconf.erik which uses M-c to
                 color messages matching the current one green.
         Integrated change to fix problem with popup blinking on new zephyrs.
         C-l and resizes will now refresh an open viewwin (eg, help).
@@ -1442,12 +1442,12 @@ BarnOwl r657 (2007-03-06)
         Integrated changes from 1.1.3, and added docs for "zlocate -d"
                 and new show commands.
         Show with arguments produces help on show.
-        Fix a bug in readconfig caught by efence (where we'd try to read before 
+        Fix a bug in readconfig caught by efence (where we'd try to read before
                 the beginning of a string if it was empty).
         The perl command doesn't do makemsg directly, but instead
-             returns the string and it will get printed if it 
+             returns the string and it will get printed if it
              was run interactively.
-	
+
 1.1.3
 	'show subs' and 'show subscriptions' are now the same as 'getsubs'
 	zlocate now takes an optional -d argument
@@ -1493,17 +1493,17 @@ BarnOwl r657 (2007-03-06)
 	Lines in the subs file starting with '-' are zpunted
 	Include login/logout messages in auto user filters
 	'V' changes to the home view ('all' by default)
-	
+
 1.1.1
-	Fixed perl, aperl, and pperl commands to deal with quoting 
+	Fixed perl, aperl, and pperl commands to deal with quoting
 	      and spaces in a saner manner.
 	Removed all owl_get_* methods for booleans and switched
-	      cases where they were used to owl_is_* 
+	      cases where they were used to owl_is_*
 	Changes to owlconf.erik to use some new features.
-	Increased the size of the help buffer (as it 
+	Increased the size of the help buffer (as it
 	      was overflowing and truncating the help message).
 	Variables prefixed with a _ are not shown in help
-	      or by printallvars (and prefixed Not Yet Implemented 
+	      or by printallvars (and prefixed Not Yet Implemented
 	      variables with this).
 	Fix typo in help
 	include stdio.h in functions.c
@@ -1516,7 +1516,7 @@ BarnOwl r657 (2007-03-06)
 	store the time for admin messages
 	display admin message time in 'info' command
 	fixed an editwin M-> last character bug
-		
+
 1.1
 	reply is a normal function now
 	'R' does reply to sender
@@ -1566,12 +1566,12 @@ BarnOwl r657 (2007-03-06)
 	Added "-id <id>" option to delete command
 	Fixed an arg checking bug in delete command
 	Added owl::id to perl namespace with message id
-	Fixed a memory corruption bug in readconfig.c (where right 
+	Fixed a memory corruption bug in readconfig.c (where right
 	      after the strdup to "out", we'd strcat a \n onto the end.
 	      This would be triggered whenever owl::format_msg returned
 	      a string not ending in a newline
-	Added 'X' keybinding which expunges and then switches to 
-	      a view defined by the variable "view_home" which defaults 
+	Added 'X' keybinding which expunges and then switches to
+	      a view defined by the variable "view_home" which defaults
 	      to "all"
 	Consolidated readconfig.c somewhat to remove duplication.
 	      owl_config_execute now returns a string.
@@ -1600,17 +1600,17 @@ BarnOwl r657 (2007-03-06)
 	      Stubs for the owl_global_<varname>_get functions and friends
 	      are generated from variable.c by stubgen.pl.
 	      The help.c messages for variables now calls into variable.c
-	      so all information about most variables is in one place.   
+	      so all information about most variables is in one place.
 	Cleaned out code from global.c and command.c that was made obselete
 	      by variable overhaul.
 	The set command now takes a -q option to not log a message.
 	Fixed a bug where set and print with no arguments would
-	      print "Undefined variable" in addition 
+	      print "Undefined variable" in addition
 	      to running owl_function_printallvars.
 	debug is now a variable that can be turned on and off.
 	Fixed mail,inbox message parsing in examples/owlconf.erik
-	Made zaway_msg and zaway_msg_default into variables 
-	Changed owl_function_makemsg and owl_function_debugmsg 
+	Made zaway_msg and zaway_msg_default into variables
+	Changed owl_function_makemsg and owl_function_debugmsg
 	       to use varargs (ie, so they can now take a format
 	       string with args).
 	Don't allow " and \ characters in URLs with the "w" command.
@@ -1630,11 +1630,11 @@ BarnOwl r657 (2007-03-06)
 	      for experimenting with what works well.)
 	Added doc/code.txt which gives a brief overview of the code.
 	Added tags makefile rule and added TAGS to distclean rule.
-	
+
 1.0.1
 	fix frees in loadsubs and loadloginsubs
 	don't return in owl_free
-	
+
 1.0
 	'print' and 'set' with no arguments prints all variables
 	Added the 'unsubscribe' and 'unsub' command
@@ -1664,7 +1664,7 @@ BarnOwl r657 (2007-03-06)
 	fixed off by one error in calculating topmsg upwards
 	you can now reply to an admin message
 	don't display an error about keypress on window resize
-	
+
 0.11
 	fixed bug in viewing messages longer than the screen
 	indicate in the sepbar if there is a non zero vert offset
@@ -1680,14 +1680,14 @@ BarnOwl r657 (2007-03-06)
 	changed message object to use char *'s to save on memory
 	change malloc, realloc, strdup and free to use owl hooks so that
 	   debugging can be added
-		
+
 0.10.1
 	fixed a trailing space bug in the parser
 	impelemented the "burning ears" feature
 	have admin messages do ztext parsing
 	fixed bug in reporting which M- key was pressed
 	C-g will now cancel commands like C-c
-	
+
 0.10
 	implemented owl_function_full_redisplay().
 	C-l uses owl_function_full_redisplay().
@@ -1712,7 +1712,7 @@ BarnOwl r657 (2007-03-06)
 	implemented owl_message_is_mail
 	some build cleanup
 
-	
+
 0.9
 	added owl_message_is_personal and have things use it
 	added owl_message_is_private
@@ -1727,17 +1727,17 @@ BarnOwl r657 (2007-03-06)
 	M-x is a keysym for ':'
 	added smart bolding and userclue
 	fixed a bug causing pings to beep even if rxping is off
-	
+
 0.8.1
 	fixed bug in logging code
-	
+
 0.8
 	implemented personal logging
 	implemented class logging
 	implemented resize of typewin
 	fixed the backspace problem
 	-v command line option prints the version number
-	
+
 0.7
 	load-subs will report error opening file
 	skip comment lines in loadsubs and loadloginsubs
@@ -1751,10 +1751,10 @@ BarnOwl r657 (2007-03-06)
 	fix problems in the build system
 	added displayoutgoing variable
 	temporarily removed error printing for zlog in / out
-	
+
 0.61
 	fixed bug in "message sent to <foo>" for zwrite
-	
+
 0.6
 	help updated
 	zaway key set to caps A
@@ -1765,7 +1765,7 @@ BarnOwl r657 (2007-03-06)
 	C-l to refresh
 	personal bell variable
 	beta message now an admin message
-	
+
 0.5
 	Added the debug command and flag
 	Fixed bug in printing fields in info command

@@ -39,7 +39,7 @@ void owl_message_init(owl_message *m)
 
   owl_message_set_hostname(m, "");
   m->attributes = g_ptr_array_new();
-  
+
   /* save the time */
   m->time = time(NULL);
   m->timestr = g_strdup(ctime(&m->time));
@@ -249,7 +249,7 @@ void owl_message_set_realm(owl_message *m, const char *realm)
 const char *owl_message_get_realm(const owl_message *m)
 {
   const char *realm;
-  
+
   realm=owl_message_get_attribute_value(m, "realm");
   if (!realm) return("");
   return(realm);
@@ -381,7 +381,7 @@ int owl_message_is_type(const owl_message *m, const char *type) {
   if(!t) return 0;
   return !strcasecmp(t, type);
 }
-						
+
 int owl_message_is_type_admin(const owl_message *m)
 {
   return owl_message_is_type(m, "admin");
@@ -527,7 +527,7 @@ void owl_message_curs_waddstr(owl_message *m, WINDOW *win, int aline, int bline,
 
   owl_fmtext_init_null(&a);
   owl_fmtext_init_null(&b);
-  
+
   owl_fmtext_truncate_lines(&(m->fmtext->fmtext), aline, bline-aline, &a);
   owl_fmtext_truncate_cols(&a, acol, bcol, &b);
 
@@ -683,7 +683,7 @@ int owl_message_search(owl_message *m, const owl_regex *re)
 {
 
   owl_message_format(m); /* is this necessary? */
-  
+
   return owl_fmtext_search(&(m->fmtext->fmtext), re, 0) >= 0;
 }
 
@@ -784,17 +784,17 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   int len;
 
   owl_message_init(m);
-  
+
   owl_message_set_type_zephyr(m);
   owl_message_set_direction_in(m);
-  
+
   /* first save the full notice */
   m->notice = *n;
   m->has_notice = true;
 
   /* a little gross, we'll replace \r's with ' ' for now */
   owl_zephyr_hackaway_cr(&(m->notice));
-  
+
   /* save the time, we need to nuke the string saved by message_init */
   if (m->timestr) g_free(m->timestr);
   m->time = n->z_time.tv_sec;
@@ -834,7 +834,7 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
     }
   }
 
-  
+
   /* set the "isprivate" attribute if it's a private zephyr. */
   if (owl_zwrite_recip_is_personal(n->z_recipient)) {
     owl_message_set_isprivate(m);
@@ -921,11 +921,11 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, const char 
 #ifdef HAVE_LIBZEPHYR
   memset(&(m->notice), 0, sizeof(ZNotice_t));
 #endif
-  
+
   longuser=long_zuser(user);
-  
+
   owl_message_init(m);
-  
+
   owl_message_set_type_zephyr(m);
   owl_message_set_direction_in(m);
 
@@ -958,7 +958,7 @@ void owl_message_create_pseudo_zlogin(owl_message *m, int direction, const char 
 void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const char *body, int recip_index)
 {
   char *replyline;
-  
+
   owl_message_init(m);
 
   /* set things */
@@ -991,7 +991,7 @@ void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const c
 
   owl_message_set_body(m, body);
   owl_message_set_zsig(m, owl_zwrite_get_zsig(z));
-  
+
   /* save the hostname */
   owl_message_set_hostname(m, g_get_host_name());
 
@@ -1007,7 +1007,7 @@ void owl_message_cleanup(owl_message *m)
 {
   int i;
   owl_pair *p;
-#ifdef HAVE_LIBZEPHYR    
+#ifdef HAVE_LIBZEPHYR
   if (m->has_notice) {
     ZFreeNotice(&(m->notice));
   }
@@ -1022,7 +1022,7 @@ void owl_message_cleanup(owl_message *m)
   }
 
   g_ptr_array_free(m->attributes, true);
- 
+
   owl_message_invalidate_format(m);
 }
 

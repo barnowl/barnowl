@@ -30,8 +30,8 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 	fu16_t maxbuddies = 0, maxwatchers = 0;
 	int ret = 0;
 
-	/* 
-	 * TLVs follow 
+	/*
+	 * TLVs follow
 	 */
 	tlvlist = aim_tlvlist_read(bs);
 
@@ -47,7 +47,7 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 	 * Watchers are other users who have you on their buddy
 	 * list.  (This is called the "reverse list" by a certain
 	 * other IM protocol.)
-	 * 
+	 *
 	 */
 	if (aim_tlv_gettlv(tlvlist, 0x0002, 1))
 		maxwatchers = aim_tlv_get16(tlvlist, 0x0002, 1);
@@ -63,7 +63,7 @@ static int rights(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 
 	aim_tlvlist_free(&tlvlist);
 
-	return ret;  
+	return ret;
 }
 
 /*
@@ -102,7 +102,7 @@ faim_export int aim_buddylist_addbuddy(aim_session_t *sess, aim_conn_t *conn, co
  *
  * buddy_list = "Screen Name One&ScreenNameTwo&";
  *
- * XXX Clean this up.  
+ * XXX Clean this up.
  *
  */
 faim_export int aim_buddylist_set(aim_session_t *sess, aim_conn_t *conn, const char *buddy_list)
@@ -113,7 +113,7 @@ faim_export int aim_buddylist_set(aim_session_t *sess, aim_conn_t *conn, const c
 	char *localcpy = NULL;
 	char *tmpptr = NULL;
 
-	if (!buddy_list || !(localcpy = strdup(buddy_list))) 
+	if (!buddy_list || !(localcpy = strdup(buddy_list)))
 		return -EINVAL;
 
 	for (tmpptr = strtok(localcpy, "&"); tmpptr; ) {
@@ -175,7 +175,7 @@ faim_export int aim_buddylist_removebuddy(aim_session_t *sess, aim_conn_t *conn,
 	return 0;
 }
 
-/* 
+/*
  * Subtype 0x000b
  *
  * XXX Why would we send this?
@@ -193,7 +193,7 @@ faim_export int aim_buddylist_oncoming(aim_session_t *sess, aim_conn_t *conn, ai
 		return -ENOMEM;
 
 	snacid = aim_cachesnac(sess, 0x0003, 0x000b, 0x0000, NULL, 0);
-	
+
 	aim_putsnac(&fr->data, 0x0003, 0x000b, 0x0000, snacid);
 	aim_putuserinfo(&fr->data, info);
 
@@ -202,7 +202,7 @@ faim_export int aim_buddylist_oncoming(aim_session_t *sess, aim_conn_t *conn, ai
 	return 0;
 }
 
-/* 
+/*
  * Subtype 0x000c
  *
  * XXX Why would we send this?
@@ -220,7 +220,7 @@ faim_export int aim_buddylist_offgoing(aim_session_t *sess, aim_conn_t *conn, co
 		return -ENOMEM;
 
 	snacid = aim_cachesnac(sess, 0x0003, 0x000c, 0x0000, NULL, 0);
-	
+
 	aim_putsnac(&fr->data, 0x0003, 0x000c, 0x0000, snacid);
 	aimbs_put8(&fr->data, strlen(sn));
 	aimbs_putraw(&fr->data, sn, strlen(sn));

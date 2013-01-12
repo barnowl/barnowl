@@ -86,7 +86,7 @@ sub convert_sessions {
     )->request($cb); # API change
 }
 
-sub authorize { 
+sub authorize {
     my ($self) = @_;
     return Facebook::Graph::Authorize->new(
         app_id          => $self->app_id,
@@ -301,7 +301,7 @@ version 1.0300
  my $fb = Facebook::Graph->new;
  my $sarah_bownds = $fb->fetch('sarahbownds');
  my $perl_page = $fb->fetch('16665510298');
- 
+
 Or better yet:
 
  my $sarah_bownds = $fb->query
@@ -310,7 +310,7 @@ Or better yet:
     ->select_fields(qw( id name picture ))
     ->request
     ->as_hashref;
-    
+
  my $sarahs_picture_uri = $fb->picture('sarahbownds')->get_large->uri_as_string;
 
 Or fetching a response from a URI you already have:
@@ -318,8 +318,8 @@ Or fetching a response from a URI you already have:
  my $response = $fb->query
     ->request('https://graph.facebook.com/btaylor')
     ->as_hashref;
- 
- 
+
+
 =head2 Building A Privileged App
 
  my $fb = Facebook::Graph->new(
@@ -341,11 +341,11 @@ Handle the Facebook authorization code postback:
 
  my $q = Plack::Request->new($env);
  $fb->request_access_token($q->query_param('code'));
- 
+
 Or if you already had the access token:
 
  $fb->access_token($token);
- 
+
 Get some info:
 
  my $user = $fb->fetch('me');
@@ -418,7 +418,7 @@ Creates a L<Facebook::Graph::Query> object, which can be used to fetch and searc
 Returns a hash reference of an object from facebook. A quick way to grab an object from Facebook. These two statements are identical:
 
  my $sarah = $fb->fetch('sarahbownds');
- 
+
  my $sarah = $fb->query->find('sarahbownds')->request->as_hashref;
 
 =head3 id

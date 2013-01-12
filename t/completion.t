@@ -20,7 +20,7 @@ sub test_tokenize {
 
     my $before_point = shift;
     my $after_point = shift;
-    
+
     my $ctx = BarnOwl::Completion::Context->new($before_point,
                                                 $after_point);
     is($ctx->line, $before_point . $after_point);
@@ -56,7 +56,7 @@ sub test_shift {
     my $before_point = shift;
     my $after_point = shift;
     my $shift = shift;
-    
+
     my $ctx = BarnOwl::Completion::Context->new($before_point,
                                                 $after_point);
     $ctx = $ctx->shift_words($shift);
@@ -206,7 +206,7 @@ sub test_complete {
     my $after = shift;
     my $words = shift;
     my $complete = shift || \&complete_zwrite;
-    
+
     my $ctx = BarnOwl::Completion::Context->new($before, $after);
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
@@ -345,7 +345,7 @@ sub test_file {
     my $dirs  = shift;
     my $files = shift;
 
-    my $expect = [ sort {$a->[1] cmp $b->[1]} 
+    my $expect = [ sort {$a->[1] cmp $b->[1]}
         ((map {["$_/", defined($pfx)?"$pfx/$_/":"$_/", 0]} @$dirs),
          (map {["$_",  defined($pfx)?"$pfx/$_" :$_   , 1]} @$files))
        ];

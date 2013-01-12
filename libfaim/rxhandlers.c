@@ -111,19 +111,19 @@ static int consumesnac(aim_session_t *sess, aim_frame_t *rx)
 	/* SNAC flags are apparently uniform across all SNACs, so we handle them here */
 	if (snac.flags & 0x0001) {
 		/*
-		 * This means the SNAC will be followed by another SNAC with 
-		 * related information.  We don't need to do anything about 
+		 * This means the SNAC will be followed by another SNAC with
+		 * related information.  We don't need to do anything about
 		 * this here.
 		 */
 	}
 	if (snac.flags & 0x8000) {
 		/*
-		 * This packet contains the version of the family that this SNAC is 
-		 * in.  You get this when your SSI module is version 2 or higher.  
-		 * For now we have no need for this, but you could always save 
+		 * This packet contains the version of the family that this SNAC is
+		 * in.  You get this when your SSI module is version 2 or higher.
+		 * For now we have no need for this, but you could always save
 		 * it as a part of aim_modnsac_t, or something.  The format is...
-		 * 2 byte length of total mini-header (which is 6 bytes), then TLV 
-		 * of  type 0x0001, length 0x0002, value is the 2 byte version 
+		 * 2 byte length of total mini-header (which is 6 bytes), then TLV
+		 * of  type 0x0001, length 0x0002, value is the 2 byte version
 		 * number
 		 */
 		aim_bstream_advance(&rx->data, aimbs_get16(&rx->data));
@@ -131,7 +131,7 @@ static int consumesnac(aim_session_t *sess, aim_frame_t *rx)
 
 	for (cur = (aim_module_t *)sess->modlistv; cur; cur = cur->next) {
 
-		if (!(cur->flags & AIM_MODFLAG_MULTIFAMILY) && 
+		if (!(cur->flags & AIM_MODFLAG_MULTIFAMILY) &&
 				(cur->family != snac.family))
 			continue;
 
@@ -154,7 +154,7 @@ static int consumenonsnac(aim_session_t *sess, aim_frame_t *rx, fu16_t family, f
 
 	for (cur = (aim_module_t *)sess->modlistv; cur; cur = cur->next) {
 
-		if (!(cur->flags & AIM_MODFLAG_MULTIFAMILY) && 
+		if (!(cur->flags & AIM_MODFLAG_MULTIFAMILY) &&
 				(cur->family != snac.family))
 			continue;
 
@@ -192,7 +192,7 @@ static int negchan_middle(aim_session_t *sess, aim_frame_t *fr)
 	if (aim_tlv_gettlv(tlvlist, 0x000b, 1))
 		msg = aim_tlv_getstr(tlvlist, 0x000b, 1);
 
-	if ((userfunc = aim_callhandler(sess, fr->conn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNERR))) 
+	if ((userfunc = aim_callhandler(sess, fr->conn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNERR)))
 		ret = userfunc(sess, fr, code, msg);
 
 	aim_tlvlist_free(&tlvlist);
@@ -220,13 +220,13 @@ faim_internal int bleck(aim_session_t *sess, aim_frame_t *frame, ...)
 		"FLAP NOP"
 	};
 	static const int maxchannels = 5;
-	
+
 	/* XXX: this is ugly. and big just for debugging. */
 	static const char *literals[14][25] = {
-		{"Invalid", 
+		{"Invalid",
 		 NULL
 		},
-		{"General", 
+		{"General",
 		 "Invalid",
 		 "Error",
 		 "Client Ready",
@@ -251,60 +251,60 @@ faim_internal int bleck(aim_session_t *sess, aim_frame_t *frame, ...)
 		 "Well Known URL",
 		 "NOP"
 		},
-		{"Location", 
+		{"Location",
 		 "Invalid",
 		 "Error",
 		 "Request Rights",
-		 "Rights Information", 
-		 "Set user information", 
-		 "Request User Information", 
-		 "User Information", 
+		 "Rights Information",
+		 "Set user information",
+		 "Request User Information",
+		 "User Information",
 		 "Watcher Sub Request",
 		 "Watcher Notification"
 		},
-		{"Buddy List Management", 
-		 "Invalid", 
-		 "Error", 
+		{"Buddy List Management",
+		 "Invalid",
+		 "Error",
 		 "Request Rights",
 		 "Rights Information",
-		 "Add Buddy", 
-		 "Remove Buddy", 
-		 "Watcher List Query", 
-		 "Watcher List Response", 
-		 "Watcher SubRequest", 
-		 "Watcher Notification", 
-		 "Reject Notification", 
-		 "Oncoming Buddy", 
+		 "Add Buddy",
+		 "Remove Buddy",
+		 "Watcher List Query",
+		 "Watcher List Response",
+		 "Watcher SubRequest",
+		 "Watcher Notification",
+		 "Reject Notification",
+		 "Oncoming Buddy",
 		 "Offgoing Buddy"
 		},
-		{"Messeging", 
+		{"Messeging",
 		 "Invalid",
-		 "Error", 
+		 "Error",
 		 "Add ICBM Parameter",
-		 "Remove ICBM Parameter", 
+		 "Remove ICBM Parameter",
 		 "Request Parameter Information",
 		 "Parameter Information",
-		 "Outgoing Message", 
+		 "Outgoing Message",
 		 "Incoming Message",
 		 "Evil Request",
-		 "Evil Reply", 
+		 "Evil Reply",
 		 "Missed Calls",
-		 "Message Error", 
+		 "Message Error",
 		 "Host Ack"
 		},
-		{"Advertisements", 
-		 "Invalid", 
-		 "Error", 
+		{"Advertisements",
+		 "Invalid",
+		 "Error",
 		 "Request Ad",
 		 "Ad Data (GIFs)"
 		},
-		{"Invitation / Client-to-Client", 
+		{"Invitation / Client-to-Client",
 		 "Invalid",
 		 "Error",
 		 "Invite a Friend",
 		 "Invitation Ack"
 		},
-		{"Administrative", 
+		{"Administrative",
 		 "Invalid",
 		 "Error",
 		 "Information Request",
@@ -316,12 +316,12 @@ faim_internal int bleck(aim_session_t *sess, aim_frame_t *frame, ...)
 		 "Account Delete Request",
 		 "Account Delete Reply"
 		},
-		{"Popups", 
+		{"Popups",
 		 "Invalid",
 		 "Error",
 		 "Display Popup"
 		},
-		{"BOS", 
+		{"BOS",
 		 "Invalid",
 		 "Error",
 		 "Request Rights",
@@ -333,25 +333,25 @@ faim_internal int bleck(aim_session_t *sess, aim_frame_t *frame, ...)
 		 "Delete deny list entries",
 		 "Server Error"
 		},
-		{"User Lookup", 
+		{"User Lookup",
 		 "Invalid",
 		 "Error",
 		 "Search Request",
 		 "Search Response"
 		},
-		{"Stats", 
+		{"Stats",
 		 "Invalid",
 		 "Error",
 		 "Set minimum report interval",
 		 "Report Events"
 		},
-		{"Translate", 
+		{"Translate",
 		 "Invalid",
 		 "Error",
 		 "Translate Request",
 		 "Translate Reply",
 		},
-		{"Chat Navigation", 
+		{"Chat Navigation",
 		 "Invalid",
 		 "Error",
 		 "Request rights",
@@ -359,10 +359,10 @@ faim_internal int bleck(aim_session_t *sess, aim_frame_t *frame, ...)
 		 "Request Room Information",
 		 "Request Occupant List",
 		 "Search for Room",
-		 "Outgoing Message", 
+		 "Outgoing Message",
 		 "Incoming Message",
-		 "Evil Request", 
-		 "Evil Reply", 
+		 "Evil Request",
+		 "Evil Reply",
 		 "Chat Error",
 		}
 	};
@@ -374,7 +374,7 @@ faim_internal int bleck(aim_session_t *sess, aim_frame_t *frame, ...)
 
 		family = aimbs_get16(&frame->data);
 		subtype = aimbs_get16(&frame->data);
-		
+
 		if ((family < maxf) && (subtype+1 < maxs) && (literals[family][subtype] != NULL))
 			faimdprintf(sess, 0, "bleck: channel %s: null handler for %04x/%04x (%s)\n", channels[frame->hdr.flap.type], family, subtype, literals[family][subtype+1]);
 		else
@@ -387,7 +387,7 @@ faim_internal int bleck(aim_session_t *sess, aim_frame_t *frame, ...)
 			faimdprintf(sess, 0, "bleck: unknown channel 0x%02x\n", frame->hdr.flap.type);
 
 	}
-		
+
 	return 1;
 }
 
@@ -470,7 +470,7 @@ faim_internal void aim_clonehandlers(aim_session_t *sess, aim_conn_t *dest, aim_
 	struct aim_rxcblist_s *cur;
 
 	for (cur = (struct aim_rxcblist_s *)src->handlerlist; cur; cur = cur->next) {
-		aim_conn_addhandler(sess, dest, cur->family, cur->type, 
+		aim_conn_addhandler(sess, dest, cur->family, cur->type,
 						cur->handler, cur->flags);
 	}
 
@@ -553,7 +553,7 @@ faim_export void aim_rxdispatch(aim_session_t *sess)
 		}
 	}
 
-	/* 
+	/*
 	 * This doesn't have to be called here.  It could easily be done
 	 * by a seperate thread or something. It's an administrative operation,
 	 * and can take a while. Though the less you call it the less memory

@@ -8,9 +8,9 @@
  * what would commonly be called an "instant message".  Channel 2
  * is used for negotiating "rendezvous".  These transactions end in
  * something more complex happening, such as a chat invitation, or
- * a file transfer.  Channel 3 is used for chat messages (not in 
- * the same family as these channels).  Channel 4 is used for 
- * various ICQ messages.  Examples are normal messages, URLs, and 
+ * a file transfer.  Channel 3 is used for chat messages (not in
+ * the same family as these channels).  Channel 4 is used for
+ * various ICQ messages.  Examples are normal messages, URLs, and
  * old-style authorization.
  *
  * In addition to the channel, every ICBM contains a cookie.  For
@@ -18,7 +18,7 @@
  * the more complex rendezvous messages make suitably more complex
  * use of this field.
  *
- * TODO: Split this up into an im.c file an an icbm.c file.  It 
+ * TODO: Split this up into an im.c file an an icbm.c file.  It
  *       will be beautiful, you'll see.
  *
  *       Need to rename all the mpmsg messages to aim_im_bleh.
@@ -34,7 +34,7 @@
 #endif
 
 /**
- * Add a standard ICBM header to the given bstream with the given 
+ * Add a standard ICBM header to the given bstream with the given
  * information.
  *
  * @param bs The bstream to write the ICBM header to.
@@ -63,7 +63,7 @@ static int aim_im_puticbm(aim_bstream_t *bs, const fu8_t *c, fu16_t ch, const ch
  *
  * Heres the current collection:
  *  0501 0003 0101 0101 01		AOL Mobile Communicator, WinAIM 1.0.414
- *  0501 0003 0101 0201 01		WinAIM 2.0.847, 2.1.1187, 3.0.1464, 
+ *  0501 0003 0101 0201 01		WinAIM 2.0.847, 2.1.1187, 3.0.1464,
  *					4.3.2229, 4.4.2286
  *  0501 0004 0101 0102 0101		WinAIM 4.1.2010, libfaim (right here)
  *  0501 0003 0101 02			WinAIM 5
@@ -83,11 +83,11 @@ faim_export fu16_t aim_im_fingerprint(const fu8_t *msghdr, int len)
 		fu8_t data[10];
 	} fingerprints[] = {
 		/* AOL Mobile Communicator, WinAIM 1.0.414 */
-		{ AIM_CLIENTTYPE_MC, 
+		{ AIM_CLIENTTYPE_MC,
 		  3, {0x01, 0x01, 0x01}},
 
 		/* WinAIM 2.0.847, 2.1.1187, 3.0.1464, 4.3.2229, 4.4.2286 */
-		{ AIM_CLIENTTYPE_WINAIM, 
+		{ AIM_CLIENTTYPE_WINAIM,
 		  3, {0x01, 0x01, 0x02}},
 
 		/* WinAIM 4.1.2010, libfaim */
@@ -115,12 +115,12 @@ faim_export fu16_t aim_im_fingerprint(const fu8_t *msghdr, int len)
 	return AIM_CLIENTTYPE_UNKNOWN;
 }
 
-/** 
+/**
  * Subtype 0x0002 - Set ICBM parameters.
  *
  * I definitly recommend sending this.  If you don't, you'll be stuck
  * with the rather unreasonable defaults.
- * 
+ *
  */
 faim_export int aim_im_setparams(aim_session_t *sess, struct aim_icbmparameters *params)
 {
@@ -144,10 +144,10 @@ faim_export int aim_im_setparams(aim_session_t *sess, struct aim_icbmparameters 
 	aimbs_put16(&fr->data, 0x0000);
 
 	/* These are all read-write */
-	aimbs_put32(&fr->data, params->flags); 
+	aimbs_put32(&fr->data, params->flags);
 	aimbs_put16(&fr->data, params->maxmsglen);
-	aimbs_put16(&fr->data, params->maxsenderwarn); 
-	aimbs_put16(&fr->data, params->maxrecverwarn); 
+	aimbs_put16(&fr->data, params->maxsenderwarn);
+	aimbs_put16(&fr->data, params->maxrecverwarn);
 	aimbs_put32(&fr->data, params->minmsginterval);
 
 	aim_tx_enqueue(sess, fr);
@@ -184,7 +184,7 @@ static int aim_im_paraminfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
 	params.maxsenderwarn = aimbs_get16(bs);
 	params.maxrecverwarn = aimbs_get16(bs);
 	params.minmsginterval = aimbs_get32(bs);
-	
+
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		return userfunc(sess, rx, &params);
 
@@ -192,7 +192,7 @@ static int aim_im_paraminfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
 }
 
 /**
- * Subtype 0x0006 - Send an ICBM (instant message).  
+ * Subtype 0x0006 - Send an ICBM (instant message).
  *
  *
  * Possible flags:
@@ -206,12 +206,12 @@ static int aim_im_paraminfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
  *                        this, you'd better be damn sure you know
  *                        what you're doing.
  *   AIM_IMFLAGS_ISO_8859_1 -- The message contains the ASCII8 subset
- *                        known as ISO-8859-1.  
+ *                        known as ISO-8859-1.
  *
  * Generally, you should use the lowest encoding possible to send
  * your message.  If you only use basic punctuation and the generic
  * Latin alphabet, use ASCII7 (no flags).  If you happen to use non-ASCII7
- * characters, but they are all clearly defined in ISO-8859-1, then 
+ * characters, but they are all clearly defined in ISO-8859-1, then
  * use that.  Keep in mind that not all characters in the PC ASCII8
  * character set are defined in the ISO standard. For those cases (most
  * notably when the (r) symbol is used), you must use the full UNICODE
@@ -223,16 +223,16 @@ static int aim_im_paraminfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
  * I strongly discourage the use of UNICODE mode, mainly because none
  * of the clients I use can parse those messages (and besides that,
  * wchars are difficult and non-portable to handle in most UNIX environments).
- * If you really need to include special characters, use the HTML UNICODE 
- * entities.  These are of the form &#2026; where 2026 is the hex 
- * representation of the UNICODE index (in this case, UNICODE 
+ * If you really need to include special characters, use the HTML UNICODE
+ * entities.  These are of the form &#2026; where 2026 is the hex
+ * representation of the UNICODE index (in this case, UNICODE
  * "Horizontal Ellipsis", or 133 in in ASCII8).
  *
  * Implementation note:  Since this is one of the most-used functions
  * in all of libfaim, it is written with performance in mind.  As such,
  * it is not as clear as it could be in respect to how this message is
- * supposed to be layed out. Most obviously, tlvlists should be used 
- * instead of writing out the bytes manually. 
+ * supposed to be layed out. Most obviously, tlvlists should be used
+ * instead of writing out the bytes manually.
  *
  * XXX - more precise verification that we never send SNACs larger than 8192
  * XXX - check SNAC size for multipart
@@ -288,16 +288,16 @@ faim_export int aim_im_sendch1_ext(aim_session_t *sess, struct aim_sendimext_arg
 	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, msgtlvlen+128)))
 		return -ENOMEM;
 
-	/* XXX - should be optional */	
+	/* XXX - should be optional */
 	snacid = aim_cachesnac(sess, 0x0004, 0x0006, 0x0000, args->destsn, strlen(args->destsn)+1);
 	aim_putsnac(&fr->data, 0x0004, 0x0006, 0x0000, snacid);
 
-	/* 
+	/*
 	 * Generate a random message cookie
 	 *
-	 * We could cache these like we do SNAC IDs.  (In fact, it 
-	 * might be a good idea.)  In the message error functions, 
-	 * the 8byte message cookie is returned as well as the 
+	 * We could cache these like we do SNAC IDs.  (In fact, it
+	 * might be a good idea.)  In the message error functions,
+	 * the 8byte message cookie is returned as well as the
 	 * SNAC ID.
 	 *
 	 */
@@ -366,7 +366,7 @@ faim_export int aim_im_sendch1_ext(aim_session_t *sess, struct aim_sendimext_arg
 
 	/*
 	 * Set the I HAVE A REALLY PURTY ICON flag.
-	 * XXX - This should really only be sent on initial 
+	 * XXX - This should really only be sent on initial
 	 * IMs and when you change your icon.
 	 */
 	if (args->flags & AIM_IMFLAGS_HASICON) {
@@ -396,7 +396,7 @@ faim_export int aim_im_sendch1_ext(aim_session_t *sess, struct aim_sendimext_arg
 }
 
 /*
- * Simple wrapper for aim_im_sendch1_ext() 
+ * Simple wrapper for aim_im_sendch1_ext()
  *
  * You cannot use aim_send_im if you need the HASICON flag.  You must
  * use aim_im_sendch1_ext directly for that.
@@ -504,7 +504,7 @@ faim_export int aim_im_sendch2_icon(aim_session_t *sess, const char *sn, const f
  *
  * You'd think this would be in icq.c, but, well, I'm trying to stick with
  * the one-group-per-file scheme as much as possible.  This could easily
- * be an exception, since Rendezvous IMs are external of the Oscar core, 
+ * be an exception, since Rendezvous IMs are external of the Oscar core,
  * and therefore are undefined.  Really I just need to think of a good way to
  * make an interface similar to what AOL actually uses.  But I'm not using COM.
  *
@@ -612,10 +612,10 @@ faim_export int aim_im_sendch2_odcrequest(aim_session_t *sess, fu8_t *cookie, co
 	snacid = aim_cachesnac(sess, 0x0004, 0x0006, 0x0000, NULL, 0);
 	aim_putsnac(&fr->data, 0x0004, 0x0006, 0x0000, snacid);
 
-	/* 
-	 * Generate a random message cookie 
+	/*
+	 * Generate a random message cookie
 	 *
-	 * This cookie needs to be alphanumeric and NULL-terminated to be 
+	 * This cookie needs to be alphanumeric and NULL-terminated to be
 	 * TOC-compatible.
 	 *
 	 * XXX - have I mentioned these should be generated in msgcookie.c?
@@ -645,7 +645,7 @@ faim_export int aim_im_sendch2_odcrequest(aim_session_t *sess, fu8_t *cookie, co
 	aim_tlvlist_add_raw(&itl, 0x0003, 4, ip);
 	aim_tlvlist_add_16(&itl, 0x0005, port);
 	aim_tlvlist_add_noval(&itl, 0x000f);
-	
+
 	aim_tlvlist_write(&hdrbs, &itl);
 
 	aim_tlvlist_add_raw(&tl, 0x0005, aim_bstream_curpos(&hdrbs), hdr);
@@ -832,7 +832,7 @@ faim_export int aim_im_sendch2_sendfile_cancel(aim_session_t *sess, struct aim_o
  *
  * @param sess The oscar session.
  * @param sn The UIN of the user of whom you wish to request info.
- * @param type The type of info you wish to request.  This should be the current 
+ * @param type The type of info you wish to request.  This should be the current
  *        state of the user, as one of the AIM_ICQ_STATE_* defines.
  * @return Return 0 if no errors, otherwise return the error number.
  */
@@ -930,10 +930,10 @@ faim_export int aim_im_sendch2_geticqaway(aim_session_t *sess, const char *sn, i
 /**
  * Subtype 0x0006 - Send an ICQ-esque ICBM.
  *
- * This can be used to send an ICQ authorization reply (deny or grant).  It is the "old way."  
- * The new way is to use SSI.  I like the new way a lot better.  This seems like such a hack, 
- * mostly because it's in network byte order.  Figuring this stuff out sometimes takes a while, 
- * but thats ok, because it gives me time to try to figure out what kind of drugs the AOL people 
+ * This can be used to send an ICQ authorization reply (deny or grant).  It is the "old way."
+ * The new way is to use SSI.  I like the new way a lot better.  This seems like such a hack,
+ * mostly because it's in network byte order.  Figuring this stuff out sometimes takes a while,
+ * but thats ok, because it gives me time to try to figure out what kind of drugs the AOL people
  * were taking when they merged the two protocols.
  *
  * @param sn The destination screen name.
@@ -1072,13 +1072,13 @@ static int outgoingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
  * Ahh, the joys of nearly ridiculous over-engineering.
  *
  * Not only do AIM ICBM's support multiple channels.  Not only do they
- * support multiple character sets.  But they support multiple character 
+ * support multiple character sets.  But they support multiple character
  * sets / encodings within the same ICBM.
  *
  * These multipart messages allow for complex space savings techniques, which
  * seem utterly unnecessary by today's standards.  In fact, there is only
  * one client still in popular use that still uses this method: AOL for the
- * Macintosh, Version 5.0.  Obscure, yes, I know.  
+ * Macintosh, Version 5.0.  Obscure, yes, I know.
  *
  * In modern (non-"legacy") clients, if the user tries to send a character
  * that is not ISO-8859-1 or ASCII, the client will send the entire message
@@ -1086,7 +1086,7 @@ static int outgoingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
  * full 16 bit UNICODE field, even if the high order byte would be zero.
  * Multipart messages prevent this wasted space by allowing the client to
  * only send the characters in UNICODE that need to be sent that way, and
- * the rest of the message can be sent in whatever the native character 
+ * the rest of the message can be sent in whatever the native character
  * set is (probably ASCII).
  *
  * An important note is that sections will be displayed in the order that
@@ -1115,8 +1115,8 @@ faim_export int aim_mpmsg_init(aim_session_t *sess, aim_mpmsg_t *mpm)
 
 static int mpmsg_addsection(aim_session_t *sess, aim_mpmsg_t *mpm, fu16_t charset, fu16_t charsubset, fu8_t *data, fu16_t datalen)
 {
-	aim_mpmsg_section_t *sec; 
-	
+	aim_mpmsg_section_t *sec;
+
 	if (!(sec = malloc(sizeof(aim_mpmsg_section_t))))
 		return -1;
 
@@ -1162,7 +1162,7 @@ faim_export int aim_mpmsg_addascii(aim_session_t *sess, aim_mpmsg_t *mpm, const 
 {
 	fu8_t *dup;
 
-	if (!(dup = strdup(ascii))) 
+	if (!(dup = strdup(ascii)))
 		return -1;
 
 	if (mpmsg_addsection(sess, mpm, 0x0000, 0x0000, dup, strlen(ascii)) == -1) {
@@ -1192,7 +1192,7 @@ faim_export int aim_mpmsg_addunicode(aim_session_t *sess, aim_mpmsg_t *mpm, cons
 		free(buf);
 		return -1;
 	}
-	
+
 	return 0;
 }
 
@@ -1202,13 +1202,13 @@ faim_export void aim_mpmsg_free(aim_session_t *sess, aim_mpmsg_t *mpm)
 
 	for (cur = mpm->parts; cur; ) {
 		aim_mpmsg_section_t *tmp;
-		
+
 		tmp = cur->next;
 		free(cur->data);
 		free(cur);
 		cur = tmp;
 	}
-	
+
 	mpm->numparts = 0;
 	mpm->parts = NULL;
 
@@ -1216,7 +1216,7 @@ faim_export void aim_mpmsg_free(aim_session_t *sess, aim_mpmsg_t *mpm)
 }
 
 /*
- * Start by building the multipart structures, then pick the first 
+ * Start by building the multipart structures, then pick the first
  * human-readable section and stuff it into args->msg so no one gets
  * suspicious.
  *
@@ -1404,7 +1404,7 @@ static int incomingim_ch1(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 			 *
 			 * You really shouldn't advertise a zero-length icon
 			 * anyway.
-			 * 
+			 *
 			 */
 			if (args.iconlen)
 				args.icbmflags |= AIM_IMFLAGS_HASICON;
@@ -1551,7 +1551,7 @@ static void incomingim_ch2_icqserverrelay_free(aim_session_t *sess, struct aim_i
 }
 
 /*
- * The relationship between AIM_CAPS_ICQSERVERRELAY and AIM_CAPS_ICQRTF is 
+ * The relationship between AIM_CAPS_ICQSERVERRELAY and AIM_CAPS_ICQRTF is
  * kind of odd. This sends the client ICQRTF since that is all that I've seen
  * SERVERRELAY used for.
  *
@@ -1570,7 +1570,7 @@ static void incomingim_ch2_icqserverrelay(aim_session_t *sess, aim_module_t *mod
 	aim_bstream_advance(servdata, hdrlen);
 
 	msgtype = aimbs_getle16(servdata);
-	
+
 	anslen = aimbs_getle32(servdata);
 	aim_bstream_advance(servdata, anslen);
 
@@ -1601,7 +1601,7 @@ static void incomingim_ch2_sendfile(aim_session_t *sess, aim_module_t *mod, aim_
 
 	args->destructor = (void *)incomingim_ch2_sendfile_free;
 
-	/* Maybe there is a better way to tell what kind of sendfile 
+	/* Maybe there is a better way to tell what kind of sendfile
 	 * this is?  Maybe TLV t(000a)? */
 	if (servdata) { /* Someone is sending us a file */
 		int flen;
@@ -1612,19 +1612,19 @@ static void incomingim_ch2_sendfile(aim_session_t *sess, aim_module_t *mod, aim_
 		args->info.sendfile.totsize = aimbs_get32(servdata);
 
 		/*
-		 * I hope to God I'm right when I guess that there is a 
-		 * 32 char max filename length for single files.  I think 
-		 * OFT tends to do that.  Gotta love inconsistency.  I saw 
+		 * I hope to God I'm right when I guess that there is a
+		 * 32 char max filename length for single files.  I think
+		 * OFT tends to do that.  Gotta love inconsistency.  I saw
 		 * a 26 byte filename?
 		 */
 		/* AAA - create an aimbs_getnullstr function (don't anymore)(maybe) */
-		/* Use an inelegant way of getting the null-terminated filename, 
+		/* Use an inelegant way of getting the null-terminated filename,
 		 * since there's no easy bstream routine. */
 		for (flen = 0; aimbs_get8(servdata); flen++);
 		aim_bstream_advance(servdata, -flen -1);
 		args->info.sendfile.filename = aimbs_getstr(servdata, flen);
 
-		/* There is sometimes more after the null-terminated filename, 
+		/* There is sometimes more after the null-terminated filename,
 		 * but I'm unsure of its format. */
 		/* I don't believe him. */
 	}
@@ -1651,7 +1651,7 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	memset(&args, 0, sizeof(args));
 
 	/*
-	 * There's another block of TLVs embedded in the type 5 here. 
+	 * There's another block of TLVs embedded in the type 5 here.
 	 */
 	block1 = aim_tlv_gettlv(tlvlist, 0x0005, 1);
 	aim_bstream_init(&bbs, block1->value, block1->length);
@@ -1660,14 +1660,14 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	 * First two bytes represent the status of the connection.
 	 *
 	 * 0 is a request, 1 is a cancel, 2 is an accept
-	 */ 
+	 */
 	args.status = aimbs_get16(&bbs);
 
 	/*
 	 * Next comes the cookie.  Should match the ICBM cookie.
 	 */
 	cookie2 = aimbs_getraw(&bbs, 8);
-	if (memcmp(cookie, cookie2, 8) != 0) 
+	if (memcmp(cookie, cookie2, 8) != 0)
 		faimdprintf(sess, 0, "rend: warning cookies don't match!\n");
 	memcpy(args.cookie, cookie2, 8);
 	free(cookie2);
@@ -1678,7 +1678,7 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	 */
 	args.reqclass = aim_locate_getcaps(sess, &bbs, 0x10);
 
-	/* 
+	/*
 	 * What follows may be TLVs or nothing, depending on the
 	 * purpose of the message.
 	 *
@@ -1760,7 +1760,7 @@ static int incomingim_ch2(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 	 */
 	if (aim_tlv_gettlv(list2, 0x000d, 1))
 		args.encoding = aim_tlv_getstr(list2, 0x000d, 1);
-	
+
 	/*
 	 * Language.
 	 */
@@ -1895,7 +1895,7 @@ static int incomingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	/*
 	 * Channel ID.
 	 *
-	 * Channel 0x0001 is the message channel.  It is 
+	 * Channel 0x0001 is the message channel.  It is
 	 * used to send basic ICBMs.
 	 *
 	 * Channel 0x0002 is the Rendevous channel, which
@@ -1904,7 +1904,7 @@ static int incomingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	 *
 	 * Channel 0x0003 is used for chat messages.
 	 *
-	 * Channel 0x0004 is used for ICQ authorization, or 
+	 * Channel 0x0004 is used for ICQ authorization, or
 	 * possibly any system notice.
 	 *
 	 */
@@ -1917,13 +1917,13 @@ static int incomingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	 * with the TLVs read below, they are two different pieces.  The
 	 * userinfo block contains the number of TLVs that contain user
 	 * information, the rest are not even though there is no seperation.
-	 * You can start reading the message TLVs after aim_info_extract() 
+	 * You can start reading the message TLVs after aim_info_extract()
 	 * parses out the standard userinfo block.
 	 *
 	 * That also means that TLV types can be duplicated between the
 	 * userinfo block and the rest of the message, however there should
 	 * never be two TLVs of the same type in one block.
-	 * 
+	 *
 	 */
 	aim_info_extract(sess, bs, &userinfo);
 
@@ -1942,7 +1942,7 @@ static int incomingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 		aim_tlvlist_t *tlvlist;
 
 		/*
-		 * Read block of TLVs (not including the userinfo data).  All 
+		 * Read block of TLVs (not including the userinfo data).  All
 		 * further data is derived from what is parsed here.
 		 */
 		tlvlist = aim_tlvlist_read(bs);
@@ -1969,11 +1969,11 @@ static int incomingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 
 /*
  * Subtype 0x0008 - Send a warning to sn.
- * 
+ *
  * Flags:
  *  AIM_WARN_ANON  Send as an anonymous (doesn't count as much)
  *
- * returns -1 on error (couldn't alloc packet), 0 on success. 
+ * returns -1 on error (couldn't alloc packet), 0 on success.
  *
  */
 faim_export int aim_im_warn(aim_session_t *sess, aim_conn_t *conn, const char *sn, fu32_t flags)
@@ -1990,7 +1990,7 @@ faim_export int aim_im_warn(aim_session_t *sess, aim_conn_t *conn, const char *s
 	snacid = aim_cachesnac(sess, 0x0004, 0x0008, 0x0000, sn, strlen(sn)+1);
 	aim_putsnac(&fr->data, 0x0004, 0x0008, 0x0000, snacid);
 
-	aimbs_put16(&fr->data, (flags & AIM_WARN_ANON) ? 0x0001 : 0x0000); 
+	aimbs_put16(&fr->data, (flags & AIM_WARN_ANON) ? 0x0001 : 0x0000);
 	aimbs_put8(&fr->data, strlen(sn));
 	aimbs_putraw(&fr->data, sn, strlen(sn));
 
@@ -2007,7 +2007,7 @@ static int missedcall(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	fu16_t channel, nummissed, reason;
 	aim_userinfo_t userinfo;
 
-	while (aim_bstream_empty(bs)) {	
+	while (aim_bstream_empty(bs)) {
 
 		channel = aimbs_get16(bs);
 		aim_info_extract(sess, bs, &userinfo);
@@ -2030,7 +2030,7 @@ static int missedcall(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
  *    AIM_TRANSFER_DENY_NOTSUPPORTED -- "client does not support"
  *    AIM_TRANSFER_DENY_DECLINE -- "client has declined transfer"
  *    AIM_TRANSFER_DENY_NOTACCEPTING -- "client is not accepting transfers"
- * 
+ *
  */
 faim_export int aim_im_denytransfer(aim_session_t *sess, const char *sender, const char *cookie, fu16_t code)
 {
@@ -2038,7 +2038,7 @@ faim_export int aim_im_denytransfer(aim_session_t *sess, const char *sender, con
 	aim_frame_t *fr;
 	aim_snacid_t snacid;
 	aim_tlvlist_t *tl = NULL;
-	
+
 	if (!sess || !(conn = aim_conn_findbygroup(sess, 0x0004)))
 		return -EINVAL;
 
@@ -2047,7 +2047,7 @@ faim_export int aim_im_denytransfer(aim_session_t *sess, const char *sender, con
 
 	snacid = aim_cachesnac(sess, 0x0004, 0x000b, 0x0000, NULL, 0);
 	aim_putsnac(&fr->data, 0x0004, 0x000b, 0x0000, snacid);
-	
+
 	aimbs_putraw(&fr->data, cookie, 8);
 
 	aimbs_put16(&fr->data, 0x0002); /* channel */
@@ -2152,8 +2152,8 @@ static int clientautoresp(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
 /*
  * Subtype 0x000c - Receive an ack after sending an ICBM.
  *
- * You have to have send the message with the AIM_IMFLAGS_ACK flag set 
- * (TLV t(0003)).  The ack contains the ICBM header of the message you 
+ * You have to have send the message with the AIM_IMFLAGS_ACK flag set
+ * (TLV t(0003)).  The ack contains the ICBM header of the message you
  * sent.
  *
  */
@@ -2181,7 +2181,7 @@ static int msgack(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_m
 /*
  * Subtype 0x0014 - Send a mini typing notification (mtn) packet.
  *
- * This is supported by winaim5 and newer, MacAIM bleh and newer, iChat bleh and newer, 
+ * This is supported by winaim5 and newer, MacAIM bleh and newer, iChat bleh and newer,
  * and Gaim 0.60 and newer.
  *
  */
@@ -2236,7 +2236,7 @@ faim_export int aim_im_sendmtn(aim_session_t *sess, fu16_t type1, const char *sn
 /*
  * Subtype 0x0014 - Receive a mini typing notification (mtn) packet.
  *
- * This is supported by winaim5 and newer, MacAIM bleh and newer, iChat bleh and newer, 
+ * This is supported by winaim5 and newer, MacAIM bleh and newer, iChat bleh and newer,
  * and Gaim 0.60 and newer.
  *
  */

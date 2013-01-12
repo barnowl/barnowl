@@ -41,7 +41,7 @@ G_GNUC_WARN_UNUSED_RESULT int owl_zwrite_create(owl_zwrite *z, int argc, const c
 {
   int badargs = 0;
   char *msg = NULL;
-  
+
   /* start with null entries */
   z->cmd=NULL;
   z->realm=NULL;
@@ -176,7 +176,7 @@ void owl_zwrite_send_ping(const owl_zwrite *z)
   char *to;
 
   if (z->noping) return;
-  
+
   if (strcasecmp(z->class, "message")) {
     return;
   }

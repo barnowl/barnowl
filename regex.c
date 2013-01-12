@@ -12,7 +12,7 @@ int owl_regex_create(owl_regex *re, const char *string)
   size_t errbuf_size;
   char *errbuf;
   const char *ptr;
-  
+
   re->string=g_strdup(string);
 
   ptr=string;
@@ -42,7 +42,7 @@ int owl_regex_create_quoted(owl_regex *re, const char *string)
 {
   char *quoted;
   int ret;
-  
+
   quoted = owl_text_quote(string, OWL_REGEX_QUOTECHARS, OWL_REGEX_QUOTEWITH);
   ret = owl_regex_create(re, quoted);
   g_free(quoted);
@@ -58,7 +58,7 @@ int owl_regex_compare(const owl_regex *re, const char *string, int *start, int *
   if (!owl_regex_is_set(re)) {
     return(0);
   }
-  
+
   ret=regexec(&(re->re), string, 1, &match, 0);
   out=ret;
   if (re->negate) {

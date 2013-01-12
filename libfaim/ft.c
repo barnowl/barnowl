@@ -2,40 +2,40 @@
  * Oscar File transfer (OFT) and Oscar Direct Connect (ODC).
  * (ODC is also referred to as DirectIM and IM Image.)
  *
- * There are a few static helper functions at the top, then 
+ * There are a few static helper functions at the top, then
  * ODC stuff, then ft stuff.
  *
- * I feel like this is a good place to explain OFT, so I'm going to 
- * do just that.  Each OFT packet has a header type.  I guess this 
- * is pretty similar to the subtype of a SNAC packet.  The type 
- * basically tells the other client the meaning of the OFT packet.  
- * There are two distinct types of file transfer, which I usually 
- * call "sendfile" and "getfile."  Sendfile is when you send a file 
- * to another AIM user.  Getfile is when you share a group of files, 
+ * I feel like this is a good place to explain OFT, so I'm going to
+ * do just that.  Each OFT packet has a header type.  I guess this
+ * is pretty similar to the subtype of a SNAC packet.  The type
+ * basically tells the other client the meaning of the OFT packet.
+ * There are two distinct types of file transfer, which I usually
+ * call "sendfile" and "getfile."  Sendfile is when you send a file
+ * to another AIM user.  Getfile is when you share a group of files,
  * and other users request that you send them the files.
  *
  * A typical sendfile file transfer goes like this:
- *   1) Sender sends a channel 2 ICBM telling the other user that 
- *      we want to send them a file.  At the same time, we open a 
- *      listener socket (this should be done before sending the 
- *      ICBM) on some port, and wait for them to connect to us.  
- *      The ICBM we sent should contain our IP address and the port 
+ *   1) Sender sends a channel 2 ICBM telling the other user that
+ *      we want to send them a file.  At the same time, we open a
+ *      listener socket (this should be done before sending the
+ *      ICBM) on some port, and wait for them to connect to us.
+ *      The ICBM we sent should contain our IP address and the port
  *      number that we're listening on.
- *   2) The receiver connects to the sender on the given IP address 
- *      and port.  After the connection is established, the receiver 
+ *   2) The receiver connects to the sender on the given IP address
+ *      and port.  After the connection is established, the receiver
  *      sends an ICBM signifying that we are ready and waiting.
- *   3) The sender sends an OFT PROMPT message over the OFT 
+ *   3) The sender sends an OFT PROMPT message over the OFT
  *      connection.
- *   4) The receiver of the file sends back an exact copy of this 
- *      OFT packet, except the cookie is filled in with the cookie 
- *      from the ICBM.  I think this might be an attempt to verify 
- *      that the user that is connected is actually the guy that 
+ *   4) The receiver of the file sends back an exact copy of this
+ *      OFT packet, except the cookie is filled in with the cookie
+ *      from the ICBM.  I think this might be an attempt to verify
+ *      that the user that is connected is actually the guy that
  *      we sent the ICBM to.  Oh, I've been calling this the ACK.
- *   5) The sender starts sending raw data across the connection 
+ *   5) The sender starts sending raw data across the connection
  *      until the entire file has been sent.
- *   6) The receiver knows the file is finished because the sender 
- *      sent the file size in an earlier OFT packet.  So then the 
- *      receiver sends the DONE thingy (after filling in the 
+ *   6) The receiver knows the file is finished because the sender
+ *      sent the file size in an earlier OFT packet.  So then the
+ *      receiver sends the DONE thingy (after filling in the
  *      "received" checksum and size) and closes the connection.
  */
 
@@ -101,18 +101,18 @@ static void aim_oft_dirconvert_fromstupid(char *name)
 /**
  * Calculate oft checksum of buffer
  *
- * Prevcheck should be 0xFFFF0000 when starting a checksum of a file.  The 
- * checksum is kind of a rolling checksum thing, so each time you get bytes 
- * of a file you just call this puppy and it updates the checksum.  You can 
- * calculate the checksum of an entire file by calling this in a while or a 
+ * Prevcheck should be 0xFFFF0000 when starting a checksum of a file.  The
+ * checksum is kind of a rolling checksum thing, so each time you get bytes
+ * of a file you just call this puppy and it updates the checksum.  You can
+ * calculate the checksum of an entire file by calling this in a while or a
  * for loop, or something.
  *
- * Thanks to Graham Booker for providing this improved checksum routine, 
- * which is simpler and should be more accurate than Josh Myer's original 
+ * Thanks to Graham Booker for providing this improved checksum routine,
+ * which is simpler and should be more accurate than Josh Myer's original
  * code. -- wtm
  *
- * This algorithim works every time I have tried it.  The other fails 
- * sometimes.  So, AOL who thought this up?  It has got to be the weirdest 
+ * This algorithim works every time I have tried it.  The other fails
+ * sometimes.  So, AOL who thought this up?  It has got to be the weirdest
  * checksum I have ever seen.
  *
  * @param buffer Buffer of data to checksum.  Man I'd like to buff her...
@@ -133,7 +133,7 @@ faim_export fu32_t aim_oft_checksum_chunk(const fu8_t *buffer, int bufferlen, fu
 			val = buffer[i] << 8;
 		check -= val;
 		/*
-		 * The following appears to be necessary.... It happens 
+		 * The following appears to be necessary.... It happens
 		 * every once in a while and the checksum doesn't fail.
 		 */
 		if (check > oldcheck)
@@ -163,8 +163,8 @@ faim_export fu32_t aim_oft_checksum_file(char *filename) {
 /**
  * Create a listening socket on a given port.
  *
- * XXX - Give the client author the responsibility of setting up a 
- *       listener, then we no longer have a libfaim problem with broken 
+ * XXX - Give the client author the responsibility of setting up a
+ *       listener, then we no longer have a libfaim problem with broken
  *       solaris *innocent smile* -- jbm
  *
  * @param portnum The port number to bind to.
@@ -186,9 +186,9 @@ static int listenestablish(fu16_t portnum)
 	if (getaddrinfo(NULL /* any IP */, serv, &hints, &res) != 0) {
 		perror("getaddrinfo");
 		return -1;
-	} 
+	}
 	ressave = res;
-	do { 
+	do {
 		listenfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		if (listenfd < 0)
 			continue;
@@ -312,7 +312,7 @@ faim_export int aim_handlerendconnect(aim_session_t *sess, aim_conn_t *cur)
  *
  * @param sess The session.
  * @param conn The already-connected ODC connection.
- * @param typing If 0x0002, sends a "typing" message, 0x0001 sends "typed," and 
+ * @param typing If 0x0002, sends a "typing" message, 0x0001 sends "typed," and
  *        0x0000 sends "stopped."
  * @return Return 0 if no errors, otherwise return the error number.
  */
@@ -385,7 +385,7 @@ faim_export int aim_odc_send_typing(aim_session_t *sess, aim_conn_t *conn, int t
 /**
  * Send client-to-client IM over an established direct connection.
  * Call this just like you would aim_send_im, to send a directim.
- * 
+ *
  * @param sess The session.
  * @param conn The already-connected ODC connection.
  * @param msg Null-terminated string to send.
@@ -452,7 +452,7 @@ faim_export int aim_odc_send_im(aim_session_t *sess, aim_conn_t *conn, const cha
 
 	/* end of hdr2 */
 
-#if 0 /* XXX - this is how you send buddy icon info... */	
+#if 0 /* XXX - this is how you send buddy icon info... */
 	aimbs_put16(hdrbs, 0x0008);
 	aimbs_put16(hdrbs, 0x000c);
 	aimbs_put16(hdrbs, 0x0000);
@@ -471,7 +471,7 @@ faim_export int aim_odc_send_im(aim_session_t *sess, aim_conn_t *conn, const cha
 
 /**
  * Get the screen name of the peer of a direct connection.
- * 
+ *
  * @param conn The ODC connection.
  * @return The screen name of the dude, or NULL if there was an anomaly.
  */
@@ -482,7 +482,7 @@ faim_export const char *aim_odc_getsn(aim_conn_t *conn)
 	if (!conn || !conn->internal)
 		return NULL;
 
-	if ((conn->type != AIM_CONN_TYPE_RENDEZVOUS) || 
+	if ((conn->type != AIM_CONN_TYPE_RENDEZVOUS) ||
 			(conn->subtype != AIM_CONN_SUBTYPE_OFT_DIRECTIM))
 		return NULL;
 
@@ -496,7 +496,7 @@ faim_export const char *aim_odc_getsn(aim_conn_t *conn)
  *
  * @param sess The session.
  * @param sn The screen name of the buddy whose direct connection you want to find.
- * @return The conn for the direct connection with the given buddy, or NULL if no 
+ * @return The conn for the direct connection with the given buddy, or NULL if no
  *         connection was found.
  */
 faim_export aim_conn_t *aim_odc_getconn(aim_session_t *sess, const char *sn)
@@ -521,9 +521,9 @@ faim_export aim_conn_t *aim_odc_getconn(aim_session_t *sess, const char *sn)
 /**
  * For those times when we want to open up the direct connection channel ourselves.
  *
- * You'll want to set up some kind of watcher on this socket.  
- * When the state changes, call aim_handlerendconnection with 
- * the connection returned by this.  aim_handlerendconnection 
+ * You'll want to set up some kind of watcher on this socket.
+ * When the state changes, call aim_handlerendconnection with
+ * the connection returned by this.  aim_handlerendconnection
  * will accept the pending connection and stop listening.
  *
  * @param sess The session
@@ -585,7 +585,7 @@ faim_export aim_conn_t *aim_odc_initiate(aim_session_t *sess, const char *sn)
  *
  * This is a wrapper for aim_newconn.
  *
- * If addr is NULL, the socket is not created, but the connection is 
+ * If addr is NULL, the socket is not created, but the connection is
  * allocated and setup to connect.
  *
  * @param sess The Godly session.
@@ -682,7 +682,7 @@ static int handlehdr_odc(aim_session_t *sess, aim_conn_t *conn, aim_frame_t *frr
 		while (payloadlength - recvd) {
 			if (payloadlength - recvd >= 1024)
 				i = aim_recv(conn->fd, &msg[recvd], 1024);
-			else 
+			else
 				i = aim_recv(conn->fd, &msg[recvd], payloadlength - recvd);
 			if (i <= 0) {
 				free(msg);
@@ -693,7 +693,7 @@ static int handlehdr_odc(aim_session_t *sess, aim_conn_t *conn, aim_frame_t *frr
 			if ((userfunc = aim_callhandler(sess, conn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_IMAGETRANSFER)))
 				ret = userfunc(sess, &fr, snptr, (double)recvd / payloadlength);
 		}
-		
+
 		if ((userfunc = aim_callhandler(sess, conn, AIM_CB_FAM_OFT, AIM_CB_OFT_DIRECTIMINCOMING)))
 			ret = userfunc(sess, &fr, snptr, msg, payloadlength, encoding, isawaymsg);
 
@@ -745,7 +745,7 @@ faim_export struct aim_oft_info *aim_oft_createinfo(aim_session_t *sess, const f
 }
 
 /**
- * Remove the given oft_info struct from the oft_info linked list, and 
+ * Remove the given oft_info struct from the oft_info linked list, and
  * then free its memory.
  *
  * @param sess The session.
@@ -780,13 +780,13 @@ faim_export int aim_oft_destroyinfo(struct aim_oft_info *oft_info)
 /**
  * Creates a listener socket so the other dude can connect to us.
  *
- * You'll want to set up some kind of watcher on this socket.  
- * When the state changes, call aim_handlerendconnection with 
- * the connection returned by this.  aim_handlerendconnection 
+ * You'll want to set up some kind of watcher on this socket.
+ * When the state changes, call aim_handlerendconnection with
+ * the connection returned by this.  aim_handlerendconnection
  * will accept the pending connection and stop listening.
  *
  * @param sess The session.
- * @param oft_info File transfer information associated with this 
+ * @param oft_info File transfer information associated with this
  *        connection.
  * @return Return 0 if no errors, otherwise return the error number.
  */
@@ -854,7 +854,7 @@ static struct aim_fileheader_t *aim_oft_getheader(aim_bstream_t *bs)
 	aimbs_getrawbuf(bs, fh->name, 64); /* XXX - filenames longer than 64B */
 
 	return fh;
-} 
+}
 
 /**
  * Fills a buffer with network-order fh data
@@ -864,7 +864,7 @@ static struct aim_fileheader_t *aim_oft_getheader(aim_bstream_t *bs)
  * @return Return non-zero on error.
  */
 static int aim_oft_buildheader(aim_bstream_t *bs, struct aim_fileheader_t *fh)
-{ 
+{
 	fu8_t *hdr;
 
 	if (!bs || !fh)
@@ -909,7 +909,7 @@ static int aim_oft_buildheader(aim_bstream_t *bs, struct aim_fileheader_t *fh)
  *
  * @param sess The session.
  * @param type The subtype of the OFT packet we're sending.
- * @param oft_info The aim_oft_info struct with the connection and OFT 
+ * @param oft_info The aim_oft_info struct with the connection and OFT
  *        info we're sending.
  * @return Return 0 if no errors, otherwise return the error number.
  */
@@ -922,8 +922,8 @@ faim_export int aim_oft_sendheader(aim_session_t *sess, fu16_t type, struct aim_
 
 #if 0
 	/*
-	 * If you are receiving a file, the cookie should be null, if you are sending a 
-	 * file, the cookie should be the same as the one used in the ICBM negotiation 
+	 * If you are receiving a file, the cookie should be null, if you are sending a
+	 * file, the cookie should be the same as the one used in the ICBM negotiation
 	 * SNACs.
 	 */
 	fh->lnameoffset = 0x1a;
@@ -955,13 +955,13 @@ faim_export int aim_oft_sendheader(aim_session_t *sess, fu16_t type, struct aim_
 }
 
 /**
- * Handle incoming data on a rendezvous connection.  This is analogous to the 
- * consumesnac function in rxhandlers.c, and I really think this should probably 
+ * Handle incoming data on a rendezvous connection.  This is analogous to the
+ * consumesnac function in rxhandlers.c, and I really think this should probably
  * be in rxhandlers.c as well, but I haven't finished cleaning everything up yet.
  *
  * @param sess The session.
  * @param fr The frame allocated for the incoming data.
- * @return Return 0 if the packet was handled correctly, otherwise return the 
+ * @return Return 0 if the packet was handled correctly, otherwise return the
  *         error number.
  */
 faim_internal int aim_rxdispatch_rendezvous(aim_session_t *sess, aim_frame_t *fr)

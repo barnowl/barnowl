@@ -61,7 +61,7 @@ Net::Jabber::Server - Jabber Server Library
 
     %status = $Server->Process();
     %status = $Server->Process(5);
-    
+
     $Server->Stop();
 
 =head1 METHODS
@@ -97,7 +97,7 @@ Net::Jabber::Server - Jabber Server Library
                            1   - Status ok, data received.
                            0   - Status ok, no data received.
                          undef - Status not ok, stop processing.
-                       
+
                        IMPORTANT: You need to check the output of every
                        Process.  If you get an undef then the connection
                        died and you should behave accordingly.

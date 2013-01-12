@@ -1,4 +1,4 @@
-### The owlconf config file   -*- perl -*-  
+### The owlconf config file   -*- perl -*-
 ###
 ### This file is interpreted by the perl interpreter.
 ### If you wish to execute an owl command use the
@@ -22,7 +22,7 @@
 ###     $owl::class, $owl::instance, $owl::recipient,
 ###     $owl::sender, $owl::opcode, $owl::zsig,
 ###     $owl::msg, $owl::time, $owl::host, @owl::fields
-###    
+###
 
 # classes will be appreviated this way
 my %class_abbrev = (
@@ -123,7 +123,7 @@ sub fill_text {
 	my $outline = " "x$indent;
     }
     for my $w (@words) {
-	if (($outline ne "") 
+	if (($outline ne "")
 	    && (length($outline)+length($w) > $width-$unindent)) {
 	    $out .= $outline."\n";
 	    $outline = " "x$indent;
@@ -136,5 +136,5 @@ sub fill_text {
 	}
 	$outline .= $w;
     }
-    $out .= $outline . "\n";    
+    $out .= $outline . "\n";
 }

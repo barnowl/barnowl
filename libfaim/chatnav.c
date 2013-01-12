@@ -45,7 +45,7 @@ faim_export int aim_chatnav_createroom(aim_session_t *sess, aim_conn_t *conn, co
 	/*
 	 * This looks to be a big hack.  You'll note that this entire
 	 * SNAC is just a room info structure, but the hard room name,
-	 * here, is set to "create".  
+	 * here, is set to "create".
 	 *
 	 * Either this goes on the "list of questions concerning
 	 * why-the-hell-did-you-do-that", or this value is completly
@@ -56,9 +56,9 @@ faim_export int aim_chatnav_createroom(aim_session_t *sess, aim_conn_t *conn, co
 	aimbs_put8(&fr->data, strlen(ck));
 	aimbs_putraw(&fr->data, ck, strlen(ck));
 
-	/* 
+	/*
 	 * instance
-	 * 
+	 *
 	 * Setting this to 0xffff apparently assigns the last instance.
 	 *
 	 */
@@ -94,18 +94,18 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 
 	tlvlist = aim_tlvlist_read(bs);
 
-	/* 
+	/*
 	 * Type 0x0002: Maximum concurrent rooms.
-	 */ 
+	 */
 	if (aim_tlv_gettlv(tlvlist, 0x0002, 1))
 		maxrooms = aim_tlv_get8(tlvlist, 0x0002, 1);
 
-	/* 
+	/*
 	 * Type 0x0003: Exchange information
 	 *
 	 * There can be any number of these, each one
-	 * representing another exchange.  
-	 * 
+	 * representing another exchange.
+	 *
 	 */
 	for (curexchange = 0; ((exchangetlv = aim_tlv_gettlv(tlvlist, 0x0003, curexchange+1))); ) {
 		aim_bstream_t tbs;
@@ -120,7 +120,7 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 		exchanges[curexchange-1].number = aimbs_get16(&tbs);
 		innerlist = aim_tlvlist_read(&tbs);
 
-		/* 
+		/*
 		 * Type 0x000a: Unknown.
 		 *
 		 * Usually three bytes: 0x0114 (exchange 1) or 0x010f (others).
@@ -129,26 +129,26 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 		if (aim_tlv_gettlv(innerlist, 0x000a, 1))
 			;
 
-		/* 
+		/*
 		 * Type 0x000d: Unknown.
 		 */
 		if (aim_tlv_gettlv(innerlist, 0x000d, 1))
 			;
 
-		/* 
+		/*
 		 * Type 0x0004: Unknown
 		 */
 		if (aim_tlv_gettlv(innerlist, 0x0004, 1))
 			;
 
-		/* 
+		/*
 		 * Type 0x0002: Unknown
 		 */
 		if (aim_tlv_gettlv(innerlist, 0x0002, 1)) {
 			fu16_t classperms;
 
 			classperms = aim_tlv_get16(innerlist, 0x0002, 1);
-			
+
 			faimdprintf(sess, 1, "faim: class permissions %x\n", classperms);
 		}
 
@@ -160,16 +160,16 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 		 * 4 Instancing Allowed
 		 * 8 Occupant Peek Allowed
 		 *
-		 */ 
+		 */
 		if (aim_tlv_gettlv(innerlist, 0x00c9, 1))
 			exchanges[curexchange-1].flags = aim_tlv_get16(innerlist, 0x00c9, 1);
-		      
+
 		/*
-		 * Type 0x00ca: Creation Date 
+		 * Type 0x00ca: Creation Date
 		 */
 		if (aim_tlv_gettlv(innerlist, 0x00ca, 1))
 			;
-		      
+
 		/*
 		 * Type 0x00d0: Mandatory Channels?
 		 */
@@ -185,13 +185,13 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 		/*
 		 * Type 0x00d2: Maximum Occupancy?
 		 */
-		if (aim_tlv_gettlv(innerlist, 0x00d2, 1))	
+		if (aim_tlv_gettlv(innerlist, 0x00d2, 1))
 			;
 
 		/*
 		 * Type 0x00d3: Exchange Description
 		 */
-		if (aim_tlv_gettlv(innerlist, 0x00d3, 1))	
+		if (aim_tlv_gettlv(innerlist, 0x00d3, 1))
 			exchanges[curexchange-1].name = aim_tlv_getstr(innerlist, 0x00d3, 1);
 		else
 			exchanges[curexchange-1].name = NULL;
@@ -199,7 +199,7 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 		/*
 		 * Type 0x00d4: Exchange Description URL
 		 */
-		if (aim_tlv_gettlv(innerlist, 0x00d4, 1))	
+		if (aim_tlv_gettlv(innerlist, 0x00d4, 1))
 			;
 
 		/*
@@ -208,7 +208,7 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 		 * 0  Creation not allowed
 		 * 1  Room creation allowed
 		 * 2  Exchange creation allowed
-		 * 
+		 *
 		 */
 		if (aim_tlv_gettlv(innerlist, 0x00d5, 1)) {
 			fu8_t createperms;
@@ -218,40 +218,40 @@ static int parseinfo_perms(aim_session_t *sess, aim_module_t *mod, aim_frame_t *
 
 		/*
 		 * Type 0x00d6: Character Set (First Time)
-		 */	      
-		if (aim_tlv_gettlv(innerlist, 0x00d6, 1))	
+		 */
+		if (aim_tlv_gettlv(innerlist, 0x00d6, 1))
 			exchanges[curexchange-1].charset1 = aim_tlv_getstr(innerlist, 0x00d6, 1);
 		else
 			exchanges[curexchange-1].charset1 = NULL;
-		      
+
 		/*
 		 * Type 0x00d7: Language (First Time)
-		 */	      
-		if (aim_tlv_gettlv(innerlist, 0x00d7, 1))	
+		 */
+		if (aim_tlv_gettlv(innerlist, 0x00d7, 1))
 			exchanges[curexchange-1].lang1 = aim_tlv_getstr(innerlist, 0x00d7, 1);
 		else
 			exchanges[curexchange-1].lang1 = NULL;
 
 		/*
 		 * Type 0x00d8: Character Set (Second Time)
-		 */	      
-		if (aim_tlv_gettlv(innerlist, 0x00d8, 1))	
+		 */
+		if (aim_tlv_gettlv(innerlist, 0x00d8, 1))
 			exchanges[curexchange-1].charset2 = aim_tlv_getstr(innerlist, 0x00d8, 1);
 		else
 			exchanges[curexchange-1].charset2 = NULL;
 
 		/*
 		 * Type 0x00d9: Language (Second Time)
-		 */	      
-		if (aim_tlv_gettlv(innerlist, 0x00d9, 1))	
+		 */
+		if (aim_tlv_gettlv(innerlist, 0x00d9, 1))
 			exchanges[curexchange-1].lang2 = aim_tlv_getstr(innerlist, 0x00d9, 1);
 		else
 			exchanges[curexchange-1].lang2 = NULL;
-		      
+
 		/*
 		 * Type 0x00da: Unknown
 		 */
-		if (aim_tlv_gettlv(innerlist, 0x00da, 1))	
+		if (aim_tlv_gettlv(innerlist, 0x00da, 1))
 			;
 
 		aim_tlvlist_free(&innerlist);
@@ -353,7 +353,7 @@ static int parseinfo_create(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
 /*
  * Subtype 0x0009
  *
- * Since multiple things can trigger this callback, we must lookup the 
+ * Since multiple things can trigger this callback, we must lookup the
  * snacid to determine the original snac subtype that was called.
  *
  * XXX This isn't really how this works.  But this is:  Every d/9 response
@@ -363,7 +363,7 @@ static int parseinfo_create(aim_session_t *sess, aim_module_t *mod, aim_frame_t 
  *    Instance Info = 4
  *    Nav Short Desc = 8
  *    Nav Instance Info = 16
- * And then everything is really asynchronous.  There is no specific 
+ * And then everything is really asynchronous.  There is no specific
  * attachment of a response to a create room request, for example.  Creating
  * the room yields no different a response than requesting the room's info.
  *

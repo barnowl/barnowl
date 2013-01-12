@@ -107,7 +107,7 @@ sub complete_file {
     return unless -d $dir;
 
     my ($pfx, $base) = splitfile($string);
-    
+
     opendir(my $dh, $dir) or return;
     my @dirs = readdir($dh);
     close($dh);
@@ -118,7 +118,7 @@ sub complete_file {
         if($d =~ m{^[.]} && $base !~ m{^[.]}) {
             next;
         }
-        
+
         my ($text, $value, $done) = ($d, "${pfx}${d}", 1);
 
         if (-d "$dir/$d") {

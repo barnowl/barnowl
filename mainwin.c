@@ -141,7 +141,7 @@ static void owl_mainwin_redraw(owl_window *w, WINDOW *recwin, void *user_data)
     if (owl_global_get_rightshift(&g)==0) {   /* this lame and should be fixed */
       if (m==owl_view_get_element(v, curmsg)) {
 	wmove(recwin, savey, 0);
-	wattron(recwin, A_BOLD);	
+	wattron(recwin, A_BOLD);
 	if (owl_global_get_curmsg_vert_offset(&g)>0) {
 	  waddstr(recwin, "+");
 	} else {

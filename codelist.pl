@@ -28,7 +28,7 @@ foreach $file (@ARGV) {
 	} elsif (/^#if/ || /^#else/ || /^#endif/) {
 	    print;
 	}
-	    
+
     }
     close(FILE);
     print "\n";

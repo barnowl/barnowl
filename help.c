@@ -10,11 +10,11 @@ void owl_help(void)
 
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_bold
-    (&fm, 
+    (&fm,
      "OWL HELP\n\n");
 
   owl_fmtext_append_normal
-    (&fm, 
+    (&fm,
      "  If you're new to BarnOwl, the first thing you should type is\n\n"
      "    :show quickstart\n\n"
      "  For help on a specific command use 'help <command>'\n"
@@ -23,11 +23,11 @@ void owl_help(void)
      "  For information on variables, use 'show variables'.\n\n");
 
   owl_fmtext_append_bold
-    (&fm, 
+    (&fm,
      "  Basic Keys:\n"
      );
   owl_fmtext_append_normal
-    (&fm, 
+    (&fm,
      "    n             Move to next non-deleted message\n"
      "    p             Move to previous non-deleted message\n"
      "    C-n , down    Move to next message\n"
@@ -77,11 +77,11 @@ void owl_help(void)
      "\n\n"
      );
   owl_fmtext_append_bold
-    (&fm, 
+    (&fm,
      "  Basic Commands:\n"
      );
   owl_fmtext_append_normal
-    (&fm, 
+    (&fm,
      "    quit, exit    Exit BarnOwl\n"
      "    help          Get help about commands\n"
      "    show          Show information about BarnOwl (see detailed help)\n"
@@ -124,9 +124,9 @@ void owl_help(void)
      "    status        Print status information about the running BarnOwl\n"
      "    version       Print the version number of BarnOwl\n"
      "\n");
-  
+
   /* help for variables */
-  owl_fmtext_append_bold(&fm, 
+  owl_fmtext_append_bold(&fm,
 			 "Variables:\n");
   varnames = owl_variable_dict_get_names(owl_global_get_vardict(&g));
   for (i = 0; i < varnames->len; i++) {

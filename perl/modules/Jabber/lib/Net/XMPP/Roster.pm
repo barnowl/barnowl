@@ -29,7 +29,7 @@ Net::XMPP::Roster - XMPP Roster Object
 
   Net::XMPP::Roster is a module that provides a developer an easy
   interface to an XMPP roster.  It provides high level functions to
-  query, update, and manage a user's roster.  
+  query, update, and manage a user's roster.
 
 =head1 DESCRIPTION
 
@@ -37,7 +37,7 @@ Net::XMPP::Roster - XMPP Roster Object
   with a user's roster.  When you instantiate it, it automatically
   registers with the connection to receivce the correct packets so
   that it can track all roster updates, and presence packets.
-  
+
 =head2 Basic Functions
 
   my $Client = Net::XMPP::Client->new(...);
@@ -90,7 +90,7 @@ Net::XMPP::Roster - XMPP Roster Object
 
   These functions are only needed if you want to manually control
   the Roster.
-  
+
   $Roster->add('bob@jabber.org',
                name=>"Bob",
                groups=>["Friends"]
@@ -130,7 +130,7 @@ Net::XMPP::Roster - XMPP Roster Object
   exists(jid) - return 1 if the JID exists in the database, undef
                 otherwise.  The jid can either be a string, or a
                 Net::XMPP::JID object.
-                
+
   groupExists(group) - return 1 if the group exists in the database,
                        undef otherwise.
 
@@ -235,11 +235,11 @@ sub new
     }
 
     $self->{CONNECTION} = $args{connection};
-    
+
     bless($self, $proto);
 
     $self->init();
-    
+
     return $self;
 }
 
@@ -364,7 +364,7 @@ sub exists
     my ($jid) = @_;
 
     $jid = $jid->GetJID() if UNIVERSAL::isa($jid,"Net::XMPP::JID");
-    
+
     return unless exists($self->{JIDS});
     return unless exists($self->{JIDS}->{$jid});
     return 1;
@@ -488,7 +488,7 @@ sub handlePresence
 
     my $resource = $jid->GetResource();
     $resource = " " unless ($resource ne "");
-    
+
     $jid = $jid->GetJID();
     $jid = "" unless defined($jid);
 
@@ -504,7 +504,7 @@ sub handlePresence
     if (($type eq "") || ($type eq "available"))
     {
         my %item;
-        
+
         $item{priority} = $presence->GetPriority();
         $item{priority} = 0 unless defined($item{priority});
 
@@ -546,7 +546,7 @@ sub jids
             push(@jids, Net::XMPP::JID->new($jid));
         }
     }
-    
+
     if ($type eq "group")
     {
         return () unless exists($self->{GROUPS});
@@ -596,14 +596,14 @@ sub priority
     my $resource = shift;
 
     $jid = $jid->GetJID() if UNIVERSAL::isa($jid,"Net::XMPP::JID");
-    
+
     if (defined($resource))
     {
         return unless $self->resourceExists($jid,$resource);
         return unless exists($self->{JIDS}->{$jid}->{resources}->{$resource}->{priority});
         return $self->{JIDS}->{$jid}->{resources}->{$resource}->{priority};
     }
-    
+
     return unless exists($self->{JIDS}->{$jid}->{priorities});
     my @priorities = sort{ $b <=> $a } keys(%{$self->{JIDS}->{$jid}->{priorities}});
     return $priorities[0];
@@ -622,7 +622,7 @@ sub query
     my $key = shift;
 
     $jid = $jid->GetJID() if UNIVERSAL::isa($jid,"Net::XMPP::JID");
-    
+
     return unless $self->exists($jid);
     if (defined($key))
     {
@@ -648,7 +648,7 @@ sub remove
     if ($self->exists($jid))
     {
         $self->{CONNECTION}->{DEBUG}->Log3("Roster::remove: deleting $jid from the DB");
-        
+
         if (defined($self->query($jid,"groups")))
         {
             foreach my $group (@{$self->query($jid,"groups")})
@@ -660,7 +660,7 @@ sub remove
                     if (scalar(keys(%{$self->{GROUPS}})) == 0);
             }
         }
-    
+
         delete($self->{JIDS}->{$jid});
         delete($self->{JIDS}) if (scalar(keys(%{$self->{JIDS}})) == 0);
     }
@@ -695,7 +695,7 @@ sub removeResource
                 $loc = $index
                     if ($self->{JIDS}->{$jid}->{priorities}->{$oldPriority}->[$index]->{resource} eq $resource);
             }
-            
+
             splice(@{$self->{JIDS}->{$jid}->{priorities}->{$oldPriority}},$loc,1);
 
             delete($self->{JIDS}->{$jid}->{priorities}->{$oldPriority})
@@ -741,7 +741,7 @@ sub resourceExists
     my $self = shift;
     my $jid = shift;
     my $resource = shift;
-    
+
     $jid = $jid->GetJID() if UNIVERSAL::isa($jid,"Net::XMPP::JID");
 
     return unless $self->exists($jid);
@@ -764,7 +764,7 @@ sub resourceQuery
     my $key = shift;
 
     $jid = $jid->GetJID() if UNIVERSAL::isa($jid,"Net::XMPP::JID");
-    
+
     return unless $self->resourceExists($jid,$resource);
     if (defined($key))
     {

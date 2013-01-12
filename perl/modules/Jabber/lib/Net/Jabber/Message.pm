@@ -51,10 +51,10 @@ use vars qw( $VERSION );
 
 $VERSION = "2.0";
 
-sub GetX     { my $self = shift; $self->GetChild(@_);    } 
+sub GetX     { my $self = shift; $self->GetChild(@_);    }
 sub DefinedX { my $self = shift; $self->DefinedChild(@_); }
 sub NewX     { my $self = shift; $self->NewChild(@_);    }
-sub AddX     { my $self = shift; $self->AddChild(@_);    } 
+sub AddX     { my $self = shift; $self->AddChild(@_);    }
 sub RemoveX  { my $self = shift; $self->RemoveChild(@_); }
 
 sub _new_jid    { my $self = shift; return Net::Jabber::JID->new(@_);     }

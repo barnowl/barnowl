@@ -49,7 +49,7 @@ sub allocate
 
     $self->{TYPE} = shift;
     $self->{VALUE} = shift;
-    
+
     return $self;
 }
 
@@ -164,11 +164,11 @@ sub isValid
         if ($self->{OP}->isValid(\$tmp_ctxt))
         {
             push(@valid_elems,$elem);
-        }   
+        }
     }
 
     $$ctxt->setList(@valid_elems);
-    
+
     if ($#valid_elems == -1)
     {
         return;
@@ -223,12 +223,12 @@ sub isValid
     }
 
     my @valid_elems;
-    
+
     foreach my $elem (@elems)
     {
         push(@valid_elems,$self->descend($elem));
     }
-    
+
     $$ctxt->setList(@valid_elems);
 
     if ($#valid_elems == -1)
@@ -246,17 +246,17 @@ sub descend
     my $elem = shift;
 
     my @valid_elems;
-    
+
     if (($self->{VALUE} eq "*") || (&XML::Stream::GetXMLData("tag",$elem) eq $self->{VALUE}))
     {
         push(@valid_elems,$elem);
     }
-    
+
     foreach my $child (&XML::Stream::GetXMLData("child array",$elem,"*"))
     {
         push(@valid_elems,$self->descend($child));
     }
-    
+
     return @valid_elems;
 }
 
@@ -325,7 +325,7 @@ sub isValid
             push(@valid_elems,$elem);
         }
     }
-    
+
     $$ctxt->setList(@valid_elems);
 
     if ($#valid_elems == -1)
@@ -342,7 +342,7 @@ sub calcStr
     my $self = shift;
     my $elem = shift;
     return &XML::Stream::GetXMLData("value",$elem);
-} 
+}
 
 
 ##############################################################################
@@ -373,7 +373,7 @@ sub isValid
     my $tmp_ctxt = new XML::Stream::XPath::Value();
     $tmp_ctxt->setList($$ctxt->getList());
     $tmp_ctxt->in_context(0);
-    
+
     if (!$self->{OP_L}->isValid(\$tmp_ctxt) || !$self->{OP_R}->isValid(\$tmp_ctxt))
     {
         return;
@@ -392,7 +392,7 @@ sub isValid
     {
         @valid_elems = $$ctxt->getList();
     }
-    
+
     $$ctxt->setList(@valid_elems);
 
     if ($#valid_elems == -1)
@@ -413,7 +413,7 @@ sub display
     print $space,"OP: type(EQUAL)\n";
     print $space,"    op_l: ";
     $self->{OP_L}->display($space."    ");
-    
+
     print $space,"    op_r: ";
     $self->{OP_R}->display($space."    ");
 }
@@ -448,7 +448,7 @@ sub isValid
     my $tmp_ctxt = new XML::Stream::XPath::Value();
     $tmp_ctxt->setList($$ctxt->getList());
     $tmp_ctxt->in_context(0);
-    
+
     if (!$self->{OP_L}->isValid(\$tmp_ctxt) || !$self->{OP_R}->isValid(\$tmp_ctxt))
     {
         return;
@@ -467,7 +467,7 @@ sub isValid
     {
         @valid_elems = $$ctxt->getList();
     }
-    
+
     $$ctxt->setList(@valid_elems);
 
     if ($#valid_elems == -1)
@@ -488,7 +488,7 @@ sub display
     print $space,"OP: type(NOTEQUAL)\n";
     print $space,"    op_l: ";
     $self->{OP_L}->display($space."    ");
-    
+
     print $space,"    op_r: ";
     $self->{OP_R}->display($space."    ");
 }
@@ -523,7 +523,7 @@ sub isValid
     my @valid_elems;
     my @values;
     my %attribs;
-    
+
     foreach my $elem (@elems)
     {
         if ($self->{VALUE} ne "*")
@@ -557,7 +557,7 @@ sub isValid
     {
         return;
     }
-    
+
     return 1;
 }
 
@@ -606,7 +606,7 @@ sub isValid
 
     my $opl = $self->{OP_L}->isValid($ctxt);
     my $opr = $self->{OP_R}->isValid($ctxt);
-    
+
     if ($opl && $opr)
     {
         return 1;
@@ -627,7 +627,7 @@ sub display
     print $space,"OP: type(AND)\n";
     print $space,"  op_l: \n";
     $self->{OP_L}->display($space."    ");
-    
+
     print $space,"  op_r: \n";
     $self->{OP_R}->display($space."    ");
 }
@@ -671,15 +671,15 @@ sub isValid
 
         my $opl = $self->{OP_L}->isValid(\$tmp_ctxt_l);
         my $opr = $self->{OP_R}->isValid(\$tmp_ctxt_r);
-    
+
         if ($opl || $opr)
         {
             push(@valid_elems,$elem);
-        }   
+        }
     }
 
     $$ctxt->setList(@valid_elems);
-    
+
     if ($#valid_elems == -1)
     {
         return;
@@ -698,7 +698,7 @@ sub display
     print "${space}OP: type(OR)\n";
     print "$space    op_l: ";
     $self->{OP_L}->display("$space    ");
-    
+
     print "$space    op_r: ";
     $self->{OP_R}->display("$space    ");
 }
@@ -749,7 +749,7 @@ sub calcStr
 {
     my $self = shift;
     my $elem = shift;
-    
+
     my $result;
     eval("\$result = &{\$XML::Stream::XPath::VALUES{\$self->{VALUE}}}(\$elem);");
     return $result;
@@ -789,12 +789,12 @@ sub function_name
         {
             push(@valid_elems,$elem);
             push(@valid_values,$text);
-        }   
+        }
     }
 
     $$ctxt->setList(@valid_elems);
     $$ctxt->setValues(@valid_values);
-    
+
     if ($#valid_elems == -1)
     {
         return;
@@ -818,11 +818,11 @@ sub function_not
         if (!($args[0]->isValid(\$tmp_ctxt)))
         {
             push(@valid_elems,$elem);
-        }   
+        }
     }
 
     $$ctxt->setList(@valid_elems);
-    
+
     if ($#valid_elems == -1)
     {
         return;
@@ -847,12 +847,12 @@ sub function_text
         {
             push(@valid_elems,$elem);
             push(@valid_values,$text);
-        }   
+        }
     }
 
     $$ctxt->setList(@valid_elems);
     $$ctxt->setValues(@valid_values);
-    
+
     if ($#valid_elems == -1)
     {
         return;
@@ -877,11 +877,11 @@ sub function_startswith
         if (substr($val1,0,length($val2)) eq $val2)
         {
             push(@valid_elems,$elem);
-        }   
+        }
     }
 
     $$ctxt->setList(@valid_elems);
-    
+
     if ($#valid_elems == -1)
     {
         return;

@@ -411,7 +411,7 @@ sub schedule_reconnect {
     if (defined $self->{reconnect_timer}) {
         $self->{reconnect_timer}->stop;
     }
-    $self->{reconnect_timer} = 
+    $self->{reconnect_timer} =
         BarnOwl::Timer->new( {
             name  => 'IRC (' . $self->alias . ') reconnect_timer',
             after => $interval,
@@ -471,7 +471,7 @@ sub strip_irc_formatting {
     # these to zephyr colors, be my guest.
     $body =~ s/\cC\d+(?:,\d+)?//g;
     $body =~ s/\cO//g;
-    
+
     my @pieces = split /\cB/, $body;
     my $out = '';
     while(@pieces) {

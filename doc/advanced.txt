@@ -43,7 +43,7 @@ The message fields that can be used in a filter command include:
      body          message body
      type          message type ('zephyr', 'aim', 'admin')
      direction     either 'in' 'out' or 'none'\n"
-     login         either 'login' 'logout' or 'none'\n" 
+     login         either 'login' 'logout' or 'none'\n"
 
 You can also use the operators 'and' 'or' and 'not' as well as the
 values 'true' and 'false'.  Parentheses can be used to group
@@ -63,7 +63,7 @@ Section 6: THE PERL EXTENSION CONFIG FILE
 
 *** WARNING: This interface is still evolving and may change over time ***
 
-The ~/.owlconf file is interpreted by the perl interpreter. 
+The ~/.owlconf file is interpreted by the perl interpreter.
 You may specify an alternate file by running owl with "owl -c <configfile>".
 
 Subroutines created with the names below will be executed at the
@@ -75,7 +75,7 @@ specified times:
     owl::shutdown()    run when owl exits
     owl::format_msg()  run to format messages when using the perl style.
 		       The return value is used to display the message on the
-                       screen. 
+                       screen.
     owl::receive_msg() run when a message is received, and after
 		       it has been added to the message list
 
@@ -86,13 +86,13 @@ If you wish to execute an owl command use the function owl::command().  i.e.
 
      owl::command('set zsigproc "/mit/kretch/bin/getzsig foo"');
 
-will set the owl variable zsigproc to 
+will set the owl variable zsigproc to
 the value "/mit/kretch/bin/getzsig foo".
 Note that you will need to watch out for perl quoting issues.
 [It may be worth talking about them a little here...]
 
 Both owl::format_msg and owl::receive_msg are passed perl owl::Message
-objects which have methods for accessing the attributes of the message.  
+objects which have methods for accessing the attributes of the message.
 
 (Caveat: Note that these owl::Message objects are currently only
 	 snapshots of the message contents that are created as needed.  As
@@ -153,10 +153,10 @@ list the direction, sender, and time would be:
 		       $m->time;
     }
 
-In the above, $m is the owl::Message object and 
+In the above, $m is the owl::Message object and
 its methods are called with $m->METHODNAME.
 
-An example receiver function that tags all zephyr pings for 
+An example receiver function that tags all zephyr pings for
 deletion would be:
 
     sub owl::receive_msg {
@@ -186,13 +186,13 @@ Perl code may be executed from within owl with:
 
 If you use pperl instead of perl, the return value
 of the perl command will be displayed in a pop-up window.
-This is particularly useful within key bindings 
+This is particularly useful within key bindings
 and aliases.  For example:
 
   alias finger pperl $x=owl::getcurmsg()->hostname; `finger \@$x`;
 
 Will cause the "finger" command to be used to finger at the host
-where the current message came from.  You can then bind this 
+where the current message came from.  You can then bind this
 to the "f" key with:
 
    bindkey recv f command finger

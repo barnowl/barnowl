@@ -58,9 +58,9 @@ sub new
     my $self = { };
 
     bless($self, $proto);
-    
+
     $self->init(@_);
-    
+
     $self->{SERVER}->{namespace} = "unknown";
 
     return $self;
@@ -75,7 +75,7 @@ sub new
 sub init
 {
     my $self = shift;
-    
+
     $self->{ARGS} = {};
     while($#_ >= 0) { $self->{ARGS}->{ lc(pop(@_)) } = pop(@_); }
 
@@ -102,7 +102,7 @@ sub init
                          debuglevel => $self->{DEBUG}->GetLevel(),
                          debugtime  => $self->{DEBUG}->GetTime(),
                         );
-    
+
     $self->{RCVDB}->{currentID} = 0;
 
     $self->callbackInit();
@@ -131,7 +131,7 @@ sub Connect
 
     $self->{DEBUG}->Log1("Connect: host($self->{SERVER}->{hostname}:$self->{SERVER}->{port}) namespace($self->{SERVER}->{namespace})");
     $self->{DEBUG}->Log1("Connect: timeout($self->{SERVER}->{timeout})");
-    
+
     delete($self->{SESSION});
     $self->{SESSION} =
         $self->{STREAM}->
@@ -209,7 +209,7 @@ sub Disconnect
 
     $self->{STREAM}->Disconnect($self->{SESSION}->{id})
         if ($self->{CONNECTED} == 1);
-    $self->{STREAM}->SetCallBacks(node=>undef);    
+    $self->{STREAM}->SetCallBacks(node=>undef);
     $self->{CONNECTED} = 0;
     $self->{DISCONNECTED} = 1;
     $self->{DEBUG}->Log1("Disconnect: bye bye");
@@ -269,7 +269,7 @@ sub Execute
             $self->{DEBUG}->Log1("Execute: Could not auth with server: ($result[0]: $result[1])");
             &{$self->{CB}->{onauthfail}}()
                 if exists($self->{CB}->{onauthfail});
-            
+
             if (!$self->{SERVER}->{allow_register} || $args{register} == 0)
             {
                 $self->{DEBUG}->Log1("Execute: Register turned off.  Exiting.");
@@ -287,7 +287,7 @@ sub Execute
                     $self->{DEBUG}->Log1("Execute: Register failed.  Exiting.");
                     &{$self->{CB}->{onregisterfail}}()
                         if exists($self->{CB}->{onregisterfail});
-            
+
                     $self->Disconnect();
                     &{$self->{CB}->{ondisconnect}}()
                         if exists($self->{CB}->{ondisconnect});
@@ -305,7 +305,7 @@ sub Execute
             &{$self->{CB}->{onauth}}()
                 if exists($self->{CB}->{onauth});
         }
- 
+
         while($self->Connected())
         {
 

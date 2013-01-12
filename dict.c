@@ -1,4 +1,4 @@
-/* Dictionary data abstraction.  
+/* Dictionary data abstraction.
  * Maps from strings to pointers.
  * Stores as a sorted list of key/value pairs.
  * O(n) on inserts and deletes.
@@ -67,8 +67,8 @@ void owl_dict_noop_delete(void *x)
   return;
 }
 
-/* Returns 0 on success.  Will copy the key but make 
-   a reference to the value.  Will clobber an existing 
+/* Returns 0 on success.  Will copy the key but make
+   a reference to the value.  Will clobber an existing
    entry with the same key iff delete_on_replace!=NULL,
    and will run delete_on_replace on the old element.
    Will return -2 if replace=NULL and match was found.
@@ -92,12 +92,12 @@ int owl_dict_insert_element(owl_dict *d, const char *k, void *v, void (*delete_o
     }
     if (pos!=d->size) {
       /* shift forward to leave us a slot */
-      memmove(d->els+pos+1, d->els+pos, 
+      memmove(d->els+pos+1, d->els+pos,
 	      sizeof(owl_dict_el)*(d->size-pos));
     }
     d->size++;
     d->els[pos].k = g_strdup(k);
-    d->els[pos].v = v;    
+    d->els[pos].v = v;
     return(0);
   }
 }

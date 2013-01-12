@@ -40,7 +40,7 @@ Net::Jabber::XDB - Jabber XDB Library
   for each Net::Jabber::Data::* module.  To see the list of avilable
   namspaces and modules see Net::Jabber::Data.
 
-  To initialize the XDB with a Jabber <xdb/> you must pass it the 
+  To initialize the XDB with a Jabber <xdb/> you must pass it the
   XML::Parser Tree array.  For example:
 
     my $xdb = Net::Jabber::XDB->new(@tree);

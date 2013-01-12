@@ -1,7 +1,7 @@
 /*
  * Family 0x000f - Newer Search Method
  *
- * Used for searching for other AIM users by email address, name, 
+ * Used for searching for other AIM users by email address, name,
  * location, commmon interests, and a few other similar things.
  *
  */
@@ -51,7 +51,7 @@ faim_export int aim_odir_email(aim_session_t *sess, const char *region, const ch
 /**
  * Subtype 0x0002 - Submit a User Search Request
  *
- * Search for an AIM screen name based on various info 
+ * Search for an AIM screen name based on various info
  * about the person.
  *
  * @param sess The oscar session.

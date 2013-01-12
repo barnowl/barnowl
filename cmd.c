@@ -78,8 +78,8 @@ CALLER_OWN char *owl_cmddict_execute(const owl_cmddict *cd, const owl_context *c
   if (argv == NULL) {
     owl_function_makemsg("Unbalanced quotes");
     return NULL;
-  } 
-  
+  }
+
   if (argc < 1) {
     g_strfreev(argv);
     return NULL;
@@ -143,7 +143,7 @@ void owl_cmd_delete(owl_cmd *cmd)
   g_free(cmd);
 }
 
-int owl_cmd_is_context_valid(const owl_cmd *cmd, const owl_context *ctx) { 
+int owl_cmd_is_context_valid(const owl_cmd *cmd, const owl_context *ctx) {
   if (owl_context_matches(ctx, cmd->validctx)) return 1;
   else return 0;
 }
@@ -167,7 +167,7 @@ CALLER_OWN char *owl_cmd_execute(const owl_cmd *cmd, const owl_cmddict *cd, cons
       newcmd = g_strdup_printf("%s %s", cmd->cmd_aliased_to, cmdbuffargs);
       rv = owl_function_command(newcmd);
       g_free(newcmd);
-    } 
+    }
     alias_recurse_depth--;
     return rv;
   }
@@ -200,13 +200,13 @@ CALLER_OWN char *owl_cmd_execute(const owl_cmd *cmd, const owl_cmddict *cd, cons
 
   if (cmd->cmd_args_fn) {
     return cmd->cmd_args_fn(argc, argv, cmdbuff);
-  } else if (cmd->cmd_v_fn) {    
+  } else if (cmd->cmd_v_fn) {
     cmd->cmd_v_fn();
   } else if (cmd->cmd_i_fn) {
     cmd->cmd_i_fn(ival);
   } else if (cmd->cmd_ctxargs_fn) {
     return cmd->cmd_ctxargs_fn(owl_context_get_data(ctx), argc, argv, cmdbuff);
-  } else if (cmd->cmd_ctxv_fn) {    
+  } else if (cmd->cmd_ctxv_fn) {
     cmd->cmd_ctxv_fn(owl_context_get_data(ctx));
   } else if (cmd->cmd_ctxi_fn) {
     cmd->cmd_ctxi_fn(owl_context_get_data(ctx), ival);
@@ -276,5 +276,5 @@ void owl_cmd_get_help(const owl_cmddict *d, const char *name, owl_fmtext *fm) {
     g_free(indent);
   }
 
-  owl_fmtext_append_normal(fm, "\n\n");  
+  owl_fmtext_append_normal(fm, "\n\n");
 }

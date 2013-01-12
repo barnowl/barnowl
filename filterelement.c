@@ -74,7 +74,7 @@ static int owl_filterelement_match_filter(const owl_filterelement *fe, const owl
      * Default to not matching
      */
     return 0;
-  } 
+  }
   return owl_filter_message_match(subfilter, m);
 }
 

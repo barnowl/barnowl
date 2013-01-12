@@ -135,7 +135,7 @@ Net::XMPP::Namespaces - In depth discussion on how namespaces are handled
 =head2 add_ns()
 
   To repeat, here is an example call to add_ns():
-  
+
     &add_ns(ns    => "mynamespace",
             tag   => "mytag",
             xpath => {
@@ -153,10 +153,10 @@ Net::XMPP::Namespaces - In depth discussion on how namespaces are handled
   entry tells Net::XMPP how to handle subsequent GetXXXX(), SetXXXX(),
   DefinedXXXX(), RemoveXXXX(), AddXXXX() calls.  The basic options you
   can pass in are:
-  
+
      type - This tells Stanza how to handle the call.  The possible
             values are:
-                       
+
            array - The value to set and returned is an an array
                    reference.  For example, <group/> in jabber:iq:roster.
 
@@ -264,11 +264,11 @@ Net::XMPP::Namespaces - In depth discussion on how namespaces are handled
                ["Get","Defined"]
                ["Add"]
                ["Get","Add","Defined"]
-             
+
             It all depends on how you want your API to look.
-     
+
   Once more... The following:
-  
+
     &add_ns(ns    => "mynamespace",
             tag   => "mytag",
             xpath => {
@@ -450,7 +450,7 @@ $SKIPNS{'__netxmpp__'} = 1;
                      },
            );
 }
-        
+
 #-----------------------------------------------------------------------------
 # __netxmpp__:iq:privacy:list:item
 #-----------------------------------------------------------------------------
@@ -587,7 +587,7 @@ sub add_ns
     my (%args) = @_;
 
     # XXX error check...
-    
+
     $NS{$args{ns}}->{tag} = $args{tag} if exists($args{tag});
     $NS{$args{ns}}->{xpath} = $args{xpath};
     if (exists($args{docs}))

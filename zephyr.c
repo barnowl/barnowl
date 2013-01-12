@@ -319,7 +319,7 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
       subSize *= 2;
       subs = g_renew(ZSubscription_t, subs, subSize);
     }
-    
+
     /* add it to the list of subs */
     if ((tmp = strtok(start, ",\n\r")) == NULL)
       continue;
@@ -648,7 +648,7 @@ CALLER_OWN char *owl_zephyr_get_message(const ZNotice_t *n, const owl_message *m
   /* deal with MIT Discuss messages */
   else if (!strcasecmp(n->z_default_format, "New transaction [$1] entered in $2\nFrom: $3 ($5)\nSubject: $4") ||
            !strcasecmp(n->z_default_format, "New transaction [$1] entered in $2\nFrom: $3\nSubject: $4")) {
-    
+
     msg = g_strdup_printf("New transaction [%s] entered in %s\nFrom: %s (%s)\nSubject: %s",
                           fields[1], fields[2], fields[3], fields[5], fields[4]);
   }
@@ -706,13 +706,13 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   Code_t ret;
   ZNotice_t notice;
   char *zsender = NULL;
-    
+
   memset(&notice, 0, sizeof(notice));
 
   ZResetAuthentication();
 
   if (!zsig) zsig="";
-  
+
   notice.z_kind=ACKED;
   notice.z_port=0;
 #ifdef ZCHARSET_UTF_8
@@ -737,7 +737,7 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
 
   /* ret=ZSendNotice(&notice, ZAUTH); */
   ret=ZSrvSendNotice(&notice, ZAUTH, send_zephyr_helper);
-  
+
   /* free then check the return */
   g_free(notice.z_message);
   ZFreeNotice(&notice);
@@ -770,7 +770,7 @@ void send_ping(const char *to, const char *zclass, const char *zinstance)
 void owl_zephyr_handle_ack(const ZNotice_t *retnotice)
 {
   char *tmp;
-  
+
   /* if it's an HMACK ignore it */
   if (retnotice->z_kind == HMACK) return;
 
@@ -879,13 +879,13 @@ int owl_zephyr_notice_is_ack(const void *n)
   return(0);
 }
 #endif
-  
+
 void owl_zephyr_zaway(const owl_message *m)
 {
 #ifdef HAVE_LIBZEPHYR
   char *tmpbuff, *myuser, *to;
   owl_zwrite *z;
-  
+
   /* bail if it doesn't look like a message we should reply to.  Some
    * of this defined by the way zaway(1) works
    */
@@ -1031,12 +1031,12 @@ void owl_zephyr_delsub(const char *filename, const char *class, const char *inst
 #ifdef HAVE_LIBZEPHYR
   char *line, *subsfile;
   int linesdeleted;
-  
+
   line=owl_zephyr_makesubline(class, inst, recip);
   line[strlen(line)-1]='\0';
 
   subsfile = owl_zephyr_dotfile(".zephyr.subs", filename);
-  
+
   linesdeleted = owl_util_file_deleteline(subsfile, line, 1);
   if (linesdeleted > 0) {
     owl_function_makemsg("Subscription removed");
@@ -1081,7 +1081,7 @@ void owl_zephyr_addbuddy(const char *name)
 {
   char *filename;
   FILE *file;
-  
+
   filename = owl_zephyr_dotfile(".anyone", NULL);
   file = fopen(filename, "a");
   g_free(filename);
@@ -1117,7 +1117,7 @@ const char *owl_zephyr_get_authstr(const ZNotice_t *n)
     return ("YES");
   } else {
     return ("UNKNOWN");
-  }           
+  }
 }
 #else
 const char *owl_zephyr_get_authstr(const void *n)
@@ -1253,7 +1253,7 @@ int owl_zephyr_set_exposure(const char *exposure)
 #endif
   return 0;
 }
-  
+
 /* Strip a local realm fron the zephyr user name.
  * The caller must free the return
  */
