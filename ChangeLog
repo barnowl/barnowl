@@ -97,7 +97,7 @@
  * Install the documentation in 'make install'. -nelhage@mit.edu
  * Add a configure flag to enable/disable building with krb4. -wthrowe@mit.edu
  * Fix an infinite loop on 'view -r args'. -nelhage@mit.edu
- * Free paths to Zephyr dot-files when non-existant -davidben@mit.edu
+ * Free paths to Zephyr dot-files when non-existent -davidben@mit.edu
  * Jabber: Accept a -m argument to jwrite to set the message. -nelhage@mit.edu
 
 1.6.1
@@ -122,7 +122,7 @@
  * Add new command unbindkey for removing keybindings -leonidg@mit.edu
  * zcrypt: Implement AES encryption support using GPG. -nelhage@mit.edu
  * Add usage messages to everything in scripts/ -nelhage@mit.edu
- * Split zcrypt into an external, standalong binary. -nelhage@mit.edu
+ * Split zcrypt into an external, standalone binary. -nelhage@mit.edu
  * Fix minor documentation typo -alexmv@mit.edu
  * Document the init/cleanup vs. new/delete naming conventions. -andersk@mit.edu
  * Clean up code naming conventions to help avoid memory leaks.. -andersk@mit.edu
@@ -215,7 +215,7 @@
  * Bind C-v and M-v in popless windows -nelhage@mit.edu
  * Fix an off by one error in some editwin code. -asedeno@mit.edu
  * Make zdots work even if the buffer has trailing whitespace. -nelhage@mit.edu
- * Fix pseudo-login interation with zephyr initialization. -asedeno@mit.edu
+ * Fix pseudo-login interaction with zephyr initialization. -asedeno@mit.edu
  * Correct the --with-libzephyr help message in the configure script. -broder@mit.edu
  * Set the UTF-8 flag on on strings we pass to Perl. -nelhage@mit.edu
    * aim.c, perlconfig.c: Fix format string bugs. -andersk@mit.edu
@@ -359,7 +359,7 @@
  * Strip out BOMs from Jabber messages. -asedeno
  * Fix logging of personal jabbers from JIDs containing / -nelhage
  * Fix Jabber breakage under reload-modules. -asedeno
- * Make reload-moduled correctly re-run startup hooks. -asedeno
+ * Make reload-module correctly re-run startup hooks. -asedeno
  * Squelch Jabbers with no bodies, such as typing notifications. -asedeno
  * Various small spelling and grammar fixes. -geofft
  * Fix a segfault when sending short zcrypted messages. -asedeno
@@ -370,7 +370,7 @@
 1.0.2
  * Fix a segfault on retrieving zephyr subs when the user doesn't
    have any or has expired tickets. -asedeno
- * Don't complain about non-existant ~/.owl/startup when starting. -asedeno
+ * Don't complain about non-existent ~/.owl/startup when starting. -asedeno
  * Fix narrowing to personals in IRC. -alexmv
  * Don't segfault retrieving subscriptions without valid tickets. -asedeno
  * Load modules even if .owlconf doesn't run successfully. -nelhage
@@ -448,10 +448,10 @@
      unhandled keypress every time we resize the terminal. - asedeno
    * more strict utf-8 byte fetching.
      This probably still needs more work. - asedeno
-   * Strip formmating characters when dumping to
+   * Strip formating characters when dumping to
      file. - asedeno
    * fixing bugs in editwin bufflen calculations. - asedeno
-   * Fix search code so higlighting actually works. - asedeno
+   * Fix search code so highlighting actually works. - asedeno
    * Remove options for libcurses and libncurses. This really only works with
      libncursesw. - asedeno
    * text entry:
@@ -500,7 +500,7 @@
  * Deal with smart-narrowing when the user's screenname has spaces in it. - asedeno
  * Add a new struct member to the global to hold an escaped aim screenname.
     populate the aforementioned new struct member. - asedeno
- * Removed our debian subdirectory, per Debian guidelines, at broder's
+ * Removed our Debian subdirectory, per Debian guidelines, at broder's
    request. - geofft
  * Make `all' the first target so we build the modules by default - nelhage
  * Commit inc/ under IRC so we build on systems with too old a M::I - nelhage
@@ -657,7 +657,7 @@ BarnOwl r720 (2007-05-29)
  * Escape $ in regexes (e.g. smartnarrowed instances)
   - nelhage
  * Adding 256-color support. This requires a version of ncurses that supports
-   ABI-6. Colors beyond the first eight are refered to by number. - asedeno
+   ABI-6. Colors beyond the first eight are referred to by number. - asedeno
  * Correctly escape {} and () in regular expressions - nelhage
  * When generating filters, change single quotes and double quotes into
    dots, so they line parser doesn't choke on them. This fixes problems
@@ -698,9 +698,9 @@ BarnOwl r657 (2007-03-06)
  * Don't include the default typemap in xsubpp compile line - hartmans
  * Cause perl to always be loaded, even if no owlconf is present. - hartmans
  * Implemented an extensible perl module system - hartmans
- * Exposed owl_fuction_popless_text() and owl_fuction_popless_ztext() to
+ * Exposed owl_function_popless_text() and owl_function_popless_ztext() to
    perl - asedeno
- * Support multiple simaltaneous Jabber connections - asedeno
+ * Support multiple simultaneous Jabber connections - asedeno
  * Fixed a segfault on subbing without a .zephyr.subs file - nelhage
  * Implemented Jabber Roster support - asedeno
  * Don't quit if we can't contact the hostmaster. - nelhage
@@ -731,12 +731,12 @@ BarnOwl r657 (2007-03-06)
 2.1.12pre
         Don't crash when sending/logging outgoing
 	   AIM message and not logged in [BZ 90]
-	Don't crash when senging to someone not on AIM buddy list [BZ 94]
+	Don't crash when sending to someone not on AIM buddy list [BZ 94]
 	   (patch from Alex Vandiver)
 
 2.1.11
 	Don't crash doing zlocate with bad tickets. [BZ 12]
-	Metion the path for the owlconf in intro.txt [BZ 54]
+	Mention the path for the owlconf in intro.txt [BZ 54]
 	Print better error message if startup fails due to unreadable
 	   .owlconf [BZ 57]
 	In load-subs: Print an error message if the file is unreadable or
@@ -744,7 +744,7 @@ BarnOwl r657 (2007-03-06)
 	  that case only print an error if the file exists but isn't
 	  readable.  Still prints an error either way if zephyr reports a
 	  failure. [BZ 19]
-	Fixed some small memory leaks in logging if files unwriteable
+	Fixed some small memory leaks in logging if files unwritable
 	If the variable logfilter is set it names a filter.  Any messages
 	  matching this filter are logged.  This is an independent
 	  mechanism from the other logging variables.  If you want to
@@ -781,7 +781,7 @@ BarnOwl r657 (2007-03-06)
         Fixed three bugs found by Valgrind.
         Fixed a case where doing "aim addbuddy" instead of "addbuddy aim"
 	  would cause a segfault.
-	pexec will now incrimentally display data as it is output
+	pexec will now incrementally display data as it is output
 	  by the child process.  Additionally, commands running under
 	  pexec may now be killed by quitting out of the popless window.
 	Added muxevents select loop dispatcher.  File descriptors may
@@ -869,7 +869,7 @@ BarnOwl r657 (2007-03-06)
 	Fixed missing word in startup message
 	Better 'status' command
 	Use '+' for popwin corners when 'fancylines' is off
-	Allow TERMINFO to be overridden in the envrionment
+	Allow TERMINFO to be overridden in the environment
 	Command line arg -D turns on debugging and deletes previous
 	  debugging file
 	Do ~ expansion in 'dump' command.
@@ -923,7 +923,7 @@ BarnOwl r657 (2007-03-06)
 2.0.10
 	Allow 'hostname' in filters.
 	Fixed bug in reporting when no one is subbed to a class
-	Added an extral newline in logging incoming zephyrs
+	Added an extra newline in logging incoming zephyrs
 	An admin message is displayed when you are logged out of AIM
 	Print an error message and admin message if an AIM send fails
 
@@ -932,7 +932,7 @@ BarnOwl r657 (2007-03-06)
 	Added the 'show startup' command.
 	Added feature for capturing stderr messages
 	   from commands and displaying them in the errors buffer.
-	Create an admin message explaning that a zephyr couldn't
+	Create an admin message explaining that a zephyr couldn't
 	   be sent
 	Better reporting of perl errors (both into the errqueue
 	        and also clearing the error after displaying it).
@@ -1004,7 +1004,7 @@ BarnOwl r657 (2007-03-06)
 	'addbuddy aim' and 'delbuddy aim' now work
 	Bug fix to make zwrite -m work with -c/-i
 	Fixed documentation bug in aimwrite
-	Initialze $owl::auth
+	Initialize $owl::auth
 	Fix in autoconf for des425
 	Reformatted editwin.c and added capability of doing password-style
 	   echoing
@@ -1030,7 +1030,7 @@ BarnOwl r657 (2007-03-06)
 	Added the 'toggle-oneline' command
 	The 'o' key is bound to 'toggle-oneline'
 	Internally, the one view now has a name, 'main', and message
-	  recalcuations are done in place when its filter is changed.
+	  recalculations are done in place when its filter is changed.
 	Added filter field 'login' which can take the values 'login'
 	   'logout' or 'none'
 	Added the perl variable $owl::login, just as above
@@ -1070,18 +1070,18 @@ BarnOwl r657 (2007-03-06)
 	Moved newmsgproc stuff to a function procedure
 	Added the 'newlinestrip' variable, on by default, that strips
 	  leading and trailing newlines from incoming messages.
-	Fixed a case sensitivity probelm in owl_message_is_personal and
+	Fixed a case sensitivity problem in owl_message_is_personal and
 	   owl_message_is_private
 	The message object now uses a list of attributes internally, in
   	  prep. for supporting new messaging protocols
-	owl_function_info now uses fmtext instead of one staticly sized
+	owl_function_info now uses fmtext instead of one statically sized
 	  buffer
 	in owl_message_get_cc() require that the colon be present after
 	  cc.
 	Added some defenses against resize crashes, and put in debug
 	  messages if they're encountered
 	In filters 'true' and 'false' are now valid tokens.
-	The 'all' filter has been redefinied to be 'true' and there is a
+	The 'all' filter has been redefined to be 'true' and there is a
 	  'none' filter defined as 'false'
 	Fixed bug in 'unsub' command that could cause file corruption
 	In the zlist function, give a more detailed error message if
@@ -1103,7 +1103,7 @@ BarnOwl r657 (2007-03-06)
 	  mode
 	added the 'alert_filter' variable, defaults to 'none'.
 	added the 'alert_action' variable, which is an owl command that
-	  will be executed when new messages arive that match the
+	  will be executed when new messages arrive that match the
 	  alert_filter
 	added the 'term' command which takes the 'raise' and 'deiconify'
 	  options.  It assumes xterm for now.
@@ -1132,7 +1132,7 @@ BarnOwl r657 (2007-03-06)
 	General cleanup to Makefile.in
 	CTRL and META are now OWL_CTRL and OWL_META.  OWL_CTRL moved to
 	  keypress.c
-	do_encrypt declaired static
+	do_encrypt declared static
 	if we don't have des functions, do not try to build in zcrypt
 	kill the newmsgproc function on exit
 	Added libfaim
@@ -1153,7 +1153,7 @@ BarnOwl r657 (2007-03-06)
 	Added the 'aim_ingorelogin_timer' variable
 	'addbuddy zephyr <user>' and 'delbuddy zephyr <user>' now work.
 	'isloginout' and 'isprivate' are now message attributes
-	improved 'info' function lists seperate info for zephyr, aim and
+	improved 'info' function lists separate info for zephyr, aim and
 	   also prints all message attributes
 	AIM logging (both in and out) now works
 	Disabled 'addbuddy' and 'delbuddy' for aim since it doesn't work yet
@@ -1168,7 +1168,7 @@ BarnOwl r657 (2007-03-06)
 	Zaway now makes an outgoing message, instead of an admin message
 	The 'zlocate' command can now handle multiple users
 	The simple user format for "To:" is in effect again
-	Prettyed up the zwrite line for using 'reply' on a zaway
+	Prettied up the zwrite line for using 'reply' on a zaway
 	Added a workaround for a libzephyr bug that caused zwrites to fail
   	  if zephyrs were sent just before and just after renewing tickets
 	Fixed a memory bug in getsubs
@@ -1202,11 +1202,11 @@ BarnOwl r657 (2007-03-06)
 	Added 'zlist' and 'l' to basic help.
 
 1.2.4
-	'zlog in' will now take an optional thrid argument to set the
+	'zlog in' will now take an optional third argument to set the
 	     'tty' variable before setting the zlocation
 	There is now a 'zlist' command that acts like 'znol -l'
 	'l' is bound to 'zlist'
-	Fixed memory leak uninitialzed memory read in fmtext
+	Fixed memory leak uninitialized memory read in fmtext
 	viewwin will now say "End" instead of "More" when at the end
 	Added a debugging message indicating the result of topmsg
 	  calculations
@@ -1233,7 +1233,7 @@ BarnOwl r657 (2007-03-06)
 	Added "body" as a valid field to match on in a filter.
 	Temporary fix to bug where C-SPACE would cause the key handler to
 	     lock up.
-	Messages now have a direciton (in, out or none).  Filters can
+	Messages now have a direction (in, out or none).  Filters can
 	     match on this direction
 	Outbound messages are no longer type 'admin' but are of the
 	     appropriate message type (i.e. 'zephyr') and are direction
@@ -1468,15 +1468,15 @@ BarnOwl r657 (2007-03-06)
 
 1.1.2
 	Fixed memory mishandling bug
-	Fixed bug in redfining the filter attached to the current view
+	Fixed bug in redefining the filter attached to the current view
 	M-n will narrow to message, instance on non-personal, class
 	     MESSAGE messages
-	M-N behavies like M-n except that on class messages it narrows
+	M-N behaves like M-n except that on class messages it narrows
 	    to class and instance
 	line wrap earlier, to account for tabbing
 	fixed typo in help
 	'status' command now displays info on terminal color support
-	zephyr @ formatting is now case independant
+	zephyr @ formatting is now case independent
 	added support for color terminals
 	zephyr @color(foo) now works
 	'D' for deleted messages is now not bold, unless it's the current
@@ -1530,9 +1530,9 @@ BarnOwl r657 (2007-03-06)
 	@italic works the same as @i
 	on reply only quote class / instance when necessary
 	C-r allows you to edit the reply line
-	don't use unecessary options in reply line
+	don't use unnecessary options in reply line
 	display 'info' errors in msgwin, not popup
-	impelemnted aexec, pexec commands
+	implemented aexec, pexec commands
 	the zsig now goes through ztext formatting
 	messages have id numbers now
 	'info' prints the msgid
@@ -1547,7 +1547,7 @@ BarnOwl r657 (2007-03-06)
 	added the 'delete' (and 'del') command
 	load-subs with no argument loads the default subs file
 	'<truncated>' is now when the *current* message is truncated
-	the reply-lockout filter (with default) specifices messages that
+	the reply-lockout filter (with default) specifies messages that
            cannot be replied to.
 	in the configfile owl::receive_msg is run whenever a message is
 	  received
@@ -1559,7 +1559,7 @@ BarnOwl r657 (2007-03-06)
 	'T' uses the 'trash' filter now
 	zaway_msg, zaway_msg_default and zaway are all user variables now.
 	zsig variable overrides zsigproc
-	If there's no appendtosepbar don't interfear with the sepbar
+	If there's no appendtosepbar don't interfere with the sepbar
 	Changed: owl_message_get_numlines will return 0 of m is NULL
 	Added login messages to messages marked by owl_function_delete_automsgs
 	Added owl_function_delete_by_id(id) which acts independent of view
@@ -1600,8 +1600,8 @@ BarnOwl r657 (2007-03-06)
 	      Stubs for the owl_global_<varname>_get functions and friends
 	      are generated from variable.c by stubgen.pl.
 	      The help.c messages for variables now calls into variable.c
-	      so all information about most variables is in one place.
-	Cleaned out code from global.c and command.c that was made obselete
+	      so all information about most variables is in one place.   
+	Cleaned out code from global.c and command.c that was made obsolete
 	      by variable overhaul.
 	The set command now takes a -q option to not log a message.
 	Fixed a bug where set and print with no arguments would
@@ -1683,7 +1683,7 @@ BarnOwl r657 (2007-03-06)
 
 0.10.1
 	fixed a trailing space bug in the parser
-	impelemented the "burning ears" feature
+	implemented the "burning ears" feature
 	have admin messages do ztext parsing
 	fixed bug in reporting which M- key was pressed
 	C-g will now cancel commands like C-c
@@ -1721,7 +1721,7 @@ BarnOwl r657 (2007-03-06)
 	bold only on message_is_personal
 	display the realm if not local
 	implemented M-f, M-b, M-d, M-<, M-> in editwin
-	implemnted word wrapping in editwin
+	implemented word wrapping in editwin
 	implemented M-q (paragraph-fill) in editwin
 	fixed bug that caused owl to segfault logging a 'weird' class
 	M-x is a keysym for ':'
@@ -1745,7 +1745,7 @@ BarnOwl r657 (2007-03-06)
 	fix replying to a blank instance
 	added subscribe command
 	subscribe to login messages from .anyone by default
-	'loginsubs' variarble controlls automated login messages
+	'loginsubs' variable controls automated login messages
 	redisplay the editwin after a resize
 	leave the cursor in the editwin if active
 	fix problems in the build system

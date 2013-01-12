@@ -12,11 +12,11 @@ The following people have provided patches or other contributions:
   Kevin Chen
   Eric Price
 
-BarnOwl is based on code from Owl, which was originally primarly
+BarnOwl is based on code from Owl, which was originally primarily
 written by James Kretchmar.  Erik Nygren also made substantial
-contributions and improvemnts to the program.
+contributions and improvements to the program.
 
-The following people provided patches and other techincal support for
+The following people provided patches and other technical support for
 Owl:
 
   Stephen Gildea
@@ -29,7 +29,7 @@ Owl:
   David Glasser
   Mark Eichin
 
-Mark Eichin is also maintaining the debian package of Owl.
+Mark Eichin is also maintaining the Debian package of Owl.
 
 The following people helped with beta testing the earliest versions of
 Owl:
