@@ -568,7 +568,7 @@ faim_internal int aim_parse_unknown(aim_session_t *sess, aim_frame_t *frame, ...
 {
 	int i;
 
-	faimdprintf(sess, 1, "\nRecieved unknown packet:");
+	faimdprintf(sess, 1, "\nReceived unknown packet:");
 
 	for (i = 0; aim_bstream_empty(&frame->data); i++) {
 		if ((i % 8) == 0)

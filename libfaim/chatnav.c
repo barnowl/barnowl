@@ -379,7 +379,7 @@ static int parseinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, ai
 	}
 
 	if (snac2->family != 0x000d) {
-		faimdprintf(sess, 0, "faim: chatnav_parse_info: recieved response that maps to corrupt request! (fam=%04x)\n", snac2->family);
+		faimdprintf(sess, 0, "faim: chatnav_parse_info: received response that maps to corrupt request! (fam=%04x)\n", snac2->family);
 		return 0;
 	}
 
@@ -389,7 +389,7 @@ static int parseinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, ai
 	if (snac2->type == 0x0002) /* request chat rights */
 		ret = parseinfo_perms(sess, mod, rx, snac, bs, snac2);
 	else if (snac2->type == 0x0003) /* request exchange info */
-		faimdprintf(sess, 0, "chatnav_parse_info: resposne to exchange info\n");
+		faimdprintf(sess, 0, "chatnav_parse_info: response to exchange info\n");
 	else if (snac2->type == 0x0004) /* request room info */
 		faimdprintf(sess, 0, "chatnav_parse_info: response to room info\n");
 	else if (snac2->type == 0x0005) /* request more room info */

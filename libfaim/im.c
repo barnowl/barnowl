@@ -1024,7 +1024,7 @@ static int outgoingim(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	channel = aimbs_get16(bs);
 
 	if (channel != 0x01) {
-		faimdprintf(sess, 0, "icbm: ICBM recieved on unsupported channel.  Ignoring. (chan = %04x)\n", channel);
+		faimdprintf(sess, 0, "icbm: ICBM received on unsupported channel.  Ignoring. (chan = %04x)\n", channel);
 		return 0;
 	}
 

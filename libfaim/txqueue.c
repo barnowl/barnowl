@@ -99,7 +99,7 @@ static int aim_tx_enqueue__queuebased(aim_session_t *sess, aim_frame_t *fr)
 {
 
 	if (!fr->conn) {
-		faimdprintf(sess, 1, "aim_tx_enqueue: WARNING: enqueueing packet with no connecetion\n");
+		faimdprintf(sess, 1, "aim_tx_enqueue: WARNING: enqueueing packet with no connection\n");
 		fr->conn = aim_getconn_type(sess, AIM_CONN_TYPE_BOS);
 	}
 
