@@ -92,7 +92,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 	       "load logins from .anyone on startup", "" ),
 
   OWLVAR_BOOL( "logging" /* %OwlVarStub */, 0,
-	       "turn personal logging on or off", 
+	       "turn personal logging on or off",
 	       "If this is set to on, personal messages are\n"
 	       "logged in the directory specified\n"
 	       "by the 'logpath' variable.  The filename in that\n"
@@ -102,7 +102,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 	       "turn class logging on or off",
 	       "If this is set to on, class messages are\n"
 	       "logged in the directory specified\n"
-	       "by the 'classlogpath' variable.\n" 
+	       "by the 'classlogpath' variable.\n"
 	       "The filename in that directory is derived from\n"
 	       "the name of the class to which the message was sent.\n" ),
 
@@ -171,7 +171,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 		    NULL, owl_variable_disable_ctrl_d_set, NULL),
 
   OWLVAR_PATH( "logpath" /* %OwlVarStub */, "~/zlog/people",
-	       "path for logging personal zephyrs", 
+	       "path for logging personal zephyrs",
 	       "Specifies a directory which must exist.\n"
 	       "Files will be created in the directory for each sender.\n"),
 
@@ -184,7 +184,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 	       "path for logging debug messages when debugging is enabled",
 	       "This file will be logged to if 'debug' is set to 'on'.\n"
                "BarnOwl will append a dot and the current process's pid to the filename."),
-  
+
   OWLVAR_PATH( "zsigproc" /* %OwlVarStub:zsigproc */, NULL,
 	       "name of a program to run that will generate zsigs",
 	       "This program should produce a zsig on stdout when run.\n"
@@ -229,11 +229,11 @@ int owl_variable_add_defaults(owl_vardict *vd)
   OWLVAR_BOOL( "zaway" /* %OwlVarStub */, 0,
 	       "turn zaway on or off", "" ),
 
-  OWLVAR_STRING( "zaway_msg" /* %OwlVarStub */, 
+  OWLVAR_STRING( "zaway_msg" /* %OwlVarStub */,
 		 OWL_DEFAULT_ZAWAYMSG,
 	         "zaway msg for responding to zephyrs when away", "" ),
 
-  OWLVAR_STRING( "zaway_msg_default" /* %OwlVarStub */, 
+  OWLVAR_STRING( "zaway_msg_default" /* %OwlVarStub */,
 		 OWL_DEFAULT_ZAWAYMSG,
 	         "default zaway message", "" ),
 
@@ -242,16 +242,16 @@ int owl_variable_add_defaults(owl_vardict *vd)
 		    "",
 		    NULL, owl_variable_aaway_set, NULL),
 
-  OWLVAR_STRING( "aaway_msg" /* %OwlVarStub */, 
+  OWLVAR_STRING( "aaway_msg" /* %OwlVarStub */,
 		 OWL_DEFAULT_AAWAYMSG,
 	         "AIM away msg for responding when away", "" ),
 
-  OWLVAR_STRING( "aaway_msg_default" /* %OwlVarStub */, 
+  OWLVAR_STRING( "aaway_msg_default" /* %OwlVarStub */,
 		 OWL_DEFAULT_AAWAYMSG,
 	         "default AIM away message", "" ),
 
   OWLVAR_STRING( "view_home" /* %OwlVarStub */, "all",
-	         "home view to switch to after 'X' and 'V'", 
+	         "home view to switch to after 'X' and 'V'",
 		 "SEE ALSO: view, filter\n" ),
 
   OWLVAR_STRING( "alert_filter" /* %OwlVarStub */, "none",
@@ -299,10 +299,10 @@ int owl_variable_add_defaults(owl_vardict *vd)
 	      "By default this is set to 15.  If you would like to view login\n"
 	      "notifications of buddies as soon as you login, set it to 0 instead."),
 
-	      
-  OWLVAR_INT_FULL( "typewinsize" /* %OwlVarStub:typwin_lines */, 
+
+  OWLVAR_INT_FULL( "typewinsize" /* %OwlVarStub:typwin_lines */,
 		   OWL_TYPWIN_SIZE,
-		  "number of lines in the typing window", 
+		  "number of lines in the typing window",
 		   "This specifies the height of the window at the\n"
 		   "bottom of the screen where commands are entered\n"
 		   "and where messages are composed.\n",
@@ -528,7 +528,7 @@ int owl_variable_pseudologins_set(owl_variable *v, const void *newval)
   return owl_variable_bool_set_default(v, newval);
 }
 
-/* note that changing the value of this will clobber 
+/* note that changing the value of this will clobber
  * any user setting of this */
 int owl_variable_disable_ctrl_d_set(owl_variable *v, const void *newval)
 {
@@ -540,8 +540,8 @@ int owl_variable_disable_ctrl_d_set(owl_variable *v, const void *newval)
     } else {
       owl_function_command_norv("bindkey editmulti C-d command edit:done");
     }
-  }  
-  return owl_variable_int_set_default(v, newval);  
+  }
+  return owl_variable_int_set_default(v, newval);
 }
 
 int owl_variable_tty_set(owl_variable *v, const void *newval)
@@ -592,48 +592,48 @@ int owl_variable_dict_add_from_list(owl_vardict *vd, owl_variable *variables_to_
       cur->set_fn(cur, cur->pval_default);
       break;
     case OWL_VARIABLE_STRING:
-      if (!cur->validate_fn) 
+      if (!cur->validate_fn)
 	cur->validate_fn = owl_variable_string_validate_default;
-      if (!cur->set_fn) 
+      if (!cur->set_fn)
 	cur->set_fn = owl_variable_string_set_default;
-      if (!cur->set_fromstring_fn) 
+      if (!cur->set_fromstring_fn)
 	cur->set_fromstring_fn = owl_variable_string_set_fromstring_default;
-      if (!cur->get_fn) 
+      if (!cur->get_fn)
 	cur->get_fn = owl_variable_get_default;
-      if (!cur->get_tostring_fn) 
-	cur->get_tostring_fn = owl_variable_string_get_tostring_default;      
+      if (!cur->get_tostring_fn)
+	cur->get_tostring_fn = owl_variable_string_get_tostring_default;
       if (!cur->delete_fn)
 	cur->delete_fn = owl_variable_delete_default;
       cur->pval_default = g_strdup(var->pval_default);
       cur->set_fn(cur, cur->pval_default);
       break;
     case OWL_VARIABLE_BOOL:
-      if (!cur->validate_fn) 
+      if (!cur->validate_fn)
 	cur->validate_fn = owl_variable_bool_validate_default;
-      if (!cur->set_fn) 
+      if (!cur->set_fn)
 	cur->set_fn = owl_variable_bool_set_default;
-      if (!cur->set_fromstring_fn) 
+      if (!cur->set_fromstring_fn)
 	cur->set_fromstring_fn = owl_variable_bool_set_fromstring_default;
-      if (!cur->get_fn) 
+      if (!cur->get_fn)
 	cur->get_fn = owl_variable_get_default;
-      if (!cur->get_tostring_fn) 
-	cur->get_tostring_fn = owl_variable_bool_get_tostring_default;      
+      if (!cur->get_tostring_fn)
+	cur->get_tostring_fn = owl_variable_bool_get_tostring_default;
       if (!cur->delete_fn)
 	cur->delete_fn = owl_variable_delete_default;
       cur->val = g_new(int, 1);
       cur->set_fn(cur, &cur->ival_default);
       break;
     case OWL_VARIABLE_INT:
-      if (!cur->validate_fn) 
+      if (!cur->validate_fn)
 	cur->validate_fn = owl_variable_int_validate_default;
-      if (!cur->set_fn) 
+      if (!cur->set_fn)
 	cur->set_fn = owl_variable_int_set_default;
-      if (!cur->set_fromstring_fn) 
+      if (!cur->set_fromstring_fn)
 	cur->set_fromstring_fn = owl_variable_int_set_fromstring_default;
-      if (!cur->get_fn) 
+      if (!cur->get_fn)
 	cur->get_fn = owl_variable_get_default;
-      if (!cur->get_tostring_fn) 
-	cur->get_tostring_fn = owl_variable_int_get_tostring_default;      
+      if (!cur->get_tostring_fn)
+	cur->get_tostring_fn = owl_variable_int_get_tostring_default;
       if (!cur->delete_fn)
 	cur->delete_fn = owl_variable_delete_default;
       cur->val = g_new(int, 1);
@@ -792,7 +792,7 @@ int owl_variable_set_fromstring(owl_variable *v, const char *value, int msg) {
   char *tostring;
   if (!v->set_fromstring_fn) {
     if (msg) owl_function_error("Variable %s is read-only", owl_variable_get_name(v));
-    return -1;   
+    return -1;
   }
   if (0 != v->set_fromstring_fn(v, value)) {
     if (msg) owl_function_error("Unable to set %s (must be %s)", owl_variable_get_name(v),
@@ -806,22 +806,22 @@ int owl_variable_set_fromstring(owl_variable *v, const char *value, int msg) {
     else
       owl_function_makemsg("%s = <null>", owl_variable_get_name(v));
     g_free(tostring);
-  }    
+  }
   return 0;
 }
- 
+
 int owl_variable_set_string(owl_variable *v, const char *newval)
 {
   if (v->type != OWL_VARIABLE_STRING) return -1;
   return v->set_fn(v, newval);
 }
- 
+
 int owl_variable_set_int(owl_variable *v, int newval)
 {
   if (v->type != OWL_VARIABLE_INT && v->type != OWL_VARIABLE_BOOL) return -1;
   return v->set_fn(v, &newval);
 }
- 
+
 int owl_variable_set_bool_on(owl_variable *v)
 {
   if (v->type != OWL_VARIABLE_BOOL) return -1;
@@ -1034,12 +1034,12 @@ CALLER_OWN char *owl_variable_int_get_tostring_default(const owl_variable *v, co
     return NULL;
   } else {
     return g_strdup_printf("%d", *(const int*)val);
-  } 
+  }
 }
 
 /* default functions for enums (a variant of integers) */
 
-int owl_variable_enum_validate(const owl_variable *v, const void *newval) {  
+int owl_variable_enum_validate(const owl_variable *v, const void *newval) {
   char **enums;
   int nenums, val;
   if (newval == NULL) return(0);

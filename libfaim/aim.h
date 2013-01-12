@@ -1,4 +1,4 @@
-/* 
+/*
  * Main libfaim header.  Must be included in client for prototypes/macros.
  *
  * "come on, i turned a chick lesbian; i think this is the hackish equivalent"
@@ -50,19 +50,19 @@ typedef fu32_t aim_snacid_t;
 typedef fu16_t flap_seqnum_t;
 
 #if defined(mach) && defined(__APPLE__)
-#define gethostbyname(x) gethostbyname2(x, AF_INET) 
+#define gethostbyname(x) gethostbyname2(x, AF_INET)
 #endif
 
 #if defined(_WIN32) && !defined(WIN32_STATIC)
 /*
  * For a win32 DLL, we define WIN32_INDLL if this file
- * is included while compiling the DLL. If its not 
+ * is included while compiling the DLL. If its not
  * defined (its included in a client app), the symbols
  * will be imported instead of exported.
  */
 #ifdef WIN32_INDLL
 #define faim_export __declspec(dllexport)
-#else 
+#else
 #define faim_export __declspec(dllimport)
 #endif /* WIN32_INDLL */
 #define faim_internal
@@ -82,8 +82,8 @@ typedef fu16_t flap_seqnum_t;
 #define TRUE true
 #endif
 
-/* 
- * Current Maximum Length for Screen Names (not including NULL) 
+/*
+ * Current Maximum Length for Screen Names (not including NULL)
  *
  * Currently only names up to 16 characters can be registered
  * however it is aparently legal for them to be larger.
@@ -103,7 +103,7 @@ typedef fu16_t flap_seqnum_t;
  * with utterly oversized instant messages!
  *
  * XXX: the real limit is the total SNAC size at 8192. Fix this.
- * 
+ *
  */
 #define MAXMSGLEN 7987
 
@@ -117,7 +117,7 @@ typedef fu16_t flap_seqnum_t;
  * Current Maximum Length for Chat Room Messages
  *
  * This is actually defined by the protocol to be
- * dynamic, but I have yet to see due cause to 
+ * dynamic, but I have yet to see due cause to
  * define it dynamically here.  Maybe later.
  *
  */
@@ -131,7 +131,7 @@ typedef fu16_t flap_seqnum_t;
 #define AIM_MD5_STRING "AOL Instant Messenger (SM)"
 
 /*
- * Client info.  Filled in by the client and passed in to 
+ * Client info.  Filled in by the client and passed in to
  * aim_send_login().  The information ends up getting passed to OSCAR
  * through the initial login command.
  *
@@ -276,8 +276,8 @@ struct client_info_s {
 #define CLIENTINFO_AIM_KNOWNGOOD CLIENTINFO_AIM_5_1_3036
 #define CLIENTINFO_ICQ_KNOWNGOOD CLIENTINFO_ICQ_5_45_3777
 
-/* 
- * These could be arbitrary, but its easier to use the actual AIM values 
+/*
+ * These could be arbitrary, but its easier to use the actual AIM values
  */
 #define AIM_CONN_TYPE_BOS		0x0002
 #define AIM_CONN_TYPE_ADS		0x0005
@@ -322,7 +322,7 @@ typedef struct aim_conn_s {
 	void *priv; /* misc data the client may want to store */
 	void *internal; /* internal conn-specific libfaim data */
 	time_t lastactivity; /* time of last transmit */
-	int forcedlatency; 
+	int forcedlatency;
 	void *handlerlist;
 	void *sessv; /* pointer to parent session */
 	void *inside; /* only accessible from inside libfaim */
@@ -352,9 +352,9 @@ typedef struct aim_bstream_s {
 typedef struct aim_frame_s {
 	fu8_t hdrtype; /* defines which piece of the union to use */
 	union {
-		struct { 
+		struct {
 			fu8_t type;
-			flap_seqnum_t seqnum;     
+			flap_seqnum_t seqnum;
 		} flap;
 		struct {
 			fu8_t magic[4]; /* ODC2 or OFT2 */
@@ -378,7 +378,7 @@ typedef struct aim_msgcookie_s {
 } aim_msgcookie_t;
 
 /*
- * AIM Session: The main client-data interface.  
+ * AIM Session: The main client-data interface.
  *
  */
 typedef struct aim_session_s {
@@ -389,7 +389,7 @@ typedef struct aim_session_s {
 	char sn[MAXSNLEN+1];
 
 	/*
-	 * Pointer to anything the client wants to 
+	 * Pointer to anything the client wants to
 	 * explicitly associate with this session.
 	 *
 	 * This is for use in the callbacks mainly. In any
@@ -409,10 +409,10 @@ typedef struct aim_session_s {
 	 * These are only used when you don't use your own lowlevel
 	 * I/O.  I don't suggest that you use libfaim's internal I/O.
 	 * Its really bad and the API/event model is quirky at best.
-	 *  
+	 *
 	 */
-	aim_frame_t *queue_outgoing;   
-	aim_frame_t *queue_incoming; 
+	aim_frame_t *queue_outgoing;
+	aim_frame_t *queue_incoming;
 
 	/*
 	 * Tx Enqueuing function.
@@ -438,7 +438,7 @@ typedef struct aim_session_s {
 	void (*debugcb)(struct aim_session_s *sess, int level, const char *format, va_list va); /* same as faim_debugging_callback_t */
 
 	/*
-	 * Outstanding snac handling 
+	 * Outstanding snac handling
 	 *
 	 * XXX: Should these be per-connection? -mid
 	 */
@@ -763,7 +763,7 @@ struct aim_sendrtfmsg_args {
 
 /*
  * This information is provided in the Incoming ICBM callback for
- * Channel 1 ICBM's.  
+ * Channel 1 ICBM's.
  *
  * Note that although CUSTOMFEATURES and CUSTOMCHARSET say they
  * are optional, both are always set by the current libfaim code.
@@ -779,7 +779,7 @@ struct aim_incomingim_ch1_args {
 	/* Always provided */
 	aim_mpmsg_t mpmsg;
 	fu32_t icbmflags; /* some flags apply only to ->msg, not all mpmsg */
-	
+
 	/* Only provided if message has a human-readable section */
 	char *msg;
 	int msglen;

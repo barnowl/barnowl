@@ -1,11 +1,11 @@
 #include "owl.h"
 
 /*
- * TODO: Idea for allowing functions to be user-specified --- 
- *      Have function have a context bitmask that says where it 
+ * TODO: Idea for allowing functions to be user-specified ---
+ *      Have function have a context bitmask that says where it
  *      can be used, and have keymaps also have one, and compare
  *      the two when setting.
- *      
+ *
  */
 
 static int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq);

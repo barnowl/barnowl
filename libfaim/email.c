@@ -1,9 +1,9 @@
 /*
  * Family 0x0018 - Email notification
  *
- * Used for being alerted when the email address(es) associated with 
- * your screen name get new electronic-m.  For normal AIM accounts, you 
- * get the email address screenname@netscape.net.  AOL accounts have 
+ * Used for being alerted when the email address(es) associated with
+ * your screen name get new electronic-m.  For normal AIM accounts, you
+ * get the email address screenname@netscape.net.  AOL accounts have
  * screenname@aol.com, and can also activate a netscape.net account.
  *
  */
@@ -64,13 +64,13 @@ faim_export int aim_email_sendcookies(aim_session_t *sess)
 /**
  * Subtype 0x0007 - Receive information about your email account
  *
- * So I don't even know if you can have multiple 16 byte keys, 
+ * So I don't even know if you can have multiple 16 byte keys,
  * but this is coded so it will handle that, and handle it well.
- * This tells you if you have unread mail or not, the URL you 
- * should use to access that mail, and the domain name for the 
- * email account (screenname@domainname.com).  If this is the 
- * first 0x0007 SNAC you've received since you signed on, or if 
- * this is just a periodic status update, this will also contain 
+ * This tells you if you have unread mail or not, the URL you
+ * should use to access that mail, and the domain name for the
+ * email account (screenname@domainname.com).  If this is the
+ * first 0x0007 SNAC you've received since you signed on, or if
+ * this is just a periodic status update, this will also contain
  * the number of unread emails that you have.
  */
 static int parseinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
@@ -130,7 +130,7 @@ static int parseinfo(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, ai
 
 	alertitle = aim_tlv_getstr(tlvlist, 0x0005, 1);
 	alerturl  = aim_tlv_getstr(tlvlist, 0x000d, 1);
-	
+
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))
 		ret = userfunc(sess, rx, new, havenewmail, alertitle, (alerturl ? alerturl + 2 : NULL));
 

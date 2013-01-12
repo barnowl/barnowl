@@ -43,7 +43,7 @@ Net::Jabber::Data - Jabber Data Library
     jabber:iq:register
     jabber:iq:roster
 
-  For more information on what these namespaces are for, visit 
+  For more information on what these namespaces are for, visit
   http://www.jabber.org and browse the Jabber Programmers Guide.
 
   Each of these namespaces provide Net::Jabber::Data with the functions

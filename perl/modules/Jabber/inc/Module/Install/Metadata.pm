@@ -272,7 +272,7 @@ sub author_from {
         my $author = $1 || $2;
         $author =~ s{E<lt>}{<}g;
         $author =~ s{E<gt>}{>}g;
-        $self->author($author); 
+        $self->author($author);
     }
     else {
         warn "Cannot determine author info from $file\n";

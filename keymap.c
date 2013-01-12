@@ -40,7 +40,7 @@ int owl_keymap_create_binding(owl_keymap *km, const char *keyseq, const char *co
   if (kb == NULL)
     return -1;
   /* see if another matching binding, and if so remove it.
-   * otherwise just add this one. 
+   * otherwise just add this one.
    */
   for (i = km->bindings->len-1; i >= 0; i--) {
     if (owl_keybinding_equal(km->bindings->pdata[i], kb)) {
@@ -98,7 +98,7 @@ void owl_keymap_get_details(const owl_keymap *km, owl_fmtext *fm, int recurse)
   }
     owl_fmtext_append_normal(fm, "\n");
   if (km->default_fn) {
-    owl_fmtext_append_normal(fm, OWL_TABSTR 
+    owl_fmtext_append_normal(fm, OWL_TABSTR
      "Has a default keypress handler (default_fn).\n");
   }
   if (km->prealways_fn) {
@@ -106,11 +106,11 @@ void owl_keymap_get_details(const owl_keymap *km, owl_fmtext *fm, int recurse)
      "Executes a function (prealways_fn) on every keypress.\n");
   }
   if (km->postalways_fn) {
-    owl_fmtext_append_normal(fm, OWL_TABSTR 
+    owl_fmtext_append_normal(fm, OWL_TABSTR
      "Executes a function (postalways_fn) after handling every keypress.\n");
   }
 
-  owl_fmtext_append_bold(fm, "\nKey bindings:\n\n");  
+  owl_fmtext_append_bold(fm, "\nKey bindings:\n\n");
   if (recurse) {
     _owl_keymap_format_with_parents(km, fm);
   } else {
@@ -135,7 +135,7 @@ static void _owl_keymap_format_bindings(const owl_keymap *km, owl_fmtext *fm)
 {
   int i;
   const owl_keybinding *kb;
-  
+
   for (i = 0; i < km->bindings->len; i++) {
     char *kbstr;
     const owl_cmd *cmd;
@@ -159,7 +159,7 @@ static void _owl_keymap_format_bindings(const owl_keymap *km, owl_fmtext *fm)
       owl_fmtext_append_normal(fm, "   [");
       owl_fmtext_append_normal(fm, kb->command);
       owl_fmtext_append_normal(fm, "]");
-    } 
+    }
     owl_fmtext_append_normal(fm, "\n");
   }
 }
@@ -248,7 +248,7 @@ int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
     j.ch = OWL_META(j.ch);
     kh->in_esc = 0;
   }
-  
+
   kh->kpstack[++(kh->kpstackpos)] = j.ch;
   if (kh->kpstackpos >= OWL_KEYMAP_MAXSTACK) {
     owl_keyhandler_reset(kh);
@@ -300,7 +300,7 @@ int owl_keyhandler_process(owl_keyhandler *kh, owl_input j)
 
   owl_keyhandler_invalidkey(kh);
   /* unable to handle */
-  return(1);  
+  return(1);
 }
 
 void owl_keyhandler_invalidkey(owl_keyhandler *kh)

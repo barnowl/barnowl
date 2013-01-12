@@ -310,16 +310,16 @@ gboolean owl_process_input(GIOChannel *source, GIOCondition condition, void *dat
       int bytes, i;
       char utf8buf[7];
       memset(utf8buf, '\0', 7);
-      
+
       utf8buf[0] = j.ch;
-      
+
       if ((j.ch & 0xc0) && (~j.ch & 0x20)) bytes = 2;
       else if ((j.ch & 0xe0) && (~j.ch & 0x10)) bytes = 3;
       else if ((j.ch & 0xf0) && (~j.ch & 0x08)) bytes = 4;
       else if ((j.ch & 0xf8) && (~j.ch & 0x04)) bytes = 5;
       else if ((j.ch & 0xfc) && (~j.ch & 0x02)) bytes = 6;
       else bytes = 1;
-      
+
       for (i = 1; i < bytes; i++) {
         int tmp = wgetch(g->input_pad);
         /* If what we got was not a byte, or not a continuation byte */
@@ -332,7 +332,7 @@ gboolean owl_process_input(GIOChannel *source, GIOCondition condition, void *dat
         }
         utf8buf[i] = tmp;
       }
-      
+
       if (j.ch != ERR) {
         if (g_utf8_validate(utf8buf, -1, NULL)) {
           j.uch = g_utf8_get_char(utf8buf);
@@ -375,7 +375,7 @@ static void sig_handler(const siginfo_t *siginfo, void *data) {
   }
   /* Send a message to the main thread. */
   owl_select_post_task(sig_handler_main_thread,
-                       GINT_TO_POINTER(siginfo->si_signo), 
+                       GINT_TO_POINTER(siginfo->si_signo),
 		       NULL, g_main_context_default());
 }
 
@@ -420,7 +420,7 @@ void owl_register_signal_handlers(void) {
 
 #if OWL_STDERR_REDIR
 
-/* Replaces stderr with a pipe so that we can read from it. 
+/* Replaces stderr with a pipe so that we can read from it.
  * Returns the fd of the pipe from which stderr can be read. */
 int stderr_replace(void)
 {

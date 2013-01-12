@@ -203,15 +203,15 @@ Net::XMPP::Message - XMPP Message Module
   RemoveTo() - removes the to attribute from the <message/>.
 
                $Mess->RemoveTo();
-  
+
   RemoveFrom() - removes the from attribute from the <message/>.
 
                  $Mess->RemoveFrom();
-  
+
   RemoveType() - removes the type attribute from the <message/>.
 
                  $Mess->RemoveType();
-  
+
   RemoveSubject() - removes the <subject/> element from the
                     <message/>.
 
@@ -219,17 +219,17 @@ Net::XMPP::Message - XMPP Message Module
 
   RemoveBody() - removes the <body/> element from the
                  <message/>.
-                  
+
                  $Mess->RemoveBody();
 
   RemoveThread() - removes the <thread/> element from the <message/>.
 
                    $Mess->RemoveThread();
-  
+
   RemoveError() - removes the <error/> element from the <message/>.
 
                   $Mess->RemoveError();
-  
+
   RemoveErrorCode() - removes the code attribute from the <error/>
                       element in the <message/>.
 

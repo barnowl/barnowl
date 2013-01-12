@@ -53,13 +53,13 @@ $VERSION = "2.0";
 sub GetQuery     { my $self = shift; $self->GetChild(@_);     }
 sub DefinedQuery { my $self = shift; $self->DefinedChild(@_); }
 sub NewQuery     { my $self = shift; $self->RemoveFirstChild(); $self->NewFirstChild(@_);     }
-sub AddQuery     { my $self = shift; $self->AddChild(@_);     } 
+sub AddQuery     { my $self = shift; $self->AddChild(@_);     }
 sub RemoveQuery  { my $self = shift; $self->RemoveFirstChild(@_);  }
 
 sub GetX     { my $self = shift; $self->GetChild(@_);     }
 sub DefinedX { my $self = shift; $self->DefinedChild(@_); }
 sub NewX     { my $self = shift; $self->NewChild(@_);     }
-sub AddX     { my $self = shift; $self->AddChild(@_);     } 
+sub AddX     { my $self = shift; $self->AddChild(@_);     }
 sub RemoveX  { my $self = shift; $self->RemoveChild(@_);  }
 
 sub _new_jid    { my $self = shift; return Net::Jabber::JID->new(@_);    }

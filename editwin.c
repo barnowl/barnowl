@@ -1285,7 +1285,7 @@ static int oe_region_width(owl_editwin *e, int start, int end, int offset)
 {
   const char *p;
   int width = offset;
-  
+
   for(p = e->buff + start;
       p < e->buff + end;
       p = g_utf8_find_next_char(p, NULL))
@@ -1389,7 +1389,7 @@ int owl_editwin_get_echochar(owl_editwin *e)
 static CALLER_OWN char *oe_chunk(owl_editwin *e, int start, int end)
 {
   char *p;
-  
+
   p = g_new(char, end - start + 1);
   memcpy(p, e->buff + start, end - start);
   p[end - start] = 0;
@@ -1418,7 +1418,7 @@ static void oe_dirty(owl_editwin *e)
   if (e->win) owl_window_dirty(e->win);
 }
 
-
+
 /*
  * Local Variables:
  * mode:C

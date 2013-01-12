@@ -12,13 +12,13 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   owl_keymap *km, *km_global, *km_editwin, *km_mainwin,
     *km_ew_multi, *km_ew_onel, *km_viewwin;
 
-  
+
   /****************************************************************/
   /*************************** GLOBAL *****************************/
   /****************************************************************/
 
   km_global = km = owl_keyhandler_create_and_add_keymap(kh, "global",
-       "System-wide default key bindings", 
+       "System-wide default key bindings",
        owl_keys_default_invalid, NULL, NULL);
   BIND_CMD("C-z",      "message Use :suspend to suspend.", "");
 
@@ -27,7 +27,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   /****************************************************************/
 
   km_editwin = km = owl_keyhandler_create_and_add_keymap(kh, "edit",
-       "Text editing and command window", 
+       "Text editing and command window",
        owl_keys_editwin_default, NULL, owl_keys_editwin_postalways);
   owl_keymap_set_parent(km_editwin, km_global);
   /*
@@ -96,7 +96,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   /****************************************************************/
 
   km_ew_multi = km = owl_keyhandler_create_and_add_keymap(kh, "editmulti",
-       "Multi-line text editing", 
+       "Multi-line text editing",
        owl_keys_editwin_default, NULL, owl_keys_editwin_postalways);
   owl_keymap_set_parent(km_ew_multi, km_editwin);
 
@@ -116,7 +116,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-p",         "edit:history-prev", "");
   BIND_CMD("M-n",         "edit:history-next", "");
 
-  /* note that changing "disable-ctrl-d" to "on" will change this to 
+  /* note that changing "disable-ctrl-d" to "on" will change this to
    * edit:delete-next-char */
   BIND_CMD("C-d",     "edit:done-or-delete", "sends the zephyr if at the end of the message");
 
@@ -126,7 +126,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   /****************************************************************/
 
   km_ew_onel = km = owl_keyhandler_create_and_add_keymap(kh, "editline",
-       "Single-line text editing", 
+       "Single-line text editing",
        owl_keys_editwin_default, NULL, owl_keys_editwin_postalways);
   owl_keymap_set_parent(km_ew_onel, km_editwin);
 
@@ -145,13 +145,13 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("LF",          "editline:done", "executes the command");
   BIND_CMD("CR",          "editline:done", "executes the command");
 
-  
+
   /****************************************************************/
   /**************************** EDITRESPONSE **********************/
   /****************************************************************/
 
   km_ew_onel = km = owl_keyhandler_create_and_add_keymap(kh, "editresponse",
-       "Single-line response to question", 
+       "Single-line response to question",
        owl_keys_editwin_default, NULL, owl_keys_editwin_postalways);
   owl_keymap_set_parent(km_ew_onel, km_editwin);
 
@@ -166,7 +166,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   /****************************************************************/
 
   km_viewwin = km = owl_keyhandler_create_and_add_keymap(kh, "popless",
-       "Pop-up window (eg, help)", 
+       "Pop-up window (eg, help)",
        owl_keys_default_invalid, NULL, owl_keys_popless_postalways);
   owl_keymap_set_parent(km_viewwin, km_global);
 
@@ -260,7 +260,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-m", "smartnarrow -r",   "like M-n but with 'narrow-related' temporarily flipped.");
   BIND_CMD("M-M", "smartnarrow -ri",  "like M-N but with 'narrow-related' temporarily flipped.");
   BIND_CMD("M-p", "view personal", "");
-  
+
   BIND_CMD("/",   "start-command search ", "start a search command");
   BIND_CMD("?",   "start-command search -r ", "start a reverse search command");
 
@@ -272,7 +272,7 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("DOWN",   "recv:next",      "");
   BIND_CMD("C-n",    "recv:next",      "");
   BIND_CMD("M-[ B",  "recv:next",      "");
-  BIND_CMD("M-C-n",  "recv:next --smart-filter", "move to next message matching the current one"); 
+  BIND_CMD("M-C-n",  "recv:next --smart-filter", "move to next message matching the current one");
   BIND_CMD("UP",     "recv:prev",      "");
   BIND_CMD("M-[ A",  "recv:prev",      "");
   BIND_CMD("n",      "recv:next-notdel", "");

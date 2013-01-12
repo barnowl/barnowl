@@ -87,7 +87,7 @@ int owl_view_get_size(const owl_view *v)
   return owl_messagelist_get_size(v->ml);
 }
 
-/* Returns the position in the view with a message closest 
+/* Returns the position in the view with a message closest
  * to the passed msgid. */
 int owl_view_get_nearest_to_msgid(const owl_view *v, int targetid)
 {

@@ -47,7 +47,7 @@ void owl_style_get_formattext(const owl_style *s, owl_fmtext *fm, const owl_mess
   owl_fmtext with_tabs;
 
   SV *sv = NULL;
-  
+
   /* Call the perl object */
   OWL_PERL_CALL_METHOD(s->perlobj,
                        "format_message",

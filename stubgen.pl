@@ -28,7 +28,7 @@ foreach $file (@ARGV) {
 	print "  owl_variable_set_int(owl_variable_get_var(&g->vars, \"$varname\"), n);\n}\n";
 	print "int owl_global_get_$altvarname(const owl_global *g) {\n";
 	print "  return owl_variable_get_int(owl_variable_get_var(&g->vars, \"$varname\"));\n}\n";
-    } 
+    }
     }
     }
     close(FILE);

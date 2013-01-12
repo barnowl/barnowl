@@ -142,7 +142,7 @@ Net::XMPP::Client - XMPP Client Module
                                       Client will attempt to register the
                                       sepecified account for you, if it
                                       does not exist.
-            
+
     Process(integer) - takes the timeout period as an argument.  If no
                        timeout is listed then the function blocks until
                        a packet is received.  Otherwise it waits that
@@ -156,7 +156,7 @@ Net::XMPP::Client - XMPP Client Module
                            1   - Status ok, data received.
                            0   - Status ok, no data received.
                          undef - Status not ok, stop processing.
-                       
+
                        IMPORTANT: You need to check the output of every
                        Process.  If you get an undef then the connection
                        died and you should behave accordingly.
@@ -189,7 +189,7 @@ sub new
 
     bless($self, $proto);
     $self->init(@_);
-    
+
     $self->{SERVER}->{port} = 5222;
     $self->{SERVER}->{namespace} = "jabber:client";
     $self->{SERVER}->{allow_register} = 1;
@@ -209,7 +209,7 @@ sub _auth
     $auth{username} = $args{username};
     $auth{password} = $args{password};
     $auth{resource} = $args{resource} if exists($args{resource});
-    
+
     return $self->AuthSend(%auth);
 }
 
@@ -218,7 +218,7 @@ sub _connection_args
 {
     my $self = shift;
     my (%args) = @_;
-    
+
     my %connect;
     $connect{hostname}       = $args{hostname};
     $connect{port}           = $args{port}           if exists($args{port});

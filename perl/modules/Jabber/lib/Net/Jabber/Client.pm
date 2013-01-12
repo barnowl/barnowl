@@ -69,7 +69,7 @@ use Carp;
 use Net::XMPP::Client;
 use Net::Jabber::Protocol;
 use base qw( Net::XMPP::Client Net::Jabber::Protocol );
-use vars qw( $VERSION ); 
+use vars qw( $VERSION );
 
 $VERSION = "2.0";
 

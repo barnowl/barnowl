@@ -187,7 +187,7 @@ behavior the program.  The 'print' command will let you view the value
 of a variable and the 'set' commmand will let you set the value of a
 variable.  For example:
 
-     set personalbell on 
+     set personalbell on
 
 will set the value of the variable 'personalbell' to 'on'.  The
 command:
@@ -346,7 +346,7 @@ specified times:
     owl::shutdown()    run when owl exits
     owl::format_msg()  run to format messages when using the perl style.
 		       The return value is used to display the message on the
-                       screen. 
+                       screen.
     owl::receive_msg() run when a message is received, and after
 		       it has been added to the message list
 
@@ -423,12 +423,12 @@ command being run.  The syntax is:
 
 For example:
 
-   bindkey recv C-k command delete 
+   bindkey recv C-k command delete
 
-will bind Control-k to the delete command, but only in the 
+will bind Control-k to the delete command, but only in the
 recv window context.
 
-Some keymaps inherit their bindings from more 
+Some keymaps inherit their bindings from more
 general keymaps.  The valid keymaps are:
 
   - global	      - owl-wide defaults (apply everywhere)
@@ -437,14 +437,14 @@ general keymaps.  The valid keymaps are:
     |  |-editline     - single-line editing and command windows
     |  |-editresponse - single-line responses to questions
     |-popless	      - scrolling pop-up windows
-    |-recv	      - the main message list window 
+    |-recv	      - the main message list window
 			where received messages are displayed
 
 The existing key bindings can be shown with "show keymaps".
 The use of "show commands" will list all available commands.
 Note that not all commands may be used in all contexts.
 
-Key sequences may be surrounded by quotes and include 
+Key sequences may be surrounded by quotes and include
 a sequence of keys that must be pressed in order
 to execute the command.  For example:
 

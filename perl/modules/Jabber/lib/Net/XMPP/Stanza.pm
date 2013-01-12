@@ -58,29 +58,29 @@ Net::XMPP::Stanza - XMPP Stanza Module
 # NS_END
 
 =pod
-    
-  For more information on what these namespaces are for, visit 
+
+  For more information on what these namespaces are for, visit
   http://www.jabber.org and browse the Jabber Programmers Guide.
 
   The following tables can be read as follows:
 
   ny:private:ns
-  
+
   Name                        Type     Get  Set  Remove  Defined  Add
   ==========================  =======  ===  ===  ======  =======  ===
   Foo                         scalar    X    X     X        X
-  Bar                         child                                X 
+  Bar                         child                                X
   Bars                        child     X
   Test                        master    X    X
 
   Withing the my:private:ns namespace, there exists the functions:
 
     GetFoo(), SetFoo(), RemoveFoo(), DefinedFoo()
-    
+
     AddBar()
-    
+
     GetBars(), DefinedBars()
-    
+
     GetTest(), SetMaster()
 
   Hopefully it should be obvious how this all works.  If not feel free to
@@ -93,106 +93,106 @@ Net::XMPP::Stanza - XMPP Stanza Module
 
   Name                        Type       Get  Set  Remove  Defined  Add
   ==========================  =========  ===  ===  ======  =======  ===
-  Digest                      scalar      X    X     X        X        
-  Hash                        scalar      X    X     X        X        
-  Password                    scalar      X    X     X        X        
-  Resource                    scalar      X    X     X        X        
-  Sequence                    scalar      X    X     X        X        
-  Token                       scalar      X    X     X        X        
-  Username                    scalar      X    X     X        X        
-  Auth                        master      X    X                       
+  Digest                      scalar      X    X     X        X
+  Hash                        scalar      X    X     X        X
+  Password                    scalar      X    X     X        X
+  Resource                    scalar      X    X     X        X
+  Sequence                    scalar      X    X     X        X
+  Token                       scalar      X    X     X        X
+  Username                    scalar      X    X     X        X
+  Auth                        master      X    X
 
 =head1 jabber:iq:privacy
 
   Name                        Type       Get  Set  Remove  Defined  Add
   ==========================  =========  ===  ===  ======  =======  ===
-  Active                      scalar      X    X     X        X        
-  Default                     scalar      X    X     X        X        
-  List                        child                                  X 
-  Lists                       child       X          X        X        
-  Privacy                     master      X    X                       
+  Active                      scalar      X    X     X        X
+  Default                     scalar      X    X     X        X
+  List                        child                                  X
+  Lists                       child       X          X        X
+  Privacy                     master      X    X
 
 =head1 jabber:iq:privacy - item objects
 
   Name                        Type       Get  Set  Remove  Defined  Add
   ==========================  =========  ===  ===  ======  =======  ===
-  Action                      scalar      X    X     X        X        
-  IQ                          flag        X    X     X        X        
-  Message                     flag        X    X     X        X        
-  Order                       scalar      X    X     X        X        
-  PresenceIn                  flag        X    X     X        X        
-  PresenceOut                 flag        X    X     X        X        
-  Type                        scalar      X    X     X        X        
-  Value                       scalar      X    X     X        X        
-  Item                        master      X    X                       
+  Action                      scalar      X    X     X        X
+  IQ                          flag        X    X     X        X
+  Message                     flag        X    X     X        X
+  Order                       scalar      X    X     X        X
+  PresenceIn                  flag        X    X     X        X
+  PresenceOut                 flag        X    X     X        X
+  Type                        scalar      X    X     X        X
+  Value                       scalar      X    X     X        X
+  Item                        master      X    X
 
 =head1 jabber:iq:privacy - list objects
 
   Name                        Type       Get  Set  Remove  Defined  Add
   ==========================  =========  ===  ===  ======  =======  ===
-  Name                        scalar      X    X     X        X        
-  Item                        child                                  X 
-  Items                       child       X          X        X        
-  List                        master      X    X                       
+  Name                        scalar      X    X     X        X
+  Item                        child                                  X
+  Items                       child       X          X        X
+  List                        master      X    X
 
 =head1 jabber:iq:register
 
   Name                        Type       Get  Set  Remove  Defined  Add
   ==========================  =========  ===  ===  ======  =======  ===
-  Address                     scalar      X    X     X        X        
-  City                        scalar      X    X     X        X        
-  Date                        scalar      X    X     X        X        
-  Email                       scalar      X    X     X        X        
-  First                       scalar      X    X     X        X        
-  Instructions                scalar      X    X     X        X        
-  Key                         scalar      X    X     X        X        
-  Last                        scalar      X    X     X        X        
-  Misc                        scalar      X    X     X        X        
-  Name                        scalar      X    X     X        X        
-  Nick                        scalar      X    X     X        X        
-  Password                    scalar      X    X     X        X        
-  Phone                       scalar      X    X     X        X        
-  Registered                  flag        X    X     X        X        
-  Remove                      flag        X    X     X        X        
-  State                       scalar      X    X     X        X        
-  Text                        scalar      X    X     X        X        
-  URL                         scalar      X    X     X        X        
-  Username                    scalar      X    X     X        X        
-  Zip                         scalar      X    X     X        X        
-  Register                    master      X    X                       
+  Address                     scalar      X    X     X        X
+  City                        scalar      X    X     X        X
+  Date                        scalar      X    X     X        X
+  Email                       scalar      X    X     X        X
+  First                       scalar      X    X     X        X
+  Instructions                scalar      X    X     X        X
+  Key                         scalar      X    X     X        X
+  Last                        scalar      X    X     X        X
+  Misc                        scalar      X    X     X        X
+  Name                        scalar      X    X     X        X
+  Nick                        scalar      X    X     X        X
+  Password                    scalar      X    X     X        X
+  Phone                       scalar      X    X     X        X
+  Registered                  flag        X    X     X        X
+  Remove                      flag        X    X     X        X
+  State                       scalar      X    X     X        X
+  Text                        scalar      X    X     X        X
+  URL                         scalar      X    X     X        X
+  Username                    scalar      X    X     X        X
+  Zip                         scalar      X    X     X        X
+  Register                    master      X    X
 
 =head1 jabber:iq:roster
 
   Name                        Type       Get  Set  Remove  Defined  Add
   ==========================  =========  ===  ===  ======  =======  ===
-  Item                        child                                  X 
-  Items                       child       X                            
-  Roster                      master      X    X                       
+  Item                        child                                  X
+  Items                       child       X
+  Roster                      master      X    X
 
 =head1 jabber:iq:roster - item objects
 
   Name                        Type       Get  Set  Remove  Defined  Add
   ==========================  =========  ===  ===  ======  =======  ===
-  Ask                         scalar      X    X     X        X        
-  Group                       array       X    X     X        X        
-  JID                         jid         X    X     X        X        
-  Name                        scalar      X    X     X        X        
-  Subscription                scalar      X    X     X        X        
-  Item                        master      X    X                       
+  Ask                         scalar      X    X     X        X
+  Group                       array       X    X     X        X
+  JID                         jid         X    X     X        X
+  Name                        scalar      X    X     X        X
+  Subscription                scalar      X    X     X        X
+  Item                        master      X    X
 
 =head1 urn:ietf:params:xml:ns:xmpp-bind
 
   Name                        Type       Get  Set  Remove  Defined  Add
   ==========================  =========  ===  ===  ======  =======  ===
-  JID                         jid         X    X     X        X        
-  Resource                    scalar      X    X     X        X        
-  Bind                        master      X    X                       
+  JID                         jid         X    X     X        X
+  Resource                    scalar      X    X     X        X
+  Bind                        master      X    X
 
 =head1 urn:ietf:params:xml:ns:xmpp-session
 
   Name                        Type       Get  Set  Remove  Defined  Add
   ==========================  =========  ===  ===  ======  =======  ===
-  Session                     master      X    X                       
+  Session                     master      X    X
 
 
 =cut
@@ -232,11 +232,11 @@ sub new
     $self->{TAG} = "__netxmpp__:unknown:tag";
 
     $self->{FUNCS} = \%FUNCTIONS;
-    
+
     my $result = $self->_init(@_);
 
     return $result if defined($result);
-    
+
     return $self;
 }
 
@@ -308,7 +308,7 @@ sub debug
 # GetXML - Returns a string that represents the packet.
 #
 ##############################################################################
-sub GetXML 
+sub GetXML
 {
     my $self = shift;
     return $self->GetTree()->GetXML();
@@ -323,7 +323,7 @@ sub GetXML
 sub GetTag
 {
     my $self = shift;
-    
+
     return $self->{TAG};
 }
 
@@ -344,7 +344,7 @@ sub GetTree
 
     $node->remove_attrib("xmlns")
         if (exists($self->{SKIPXMLNS}) && ($keepXMLNS == 0));
-    
+
     foreach my $child (@{$self->{CHILDREN}})
     {
         my $child_tree = $child->GetTree($keepXMLNS);
@@ -364,7 +364,7 @@ sub GetTree
         if (exists($self->{RAWXML}) && ($#{$self->{RAWXML}} > -1));
 
     return $node;
-} 
+}
 
 
 ##############################################################################
@@ -378,7 +378,7 @@ sub NewChild
     my $self = shift;
     my $xmlns = shift;
     my $tag = shift;
-    
+
     return unless exists($Net::XMPP::Namespaces::NS{$xmlns});
 
     if (!defined($tag))
@@ -387,7 +387,7 @@ sub NewChild
         $tag = $Net::XMPP::Namespaces::NS{$xmlns}->{tag}
             if exists($Net::XMPP::Namespaces::NS{$xmlns});
     }
-    
+
     my $node = new XML::Stream::Node($tag);
     $node->put_attrib(xmlns=>$xmlns);
 
@@ -444,7 +444,7 @@ sub NewFirstChild
     my $self = shift;
     my $xmlns = shift;
     my $tag = shift;
-    
+
     return unless exists($Net::XMPP::Namespaces::NS{$xmlns});
 
     if (!defined($tag))
@@ -453,7 +453,7 @@ sub NewFirstChild
         $tag = $Net::XMPP::Namespaces::NS{$xmlns}->{tag}
             if exists($Net::XMPP::Namespaces::NS{$xmlns});
     }
-    
+
     my $node = new XML::Stream::Node($tag);
     $node->put_attrib(xmlns=>$xmlns);
 
@@ -591,8 +591,8 @@ sub _xpath_AUTOLOAD
     my @setFuncs = grep { $_ ne $var } keys(%{$funcs});
 
     #$self->_debug("_xpath_AUTOLOAD: setFuncs(",join(",",@setFuncs),")");
-                
-    
+
+
     my $type = (exists($funcs->{$var}->{type}) ?
                 $funcs->{$var}->{type} :
                 "scalar"
@@ -606,7 +606,7 @@ sub _xpath_AUTOLOAD
     $path = "*" if ($type eq "raw");
 
     my $child = "";
-    
+
     #-------------------------------------------------------------------------
     # When this is a master function... change the above variables...
     #-------------------------------------------------------------------------
@@ -629,7 +629,7 @@ sub _xpath_AUTOLOAD
                         ($funcType eq "flag") || ($funcType eq "timestamp") ||
                         (ref($funcType) eq "ARRAY"));
             }
-                
+
             $child = \@newSetFuncs;
         }
         else
@@ -643,13 +643,13 @@ sub _xpath_AUTOLOAD
     elsif (exists($funcs->{$var}->{child}))
     {
         $child = $funcs->{$var}->{child};
-                
+
         #$self->_debug("_xpath_AUTOLOAD: child($child)");
-                
+
         if (exists($child->{ns}))
         {
             my $addXMLNS = $child->{ns};
-                
+
             my $addFuncs = $Net::XMPP::Namespaces::NS{$addXMLNS}->{xpath};
             my @calls =
                 grep
@@ -690,7 +690,7 @@ sub _xpath_funcs
     my $xmlns = shift;
 
     my $funcs;
-    
+
     my $coreFuncs = $self->{FUNCS};
     #eval "\$coreFuncs = \\%".$package."::FUNCTIONS";
     $coreFuncs = {} unless defined($coreFuncs);
@@ -749,7 +749,7 @@ sub _xpath
     my $call = shift;
 
     #$self->_debug("_xpath: call($call) args(",join(",",@_),")");
-    
+
     if ($call eq "Get")        { return $self->_xpath_get(@_)    ; }
     elsif ($call eq "Set")     { return $self->_xpath_set(@_);     }
     elsif ($call eq "Defined") { return $self->_xpath_defined(@_); }
@@ -760,7 +760,7 @@ sub _xpath
 
 ##############################################################################
 #
-# _xpath_get - returns the value stored in the node 
+# _xpath_get - returns the value stored in the node
 #
 ##############################################################################
 sub _xpath_get
@@ -770,13 +770,13 @@ sub _xpath_get
     my $xpath = shift;
     my $childtype = shift;
     my ($arg0) = shift;
-    
+
     #$self->_debug("_xpath_get: self($self) type($type) xpath($xpath) childtype($childtype)");
     #$self->{TREE}->debug();
 
     my $subType;
     ($type,$subType) = $self->_xpath_resolve_types($type);
-    
+
 
     #-------------------------------------------------------------------------
     # type == master
@@ -784,7 +784,7 @@ sub _xpath_get
     if ($type eq "master")
     {
         my %fields;
-        
+
         foreach my $func (sort {$a cmp $b} @{$childtype})
         {
             my $defined;
@@ -807,13 +807,13 @@ sub _xpath_get
 
         return %fields;
     }
-    
+
     #-------------------------------------------------------------------------
     # type == node
     #-------------------------------------------------------------------------
     # XXX Remove this if there are no problems
     #if ($type eq "node")
-    #{ 
+    #{
         #$self->_debug("_xpath_get: node: xmlns($arg0)") if defined($arg0);
 
         #my @results;
@@ -824,7 +824,7 @@ sub _xpath_get
 
             #push(@results,$child)
             #     if (!defined($arg0) ||
-            #         ($arg0 eq "") || 
+            #         ($arg0 eq "") ||
             #         ($child->GetTree(1)->get_attrib("xmlns") eq $arg0));
             #}
 
@@ -865,7 +865,7 @@ sub _xpath_get
     {
         return $#nodes > -1;
     }
-    
+
     #-------------------------------------------------------------------------
     # type == array
     #-------------------------------------------------------------------------
@@ -874,7 +874,7 @@ sub _xpath_get
         return @nodes if (wantarray);
         return $nodes[0];
     }
-    
+
     #-------------------------------------------------------------------------
     # type == raw
     #-------------------------------------------------------------------------
@@ -883,7 +883,7 @@ sub _xpath_get
         my $rawXML = "";
 
         return join("",@{$self->{RAWXML}}) if ($#{$self->{RAWXML}} > -1);
-        
+
         foreach my $node (@nodes)
         {
             $rawXML .= $node->GetXML();
@@ -1046,7 +1046,7 @@ sub _xpath_set
 
         #$self->_debug("_xpath_set: val($val)") unless !defined($val);
         #$self->_debug("_xpath_set: path($path)");
-    
+
         my $childPath = "";
         while(($path !~ /^\/?\@/) && ($path !~ /^\/?text\(\)/))
         {
@@ -1055,12 +1055,12 @@ sub _xpath_set
             $path =~ s/^\/?[^\/]+//;
             #$self->_debug("_xpath_set: path($path)");
             #$self->_debug("_xpath_set: childPath($childPath)");
-            
+
             if (($type eq "scalar") || ($type eq "jid") || ($type eq "timestamp"))
             {
                 my $tmpPath = $child;
                 $tmpPath = "$childPath/$child" if ($childPath ne "");
-                
+
                 my @nodes = $self->{TREE}->XPath("$tmpPath");
                 #$self->_debug("_xpath_set: \$#nodes($#nodes)");
                 if ($#nodes == -1)
@@ -1091,13 +1091,13 @@ sub _xpath_set
                 $node = $self->{TREE}->add_child($child);
                 return;
             }
-            
+
             $childPath .= "/" unless ($childPath eq "");
             $childPath .= $child;
         }
 
         my ($piece) = ($path =~ /^\/?([^\/]+)/);
-    
+
         #$self->_debug("_xpath_set: piece($piece)");
 
         if ($piece =~ /^\@(.+)$/)
@@ -1144,17 +1144,17 @@ sub _xpath_defined
 
     my @nodes = $self->{TREE}->XPath($xpath);
     my $defined = ($#nodes > -1);
-    
+
     #$self->_debug("_xpath_defined: nodes(",join(",",@nodes),")");
     #$self->_debug("_xpath_defined: ",$#nodes);
-    
+
     if (!$defined && (($type eq "child") || ($type eq "children") || ($type eq "node")))
     {
         if ((ref($childtype) eq "HASH") && exists($childtype->{ns}))
         {
             $ns = $childtype->{ns};
         }
-    
+
         foreach my $packet (@{$self->{CHILDREN}})
         {
             if (!defined($ns) || ($packet->GetXMLNS() eq $ns))
@@ -1173,7 +1173,7 @@ sub _xpath_defined
 
 ##############################################################################
 #
-# _xpath_add - returns the value stored in the node 
+# _xpath_add - returns the value stored in the node
 #
 ##############################################################################
 sub _xpath_add
@@ -1241,12 +1241,12 @@ sub _xpath_remove
     @nodes = $self->{TREE}->XPath($nodePath) if ($nodePath ne "");
 
     #$self->_debug("_xpath_remove: nodes($#nodes)");
-    
+
     if ($xpath =~ /\@(\S+)/)
     {
         my $attrib = $1;
         #$self->_debug("_xpath_remove: attrib($attrib)");
-        
+
         if ($nodePath eq "")
         {
             $self->{TREE}->remove_attrib($attrib);
@@ -1260,7 +1260,7 @@ sub _xpath_remove
         }
         return;
     }
-    
+
     foreach my $node (@nodes)
     {
         #$self->_debug("_xpath_remove: node GetXML(".$node->GetXML().")");
@@ -1291,7 +1291,7 @@ sub _xpath_resolve_types
 {
     my $self = shift;
     my $type = shift;
-    
+
     my $subType = "";
     if (ref($type) eq "ARRAY")
     {
@@ -1306,7 +1306,7 @@ sub _xpath_resolve_types
             $type = "master";
         }
     }
-    
+
     #$self->_debug("_xpath_resolve_types: type($type) subtype($subType)");
 
     return ($type,$subType);

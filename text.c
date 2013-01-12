@@ -57,7 +57,7 @@ CALLER_OWN char *owl_text_htmlstrip(const char *in)
 
   ptr1=in;
   end=in+strlen(in);
-  
+
   while(ptr1<end) {
     /* look for an open bracket */
     ptr2=strchr(ptr1, '<');
@@ -75,7 +75,7 @@ CALLER_OWN char *owl_text_htmlstrip(const char *in)
 
     /* find the close bracket */
     ptr3=strchr(ptr2, '>');
-    
+
     /* if there is no close, copy as you are and exit */
     if (!ptr3) {
       strcat(out, ptr2);

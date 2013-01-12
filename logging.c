@@ -54,7 +54,7 @@ int owl_log_shouldlog_message(const owl_message *m) {
 
   /* skip login/logout messages if appropriate */
   if (!owl_global_is_loglogins(&g) && owl_message_is_loginout(m)) return(0);
-      
+
   /* check direction */
   if ((owl_global_get_loggingdirection(&g)==OWL_LOGGING_DIRECTION_IN) && owl_message_is_direction_out(m)) {
     return(0);
@@ -82,18 +82,18 @@ CALLER_OWN char *owl_log_zephyr(const owl_message *m)
     GString *buffer = NULL;
     buffer = g_string_new("");
     tmp = short_zuser(owl_message_get_sender(m));
-    g_string_append_printf(buffer, "Class: %s Instance: %s", 
-                           owl_message_get_class(m), 
+    g_string_append_printf(buffer, "Class: %s Instance: %s",
+                           owl_message_get_class(m),
                            owl_message_get_instance(m));
     if (strcmp(owl_message_get_opcode(m), "")) {
-      g_string_append_printf(buffer, " Opcode: %s", 
+      g_string_append_printf(buffer, " Opcode: %s",
                              owl_message_get_opcode(m));
     }
     g_string_append_printf(buffer, "\n");
-    g_string_append_printf(buffer, "Time: %s Host: %s\n", 
-                           owl_message_get_timestr(m), 
+    g_string_append_printf(buffer, "Time: %s Host: %s\n",
+                           owl_message_get_timestr(m),
                            owl_message_get_hostname(m));
-    g_string_append_printf(buffer, "From: %s <%s>\n\n", 
+    g_string_append_printf(buffer, "From: %s <%s>\n\n",
                            owl_message_get_zsig(m), tmp);
     g_string_append_printf(buffer, "%s\n\n", owl_message_get_body(m));
     g_free(tmp);
@@ -104,9 +104,9 @@ CALLER_OWN char *owl_log_aim(const owl_message *m)
 {
     GString *buffer = NULL;
     buffer = g_string_new("");
-    g_string_append_printf(buffer, "From: <%s> To: <%s>\n", 
+    g_string_append_printf(buffer, "From: <%s> To: <%s>\n",
                            owl_message_get_sender(m), owl_message_get_recipient(m));
-    g_string_append_printf(buffer, "Time: %s\n\n", 
+    g_string_append_printf(buffer, "Time: %s\n\n",
                            owl_message_get_timestr(m));
     if (owl_message_is_login(m)) {
         g_string_append_printf(buffer, "LOGIN\n\n");
@@ -123,9 +123,9 @@ CALLER_OWN char *owl_log_jabber(const owl_message *m)
     GString *buffer = NULL;
     buffer = g_string_new("");
     g_string_append_printf(buffer, "From: <%s> To: <%s>\n",
-                           owl_message_get_sender(m), 
+                           owl_message_get_sender(m),
                            owl_message_get_recipient(m));
-    g_string_append_printf(buffer, "Time: %s\n\n", 
+    g_string_append_printf(buffer, "Time: %s\n\n",
                            owl_message_get_timestr(m));
     g_string_append_printf(buffer, "%s\n\n", owl_message_get_body(m));
     return g_string_free(buffer, FALSE);
@@ -135,12 +135,12 @@ CALLER_OWN char *owl_log_generic(const owl_message *m)
 {
     GString *buffer;
     buffer = g_string_new("");
-    g_string_append_printf(buffer, "From: <%s> To: <%s>\n", 
-                           owl_message_get_sender(m), 
+    g_string_append_printf(buffer, "From: <%s> To: <%s>\n",
+                           owl_message_get_sender(m),
                            owl_message_get_recipient(m));
-    g_string_append_printf(buffer, "Time: %s\n\n", 
+    g_string_append_printf(buffer, "Time: %s\n\n",
                            owl_message_get_timestr(m));
-    g_string_append_printf(buffer, "%s\n\n", 
+    g_string_append_printf(buffer, "%s\n\n",
                            owl_message_get_body(m));
     return g_string_free(buffer, FALSE);
 }
@@ -182,11 +182,11 @@ static void owl_log_entry_free(void *data)
 
 void owl_log_enqueue_message(const char *buffer, const char *filename)
 {
-  owl_log_entry *log_msg = NULL; 
+  owl_log_entry *log_msg = NULL;
   log_msg = g_new(owl_log_entry,1);
   log_msg->message = g_strdup(buffer);
   log_msg->filename = g_strdup(filename);
-  owl_select_post_task(owl_log_write_entry, log_msg, 
+  owl_select_post_task(owl_log_write_entry, log_msg,
 		       owl_log_entry_free, log_context);
 }
 
@@ -352,16 +352,16 @@ void owl_log_incoming(const owl_message *m)
     from=frombuff=g_strdup("loopback");
   } else if (owl_message_is_type_jabber(m)) {
     if (personal) {
-      from=frombuff=g_strdup_printf("jabber:%s", 
+      from=frombuff=g_strdup_printf("jabber:%s",
 				    owl_message_get_sender(m));
     } else {
-      from=frombuff=g_strdup_printf("jabber:%s", 
+      from=frombuff=g_strdup_printf("jabber:%s",
 				    owl_message_get_recipient(m));
     }
   } else {
     from=frombuff=g_strdup("unknown");
   }
-  
+
   /* check for malicious sender formats */
   len=strlen(frombuff);
   if (len<1 || len>35) from="weird";
@@ -433,7 +433,7 @@ static gpointer owl_log_thread_func(gpointer data)
   return NULL;
 }
 
-void owl_log_init(void) 
+void owl_log_init(void)
 {
   log_context = g_main_context_new();
 #if GLIB_CHECK_VERSION(2, 31, 0)
@@ -453,7 +453,7 @@ void owl_log_init(void)
     exit(1);
   }
 #endif
-  
+
 }
 
 static void owl_log_quit_func(gpointer data)

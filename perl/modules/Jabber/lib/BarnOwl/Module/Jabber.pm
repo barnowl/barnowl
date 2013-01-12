@@ -1049,7 +1049,7 @@ sub process_incoming_error_message {
     my %jhash = j2hash( $j, { direction => 'in',
                               sid => $sid } );
     $jhash{type} = 'admin';
-    
+
     BarnOwl::queue_message( BarnOwl::Message->new(%jhash) );
 }
 

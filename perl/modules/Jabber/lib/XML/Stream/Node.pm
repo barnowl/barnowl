@@ -84,7 +84,7 @@ would be:
   add_child(tag,cdata)   as the root node.  Returns the node added.
 
   remove_child(node) - removes the child node from the current node.
-  
+
   remove_cdata() - removes all of the cdata children from the current node.
 
   add_cdata(string) - adds the string as cdata onto the current nodes
@@ -119,7 +119,7 @@ would be:
   copy() - return a recursive copy of the node.
 
   XPath(path) - run XML::Stream::XPath on this node.
-  
+
   XPathCheck(path) - run XML::Stream::XPath on this node and return 1 or 0
                      to see if it matches or not.
 
@@ -265,7 +265,7 @@ sub get_cdata
     }
 
     return $cdata;
-} 
+}
 
 
 sub remove_cdata
@@ -285,7 +285,7 @@ sub remove_cdata
     {
         splice(@{$self->{CHILDREN}},$index,1);
     }
-} 
+}
 
 
 sub attrib
@@ -293,7 +293,7 @@ sub attrib
     my $self = shift;
     return () unless exists($self->{ATTRIBS});
     return %{$self->{ATTRIBS}};
-} 
+}
 
 
 sub get_attrib
@@ -307,7 +307,7 @@ sub get_attrib
 
 
 sub put_attrib
-{ 
+{
     my $self = shift;
     my (%att) = @_;
 
@@ -365,7 +365,7 @@ sub set_tag
     my $self = shift;
     my ($tag) = @_;
 
-    $self->{TAG} = $tag; 
+    $self->{TAG} = $tag;
 }
 
 
@@ -512,7 +512,7 @@ sub _handle_close
     my $CLOSED = pop @{$self->{SIDS}->{$sid}->{node}};
 
     $self->debug(2,"Node: _handle_close: check2(",$#{$self->{SIDS}->{$sid}->{node}},")");
-    
+
     if($#{$self->{SIDS}->{$sid}->{node}} == -1)
     {
         push @{$self->{SIDS}->{$sid}->{node}}, $CLOSED;
@@ -520,7 +520,7 @@ sub _handle_close
         if (ref($self) ne "XML::Stream::Parser")
         {
             my $stream_prefix = $self->StreamPrefix($sid);
-            
+
             if(defined($self->{SIDS}->{$sid}->{node}->[0]) &&
                ($self->{SIDS}->{$sid}->{node}->[0]->get_tag() =~ /^${stream_prefix}\:/))
             {
@@ -541,7 +541,7 @@ sub _handle_close
                 if ($#special > -1)
                 {
                     my $xmlns = $node->get_attrib("xmlns");
-                    
+
                     $self->ProcessSASLPacket($sid,$node)
                         if ($xmlns eq &XML::Stream::ConstXMLNS("xmpp-sasl"));
                     $self->ProcessTLSPacket($sid,$node)

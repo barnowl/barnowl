@@ -396,7 +396,7 @@ sub twitter_direct {
             my $tweet = BarnOwl::Message->new(
                 type      => 'Twitter',
                 sender    => $self->{cfg}->{user} || $self->{user},
-                recipient => $who, 
+                recipient => $who,
                 direction => 'out',
                 body      => $msg,
                 private => 'true',

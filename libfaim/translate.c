@@ -6,7 +6,7 @@
  * the server with this group, it whined about not supporting it.
  *
  * But we advertise it anyway, because its fun.
- * 
+ *
  */
 
 #define FAIM_INTERNAL

@@ -24,7 +24,7 @@ package XML::Stream::Namespace;
 
 =head1 NAME
 
-XML::Stream::Namespace - Object to make defining Namespaces easier in 
+XML::Stream::Namespace - Object to make defining Namespaces easier in
                          XML::Stream.
 
 =head1 SYNOPSIS
@@ -48,8 +48,8 @@ a clean way of defining Namespaces for XML::Stream to use when connecting.
   GetXMLNS() returns "http://www.mynamespace.com/xmlns"
   GetAttributes() returns a hash ( attrib1=>"value1",attrib2=>"value2")
   GetStream() returns the following string:
-    "xmlns:mynamespace='http://www.nynamespace.com/xmlns' 
-     mynamespace:attrib1='value1' 
+    "xmlns:mynamespace='http://www.nynamespace.com/xmlns'
+     mynamespace:attrib1='value1'
      mynamespace:attrib2='value2'"
 
 =head1 EXAMPLES
@@ -70,15 +70,15 @@ a clean way of defining Namespaces for XML::Stream to use when connecting.
   # The above Connect will send the following as the opening string
   # of the stream to foo.bar.org:1234...
   #
-  #   <stream:stream 
+  #   <stream:stream
   #    xmlns:stream="http://etherx.jabber.org/streams"
   #    to="foo.bar.org"
-  #    xmlns="foo:bar" 
+  #    xmlns="foo:bar"
   #    xmlns:mynamespace="http://www.mynamespace.org/xmlns"
   #    mynamespace:foo="bar"
   #    mynamespace:bob="vila">
   #
-    
+
 
 =head1 AUTHOR
 
@@ -182,7 +182,7 @@ sub GetStream
     $string .= $attrib;
     $string .= "='".$self->GetAttributes($attrib)."'";
   }
-    
+
   return $string;
 }
 

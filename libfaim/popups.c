@@ -12,7 +12,7 @@
  * This is all there is to it.
  *
  * The message is probably HTML.
- * 
+ *
  */
 static int parsepopup(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
