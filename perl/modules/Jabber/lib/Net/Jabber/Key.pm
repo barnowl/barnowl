@@ -54,7 +54,7 @@ Net::Jabber::Key - Jabber Key Library
 
     new(debug=>string,       - creates the Key object.  debug should
         debugfh=>FileHandle,   be set to the path for the debug
-        debuglevel=>integer)   log to be written.  If set to "stdout" 
+        debuglevel=>integer)   log to be written.  If set to "stdout"
                                then the debug will go there.  Also, you
                                can specify a filehandle that already
                                exists and use that.  debuglevel controls
@@ -64,7 +64,7 @@ Net::Jabber::Key - Jabber Key Library
     Generate() - returns a key in Digest SHA1 form based on the current
                  time and the PID.
 
-    Create(cacheString) - generates a key and caches it with the key 
+    Create(cacheString) - generates a key and caches it with the key
                           of cacheString.  Create returns the key.
 
     Compare(cacheString, - compares the key stored in the cache under
@@ -100,7 +100,7 @@ sub new
                                              header=>"NJ::Key");
 
     $self->{VERSION} = $VERSION;
-    
+
     $self->{CACHE} = {};
 
     if (eval "require Digest::SHA")
@@ -121,8 +121,8 @@ sub new
 
 ###########################################################################
 #
-# Generate - returns a random string based on the PID and time and a 
-#            random number.  Then it creates an SHA1 Digest of that 
+# Generate - returns a random string based on the PID and time and a
+#            random number.  Then it creates an SHA1 Digest of that
 #            string and returns it.
 #
 ###########################################################################

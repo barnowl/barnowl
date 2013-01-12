@@ -109,7 +109,7 @@ faim_export int aim_icq_hideip(aim_session_t *sess)
  * Change your ICQ password.
  *
  * @param sess The oscar session
- * @param passwd The new password.  If this is longer than 8 characters it 
+ * @param passwd The new password.  If this is longer than 8 characters it
  *        will be truncated.
  * @return Return 0 if no errors, otherwise return the error number.
  */
@@ -321,7 +321,7 @@ faim_export int aim_icq_sendxmlreq(aim_session_t *sess, const char *xml)
 }
 
 /*
- * Send an SMS message.  This is the non-US way.  The US-way is to IM 
+ * Send an SMS message.  This is the non-US way.  The US-way is to IM
  * their cell phone number (+19195551234).
  *
  * We basically construct and send an XML message.  The format is:
@@ -335,7 +335,7 @@ faim_export int aim_icq_sendxmlreq(aim_session_t *sess, const char *xml)
  *   <time>Wkd, DD Mmm YYYY HH:MM:SS TMZ</time>
  * </icq_sms_message>
  *
- * Yeah hi Peter, whaaaat's happening.  If there's any way to use 
+ * Yeah hi Peter, whaaaat's happening.  If there's any way to use
  * a codepage other than 1252 that would be great.  Thaaaanks.
  */
 faim_export int aim_icq_sendsms(aim_session_t *sess, const char *name, const char *msg, const char *alias)

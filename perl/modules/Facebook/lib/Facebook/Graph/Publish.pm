@@ -76,7 +76,7 @@ version 1.0300
 
 =head1 DESCRIPTION
 
-This module shouldn't be used by you directly for any purpose. 
+This module shouldn't be used by you directly for any purpose.
 
 =head1 LEGAL
 

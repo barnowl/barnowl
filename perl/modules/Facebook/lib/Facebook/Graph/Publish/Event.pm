@@ -182,8 +182,8 @@ A L<DateTime> object.
 Posts the data and returns a L<Facebook::Graph::Response> object. The response object should contain the id:
 
  {"id":"1647395831_130068550371568"}
- 
- 
+
+
 =head1 TODO
 
 Add venue and privacy as described on L<http://developers.facebook.com/docs/reference/api/event>.

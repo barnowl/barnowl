@@ -1,10 +1,10 @@
 /*
  *
- * Various SNAC-related dodads... 
+ * Various SNAC-related dodads...
  *
  * outstanding_snacs is a list of aim_snac_t structs.  A SNAC should be added
  * whenever a new SNAC is sent and it should remain in the list until the
- * response for it has been receieved.  
+ * response for it has been receieved.
  *
  * cleansnacs() should be called periodically by the client in order
  * to facilitate the aging out of unreplied-to SNACs. This can and does
@@ -73,13 +73,13 @@ faim_internal aim_snacid_t aim_newsnac(aim_session_t *sess, aim_snac_t *newsnac)
 }
 
 /*
- * Finds a snac structure with the passed SNAC ID, 
+ * Finds a snac structure with the passed SNAC ID,
  * removes it from the list/hash, and returns a pointer to it.
  *
  * The returned structure must be freed by the caller.
  *
  */
-faim_internal aim_snac_t *aim_remsnac(aim_session_t *sess, aim_snacid_t id) 
+faim_internal aim_snac_t *aim_remsnac(aim_session_t *sess, aim_snacid_t id)
 {
 	aim_snac_t *cur, **prev;
 	int index;

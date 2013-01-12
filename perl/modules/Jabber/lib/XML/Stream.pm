@@ -316,7 +316,7 @@ sub import
         die($@) if ($@);
 
         my $lc = lc($module);
-        
+
         eval("\$HANDLERS{\$lc}->{startElement} = \\&XML::Stream::${module}::_handle_element;");
         eval("\$HANDLERS{\$lc}->{endElement}   = \\&XML::Stream::${module}::_handle_close;");
         eval("\$HANDLERS{\$lc}->{characters}   = \\&XML::Stream::${module}::_handle_cdata;");
@@ -599,7 +599,7 @@ sub Respond
     my $serverid = $self->{SIDS}->{$sid}->{serverid};
 
     my $root = $self->GetRoot($sid);
-    
+
     if ($root->{xmlns} ne $self->{SIDS}->{$serverid}->{namespace})
     {
         my $error = $self->StreamError($sid,"invalid-namespace","Invalid namespace specified");
@@ -667,13 +667,13 @@ sub Connect
         $self->{SIDS}->{newconnection}->{$key} = $self->{SIDS}->{default}->{$key};
     }
     while($#_ >= 0) { $self->{SIDS}->{newconnection}->{ lc pop(@_) } = pop(@_); }
-    
+
     my $timeout = exists($self->{SIDS}->{newconnection}->{timeout}) ?
                   delete($self->{SIDS}->{newconnection}->{timeout}) :
                   "";
 
     $self->debug(4,"Connect: timeout($timeout)");
-    
+
 
     if (exists($self->{SIDS}->{newconnection}->{srv}))
     {
@@ -682,9 +682,9 @@ sub Connect
         {
             my $res = Net::DNS::Resolver->new();
             my $query = $res->query($self->{SIDS}->{newconnection}->{srv}.".".$self->{SIDS}->{newconnection}->{hostname},"SRV");
-            
+
             if ($query)
-            { 
+            {
                 $self->{SIDS}->{newconnection}->{hostname} = ($query->answer)[0]->target();
                 $self->{SIDS}->{newconnection}->{port} = ($query->answer)[0]->port();
                 $self->debug(1,"Connect: srv host: $self->{SIDS}->{newconnection}->{hostname}");
@@ -770,7 +770,7 @@ sub Connect
     {
         $self->{SIDS}->{newconnection}->{sock} =
             new FileHandle(">&STDOUT");
-    }  
+    }
 
     #---------------------------------------------------------------------------
     # HTTP
@@ -1029,13 +1029,13 @@ sub OpenStream
     # Next, we build the opening handshake.
     #---------------------------------------------------------------------------
     my %stream_args;
-    
+
     if (($self->{SIDS}->{$currsid}->{connectiontype} eq "tcpip") ||
         ($self->{SIDS}->{$currsid}->{connectiontype} eq "http"))
     {
         $stream_args{to}= $self->{SIDS}->{$currsid}->{hostname}
             unless exists($self->{SIDS}->{$currsid}->{to});
-        
+
         $stream_args{to} = $self->{SIDS}->{$currsid}->{to}
             if exists($self->{SIDS}->{$currsid}->{to});
 
@@ -1043,10 +1043,10 @@ sub OpenStream
             if (!exists($self->{SIDS}->{$currsid}->{from}) &&
                 ($self->{SIDS}->{$currsid}->{myhostname} ne "")
                );
-        
+
         $stream_args{from} = $self->{SIDS}->{$currsid}->{from}
             if exists($self->{SIDS}->{$currsid}->{from});
-        
+
         $stream_args{id} = $self->{SIDS}->{$currsid}->{id}
             if (exists($self->{SIDS}->{$currsid}->{id}) &&
                 ($self->{SIDS}->{$currsid}->{id} ne "")
@@ -1054,7 +1054,7 @@ sub OpenStream
 
         $stream_args{namespaces} = $self->{SIDS}->{$currsid}->{namespaces};
     }
-    
+
     my $stream =
         $self->StreamHeader(
             xmlns=>$self->{SIDS}->{$currsid}->{namespace},
@@ -1171,7 +1171,7 @@ sub OpenStream
             $self->Process(1);
         }
     }
-        
+
     return $self->GetRoot($sid);
 }
 
@@ -1332,7 +1332,7 @@ sub InitConnection
     # Mark the stream:features as MIA.
     #---------------------------------------------------------------------------
     $self->{SIDS}->{$sid}->{streamfeatures}->{received} = 0;
-    
+
     #---------------------------------------------------------------------------
     # First acitivty is the connection... duh. =)
     #---------------------------------------------------------------------------
@@ -1521,7 +1521,7 @@ sub Process
             {
                 $self->debug(4,"Process: sid($sid) time(",time,") timeout(undef)");
             }
-            
+
             $self->Respond($sid)
                 if (exists($self->{SIDS}->{$sid}->{activitytimeout}) &&
                     defined($self->GetRoot($sid)));
@@ -1636,7 +1636,7 @@ sub Send
     $self->debug(1,"Send: (@_)");
     $self->debug(3,"Send: sid($sid)");
     $self->debug(3,"Send: status($self->{SIDS}->{$sid}->{status})");
-    
+
     $self->{SIDS}->{$sid}->{keepalive} = time;
 
     return if ($self->{SIDS}->{$sid}->{status} == -1);
@@ -1676,7 +1676,7 @@ sub Send
                 $self->SetErrorCode($sid,"Socket died for an unknown reason.");
                 return;
             }
-            
+
             $self->debug(4,"Send: SENDWRITTEN($self->{SENDWRITTEN})");
 
             $self->{SENDLENGTH} -= $self->{SENDWRITTEN};
@@ -1735,7 +1735,7 @@ sub ProcessStreamFeatures
             $self->{SIDS}->{$sid}->{streamfeatures}->{'xmpp-sasl'} = \@mechanisms;
         }
     }
-    
+
     #-------------------------------------------------------------------------
     # XMPP-TLS - 1.0
     #-------------------------------------------------------------------------
@@ -1752,7 +1752,7 @@ sub ProcessStreamFeatures
             }
         }
     }
-    
+
     #-------------------------------------------------------------------------
     # XMPP-Bind - 1.0
     #-------------------------------------------------------------------------
@@ -1761,7 +1761,7 @@ sub ProcessStreamFeatures
     {
         $self->{SIDS}->{$sid}->{streamfeatures}->{'xmpp-bind'} = 1;
     }
-    
+
     #-------------------------------------------------------------------------
     # XMPP-Session - 1.0
     #-------------------------------------------------------------------------
@@ -1770,7 +1770,7 @@ sub ProcessStreamFeatures
     {
         $self->{SIDS}->{$sid}->{streamfeatures}->{'xmpp-session'} = 1;
     }
-    
+
 }
 
 
@@ -1832,7 +1832,7 @@ sub ProcessTLSPacket
     {
         $self->TLSClientFailure($sid,$node);
     }
-    
+
     if ($tag eq "proceed")
     {
         $self->TLSClientProceed($sid,$node);
@@ -1852,7 +1852,7 @@ sub StartTLS
     my $timeout = shift;
     $timeout = 120 unless defined($timeout);
     $timeout = 120 if ($timeout eq "");
-    
+
     $self->TLSStartTLS($sid);
 
     my $endTime = time + $timeout;
@@ -1903,13 +1903,13 @@ sub TLSClientProceed
         $self->{SIDS}->{$sid}->{tls}->{done} = 1;
         return;
     }
-    
+
     IO::Socket::SSL->start_SSL($self->{SIDS}->{$sid}->{sock},{SSL_verify_mode=>0x00});
 
     $self->debug(1,"TLSClientProceed: ssl_sock($self->{SIDS}->{$sid}->{sock})");
     $self->debug(1,"TLSClientProceed: SSL: We are secure")
         if ($self->{SIDS}->{$sid}->{sock});
-    
+
     $self->{SIDS}->{$sid}->{tls}->{done} = 1;
     $self->{SIDS}->{$sid}->{tls}->{secure} = 1;
 }
@@ -1924,7 +1924,7 @@ sub TLSClientSecure
 {
     my $self = shift;
     my $sid = shift;
-    
+
     return $self->{SIDS}->{$sid}->{tls}->{secure};
 }
 
@@ -1938,7 +1938,7 @@ sub TLSClientDone
 {
     my $self = shift;
     my $sid = shift;
-    
+
     return $self->{SIDS}->{$sid}->{tls}->{done};
 }
 
@@ -1952,7 +1952,7 @@ sub TLSClientError
 {
     my $self = shift;
     my $sid = shift;
-    
+
     return $self->{SIDS}->{$sid}->{tls}->{error};
 }
 
@@ -1967,7 +1967,7 @@ sub TLSClientFailure
     my $self = shift;
     my $sid = shift;
     my $node = shift;
-    
+
     my $type = &XPath($node,"*/name()");
 
     $self->{SIDS}->{$sid}->{tls}->{error} = $type;
@@ -1985,7 +1985,7 @@ sub TLSFailure
     my $self = shift;
     my $sid = shift;
     my $type = shift;
-    
+
     $self->Send($sid,"<failure xmlns='".&ConstXMLNS('xmpp-tls')."'><${type}/></failure>");
 }
 
@@ -2017,12 +2017,12 @@ sub ProcessSASLPacket
     {
         $self->SASLAnswerChallenge($sid,$node);
     }
-    
+
     if ($tag eq "failure")
     {
         $self->SASLClientFailure($sid,$node);
     }
-    
+
     if ($tag eq "success")
     {
         $self->SASLClientSuccess($sid,$node);
@@ -2044,7 +2044,7 @@ sub SASLAnswerChallenge
 
     my $challenge64 = &XPath($node,"text()");
     my $challenge = MIME::Base64::decode_base64($challenge64);
-    
+
     #-------------------------------------------------------------------------
     # As far as I can tell, if the challenge contains rspauth, then we authed.
     # If you try to send that to Authen::SASL, it will spew warnings about
@@ -2111,7 +2111,7 @@ sub SASLClient
     my $mechanisms = $self->GetStreamFeature($sid,"xmpp-sasl");
 
     return unless defined($mechanisms);
-    
+
     my $sasl = new Authen::SASL(mechanism=>join(" ",@{$mechanisms}),
                                 callback=>{
 #                                           authname => $username."@".$self->{SIDS}->{$sid}->{hostname},
@@ -2139,7 +2139,7 @@ sub SASLClientAuthed
 {
     my $self = shift;
     my $sid = shift;
-    
+
     return $self->{SIDS}->{$sid}->{sasl}->{authed};
 }
 
@@ -2153,7 +2153,7 @@ sub SASLClientDone
 {
     my $self = shift;
     my $sid = shift;
-    
+
     return $self->{SIDS}->{$sid}->{sasl}->{done};
 }
 
@@ -2167,7 +2167,7 @@ sub SASLClientError
 {
     my $self = shift;
     my $sid = shift;
-    
+
     return $self->{SIDS}->{$sid}->{sasl}->{error};
 }
 
@@ -2182,7 +2182,7 @@ sub SASLClientFailure
     my $self = shift;
     my $sid = shift;
     my $node = shift;
-    
+
     my $type = &XPath($node,"*/name()");
 
     $self->{SIDS}->{$sid}->{sasl}->{error} = $type;
@@ -2200,7 +2200,7 @@ sub SASLClientSuccess
     my $self = shift;
     my $sid = shift;
     my $node = shift;
-    
+
     $self->{SIDS}->{$sid}->{sasl}->{authed} = 1;
     $self->{SIDS}->{$sid}->{sasl}->{done} = 1;
 }
@@ -2216,7 +2216,7 @@ sub SASLFailure
     my $self = shift;
     my $sid = shift;
     my $type = shift;
-    
+
     $self->Send($sid,"<failure xmlns='".&ConstXMLNS('xmpp-sasl')."'><${type}/></failure>");
 }
 
@@ -2291,7 +2291,7 @@ sub _handle_root
         #---------------------------------------------------------------------
         # Make sure we are receiving a valid stream on the same namespace.
         #---------------------------------------------------------------------
-        
+
         $self->debug(3,"_handle_root: ($self->{SIDS}->{$self->{SIDS}->{$sid}->{serverid}}->{namespace})");
         $self->{SIDS}->{$sid}->{status} =
             ((($tag eq "stream:stream") &&
@@ -2327,14 +2327,14 @@ sub _handle_root
             $self->RegisterPrefix($sid,$att{$key},$1);
         }
     }
-    
+
     #-------------------------------------------------------------------------
     # Sometimes we will get an error, so let's parse the tag assuming that we
     # got a stream:error
     #-------------------------------------------------------------------------
     my $stream_prefix = $self->StreamPrefix($sid);
     $self->debug(5,"_handle_root: stream_prefix($stream_prefix)");
-    
+
     if ($tag eq $stream_prefix.":error")
     {
         &XML::Stream::Tree::_handle_element($self,$sax,$tag,%att)
@@ -2440,7 +2440,7 @@ sub ProcessStreamError
 
     $self->{SIDS}->{$sid}->{streamerror}->{type} = "unknown";
     $self->{SIDS}->{$sid}->{streamerror}->{node} = $node;
-    
+
     #-------------------------------------------------------------------------
     # Check for older 0.9 streams and handle the errors for them.
     #-------------------------------------------------------------------------
@@ -2675,14 +2675,14 @@ sub XPath
 {
     my $tree = shift;
     my $path = shift;
-    
+
     my $query = new XML::Stream::XPath::Query($path);
     my $result = $query->execute($tree);
     if ($result->check())
     {
         my %attribs = $result->getAttribs();
         return %attribs if (scalar(keys(%attribs)) > 0);
-        
+
         my @values = $result->getValues();
         @values = $result->getList() unless ($#values > -1);
         return @values if wantarray;
@@ -2702,7 +2702,7 @@ sub XPathCheck
 {
     my $tree = shift;
     my $path = shift;
-    
+
     my $query = new XML::Stream::XPath::Query($path);
     my $result = $query->execute($tree);
     return $result->check();
@@ -2890,7 +2890,7 @@ sub BuildXML
 sub ConstXMLNS
 {
     my $const = shift;
-    
+
     return $XMLNS{$const};
 }
 
@@ -2904,7 +2904,7 @@ sub StreamPrefix
 {
     my $self = shift;
     my $sid = shift;
-    
+
     return $self->ns2prefix($sid,&ConstXMLNS("stream"));
 }
 
@@ -2990,13 +2990,13 @@ sub LoadSSL
     my $self = shift;
 
     $self->debug(1,"LoadSSL: Load the IO::Socket::SSL module");
-    
+
     if (defined($SSL) && ($SSL == 1))
     {
         $self->debug(1,"LoadSSL: Success");
         return 1;
     }
-    
+
     if (defined($SSL) && ($SSL == 0))
     {
         $self->debug(1,"LoadSSL: Failure");
@@ -3105,7 +3105,7 @@ sub StreamHeader
     {
         $stream .= " ".$ns->GetStream();
     }
-    
+
     $stream .= ">";
 
     return $stream;

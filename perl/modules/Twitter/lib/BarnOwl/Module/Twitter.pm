@@ -136,7 +136,7 @@ sub read_config {
     for my $cfg (@$raw_cfg) {
         my $twitter_args = { username   => $cfg->{user},
                              password   => $cfg->{password},
-                             source     => 'barnowl', 
+                             source     => 'barnowl',
                          };
         if (defined $cfg->{service}) {
             my $service = $cfg->{service};
@@ -229,7 +229,7 @@ sub twitter {
     if (defined $account) {
         my $handle = find_account($account);
         $handle->twitter(@_);
-    } 
+    }
     else {
         # broadcast
         for my $handle (@twitter_handles) {
@@ -257,7 +257,7 @@ BarnOwl::new_command( 'twitter-atreply' => sub { cmd_twitter_atreply(@_); },
     {
     summary     => 'Send a Twitter @ message',
     usage       => 'twitter-atreply USER [ACCOUNT]',
-    description => 'Send a Twitter @reply Message to USER on ACCOUNT (defaults to default_sender,' 
+    description => 'Send a Twitter @reply Message to USER on ACCOUNT (defaults to default_sender,'
     . "\nor first service if no default is provided)"
     }
 );

@@ -1,8 +1,8 @@
 /*
  * Family 0x0007 - Account Administration.
  *
- * Used for stuff like changing the formating of your screen name, changing your 
- * email address, requesting an account confirmation email, getting account info, 
+ * Used for stuff like changing the formating of your screen name, changing your
+ * email address, requesting an account confirmation email, getting account info,
  *
  */
 
@@ -17,7 +17,7 @@
  * 0x0011 - Email address
  * 0x0013 - Unknown
  *
- */ 
+ */
 faim_export int aim_admin_getinfo(aim_session_t *sess, aim_conn_t *conn, fu16_t info)
 {
 	aim_frame_t *fr;
@@ -40,7 +40,7 @@ faim_export int aim_admin_getinfo(aim_session_t *sess, aim_conn_t *conn, fu16_t 
 /*
  * Subtypes 0x0003 and 0x0005 - Parse account info.
  *
- * Called in reply to both an information request (subtype 0x0002) and 
+ * Called in reply to both an information request (subtype 0x0002) and
  * an information change (subtype 0x0004).
  *
  */
@@ -111,10 +111,10 @@ faim_export int aim_admin_setnick(aim_session_t *sess, aim_conn_t *conn, const c
 	aim_putsnac(&fr->data, 0x0007, 0x0004, 0x0000, snacid);
 
 	aim_tlvlist_add_raw(&tl, 0x0001, strlen(newnick), newnick);
-	
+
 	aim_tlvlist_write(&fr->data, &tl);
 	aim_tlvlist_free(&tl);
-	
+
 	aim_tx_enqueue(sess, fr);
 
 
@@ -168,10 +168,10 @@ faim_export int aim_admin_setemail(aim_session_t *sess, aim_conn_t *conn, const 
 	aim_putsnac(&fr->data, 0x0007, 0x0004, 0x0000, snacid);
 
 	aim_tlvlist_add_raw(&tl, 0x0011, strlen(newemail), newemail);
-	
+
 	aim_tlvlist_write(&fr->data, &tl);
 	aim_tlvlist_free(&tl);
-	
+
 	aim_tx_enqueue(sess, fr);
 
 	return 0;

@@ -1,7 +1,7 @@
-### The owlconf config file   -*- perl -*-  
+### The owlconf config file   -*- perl -*-
 ###
 ### !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!!
-### This is an example file intended to demonstrate how to use 
+### This is an example file intended to demonstrate how to use
 ### various features of owl.  Some of the key bindings, in particular,
 ### are more for examples than things you may actually want to use.
 ### Make sure to read through it first and understand it before just using it.
@@ -29,7 +29,7 @@
 ### The format_msg and receive_msg functions are passed owl::Message objects.
 ### The message attributes may be dereferenced with $m->attribute
 ###
-###    
+###
 
 # tokens for sepbar are:
 #    .username = ping
@@ -121,7 +121,7 @@ sub colorthread {
     }
 }
 
-# Load in things which don't belong in an owlconf 
+# Load in things which don't belong in an owlconf
 # that people might use as an example...
 sub personal_startup {
     my $personalconf = $ENV{"HOME"}."/.owl/personalconf";
@@ -230,7 +230,7 @@ sub owl::receive_msg {
 	} elsif ($m->is_logout) {
 	    sepbartokens_add("<$sender");
 	    sepbartokens_trim(">$sender");
-	} 
+	}
     } elsif ($m->is_mail) {
 	mail_add_message($m);
         $m->delete();
@@ -248,7 +248,7 @@ sub owl::receive_msg {
 sub indent4 {
     my ($b) = @_;
     $b=~s/^/    /g;
-    $b=~s/\n/\n    /g;    
+    $b=~s/\n/\n    /g;
     return $b;
 }
 
@@ -281,7 +281,7 @@ sub format_msg_custom {
 	return("$out\n");
     }
 
-    if (!$m->is_zephyr && !$m->is_aim) { 
+    if (!$m->is_zephyr && !$m->is_aim) {
 	return "Unknown message type: ".$m->type."\n";
     }
 
@@ -307,7 +307,7 @@ sub format_msg_custom {
     }
 
     if ($m->is_zephyr) {
-	$out = sprintf "[mit,%s,%s] / %s / %s", lc($m->class), 
+	$out = sprintf "[mit,%s,%s] / %s / %s", lc($m->class),
 	lc($m->instance), $m->time, lc($m->host);
 	if ($m->opcode ne "") {$out.=" op:".$m->opcode;}
 	$out.="\n";
@@ -321,11 +321,11 @@ sub format_msg_custom {
 		$out.="# $zsig";
 	    }
 	}
-	$out.="\n";		
+	$out.="\n";
     } else {
 	$out = sprintf "[%s] / %s\n", lc($m->type), $m->time;
 	$out.= "  \@bold($sender)> ";
-	$out.="\n";		
+	$out.="\n";
     }
 
     $out.=indent4($m->body);
@@ -379,7 +379,7 @@ sub format_msg_vt {
 	return $out;
     }
 
-    if (!$m->is_zephyr && !$m->is_aim) { 
+    if (!$m->is_zephyr && !$m->is_aim) {
 	return "Unknown message type: ".$m->type."\n";
     }
 
@@ -401,7 +401,7 @@ sub format_msg_vt {
 	    $out .= sprintf "via %s", $m->type;
 	}
 	return "$out\n";
-		
+
     } elsif ($m->is_zephyr && $m->is_mail) {
 	my $body = $m->body;
 	$out = sprintf "%-15s %-13s ", "\@bold(MAIL)", "";
@@ -413,7 +413,7 @@ sub format_msg_vt {
 
     my $channel = "";
     my $body = $m->body;
-    
+
     if ($m->is_zephyr) {
 	my $inst = $m->instance;
 	$channel = $m->class;
@@ -458,7 +458,7 @@ sub fill_text {
 	my $outline = " "x$indent;
     }
     for my $w (@words) {
-	if (($outline ne "") 
+	if (($outline ne "")
 	    && (length($outline)+length($w) > $width-$unindent)) {
 	    $out .= $outline."\n";
 	    $outline = " "x$indent;
@@ -471,5 +471,5 @@ sub fill_text {
 	}
 	$outline .= $w;
     }
-    $out .= $outline . "\n";    
+    $out .= $outline . "\n";
 }

@@ -116,7 +116,7 @@ CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
     (void)hv_store(h, owl_pair_get_key(pair), strlen(owl_pair_get_key(pair)),
                    owl_new_sv(owl_pair_get_value(pair)),0);
   }
-  
+
   MSG2H(h, type);
   MSG2H(h, direction);
   MSG2H(h, class);
@@ -131,7 +131,7 @@ CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
   MSG2H(h, zsig);
   MSG2H(h, zwriteline);
   if (owl_message_get_header(m)) {
-    MSG2H(h, header); 
+    MSG2H(h, header);
   }
   (void)hv_store(h, "time", strlen("time"), owl_new_sv(owl_message_get_timestr(m)),0);
   (void)hv_store(h, "unix_time", strlen("unix_time"), newSViv(m->time), 0);
@@ -231,17 +231,17 @@ CALLER_OWN char *owl_perlconfig_call_with_message(const char *subname, const owl
   int count;
   SV *msgref, *srv;
   char *out;
-  
+
   ENTER ;
   SAVETMPS;
-  
+
   PUSHMARK(SP) ;
   msgref = owl_perlconfig_message2hashref(m);
   XPUSHs(sv_2mortal(msgref));
   PUTBACK ;
-  
+
   count = call_pv(subname, G_SCALAR|G_EVAL);
-  
+
   SPAGAIN ;
 
   if (SvTRUE(ERRSV)) {
@@ -262,7 +262,7 @@ CALLER_OWN char *owl_perlconfig_call_with_message(const char *subname, const owl
   } else {
     out = NULL;
   }
-  
+
   PUTBACK ;
   FREETMPS ;
   LEAVE ;
@@ -542,7 +542,7 @@ void owl_perlconfig_edit_callback(owl_editwin *e, bool success)
   XPUSHs(sv_2mortal(text));
   XPUSHs(sv_2mortal(newSViv(success)));
   PUTBACK;
-  
+
   call_sv(cb, G_DISCARD|G_EVAL);
 
   if(SvTRUE(ERRSV)) {

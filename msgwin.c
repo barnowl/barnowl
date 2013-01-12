@@ -18,7 +18,7 @@ static void owl_msgwin_redraw(owl_window *w, WINDOW *curswin, void *msgwin_)
 
   werase(curswin);
   if (msgwin->msg)
-    waddstr(curswin, msgwin->msg);  
+    waddstr(curswin, msgwin->msg);
 }
 
 void owl_msgwin_set_text(owl_msgwin *msgwin, const char *msg)

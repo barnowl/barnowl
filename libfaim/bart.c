@@ -1,7 +1,7 @@
 /*
  * Family 0x0010 - Server stored buddy art
  *
- * Used for storing and retrieving your cute little buddy icon 
+ * Used for storing and retrieving your cute little buddy icon
  * from the AIM servers.
  *
  */

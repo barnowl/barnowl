@@ -170,26 +170,26 @@ admin_message(header, body)
 	const char *body
 	CODE:
 	{
-		owl_function_adminmsg(header, body);		
+		owl_function_adminmsg(header, body);
 	}
 
 
-const char * 
+const char *
 get_data_dir ()
 	CODE:
 		RETVAL = owl_get_datadir();
 	OUTPUT:
 	RETVAL
 
-const char * 
+const char *
 get_config_dir ()
 	CODE:
 		RETVAL = owl_global_get_confdir(&g);
 	OUTPUT:
-	RETVAL	
+	RETVAL
 
 void
-popless_text(text) 
+popless_text(text)
 	const char *text
 	CODE:
 	{
@@ -197,7 +197,7 @@ popless_text(text)
 	}
 
 void
-popless_ztext(text) 
+popless_ztext(text)
 	const char *text
 	CODE:
 	{
@@ -209,7 +209,7 @@ popless_ztext(text)
 	}
 
 void
-error(text) 
+error(text)
 	const char *text
 	CODE:
 	{
@@ -272,7 +272,7 @@ wordwrap(in, cols)
 		char *rv = NULL;
 	CODE:
 		rv = owl_text_wordwrap(in, cols);
-		RETVAL = rv;	
+		RETVAL = rv;
 	OUTPUT:
 		RETVAL
 	CLEANUP:

@@ -1,7 +1,7 @@
-### The owlconf config file   -*- perl -*-  
+### The owlconf config file   -*- perl -*-
 
 ### !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!! !!!!!WARNING!!!!!
-### This is an example file intended to demonstrate how to use 
+### This is an example file intended to demonstrate how to use
 ### various features of owl.  Some of the key bindings, in particular,
 ### are more for examples than things you may actually want to use.
 ### Make sure to read through it first and understand it before just using it.
@@ -35,7 +35,7 @@
 ###     $owl::class, $owl::instance, $owl::recipient, $owl::direction,
 ###     $owl::sender, $owl::opcode, $owl::zsig,
 ###     $owl::msg, $owl::time, $owl::host, @owl::fields, $owl::id
-###    
+###
 
 # NOTE: Lines beginning with a "#" are perl comments.
 
@@ -48,7 +48,7 @@ sub owl::startup {
     ## The following set the values of variables.
     ## Doing "help" will show you more about each variable.
     ## These lines will set things to the default.
-    ## You can uncomment them and then change the value to get 
+    ## You can uncomment them and then change the value to get
     ## a different behavior (remove the "#" to an alternate value).
     ################################################################
 
@@ -59,14 +59,14 @@ sub owl::startup {
     # owl::command('set -q personalbell off');
 
     ## Set this to on to enable logging of personal zephyrs
-    # owl::command('set -q logging off');  
+    # owl::command('set -q logging off');
 
     ## This directory must exist and is where personal zephyrs are logged.
     ## By default, this is the ~/zlog/personal/ directory
     # owl::command('set -q logpath '.$ENV{'HOME'}.'/zlog/personal/');
 
     ## Set this to on to enable logging of classes
-    # owl::command('set -q classlogging off');  
+    # owl::command('set -q classlogging off');
 
     ## This directory must exist and is where class zephyrs are logged.
     ## By default, this is the ~/zlog/class/ directory
@@ -104,7 +104,7 @@ sub owl::startup {
 
     ################################################################
     ## The following create filters.  Filters can be used to select
-    ## on multiple zephyrs for operations.  With 'views' you can 
+    ## on multiple zephyrs for operations.  With 'views' you can
     ## look at only the zephyrs matching a particular filter.
     ## Use the 'view <filtername>' command or the 'v' key to switch views.
     ## The 'V' key will switch you back to your 'view_home' view.
@@ -113,7 +113,7 @@ sub owl::startup {
     ##
     ## The filter command creates a filter with the specified name,
     ## or if one already exists it is replaced.  Example filter
-    ## syntax would be:                                        
+    ## syntax would be:
     ##
     ##    filter myfilter -c red ( class ^foobar$ ) or ( class ^quux$ and instance ^bar$ )
     ##
@@ -122,7 +122,7 @@ sub owl::startup {
     ## present before and after parenthesis.  If the optional color argument
     ## is used it specifies the color that messages matching this filter
     ## should be displayed in.  Do 'show colors' to see the available colors.
-    ## 
+    ##
     ################################################################
 
     ## This would create a shortcut to only show personal messages
@@ -136,7 +136,7 @@ sub owl::startup {
 
     ## The 'trash' filter is used when you press 'T' to mark things
     ## for autodeletion.
-    # owl::command('filter trash class ^mail$ or opcode ^ping$ or type ^admin$ or class ^login$');   
+    # owl::command('filter trash class ^mail$ or opcode ^ping$ or type ^admin$ or class ^login$');
 
 }
 
@@ -187,7 +187,7 @@ sub owl::format_msg {
     ## Outgoing messages have different headers than incoming messages.
     ## Note that:
     ##   $out .= "foo";  appends "foo" to the end of the variable $out.
-    ##   lc(bar) will convert bar to lowercase.    
+    ##   lc(bar) will convert bar to lowercase.
     ##   "ne" does "not equal" for string comparison.
     ##   sprintf fills in the %s's with the arguments later on the line.
     ##   "foo"."bar" will append the two strings together.
@@ -212,7 +212,7 @@ sub owl::format_msg {
     } else {
 	# Incoming messages
 
-	$out .= sprintf "[mit,%s,%s] / %s / %s", lc($owl::class), 
+	$out .= sprintf "[mit,%s,%s] / %s / %s", lc($owl::class),
 	                lc($owl::instance), $owl::time, lc($owl::host);
 	if ($owl::opcode ne "") {$out.=" op:$owl::opcode";}
 	$out.="\n";
@@ -227,7 +227,7 @@ sub owl::format_msg {
 	    }
 	}
     }
-    $out.="\n";		
+    $out.="\n";
 
     # This indents the body of the message and then appends it on.
     $tmp=$owl::msg;
@@ -250,7 +250,7 @@ sub owl::format_msg {
 ## it has been added to the message list.
 ## In most cases you won't need anything here.
 sub owl::receive_msg() {
-    
+
     ## If this is uncommented, it would mark all messages
     ## with opcode "PING" for immediate deletion:
     #

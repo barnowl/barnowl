@@ -95,7 +95,7 @@ sub setAttribs
 
 
 sub getAttribs
-{ 
+{
     my $self = shift;
     return unless (scalar(keys(%{$self->{ATTRIBS}})) > 0);
     return %{$self->{ATTRIBS}};

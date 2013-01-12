@@ -113,7 +113,7 @@ static void sepbar_redraw(owl_window *w, WINDOW *sepwin, void *user_data)
 
   getyx(sepwin, y, x);
   wmove(sepwin, y, owl_global_get_cols(&g)-1);
-    
+
   wattroff(sepwin, A_BOLD);
   wattroff(sepwin, A_REVERSE);
 }

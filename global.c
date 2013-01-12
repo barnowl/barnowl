@@ -54,7 +54,7 @@ void owl_global_init(owl_global *g) {
   g->starttime=time(NULL); /* assumes we call init only a start time */
   g->lastinputtime=g->starttime;
   g->newmsgproc_pid=0;
-  
+
   owl_global_set_config_format(g, 0);
   owl_global_set_no_have_config(g);
   owl_history_init(&(g->msghist));
@@ -595,11 +595,11 @@ int owl_global_message_is_puntable(owl_global *g, const owl_message *m) {
 
 int owl_global_should_followlast(owl_global *g) {
   const owl_view *v;
-  
+
   if (!owl_global_is__followlast(g)) return(0);
-  
+
   v=owl_global_get_current_view(g);
-  
+
   if (owl_global_get_curmsg(g)==owl_view_get_size(v)-1) return(1);
   return(0);
 }
@@ -742,7 +742,7 @@ owl_buddylist *owl_global_get_buddylist(owl_global *g)
 {
   return(&(g->buddylist));
 }
-  
+
 /* style */
 
 /* Return the style with name 'name'.  If it does not exist return

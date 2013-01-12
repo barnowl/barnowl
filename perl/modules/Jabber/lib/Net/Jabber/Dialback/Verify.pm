@@ -150,16 +150,16 @@ Net::Jabber::Dialback::Verify - Jabber Dialback Verify Module
 
 =head2 Test functions
 
-  DefinedTo() - returns 1 if the to attribute is defined in the 
+  DefinedTo() - returns 1 if the to attribute is defined in the
                 <db:verify/>, 0 otherwise.
 
-  DefinedFrom() - returns 1 if the from attribute is defined in the 
+  DefinedFrom() - returns 1 if the from attribute is defined in the
                   <db:verify/>, 0 otherwise.
 
-  DefinedType() - returns 1 if the type attribute is defined in the 
+  DefinedType() - returns 1 if the type attribute is defined in the
                   <db:verify/>, 0 otherwise.
 
-  DefinedID() - returns 1 if the id attribute is defined in the 
+  DefinedID() - returns 1 if the id attribute is defined in the
                   <db:verify/>, 0 otherwise.
 
 =head1 AUTHOR

@@ -197,23 +197,23 @@ Net::XMPP::IQ - XMPP Info/Query Module
   RemoveTo() - removes the to attribute from the <iq/>.
 
                $IQ->RemoveTo();
-  
+
   RemoveFrom() - removes the from attribute from the <iq/>.
 
                  $IQ->RemoveFrom();
-  
+
   RemoveID() - removes the id attribute from the <iq/>.
 
                $IQ->RemoveID();
-  
+
   RemoveType() - removes the type attribute from the <iq/>.
 
                  $IQ->RemoveType();
-  
+
   RemoveError() - removes the <error/> element from the <iq/>.
 
                   $IQ->RemoveError();
-  
+
   RemoveErrorCode() - removes the code attribute from the <error/>
                       element in the <iq/>.
 
@@ -221,7 +221,7 @@ Net::XMPP::IQ - XMPP Info/Query Module
 
 =head2 Test functions
 
-  DefinedTo() - returns 1 if the to attribute is defined in the <iq/>, 
+  DefinedTo() - returns 1 if the to attribute is defined in the <iq/>,
                 0 otherwise.
 
                 $test = $IQ->DefinedTo();
@@ -231,7 +231,7 @@ Net::XMPP::IQ - XMPP Info/Query Module
 
                   $test = $IQ->DefinedFrom();
 
-  DefinedID() - returns 1 if the id attribute is defined in the <iq/>, 
+  DefinedID() - returns 1 if the id attribute is defined in the <iq/>,
                 0 otherwise.
 
                 $test = $IQ->DefinedID();
@@ -241,7 +241,7 @@ Net::XMPP::IQ - XMPP Info/Query Module
 
                   $test = $IQ->DefinedType();
 
-  DefinedError() - returns 1 if <error/> is defined in the <iq/>, 
+  DefinedError() - returns 1 if <error/> is defined in the <iq/>,
                    0 otherwise.
 
                    $test = $IQ->DefinedError();
@@ -284,7 +284,7 @@ sub new
     $self->{TAG} = "iq";
 
     $self->{FUNCS} = \%FUNCTIONS;
-    
+
     $self->_init(@_);
 
     return $self;

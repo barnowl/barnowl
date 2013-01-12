@@ -29,12 +29,12 @@ Net::Jabber::Log - Jabber Log Module
 =head1 SYNOPSIS
 
   Net::Jabber::Log is a companion to the Net::Jabber module.
-  It provides the user a simple interface to set and retrieve all 
+  It provides the user a simple interface to set and retrieve all
   parts of a Jabber Log.
 
 =head1 DESCRIPTION
 
-  To initialize the Log with a Jabber <log/> you must pass it the 
+  To initialize the Log with a Jabber <log/> you must pass it the
   XML::Parser Tree array.  For example:
 
     my $log = Net::Jabber::Log->new(@tree);
@@ -96,8 +96,8 @@ Net::Jabber::Log - Jabber Log Module
 
   GetFrom()      -  returns either a string with the Jabber Identifier,
   GetFrom("jid")    or a Net::Jabber::JID object for the person who
-                    sent the <log/>.  To get the JID object set 
-                    the string to "jid", otherwise leave blank for the 
+                    sent the <log/>.  To get the JID object set
+                    the string to "jid", otherwise leave blank for the
                     text string.
 
   GetType() - returns a string with the type <log/> this is.
@@ -124,7 +124,7 @@ Net::Jabber::Log - Jabber Log Module
                              specific Set functions below.
 
   SetFrom(string) - sets the from attribute.  You can either pass a string
-  SetFrom(JID)      or a JID object.  They must be valid Jabber 
+  SetFrom(JID)      or a JID object.  They must be valid Jabber
                     Identifiers or the server will return an error log.
                     (ie.  jabber:bob@jabber.org/Silent Bob, etc...)
 
@@ -132,7 +132,7 @@ Net::Jabber::Log - Jabber Log Module
 
                     notice     general logging
                     warn       warning
-                    alert      critical error (can still run but not 
+                    alert      critical error (can still run but not
                                correctly)
                     error      fatal error (cannot run anymore)
 
@@ -140,10 +140,10 @@ Net::Jabber::Log - Jabber Log Module
 
 =head2 Test functions
 
-  DefinedFrom() - returns 1 if the from attribute is defined in the 
+  DefinedFrom() - returns 1 if the from attribute is defined in the
                   <log/>, 0 otherwise.
 
-  DefinedType() - returns 1 if the type attribute is defined in the 
+  DefinedType() - returns 1 if the type attribute is defined in the
                   <log/>, 0 otherwise.
 
 =head1 AUTHOR
@@ -169,7 +169,7 @@ sub new
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my $self = { };
-    
+
     $self->{VERSION} = $VERSION;
     $self->{TIMESTAMP} = &Net::Jabber::GetTimeStamp("local");
 
@@ -213,7 +213,7 @@ sub AUTOLOAD
     my ($type,$value) = ($AUTOLOAD =~ /^(Get|Set|Defined)(.*)$/);
     $type = "" unless defined($type);
     my $treeName = "LOG";
-    
+
     return "log" if ($AUTOLOAD eq "GetTag");
     return &XML::Stream::BuildXML(@{$self->{$treeName}}) if ($AUTOLOAD eq "GetXML");
     return @{$self->{$treeName}} if ($AUTOLOAD eq "GetTree");

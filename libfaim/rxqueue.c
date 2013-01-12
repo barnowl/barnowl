@@ -7,7 +7,7 @@
  */
 
 #define FAIM_INTERNAL
-#include <aim.h> 
+#include <aim.h>
 
 #ifndef _WIN32
 #include <sys/socket.h>
@@ -18,11 +18,11 @@
  */
 faim_internal int aim_recv(int fd, void *buf, size_t count)
 {
-	int left, cur; 
+	int left, cur;
 
 	for (cur = 0, left = count; left; ) {
 		int ret;
-		
+
 		ret = recv(fd, ((unsigned char *)buf)+cur, left, 0);
 
 		/* Of course EOF is an error, only morons disagree with that. */
@@ -46,7 +46,7 @@ faim_internal int aim_bstream_recv(aim_bstream_t *bs, int fd, size_t count)
 
 	if (!bs || (fd < 0) || (count < 0))
 		return -1;
-	
+
 	if (count > (bs->len - bs->offset))
 		count = bs->len - bs->offset; /* truncate to remaining space */
 
@@ -87,7 +87,7 @@ static int aim_get_command_flap(aim_session_t *sess, aim_conn_t *conn, aim_frame
 	fu8_t flaphdr_raw[6];
 	aim_bstream_t flaphdr;
 	fu16_t payloadlen;
-	
+
 	aim_bstream_init(&flaphdr, flaphdr_raw, sizeof(flaphdr_raw));
 
 	/*
@@ -116,7 +116,7 @@ static int aim_get_command_flap(aim_session_t *sess, aim_conn_t *conn, aim_frame
 		faimdprintf(sess, 0, "FLAP framing disrupted (0x%02x)", start);
 		aim_conn_close(conn);
 		return -1;
-	}	
+	}
 
 	/* we're doing FLAP if we're here */
 	fr->hdrtype = AIM_FRAMETYPE_FLAP;
@@ -155,7 +155,7 @@ static int aim_get_command_rendezvous(aim_session_t *sess, aim_conn_t *conn, aim
 }
 
 /*
- * Grab a single command sequence off the socket, and enqueue it in the incoming event queue 
+ * Grab a single command sequence off the socket, and enqueue it in the incoming event queue
  * in a separate struct.
  */
 faim_export int aim_get_command(aim_session_t *sess, aim_conn_t *conn)
@@ -179,7 +179,7 @@ faim_export int aim_get_command(aim_session_t *sess, aim_conn_t *conn)
 		return -ENOMEM;
 
 	/*
-	 * Rendezvous (client to client) connections do not speak FLAP, so this 
+	 * Rendezvous (client to client) connections do not speak FLAP, so this
 	 * function will break on them.
 	 */
 	if (conn->type == AIM_CONN_TYPE_RENDEZVOUS) {
@@ -238,15 +238,15 @@ faim_export int aim_get_command(aim_session_t *sess, aim_conn_t *conn)
 
 	newrx->conn->lastactivity = time(NULL);
 
-	return 0;  
+	return 0;
 }
 
 /*
  * Purge recieve queue of all handled commands (->handled==1).  Also
  * allows for selective freeing using ->nofree so that the client can
- * keep the data for various purposes.  
+ * keep the data for various purposes.
  *
- * If ->nofree is nonzero, the frame will be delinked from the global list, 
+ * If ->nofree is nonzero, the frame will be delinked from the global list,
  * but will not be free'ed.  The client _must_ keep a pointer to the
  * data -- libfaim will not!  If the client marks ->nofree but
  * does not keep a pointer, it's lost forever.
@@ -260,7 +260,7 @@ faim_export void aim_purge_rxqueue(aim_session_t *sess)
 		if (cur->handled) {
 
 			*prev = cur->next;
-			
+
 			if (!cur->nofree)
 				aim_frame_destroy(cur);
 
@@ -285,6 +285,6 @@ faim_internal void aim_rxqueue_cleanbyconn(aim_session_t *sess, aim_conn_t *conn
 	for (currx = sess->queue_incoming; currx; currx = currx->next) {
 		if ((!currx->handled) && (currx->conn == conn))
 			currx->handled = 1;
-	}	
+	}
 	return;
 }

@@ -4,7 +4,7 @@
  */
 
 #define FAIM_INTERNAL
-#include <aim.h> 
+#include <aim.h>
 
 #include <string.h>
 
@@ -92,7 +92,7 @@ static int aim_addtlvtochain_chatroom(aim_tlvlist_t **list, fu16_t type, fu16_t 
 	aim_bstream_t bs;
 
 	buflen = 2 + 1 + strlen(roomname) + 2;
-	
+
 	if (!(buf = malloc(buflen)))
 		return 0;
 
@@ -111,9 +111,9 @@ static int aim_addtlvtochain_chatroom(aim_tlvlist_t **list, fu16_t type, fu16_t 
 }
 
 /*
- * Join a room of name roomname.  This is the first step to joining an 
- * already created room.  It's basically a Service Request for 
- * family 0x000e, with a little added on to specify the exchange and room 
+ * Join a room of name roomname.  This is the first step to joining an
+ * already created room.  It's basically a Service Request for
+ * family 0x000e, with a little added on to specify the exchange and room
  * name.
  */
 faim_export int aim_chat_join(aim_session_t *sess, aim_conn_t *conn, fu16_t exchange, const char *roomname, fu16_t instance)
@@ -122,7 +122,7 @@ faim_export int aim_chat_join(aim_session_t *sess, aim_conn_t *conn, fu16_t exch
 	aim_snacid_t snacid;
 	aim_tlvlist_t *tl = NULL;
 	struct chatsnacinfo csi;
-	
+
 	if (!sess || !conn || !roomname || !strlen(roomname))
 		return -EINVAL;
 
@@ -148,7 +148,7 @@ faim_export int aim_chat_join(aim_session_t *sess, aim_conn_t *conn, fu16_t exch
 
 	aim_tx_enqueue(sess, fr);
 
-	return 0; 
+	return 0;
 }
 
 faim_internal int aim_chat_readroominfo(aim_bstream_t *bs, struct aim_chat_roominfo *outinfo)
@@ -193,7 +193,7 @@ faim_export int aim_chat_invite(aim_session_t *sess, aim_conn_t *conn, const cha
 	fu8_t *hdr;
 	int hdrlen;
 	aim_bstream_t hdrbs;
-	
+
 	if (!sess || !conn || !sn || !msg || !roomname)
 		return -EINVAL;
 
@@ -238,13 +238,13 @@ faim_export int aim_chat_invite(aim_session_t *sess, aim_conn_t *conn, const cha
 	 *
 	 * Sigh.  AOL was rather inconsistent right here.  So we have
 	 * to play some minor tricks.  Right inside the type 5 is some
-	 * raw data, followed by a series of TLVs.  
+	 * raw data, followed by a series of TLVs.
 	 *
 	 */
 	hdrlen = 2+8+16+6+4+4+strlen(msg)+4+2+1+strlen(roomname)+2;
 	hdr = malloc(hdrlen);
 	aim_bstream_init(&hdrbs, hdr, hdrlen);
-	
+
 	aimbs_put16(&hdrbs, 0x0000); /* Unknown! */
 	aimbs_putraw(&hdrbs, ckstr, sizeof(ckstr)); /* I think... */
 	aim_putcap(&hdrbs, AIM_CAPS_CHAT);
@@ -254,7 +254,7 @@ faim_export int aim_chat_invite(aim_session_t *sess, aim_conn_t *conn, const cha
 	aim_tlvlist_add_raw(&itl, 0x000c, strlen(msg), msg);
 	aim_addtlvtochain_chatroom(&itl, 0x2711, exchange, roomname, instance);
 	aim_tlvlist_write(&hdrbs, &itl);
-	
+
 	aim_tlvlist_add_raw(&otl, 0x0005, aim_bstream_curpos(&hdrbs), hdr);
 
 	aim_tlvlist_write(&fr->data, &otl);
@@ -262,7 +262,7 @@ faim_export int aim_chat_invite(aim_session_t *sess, aim_conn_t *conn, const cha
 	free(hdr);
 	aim_tlvlist_free(&itl);
 	aim_tlvlist_free(&otl);
-	
+
 	aim_tx_enqueue(sess, fr);
 
 	return 0;
@@ -306,7 +306,7 @@ static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 
 	/*
 	 * Everything else are TLVs.
-	 */ 
+	 */
 	tlvlist = aim_tlvlist_read(bs);
 
 	/*
@@ -324,7 +324,7 @@ static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	/*
 	 * Type 0x0073:  Occupant list.
 	 */
-	if (aim_tlv_gettlv(tlvlist, 0x0073, 1)) {	
+	if (aim_tlv_gettlv(tlvlist, 0x0073, 1)) {
 		int curoccupant = 0;
 		aim_tlv_t *tmptlv;
 		aim_bstream_t occbs;
@@ -340,31 +340,31 @@ static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 			aim_info_extract(sess, &occbs, &userinfo[curoccupant++]);
 	}
 
-	/* 
+	/*
 	 * Type 0x00c9: Flags. (AIM_CHATROOM_FLAG)
 	 */
 	if (aim_tlv_gettlv(tlvlist, 0x00c9, 1))
 		flags = aim_tlv_get16(tlvlist, 0x00c9, 1);
 
-	/* 
+	/*
 	 * Type 0x00ca: Creation time (4 bytes)
 	 */
 	if (aim_tlv_gettlv(tlvlist, 0x00ca, 1))
 		creationtime = aim_tlv_get32(tlvlist, 0x00ca, 1);
 
-	/* 
+	/*
 	 * Type 0x00d1: Maximum Message Length
 	 */
 	if (aim_tlv_gettlv(tlvlist, 0x00d1, 1))
 		maxmsglen = aim_tlv_get16(tlvlist, 0x00d1, 1);
 
-	/* 
+	/*
 	 * Type 0x00d2: Unknown. (2 bytes)
 	 */
 	if (aim_tlv_gettlv(tlvlist, 0x00d2, 1))
 		unknown_d2 = aim_tlv_get16(tlvlist, 0x00d2, 1);
 
-	/* 
+	/*
 	 * Type 0x00d3: Room Description
 	 */
 	if (aim_tlv_gettlv(tlvlist, 0x00d3, 1))
@@ -376,7 +376,7 @@ static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	if (aim_tlv_gettlv(tlvlist, 0x000d4, 1))
 		;
 
-	/* 
+	/*
 	 * Type 0x00d5: Unknown. (1 byte)
 	 */
 	if (aim_tlv_gettlv(tlvlist, 0x00d5, 1))
@@ -388,7 +388,7 @@ static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	 */
 	if (aim_tlv_gettlv(tlvlist, 0x000d6, 1))
 		;
-	
+
 	/*
 	 * Type 0x00d7: Language 1 ("en")
 	 */
@@ -400,7 +400,7 @@ static int infoupdate(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, a
 	 */
 	if (aim_tlv_gettlv(tlvlist, 0x000d8, 1))
 		;
-	
+
 	/*
 	 * Type 0x00d9: Language 2 ("en")
 	 */
@@ -474,10 +474,10 @@ static int userlistchange(aim_session_t *sess, aim_module_t *mod, aim_frame_t *r
  *                                 (Note that WinAIM does not honor this,
  *                                 and displays the message as normal.)
  *
- * XXX convert this to use tlvchains 
+ * XXX convert this to use tlvchains
  */
 faim_export int aim_chat_send_im(aim_session_t *sess, aim_conn_t *conn, fu16_t flags, const char *msg, int msglen)
-{   
+{
 	int i;
 	aim_frame_t *fr;
 	aim_msgcookie_t *cookie;
@@ -538,16 +538,16 @@ faim_export int aim_chat_send_im(aim_session_t *sess, aim_conn_t *conn, fu16_t f
 	 * Type 5: Message block.  Contains more TLVs.
 	 *
 	 * This could include other information... We just
-	 * put in a message TLV however.  
-	 * 
+	 * put in a message TLV however.
+	 *
 	 */
 	aim_tlvlist_add_frozentlvlist(&otl, 0x0005, &itl);
 
 	aim_tlvlist_write(&fr->data, &otl);
-	
+
 	aim_tlvlist_free(&itl);
 	aim_tlvlist_free(&otl);
-	
+
 	aim_tx_enqueue(sess, fr);
 
 	return 0;
@@ -556,7 +556,7 @@ faim_export int aim_chat_send_im(aim_session_t *sess, aim_conn_t *conn, fu16_t f
 /*
  * Subtype 0x0006
  *
- * We could probably include this in the normal ICBM parsing 
+ * We could probably include this in the normal ICBM parsing
  * code as channel 0x0003, however, since only the start
  * would be the same, we might as well do it here.
  *
@@ -576,12 +576,12 @@ faim_export int aim_chat_send_im(aim_session_t *sess, aim_conn_t *conn, fu16_t f
  *       message tlv
  *         message string
  *       possibly others
- *  
+ *
  */
 static int incomingmsg(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, aim_modsnac_t *snac, aim_bstream_t *bs)
 {
 	aim_userinfo_t userinfo;
-	aim_rxcallback_t userfunc;	
+	aim_rxcallback_t userfunc;
 	int ret = 0;
 	fu8_t *cookie;
 	fu16_t channel;
@@ -618,7 +618,7 @@ static int incomingmsg(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 	}
 
 	/*
-	 * Start parsing TLVs right away. 
+	 * Start parsing TLVs right away.
 	 */
 	otl = aim_tlvlist_read(bs);
 
@@ -636,7 +636,7 @@ static int incomingmsg(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 	}
 
 	/*
-	 * Type 0x0001: If present, it means it was a message to the 
+	 * Type 0x0001: If present, it means it was a message to the
 	 * room (as opposed to a whisper).
 	 */
 	if (aim_tlv_gettlv(otl, 0x0001, 1))
@@ -654,13 +654,13 @@ static int incomingmsg(aim_session_t *sess, aim_module_t *mod, aim_frame_t *rx, 
 		aim_bstream_init(&tbs, msgblock->value, msgblock->length);
 		itl = aim_tlvlist_read(&tbs);
 
-		/* 
+		/*
 		 * Type 0x0001: Message.
-		 */	
+		 */
 		if (aim_tlv_gettlv(itl, 0x0001, 1))
 			msg = aim_tlv_getstr(itl, 0x0001, 1);
 
-		aim_tlvlist_free(&itl); 
+		aim_tlvlist_free(&itl);
 	}
 
 	if ((userfunc = aim_callhandler(sess, rx->conn, snac->family, snac->subtype)))

@@ -106,7 +106,7 @@ void owl_aim_init(void)
    * function here, in case there's stuff we want to init in the
    * future.  It's still called by Owl.
    */
-     
+
 }
 
 gboolean owl_aim_send_nop(gpointer data) {
@@ -130,7 +130,7 @@ int owl_aim_login(const char *screenname, const char *password)
   aim_session_init(sess, TRUE, 0);
   aim_setdebuggingcb(sess, faimtest_debugcb);
   aim_tx_setenqueue(sess, AIM_TX_IMMEDIATE, NULL);
-  
+
   /* this will leak, I know and just don't care right now */
   priv=g_new0(struct owlfaim_priv, 1);
 
@@ -164,7 +164,7 @@ int owl_aim_login(const char *screenname, const char *password)
   }
   */
 
-    
+
   aim_conn_addhandler(sess, conn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_FLAPVER, faimtest_flapversion, 0);
   aim_conn_addhandler(sess, conn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNCOMPLETE, faimtest_conncomplete, 0);
 
@@ -173,7 +173,7 @@ int owl_aim_login(const char *screenname, const char *password)
   /* aim_conn_addhandler(sess, conn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNERR, gaim_connerr, 0); */
   /* aim_conn_addhandler(sess, conn, 0x0017, 0x0007, gaim_parse_login, 0); */
   /* aim_conn_addhandler(sess, conn, 0x0017, 0x0003, gaim_parse_auth_resp, 0); */
-    
+
   /* start processing AIM events */
   owl_global_set_doaimevents(&g);
   /* conn->status |= AIM_CONN_STATUS_INPROGRESS; */
@@ -337,7 +337,7 @@ void owl_aim_search(const char *email)
   int ret;
 
   owl_function_debugmsg("owl_aim_search: doing search for %s", email);
-  ret=aim_search_address(owl_global_get_aimsess(&g), 
+  ret=aim_search_address(owl_global_get_aimsess(&g),
 			 aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_BOS),
 			 email);
 
@@ -357,7 +357,7 @@ int owl_aim_set_awaymsg(const char *msg)
     foo[500]='\0';
     len=499;
   }
-    
+
   aim_locate_setprofile(owl_global_get_aimsess(&g),
 			NULL, NULL, 0,
 			"us-ascii", foo, len);
@@ -366,7 +366,7 @@ int owl_aim_set_awaymsg(const char *msg)
   /*
   aim_bos_setprofile(owl_global_get_aimsess(&g),
 		     owl_global_get_bosconn(&g),
-		     NULL, NULL, 0, "us-ascii", msg, 
+		     NULL, NULL, 0, "us-ascii", msg,
 		     strlen(msg), 0);
   */
   return(0);
@@ -420,7 +420,7 @@ void owl_aim_chat_join(const char *name, int exchange)
   ret = aim_chatnav_createroom(owl_global_get_aimsess(&g),
 			       aim_getconn_type(owl_global_get_aimsess(&g), AIM_CONN_TYPE_CHATNAV), name, exchange);
    ret=aim_chat_join(owl_global_get_aimsess(&g), owl_global_get_bosconn(&g), exchange, name, 0x0000);
-  
+
 }
 
 void owl_aim_chat_leave(const char *chatroom)
@@ -467,13 +467,13 @@ int owl_aim_process_events(aim_session_t *aimsess)
 
   if (selstat == -1) {
     owl_aim_logged_out();
-  } else if (selstat == 0) { 
+  } else if (selstat == 0) {
     /* no events pending */
   } else if (selstat == 1) { /* outgoing data pending */
     aim_tx_flushqueue(aimsess);
   } else if (selstat == 2) { /* incoming data pending */
     /* printf("selstat == 2\n"); */
-    
+
     if (aim_get_command(aimsess, waitingconn) >= 0) {
       aim_rxdispatch(aimsess);
     } else {
@@ -509,7 +509,7 @@ static int faimtest_parse_login(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   struct owlfaim_priv *priv = sess->aux_data;
   struct client_info_s info = CLIENTINFO_AIM_KNOWNGOOD;
-    
+
   const char *key;
   va_list ap;
 
@@ -518,7 +518,7 @@ static int faimtest_parse_login(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
 
   aim_send_login(sess, fr->conn, priv->screenname, priv->password, &info, key);
-  
+
   return(1);
 }
 
@@ -648,7 +648,7 @@ void addcb_bos(aim_session_t *sess, aim_conn_t *bosconn)
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOK, AIM_CB_LOK_ERROR, faimtest_parse_searcherror, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOK, 0x0003, faimtest_parse_searchreply, 0);
   */
-  
+
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_ERROR,              faimtest_parse_msgerr, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_LOC, AIM_CB_LOC_USERINFO,           faimtest_parse_userinfo, 0);
   aim_conn_addhandler(sess, bosconn, AIM_CB_FAM_MSG, AIM_CB_MSG_ACK,                faimtest_parse_msgack, 0);
@@ -706,7 +706,7 @@ static int conninitdone_bos(aim_session_t *sess, aim_frame_t *fr, ...)
 static int conninitdone_admin(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   aim_clientready(sess, fr->conn);
-  owl_function_debugmsg("conninitdone_admin: initializtion done for admin connection");
+  owl_function_debugmsg("conninitdone_admin: initialization done for admin connection");
   return(1);
 }
 
@@ -732,17 +732,17 @@ static int faimtest_parse_connerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_list ap;
   fu16_t code;
   const char *msg;
-  
+
   va_start(ap, fr);
   code = va_arg(ap, int);
   msg = va_arg(ap, const char *);
   va_end(ap);
-  
+
   owl_function_error("faimtest_parse_connerr: Code 0x%04x: %s\n", code, msg);
   aim_conn_kill(sess, &fr->conn); /* this will break the main loop */
-  
+
   priv->connected = 0;
-  
+
   return 1;
 }
 
@@ -750,14 +750,14 @@ static int faimtest_accountconfirm(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   int status;
   va_list ap;
-  
+
   va_start(ap, fr);
   status = va_arg(ap, int); /* status code of confirmation request */
   va_end(ap);
 
   /* owl_function_debugmsg("faimtest_accountconfirm: Code 0x%04x: %s\n", code, msg); */
   owl_function_debugmsg("faimtest_accountconfirm: account confirmation returned status 0x%04x (%s)\n", status, (status==0x0000)?"email sent":"unknown");
-  
+
   return 1;
 }
 
@@ -767,7 +767,7 @@ static int faimtest_infochange(aim_session_t *sess, aim_frame_t *fr, ...)
   int length, str;
   const char *val;
   va_list ap;
-  
+
   va_start(ap, fr);
   change = va_arg(ap, int);
   perms = (fu16_t)va_arg(ap, unsigned int);
@@ -776,9 +776,9 @@ static int faimtest_infochange(aim_session_t *sess, aim_frame_t *fr, ...)
   val = va_arg(ap, const char *);
   str = va_arg(ap, int);
   va_end(ap);
-  
+
   owl_function_debugmsg("faimtest_infochange: info%s: perms = %d, type = %x, length = %d, val = %s", change?" change":"", perms, type, length, str?val:"(not string)");
-  
+
   return(1);
 }
 
@@ -789,17 +789,17 @@ static int faimtest_handleredirect(aim_session_t *sess, aim_frame_t *fr, ...)
   struct aim_redirect_data *redir;
 
   owl_function_debugmsg("faimtest_handledirect:");
-  
+
   va_start(ap, fr);
   redir = va_arg(ap, struct aim_redirect_data *);
-  
+
   if (redir->group == 0x0005) {  /* Adverts */
-    
+
   } else if (redir->group == 0x0007) {  /* Authorizer */
     aim_conn_t *tstconn;
 
     owl_function_debugmsg("faimtest_handledirect: autorizer");
-    
+
     tstconn = aim_newconn(sess, AIM_CONN_TYPE_AUTH, redir->ip);
     if (!tstconn || (tstconn->status & AIM_CONN_STATUS_RESOLVERR)) {
       owl_function_error("faimtest_handleredirect: unable to reconnect with authorizer");
@@ -831,14 +831,14 @@ static int faimtest_icbmparaminfo(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   struct aim_icbmparameters *params;
   va_list ap;
-  
+
   va_start(ap, fr);
   params = va_arg(ap, struct aim_icbmparameters *);
   va_end(ap);
-  
-  owl_function_debugmsg("faimtest_icbmparaminfo: ICBM Parameters: maxchannel = %d, default flags = 0x%08x, max msg len = %d, max sender evil = %f, max reciever evil = %f, min msg interval = %u",
+
+  owl_function_debugmsg("faimtest_icbmparaminfo: ICBM Parameters: maxchannel = %d, default flags = 0x%08x, max msg len = %d, max sender evil = %f, max receiver evil = %f, min msg interval = %u",
 		       params->maxchan, params->flags, params->maxmsglen, ((float)params->maxsenderwarn)/10.0, ((float)params->maxrecverwarn)/10.0, params->minmsginterval);
-     
+
   /*
   * Set these to your taste, or client medium.  Setting minmsginterval
   * higher is good for keeping yourself from getting flooded (esp
@@ -849,7 +849,7 @@ static int faimtest_icbmparaminfo(aim_session_t *sess, aim_frame_t *fr, ...)
   params->minmsginterval = 0; /* in milliseconds */
   /* aim_seticbmparam(sess, params); */
   aim_im_setparams(sess, params);
-  
+
   return 1;
 }
 
@@ -857,17 +857,17 @@ static int faimtest_parse_buddyrights(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   va_list ap;
   fu16_t maxbuddies, maxwatchers;
-  
+
   va_start(ap, fr);
   maxbuddies = va_arg(ap, int);
   maxwatchers = va_arg(ap, int);
   va_end(ap);
-  
+
   owl_function_debugmsg("faimtest_parse_buddyrights: Max buddies = %d / Max watchers = %d\n", maxbuddies, maxwatchers);
-  
+
   /* aim_ssi_reqrights(sess, fr->conn); */
   aim_ssi_reqrights(sess);
-  
+
   return 1;
 }
 
@@ -875,12 +875,12 @@ static int faimtest_bosrights(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   va_list ap;
   fu16_t maxpermits, maxdenies;
-  
+
   va_start(ap, fr);
   maxpermits = va_arg(ap, int);
   maxdenies = va_arg(ap, int);
   va_end(ap);
-  
+
   owl_function_debugmsg("faimtest_bosrights: Max permit = %d / Max deny = %d\n", maxpermits, maxdenies);
   aim_clientready(sess, fr->conn);
   owl_function_debugmsg("officially connected to BOS.");
@@ -892,13 +892,13 @@ static int faimtest_locrights(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   va_list ap;
   fu16_t maxsiglen;
-  
+
   va_start(ap, fr);
   maxsiglen = va_arg(ap, int);
   va_end(ap);
 
   owl_function_debugmsg("faimtest_locrights: rights: max signature length = %d\n", maxsiglen);
-  
+
   return(1);
 }
 
@@ -943,7 +943,7 @@ static int faimtest_parse_motd(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
 
   owl_function_debugmsg("faimtest_parse_motd: %s (%d / %s)\n", msg?msg:"nomsg", id, (id < codeslen)?codes[id]:"unknown");
-  
+
   return 1;
 }
 
@@ -959,7 +959,7 @@ static void printuserflags(fu16_t flags)
   if (flags & AIM_FLAG_ICQ) printf("ICQ ");
   if (flags & AIM_FLAG_WIRELESS) printf("WIRELESS ");
   if (flags & AIM_FLAG_ACTIVEBUDDY) printf("ACTIVEBUDDY ");
-  
+
   return;
 }
 */
@@ -1072,21 +1072,21 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
  */
 static int faimtest_parse_incoming_im_chan2(aim_session_t *sess, aim_conn_t *conn, aim_userinfo_t *userinfo, struct aim_incomingim_ch2_args *args)
 {
-  /* 
+  /*
   printf("rendezvous: source sn = %s\n", userinfo->sn);
   printf("rendezvous: \twarnlevel = %f\n", aim_userinfo_warnlevel(userinfo));
   printf("rendezvous: \tclass = 0x%04x = ", userinfo->flags);
   printuserflags(userinfo->flags);
   printf("\n");
-  
+
   printf("rendezvous: \tonlinesince = %lu\n", userinfo->onlinesince);
   printf("rendezvous: \tidletime = 0x%04x\n", userinfo->idletime);
-  
+
   printf("rendezvous: message/description = %s\n", args->msg);
   printf("rendezvous: encoding = %s\n", args->encoding);
   printf("rendezvous: language = %s\n", args->language);
   */
-  
+
   if (args->reqclass == AIM_CAPS_SENDFILE) {
     owl_function_debugmsg("faimtest_parse_incoming_im_chan2: send file!");
   } else if (args->reqclass == AIM_CAPS_CHAT) {
@@ -1118,11 +1118,11 @@ static int faimtest_parse_incoming_im(aim_session_t *sess, aim_frame_t *fr, ...)
   aim_userinfo_t *userinfo;
   va_list ap;
   int ret = 0;
-  
+
   va_start(ap, fr);
   channel = (fu16_t)va_arg(ap, unsigned int);
   userinfo = va_arg(ap, aim_userinfo_t *);
-  
+
   if (channel == 1) {
     struct aim_incomingim_ch1_args *args;
     args = va_arg(ap, struct aim_incomingim_ch1_args *);
@@ -1150,7 +1150,7 @@ static int faimtest_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
 
   nz_screenname=owl_aim_normalize_screenname(userinfo->sn);
-  
+
   owl_buddylist_oncoming(owl_global_get_buddylist(&g), nz_screenname);
 
   if (userinfo->present & AIM_USERINFO_PRESENT_IDLE) {
@@ -1172,11 +1172,11 @@ static int faimtest_parse_oncoming(aim_session_t *sess, aim_frame_t *fr, ...)
   if (userinfo->flags & AIM_FLAG_AWAY) {
     owl_function_debugmsg("parse_oncoming sn: %s away flag!", userinfo->sn);
   }
-  
+
   owl_function_debugmsg("parse_oncoming sn: %s idle: %i", userinfo->sn, userinfo->idletime);
-    
+
   g_free(nz_screenname);
-  
+
   /*
     printf("%ld  %s is now online (flags: %04x = %s%s%s%s%s%s%s%s) (caps = %s = 0x%08lx)\n",
     time(NULL),
@@ -1200,7 +1200,7 @@ static int faimtest_parse_offgoing(aim_session_t *sess, aim_frame_t *fr, ...)
   aim_userinfo_t *userinfo;
   char *nz_screenname;
   va_list ap;
-  
+
   va_start(ap, fr);
   userinfo = va_arg(ap, aim_userinfo_t *);
   va_end(ap);
@@ -1228,7 +1228,7 @@ static int faimtest_parse_offgoing(aim_session_t *sess, aim_frame_t *fr, ...)
 	 (userinfo->present & AIM_USERINFO_PRESENT_CAPABILITIES) ? "present" : "not present",
 	 userinfo->capabilities);
   */
-  
+
   return 1;
 }
 
@@ -1237,14 +1237,14 @@ int faimtest_parse_genericerr(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   va_list ap;
   fu16_t reason;
-  
+
   va_start(ap, fr);
   reason = (fu16_t)va_arg(ap, unsigned int);
   va_end(ap);
-  
+
   /* printf("snac threw error (reason 0x%04x: %s)\n", reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
   if (reason<msgerrreasonslen) owl_function_error("%s", msgerrreasons[reason]);
-  
+
   return 1;
 }
 
@@ -1253,19 +1253,19 @@ static int faimtest_parse_msgerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_list ap;
   const char *destsn;
   fu16_t reason;
-  
+
   va_start(ap, fr);
   reason = (fu16_t)va_arg(ap, unsigned int);
   destsn = va_arg(ap, const char *);
   va_end(ap);
-  
+
   /* printf("message to %s bounced (reason 0x%04x: %s)\n", destsn, reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
   if (reason<msgerrreasonslen) owl_function_error("%s", msgerrreasons[reason]);
 
   if (reason==4) {
     owl_function_adminmsg("", "Could not send AIM message, user not logged on");
   }
-  
+
   return 1;
 }
 
@@ -1274,15 +1274,15 @@ static int faimtest_parse_locerr(aim_session_t *sess, aim_frame_t *fr, ...)
   va_list ap;
   const char *destsn;
   fu16_t reason;
-  
+
   va_start(ap, fr);
   reason = (fu16_t)va_arg(ap, unsigned int);
   destsn = va_arg(ap, const char *);
   va_end(ap);
-  
+
   /* printf("user information for %s unavailable (reason 0x%04x: %s)\n", destsn, reason, (reason<msgerrreasonslen)?msgerrreasons[reason]:"unknown"); */
   if (reason<msgerrreasonslen) owl_function_error("%s", msgerrreasons[reason]);
-  
+
   return 1;
 }
 
@@ -1296,20 +1296,20 @@ static int faimtest_parse_misses(aim_session_t *sess, aim_frame_t *fr, ...)
     "Evil Receiver"
   };
   static int missedreasonslen = 5;
-  
+
   va_list ap;
   fu16_t chan, nummissed, reason;
   aim_userinfo_t *userinfo;
-  
+
   va_start(ap, fr);
   chan = (fu16_t)va_arg(ap, unsigned int);
   userinfo = va_arg(ap, aim_userinfo_t *);
   nummissed = (fu16_t)va_arg(ap, unsigned int);
   reason = (fu16_t)va_arg(ap, unsigned int);
   va_end(ap);
-  
+
   owl_function_debugmsg("faimtest_parse_misses: missed %d messages from %s on channel %d (reason %d: %s)\n", nummissed, userinfo->sn, chan, reason, (reason<missedreasonslen)?missedreasons[reason]:"unknown");
-  
+
   return 1;
 }
 
@@ -1321,14 +1321,14 @@ static int faimtest_parse_msgack(aim_session_t *sess, aim_frame_t *fr, ...)
   va_list ap;
   fu16_t type;
   const char *sn = NULL;
-  
+
   va_start(ap, fr);
   type = (fu16_t)va_arg(ap, unsigned int);
   sn = va_arg(ap, const char *);
   va_end(ap);
-  
+
   owl_function_debugmsg("faimtest_parse_msgack: 0x%04x / %s\n", type, sn);
-  
+
   return 1;
 }
 
@@ -1345,24 +1345,24 @@ static int faimtest_parse_ratechange(aim_session_t *sess, aim_frame_t *fr, ...)
   fu16_t code, rateclass;
   fu32_t windowsize, clear, alert, limit, disconnect;
   fu32_t currentavg, maxavg;
-  
-  va_start(ap, fr); 
-  
+
+  va_start(ap, fr);
+
   /* See code explanations below */
   code = (fu16_t)va_arg(ap, unsigned int);
-  
+
   /*
    * See comments above aim_parse_ratechange_middle() in aim_rxhandlers.c.
    */
   rateclass = (fu16_t)va_arg(ap, unsigned int);
-  
+
   /*
-   * Not sure what this is exactly.  I think its the temporal 
+   * Not sure what this is exactly.  I think its the temporal
    * relation factor (ie, how to make the rest of the numbers
-   * make sense in the real world). 
+   * make sense in the real world).
    */
   windowsize = va_arg(ap, fu32_t);
-  
+
   /* Explained below */
   clear = va_arg(ap, fu32_t);
   alert = va_arg(ap, fu32_t);
@@ -1370,9 +1370,9 @@ static int faimtest_parse_ratechange(aim_session_t *sess, aim_frame_t *fr, ...)
   disconnect = va_arg(ap, fu32_t);
   currentavg = va_arg(ap, fu32_t);
   maxavg = va_arg(ap, fu32_t);
-  
+
   va_end(ap);
-  
+
   owl_function_debugmsg("faimtest_parse_ratechange: rate %s (rate class 0x%04x): curavg = %u, maxavg = %u, alert at %u, clear warning at %u, limit at %u, disconnect at %u (window size = %u)",
 			(code < 5)?codes[code]:"invalid",
 			rateclass,
@@ -1388,12 +1388,12 @@ static int faimtest_parse_evilnotify(aim_session_t *sess, aim_frame_t *fr, ...)
   va_list ap;
   fu16_t newevil;
   aim_userinfo_t *userinfo;
-  
+
   va_start(ap, fr);
   newevil = (fu16_t)va_arg(ap, unsigned int);
   userinfo = va_arg(ap, aim_userinfo_t *);
   va_end(ap);
-  
+
   /*
    * Evil Notifications that are lacking userinfo->sn are anon-warns
    * if they are an evil increases, but are not warnings at all if its
@@ -1403,7 +1403,7 @@ static int faimtest_parse_evilnotify(aim_session_t *sess, aim_frame_t *fr, ...)
    * ten.
    */
   owl_function_debugmsg("faimtest_parse_evilnotify: new value = %2.1f%% (caused by %s)\n", ((float)newevil)/10, (userinfo && strlen(userinfo->sn))?userinfo->sn:"anonymous");
-  
+
   return 1;
 }
 
@@ -1413,7 +1413,7 @@ static int faimtest_parse_searchreply(aim_session_t *sess, aim_frame_t *fr, ...)
   const char *address, *SNs;
   int num, i;
   GPtrArray *list;
-  
+
   va_start(ap, fr);
   address = va_arg(ap, const char *);
   num = va_arg(ap, int);
@@ -1421,7 +1421,7 @@ static int faimtest_parse_searchreply(aim_session_t *sess, aim_frame_t *fr, ...)
   va_end(ap);
 
   list = g_ptr_array_new();
-  
+
   owl_function_debugmsg("faimtest_parse_searchreply: E-Mail Search Results for %s: ", address);
   for (i=0; i<num; i++) {
     owl_function_debugmsg("  %s", &SNs[i*(MAXSNLEN+1)]);
@@ -1436,14 +1436,14 @@ static int faimtest_parse_searcherror(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   va_list ap;
   const char *address;
-  
+
   va_start(ap, fr);
   address = va_arg(ap, const char *);
   va_end(ap);
 
   owl_function_error("No results searching for %s", address);
   owl_function_debugmsg("faimtest_parse_searcherror: E-Mail Search Results for %s: No Results or Invalid Email\n", address);
-  
+
   return(1);
 }
 
@@ -1452,7 +1452,7 @@ static int handlepopup(aim_session_t *sess, aim_frame_t *fr, ...)
   va_list ap;
   const char *msg, *url;
   fu16_t width, height, delay;
-  
+
   va_start(ap, fr);
   msg = va_arg(ap, const char *);
   url = va_arg(ap, const char *);
@@ -1460,9 +1460,9 @@ static int handlepopup(aim_session_t *sess, aim_frame_t *fr, ...)
   height = va_arg(ap, unsigned int);
   delay = va_arg(ap, unsigned int);
   va_end(ap);
-  
+
   owl_function_debugmsg("handlepopup: (%dx%x:%d) %s (%s)\n", width, height, delay, msg, url);
-  
+
   return 1;
 }
 
@@ -1478,24 +1478,24 @@ static int migrate(aim_session_t *sess, aim_frame_t *fr, ...)
   aim_conn_t *bosconn;
   const char *bosip;
   fu8_t *cookie;
-  
+
   va_start(ap, fr);
   bosip = va_arg(ap, const char *);
   cookie = va_arg(ap, fu8_t *);
   va_end(ap);
-  
+
   owl_function_debugmsg("migrate: migration in progress -- new BOS is %s -- disconnecting", bosip);
   aim_conn_kill(sess, &fr->conn);
-  
+
   if (!(bosconn = aim_newconn(sess, AIM_CONN_TYPE_BOS, bosip))) {
     owl_function_debugmsg("migrate: could not connect to BOS: internal error");
     return 1;
-  } else if (bosconn->status & AIM_CONN_STATUS_CONNERR) {	
+  } else if (bosconn->status & AIM_CONN_STATUS_CONNERR) {
     owl_function_debugmsg("migrate: could not connect to BOS");
     aim_conn_kill(sess, &bosconn);
     return 1;
   }
-  
+
   /* Login will happen all over again. */
   addcb_bos(sess, bosconn);
   /* aim_sendcookie(sess, bosconn, cookie); */ /********/
@@ -1507,7 +1507,7 @@ static int ssirights(aim_session_t *sess, aim_frame_t *fr, ...)
   owl_function_debugmsg("ssirights: got SSI rights, requesting data\n");
   /* aim_ssi_reqdata(sess, fr->conn, 0, 0x0000); */
   aim_ssi_reqdata(sess);
-  
+
   return(1);
 }
 
@@ -1522,14 +1522,14 @@ static int ssidata(aim_session_t *sess, aim_frame_t *fr, ...)
   struct aim_ssi_item *curitem;
   struct aim_ssi_item *l;
   */
-  
+
   va_start(ap, fr);
   fmtver = va_arg(ap, unsigned int);
   itemcount = va_arg(ap, unsigned int);
   stamp = va_arg(ap, fu32_t);
   list = va_arg(ap, struct aim_ssi_item *);
   va_end(ap);
-  
+
   owl_function_debugmsg("ssiddata: got SSI data (0x%02x, %d items, %u)", fmtver, itemcount, stamp);
   /*
   for (curitem=sess->ssi.local; curitem; curitem=curitem->next) {
@@ -1539,7 +1539,7 @@ static int ssidata(aim_session_t *sess, aim_frame_t *fr, ...)
   }
   */
   aim_ssi_enable(sess);
-  
+
   return 1;
 }
 
@@ -1555,11 +1555,11 @@ static int offlinemsg(aim_session_t *sess, aim_frame_t *fr, ...)
 {
   va_list ap;
   struct aim_icq_offlinemsg *msg;
-  
+
   va_start(ap, fr);
   msg = va_arg(ap, struct aim_icq_offlinemsg *);
   va_end(ap);
-  
+
   if (msg->type == 0x0001) {
     owl_function_debugmsg("offlinemsg: from %u at %d/%d/%d %02d:%02d : %s", msg->sender, msg->year, msg->month, msg->day, msg->hour, msg->minute, msg->msg);
   } else {
@@ -1585,7 +1585,7 @@ static int faimtest_chat_join(aim_session_t *sess, aim_frame_t *fr, ...)
   aim_userinfo_t *userinfo;
   int count;
   /* int i; */
-  
+
   va_start(ap, fr);
   count = va_arg(ap, int);
   userinfo = va_arg(ap, aim_userinfo_t *);
@@ -1607,15 +1607,15 @@ static int faimtest_chat_leave(aim_session_t *sess, aim_frame_t *fr, ...)
   int count;
   /* int i; */
 
-  
+
   va_start(ap, fr);
   count = va_arg(ap, int);
   userinfo = va_arg(ap, aim_userinfo_t *);
   va_end(ap);
-  
+
   /*
     printf("chat: %s:  Some occupants have left:\n", aim_chat_getname(fr->conn));
-    
+
     for (i = 0; i < count; i++)
     printf("chat: %s: \t%s\n", aim_chat_getname(fr->conn), userinfo[i].sn);
   */
@@ -1634,9 +1634,9 @@ static int faimtest_chat_infoupdate(aim_session_t *sess, aim_frame_t *fr, ...)
   fu32_t creationtime;
   const char *croomname;
   /* int i; */
-  
+
   croomname = aim_chat_getname(fr->conn);
-  
+
   va_start(ap, fr);
   roominfo = va_arg(ap, struct aim_chat_roominfo *);
   roomname = va_arg(ap, const char *);
@@ -1661,8 +1661,8 @@ static int faimtest_chat_infoupdate(aim_session_t *sess, aim_frame_t *fr, ...)
 
   for (i = 0; i < usercount; i++)
     printf("chat: %s:  \t\t%s\n", croomname, userinfo[i].sn);
-  
-  owl_function_debugmsg("chat: %s:  \tRoom flags: 0x%04x (%s%s%s%s)\n", 
+
+  owl_function_debugmsg("chat: %s:  \tRoom flags: 0x%04x (%s%s%s%s)\n",
 	 croomname, flags,
 	 (flags & AIM_CHATROOM_FLAG_EVILABLE) ? "Evilable, " : "",
 	 (flags & AIM_CHATROOM_FLAG_NAV_ONLY) ? "Nav Only, " : "",
@@ -1674,7 +1674,7 @@ static int faimtest_chat_infoupdate(aim_session_t *sess, aim_frame_t *fr, ...)
   printf("chat: %s:  \tMax message length: %d bytes\n", croomname, maxmsglen);
   printf("chat: %s:  \tMax visible message length: %d bytes\n", croomname, maxvisiblemsglen);
   */
-  
+
   return(1);
 }
 
@@ -1684,9 +1684,9 @@ static int faimtest_chat_incomingmsg(aim_session_t *sess, aim_frame_t *fr, ...)
   aim_userinfo_t *userinfo;
   const char *msg;
   char tmpbuf[1152];
-  
+
   va_start(ap, fr);
-  userinfo = va_arg(ap, aim_userinfo_t *);	
+  userinfo = va_arg(ap, aim_userinfo_t *);
   msg = va_arg(ap, const char *);
   va_end(ap);
 
@@ -1695,7 +1695,7 @@ static int faimtest_chat_incomingmsg(aim_session_t *sess, aim_frame_t *fr, ...)
   /*
   printf("chat: %s: incoming msg from %s: %s\n", aim_chat_getname(fr->conn), userinfo->sn, msg);
   */
-  
+
   /*
    * Do an echo for testing purposes.  But not for ourselves ("oops!")
    */
@@ -1703,7 +1703,7 @@ static int faimtest_chat_incomingmsg(aim_session_t *sess, aim_frame_t *fr, ...)
     /* sprintf(tmpbuf, "(%s said \"%s\")", userinfo->sn, msg); */
     aim_chat_send_im(sess, fr->conn, 0, tmpbuf, strlen(tmpbuf));
   }
-  
+
   return 1;
 }
 
@@ -1716,9 +1716,9 @@ static int conninitdone_chat(aim_session_t *sess, aim_frame_t *fr, ...)
   aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CHT, AIM_CB_CHT_USERLEAVE, faimtest_chat_leave, 0);
   aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CHT, AIM_CB_CHT_ROOMINFOUPDATE, faimtest_chat_infoupdate, 0);
   aim_conn_addhandler(sess, fr->conn, AIM_CB_FAM_CHT, AIM_CB_CHT_INCOMINGMSG, faimtest_chat_incomingmsg, 0);
-  
+
   aim_clientready(sess, fr->conn);
-  
+
   owl_function_debugmsg("Chat ready");
 
   /*
@@ -1734,7 +1734,7 @@ void chatnav_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
   aim_conn_t *tstconn;
 
   owl_function_debugmsg("in faimtest_chatnav_redirect");
-  
+
   tstconn = aim_newconn(sess, AIM_CONN_TYPE_CHATNAV, redir->ip);
   if (!tstconn || (tstconn->status & AIM_CONN_STATUS_RESOLVERR)) {
     /* printf("unable to connect to chat(nav) server\n"); */
@@ -1742,7 +1742,7 @@ void chatnav_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
       aim_conn_kill(sess, &tstconn);
     return;
   }
-  
+
   aim_conn_addhandler(sess, tstconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNCOMPLETE, faimtest_conncomplete, 0);
   aim_conn_addhandler(sess, tstconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNINITDONE, conninitdone_chat, 0);
   aim_sendcookie(sess, tstconn, redir->cookielen, redir->cookie);
@@ -1756,15 +1756,15 @@ void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
   aim_conn_t *tstconn;
 
   owl_function_debugmsg("in chat_redirect");
-  
+
   tstconn = aim_newconn(sess, AIM_CONN_TYPE_CHAT, redir->ip);
   if (!tstconn || (tstconn->status & AIM_CONN_STATUS_RESOLVERR)) {
     /* printf("unable to connect to chat server\n"); */
     if (tstconn) aim_conn_kill(sess, &tstconn);
-    return; 
-  }		
+    return;
+  }
   /* printf("chat: connected to %s instance %d on exchange %d\n", redir->chat.room, redir->chat.instance, redir->chat.exchange); */
-  
+
   /*
    * We must do this to attach the stored name to the connection!
    */
@@ -1772,7 +1772,7 @@ void chat_redirect(aim_session_t *sess, struct aim_redirect_data *redir)
   aim_conn_addhandler(sess, tstconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNCOMPLETE, faimtest_conncomplete, 0);
   aim_conn_addhandler(sess, tstconn, AIM_CB_FAM_SPECIAL, AIM_CB_SPECIAL_CONNINITDONE, conninitdone_chat, 0);
   aim_sendcookie(sess, tstconn, redir->cookielen, redir->cookie);
-  return;	
+  return;
 }
 
 typedef struct _owl_aim_event_source { /*noproto*/

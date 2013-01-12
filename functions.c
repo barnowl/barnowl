@@ -7,7 +7,7 @@
 CALLER_OWN char *owl_function_command(const char *cmdbuff)
 {
   owl_function_debugmsg("executing command: %s", cmdbuff);
-  return owl_cmddict_execute(owl_global_get_cmddict(&g), 
+  return owl_cmddict_execute(owl_global_get_cmddict(&g),
 			     owl_global_get_context(&g), cmdbuff);
 }
 
@@ -197,7 +197,7 @@ void owl_function_adminmsg(const char *header, const char *body)
 
   m=g_new(owl_message, 1);
   owl_message_create_admin(m, header, body);
-  
+
   /* add it to the global list and current view */
   owl_messagelist_append_element(owl_global_get_msglist(&g), m);
   owl_view_consider_message(owl_global_get_current_view(&g), m);
@@ -249,7 +249,7 @@ CALLER_OWN owl_message *owl_function_make_outgoing_aim(const char *body, const c
 
   /* error if we're not logged into aim */
   if (!owl_global_is_aimloggedin(&g)) return(NULL);
-  
+
   m=g_new(owl_message, 1);
   owl_message_create_aim(m,
 			 owl_global_get_aim_screenname(&g),
@@ -454,7 +454,7 @@ void owl_function_aimwrite(const char *to, const char *msg, bool unwrap)
   format_msg = g_strdup(msg);
   if (unwrap)
     owl_text_wordunwrap(format_msg);
-  
+
   /* send the message */
   ret=owl_aim_send_im(to, format_msg);
   if (!ret) {
@@ -484,7 +484,7 @@ void owl_function_send_aimawymsg(const char *to, const char *msg)
   /* make a formatted copy of the message */
   format_msg=g_strdup(msg);
   owl_text_wordunwrap(format_msg);
-  
+
   /* send the message */
   ret=owl_aim_send_awaymsg(to, format_msg);
   if (!ret) {
@@ -533,7 +533,7 @@ void owl_function_loopwrite(const char *msg)
 }
 
 /* If filter is non-null, looks for the next message matching
- * that filter.  If skip_deleted, skips any deleted messages. 
+ * that filter.  If skip_deleted, skips any deleted messages.
  * If last_if_none, will stop at the last message in the view
  * if no matching messages are found.  */
 void owl_function_nextmsg_full(const char *filter, int skip_deleted, int last_if_none)
@@ -706,7 +706,7 @@ void owl_function_deletecur(int move_after)
   owl_view_delete_element(v, curmsg);
 
   if (move_after) {
-    /* move the poiner in the appropriate direction 
+    /* move the poiner in the appropriate direction
      * to the next undeleted msg */
     if (owl_global_get_direction(&g)==OWL_DIRECTION_UPWARDS) {
       owl_function_prevmsg_notdeleted();
@@ -722,7 +722,7 @@ void owl_function_undeletecur(int move_after)
   owl_view *v;
 
   v=owl_global_get_current_view(&g);
-  
+
   if (owl_view_get_size(v) < 1) {
     owl_function_error("No current message to undelete");
     return;
@@ -800,7 +800,7 @@ void owl_function_expunge(void)
   owl_messagelist_expunge(ml);
 
   owl_function_redisplay_to_nearest(lastmsgid, v);
-  
+
   owl_function_makemsg("Messages expunged");
 }
 
@@ -819,7 +819,7 @@ void owl_function_lastmsg(void)
 
   v=owl_global_get_current_view(&g);
   oldcurmsg=owl_global_get_curmsg(&g);
-  curmsg=owl_view_get_size(v)-1;  
+  curmsg=owl_view_get_size(v)-1;
   if (curmsg<0) curmsg=0;
   owl_global_set_curmsg(&g, curmsg);
   if (oldcurmsg < curmsg) {
@@ -829,7 +829,7 @@ void owl_function_lastmsg(void)
      * past the end of the messages. */
     owl_global_set_topmsg(&g, curmsg+1);
     owl_global_set_curmsg(&g, curmsg+1);
-  } 
+  }
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   owl_global_set_direction_downwards(&g);
 }
@@ -994,7 +994,7 @@ void owl_function_aaway_off(void)
 void owl_function_quit(void)
 {
   char *ret;
-  
+
   /* zlog out if we need to */
   if (owl_global_is_havezephyr(&g) &&
       owl_global_is_shutdownlogout(&g)) {
@@ -1009,7 +1009,7 @@ void owl_function_quit(void)
   if (owl_global_get_newmsgproc_pid(&g)) {
     kill(owl_global_get_newmsgproc_pid(&g), SIGHUP);
   }
-  
+
   /* Quit AIM */
   if (owl_global_is_aimloggedin(&g)) {
     owl_aim_logout();
@@ -1059,8 +1059,8 @@ void owl_function_calculate_topmsg(int direction)
   owl_global_set_topmsg(&g, topmsg);
 }
 
-/* Returns what the new topmsg should be.  
- * Passed the last direction of movement, 
+/* Returns what the new topmsg should be.
+ * Passed the last direction of movement,
  * the current view,
  * the current message number in the view,
  * the top message currently being displayed,
@@ -1073,7 +1073,7 @@ int owl_function_calculate_topmsg_top(int direction, const owl_view *v, int curm
 
 int owl_function_calculate_topmsg_neartop(int direction, const owl_view *v, int curmsg, int topmsg, int recwinlines)
 {
-  if (curmsg>0 
+  if (curmsg>0
       && (owl_message_get_numlines(owl_view_get_element(v, curmsg-1))
 	  <  recwinlines/2)) {
     return(curmsg-1);
@@ -1081,7 +1081,7 @@ int owl_function_calculate_topmsg_neartop(int direction, const owl_view *v, int 
     return(curmsg);
   }
 }
-  
+
 int owl_function_calculate_topmsg_center(int direction, const owl_view *v, int curmsg, int topmsg, int recwinlines)
 {
   int i, last, lines;
@@ -1095,12 +1095,12 @@ int owl_function_calculate_topmsg_center(int direction, const owl_view *v, int c
   }
   return(last);
 }
-  
+
 int owl_function_calculate_topmsg_paged(int direction, const owl_view *v, int curmsg, int topmsg, int recwinlines, int center_on_page)
 {
   int i, last, lines, savey;
-  
-  /* If we're off the top of the screen, scroll up such that the 
+
+  /* If we're off the top of the screen, scroll up such that the
    * curmsg is near the botton of the screen. */
   if (curmsg < topmsg) {
     last = curmsg;
@@ -1141,7 +1141,7 @@ int owl_function_calculate_topmsg_normal(int direction, const owl_view *v, int c
   int savey, i, foo, y;
 
   if (curmsg<0) return(topmsg);
-    
+
   /* If we're off the top of the screen then center */
   if (curmsg<topmsg) {
     topmsg=owl_function_calculate_topmsg_center(direction, v, curmsg, 0, recwinlines);
@@ -1166,7 +1166,7 @@ int owl_function_calculate_topmsg_normal(int direction, const owl_view *v, int c
     savey=owl_message_get_numlines(owl_view_get_element(v, curmsg));
     direction=OWL_DIRECTION_UPWARDS;
   }
-  
+
   /* If our bottom line is less than 1/4 down the screen then scroll up */
   if (direction == OWL_DIRECTION_UPWARDS || direction == OWL_DIRECTION_NONE) {
     if (savey < (recwinlines / 4)) {
@@ -1385,7 +1385,7 @@ void owl_function_info(void)
 #endif
 
   owl_fmtext_init_null(&fm);
-  
+
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
   if (!m || owl_view_get_size(v)==0) {
@@ -1421,7 +1421,7 @@ void owl_function_info(void)
 
   if (owl_message_is_type_zephyr(m)) {
     owl_fmtext_append_bold(&fm, "\nZephyr Specific Information:\n");
-    
+
     owl_fmtext_appendf_normal(&fm, "  Class     : %s\n", owl_message_get_class(m));
     owl_fmtext_appendf_normal(&fm, "  Instance  : %s\n", owl_message_get_instance(m));
     owl_fmtext_appendf_normal(&fm, "  Opcode    : %s\n", owl_message_get_opcode(m));
@@ -1492,7 +1492,7 @@ void owl_function_info(void)
   owl_fmtext_append_bold(&fm, "\nBarnOwl Message Attributes:\n");
   owl_message_attributes_tofmtext(m, &attrfm);
   owl_fmtext_append_fmtext(&fm, &attrfm);
-  
+
   owl_function_popless_fmtext(&fm);
   owl_fmtext_cleanup(&fm);
   owl_fmtext_cleanup(&attrfm);
@@ -1547,15 +1547,15 @@ void owl_function_page_curmsg(int step)
       owl_function_makemsg("The entire message is already displayed");
       return;
     }
-    
+
     /* Bail if we're not truncated */
     if (!owl_mainwin_is_curmsg_truncated(owl_global_get_mainwin(&g))) {
       owl_function_makemsg("The entire message is already displayed");
       return;
     }
   }
-  
-  
+
+
   /* don't scroll past the last line */
   if (step>0) {
     if (offset+step > lines-1) {
@@ -1573,7 +1573,7 @@ void owl_function_page_curmsg(int step)
       owl_global_set_curmsg_vert_offset(&g, offset+step);
     }
   }
-  
+
   /* redisplay */
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
@@ -1616,7 +1616,7 @@ void owl_function_getsubs(void)
   } else {
     owl_function_popless_text("Error getting subscriptions");
   }
-	   
+
   g_free(buff);
 }
 
@@ -1657,12 +1657,12 @@ void owl_function_show_variables(void)
 {
   const owl_variable *v;
   GPtrArray *varnames;
-  owl_fmtext fm;  
+  owl_fmtext fm;
   int i;
   const char *varname;
 
   owl_fmtext_init_null(&fm);
-  owl_fmtext_append_bold(&fm, 
+  owl_fmtext_append_bold(&fm,
       "Variables: (use 'show variable <name>' for details)\n");
   varnames = owl_variable_dict_get_names(owl_global_get_vardict(&g));
   for (i = 0; i < varnames->len; i++) {
@@ -1680,7 +1680,7 @@ void owl_function_show_variables(void)
 void owl_function_show_variable(const char *name)
 {
   const owl_variable *v;
-  owl_fmtext fm;  
+  owl_fmtext fm;
 
   owl_fmtext_init_null(&fm);
   v = owl_variable_get_var(owl_global_get_vardict(&g), name);
@@ -1818,7 +1818,7 @@ void owl_function_status(void)
 #else
   owl_fmtext_append_normal(&fm, "no\n");
 #endif
-  
+
 
   owl_fmtext_append_normal(&fm, "\nAIM Status:\n");
   owl_fmtext_append_normal(&fm, "  Logged in: ");
@@ -1871,12 +1871,12 @@ void owl_function_reply(int type, int enter)
   char *buff=NULL;
   const owl_message *m;
   const owl_filter *f;
-  
+
   if (owl_view_get_size(owl_global_get_current_view(&g))==0) {
     owl_function_error("No message selected");
   } else {
     char *cmd;
-    
+
     m=owl_view_get_element(owl_global_get_current_view(&g), owl_global_get_curmsg(&g));
     if (!m) {
       owl_function_error("No message selected");
@@ -2019,7 +2019,7 @@ CALLER_OWN char *owl_function_exec(int argc, const char *const *argv, const char
 
 #if OWL_STDERR_REDIR
   redirect = " < /dev/null";
-#endif 
+#endif
 
   if (argc<2) {
     owl_function_error("Wrong number of arguments to the exec command");
@@ -2035,7 +2035,7 @@ CALLER_OWN char *owl_function_exec(int argc, const char *const *argv, const char
     p = popen(newbuff, "r");
     out = owl_slurp(p);
     pclose(p);
-    
+
     if (type == OWL_OUTPUT_RETURN) {
       g_free(newbuff);
       return out;
@@ -2066,7 +2066,7 @@ CALLER_OWN char *owl_function_perl(int argc, const char *const *argv, const char
   buff = skiptokens(buff, 1);
 
   perlout = owl_perlconfig_execute(buff);
-  if (perlout) { 
+  if (perlout) {
     if (type == OWL_OUTPUT_POPUP) {
       owl_function_popless_text(perlout);
     } else if (type == OWL_OUTPUT_ADMINMSG) {
@@ -2113,7 +2113,7 @@ void owl_function_change_currentview_filter(const char *filtname)
 
   /* Figure out what to set the current message to.
    * - If the view we're leaving has messages in it, go to the closest message
-   *   to the last message pointed to in that view. 
+   *   to the last message pointed to in that view.
    * - If the view we're leaving is empty, try to restore the position
    *   from the last time we were in the new view.  */
   if (curm) {
@@ -2226,7 +2226,7 @@ CALLER_OWN char *owl_function_create_negative_filter(const char *filtername)
   const char *argv[5];
 
   owl_function_debugmsg("owl_function_create_negative_filter");
-  
+
   if (!strncmp(filtername, "not-", 4)) {
     newname=g_strdup(filtername+4);
   } else {
@@ -2315,7 +2315,7 @@ void owl_function_show_zpunts(void)
  * name of the filter or null.  The caller must free this name.
  * If 'related' is nonzero, encompass unclasses and .d classes as well.
  */
-CALLER_OWN char *owl_function_classinstfilt(const char *c, const char *i, int related) 
+CALLER_OWN char *owl_function_classinstfilt(const char *c, const char *i, int related)
 {
   owl_filter *f;
   char *filtname;
@@ -2349,7 +2349,7 @@ CALLER_OWN char *owl_function_classinstfilt(const char *c, const char *i, int re
       filtname = temp;
     }
   }
-  
+
   /* if it already exists then go with it.  This lets users override */
   if (owl_global_get_filter(&g, filtname)) {
     goto done;
@@ -2539,7 +2539,7 @@ void owl_function_delete_curview_msgs(int flag)
 
   owl_function_makemsg("%i messages marked for %sdeletion", j, flag?"":"un");
 
-  owl_mainwin_redisplay(owl_global_get_mainwin(&g));  
+  owl_mainwin_redisplay(owl_global_get_mainwin(&g));
 }
 
 static CALLER_OWN char *owl_function_smartfilter_cc(const owl_message *m)
@@ -2587,12 +2587,12 @@ static CALLER_OWN char *owl_function_smartfilter_cc(const owl_message *m)
  *    to the zephyr conversation with that user.
  * If the curmsg is a zephyr class message, instance foo, recip *,
  *    return a filter name to the class, inst.
- * If the curmsg is a zephyr class message and type==0 then 
+ * If the curmsg is a zephyr class message and type==0 then
  *    return a filter name for just the class.
- * If the curmsg is a zephyr class message and type==1 then 
+ * If the curmsg is a zephyr class message and type==1 then
  *    return a filter name for the class and instance.
  * If the curmsg is a personal AIM message returna  filter
- *    name to the AIM conversation with that user 
+ *    name to the AIM conversation with that user
  */
 CALLER_OWN char *owl_function_smartfilter(int type, int invert_related)
 {
@@ -2669,13 +2669,13 @@ CALLER_OWN char *owl_function_smartfilter(int type, int invert_related)
 
 void owl_function_smartzpunt(int type)
 {
-  /* Starts a zpunt command based on the current class,instance pair. 
+  /* Starts a zpunt command based on the current class,instance pair.
    * If type=0, uses just class.  If type=1, uses instance as well. */
   const owl_view *v;
   const owl_message *m;
   const char *mclass, *minst;
   GString *buf;
-  
+
   v=owl_global_get_current_view(&g);
   m=owl_view_get_element(v, owl_global_get_curmsg(&g));
 
@@ -2758,7 +2758,7 @@ int owl_function_color_filter(const char *filtname, const char *fgcolor, const c
     owl_filter_set_bgcolor(f, owl_util_string_to_color(bgcolor));
   }
   owl_filter_set_fgcolor(f, owl_util_string_to_color(fgcolor));
-  
+
   owl_mainwin_redisplay(owl_global_get_mainwin(&g));
   return(0);
 }
@@ -2766,8 +2766,8 @@ int owl_function_color_filter(const char *filtname, const char *fgcolor, const c
 void owl_function_show_colors(void)
 {
   owl_fmtext fm;
-  int i; 
-  
+  int i;
+
   owl_fmtext_init_null(&fm);
   owl_fmtext_append_normal(&fm,"default:  ");
   owl_fmtext_append_normal_color(&fm, "default\n", OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
@@ -2804,7 +2804,7 @@ void owl_function_show_colors(void)
     g_free(str1);
      g_free(str2);
   }
-  
+
   owl_function_popless_fmtext(&fm);
   owl_fmtext_cleanup(&fm);
 }
@@ -2922,7 +2922,7 @@ void owl_function_show_keymaps(void)
     owl_keymap_get_details(km, &fm, 0);
   }
   owl_fmtext_append_normal(&fm, "\n");
-  
+
   owl_function_popless_fmtext(&fm);
   owl_ptr_array_free(l, g_free);
   owl_fmtext_cleanup(&fm);
@@ -2930,7 +2930,7 @@ void owl_function_show_keymaps(void)
 
 CALLER_OWN char *owl_function_keymap_summary(const char *name)
 {
-  const owl_keymap *km 
+  const owl_keymap *km
     = owl_keyhandler_get_keymap(owl_global_get_keyhandler(&g), name);
   if (km) return owl_keymap_summary(km);
   else return(NULL);
@@ -2948,7 +2948,7 @@ void owl_function_show_keymap(const char *name)
     owl_keymap_get_details(km, &fm, 1);
   } else {
     owl_fmtext_append_normal(&fm, "No such keymap...\n");
-  }  
+  }
   owl_function_popless_fmtext(&fm);
   owl_fmtext_cleanup(&fm);
 }
@@ -2959,7 +2959,7 @@ void owl_function_help_for_command(const char *cmdname)
 
   owl_fmtext_init_null(&fm);
   owl_cmd_get_help(owl_global_get_cmddict(&g), cmdname, &fm);
-  owl_function_popless_fmtext(&fm);  
+  owl_function_popless_fmtext(&fm);
   owl_fmtext_cleanup(&fm);
 }
 
@@ -2992,7 +2992,7 @@ void owl_function_search_helper(int consider_current, int direction)
   v=owl_global_get_current_view(&g);
   viewsize=owl_view_get_size(v);
   curmsg=owl_global_get_curmsg(&g);
-  
+
   if (viewsize==0) {
     owl_function_makemsg("No messages present");
     return;
@@ -3040,7 +3040,7 @@ void owl_function_search_helper(int consider_current, int direction)
   owl_function_makemsg("No matches found");
 }
 
-/* strips formatting from ztext and returns the unformatted text. 
+/* strips formatting from ztext and returns the unformatted text.
  * caller is responsible for freeing. */
 CALLER_OWN char *owl_function_ztext_stylestrip(const char *zt)
 {
@@ -3166,7 +3166,7 @@ void owl_function_buddylist(int aim, int zephyr, const char *filename)
 }
 
 /* Dump messages in the current view to the file 'filename'. */
-void owl_function_dump(const char *filename) 
+void owl_function_dump(const char *filename)
 {
   int i, j;
   owl_message *m;
@@ -3220,7 +3220,7 @@ void owl_function_do_newmsgproc(void)
 	owl_function_debugmsg("newmsgproc did not exit");
       }
     }
-    
+
     /* if it exited, spawn a new one */
     if (owl_global_get_newmsgproc_pid(&g)==0) {
       int myargc;

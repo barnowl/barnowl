@@ -122,7 +122,7 @@ Net::XMPP::Presence - XMPP Presence Module
 					   StatuS=>"Out for lunch");
 
   SetTo(string) - sets the to attribute.  You can either pass a string
-  SetTo(JID)      or a JID object.  They must be valid JIDs or the 
+  SetTo(JID)      or a JID object.  They must be valid JIDs or the
                   server will return an error message.
                   (ie.  bob@jabber.org/Silent Bob, etc...)
 
@@ -179,28 +179,28 @@ Net::XMPP::Presence - XMPP Presence Module
   RemoveTo() -  removes the to attribute from the <presence/>.
 
                 $Pres->RemoveTo();
-  
+
   RemoveFrom() -  removes the from attribute from the <presence/>.
 
                   $Pres->RemoveFrom();
-  
+
   RemoveType() -  removes the type attribute from the <presence/>.
 
                   $Pres->RemoveType();
-  
+
   RemoveStatus() -  removes the <status/> element from the <presence/>.
 
                     $Pres->RemoveStatus();
-  
+
   RemovePriority() -  removes the <priority/> element from the
                       <presence/>.
 
                       $Pres->RemovePriority();
-  
+
   RemoveShow() -  removes the <show/> element from the <presence/>.
 
                   $Pres->RemoveShow();
-  
+
 =head2 Test functions
 
   DefinedTo() - returns 1 if the to attribute is defined in the
@@ -263,7 +263,7 @@ sub new
     $self->{TAG} = "presence";
 
     $self->{FUNCS} = \%FUNCTIONS;
-    
+
     $self->_init(@_);
 
     return $self;

@@ -1,13 +1,13 @@
 /*
  * misc.c
  *
- * Random stuff.  Basically just a few functions for sending 
+ * Random stuff.  Basically just a few functions for sending
  * simple SNACs, and then the generic error handler.
  *
  */
 
 #define FAIM_INTERNAL
-#include <aim.h> 
+#include <aim.h>
 
 /*
  * Generic routine for sending commands.
@@ -60,7 +60,7 @@ faim_internal int aim_genericreq_l(aim_session_t *sess, aim_conn_t *conn, fu16_t
 		return aim_genericreq_n(sess, conn, family, subtype);
 
 	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+4)))
-		return -ENOMEM; 
+		return -ENOMEM;
 
 	snacid = aim_cachesnac(sess, family, subtype, 0x0000, NULL, 0);
 
@@ -81,7 +81,7 @@ faim_internal int aim_genericreq_s(aim_session_t *sess, aim_conn_t *conn, fu16_t
 		return aim_genericreq_n(sess, conn, family, subtype);
 
 	if (!(fr = aim_tx_new(sess, conn, AIM_FRAMETYPE_FLAP, 0x02, 10+2)))
-		return -ENOMEM; 
+		return -ENOMEM;
 
 	snacid = aim_cachesnac(sess, family, subtype, 0x0000, NULL, 0);
 

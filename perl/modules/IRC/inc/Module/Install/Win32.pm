@@ -16,7 +16,7 @@ sub check_nmake {
 	my $self = shift;
 	$self->load('can_run');
 	$self->load('get_file');
-	
+
 	require Config;
 	return unless (
 		$^O eq 'MSWin32'                     and

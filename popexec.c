@@ -93,7 +93,7 @@ gboolean owl_popexec_inputhandler(GIOChannel *source, GIOCondition condition, vo
 
   if (!pe) return FALSE;
 
-  /* If pe->winactive is 0 then the vwin has closed. 
+  /* If pe->winactive is 0 then the vwin has closed.
    * If pe->pid is 0 then the child has already been reaped.
    * if d->fd is -1 then the fd has been closed out.
    * Under these cases we want to get to a state where:
@@ -118,7 +118,7 @@ gboolean owl_popexec_inputhandler(GIOChannel *source, GIOCondition condition, vo
   if (navail==0 && pe->pid>0 && waitpid(pe->pid, &status, WNOHANG) > 0) {
     owl_function_debugmsg("waitpid got child status: <%d>\n", status);
     pe->pid = 0;
-    if (pe->winactive) { 
+    if (pe->winactive) {
       owl_viewwin_append_text(pe->vwin, "\n");
     }
     pe->io_watch = 0;

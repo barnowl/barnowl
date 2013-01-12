@@ -80,7 +80,7 @@ sub _complete_filter_expr {
         $i = _complete_filter_primitive_expr($ctx, $i, $o_comp);
         return $INCOMPLETE if $i == $INCOMPLETE;
     }
-    
+
     return $i; # Well, it looks like we're happy
     # (Actually, I'm pretty sure this never happens...)
 }

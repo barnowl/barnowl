@@ -159,9 +159,9 @@ faim_export int aim_util_getlocalip(fu8_t *ip)
 
 /*
 * int snlen(const char *)
-* 
+*
 * This takes a screen name and returns its length without
-* spaces.  If there are no spaces in the SN, then the 
+* spaces.  If there are no spaces in the SN, then the
 * return is equal to that of strlen().
 *
 */
@@ -187,7 +187,7 @@ faim_export int aim_snlen(const char *sn)
 * This takes two screen names and compares them using the rules
 * on screen names for AIM/AOL.  Mainly, this means case and space
 * insensitivity (all case differences and spacing differences are
-* ignored, with the exception that screen names can not start with 
+* ignored, with the exception that screen names can not start with
 * a space).
 *
 * Return: 0 if equal

@@ -11,7 +11,7 @@ use List::Util qw(first);
 =head1 DESCRIPTION
 
 C<BarnOwl::Hooks> exports a set of C<BarnOwl::Hook> objects made
-available by BarnOwl internally. 
+available by BarnOwl internally.
 
 =head2 USAGE
 
@@ -134,7 +134,7 @@ sub _load_owlconf {
         }
         package BarnOwl;
         if(*BarnOwl::format_msg{CODE}) {
-            # if the config defines a legacy formatting function, add 'perl' as a style 
+            # if the config defines a legacy formatting function, add 'perl' as a style
             BarnOwl::create_style("perl", BarnOwl::Style::Legacy->new(
                 "BarnOwl::format_msg",
                 "User-defined perl style that calls BarnOwl::format_msg"
@@ -162,7 +162,7 @@ sub _startup {
     } else {
         BarnOwl::error("Can't load BarnOwl::ModuleLoader, loadable module support disabled:\n$@");
     }
-    
+
     $mainLoop->check_owlconf();
     $startup->run(0);
     BarnOwl::startup() if *BarnOwl::startup{CODE};
@@ -170,7 +170,7 @@ sub _startup {
 
 sub _shutdown {
     $shutdown->run;
-    
+
     BarnOwl::shutdown() if *BarnOwl::shutdown{CODE};
 }
 
@@ -178,7 +178,7 @@ sub _receive_msg {
     my $m = shift;
 
     $receiveMessage->run($m);
-    
+
     BarnOwl::receive_msg($m) if *BarnOwl::receive_msg{CODE};
 }
 
@@ -186,7 +186,7 @@ sub _new_msg {
     my $m = shift;
 
     $newMessage->run($m);
-    
+
     BarnOwl::new_msg($m) if *BarnOwl::new_msg{CODE};
 }
 

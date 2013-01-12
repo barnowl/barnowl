@@ -150,7 +150,7 @@ sub Init
 
     my %args;
     while($#_ >= 0) { $args{ lc pop(@_) } = pop(@_); }
-    
+
     delete($args{file}) if (lc($args{file}) eq "stdout");
 
     $args{time} = 0 if !exists($args{time});

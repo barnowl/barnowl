@@ -94,7 +94,7 @@ Net::Jabber::Component - Jabber Component Library
                                       value, on the port listed.  The
                                       defaults for the two are localhost
                                       and 5269.
-                                      
+
                                       Note: A change from previous
                                       versions is that Component now
                                       shares its core with Client.  To
@@ -159,7 +159,7 @@ Net::Jabber::Component - Jabber Component Library
                            1   - Status ok, data received.
                            0   - Status ok, no data received.
                          undef - Status not ok, stop processing.
-                       
+
                        IMPORTANT: You need to check the output of every
                        Process.  If you get an undef then the connection
                        died and you should behave accordingly.
@@ -195,11 +195,11 @@ sub new
 
     bless($self, $proto);
     $self->init(@_);
-    
+
     $self->{SERVER}->{port} = 5269;
     $self->{SERVER}->{namespace} = "jabber:component:accept";
     $self->{SERVER}->{allow_register} = 0;
-    
+
     return $self;
 }
 
@@ -216,7 +216,7 @@ sub _auth
 {
     my $self = shift;
     my (%args) = @_;
-    
+
     $self->{STREAM}->SetCallBacks(node=>undef);
 
     $self->Send("<handshake>".Digest::SHA::sha1_hex($self->{SESSION}->{id}.$args{secret})."</handshake>");
@@ -247,7 +247,7 @@ sub _connection_args
 {
     my $self = shift;
     my (%args) = @_;
-    
+
     my %connect;
     $connect{componentname}  = $args{componentname};
     $connect{hostname}       = $args{hostname};
@@ -256,7 +256,7 @@ sub _connection_args
     $connect{timeout}        = $args{connecttimeout} if exists($args{connecttimeout});
     $connect{tls}            = $args{tls}            if exists($args{tls});
 
-    
+
     return %connect;
 }
 

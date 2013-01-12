@@ -61,7 +61,7 @@ Net::Jabber::Protocol - Jabber Protocol Library
     block - send the packet with an ID, and then block until an answer
             comes back.  You can optionally specify a timeout so that
             you do not block forever.
-           
+
     nonblock - send the packet with an ID, but then return that id and
                control to the master program.  Net::Jabber is still
                tracking this packet, so you must use the CheckID function
@@ -72,7 +72,7 @@ Net::Jabber::Protocol - Jabber Protocol Library
                Net::Jabber, then return the ID.  This is useful when
                combined with the XPath function because you can register
                a one shot function tied to the id you get back.
-               
+
 
 =head2 Basic Functions
 
@@ -144,9 +144,9 @@ Net::Jabber::Protocol - Jabber Protocol Library
 
 =head2 Bystreams Functions
 
-    %hash = $Con->ByteStreamsProxyRequest(jid=>"proxy.server"); 
+    %hash = $Con->ByteStreamsProxyRequest(jid=>"proxy.server");
     %hash = $Con->ByteStreamsProxyRequest(jid=>"proxy.server",
-                                          timeout=>10); 
+                                          timeout=>10);
 
     $id = $Con->ByteStreamsProxyRequest(jid=>"proxy.server",
                                         mode=>"nonblock");
@@ -154,15 +154,15 @@ Net::Jabber::Protocol - Jabber Protocol Library
     $id = $Con->ByteStreamsProxyRequest(jid=>"proxy.server",
                                         mode=>"passthru");
 
-    
+
     %hash = $Con->ByteStreamsProxyParse($query);
 
-    
+
     $status = $Con->ByteStreamsProxyActivate(sid=>"stream_id",
-                                             jid=>"proxy.server"); 
+                                             jid=>"proxy.server");
     $status = $Con->ByteStreamsProxyActivate(sid=>"stream_id",
                                              jid=>"proxy.server",
-                                            timeout=>10); 
+                                            timeout=>10);
 
     $id = $Con->ByteStreamsProxyActivate(sid=>"stream_id",
                                          jid=>"proxy.server",
@@ -170,7 +170,7 @@ Net::Jabber::Protocol - Jabber Protocol Library
 
     $id = $Con->ByteStreamsProxyActivate(sid=>"stream_id",
                                          jid=>"proxy.server",
-                                        mode=>"passthru"); 
+                                        mode=>"passthru");
 
 
     $jid = $Con->ByteStreamsOffer(sid=>"stream_id",
@@ -181,11 +181,11 @@ Net::Jabber::Protocol - Jabber Protocol Library
                                                 },
                                                 ...
                                                ],
-                                  jid=>"bob\@jabber.org"); 
+                                  jid=>"bob\@jabber.org");
     $jid = $Con->ByteStreamsOffer(sid=>"stream_id",
                                   streamhosts=>[{},{},...],
                                   jid=>"bob\@jabber.org",
-                                  timeout=>10); 
+                                  timeout=>10);
 
     $id = $Con->ByteStreamsOffer(sid=>"stream_id",
                                  streamhosts=>[{},{},...],
@@ -196,7 +196,7 @@ Net::Jabber::Protocol - Jabber Protocol Library
                                  streamhosts=>[{},{},...],
                                  jid=>"bob\@jabber.org",
                                  mode=>"passthru");
- 
+
 =head2 Disco Functions
 
     %hash = $Con->DiscoInfoRequest(jid=>"jabber.org");
@@ -218,7 +218,7 @@ Net::Jabber::Protocol - Jabber Protocol Library
                                  node=>"node...",
                                  mode=>"passthru");
 
-    
+
     %hash = $Con->DiscoInfoParse($query);
 
 
@@ -232,12 +232,12 @@ Net::Jabber::Protocol - Jabber Protocol Library
     $id = $Con->DiscoItemsRequest(jid=>"jabber.org",
                                   mode=>"passthru");
 
-    
+
     %hash = $Con->DiscoItemsParse($query);
 
 =head2 Feature Negotiation Functions
 
-  
+
     %hash = $Con->FeatureNegRequest(jid=>"jabber.org",
                                     features=>{ feat1=>["opt1","opt2",...],
                                                 feat2=>["optA","optB",...]
@@ -258,7 +258,7 @@ Net::Jabber::Protocol - Jabber Protocol Library
     my $query = $self->FeatureNegQuery(\{ ... });
     $iq->AddQuery($query);
 
-    %hash = $Con->FeatureNegParse($query);  
+    %hash = $Con->FeatureNegParse($query);
 
 =head2 File Transfer Functions
 
@@ -567,7 +567,7 @@ Net::Jabber::Protocol - Jabber Protocol Library
 
                                     See DiscoInfoParse for the format
                                     of the resulting tree.
-                                    
+
                                     See MODES above for using the mode
                                     and timeout.
 
@@ -585,7 +585,7 @@ Net::Jabber::Protocol - Jabber Protocol Library
 
              $info{feature}->{http://jabber.org/protocol/disco#info} = 1;
              $info{feature}->{http://jabber.org/protocol/muc#admin} = 1;
-                                    
+
     DiscoItemsRequest(jid=>string, - sends a disco#items request to
                       mode=>string,  the jid passed as an argument.
                       timeout=>int)  Returns a hash with the resulting
@@ -593,7 +593,7 @@ Net::Jabber::Protocol - Jabber Protocol Library
 
                                      See DiscoItemsParse for the format
                                      of the resulting tree.
-                                    
+
                                      See MODES above for using the mode
                                      and timeout.
 
@@ -617,10 +617,10 @@ Net::Jabber::Protocol - Jabber Protocol Library
 
                                            See DiscoInfoQuery for the format
                                            of the features hash ref.
-                                    
+
                                            See DiscoInfoParse for the format
                                            of the resulting tree.
-                                    
+
                                            See MODES above for using the mode
                                            and timeout.
 
@@ -714,7 +714,7 @@ Net::Jabber::Protocol - Jabber Protocol Library
             methodName=>string,   builds the RPC calls and sends it
             params=>array,        to the specified address.  Returns
             mode=>string,         the above data from RPCParse.
-            timeout=>int)         
+            timeout=>int)
                                   See MODES above for using the mode
                                   and timeout.
 
@@ -779,7 +779,7 @@ Net::Jabber::Protocol - Jabber Protocol Library
                                  In $hash{form}, the fields that are
                                  present are the required fields the
                                  server needs.
-                                
+
                                  See MODES above for using the mode
                                  and timeout.
 
@@ -909,7 +909,7 @@ sub DefineNamespace
         if !exists($args{type});
     croak("You must specify functions=>'' for the function call to DefineNamespace")
         if !exists($args{functions});
-    
+
     my %xpath;
 
     my $tag;
@@ -958,7 +958,7 @@ sub DefineNamespace
                         {
                             $xpath{$name}->{$type}->{skip_xmlns} = 1;
                         }
-                        
+
                         if ($funcHash{$type}->[$i] eq "__netjabber__:specifyname")
                         {
                             $xpath{$name}->{$type}->{specify_name} = 1;
@@ -976,7 +976,7 @@ sub DefineNamespace
             }
             next;
         }
-        
+
         my $type = $funcHash{set}->[0];
         my $xpath = $funcHash{set}->[1];
         if (exists($funcHash{hash}))
@@ -992,13 +992,13 @@ sub DefineNamespace
             $xpath{$name}->{type} = $type;
             next;
         }
-        
+
         if ($type eq "scalar")
         {
             $xpath{$name}->{path} = $xpath;
             next;
         }
-        
+
         if ($type eq "flag")
         {
             $xpath{$name}->{type} = 'flag';
@@ -1094,7 +1094,7 @@ sub BrowseRequest
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -1130,7 +1130,7 @@ sub BrowseRequest
 #
 ###############################################################################
 sub BrowseParse
-{ 
+{
     my $self = shift;
     my $item = shift;
     my %browse;
@@ -1208,7 +1208,7 @@ sub BrowseDBQuery
 
 ###############################################################################
 #
-# ByteStreamsProxyRequest - This queries a proxy server to get a list of 
+# ByteStreamsProxyRequest - This queries a proxy server to get a list of
 #
 ###############################################################################
 sub ByteStreamsProxyRequest
@@ -1236,7 +1236,7 @@ sub ByteStreamsProxyRequest
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -1288,14 +1288,14 @@ sub ByteStreamsProxyParse
 
         push(@hosts,\%host);
     }
-    
+
     return \@hosts;
 }
 
 
 ###############################################################################
 #
-# ByteStreamsProxyActivate - This tells a proxy to activate the connection 
+# ByteStreamsProxyActivate - This tells a proxy to activate the connection
 #
 ###############################################################################
 sub ByteStreamsProxyActivate
@@ -1314,7 +1314,7 @@ sub ByteStreamsProxyActivate
     $query->SetByteStreams(sid=>$args{sid},
                            activate=>(ref($args{recipient}) eq "Net::Jabber::JID" ? $args{recipient}->GetJID("full") : $args{recipient})
                          );
-    
+
     #--------------------------------------------------------------------------
     # Send the IQ with the next available ID and wait for a reply with that
     # id to be received.  Then grab the IQ reply.
@@ -1326,9 +1326,9 @@ sub ByteStreamsProxyActivate
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
-    
+
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
 
     #--------------------------------------------------------------------------
@@ -1387,7 +1387,7 @@ sub ByteStreamsOffer
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -1446,7 +1446,7 @@ sub DiscoInfoRequest
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -1494,7 +1494,7 @@ sub DiscoInfoParse
     {
         $disco{feature}->{$feat->GetVar()} = 1;
     }
-    
+
     return \%disco;
 }
 
@@ -1530,7 +1530,7 @@ sub DiscoItemsRequest
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -1576,7 +1576,7 @@ sub DiscoItemsParse
     {
         $disco{$item->GetJID()}->{$item->GetNode()} = $item->GetName();
     }
-    
+
     return \%disco;
 }
 
@@ -1602,7 +1602,7 @@ sub FeatureNegRequest
     my $query = $self->FeatureNegQuery($args{features});
 
     $iq->AddQuery($query);
-    
+
     #--------------------------------------------------------------------------
     # Send the IQ with the next available ID and wait for a reply with that
     # id to be received.  Then grab the IQ reply.
@@ -1614,7 +1614,7 @@ sub FeatureNegRequest
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -1658,11 +1658,11 @@ sub FeatureNegQuery
     my $tag = "query";
     $tag = $Net::Jabber::Query::TAGS{'http://jabber.org/protocol/feature-neg'}
         if exists($Net::Jabber::Query::TAGS{'http://jabber.org/protocol/feature-neg'});
-    
+
     my $query = Net::Jabber::Query->new($tag);
     $query->SetXMLNS("http://jabber.org/protocol/feature-neg");
     my $xdata = $query->NewX("jabber:x:data");
-    
+
     foreach my $feature (keys(%{$features}))
     {
         my $field = $xdata->AddField(type=>"list-single",
@@ -1691,11 +1691,11 @@ sub FeatureNegParse
     my %feats;
 
     my $xdata = $item->GetX("jabber:x:data");
-    
+
     foreach my $field ($xdata->GetFields())
     {
         my @options;
-        
+
         foreach my $option ($field->GetOptions())
         {
             push(@options,$option->GetValue());
@@ -1703,7 +1703,7 @@ sub FeatureNegParse
 
         if ($#options == -1)
         {
-            
+
             $feats{$field->GetVar()} = $field->GetValue();
         }
         else
@@ -1711,7 +1711,7 @@ sub FeatureNegParse
             $feats{$field->GetVar()} = \@options;
         }
     }
-    
+
     return \%feats;
 }
 
@@ -1748,7 +1748,7 @@ sub FileTransferOffer
 
     $profile->SetFile(desc=>$args{desc}) if exists($args{desc});
 
-    $query->SetStream(mimetype=>(-B $args{filename} ? 
+    $query->SetStream(mimetype=>(-B $args{filename} ?
                                     "application/octect-stream" :
                                     "text/plain"
                                 ),
@@ -1780,7 +1780,7 @@ sub FileTransferOffer
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -1874,7 +1874,7 @@ sub TreeTransferOffer
         $tree{id} = $id;
         return %tree;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -1920,7 +1920,7 @@ sub TreeTransferDescend
     my $tree = shift;
 
     $tree->{size} += (-s $path);
-            
+
     opendir(DIR, $path);
     foreach my $file ( sort {$a cmp $b} readdir(DIR) )
     {
@@ -1938,7 +1938,7 @@ sub TreeTransferDescend
         else
         {
             $tree->{size} += (-s "$path/$file");
-            
+
             $tree->{tree}->{"$path/$file"}->{order} = $tree->{counter};
             $tree->{tree}->{"$path/$file"}->{sid} =
                 $sidbase."-".$tree->{counter};
@@ -1969,7 +1969,7 @@ sub LastQuery
     $args{waitforid} = 0 unless exists($args{waitforid});
     my $waitforid = delete($args{waitforid});
     $args{mode} = "block" if $waitforid;
-    
+
     my $timeout = exists($args{timeout}) ? delete($args{timeout}) : undef;
 
     my $iq = $self->_iq();
@@ -1984,7 +1984,7 @@ sub LastQuery
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -2135,7 +2135,7 @@ sub RPCCall
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -2426,7 +2426,7 @@ sub SearchRequest
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -2566,7 +2566,7 @@ sub TimeQuery
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -2623,7 +2623,7 @@ sub VersionQuery
     $args{waitforid} = 0 unless exists($args{waitforid});
     my $waitforid = delete($args{waitforid});
     $args{mode} = "block" if $waitforid;
-    
+
     my $timeout = exists($args{timeout}) ? delete($args{timeout}) : undef;
 
     my $iq = $self->_iq();
@@ -2638,7 +2638,7 @@ sub VersionQuery
         $self->Send($iq);
         return $id;
     }
-    
+
     return $self->SendWithID($iq) if ($args{mode} eq "nonblock");
 
     $iq = $self->SendAndReceiveWithID($iq,$timeout);
@@ -2697,7 +2697,7 @@ sub MUCJoin
     {
         $x->SetMUC(password=>$args{password});
     }
-    
+
     return $presence->GetXML() if exists($args{'__netjabber__:test'});
     $self->Send($presence);
 }
@@ -2748,7 +2748,7 @@ sub ExtractForms
                 {
                     $target->{form}->[$order]->{value} = ($field->GetValue())[0];
                 }
-            }  
+            }
             my $count = 0;
             foreach my $option ($field->GetOptions())
             {
@@ -2943,7 +2943,7 @@ sub callbackResultIQTime
     my $body = "UTC: ".$query->GetUTC()."\n";
     $body .=   "Time: ".$query->GetDisplay()."\n";
     $body .=   "Timezone: ".$query->GetTZ()."\n";
-    
+
     my $message = $self->_message();
     $message->SetMessage(to=>$iq->GetTo(),
                          from=>$iq->GetFrom(),
@@ -3069,7 +3069,7 @@ sub callbackResultIQLast
         $body .= "Message: ".$query->GetMessage()."\n"
             if ($query->DefinedMessage());
     }
-    
+
     my $message = $self->_message();
     $message->SetMessage(from=>$iq->GetFrom(),
                          subject=>"Last Activity",

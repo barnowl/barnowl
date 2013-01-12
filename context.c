@@ -23,8 +23,8 @@ int owl_context_matches(const owl_context *ctx, int test)
   /*owl_function_debugmsg(", current: 0x%04x test: 0x%04x\n", ctx->mode, test);*/
   if ((((ctx->mode&OWL_CTX_MODE_BITS) & test)
        || !(test&OWL_CTX_MODE_BITS))
-      && 
-      (((ctx->mode&OWL_CTX_ACTIVE_BITS) & test) 
+      &&
+      (((ctx->mode&OWL_CTX_ACTIVE_BITS) & test)
        || !(test&OWL_CTX_ACTIVE_BITS))) {
     return 1;
   } else {

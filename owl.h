@@ -73,7 +73,7 @@ typedef struct _owl_fake_HV HV;
 #endif
 #endif /* !OWL_VERSION_STRING */
 
-/* Feature that is being tested to redirect stderr through a pipe. 
+/* Feature that is being tested to redirect stderr through a pipe.
  * There may still be some portability problems with this. */
 #define OWL_STDERR_REDIR 1
 
@@ -242,17 +242,17 @@ typedef struct _owl_variable {
   void *val;                    /* current value */
   int  (*validate_fn)(const struct _owl_variable *v, const void *newval);
                                 /* returns 1 if newval is valid */
-  int  (*set_fn)(struct _owl_variable *v, const void *newval); 
+  int  (*set_fn)(struct _owl_variable *v, const void *newval);
                                 /* sets the variable to a value
 				 * of the appropriate type.
-				 * unless documented, this 
-				 * should make a copy. 
+				 * unless documented, this
+				 * should make a copy.
 				 * returns 0 on success. */
   int  (*set_fromstring_fn)(struct _owl_variable *v, const char *newval);
                                 /* sets the variable to a value
 				 * of the appropriate type.
-				 * unless documented, this 
-				 * should make a copy. 
+				 * unless documented, this
+				 * should make a copy.
 				 * returns 0 on success. */
   const void *(*get_fn)(const struct _owl_variable *v);
 				/* returns a reference to the current value.
@@ -312,7 +312,7 @@ typedef struct _owl_cmd {	/* command */
   /* Only one of these may be non-NULL ... */
 
   char *cmd_aliased_to;		/* what this command is aliased to... */
-  
+
   /* These don't take any context */
   CALLER_OWN char *(*cmd_args_fn)(int argc, const char *const *argv, const char *buff);
 				/* takes argv and the full command as buff.
@@ -405,14 +405,14 @@ typedef struct _owl_viewwin {
   gulong sig_status_redraw_id;
   owl_window *cmdwin;
 } owl_viewwin;
-  
+
 typedef struct _owl_popwin {
   owl_window *border;
   owl_window *content;
   gulong sig_redraw_id;
   gulong sig_resize_id;
 } owl_popwin;
-  
+
 typedef struct _owl_msgwin {
   char *msg;
   owl_window *window;

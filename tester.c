@@ -150,9 +150,9 @@ int owl_util_regtest(void)
   CHECK_STR_AND_FREE("owl_text_substitute 4", "/u/foo/meep",
                      owl_text_substitute("~/meep", "~", "/u/foo"));
 
-  FAIL_UNLESS("skiptokens 1", 
+  FAIL_UNLESS("skiptokens 1",
 	      !strcmp("bar quux", skiptokens("foo bar quux", 1)));
-  FAIL_UNLESS("skiptokens 2", 
+  FAIL_UNLESS("skiptokens 2",
 	      !strcmp("meep", skiptokens("foo 'bar quux' meep", 2)));
 
   CHECK_STR_AND_FREE("expand_tabs 1", "        hi", owl_text_expand_tabs("\thi"));
@@ -328,7 +328,7 @@ int owl_dict_regtest(void) {
   FAIL_UNLESS("get_size", 3==owl_dict_get_size(&d));
   l = owl_dict_get_keys(&d);
   FAIL_UNLESS("get_keys result size", 3 == l->len);
-  
+
   /* these assume the returned keys are sorted */
   FAIL_UNLESS("get_keys result val", 0 == strcmp("a", l->pdata[0]));
   FAIL_UNLESS("get_keys result val", 0 == strcmp("b", l->pdata[1]));

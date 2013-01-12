@@ -13,20 +13,20 @@
  * tracking of error messages by caching SNAC IDs of outgoing
  * ICBMs and comparing them to incoming errors.  However,
  * its a helluvalot of overhead for something that should
- * rarely happen.  
+ * rarely happen.
  *
  * Default: defined.  This is now defined by default
- * because it should be stable and its not too bad.  
+ * because it should be stable and its not too bad.
  * And Josh wanted it.
  *
  */
 #define USE_SNAC_FOR_IMS
 
 /*
- * Default Authorizer server name and TCP port for the OSCAR farm.  
+ * Default Authorizer server name and TCP port for the OSCAR farm.
  *
  * You shouldn't need to change this unless you're writing
- * your own server. 
+ * your own server.
  *
  * Note that only one server is needed to start the whole
  * AIM process.  The later server addresses come from

@@ -64,11 +64,11 @@ sub new
     while($#_ >= 0) { $args{ lc(pop(@_)) } = pop(@_); }
 
     $self->{CONNECTION} = $args{connection};
-    
+
     bless($self, $proto);
 
     $self->init();
-    
+
     return $self;
 }
 
@@ -171,7 +171,7 @@ sub fetchList
 {
     my $self = shift;
     my $list = shift;
-    
+
     my $iq = $self->{CONNECTION}->PrivacyListsGet(list=>$list);
     $self->handleIQ($iq);
 }
@@ -250,13 +250,13 @@ sub handleIQ
     if ($type eq "result")
     {
         my $query = $iq->GetChild("jabber:iq:privacy");
-        
+
         my @lists = $query->GetLists();
 
         return unless ($#lists > -1);
-        
+
         my @items = $lists[0]->GetItems();
-        
+
         if (($#lists == 0) && ($#items > -1))
         {
             $self->parseList($lists[0]);
@@ -273,13 +273,13 @@ sub parseList
 {
     my $self = shift;
     my $list = shift;
-    
+
     my $name = $list->GetName();
 
     foreach my $item ($list->GetItems())
     {
         my %item = $item->GetItem();
-        
+
         $self->addItem($name,%item);
     }
 }
@@ -289,7 +289,7 @@ sub parseLists
 {
     my $self = shift;
     my $lists = shift;
-    
+
     foreach my $list (@{$lists})
     {
         my $name = $list->GetName();
@@ -325,7 +325,7 @@ sub remove
     if ($self->exists($list))
     {
         $self->{CONNECTION}->{DEBUG}->Log3("PrivacyLists::remove: deleting $list from the DB");
-        
+
         delete($self->{LISTS}->{$list});
         delete($self->{LISTS}) if (scalar(keys(%{$self->{LISTS}})) == 0);
     }

@@ -5,11 +5,11 @@
  */
 
 #define FAIM_INTERNAL
-#include <aim.h> 
+#include <aim.h>
 
 faim_internal int aim_bstream_init(aim_bstream_t *bs, fu8_t *data, int len)
 {
-	
+
 	if (!bs)
 		return -1;
 
@@ -62,67 +62,67 @@ faim_internal int aim_bstream_advance(aim_bstream_t *bs, int n)
 
 faim_internal fu8_t aimbs_get8(aim_bstream_t *bs)
 {
-	
+
 	if (aim_bstream_empty(bs) < 1)
 		return 0; /* XXX throw an exception */
-	
+
 	bs->offset++;
-	
+
 	return aimutil_get8(bs->data + bs->offset - 1);
 }
 
 faim_internal fu16_t aimbs_get16(aim_bstream_t *bs)
 {
-	
+
 	if (aim_bstream_empty(bs) < 2)
 		return 0; /* XXX throw an exception */
-	
+
 	bs->offset += 2;
-	
+
 	return aimutil_get16(bs->data + bs->offset - 2);
 }
 
 faim_internal fu32_t aimbs_get32(aim_bstream_t *bs)
 {
-	
+
 	if (aim_bstream_empty(bs) < 4)
 		return 0; /* XXX throw an exception */
-	
+
 	bs->offset += 4;
-	
+
 	return aimutil_get32(bs->data + bs->offset - 4);
 }
 
 faim_internal fu8_t aimbs_getle8(aim_bstream_t *bs)
 {
-	
+
 	if (aim_bstream_empty(bs) < 1)
 		return 0; /* XXX throw an exception */
-	
+
 	bs->offset++;
-	
+
 	return aimutil_getle8(bs->data + bs->offset - 1);
 }
 
 faim_internal fu16_t aimbs_getle16(aim_bstream_t *bs)
 {
-	
+
 	if (aim_bstream_empty(bs) < 2)
 		return 0; /* XXX throw an exception */
-	
+
 	bs->offset += 2;
-	
+
 	return aimutil_getle16(bs->data + bs->offset - 2);
 }
 
 faim_internal fu32_t aimbs_getle32(aim_bstream_t *bs)
 {
-	
+
 	if (aim_bstream_empty(bs) < 4)
 		return 0; /* XXX throw an exception */
-	
+
 	bs->offset += 4;
-	
+
 	return aimutil_getle32(bs->data + bs->offset - 4);
 }
 

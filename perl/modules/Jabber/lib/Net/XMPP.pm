@@ -39,7 +39,7 @@ Net::XMPP - XMPP Perl Library
   Net::XMPP is a convenient tool to use for any perl script that would
   like to utilize the XMPP Instant Messaging protocol.  While not a
   client in and of itself, it provides all of the necessary back-end
-  functions to make a CGI client or command-line perl client feasible 
+  functions to make a CGI client or command-line perl client feasible
   and easy to use.  Net::XMPP is a wrapper around the rest of the
   official Net::XMPP::xxxxxx packages.
 
