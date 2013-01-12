@@ -106,7 +106,7 @@ void owl_help(void)
      "    getsubs       Print a list of current subscriptions\n"
      "    unsuball      Unsubscribe from all zephyr classes\n"
      "    load-subs     Load zephyr subscriptions from a file\n"
-     "    zpunt         Supress messages from a zephyr triplet\n"
+     "    zpunt         Suppress messages from a zephyr triplet\n"
      "    zlog          Send a login or logout notification\n"
      "    zlist         Print a list of zephyr buddies logged in\n"
      "    alist         Print a list of AIM buddies logged in\n"
