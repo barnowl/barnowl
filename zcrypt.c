@@ -865,6 +865,7 @@ int do_decrypt_aes(const char *keyfile) {
   if(!in) return FALSE;
 
   err = call_filter(argv, in, &out, &status);
+  free(in);
   if(err || status) {
     g_free(out);
     return FALSE;
