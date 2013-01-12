@@ -1032,7 +1032,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 
   OWLCMD_ARGS_CTX("popless:start-search", owl_viewwin_command_start_search, OWL_CTX_POPLESS,
 		  "starts a command line to search for particular string",
-		  "popless:start-search [-r] [inital-value]",
+		  "popless:start-search [-r] [initial-value]",
 		  "Initializes the command-line to search for initial-value. If\n"
 		  "-r is used, the search will be performed backwards.\n\n"
                   "SEE ALSO: popless:search"),
@@ -2189,7 +2189,7 @@ char *owl_command_view(int argc, const char *const *argv, const char *buff)
   while (argc) {
     if (!strcmp(argv[0], "-f")) {
       if (argc<2) {
-	owl_function_makemsg("Too few argments to the view command");
+	owl_function_makemsg("Too few arguments to the view command");
 	return(NULL);
       }
       owl_function_change_currentview_filter(argv[1]);
@@ -2201,14 +2201,14 @@ char *owl_command_view(int argc, const char *const *argv, const char *buff)
       argv++;
     } else if (!strcmp(argv[0], "-s")) {
       if (argc<2) {
-	owl_function_makemsg("Too few argments to the view command");
+	owl_function_makemsg("Too few arguments to the view command");
 	return(NULL);
       }
       owl_function_change_style(owl_global_get_current_view(&g), argv[1]);
       argc-=2;
       argv+=2;
     } else {
-      owl_function_makemsg("Too few argments to the view command");
+      owl_function_makemsg("Too few arguments to the view command");
       return(NULL);
     }
     

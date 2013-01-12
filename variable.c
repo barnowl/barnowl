@@ -353,7 +353,7 @@ int owl_variable_add_defaults(owl_vardict *vd)
 
   OWLVAR_BOOL( "narrow-related" /* %OwlVarStub:narrow_related */, 1,
                "Make smartnarrow use broader filters",
-               "Causes smartfiler to narrow to messages \"related\" to \n"
+               "Causes smartfilter to narrow to messages \"related\" to \n"
                "the current message, as well as ones to the same place.\n\n"
                "for Zephyr, this controls whether to narrow to e.g. class-help or\n"
                "class-help.d alone, or to related-class-help, which includes\n"
