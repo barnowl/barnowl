@@ -95,15 +95,6 @@ zephyr_getsender()
 	OUTPUT:
 		RETVAL
 
-void
-zephyr_zwrite(cmd,msg)
-	const char *cmd
-	const char *msg
-	PREINIT:
-		int i;
-	CODE:
-		i = owl_zwrite_create_and_send_from_line(cmd, msg);
-
 const utf8 *
 ztext_stylestrip(ztext)
 	const char *ztext
@@ -473,6 +464,15 @@ start_edit(edit_type, line, callback)
 		owl_editwin_set_cbdata(e, newSVsv(callback), owl_perlconfig_dec_refcnt);
 		owl_editwin_set_callback(e, owl_perlconfig_edit_callback);
 	}
+
+int
+zephyr_zwrite(cmd,msg)
+	const char *cmd
+	const char *msg
+	CODE:
+		RETVAL = owl_zwrite_create_and_send_from_line(cmd, msg);
+	OUTPUT:
+		RETVAL
 
 MODULE = BarnOwl		PACKAGE = BarnOwl::Editwin
 
