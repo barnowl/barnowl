@@ -132,7 +132,7 @@ int owl_regtest(void) {
 int owl_util_regtest(void)
 {
   int numfailed=0;
-  char *s, *path, *home;
+  char *path, *home;
 
   printf("# BEGIN testing owl_util\n");
 
@@ -228,55 +228,41 @@ int owl_util_regtest(void)
   g_string_free(quoted, true);
 
 
-  s = owl_util_baseclass("barnowl");
-  FAIL_UNLESS("baseclass barnowl", !strcmp("barnowl", s));
-  g_free(s);
-  s = owl_util_baseclass("unbarnowl");
-  FAIL_UNLESS("baseclass unbarnowl", !strcmp("barnowl", s));
-  g_free(s);
-  s = owl_util_baseclass("unununbarnowl.d.d");
-  FAIL_UNLESS("baseclass unununbarnowl.d.d", !strcmp("barnowl", s));
-  g_free(s);
-  s = owl_util_baseclass("ununun.d.d");
-  FAIL_UNLESS("baseclass ununun.d.d", !strcmp("", s));
-  g_free(s);
-  s = owl_util_baseclass("d.d.d.d");
-  FAIL_UNLESS("baseclass d.d.d.d", !strcmp("d", s));
-  g_free(s);
-  s = owl_util_baseclass("n.d.d.d");
-  FAIL_UNLESS("baseclass n.d.d.d", !strcmp("n", s));
-  g_free(s);
-  s = owl_util_baseclass("ununun.");
-  FAIL_UNLESS("baseclass ununun.", !strcmp(".", s));
-  g_free(s);
-  s = owl_util_baseclass("unununu");
-  FAIL_UNLESS("baseclass unununu", !strcmp("u", s));
-  g_free(s);
+  CHECK_STR_AND_FREE("baseclass barnowl",
+                     "barnowl", owl_util_baseclass("barnowl"));
+  CHECK_STR_AND_FREE("baseclass unbarnowl",
+                     "barnowl", owl_util_baseclass("unbarnowl"));
+  CHECK_STR_AND_FREE("baseclass unununbarnowl.d.d",
+                     "barnowl", owl_util_baseclass("unununbarnowl.d.d"));
+  CHECK_STR_AND_FREE("baseclass ununun.d.d",
+                     "", owl_util_baseclass("ununun.d.d"));
+  CHECK_STR_AND_FREE("baseclass d.d.d.d",
+                     "d", owl_util_baseclass("d.d.d.d"));
+  CHECK_STR_AND_FREE("baseclass n.d.d.d",
+                     "n", owl_util_baseclass("n.d.d.d"));
+  CHECK_STR_AND_FREE("baseclass ununun.",
+                     ".", owl_util_baseclass("ununun."));
+  CHECK_STR_AND_FREE("baseclass unununu",
+                     "u", owl_util_baseclass("unununu"));
 
 
-  s = owl_util_makepath("foo/bar");
-  FAIL_UNLESS("makepath foo/bar", !strcmp("foo/bar", s));
-  g_free(s);
-  s = owl_util_makepath("//foo///bar");
-  FAIL_UNLESS("makepath //foo///bar", !strcmp("/foo/bar", s));
-  g_free(s);
-  s = owl_util_makepath("foo/~//bar/");
-  FAIL_UNLESS("makepath foo/~//bar/", !strcmp("foo/~/bar/", s));
-  g_free(s);
-  s = owl_util_makepath("~thisuserhadreallybetternotexist/foobar/");
-  FAIL_UNLESS("makepath ~thisuserhadreallybetternotexist/foobar/",
-              !strcmp("~thisuserhadreallybetternotexist/foobar/", s));
-  g_free(s);
+  CHECK_STR_AND_FREE("makepath foo/bar",
+                     "foo/bar", owl_util_makepath("foo/bar"));
+  CHECK_STR_AND_FREE("makepath //foo///bar",
+                     "/foo/bar", owl_util_makepath("//foo///bar"));
+  CHECK_STR_AND_FREE("makepath foo/~//bar/",
+                     "foo/~/bar/", owl_util_makepath("foo/~//bar/"));
+  CHECK_STR_AND_FREE("makepath ~thisuserhadreallybetternotexist/foobar/",
+                     "~thisuserhadreallybetternotexist/foobar/",
+                     owl_util_makepath("~thisuserhadreallybetternotexist/foobar/"));
 
   home = g_strdup(owl_global_get_homedir(&g));
-  s = owl_util_makepath("~");
-  FAIL_UNLESS("makepath ~", !strcmp(home, s));
-  g_free(s);
+  CHECK_STR_AND_FREE("makepath ~",
+                     home, owl_util_makepath("~"));
 
   path = g_build_filename(home, "foo/bar/baz", NULL);
-  s = owl_util_makepath("~///foo/bar//baz");
-  FAIL_UNLESS("makepath ~///foo/bar//baz", !strcmp(path, s));
-  g_free(s);
+  CHECK_STR_AND_FREE("makepath ~///foo/bar//baz",
+                     path, owl_util_makepath("~///foo/bar//baz"));
   g_free(path);
   g_free(home);
 
@@ -287,14 +273,12 @@ int owl_util_regtest(void)
     fprintf(stderr, "owl_util_homedir_for_user failed");
   }
 
-  s = owl_util_makepath("~root");
-  FAIL_UNLESS("makepath ~root", !strcmp(home, s));
-  g_free(s);
+  CHECK_STR_AND_FREE("makepath ~root",
+                     home, owl_util_makepath("~root"));
 
   path = g_build_filename(home, "foo/bar/baz", NULL);
-  s = owl_util_makepath("~root///foo/bar//baz");
-  FAIL_UNLESS("makepath ~root///foo/bar//baz", !strcmp(path, s));
-  g_free(s);
+  CHECK_STR_AND_FREE("makepath ~root///foo/bar//baz",
+                     path, owl_util_makepath("~root///foo/bar//baz"));
   g_free(path);
   g_free(home);
 
