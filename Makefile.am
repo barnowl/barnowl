@@ -25,9 +25,9 @@ barnowl tester: %: barnowl-wrapper.in %.bin Makefile
 	chmod +x $@
 
 barnowl_bin_SOURCES = $(BASE_SRCS) \
-     owl.h owl_perl.h config.h \
-     owl.c \
-     $(GEN_C) $(GEN_H)
+     owl.h owl_perl.h \
+     owl.c
+nodist_barnowl_bin_SOURCES = $(GEN_C) $(GEN_H)
 
 dist_man_MANS = doc/barnowl.1
 dist_doc_DATA = doc/intro.txt doc/advanced.txt
@@ -35,9 +35,9 @@ dist_doc_DATA = doc/intro.txt doc/advanced.txt
 barnowl_bin_LDADD = compat/libcompat.a libfaim/libfaim.a
 
 tester_bin_SOURCES = $(BASE_SRCS) \
-     owl.h owl_perl.h config.h \
-     $(GEN_C) $(GEN_H) \
+     owl.h owl_perl.h \
      tester.c
+nodist_tester_bin_SOURCES = $(GEN_C) $(GEN_H)
 
 tester_bin_LDADD = compat/libcompat.a libfaim/libfaim.a
 
