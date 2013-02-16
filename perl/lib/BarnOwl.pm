@@ -425,55 +425,96 @@ A longer description of the function of the variable
 =cut
 
 sub new_variable_int {
-    unshift @_, 0, "<int>", 0, sub { "$_[0]" }, # to string
-                               sub { $_[0] =~ /^-?[0-9]+$/ }, # validate
-                               sub { 0 + $_[0] }; # from string
-    goto \&_new_variable;
+    my ($name, $args) = @_;
+    my $storage = defined($args->{default}) ? $args->{default} : 0;
+    BarnOwl::new_variable_full($name, {
+            %{$args},
+            get_tostring => sub { "$storage" },
+            set_fromstring => sub {
+                return -1 unless $_[0] =~ /^-?[0-9]+$/;
+                $storage = 0 + $_[0];
+                return 0;
+            },
+            validsettings => "<int>",
+            takes_on_off => 0,
+        });
 }
 
 sub new_variable_bool {
-    unshift @_, 0, "on,off", 1, sub { $_[0] ? "on" : "off" }, # to string
-                                sub { $_[0] eq "on" || $_[0] eq "off" }, # validate
-                                sub { $_[0] eq "on" }; # from string
-    goto \&_new_variable;
+    my ($name, $args) = @_;
+    my $storage = defined($args->{default}) ? $args->{default} : 0;
+    BarnOwl::new_variable_full($name, {
+            %{$args},
+            get_tostring => sub { $storage ? "on" : "off" },
+            set_fromstring => sub {
+                return -1 unless $_[0] eq "on" || $_[0] eq "off";
+                $storage = $_[0] eq "on";
+                return 0;
+            },
+            validsettings => "on,off",
+            takes_on_off => 1,
+        });
 }
 
 sub new_variable_string {
-    unshift @_, "", "<string>", 0, sub { $_[0] }, # to string
-                                   sub { 1 }, # validate
-                                   sub { $_[0] }; # from string
-    goto \&_new_variable;
+    my ($name, $args) = @_;
+    my $storage = defined($args->{default}) ? $args->{default} : "";
+    BarnOwl::new_variable_full($name, {
+            %{$args},
+            get_tostring => sub { $storage },
+            set_fromstring => sub {
+                $storage = $_[0];
+                return 0;
+            },
+            validsettings => "<string>",
+            takes_on_off => 0,
+        });
 }
 
-sub _new_variable {
-    my $default_default = shift;
-    my $validsettings = shift;
-    my $takes_on_off = shift;
-    my $tostring_fn = shift;
-    my $validate_fn = shift;
-    my $fromstring_fn = shift;
+=head2 new_variable_full NAME {ARGS}
 
+Create a variable, in full generality. The keyword arguments have types below:
+
+ get_tostring : ()  -> string
+ set_fromstring : string -> int
+ -- optional --
+ summary : string
+ description : string
+ validsettings : string
+ takes_on_off : int
+
+The get/set functions are required. Note that the caller manages storage for the
+variable. get_tostring/set_fromstring both convert AND store the value.
+set_fromstring returns 0 on success.
+
+If the variable takes parameters 'on' and 'off' (i.e. is boolean-looking), set
+takes_on_off to 1. This makes :set VAR and :unset VAR work. set_fromstring will
+be called with those arguments.
+
+=cut
+
+sub new_variable_full {
     my $name = shift;
     my $args = shift || {};
     my %args = (
-        summary     => "",
+        summary => "",
         description => "",
-        default     => $default_default,
+        takes_on_off => 0,
+        validsettings => "<string>",
         %{$args});
 
-    # Store the value in a closure.
-    my $value = $args{default};
+    die "get_tostring required" unless $args{get_tostring};
+    die "set_fromstring required" unless $args{set_fromstring};
 
-    my $get_tostring_fn = sub { $tostring_fn->($value) };
+    # Strip off the bogus dummy argument. Aargh perl-Glib.
+    my $get_tostring_fn = sub { $args{get_tostring}->() };
     my $set_fromstring_fn = sub {
-      my ($dummy, $newval) = @_;
-      return -1 unless $validate_fn->($newval);
-      $value = $fromstring_fn->($newval);
-      return 0;
+      my ($dummy, $val) = @_;
+      $args{set_fromstring}->($val);
     };
 
-    BarnOwl::Internal::new_variable($name, $args{summary}, $args{description}, $validsettings,
-                                    $takes_on_off, $get_tostring_fn, $set_fromstring_fn, undef);
+    BarnOwl::Internal::new_variable($name, $args{summary}, $args{description}, $args{validsettings},
+                                    $args{takes_on_off}, $get_tostring_fn, $set_fromstring_fn, undef);
 }
 
 =head2 quote LIST
