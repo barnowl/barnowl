@@ -17,6 +17,7 @@ our @EXPORT_OK = qw(command getcurmsg getnumcols getnumlines getidletime
                     add_io_dispatch remove_io_dispatch
                     new_command
                     new_variable_int new_variable_bool new_variable_string
+                    new_variable_enum
                     quote redisplay);
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -401,10 +402,14 @@ sub new_command {
 
 =head2 new_variable_string NAME [{ARGS}]
 
-Add a new owl variable, either an int, a bool, or a string, with the
+=head2 new_variable_enum NAME [{ARGS}]
+
+Add a new owl variable, either an int, a bool, a string, or an enum with the
 specified name.
 
-ARGS can optionally contain the following keys:
+For new_variable_enum, ARGS is required to contain a validsettings key pointing
+to an array reference. For all four, it can optionally contain the following
+keys:
 
 =over 4
 
@@ -468,6 +473,29 @@ sub new_variable_string {
             },
             validsettings => "<string>",
             takes_on_off => 0,
+        });
+}
+
+sub new_variable_enum {
+    my ($name, $args) = @_;
+
+    # Gather the valid settings.
+    die "validsettings is required" unless defined($args->{validsettings});
+    my %valid;
+    map { $valid{$_} = 1 } @{$args->{validsettings}};
+
+    my $storage = (defined($args->{default}) ?
+                   $args->{default} :
+                   $args->{validsettings}->[0]);
+    BarnOwl::new_variable_full($name, {
+            %{$args},
+            get_tostring => sub { $storage },
+            set_fromstring => sub {
+                return -1 unless $valid{$_[0]};
+                $storage = $_[0];
+                return 0;
+            },
+            validsettings => join(",", @{$args->{validsettings}})
         });
 }
 
