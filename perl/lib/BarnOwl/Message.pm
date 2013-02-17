@@ -3,6 +3,8 @@ use warnings;
 
 package BarnOwl::Message;
 
+use File::Spec;
+
 use BarnOwl::Message::Admin;
 use BarnOwl::Message::AIM;
 use BarnOwl::Message::Generic;
@@ -164,22 +166,22 @@ sub log_body {
 =head2 log_filenames MESSAGE
 
 Returns a list of filenames to which this message should be logged.
-The filenames should be relative to the path returned by
-C<log_base_path>.  See L<BarnOwl::Logging::get_filenames> for the
-specification of valid filenames, and for what happens if this
-method returns an invalid filename.
+The filenames should be relative to the path returned by C<log_path>.
+See L<BarnOwl::Logging::get_filenames> for the specification of valid
+filenames, and for what happens if this method returns an invalid
+filename.
 
 =cut
 
 sub log_filenames {
     my ($m) = @_;
-    my $filename = lc($m->type);
-    $filename = "unknown" if !defined $filename || $filename eq '';
-    if ($m->is_incoming && $m->pretty_sender) {
-        $filename .= ":" . $m->pretty_sender;
-    } elsif ($m->is_outgoing && $m->pretty_recipient) {
-        $filename .= ":" . $m->pretty_recipient;
+    my $filename;
+    if ($m->is_incoming) {
+        $filename = $m->pretty_sender;
+    } elsif ($m->is_outgoing) {
+        $filename = $m->pretty_recipient;
     }
+    $filename = "unknown" if !defined($filename) || $filename eq '';
     return ($filename);
 }
 
@@ -198,17 +200,41 @@ sub log_to_all_file {
     return $m->is_outgoing;
 }
 
+=head2 log_path MESSAGE
+
+Returns the folder in which all messages of this class get logged.
+
+Defaults to C<log_base_path>/C<log_subfolder>.
+
+=cut
+
+sub log_path {
+    my ($m) = @_;
+    return File::Spec->catfile($m->log_base_path, $m->log_subfolder);
+}
+
 =head2 log_base_path MESSAGE
 
-Returns the base path for logging, the folder in which all messages
-of this class get logged.
+Returns the base path for logging.  See C<log_path> for more information.
 
-Defaults to the BarnOwl variable C<logpath>.
+Defaults to the BarnOwl variable C<logbasepath>.
 
 =cut
 
 sub log_base_path {
-    return BarnOwl::getvar('logpath');
+    return BarnOwl::getvar('logbasepath');
+}
+
+=head2 log_subfolder MESSAGE
+
+Returns the subfolder of C<log_base_path> to log messages in.
+
+Defaults to C<lc($m->type)>.
+
+=cut
+
+sub log_subfolder {
+    return lc(shift->type);
 }
 
 =head2 log_outgoing_error MESSAGE

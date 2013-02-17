@@ -273,7 +273,7 @@ sub log_to_class_file {
     return !$m->is_personal;
 }
 
-sub log_base_path {
+sub log_path {
     my ($m) = @_;
     if ($m->log_to_class_file) {
         return BarnOwl::getvar('classlogpath');
