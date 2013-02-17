@@ -90,6 +90,16 @@ sub _register_variables {
                            . "logged."
         });
 
+    BarnOwl::new_variable_string('logbasepath',
+        {
+            default       => '~/zlog',
+            validsettings => '<path>',
+            summary       => 'path for logging non-zephyr messages',
+            description   => "Specifies a directory which must exist.\n"
+                           . "Each non-zephyr protocol gets its own subdirectory in\n"
+                           . "logbasepath, and messages get logged there."
+        });
+
     BarnOwl::new_variable_string('logpath',
         {
             default       => '~/zlog/people',
@@ -140,7 +150,7 @@ Returns a list of filenames in which to log the passed message.
 
 This method calls C<log_filenames> on C<MESSAGE> to determine the list
 of filenames to which C<MESSAGE> gets logged.  All filenames are
-relative to C<MESSAGE->log_base_path>.  If C<MESSAGE->log_to_all_file>
+relative to C<MESSAGE->log_path>.  If C<MESSAGE->log_to_all_file>
 returns true, then the filename C<"all"> is appended to the list of
 filenames.
 
@@ -152,7 +162,7 @@ sub get_filenames {
     my ($m) = @_;
     my @filenames = $m->log_filenames;
     push @filenames, 'all' if $m->log_to_all_file;
-    return map { sanitize_filename($m->log_base_path, $_) } @filenames;
+    return map { sanitize_filename($m->log_path, $_) } @filenames;
 }
 
 =head2 should_log_message MESSAGE
