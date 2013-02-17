@@ -97,7 +97,9 @@ sub _register_variables {
             summary       => 'path for logging non-zephyr messages',
             description   => "Specifies a directory which must exist.\n"
                            . "Each non-zephyr protocol gets its own subdirectory in\n"
-                           . "logbasepath, and messages get logged there."
+                           . "logbasepath, and messages get logged there.  Note that\n"
+                           . "if the directory logbasepath/\$protocol does not exist,\n"
+                           . "logging will fail for \$protocol."
         });
 
     BarnOwl::new_variable_string('logpath',
