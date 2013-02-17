@@ -96,7 +96,7 @@ sub log_filenames {
     my ($m) = @_;
     die "IRC should not be handling non-IRC messages" if lc($m->type) ne "irc";
     BarnOwl::error("IRC message without a network") if !defined($m->network) || $m->network eq '';
-    my $filename = lc($m->type) . ":" . lc($m->network);
+    my $filename = lc($m->network);
     if ($m->is_personal) {
         if ($m->is_incoming) {
             $filename .= ":" . $m->sender;
