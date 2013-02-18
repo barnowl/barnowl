@@ -290,7 +290,6 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
   int count;
   struct stat statbuff;
 
-  subs = g_new(ZSubscription_t, subSize);
   subsfile = owl_zephyr_dotfile(".zephyr.subs", filename);
 
   if (stat(subsfile, &statbuff) != 0) {
@@ -306,6 +305,8 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
   g_free(subsfile);
   if (!file)
     return -1;
+
+  subs = g_new(ZSubscription_t, subSize);
   while (owl_getline(&buffer, file)) {
     if (buffer[0] == '#' || buffer[0] == '\n')
 	continue;
