@@ -241,29 +241,29 @@ typedef struct _owl_variable {
   bool takes_on_off;            /* allow passing on/off in argument-less set/unset */
   GClosure *set_fromstring_fn;
                                 /* sets the variable to a value
-				 * of the appropriate type.
-				 * unless documented, this 
-				 * should make a copy. 
-				 * returns 0 on success. */
+                                 * of the appropriate type.
+                                 * unless documented, this
+                                 * should make a copy.
+                                 * returns 0 on success. */
   GClosure *get_tostring_fn;
                                 /* converts val to a string;
-				 * caller must free the result */
+                                 * caller must free the result */
 
   /* These are only valid for OWL_VARIABLE_{INT,BOOL,STRING} */
   GValue val;                   /* current value, if default get_fn/set_fn */
 
   GCallback get_fn;
-				/* returns a reference to the current value.
-				 * WARNING:  this approach is hard to make
-				 * thread-safe... */
+                                /* returns a reference to the current value.
+                                 * WARNING:  this approach is hard to make
+                                 * thread-safe... */
   GCallback validate_fn;
                                 /* returns 1 if newval is valid */
   GCallback set_fn;
                                 /* sets the variable to a value
-				 * of the appropriate type.
-				 * unless documented, this 
-				 * should make a copy. 
-				 * returns 0 on success. */
+                                 * of the appropriate type.
+                                 * unless documented, this
+                                 * should make a copy.
+                                 * returns 0 on success. */
 } owl_variable;
 
 
