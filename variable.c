@@ -812,12 +812,7 @@ int owl_variable_set_fromstring(owl_variable *v, const char *value, int msg) {
   char *tostring;
   GValue values[] = {G_VALUE_INIT, G_VALUE_INIT};
   GValue return_box = G_VALUE_INIT;
-
-  int set_successfully = -1;
-  if (!v->set_fromstring_fn) {
-    if (msg) owl_function_error("Variable %s is read-only", owl_variable_get_name(v));
-    return -1;   
-  }
+  int set_successfully;
 
   g_value_init(&values[0], G_TYPE_POINTER);
   g_value_set_pointer(&values[0], NULL);
