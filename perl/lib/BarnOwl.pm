@@ -436,9 +436,8 @@ sub new_variable_int {
             %{$args},
             get_tostring => sub { "$storage" },
             set_fromstring => sub {
-                return -1 unless $_[0] =~ /^-?[0-9]+$/;
+                die "Expected integer" unless $_[0] =~ /^-?[0-9]+$/;
                 $storage = 0 + $_[0];
-                return 0;
             },
             validsettings => "<int>",
             takes_on_off => 0,
@@ -452,9 +451,8 @@ sub new_variable_bool {
             %{$args},
             get_tostring => sub { $storage ? "on" : "off" },
             set_fromstring => sub {
-                return -1 unless $_[0] eq "on" || $_[0] eq "off";
+                die "Valid settings are on/off" unless $_[0] eq "on" || $_[0] eq "off";
                 $storage = $_[0] eq "on";
-                return 0;
             },
             validsettings => "on,off",
             takes_on_off => 1,
@@ -467,10 +465,7 @@ sub new_variable_string {
     BarnOwl::new_variable_full($name, {
             %{$args},
             get_tostring => sub { $storage },
-            set_fromstring => sub {
-                $storage = $_[0];
-                return 0;
-            },
+            set_fromstring => sub { $storage = $_[0]; },
             validsettings => "<string>",
             takes_on_off => 0,
         });
@@ -491,9 +486,8 @@ sub new_variable_enum {
             %{$args},
             get_tostring => sub { $storage },
             set_fromstring => sub {
-                return -1 unless $valid{$_[0]};
+                die "Invalid input" unless $valid{$_[0]};
                 $storage = $_[0];
-                return 0;
             },
             validsettings => join(",", @{$args->{validsettings}})
         });
@@ -513,7 +507,7 @@ Create a variable, in full generality. The keyword arguments have types below:
 
 The get/set functions are required. Note that the caller manages storage for the
 variable. get_tostring/set_fromstring both convert AND store the value.
-set_fromstring returns 0 on success.
+set_fromstring dies on failure.
 
 If the variable takes parameters 'on' and 'off' (i.e. is boolean-looking), set
 takes_on_off to 1. This makes :set VAR and :unset VAR work. set_fromstring will
@@ -538,7 +532,13 @@ sub new_variable_full {
     my $get_tostring_fn = sub { $args{get_tostring}->() };
     my $set_fromstring_fn = sub {
       my ($dummy, $val) = @_;
-      $args{set_fromstring}->($val);
+      # Translate from user-supplied die-on-failure callback to expected
+      # non-zero on error. Less of a nuisance than interacting with ERRSV.
+      eval { $args{set_fromstring}->($val) };
+      # TODO: Consider changing B::I::new_variable to expect string|NULL with
+      # string as the error message. That can then be translated to a GError in
+      # owl_variable_set_fromstring. For now the string is ignored.
+      return ($@ ? -1 : 0);
     };
 
     BarnOwl::Internal::new_variable($name, $args{summary}, $args{description}, $args{validsettings},

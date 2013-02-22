@@ -61,9 +61,8 @@ BarnOwl::new_variable_full("fullvar", {
     validsettings => '<short-words>',
     get_tostring => sub { "value is " . $value },
     set_fromstring => sub {
-	return -1 unless $_[0] =~ /^...?$/;
+	die "Too long" unless $_[0] =~ /^...?$/;
 	$value = $_[0];
-	return 0;
     },
     takes_on_off => 1
 });
