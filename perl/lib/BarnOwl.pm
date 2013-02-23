@@ -427,6 +427,9 @@ A longer description of the function of the variable
 
 =back
 
+In addition, new_variable_string optionally accepts a string validsettings
+parameter, in case people want to set it to "<path>".
+
 =cut
 
 sub new_variable_int {
@@ -463,10 +466,13 @@ sub new_variable_string {
     my ($name, $args) = @_;
     my $storage = defined($args->{default}) ? $args->{default} : "";
     BarnOwl::new_variable_full($name, {
+            # Allow people to override this one if they /reaaally/ want to for
+            # some reason. Though we still reserve the right to interpret this
+            # value in interesting ways for tab-completion purposes.
+            validsettings => "<string>",
             %{$args},
             get_tostring => sub { $storage },
             set_fromstring => sub { $storage = $_[0]; },
-            validsettings => "<string>",
             takes_on_off => 0,
         });
 }
