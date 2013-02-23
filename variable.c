@@ -92,7 +92,7 @@ static void owl_variable_dict_newvar_enum_full(owl_vardict *vd,
         owl_variable_dict_newvar_enum_full(vd, name, default, summary, description, \
                                            validset, validate, set, get)
 
-int owl_variable_add_defaults(owl_vardict *vd)
+void owl_variable_add_defaults(owl_vardict *vd)
 {
   OWLVAR_STRING( "personalbell" /* %OwlVarStub */, "off",
 		 "ring the terminal bell when personal messages are received",
@@ -474,7 +474,6 @@ int owl_variable_add_defaults(owl_vardict *vd)
                       "                     personal subscriptions will be entered for the\n"
                       "                     user.\n",
                       NULL, owl_variable_exposure_set, NULL /* use default for get */ );
-  return 0;
 }
 
 /**************************************************************************/
@@ -595,9 +594,9 @@ int owl_variable_exposure_set(owl_variable *v, const char *newval)
 /****************************** GENERAL ***********************************/
 /**************************************************************************/
 
-int owl_variable_dict_setup(owl_vardict *vd) {
+void owl_variable_dict_setup(owl_vardict *vd) {
   owl_dict_create(vd);
-  return owl_variable_add_defaults(vd);
+  owl_variable_add_defaults(vd);
 }
 
 CALLER_OWN GClosure *owl_variable_make_closure(owl_variable *v,

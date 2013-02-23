@@ -338,7 +338,7 @@ int owl_variable_regtest(void) {
   char *value;
 
   printf("# BEGIN testing owl_variable\n");
-  FAIL_UNLESS("setup", 0==owl_variable_dict_setup(&vd));
+  owl_variable_dict_setup(&vd);
 
   FAIL_UNLESS("get bool var", NULL != (var = owl_variable_get_var(&vd, "rxping")));
   FAIL_UNLESS("get bool", 0 == owl_variable_get_bool(var));
