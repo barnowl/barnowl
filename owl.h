@@ -234,36 +234,38 @@ static inline const char *const *strs(char *const *pstr)
 typedef struct _owl_variable {
   char *name;
   int   type;  /* OWL_VARIABLE_* */
-  void *pval_default;  /* for types other and string */
-  int   ival_default;  /* for types int and bool     */
-  const char *validsettings;	/* documentation of valid settings */
+  char *default_str;            /* the default value as a string */
+  char *validsettings;	        /* documentation of valid settings */
   char *summary;		/* summary of usage */
   char *description;		/* detailed description */
-  void *val;                    /* current value */
-  int  (*validate_fn)(const struct _owl_variable *v, const void *newval);
-                                /* returns 1 if newval is valid */
-  int  (*set_fn)(struct _owl_variable *v, const void *newval); 
+  bool takes_on_off;            /* allow passing on/off in argument-less set/unset */
+  GClosure *set_fromstring_fn;
                                 /* sets the variable to a value
-				 * of the appropriate type.
-				 * unless documented, this 
-				 * should make a copy. 
-				 * returns 0 on success. */
-  int  (*set_fromstring_fn)(struct _owl_variable *v, const char *newval);
-                                /* sets the variable to a value
-				 * of the appropriate type.
-				 * unless documented, this 
-				 * should make a copy. 
-				 * returns 0 on success. */
-  const void *(*get_fn)(const struct _owl_variable *v);
-				/* returns a reference to the current value.
-				 * WARNING:  this approach is hard to make
-				 * thread-safe... */
-  CALLER_OWN char *(*get_tostring_fn)(const struct _owl_variable *v, const void *val);
+                                 * of the appropriate type.
+                                 * unless documented, this
+                                 * should make a copy.
+                                 * returns 0 on success. */
+  GClosure *get_tostring_fn;
                                 /* converts val to a string;
-				 * caller must free the result */
-  void (*delete_fn)(struct _owl_variable *v);
-				/* frees val as needed */
+                                 * caller must free the result */
+
+  /* These are only valid for OWL_VARIABLE_{INT,BOOL,STRING} */
+  GValue val;                   /* current value, if default get_fn/set_fn */
+
+  GCallback get_fn;
+                                /* returns a reference to the current value.
+                                 * WARNING:  this approach is hard to make
+                                 * thread-safe... */
+  GCallback validate_fn;
+                                /* returns 1 if newval is valid */
+  GCallback set_fn;
+                                /* sets the variable to a value
+                                 * of the appropriate type.
+                                 * unless documented, this
+                                 * should make a copy.
+                                 * returns 0 on success. */
 } owl_variable;
+
 
 typedef struct _owl_input {
   int ch;
@@ -612,5 +614,11 @@ extern owl_global g;
 int ZGetSubscriptions(ZSubscription_t *, int *);
 int ZGetLocations(ZLocations_t *,int *);
 #endif
+
+/* We have to dynamically bind these ourselves */
+extern gboolean (*gvalue_from_sv) (GValue * value, SV * sv);
+extern SV * (*sv_from_gvalue) (const GValue * value);
+extern GClosure * (*perl_closure_new) (SV * callback, SV * data, gboolean swap);
+
 
 #endif /* INC_BARNOWL_OWL_H */

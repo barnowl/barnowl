@@ -1,0 +1,4 @@
+# set_fromstring_fn
+INT:STRING
+# get_tostring_fn
+STRING:VOID
