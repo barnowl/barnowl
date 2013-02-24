@@ -336,10 +336,9 @@ int owl_variable_regtest(void) {
   owl_variable *var;
   int numfailed=0;
   char *value;
-  const void *v;
 
   printf("# BEGIN testing owl_variable\n");
-  FAIL_UNLESS("setup", 0==owl_variable_dict_setup(&vd));
+  owl_variable_dict_setup(&vd);
 
   FAIL_UNLESS("get bool var", NULL != (var = owl_variable_get_var(&vd, "rxping")));
   FAIL_UNLESS("get bool", 0 == owl_variable_get_bool(var));
@@ -376,34 +375,53 @@ int owl_variable_regtest(void) {
   FAIL_UNLESS("set int 6", -1 == owl_variable_set_fromstring(var, "", 0));
   FAIL_UNLESS("get int 7", 9 == owl_variable_get_int(var));
 
-  owl_variable_dict_newvar_string(&vd, "stringvar", "", "", "testval");
+  FAIL_UNLESS("get enum var", NULL != (var = owl_variable_get_var(&vd, "scrollmode")));
+  FAIL_UNLESS("get enum", OWL_SCROLLMODE_NORMAL == owl_variable_get_int(var));
+  FAIL_UNLESS("get enum as string",
+	      !strcmp((value = owl_variable_get_tostring(var)), "normal"));
+  g_free(value);
+  FAIL_UNLESS("set enum 1", 0 == owl_variable_set_int(var, OWL_SCROLLMODE_TOP));
+  FAIL_UNLESS("get enum 1", OWL_SCROLLMODE_TOP == owl_variable_get_int(var));
+  FAIL_UNLESS("set enum 2a", -1 == owl_variable_set_int(var, -1));
+  FAIL_UNLESS("set enum 2b", -1 == owl_variable_set_int(var, OWL_SCROLLMODE_PAGEDCENTER + 1));
+  FAIL_UNLESS("get enum 2", OWL_SCROLLMODE_TOP == owl_variable_get_int(var));
+  FAIL_UNLESS("set enum 3", 0 == owl_variable_set_fromstring(var, "center", 0));
+  FAIL_UNLESS("get enum 4", OWL_SCROLLMODE_CENTER == owl_variable_get_int(var));
+  FAIL_UNLESS("set enum 5", -1 == owl_variable_set_fromstring(var, "bogus", 0));
+  FAIL_UNLESS("set enum 6", -1 == owl_variable_set_fromstring(var, "", 0));
+  FAIL_UNLESS("get enum 7", OWL_SCROLLMODE_CENTER == owl_variable_get_int(var));
+
+  owl_variable_dict_newvar_string(&vd, "stringvar", "testval", "", "");
   FAIL_UNLESS("get new string var", NULL != (var = owl_variable_get_var(&vd, "stringvar")));
-  FAIL_UNLESS("get new string var", NULL != (v = owl_variable_get(var)));
   FAIL_UNLESS("get new string val", !strcmp("testval", owl_variable_get_string(var)));
   owl_variable_set_string(var, "new val");
   FAIL_UNLESS("update string val", !strcmp("new val", owl_variable_get_string(var)));
 
-  owl_variable_dict_newvar_int(&vd, "intvar", "", "", 47);
+  owl_variable_dict_newvar_int(&vd, "intvar", 47, "", "");
   FAIL_UNLESS("get new int var", NULL != (var = owl_variable_get_var(&vd, "intvar")));
-  FAIL_UNLESS("get new int var", NULL != (v = owl_variable_get(var)));
   FAIL_UNLESS("get new int val", 47 == owl_variable_get_int(var));
   owl_variable_set_int(var, 17);
   FAIL_UNLESS("update int val", 17 == owl_variable_get_int(var));
 
-  owl_variable_dict_newvar_bool(&vd, "boolvar", "", "", 1);
+  owl_variable_dict_newvar_bool(&vd, "boolvar", true, "", "");
   FAIL_UNLESS("get new bool var", NULL != (var = owl_variable_get_var(&vd, "boolvar")));
-  FAIL_UNLESS("get new bool var", NULL != (v = owl_variable_get(var)));
   FAIL_UNLESS("get new bool val", owl_variable_get_bool(var));
   owl_variable_set_bool_off(var);
   FAIL_UNLESS("update bool val", !owl_variable_get_bool(var));
 
-  owl_variable_dict_newvar_string(&vd, "nullstringvar", "", "", NULL);
+  owl_variable_dict_newvar_string(&vd, "nullstringvar", NULL, "", "");
   FAIL_UNLESS("get new string (NULL) var", NULL != (var = owl_variable_get_var(&vd, "nullstringvar")));
   FAIL_UNLESS("get string (NULL)", NULL == (value = owl_variable_get_tostring(var)));
   g_free(value);
   var = owl_variable_get_var(&vd, "zsigproc");
   FAIL_UNLESS("get string (NULL) 2", NULL == (value = owl_variable_get_tostring(var)));
   g_free(value);
+
+  owl_variable_dict_newvar_enum(&vd, "enumvar", 0, "", "", "a,b,c,d");
+  FAIL_UNLESS("get new enum var", NULL != (var = owl_variable_get_var(&vd, "enumvar")));
+  FAIL_UNLESS("get new enum val", 0 == owl_variable_get_int(var));
+  owl_variable_set_fromstring(var, "c", 0);
+  FAIL_UNLESS("update enum val", 2 == owl_variable_get_int(var));
 
   owl_variable_dict_cleanup(&vd);
 

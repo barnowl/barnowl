@@ -17,6 +17,7 @@ our @EXPORT_OK = qw(command getcurmsg getnumcols getnumlines getidletime
                     add_io_dispatch remove_io_dispatch
                     new_command
                     new_variable_int new_variable_bool new_variable_string
+                    new_variable_enum
                     quote redisplay);
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -401,10 +402,14 @@ sub new_command {
 
 =head2 new_variable_string NAME [{ARGS}]
 
-Add a new owl variable, either an int, a bool, or a string, with the
+=head2 new_variable_enum NAME [{ARGS}]
+
+Add a new owl variable, either an int, a bool, a string, or an enum with the
 specified name.
 
-ARGS can optionally contain the following keys:
+For new_variable_enum, ARGS is required to contain a validsettings key pointing
+to an array reference. For all four, it can optionally contain the following
+keys:
 
 =over 4
 
@@ -422,34 +427,128 @@ A longer description of the function of the variable
 
 =back
 
+In addition, new_variable_string optionally accepts a string validsettings
+parameter, in case people want to set it to "<path>".
+
 =cut
 
 sub new_variable_int {
-    unshift @_, \&BarnOwl::Internal::new_variable_int, 0;
-    goto \&_new_variable;
+    my ($name, $args) = @_;
+    my $storage = defined($args->{default}) ? $args->{default} : 0;
+    BarnOwl::new_variable_full($name, {
+            %{$args},
+            get_tostring => sub { "$storage" },
+            set_fromstring => sub {
+                die "Expected integer" unless $_[0] =~ /^-?[0-9]+$/;
+                $storage = 0 + $_[0];
+            },
+            validsettings => "<int>",
+            takes_on_off => 0,
+        });
 }
 
 sub new_variable_bool {
-    unshift @_, \&BarnOwl::Internal::new_variable_bool, 0;
-    goto \&_new_variable;
+    my ($name, $args) = @_;
+    my $storage = defined($args->{default}) ? $args->{default} : 0;
+    BarnOwl::new_variable_full($name, {
+            %{$args},
+            get_tostring => sub { $storage ? "on" : "off" },
+            set_fromstring => sub {
+                die "Valid settings are on/off" unless $_[0] eq "on" || $_[0] eq "off";
+                $storage = $_[0] eq "on";
+            },
+            validsettings => "on,off",
+            takes_on_off => 1,
+        });
 }
 
 sub new_variable_string {
-    unshift @_, \&BarnOwl::Internal::new_variable_string, "";
-    goto \&_new_variable;
+    my ($name, $args) = @_;
+    my $storage = defined($args->{default}) ? $args->{default} : "";
+    BarnOwl::new_variable_full($name, {
+            # Allow people to override this one if they /reaaally/ want to for
+            # some reason. Though we still reserve the right to interpret this
+            # value in interesting ways for tab-completion purposes.
+            validsettings => "<string>",
+            %{$args},
+            get_tostring => sub { $storage },
+            set_fromstring => sub { $storage = $_[0]; },
+            takes_on_off => 0,
+        });
 }
 
-sub _new_variable {
-    my $func = shift;
-    my $default_default = shift;
+sub new_variable_enum {
+    my ($name, $args) = @_;
+
+    # Gather the valid settings.
+    die "validsettings is required" unless defined($args->{validsettings});
+    my %valid;
+    map { $valid{$_} = 1 } @{$args->{validsettings}};
+
+    my $storage = (defined($args->{default}) ?
+                   $args->{default} :
+                   $args->{validsettings}->[0]);
+    BarnOwl::new_variable_full($name, {
+            %{$args},
+            get_tostring => sub { $storage },
+            set_fromstring => sub {
+                die "Invalid input" unless $valid{$_[0]};
+                $storage = $_[0];
+            },
+            validsettings => join(",", @{$args->{validsettings}})
+        });
+}
+
+=head2 new_variable_full NAME {ARGS}
+
+Create a variable, in full generality. The keyword arguments have types below:
+
+ get_tostring : ()  -> string
+ set_fromstring : string -> int
+ -- optional --
+ summary : string
+ description : string
+ validsettings : string
+ takes_on_off : int
+
+The get/set functions are required. Note that the caller manages storage for the
+variable. get_tostring/set_fromstring both convert AND store the value.
+set_fromstring dies on failure.
+
+If the variable takes parameters 'on' and 'off' (i.e. is boolean-looking), set
+takes_on_off to 1. This makes :set VAR and :unset VAR work. set_fromstring will
+be called with those arguments.
+
+=cut
+
+sub new_variable_full {
     my $name = shift;
     my $args = shift || {};
     my %args = (
-        summary     => "",
+        summary => "",
         description => "",
-        default     => $default_default,
+        takes_on_off => 0,
+        validsettings => "<string>",
         %{$args});
-    $func->($name, $args{default}, $args{summary}, $args{description});
+
+    die "get_tostring required" unless $args{get_tostring};
+    die "set_fromstring required" unless $args{set_fromstring};
+
+    # Strip off the bogus dummy argument. Aargh perl-Glib.
+    my $get_tostring_fn = sub { $args{get_tostring}->() };
+    my $set_fromstring_fn = sub {
+      my ($dummy, $val) = @_;
+      # Translate from user-supplied die-on-failure callback to expected
+      # non-zero on error. Less of a nuisance than interacting with ERRSV.
+      eval { $args{set_fromstring}->($val) };
+      # TODO: Consider changing B::I::new_variable to expect string|NULL with
+      # string as the error message. That can then be translated to a GError in
+      # owl_variable_set_fromstring. For now the string is ignored.
+      return ($@ ? -1 : 0);
+    };
+
+    BarnOwl::Internal::new_variable($name, $args{summary}, $args{description}, $args{validsettings},
+                                    $args{takes_on_off}, $get_tostring_fn, $set_fromstring_fn, undef);
 }
 
 =head2 quote LIST

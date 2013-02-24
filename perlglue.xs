@@ -401,44 +401,35 @@ new_command(name, func, summary, usage, description)
 		owl_cmddict_add_cmd(owl_global_get_cmddict(&g), &cmd);
 	   }
 
-void
-new_variable_string(name, ival, summ, desc)
-	const char * name
-	const char * ival
-	const char * summ
-	const char * desc
-	CODE:
-	owl_variable_dict_newvar_string(owl_global_get_vardict(&g),
-					name,
-					summ,
-					desc,
-					ival);
+
+MODULE = BarnOwl		PACKAGE = BarnOwl::Internal
 
 void
-new_variable_int(name, ival, summ, desc)
-	const char * name
-	int ival
-	const char * summ
-	const char * desc
-	CODE:
-	owl_variable_dict_newvar_int(owl_global_get_vardict(&g),
-				     name,
-				     summ,
-				     desc,
-				     ival);
+new_variable(name, summary, description, validsettings, takes_on_off, get_tostring_fn, set_fromstring_fn, data)
+    const char *name
+    const char *summary
+    const char *description
+    const char *validsettings
+    int takes_on_off
+    SV *get_tostring_fn
+    SV *set_fromstring_fn
+    SV *data
+    CODE:
+{
+        /* data is somewhat redundant given we can create closures, but oh
+         * well. Might be convenient sometimes. */
+	if(!SV_IS_CODEREF(get_tostring_fn)) {
+		croak("To-string function must be a coderef!");
+	}
+	if(!SV_IS_CODEREF(set_fromstring_fn)) {
+		croak("From-string function must be a coderef!");
+	}
 
-void
-new_variable_bool(name, ival, summ, desc)
-	const char * name
-	int ival
-	const char * summ
-	const char * desc
-	CODE:
-	owl_variable_dict_newvar_bool(owl_global_get_vardict(&g),
-				      name,
-				      summ,
-				      desc,
-				      ival);
+        owl_variable_dict_newvar_other(owl_global_get_vardict(&g),
+                                       name, summary, description, validsettings, takes_on_off,
+                                       perl_closure_new(get_tostring_fn, data, false),
+                                       perl_closure_new(set_fromstring_fn, data, false));
+}
 
 void
 start_edit(edit_type, line, callback)

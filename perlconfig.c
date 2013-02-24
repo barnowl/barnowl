@@ -330,6 +330,7 @@ CALLER_OWN char *owl_perlconfig_initperl(const char *file, int *Pargc, char ***P
   PerlInterpreter *p;
   char *err;
   const char *args[4] = {"", "-e", "0;", NULL};
+  const char *dlerr;
   AV *inc;
   char *path;
 
@@ -387,6 +388,16 @@ CALLER_OWN char *owl_perlconfig_initperl(const char *file, int *Pargc, char ***P
   av_store(inc, 0, owl_new_sv(path));
   g_free(path);
 
+  /* Load up perl-Glib. */
+  eval_pv("use Glib;", FALSE);
+
+  /* Now, before BarnOwl tries to use them, get the relevant function pointers out. */
+  dlerr = owl_closure_init();
+  if (dlerr) {
+    return g_strdup(dlerr);
+  }
+
+  /* And now it's safe to import BarnOwl. */
   eval_pv("use BarnOwl;", FALSE);
 
   if (SvTRUE(ERRSV)) {
