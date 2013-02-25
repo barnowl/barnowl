@@ -813,6 +813,10 @@ const char *owl_variable_get_validsettings(const owl_variable *v) {
   return v->validsettings;
 }
 
+bool owl_variable_takes_on_off(const owl_variable *v) {
+  return v->takes_on_off;
+}
+
 int owl_variable_get_type(const owl_variable *v)
 {
   return v->type;

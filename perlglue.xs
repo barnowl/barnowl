@@ -384,6 +384,34 @@ skiptokens(str, n)
 	OUTPUT:
 		RETVAL
 
+SV *
+get_variable_info(name)
+	const char *name;
+	PREINIT:
+		owl_variable *var;
+		HV *h;
+	CODE:
+		var = owl_variable_get_var(owl_global_get_vardict(&g), name);
+		if (var == NULL) {
+			croak("No such variable");
+		}
+		h = newHV();
+		(void)hv_store(h, "name", strlen("name"),
+		               owl_new_sv(owl_variable_get_name(var)), 0);
+		(void)hv_store(h, "description", strlen("description"),
+		               owl_new_sv(owl_variable_get_description(var)),
+		               0);
+		(void)hv_store(h, "summary", strlen("summary"),
+		               owl_new_sv(owl_variable_get_summary(var)), 0);
+		(void)hv_store(h, "validsettings", strlen("validsettings"),
+		               owl_new_sv(owl_variable_get_validsettings(var)),
+		               0);
+		(void)hv_store(h, "takes_on_off", strlen("takes_on_off"),
+		               newSViv(owl_variable_takes_on_off(var)), 0);
+		RETVAL = newRV_noinc((SV*)h);
+	OUTPUT:
+		RETVAL
+
 
 MODULE = BarnOwl		PACKAGE = BarnOwl::Zephyr
 
