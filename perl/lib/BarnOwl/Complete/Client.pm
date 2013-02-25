@@ -145,19 +145,39 @@ sub complete_getvar {
 
 sub complete_set {
     my $ctx = shift;
-    if ($ctx->word == 1) {
-        return ("-q", complete_variable());
+    my $is_unset = ($ctx->words->[0] eq "unset");
+
+    # Shift away the -q if seen.
+    my $seen_q = 0;
+    if ($ctx->word > 1 && $ctx->words->[1] eq "-q") {
+        $seen_q = 1;
+        $ctx = $ctx->shift_words(1);
     }
-    if ($ctx->word == 2 && $ctx->words->[1] eq "-q") {
-        return complete_variable();
+
+    # First argument is the variable.
+    if ($ctx->word == 1) {
+        my @vars = complete_variable();
+        if ($is_unset) {
+            # Only complete the variables which are unsettable.
+            @vars = grep { BarnOwl::get_variable_info($_)->{takes_on_off} } @vars;
+        }
+        unshift(@vars, "-q") unless $seen_q;
+        return @vars;
+    }
+    # For set, second argument is the value.
+    if (!$is_unset && $ctx->word == 2) {
+        # Parse what we can out of validsettings.
+        my $info;
+        eval { $info = BarnOwl::get_variable_info($ctx->words->[1]) };
+        return if $@;
+        if ($info->{validsettings} eq "<path>") {
+            return complete_file($ctx->words->[2]);
+        } elsif ($info->{validsettings} !~ /^<.*>$/) {
+            # Assume it's a comma-separated list of values;
+            return split(",", $info->{validsettings});
+        }
     }
     return;
-}
-sub complete_set_args {
-    my $ctx = shift;
-    my $arg = shift;
-    return if $arg;
-    return complete_variable();
 }
 
 sub complete_startup {
