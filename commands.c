@@ -152,7 +152,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 
   OWLCMD_ARGS("set", owl_command_set, OWL_CTX_ANY,
 	      "set a variable value",
-	      "set [-q] [<variable>] [<value>]\n"
+	      "set [-q] <variable> [<value>]\n"
 	      "set",
 	      "Set the named variable to the specified value.  If no\n"
 	      "arguments are given, print the value of all variables.\n"
