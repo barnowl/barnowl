@@ -145,12 +145,13 @@ sub complete_getvar {
 
 sub complete_set {
     my $ctx = shift;
-    return complete_flags($ctx,
-        [qw(-q)],
-        {
-        },
-         \&complete_set_args
-        );
+    if ($ctx->word == 1) {
+        return ("-q", complete_variable());
+    }
+    if ($ctx->word == 2 && $ctx->words->[1] eq "-q") {
+        return complete_variable();
+    }
+    return;
 }
 sub complete_set_args {
     my $ctx = shift;
