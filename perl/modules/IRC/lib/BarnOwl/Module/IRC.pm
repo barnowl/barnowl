@@ -614,7 +614,7 @@ sub mk_irc_command {
             }
         }
 
-        if(!$channel &&
+        if(!defined($channel) &&
            ($flags & CHANNEL_ARG) &&
            !($flags & CHANNEL_OPTIONAL)) {
             die("Usage: $cmd <channel>\n");
