@@ -161,7 +161,7 @@ void owl_variable_add_defaults(owl_vardict *vd)
 
   OWLVAR_BOOL_FULL( "colorztext" /* %OwlVarStub */, 1,
                     "allow @color() in zephyrs to change color",
-                    NULL, NULL, owl_variable_colorztext_set, NULL);
+                    "", NULL, owl_variable_colorztext_set, NULL);
 
   OWLVAR_BOOL( "fancylines" /* %OwlVarStub */, 1,
 	       "Use 'nice' line drawing on the terminal.",
