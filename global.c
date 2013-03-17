@@ -8,7 +8,9 @@ void owl_global_init(owl_global *g) {
   char *cd;
   const char *homedir;
 
+#if !GLIB_CHECK_VERSION(2, 35, 0)
   g_type_init();
+#endif
 #if !GLIB_CHECK_VERSION(2, 31, 0)
   g_thread_init(NULL);
 #endif
