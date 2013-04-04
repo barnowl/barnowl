@@ -11,27 +11,39 @@ endif
 zcrypt_SOURCES = zcrypt.c filterproc.c
 
 check_PROGRAMS = tester.bin
+dist_check_DATA = t
+dist_check_SCRIPTS = runtests.sh
+
+bin_SCRIPTS = barnowl
+check_SCRIPTS = tester
+
+barnowl tester: %: barnowl-wrapper.in %.bin Makefile
+	sed \
+	    -e 's,[@]abs_srcdir[@],$(abs_srcdir),g' \
+	    -e 's,[@]abs_builddir[@],$(abs_builddir),g' \
+	    $< > $@
+	chmod +x $@
 
 barnowl_bin_SOURCES = $(BASE_SRCS) \
-     owl.h owl_perl.h config.h \
-     owl.c \
-     $(GEN_C) $(GEN_H)
+     owl.h owl_perl.h \
+     owl.c
+nodist_barnowl_bin_SOURCES = $(GEN_C) $(GEN_H)
 
-man_MANS = doc/barnowl.1
-doc_DATA = doc/intro.txt doc/advanced.txt
+dist_man_MANS = doc/barnowl.1
+dist_doc_DATA = doc/intro.txt doc/advanced.txt
 
 barnowl_bin_LDADD = compat/libcompat.a libfaim/libfaim.a
 
 tester_bin_SOURCES = $(BASE_SRCS) \
-     owl.h owl_perl.h config.h \
-     $(GEN_C) $(GEN_H) \
+     owl.h owl_perl.h \
      tester.c
+nodist_tester_bin_SOURCES = $(GEN_C) $(GEN_H)
 
 tester_bin_LDADD = compat/libcompat.a libfaim/libfaim.a
 
 TESTS=runtests.sh
 
-AM_CPPFLAGS = -I$(top_srcdir)/ \
+AM_CPPFLAGS = \
            -I$(top_srcdir)/libfaim/ \
            -DDATADIR='"$(pkgdatadir)"' \
            -DBINDIR='"$(bindir)"' \
@@ -47,12 +59,12 @@ CODELIST_SRCS=message.c mainwin.c popwin.c zephyr.c messagelist.c \
      zbuddylist.c popexec.c select.c wcwidth.c \
      mainpanel.c msgwin.c sepbar.c editcontext.c signal.c closures.c
 
-NORMAL_SRCS = filterproc.c window.c windowcb.c
+NORMAL_SRCS = filterproc.c filterproc.h window.c window.h windowcb.c
 
 BASE_SRCS = $(CODELIST_SRCS) $(NORMAL_SRCS)
 
 GEN_C = varstubs.c perlglue.c gmarshal_funcs.c
-GEN_H = owl_prototypes.h gmarshal_funcs.h
+GEN_H = owl_prototypes.h owl_prototypes.h.new gmarshal_funcs.h
 
 BUILT_SOURCES = $(GEN_C) $(GEN_H)
 
@@ -65,8 +77,8 @@ BUILT_SOURCES = $(GEN_C) $(GEN_H)
 
 proto: owl_prototypes.h
 
-perlglue.c: perlglue.xs $(TYPEMAP)
-	$(AM_V_GEN)perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes perlglue.xs > perlglue.c
+perlglue.c: perlglue.xs typemap
+	$(AM_V_GEN)perl $(XSUBPPDIR)/xsubpp $(XSUBPPFLAGS) -prototypes $< > $@
 
 varstubs.c: stubgen.pl variable.c
 	$(AM_V_GEN)perl $< $(sort $(filter-out $<,$+)) > $@
@@ -83,13 +95,25 @@ gmarshal_funcs.c: marshal_types
 check-syntax: proto
 	$(COMPILE) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES)
 
-install-data-local:
-	$(mkinstalldirs) ${DESTDIR}${pkgdatadir}/lib
-	(cd perl/lib && tar -cf - . ) | (cd ${DESTDIR}${pkgdatadir}/lib && tar -xf - )
-
 do_transform = $(shell echo '$(1)' | sed '$(transform)')
 install-exec-hook:
 	mv -f $(DESTDIR)$(bindir)/$(call do_transform,barnowl.bin) \
 	      $(DESTDIR)$(bindir)/$(call do_transform,barnowl)
+
+uninstall-local:
+	rm -f $(DESTDIR)$(bindir)/$(call do_transform,barnowl)
+
+CLEANFILES = $(BUILT_SOURCES) $(bin_SCRIPTS) $(check_SCRIPTS)
+EXTRA_DIST = \
+    autogen.sh \
+    barnowl-wrapper.in \
+    codelist.pl \
+    doc \
+    examples \
+    marshal_types \
+    perlglue.xs \
+    scripts \
+    stubgen.pl \
+    typemap
 
 SUBDIRS = compat libfaim perl

@@ -1,7 +1,7 @@
 #ifndef INC_BARNOWL_COMPAT_COMPAT_H
 #define INC_BARNOWL_COMPAT_COMPAT_H
 
-#include "../config.h"
+#include <config.h>
 
 #include <stddef.h>
 

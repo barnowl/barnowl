@@ -1,6 +1,10 @@
-#include "owl.h"
+#include "filterproc.h"
 #include <sys/wait.h>
+#include <fcntl.h>
+#include <glib.h>
 #include <poll.h>
+#include <string.h>
+#include <unistd.h>
 
 /* Even in case of error, send_receive is responsible for closing wfd
  * (to EOF the child) and rfd (for consistency). */

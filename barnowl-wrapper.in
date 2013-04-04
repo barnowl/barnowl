@@ -3,7 +3,6 @@
 # if we're running from a build tree. barnowl.bin is the actual built
 # binary.
 
-SRCDIR=`dirname "${0}"`
 EXE="$0.bin"
 
 if test ! -x "$EXE"; then
@@ -11,8 +10,8 @@ if test ! -x "$EXE"; then
     exit 1
 fi
 
-BARNOWL_DATA_DIR="$SRCDIR/perl/"
-BARNOWL_BIN_DIR="$SRCDIR/"
+BARNOWL_DATA_DIR="@abs_srcdir@/perl"
+BARNOWL_BIN_DIR="@abs_builddir@"
 export BARNOWL_DATA_DIR
 export BARNOWL_BIN_DIR
 exec "$EXE" "$@"

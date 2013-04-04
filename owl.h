@@ -9,7 +9,7 @@
 #ifndef INC_BARNOWL_OWL_H
 #define INC_BARNOWL_OWL_H
 
-#include "config.h"
+#include <config.h>
 
 #include "compat/compat.h"
 
@@ -607,7 +607,7 @@ typedef struct _owl_global {
 /* globals */
 extern owl_global g;
 
-#include "owl_prototypes.h"
+#include <owl_prototypes.h>
 
 /* These were missing from the Zephyr includes before Zephyr 3. */
 #if defined HAVE_LIBZEPHYR && defined ZCONST
