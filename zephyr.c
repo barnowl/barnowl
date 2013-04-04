@@ -741,7 +741,6 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   
   /* free then check the return */
   g_free(notice.z_message);
-  ZFreeNotice(&notice);
   g_free(zsender);
   if (ret != ZERR_NONE) {
     owl_function_error("Error sending zephyr: %s", error_message(ret));
