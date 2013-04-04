@@ -133,6 +133,11 @@ argument listed above, and die if no channel argument can be found.
 Pass the channel argument, but don't die if not present. Only relevant
 with C<CHANNEL_ARG>.
 
+=item C<CHANNEL_EXPLICIT>
+
+Do not determine the channel from the current message. Only relevant
+with C<CHANNEL_ARG>.
+
 =item C<ALLOW_DISCONNECTED>
 
 C<IRC-CONNECTION> may be a disconnected connection object that is
@@ -144,8 +149,9 @@ currently pending a reconnect.
 
 use constant CHANNEL_ARG        => 1;
 use constant CHANNEL_OPTIONAL   => 2;
+use constant CHANNEL_EXPLICIT   => 4;
 
-use constant ALLOW_DISCONNECTED => 4;
+use constant ALLOW_DISCONNECTED => 8;
 
 sub register_commands {
     BarnOwl::new_command(
@@ -187,10 +193,10 @@ END_DESCR
     );
 
     BarnOwl::new_command(
-        'irc-msg' => mk_irc_command( \&cmd_msg ),
+        'irc-msg' => mk_irc_command( \&cmd_msg, CHANNEL_ARG|CHANNEL_OPTIONAL|CHANNEL_EXPLICIT ),
         {
             summary => 'Send an IRC message',
-            usage   => 'irc-msg [-a ALIAS] DESTINATION MESSAGE',
+            usage   => 'irc-msg [-a ALIAS] DESTINATION [MESSAGE]',
 
             description => <<END_DESCR
 Send an IRC message.
@@ -406,7 +412,7 @@ sub cmd_disconnect {
 sub cmd_msg {
     my $cmd  = shift;
     my $conn = shift;
-    my $to = shift or die("Usage: $cmd [NICK|CHANNEL]\n");
+    my $to = shift || shift or die("Usage: $cmd [NICK|CHANNEL]\n");
     # handle multiple recipients?
     if(@_) {
         process_msg($conn, $to, join(" ", @_));
@@ -586,11 +592,12 @@ sub mk_irc_command {
         if($flags & CHANNEL_ARG) {
             $channel = $ARGV[0];
             if(defined($channel) && $channel =~ /^#/) {
+                shift @ARGV;
                 if(my $c = find_channel($channel)) {
-                    shift @ARGV;
                     $conn ||= $c;
                 }
-            } elsif ($m && $m->type eq 'IRC' && !$m->is_private) {
+            } elsif (!($flags & CHANNEL_EXPLICIT) &&
+		     $m && $m->type eq 'IRC' && !$m->is_private) {
                 $channel = $m->channel;
             } else {
                 undef $channel;
