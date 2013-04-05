@@ -454,7 +454,7 @@ int owl_zephyr_loadloginsubs(const char *filename)
 #endif
 }
 
-void unsuball(void)
+bool unsuball(void)
 {
 #if HAVE_LIBZEPHYR
   Code_t ret;
@@ -464,7 +464,9 @@ void unsuball(void)
   if (ret != ZERR_NONE)
     owl_function_error("Zephyr: Cancelling subscriptions: %s",
                        error_message(ret));
+  return (ret == ZERR_NONE);
 #endif
+  return true;
 }
 
 int owl_zephyr_sub(const char *class, const char *inst, const char *recip)
