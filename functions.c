@@ -854,8 +854,8 @@ void owl_function_shift_left(void)
 
 void owl_function_unsuball(void)
 {
-  unsuball();
-  owl_function_makemsg("Unsubscribed from all messages.");
+  if (unsuball())
+    owl_function_makemsg("Unsubscribed from all messages.");
 }
 
 
