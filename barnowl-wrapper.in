@@ -1,9 +1,9 @@
 #!/bin/sh
 # This is a wrapper script to point BARNOWL_DATA_DIR at the source dir
-# if we're running from a build tree. barnowl.bin is the actual built
+# if we're running from a build tree. bin/barnowl is the actual built
 # binary.
 
-EXE="$0.bin"
+EXE="@abs_builddir@/bin/$(basename "$0")"
 
 if test ! -x "$EXE"; then
     echo "Cannot find $EXE" >&2
