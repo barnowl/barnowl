@@ -27,6 +27,16 @@
 
 #include "filterproc.h"
 
+#ifndef OWL_VERSION_STRING
+#ifdef  GIT_VERSION
+#define stringify(x)       __stringify(x)
+#define __stringify(x)     #x
+#define OWL_VERSION_STRING stringify(GIT_VERSION)
+#else
+#define OWL_VERSION_STRING PACKAGE_VERSION
+#endif
+#endif /* !OWL_VERSION_STRING */
+
 /* Annotate functions in which the caller owns the return value and is
  * responsible for ensuring it is freed. */
 #define CALLER_OWN G_GNUC_WARN_UNUSED_RESULT
@@ -122,7 +132,11 @@ int main(int argc, char *argv[])
   ZWRITEOPTIONS zoptions;
   zoptions.flags = 0;
 
+  enum {
+    OPT_VERSION = CHAR_MAX + 1,
+  };
   static const struct option options[] = {
+    {"version", no_argument, NULL, OPT_VERSION},
     {NULL, 0, NULL, 0}
   };
 
@@ -130,6 +144,10 @@ int main(int argc, char *argv[])
   {
     switch(c)
     {
+      case OPT_VERSION:
+        /* Version */
+        printf("This is zcrypt version %s\n", OWL_VERSION_STRING);
+        exit(0);
       case 'Z':
         /* Zephyr encrypt */
         mode = M_ZEPHYR_ENCRYPT;
