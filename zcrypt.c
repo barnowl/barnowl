@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <ctype.h>
+#include <getopt.h>
 
 #include <config.h>
 
@@ -115,13 +116,17 @@ int main(int argc, char *argv[])
   const char *class = NULL, *instance = NULL;
   int mode = M_NONE;
 
-  char c;
+  int c;
 
   int messageflag = FALSE;
   ZWRITEOPTIONS zoptions;
   zoptions.flags = 0;
 
-  while ((c = getopt(argc, argv, "ZDERSF:c:i:advqtluons:f:m")) != (char)EOF)
+  static const struct option options[] = {
+    {NULL, 0, NULL, 0}
+  };
+
+  while ((c = getopt_long(argc, argv, "ZDERSF:c:i:advqtluons:f:m", options, NULL)) != -1)
   {
     switch(c)
     {
