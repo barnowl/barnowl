@@ -9,6 +9,7 @@ AC_CONFIG_HEADER([config.h])
 
 AC_PROG_CC
 AC_PROG_CC_C99
+AC_PROG_LN_S
 
 AC_ARG_WITH([zephyr-default-format],
     [AS_HELP_STRING([--with-zephyr-default-format],

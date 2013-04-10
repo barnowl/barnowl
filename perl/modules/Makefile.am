@@ -10,21 +10,21 @@ all-local: $(MODULES)
 $(MODULES): %: %/Makefile
 	(cd $* && $(MAKE) $*.par)
 
+BARNOWL_PERL := $(shell which perl) -I$(abs_srcdir)/../lib
+
 MODULES_MAKEFILE = $(MODULES:=/Makefile)
 $(MODULES_MAKEFILE): %/Makefile: %/Makefile.PL ../lib/Module/Install/BarnOwl.pm
-	[ $(srcdir) = . ] || cp -srf --no-preserve=mode -- $(abs_srcdir)/$*/. $*
-	$(AM_V_GEN)(cd $* && perl -I../../lib Makefile.PL)
+	$(AM_V_GEN)test -d $* || mkdir $*
+	$(AM_V_at)test $(srcdir) = . || $(LN_S) $(abs_srcdir)/$*/Makefile.PL $*/Makefile.PL
+	$(AM_V_at)(cd $* && BARNOWL_SRCDIR='$(abs_srcdir)/$*' && export BARNOWL_SRCDIR && $(BARNOWL_PERL) Makefile.PL 'PERL=$(BARNOWL_PERL)')
 
 MODULES_CLEAN = $(MODULES:%=clean_%)
 clean-local: $(MODULES_CLEAN)
 $(MODULES_CLEAN): clean_%:
-	if [ $(srcdir) = . ]; then \
-	    (cd $* && { test ! -f Makefile || $(MAKE) realclean; }) && \
-	    rm -f $*/$*.par; \
-	    rm -rf $*/inc; \
-	else \
-	    rm -rf $*; \
-	fi
+	(cd $* && { test ! -f Makefile || $(MAKE) realclean; })
+	rm -f $*/$*.par
+	rm -rf $*/inc
+	test $(srcdir) = . || rm -f $*/Makefile.PL
 
 MODULES_INSTALL = $(MODULES:%=module_install_%)
 install-data-local: $(MODULES_INSTALL)
