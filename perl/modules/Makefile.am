@@ -1,6 +1,6 @@
 MODULES = Jabber IRC WordWrap Twitter Facebook
 
-EXTRA_DIST = $(MODULES:=/Makefile.PL) $(MODULES:=/inc) $(MODULES:=/lib)
+EXTRA_DIST = $(MODULES:=/Makefile.PL) $(MODULES:=/lib)
 EXTRA_DIST += \
     Facebook/README \
     Twitter/README \
@@ -11,7 +11,7 @@ $(MODULES): %: %/Makefile
 	(cd $* && $(MAKE) $*.par)
 
 MODULES_MAKEFILE = $(MODULES:=/Makefile)
-$(MODULES_MAKEFILE): %/Makefile: %/Makefile.PL
+$(MODULES_MAKEFILE): %/Makefile: %/Makefile.PL ../lib/Module/Install/BarnOwl.pm
 	[ $(srcdir) = . ] || cp -srf --no-preserve=mode -- $(abs_srcdir)/$*/. $*
 	$(AM_V_GEN)(cd $* && perl -I../../lib Makefile.PL)
 
@@ -21,6 +21,7 @@ $(MODULES_CLEAN): clean_%:
 	if [ $(srcdir) = . ]; then \
 	    (cd $* && { test ! -f Makefile || $(MAKE) realclean; }) && \
 	    rm -f $*/$*.par; \
+	    rm -rf $*/inc; \
 	else \
 	    rm -rf $*; \
 	fi

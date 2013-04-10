@@ -20,9 +20,10 @@ BarnOwl currently requires the following perl modules off of CPAN:
 
 AnyEvent
 Class::Accessor
-Glib
-PAR
 ExtUtils::Depends
+Glib
+Module::Install
+PAR
 
 (Note that these are all available as Debian packages)
 We plan to soon add targets to the Makefile to check for and install

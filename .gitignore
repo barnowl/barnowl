@@ -24,6 +24,7 @@ core
 depcomp
 gmarshal_funcs.c
 gmarshal_funcs.h
+inc/
 install-sh
 jabber.log
 missing
