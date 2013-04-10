@@ -108,7 +108,9 @@ EXTRA_DIST = \
     autogen.sh \
     barnowl-wrapper.in \
     codelist.pl \
-    doc \
+    doc/code.txt \
+    doc/owl-window.txt \
+    doc/releasing-barnowl.txt \
     examples \
     marshal_types \
     perlglue.xs \
