@@ -1,6 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT([BarnOwl],[1.10dev],[bug-barnowl@mit.edu])
 AM_INIT_AUTOMAKE([1.7.0 -Wall -Wno-portability foreign])
+AM_MAINTAINER_MODE([enable])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -183,6 +184,9 @@ fi
 AC_CONFIG_LIBOBJ_DIR([compat])
 AC_CHECK_DECLS([memrchr])
 AC_REPLACE_FUNCS([memrchr])
+
+AC_SUBST([abs_builddir])
+AC_SUBST([abs_srcdir])
 
 AC_CONFIG_FILES([Makefile compat/Makefile libfaim/Makefile perl/Makefile perl/modules/Makefile])
 AC_OUTPUT
