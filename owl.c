@@ -33,17 +33,17 @@ typedef struct _owl_options {
   bool debug;
 } owl_options;
 
-void usage(void)
+void usage(FILE *file)
 {
-  fprintf(stderr, "Barnowl version %s\n", OWL_VERSION_STRING);
-  fprintf(stderr, "Usage: barnowl [-n] [-d] [-D] [-v] [-h] [-c <configfile>] [-s <confdir>] [-t <ttyname>]\n");
-  fprintf(stderr, "  -n,--no-subs        don't load zephyr subscriptions\n");
-  fprintf(stderr, "  -d,--debug          enable debugging\n");
-  fprintf(stderr, "  -v,--version        print the Barnowl version number and exit\n");
-  fprintf(stderr, "  -h,--help           print this help message\n");
-  fprintf(stderr, "  -s,--config-dir     specify an alternate config dir (default ~/.owl)\n");
-  fprintf(stderr, "  -c,--config-file    specify an alternate config file (default ~/.owl/init.pl)\n");
-  fprintf(stderr, "  -t,--tty            set the tty name\n");
+  fprintf(file, "Barnowl version %s\n", OWL_VERSION_STRING);
+  fprintf(file, "Usage: barnowl [-n] [-d] [-D] [-v] [-h] [-c <configfile>] [-s <confdir>] [-t <ttyname>]\n");
+  fprintf(file, "  -n,--no-subs        don't load zephyr subscriptions\n");
+  fprintf(file, "  -d,--debug          enable debugging\n");
+  fprintf(file, "  -v,--version        print the Barnowl version number and exit\n");
+  fprintf(file, "  -h,--help           print this help message\n");
+  fprintf(file, "  -s,--config-dir     specify an alternate config dir (default ~/.owl)\n");
+  fprintf(file, "  -c,--config-file    specify an alternate config file (default ~/.owl/init.pl)\n");
+  fprintf(file, "  -t,--tty            set the tty name\n");
 }
 
 /* TODO: free owl_options after init is done? */
@@ -82,8 +82,10 @@ void owl_parse_options(int argc, char *argv[], owl_options *opts) {
       printf("This is BarnOwl version %s\n", OWL_VERSION_STRING);
       exit(0);
     case 'h':
+      usage(stdout);
+      exit(0);
     default:
-      usage();
+      usage(stderr);
       exit(1);
     }
   }

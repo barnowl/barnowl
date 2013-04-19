@@ -3,43 +3,43 @@ ACLOCAL_AMFLAGS = -I m4
 GIT_DESCRIPTION := $(if $(wildcard .git),$(shell git describe --match='barnowl-*' HEAD 2>/dev/null))
 GIT_FLAGS := $(if $(GIT_DESCRIPTION),-DGIT_VERSION=$(GIT_DESCRIPTION:barnowl-%=%))
 
-bin_PROGRAMS = barnowl.bin
+bin_PROGRAMS = bin/barnowl
 if ENABLE_ZCRYPT
 bin_PROGRAMS += zcrypt
 endif
 
 zcrypt_SOURCES = zcrypt.c filterproc.c
 
-check_PROGRAMS = tester.bin
+check_PROGRAMS = bin/tester
 dist_check_DATA = t
 dist_check_SCRIPTS = runtests.sh
 
-bin_SCRIPTS = barnowl
+noinst_SCRIPTS = barnowl
 check_SCRIPTS = tester
 
-barnowl tester: %: barnowl-wrapper.in %.bin Makefile
+barnowl tester: %: barnowl-wrapper.in bin/% Makefile
 	sed \
 	    -e 's,[@]abs_srcdir[@],$(abs_srcdir),g' \
 	    -e 's,[@]abs_builddir[@],$(abs_builddir),g' \
 	    $< > $@
 	chmod +x $@
 
-barnowl_bin_SOURCES = $(BASE_SRCS) \
+bin_barnowl_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h \
      owl.c
-nodist_barnowl_bin_SOURCES = $(GEN_C) $(GEN_H)
+nodist_bin_barnowl_SOURCES = $(GEN_C) $(GEN_H)
 
 dist_man_MANS = doc/barnowl.1
 dist_doc_DATA = doc/intro.txt doc/advanced.txt
 
-barnowl_bin_LDADD = compat/libcompat.a libfaim/libfaim.a
+bin_barnowl_LDADD = compat/libcompat.a libfaim/libfaim.a
 
-tester_bin_SOURCES = $(BASE_SRCS) \
+bin_tester_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h \
      tester.c
-nodist_tester_bin_SOURCES = $(GEN_C) $(GEN_H)
+nodist_bin_tester_SOURCES = $(GEN_C) $(GEN_H)
 
-tester_bin_LDADD = compat/libcompat.a libfaim/libfaim.a
+bin_tester_LDADD = compat/libcompat.a libfaim/libfaim.a
 
 TESTS=runtests.sh
 
@@ -95,15 +95,7 @@ gmarshal_funcs.c: marshal_types
 check-syntax: proto
 	$(COMPILE) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES)
 
-do_transform = $(shell echo '$(1)' | sed '$(transform)')
-install-exec-hook:
-	mv -f $(DESTDIR)$(bindir)/$(call do_transform,barnowl.bin) \
-	      $(DESTDIR)$(bindir)/$(call do_transform,barnowl)
-
-uninstall-local:
-	rm -f $(DESTDIR)$(bindir)/$(call do_transform,barnowl)
-
-CLEANFILES = $(BUILT_SOURCES) $(bin_SCRIPTS) $(check_SCRIPTS)
+CLEANFILES = $(BUILT_SOURCES) $(noinst_SCRIPTS) $(check_SCRIPTS)
 EXTRA_DIST = \
     autogen.sh \
     barnowl-wrapper.in \

@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <ctype.h>
+#include <limits.h>
+#include <getopt.h>
 
 #include <config.h>
 
@@ -25,6 +27,16 @@
 #endif
 
 #include "filterproc.h"
+
+#ifndef OWL_VERSION_STRING
+#ifdef  GIT_VERSION
+#define stringify(x)       __stringify(x)
+#define __stringify(x)     #x
+#define OWL_VERSION_STRING stringify(GIT_VERSION)
+#else
+#define OWL_VERSION_STRING PACKAGE_VERSION
+#endif
+#endif /* !OWL_VERSION_STRING */
 
 /* Annotate functions in which the caller owns the return value and is
  * responsible for ensuring it is freed. */
@@ -105,6 +117,13 @@ static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule *sch
   des_key_sched(key, *schedule);
 }
 
+void usage(FILE *file, const char *progname)
+{
+  fprintf(file, "Usage: %s [-Z|-D|-E|-R|-S] [-F Keyfile] [-c class] [-i instance]\n", progname);
+  fprintf(file, "       [-advqtluon] [-s signature] [-f arg] [-m message]\n");
+  fprintf(file, "  One or more of class, instance, and keyfile must be specified.\n");
+}
+
 int main(int argc, char *argv[])
 {
   char *cryptspec = NULL;
@@ -115,16 +134,34 @@ int main(int argc, char *argv[])
   const char *class = NULL, *instance = NULL;
   int mode = M_NONE;
 
-  char c;
+  int c;
 
   int messageflag = FALSE;
   ZWRITEOPTIONS zoptions;
   zoptions.flags = 0;
 
-  while ((c = getopt(argc, argv, "ZDERSF:c:i:advqtluons:f:m")) != (char)EOF)
+  enum {
+    OPT_VERSION = CHAR_MAX + 1,
+    OPT_HELP,
+  };
+  static const struct option options[] = {
+    {"version", no_argument, NULL, OPT_VERSION},
+    {"help", no_argument, NULL, OPT_HELP},
+    {NULL, 0, NULL, 0}
+  };
+
+  while ((c = getopt_long(argc, argv, "ZDERSF:c:i:advqtluons:f:m", options, NULL)) != -1)
   {
     switch(c)
     {
+      case OPT_VERSION:
+        /* Version */
+        printf("This is zcrypt version %s\n", OWL_VERSION_STRING);
+        exit(0);
+      case OPT_HELP:
+        /* Help */
+        usage(stdout, argv[0]);
+        exit(0);
       case 'Z':
         /* Zephyr encrypt */
         mode = M_ZEPHYR_ENCRYPT;
@@ -256,9 +293,7 @@ int main(int argc, char *argv[])
 
   if (error || !cryptspec)
   {
-    fprintf(stderr, "Usage: %s [-Z|-D|-E|-R|-S] [-F Keyfile] [-c class] [-i instance]\n", argv[0]);
-    fprintf(stderr, "       [-advqtluon] [-s signature] [-f arg] [-m message]\n");
-    fprintf(stderr, "  One or more of class, instance, and keyfile must be specified.\n");
+    usage(stderr, argv[0]);
     exit(1);
   }
 
