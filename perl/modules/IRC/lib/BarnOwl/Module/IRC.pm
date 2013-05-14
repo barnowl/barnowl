@@ -22,6 +22,7 @@ use BarnOwl::Module::IRC::Completion;
 use AnyEvent::IRC;
 use Getopt::Long;
 use Encode;
+use Text::Wrap;
 
 our $VERSION = 0.02;
 
@@ -64,6 +65,14 @@ sub startup {
         summary     => 'Skip messages of these types',
         description => 'If set, each (space-separated) message type ' .
         'provided will be hidden and ignored if received.'
+       });
+
+    BarnOwl::new_variable_int('irc:max-message-length', {
+        default     => 450,
+        summary     => 'Split messages to at most this many characters.' .
+                       "If non-positive, don't split messages",
+        description => 'If set to a positive number, any paragraph in an ' .
+                       'IRC message will be split after this many characters.'
        });
 
     register_commands();
@@ -426,6 +435,14 @@ sub process_msg {
     $fullbody =~ s/\r//g;
     @msgs = split "\n\n", $fullbody;
     map { tr/\n/ / } @msgs;
+    # split each body at irc:max-message-length characters, if that number
+    # is positive.  Only split at space boundaries.  Start counting a-fresh
+    # at the beginning of each paragraph
+    my $max_len = BarnOwl::getvar('irc:max-message-length');
+    if ($max_len > 0) {
+        local($Text::Wrap::columns) = $max_len;
+        @msgs = split "\n", wrap("", "", join "\n", @msgs);
+    }
     for my $body (@msgs) {
 	if ($body =~ /^\/me (.*)/) {
 	    $conn->me($to, Encode::encode('utf-8', $1));
