@@ -11,7 +11,7 @@ package BarnOwl::Zephyr;
 
 use BarnOwl::Hook;
 
-my $zephyrStartup = BarnOwl::Hook->new;
+our $zephyrStartup = BarnOwl::Hook->new;
 
 sub _zephyr_startup {
     $zephyrStartup->run;
