@@ -28,7 +28,7 @@ static GSourceFuncs zephyr_event_funcs = {
 
 #define HM_SVC_FALLBACK		htons((unsigned short) 2104)
 
-static char *owl_zephyr_dotfile(const char *name, const char *input)
+static CALLER_OWN char *owl_zephyr_dotfile(const char *name, const char *input)
 {
   if (input != NULL)
     return g_strdup(input);
@@ -1024,6 +1024,7 @@ void owl_zephyr_addsub(const char *filename, const char *class, const char *inst
     }
   }
 
+  g_free(subsfile);
   g_free(line);
 #endif
 }
