@@ -855,7 +855,7 @@ void owl_global_setup_default_filters(owl_global *g)
     { "ping", "opcode ^ping$" },
     { "auto", "opcode ^auto$" },
     { "login", "not login ^none$" },
-    { "reply-lockout", "class ^mail$" },
+    { "reply-lockout", "class ^mail$ or class ^filsrv$" },
     { "out", "direction ^out$" },
     { "aim", "type ^aim$" },
     { "zephyr", "type ^zephyr$" },
