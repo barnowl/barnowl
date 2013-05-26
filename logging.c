@@ -150,11 +150,17 @@ static void owl_log_error_main_thread(gpointer data)
   owl_function_error("%s", (const char*)data);
 }
 
-static void owl_log_error(const char *message)
+static void G_GNUC_PRINTF(1, 2) owl_log_error(const char *fmt, ...)
 {
-  char *data = g_strdup(message);
+  va_list ap;
+  char *data;
+
+  va_start(ap, fmt);
+  data = g_strdup_vprintf(fmt, ap);
+  va_end(ap);
+
   owl_select_post_task(owl_log_error_main_thread,
-		       data, g_free, g_main_context_default());
+                       data, g_free, g_main_context_default());
 }
 
 static void owl_log_write_entry(gpointer data)
@@ -163,7 +169,7 @@ static void owl_log_write_entry(gpointer data)
   FILE *file = NULL;
   file = fopen(msg->filename, "a");
   if (!file) {
-    owl_log_error("Unable to open file for logging");
+    owl_log_error("Unable to open file for logging (%s)", msg->filename);
     return;
   }
   fprintf(file, "%s", msg->message);
