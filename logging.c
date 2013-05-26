@@ -211,6 +211,13 @@ static void owl_log_entry_free_gfunc(gpointer data, gpointer user_data)
 }
 #endif
 
+static void owl_log_file_error(owl_log_entry *msg, int ret)
+{
+  owl_log_error("Unable to open file for logging: %s (file %s)",
+                g_strerror(ret),
+                msg->filename);
+}
+
 /* If we are deferring log messages, enqueue this entry for writing.
  * Otherwise, try to write this log message, and, if it fails with
  * EPERM or EACCES, go into deferred logging mode and queue an admin
@@ -235,9 +242,7 @@ static void owl_log_eventually_write_entry(gpointer data)
                     g_strerror(ret));
       owl_log_deferred_enqueue_message(msg->message, msg->filename);
     } else if (ret != 0) {
-      owl_log_error("Unable to open file for logging: %s (file %s)",
-                    g_strerror(ret),
-                    msg->filename);
+      owl_log_file_error(msg, ret);
     }
   }
 }
@@ -246,18 +251,33 @@ static void owl_log_eventually_write_entry(gpointer data)
 static void owl_log_write_deferred_entries(gpointer data)
 {
   owl_log_entry *entry;
+  bool drop_failed_logs = *(bool *)data;
+  int ret;
 
   defer_logs = false;
   while (!g_queue_is_empty(deferred_entry_queue) && !defer_logs) {
     entry = (owl_log_entry*)g_queue_pop_head(deferred_entry_queue);
-    owl_log_eventually_write_entry(entry);
+    if (drop_failed_logs) {
+      owl_log_eventually_write_entry(entry);
+    } else {
+      ret = owl_log_try_write_entry(entry);
+      if (ret != 0) {
+        owl_log_file_error(entry, ret);
+      }
+    }
     owl_log_entry_free(entry);
   }
 }
 
-void owl_log_flush_logs(void)
+void owl_log_flush_logs(bool drop_failed_logs)
 {
-  owl_select_post_task(owl_log_write_deferred_entries, NULL, NULL, log_context);
+  bool *data = g_new(bool, 1);
+  *data = drop_failed_logs;
+
+  owl_select_post_task(owl_log_write_deferred_entries,
+                       data,
+                       g_free,
+                       log_context);
 }
 
 void owl_log_enqueue_message(const char *buffer, const char *filename)
@@ -538,8 +558,10 @@ void owl_log_init(void)
 static void owl_log_quit_func(gpointer data)
 {
   /* flush the deferred logs queue, trying to write the
-   * entries to the disk one last time */
-  owl_log_write_deferred_entries(NULL);
+   * entries to the disk one last time.  Drop any failed
+   * entries */
+  bool bool_true = true;
+  owl_log_write_deferred_entries(&bool_true);
 #if GLIB_CHECK_VERSION(2, 32, 0)
   g_queue_free_full(deferred_entry_queue, owl_log_entry_free);
 #else
