@@ -65,12 +65,6 @@ sub zwriteline  { return shift->{"zwriteline"}; }
 
 sub is_ping     { return (lc(shift->opcode) eq "ping"); }
 
-sub is_personal {
-    my ($m) = @_;
-    return ((lc($m->class) eq "message")
-	    && $m->is_private);
-}
-
 sub is_mail {
     my ($m) = @_;
     return ((lc($m->class) eq "mail") && $m->is_private);

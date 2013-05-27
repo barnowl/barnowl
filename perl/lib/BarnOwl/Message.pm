@@ -50,7 +50,7 @@ sub is_loopback { return (shift->{"type"} eq "loopback"); }
 # These are overridden by appropriate message types
 sub is_ping     { return 0; }
 sub is_mail     { return 0; }
-sub is_personal { return shift->is_private; }
+sub is_personal { return BarnOwl::message_matches_filter(shift, "personal"); }
 sub class       { return undef; }
 sub instance    { return undef; }
 sub realm       { return undef; }
