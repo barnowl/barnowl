@@ -15,6 +15,7 @@ our @EXPORT_OK = qw(command getcurmsg getnumcols getnumlines getidletime
                     error debug
                     create_style getnumcolors wordwrap
                     message_matches_filter
+                    get_variable_info
                     add_dispatch remove_dispatch
                     add_io_dispatch remove_io_dispatch
                     new_command
@@ -249,6 +250,26 @@ Returns 1 if C<FILTER_NAME> is the name of a valid filter, and
 C<MESSAGE> matches that filter.  Returns 0 otherwise.  If
 C<QUIET> is false, this method displays an error message if
 if C<FILTER_NAME> does not name a valid filter.
+
+=head2 get_variable_info VARIABLE_NAME
+
+Returns a hash with the following keys, describing the variable named:
+
+=over
+
+=item name
+
+=item description
+
+=item summary
+
+=item validsettings
+
+=item takes_on_off
+
+=back
+
+Fails if C<VARIABLE_NAME> does not name a valid variable.
 
 =head2 add_dispatch FD CALLBACK
 
