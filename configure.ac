@@ -9,6 +9,22 @@ AC_CONFIG_HEADER([config.h])
 AC_PROG_CC
 AC_PROG_CC_C99
 
+AC_ARG_WITH([zephyr-default-format],
+    [AS_HELP_STRING([--with-zephyr-default-format],
+                    [value for the default format zephyrgram field])],
+    [
+        case $withval in
+            yes) withval='Config error: see http://mit.edu/df';;
+            no) withval='';;
+        esac
+        zephyr_default_format=$withval
+    ],
+    [zephyr_default_format='Config error: see http://mit.edu/df'])
+AC_DEFINE_UNQUOTED(
+    [ZEPHYR_DEFAULT_FORMAT], ["$zephyr_default_format"],
+    [Value for the default format zephyrgram field]
+)
+
 AC_ARG_WITH([stack-protector],
   [AS_HELP_STRING([--with-stack-protector],
     [Enable gcc -fstack-protector])],
