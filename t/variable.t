@@ -67,36 +67,38 @@ is(BarnOwl::getvar("enumvar2"), "foo", "enumvar default default");
 my $value = "foo";
 BarnOwl::new_variable_full("fullvar", {
     validsettings => '<short-words>',
-    get_tostring => sub { "value is " . $value },
+    get_tostring => sub { $value },
     set_fromstring => sub {
         die "Too long" unless $_[0] =~ /^...?$/;
-        $value = $_[0];
+        $value = lc($_[0]);
     },
     takes_on_off => 1
 });
-is(BarnOwl::getvar("fullvar"), "value is foo", "fullvar get");
-BarnOwl::set("-q", "fullvar", "bar");
-is(BarnOwl::getvar("fullvar"), "value is bar", "fullvar set");
+is(BarnOwl::getvar("fullvar"), "foo", "fullvar get");
+BarnOwl::set("-q", "fullvar", "Bar");
+is(BarnOwl::getvar("fullvar"), "bar", "fullvar set");
 BarnOwl::set("-q", "fullvar");
-is(BarnOwl::getvar("fullvar"), "value is on", "fullvar set2");
+is(BarnOwl::getvar("fullvar"), "on", "fullvar set2");
 BarnOwl::unset("-q", "fullvar");
-is(BarnOwl::getvar("fullvar"), "value is off", "fullvar unset");
+is(BarnOwl::getvar("fullvar"), "off", "fullvar unset");
 BarnOwl::set("-q", "fullvar", "bogus");
-is(BarnOwl::getvar("fullvar"), "value is off", "fullvar set bogus");
-$value = "something really long";
-is(BarnOwl::getvar("fullvar"), "value is something really long", "fullvar set out-of-band");
+is(BarnOwl::getvar("fullvar"), "off", "fullvar set bogus");
+$value = "xyz";
+is(BarnOwl::getvar("fullvar"), "xyz", "fullvar set out-of-band");
 # Kinda verbose, but better to test all forms
-my $value = "foo";
+my $newvalue = "foo";
 BarnOwl::new_variable_full("fullvar", {
     validsettings => '<short-words>',
-    get_tostring => sub { "value is " . $value },
+    get_tostring => sub { $newvalue },
     set_fromstring => sub {
         die "Too long" unless $_[0] =~ /^...?$/;
-        $value = $_[0];
+        $newvalue = lc($_[0]);
     },
     takes_on_off => 1
 });
-isnt(BarnOwl::getvar("fullvar"), "value is foo", "fullvar reinit doesn't override value");
+is(BarnOwl::getvar("fullvar"), "xyz", "fullvar reinit doesn't override value");
+$newvalue = "abc";
+is(BarnOwl::getvar("fullvar"), "abc", "fullvar reinit changed setters");
 
 1;
 
