@@ -776,7 +776,8 @@ void owl_variable_delete(owl_variable *v)
   g_free(v->description);
   g_free(v->default_str);
   g_free(v->validsettings);
-  g_value_unset(&(v->val));
+  if (v->type != OWL_VARIABLE_OTHER)
+    g_value_unset(&(v->val));
   g_closure_unref(v->get_tostring_fn);
   g_closure_unref(v->set_fromstring_fn);
 
