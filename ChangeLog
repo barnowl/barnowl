@@ -1,3 +1,42 @@
+1.9
+ * Add getnumlines() to perl interface -asedeno@mit.edu
+ * Include names of invalid filters on filter errors -adehnert@mit.edu
+ * Don't incorrectly mark decryption failures as decrypted -davidben@mit.edu
+ * Hide the default cursor when possible -davidben@mit.edu
+ * Complete viewperson and vp as viewuser and vu -davidben@mit.edu
+ * Set z_charset = ZCHARSET_UTF_8 -andersk@mit.edu
+ * Allow zsender spoofing on cross-realm classes -andersk@mit.edu
+ * Append the realm to the zsender if missing -andersk@mit.edu
+ * Redisplay on setting colorztext -jgross@mit.edu
+ * Rename default config file to .owl/init.pl -kevinr@free-dissociation.com
+ * Add completion for jabberlogout -adehnert@mit.edu
+ * Switch to interactive context before sourcing the startup file -davidben@mit.edu
+ * Add completion for reload-module -adehnert@mit.edu
+ * editwin callback for canceling the editwin -jgross@mit.edu
+ * Fix dirtying windows inside a redraw handler -davidben@mit.edu
+ * Facebook module -ezyang@mit.edu
+ * Complete unstartup command just like startup command -jgross@mit.edu
+ * Fix the description of disable-ctrl-d -jgross@mit.edu
+ * Use wbkgrndset instead of wbkgdset in _owl_fmtext_wcolor_set -davidben@mit.edu
+ * Show the time zone in :info -jgross@mit.edu
+ * Treat [!.?]" as end of sentence in edit:fill-paragraph -jgross@mit.edu
+ * Correctly display multiline fields in :info -jgross@mit.edu
+
+1.8.1
+ * Only add outgoing messages for personal part of half-personal messages -andersk@mit.edu
+ * Don’t write CC: line on zwrite -C '' -andersk@mit.edu
+ * Don’t send public pings on zwrite '' or zwrite @REALM -andersk@mit.edu
+ * Don’t treat zwrite '' as personal -andersk@mit.edu
+ * Stop pretending to support zwrite * -andersk@mit.edu
+ * Show foreign realms on non-personal zephyrs like Owl did -andersk@mit.edu
+ * Fix memory leak in zcrypt -davidben@mit.edu
+ * Don't attempt to switch filters in :view -d if invalid -davidben@mit.edu
+ * Fixed typo in unbindkey usage error -rileyb@mit.edu
+ * Fix bug generating filter text in 256-color mode -asedeno@mit.edu
+ * Remove ^noc from reply-lockout -geofft@mit.edu
+ * Avoid quadratic loops when receiving zephyrs -andersk@mit.edu
+ * Fix hang on empty zcrypt messages -adehnert@MIT.EDU
+
 1.8
  * Compute the home directory in zcrypt consistently with BarnOwl -davidben@mit.edu
  * Make help show the correct keybinding for A -jgross@mit.edu
