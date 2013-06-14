@@ -611,7 +611,18 @@ CALLER_OWN GClosure *owl_variable_make_closure(owl_variable *v,
 
 void owl_variable_dict_add_variable(owl_vardict * vardict,
                                     owl_variable * var) {
+  char *oldvalue = NULL;
+  owl_variable *oldvar = owl_variable_get_var(vardict, var->name);
+  /* Save the old value as a string. */
+  if (oldvar) {
+    oldvalue = owl_variable_get_tostring(oldvar);
+  }
   owl_dict_insert_element(vardict, var->name, var, (void (*)(void *))owl_variable_delete);
+  /* Restore the old value. */
+  if (oldvalue) {
+    owl_variable_set_fromstring(var, oldvalue, 0);
+    g_free(oldvalue);
+  }
 }
 
 static owl_variable *owl_variable_newvar(int type, const char *name, const char *summary, const char *description, const char *validsettings) {
@@ -776,7 +787,8 @@ void owl_variable_delete(owl_variable *v)
   g_free(v->description);
   g_free(v->default_str);
   g_free(v->validsettings);
-  g_value_unset(&(v->val));
+  if (v->type != OWL_VARIABLE_OTHER)
+    g_value_unset(&(v->val));
   g_closure_unref(v->get_tostring_fn);
   g_closure_unref(v->set_fromstring_fn);
 
