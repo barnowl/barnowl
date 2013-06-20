@@ -9,6 +9,7 @@ AC_CONFIG_HEADER([config.h])
 
 AC_PROG_CC
 AC_PROG_CC_C99
+AC_PROG_LN_S
 
 AC_ARG_WITH([zephyr-default-format],
     [AS_HELP_STRING([--with-zephyr-default-format],
@@ -139,12 +140,14 @@ AX_PROG_PERL_MODULES([AnyEvent],,
                      [AC_MSG_ERROR([cannot find perl module AnyEvent.])])
 AX_PROG_PERL_MODULES([Class::Accessor::Fast],,
                      [AC_MSG_ERROR([cannot find perl module Class::Accessor::Fast.])])
-AX_PROG_PERL_MODULES([Glib],,
-                     [AC_MSG_ERROR([cannot find perl module Glib.])])
-AX_PROG_PERL_MODULES([PAR],,
-                     [AC_MSG_WARN([PAR.pm not found. Loadable modules will be disabled.])])
 AX_PROG_PERL_MODULES([ExtUtils::Depends],,
                      [AC_MSG_ERROR([cannot find perl module ExtUtils::Depends])])
+AX_PROG_PERL_MODULES([Glib],,
+                     [AC_MSG_ERROR([cannot find perl module Glib.])])
+AX_PROG_PERL_MODULES([Module::Install::Base],,
+                     [AC_MSG_ERROR([cannot find perl module Module::Install::Base])])
+AX_PROG_PERL_MODULES([PAR],,
+                     [AC_MSG_WARN([PAR.pm not found. Loadable modules will be disabled.])])
 
 dnl Add CFLAGS and LIBS for glib-2.0
 PKG_CHECK_MODULES(GLIB,[glib-2.0 >= 2.16 gobject-2.0 gthread-2.0])

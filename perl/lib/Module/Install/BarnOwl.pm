@@ -40,12 +40,19 @@ sub barnowl_module {
     my $name = ucfirst shift;
     my $class = ref $self;
 
+    my $srcdir = $ENV{BARNOWL_SRCDIR} || '.';
+
     $self->name("BarnOwl-Module-$name");
-    $self->all_from("lib/BarnOwl/Module/$name.pm");
+    $self->all_from("$srcdir/lib/BarnOwl/Module/$name.pm");
+    $self->makemaker_args(PMLIBDIRS => ["$srcdir/lib"],
+                          PMLIBPARENTDIRS => ["$srcdir/lib"]);
 
     $self->postamble(<<"END_MAKEFILE");
 
 # --- $class section:
+
+BARNOWL_SRCDIR = $srcdir
+export BARNOWL_SRCDIR
 
 $name.par: pm_to_blib
 \tcd blib; zip -q ../$name.par -r arch lib
