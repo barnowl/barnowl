@@ -66,7 +66,7 @@ BASE_SRCS = $(CODELIST_SRCS) $(NORMAL_SRCS)
 GEN_C = varstubs.c perlglue.c gmarshal_funcs.c
 GEN_H = owl_prototypes.h owl_prototypes.h.new gmarshal_funcs.h
 
-BUILT_SOURCES = $(GEN_C) $(GEN_H)
+BUILT_SOURCES = $(GEN_H)
 
 # Only copy file into place if file.new is different
 %: %.new
@@ -95,7 +95,7 @@ gmarshal_funcs.c: marshal_types
 check-syntax: proto
 	$(COMPILE) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES)
 
-CLEANFILES = $(BUILT_SOURCES) $(noinst_SCRIPTS) $(check_SCRIPTS)
+CLEANFILES = $(BUILT_SOURCES) $(GEN_C) $(noinst_SCRIPTS) $(check_SCRIPTS)
 EXTRA_DIST = \
     autogen.sh \
     barnowl-wrapper.in \
