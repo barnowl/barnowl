@@ -1,14 +1,19 @@
 ACLOCAL_AMFLAGS = -I m4
 
-GIT_DESCRIPTION := $(if $(wildcard .git),$(shell git describe --match='barnowl-*' HEAD 2>/dev/null))
-GIT_FLAGS := $(if $(GIT_DESCRIPTION),-DGIT_VERSION=$(GIT_DESCRIPTION:barnowl-%=%))
+GIT_DESCRIPTION := $(if $(wildcard $(srcdir)/.git),$(shell cd $(srcdir) && git describe --match='barnowl-*' HEAD 2>/dev/null))
+VERSION = $(if $(GIT_DESCRIPTION),$(GIT_DESCRIPTION:barnowl-%=%),@VERSION@)
+-include BUILD_VERSION.mk
+
+FORCE:
+BUILD_VERSION.mk: $(if $(filter-out $(BUILD_VERSION),$(VERSION)),FORCE)
+	echo 'BUILD_VERSION = $(VERSION)' > $@
 
 bin_PROGRAMS = bin/barnowl
 if ENABLE_ZCRYPT
 bin_PROGRAMS += zcrypt
 endif
 
-zcrypt_SOURCES = zcrypt.c filterproc.c
+zcrypt_SOURCES = zcrypt.c filterproc.c version.c
 
 check_PROGRAMS = bin/tester
 dist_check_DATA = t
@@ -46,8 +51,7 @@ TESTS=runtests.sh
 AM_CPPFLAGS = \
            -I$(top_srcdir)/libfaim/ \
            -DDATADIR='"$(pkgdatadir)"' \
-           -DBINDIR='"$(bindir)"' \
-           $(GIT_FLAGS)
+           -DBINDIR='"$(bindir)"'
 
 CODELIST_SRCS=message.c mainwin.c popwin.c zephyr.c messagelist.c \
      commands.c global.c text.c fmtext.c editwin.c \
@@ -63,13 +67,13 @@ NORMAL_SRCS = filterproc.c filterproc.h window.c window.h windowcb.c
 
 BASE_SRCS = $(CODELIST_SRCS) $(NORMAL_SRCS)
 
-GEN_C = varstubs.c perlglue.c gmarshal_funcs.c
+GEN_C = varstubs.c perlglue.c gmarshal_funcs.c version.c version.c.new
 GEN_H = owl_prototypes.h owl_prototypes.h.new gmarshal_funcs.h
 
 BUILT_SOURCES = $(GEN_H)
 
 # Only copy file into place if file.new is different
-%: %.new
+owl_prototypes.h version.c: %: %.new
 	@diff -U0 $@ $< || { \
 	 test -f $@ && echo '$@ changed!'; \
 	 echo cp -f $< $@; \
@@ -86,6 +90,9 @@ varstubs.c: stubgen.pl variable.c
 owl_prototypes.h.new: codelist.pl varstubs.c $(CODELIST_SRCS)
 	$(AM_V_GEN)perl $< $(sort $(filter-out $<,$+)) > $@
 
+version.c.new: Makefile BUILD_VERSION.mk
+	$(AM_V_GEN)echo 'const char *version = "$(VERSION)";' > $@
+
 gmarshal_funcs.h: marshal_types
 	glib-genmarshal --header $< > $@
 gmarshal_funcs.c: marshal_types
@@ -95,7 +102,7 @@ gmarshal_funcs.c: marshal_types
 check-syntax: proto
 	$(COMPILE) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES)
 
-CLEANFILES = $(BUILT_SOURCES) $(GEN_C) $(noinst_SCRIPTS) $(check_SCRIPTS)
+CLEANFILES = $(BUILT_SOURCES) $(GEN_C) $(noinst_SCRIPTS) $(check_SCRIPTS) BUILD_VERSION.mk
 EXTRA_DIST = \
     autogen.sh \
     barnowl-wrapper.in \

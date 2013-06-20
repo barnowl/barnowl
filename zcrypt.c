@@ -28,15 +28,7 @@
 
 #include "filterproc.h"
 
-#ifndef OWL_VERSION_STRING
-#ifdef  GIT_VERSION
-#define stringify(x)       __stringify(x)
-#define __stringify(x)     #x
-#define OWL_VERSION_STRING stringify(GIT_VERSION)
-#else
-#define OWL_VERSION_STRING PACKAGE_VERSION
-#endif
-#endif /* !OWL_VERSION_STRING */
+extern const char *version;
 
 /* Annotate functions in which the caller owns the return value and is
  * responsible for ensuring it is freed. */
@@ -156,7 +148,7 @@ int main(int argc, char *argv[])
     {
       case OPT_VERSION:
         /* Version */
-        printf("This is zcrypt version %s\n", OWL_VERSION_STRING);
+        printf("This is zcrypt version %s\n", version);
         exit(0);
       case OPT_HELP:
         /* Help */

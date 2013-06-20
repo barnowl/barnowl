@@ -63,15 +63,7 @@ typedef struct _owl_fake_HV HV;
 
 #include "window.h"
 
-#ifndef OWL_VERSION_STRING
-#ifdef  GIT_VERSION
-#define stringify(x)       __stringify(x)
-#define __stringify(x)     #x
-#define OWL_VERSION_STRING stringify(GIT_VERSION)
-#else
-#define OWL_VERSION_STRING PACKAGE_VERSION
-#endif
-#endif /* !OWL_VERSION_STRING */
+extern const char *version;
 
 /* Feature that is being tested to redirect stderr through a pipe. 
  * There may still be some portability problems with this. */
