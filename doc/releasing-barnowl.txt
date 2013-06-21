@@ -19,6 +19,12 @@
    - [ ] The RC commit
    - [ ] The configure.ac change on master
    - [ ] A release-1.N branch pointing at the RC commit
+  - [ ] Update debian/changelog on the launchpad build using `dch -v 1.(N+1)`
+   - [ ] bzr branch lp:~barnowl/barnowl/packaging && cd packaging && dch -v 1.(N+1)
+   - [ ] Add relevant changelog entries such as "New upstream release" or
+         "Placeholder version number for daily builds."; fix your name and email
+         if necessary
+   - [ ] bzr commit && bzr push
   - [ ] Copy tarball into /mit/barnowl/web_scripts/dist
   - [ ] Send mail announcing the RC to barnowl-dev@mit.edu
   - [ ] Wait 1-2 weeks, collect any bug reports
