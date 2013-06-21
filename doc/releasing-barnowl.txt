@@ -38,6 +38,7 @@
 
 * DOING THE ACTUAL RELEASE
   - [ ] Update the changelog and configure.ac for barnowl 1.N
+  - [ ] Copy the changelog changes to the master branch
   - [ ] run ./scripts/do-release
   - [ ] Do the locker build
   - [ ] Push the release tag
