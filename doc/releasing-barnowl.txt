@@ -15,10 +15,18 @@
         missing changelog), makes a tarball
   - [ ] Do a locker build (See DOING A LOCKER BUILD)
   - [ ] Update configure.ac on master to bump the version to 1.(N+1)dev
+  - [ ] Add the barnowl-1.(N+1)dev git tag
   - [ ] Push git git:
    - [ ] The RC commit
    - [ ] The configure.ac change on master
    - [ ] A release-1.N branch pointing at the RC commit
+   - [ ] the new git tags
+  - [ ] Update debian/changelog on the launchpad build using `dch -v 1.(N+1)`
+   - [ ] bzr branch lp:~barnowl/barnowl/packaging && cd packaging && dch -v 1.(N+1)
+   - [ ] Add relevant changelog entries such as "New upstream release" or
+         "Placeholder version number for daily builds."; fix your name and email
+         if necessary
+   - [ ] bzr commit && bzr push
   - [ ] Copy tarball into /mit/barnowl/web_scripts/dist
   - [ ] Send mail announcing the RC to barnowl-dev@mit.edu
   - [ ] Wait 1-2 weeks, collect any bug reports
@@ -30,6 +38,7 @@
 
 * DOING THE ACTUAL RELEASE
   - [ ] Update the changelog and configure.ac for barnowl 1.N
+  - [ ] Copy the changelog changes to the master branch
   - [ ] run ./scripts/do-release
   - [ ] Do the locker build
   - [ ] Push the release tag
