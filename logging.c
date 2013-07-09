@@ -220,9 +220,9 @@ static void owl_log_file_error(owl_log_entry *msg, int ret)
 
 /* If we are deferring log messages, enqueue this entry for writing.
  * Otherwise, try to write this log message, and, if it fails with
- * EPERM or EACCES, go into deferred logging mode and queue an admin
- * message.  If it fails with anything else, display an error message,
- * but do not go into deferred logging mode. */
+ * EPERM, EACCES, or ETIMEDOUT, go into deferred logging mode and
+ * queue an admin message.  If it fails with anything else, display an
+ * error message, but do not go into deferred logging mode. */
 static void owl_log_eventually_write_entry(gpointer data)
 {
   int ret;
@@ -231,7 +231,7 @@ static void owl_log_eventually_write_entry(gpointer data)
     owl_log_deferred_enqueue_message(msg->message, msg->filename);
   } else {
     ret = owl_log_try_write_entry(msg);
-    if (ret == EPERM || ret == EACCES) {
+    if (ret == EPERM || ret == EACCES || ret == ETIMEDOUT) {
       defer_logs = true;
       owl_log_error("Unable to open file for logging (%s): \n"
                     "%s.  \n"
