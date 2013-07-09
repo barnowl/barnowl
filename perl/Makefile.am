@@ -8,6 +8,7 @@ nobase_dist_pkgdata_DATA = \
 	lib/BarnOwl/Completion.pm \
 	lib/BarnOwl/Completion/Context.pm \
 	lib/BarnOwl/Completion/Util.pm \
+	lib/BarnOwl/DeferredLogging.pm \
 	lib/BarnOwl/Editwin.pm \
 	lib/BarnOwl/Help.pm \
 	lib/BarnOwl/Hook.pm \
