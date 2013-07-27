@@ -109,4 +109,16 @@ sub log_filenames {
     return ($filename);
 }
 
+sub log {
+    my ($m) = @_;
+    my $sender = $m->sender;
+    my $timestr = $m->time;
+    my $body = $m->body;
+    if ($m->is_loginout) {
+        return BarnOwl::Message::log($m);
+    } else {
+        return "[$timestr] <$sender> $body\n";
+    }
+}
+
 1;
