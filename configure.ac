@@ -186,6 +186,11 @@ dnl Define _BSD_SOURCE because zephyr needs caddr_t.
 AM_CFLAGS="$AM_CFLAGS -D_BSD_SOURCE"
 dnl Define __EXTENSIONS__ for strcasecmp on Solaris.
 AM_CFLAGS="$AM_CFLAGS -D__EXTENSIONS__"
+dnl Define _XOPEN_SOURCE_EXTENDED for some features in ncurses,
+dnl including cchar_t.  This should not be necessary with
+dnl _XOPEN_SOURCE=600, but some versions of ncurses
+dnl apparently still need it.
+AM_CFLAGS="$AM_CFLAGS -D_XOPEN_SOURCE_EXTENDED"
 
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([LIBFAIM_CFLAGS])
