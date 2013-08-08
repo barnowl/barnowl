@@ -20,11 +20,14 @@ use BarnOwl::Module::IRC::Connection qw(is_private);
 use BarnOwl::Module::IRC::Completion;
 
 use AnyEvent::IRC;
-use Getopt::Long;
 use Encode;
+use File::Spec;
+use Getopt::Long;
 use Text::Wrap;
 
 our $VERSION = 0.02;
+
+our $IRC_SUBS_FILENAME = "ircchannels";
 
 our $irc;
 
@@ -168,7 +171,7 @@ sub register_commands {
         {
             summary => 'Connect to an IRC server',
             usage =>
-'irc-connect [-a ALIAS ] [-s] [-p PASSWORD] [-n NICK] SERVER [port]',
+'irc-connect [-a ALIAS] [-s] [-p PASSWORD] [-n NICK] SERVER [port]',
             description => <<END_DESCR
 Connect to an IRC server. Supported options are:
 
@@ -229,10 +232,13 @@ END_DESCR
         'irc-join' => mk_irc_command( \&cmd_join ),
         {
             summary => 'Join an IRC channel',
-            usage   => 'irc-join [-a ALIAS] #channel [KEY]',
+            usage   => 'irc-join [-a ALIAS] [-t] #channel [KEY]',
 
             description => <<END_DESCR
-Join an IRC channel.
+Join an IRC channel.  If the -t option is present the subscription will only be
+temporary, i.e., it will not be written to the subscription file and will
+therefore not be present the next time BarnOwl is started, and will disappear
+if the connection is lost.
 END_DESCR
         }
     );
@@ -241,10 +247,13 @@ END_DESCR
         'irc-part' => mk_irc_command( \&cmd_part, CHANNEL_ARG ),
         {
             summary => 'Leave an IRC channel',
-            usage   => 'irc-part [-a ALIAS] #channel',
+            usage   => 'irc-part [-a ALIAS] [-t] #channel',
 
             description => <<END_DESCR
-Part from an IRC channel.
+Part from an IRC channel.  If the -t option is present the unsubscription will
+only be temporary, i.e., it will not be updated in the subscription file and
+will therefore not be in effect the next time BarnOwl is started, or if the
+connection is lost.
 END_DESCR
         }
     );
@@ -344,6 +353,23 @@ BarnOwl, or to define new IRC commands.
 END_DESCR
         }
     );
+
+    BarnOwl::new_command(
+        'irc-loadchannels' => \&cmd_loadchannels,
+        {
+            summary => 'Reload persistent channels',
+            usage   => 'irc-loadchannels [-a ALIAS] [<file>]',
+
+            description => <<END_DESCR
+Load persistent channels from a file.  The file defaults to
+\$HOME/.owl/$IRC_SUBS_FILENAME.  If the ALIAS is present, only channels
+on the given alias are loaded.  The ALIAS is case-sensitive.
+
+Each line of the file should describe a single channel, in the format
+'\$alias \$channel' (without quotes).
+END_DESCR
+        }
+    );
 }
 
 
@@ -355,6 +381,124 @@ $BarnOwl::Hooks::getBuddyList->add("BarnOwl::Module::IRC::buddylist");
 ################################################################################
 ######################## Owl command handlers ##################################
 ################################################################################
+
+sub make_autoconnect_filename {
+    # can't use ||, or else we'll treat '0' as invalid.  We could check for eq "" ...
+    # TODO(jgross): When we move to requiring perl 5.10, combine the
+    # following two lines using //
+    my $filename = shift;
+    $filename = File::Spec->catfile(BarnOwl::get_config_dir(), $IRC_SUBS_FILENAME) unless defined $filename;
+    if (!File::Spec->file_name_is_absolute($filename)) {
+        $filename = File::Spec->catfile($ENV{HOME}, $filename);
+    }
+    return $filename;
+}
+
+sub _get_autoconnect_lines {
+    my $filename = shift;
+
+    # TODO(jgross): Write a C-side function to do this, asynchronously;
+    #               AIUI, perl doesn't do asynchronous I/O in any useful way
+    if (open (my $subsfile, "<:encoding(UTF-8)", $filename)) {
+        my @lines = <$subsfile>;
+        close($subsfile);
+
+        # strip trailing newlines
+        local $/ = "";
+        chomp(@lines);
+
+        return @lines;
+    }
+
+    return ();
+}
+
+sub get_autoconnect_channels {
+    my $filename = make_autoconnect_filename(shift);
+    my %channel_hash = ();
+
+    # Load the subs from the file
+    my @lines = _get_autoconnect_lines($filename);
+
+    foreach my $line (@lines) {
+        my @parsed_args = split(' ', $line);
+        if (scalar @parsed_args == 2) {
+            push @{$channel_hash{$parsed_args[0]}}, $parsed_args[1];
+        } else {
+            warn "Trouble parsing irc configuration file '$filename' line '$line'; the format is '\$alias \$channel', with no spaces in either\n";
+        }
+    }
+
+    return %channel_hash;
+}
+
+sub add_autoconnect_channel {
+    my $conn = shift;
+    my $channel = shift;
+    my $alias = $conn->alias;
+    my $filename = make_autoconnect_filename(shift);
+
+    # we already checked for spaces in $channel in cmd_join, but we still need
+    # to check $alias
+    die "Alias name '$alias' contains a space; parsing will fail.  Use the -t flag.\n" unless index($alias, " ") == -1;
+
+    my $line = "$alias $channel";
+
+    my @lines = _get_autoconnect_lines($filename);
+
+    # We don't want to be noisy about duplicated joins.  For example, some
+    # people might have :irc-join in startup files, even though that doesn't
+    # work correctly anymore because connect is asynchronous and so join on
+    # startup races with connect.  Regardless, just fail silently if the line
+    # already exists.
+    return if grep { $_ eq $line } @lines;
+
+    open (my $subsfile, ">>:encoding(UTF-8)", make_autoconnect_filename($filename))
+        or die "Cannot open $filename for writing: $!\n";
+    local $, = "";
+    local $/ = "";
+    print $subsfile "$line\n";
+    close($subsfile);
+}
+
+sub remove_autoconnect_channel {
+    my $conn = shift;
+    my $channel = shift;
+    my $alias = $conn->alias;
+    my $filename = make_autoconnect_filename(shift);
+
+    BarnOwl::Internal::file_deleteline($filename, "$alias $channel", 1);
+}
+
+sub cmd_loadchannels {
+    my $cmd = shift;
+    my $alias;
+    my $getopt = Getopt::Long::Parser->new;
+
+    local @ARGV = @_;
+    $getopt->configure(qw(pass_through permute no_getopt_compat prefix_pattern=-|--));
+    $getopt->getoptions("alias=s" => \$alias);
+
+    my %channel_hash = get_autoconnect_channels(@ARGV);
+
+    my $aliases = (defined $alias) ? [$alias] : [keys %channel_hash];
+
+    foreach my $cur_alias (@$aliases) {
+        # get_connection_by_alias might die, and we don't want to
+        eval {
+            my $conn = get_connection_by_alias($cur_alias, 1);
+            my %existing_channels = map { $_ => 1 } @{$conn->autoconnect_channels}, @{$channel_hash{$cur_alias}};
+            $conn->autoconnect_channels([keys %existing_channels]);
+        };
+        foreach my $channel (@{$channel_hash{$cur_alias}}) {
+            if ($cur_alias eq "") {
+                BarnOwl::command("irc-join", "-t", $channel);
+            } else {
+                BarnOwl::command("irc-join", "-t", "-a", $cur_alias, $channel);
+            }
+        }
+    }
+}
 
 sub cmd_connect {
     my $cmd = shift;
@@ -392,13 +536,16 @@ sub cmd_connect {
         die("Already connected to a server with alias '$alias'. Either disconnect or specify an alias with -a.\n");
     }
 
+    my %channel_hash = get_autoconnect_channels;
+
     my $conn = BarnOwl::Module::IRC::Connection->new($alias, $host, $port, {
-        nick      => $nick,
-        user      => $username,
-        real      => $ircname,
-        password  => $password,
-        SSL       => $ssl,
-        timeout   => sub {0}
+        nick                 => $nick,
+        user                 => $username,
+        real                 => $ircname,
+        password             => $password,
+        SSL                  => $ssl,
+        timeout              => sub {0},
+        autoconnect_channels => $channel_hash{$alias}
        });
     $ircnets{$alias} = $conn;
     return;
@@ -485,17 +632,63 @@ sub cmd_mode {
 
 sub cmd_join {
     my $cmd = shift;
-    my $conn = shift;
-    my $chan = shift or die("Usage: $cmd channel\n");
-    $conn->conn->send_msg(join => $chan, @_);
+    my $is_temporary;
+
+    my $getopt = Getopt::Long::Parser->new;
+
+    local @ARGV = @_;
+    $getopt->configure(qw(pass_through permute no_getopt_compat prefix_pattern=-|--));
+    $getopt->getoptions("temporary" => \$is_temporary);
+
+    my $conn = shift @ARGV;
+    my $chan = shift @ARGV or die("Usage: $cmd channel\n");
+
+    die "Channel name '$chan' contains a space.  As per RFC 2812, IRC channel names may not contain spaces.\n" unless index($channel, " ") == -1;
+
+    $conn->conn->send_msg(join => $chan, @ARGV);
+
+    # regardless of whether or not this is temporary, we want to persist it
+    # across reconnects.
+
+    # check if the channel is already in the list
+    if (!grep { $_ eq $chan } @{$conn->autoconnect_channels}) {
+        push @{$conn->autoconnect_channels}, $chan;
+    }
+
+    if (!$is_temporary) {
+        # add the line to the subs file
+        add_autoconnect_channel($conn, $chan);
+    }
+
     return;
 }
 
 sub cmd_part {
     my $cmd = shift;
-    my $conn = shift;
-    my $chan = shift;
+    my $is_temporary;
+
+    my $getopt = Getopt::Long::Parser->new;
+
+    local @ARGV = @_;
+    $getopt->configure(qw(pass_through permute no_getopt_compat prefix_pattern=-|--));
+    $getopt->getoptions("temporary" => \$is_temporary);
+
+    my $conn = shift @ARGV;
+    my $chan = shift @ARGV or die("Usage: $cmd channel\n");
+
     $conn->conn->send_msg(part => $chan);
+
+    # regardless of whether or not this is temporary, we want to persist it
+    # across reconnects
+    my %existing_channels = map { $_ => 1 } @{$conn->autoconnect_channels};
+    delete $existing_channels{$chan};
+    $conn->autoconnect_channels([keys %existing_channels]);
+
+    if (!$is_temporary) {
+        # remove the line from the subs file
+        remove_autoconnect_channel($conn, $chan);
+    }
+
     return;
 }
 
@@ -595,12 +788,14 @@ sub mk_irc_command {
         my $conn;
         my $alias;
         my $channel;
+        my $is_temporary;
         my $getopt = Getopt::Long::Parser->new;
         my $m = BarnOwl::getcurmsg();
 
         local @ARGV = @_;
         $getopt->configure(qw(pass_through permute no_getopt_compat prefix_pattern=-|--));
-        $getopt->getoptions("alias=s" => \$alias);
+        $getopt->getoptions("alias=s" => \$alias,
+                            "temporary" => \$is_temporary);
 
         if(defined($alias)) {
             $conn = get_connection_by_alias($alias,
@@ -639,6 +834,7 @@ sub mk_irc_command {
         if(!$conn) {
             die("You must specify an IRC network using -a.\n");
         }
+        push @ARGV, "-t" if $is_temporary;
         if($flags & CHANNEL_ARG) {
             $sub->($cmd, $conn, $channel, @ARGV);
         } else {

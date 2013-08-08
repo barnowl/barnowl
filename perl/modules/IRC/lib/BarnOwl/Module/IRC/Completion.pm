@@ -56,6 +56,17 @@ sub complete_irc_dest {
        );
 }
 
+sub complete_irc_join_part {
+    my $ctx = shift;
+    return complete_flags($ctx,
+        [qw(-t)],
+        {
+            "-a" => \&complete_networks,
+        },
+        \&complete_channels
+       );
+}
+
 sub complete_irc_channel {
     my $ctx = shift;
     return complete_flags($ctx,
@@ -94,8 +105,8 @@ BarnOwl::Completion::register_completer('irc-connect'    => \&complete_irc_conne
 BarnOwl::Completion::register_completer('irc-disconnect' => \&complete_irc_network);
 BarnOwl::Completion::register_completer('irc-msg'        => \&complete_irc_dest);
 BarnOwl::Completion::register_completer('irc-mode'       => \&complete_irc_dest);
-BarnOwl::Completion::register_completer('irc-join'       => \&complete_irc_channel);
-BarnOwl::Completion::register_completer('irc-part'       => \&complete_irc_channel);
+BarnOwl::Completion::register_completer('irc-join'       => \&complete_irc_join_part);
+BarnOwl::Completion::register_completer('irc-part'       => \&complete_irc_join_part);
 BarnOwl::Completion::register_completer('irc-names'      => \&complete_irc_channel);
 BarnOwl::Completion::register_completer('irc-whois'      => \&complete_irc_nick);
 BarnOwl::Completion::register_completer('irc-motd'       => \&complete_irc_network);
