@@ -114,10 +114,8 @@ void owl_function_show_command(const char *name)
 
 void owl_function_show_license(void)
 {
-  const char *text;
-
-  text=""
-    "BarnOwl version " OWL_VERSION_STRING "\n"
+  char *text = g_strdup_printf(
+    "BarnOwl version %s\n"
     "Copyright (c) 2006-2011 The BarnOwl Developers. All rights reserved.\n"
     "Copyright (c) 2004 James Kretchmar. All rights reserved.\n"
     "\n"
@@ -154,8 +152,10 @@ void owl_function_show_license(void)
     "BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,\n"
     "WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE\n"
     "OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN\n"
-    "IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n";
+    "IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n",
+    version);
   owl_function_popless_text(text);
+  g_free(text);
 }
 
 void owl_function_show_quickstart(void)
@@ -1358,8 +1358,8 @@ void owl_function_popless_file(const char *filename)
 
 void owl_function_about(void)
 {
-  owl_function_popless_text(
-    "This is BarnOwl version " OWL_VERSION_STRING ".\n\n"
+  char *text = g_strdup_printf(
+    "This is BarnOwl version %s.\n\n"
     "BarnOwl is a fork of the Owl zephyr client, written and\n"
     "maintained by Alejandro Sedeno and Nelson Elhage at the\n"
     "Massachusetts Institute of Technology. \n"
@@ -1378,8 +1378,10 @@ void owl_function_about(void)
     "\n"
     "This program is free software. You can redistribute it and/or\n"
     "modify under the terms of the Sleepycat License. Use the \n"
-    "':show license' command to display the full license\n"
-  );
+      "':show license' command to display the full license\n",
+      version);
+  owl_function_popless_text(text);
+  g_free(text);
 }
 
 void owl_function_info(void)
@@ -1780,7 +1782,7 @@ void owl_function_status(void)
   owl_fmtext_append_normal(&fm, "General Information:\n");
 
   owl_fmtext_append_normal(&fm, "  Version: ");
-  owl_fmtext_append_normal(&fm, OWL_VERSION_STRING);
+  owl_fmtext_append_normal(&fm, version);
   owl_fmtext_append_normal(&fm, "\n");
 
   owl_fmtext_append_normal(&fm, "  Startup Arguments: ");

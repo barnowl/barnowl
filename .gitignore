@@ -3,6 +3,7 @@
 *.par
 .deps
 /bin/
+BUILD_VERSION.mk
 META.yml
 MYMETA.yml
 Makefile
@@ -39,4 +40,6 @@ test-driver
 test-suite.log
 tester
 varstubs.c
+version.c
+version.c.new
 zcrypt

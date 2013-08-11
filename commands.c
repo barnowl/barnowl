@@ -1113,7 +1113,7 @@ void owl_command_about(void)
 
 void owl_command_version(void)
 {
-  owl_function_makemsg("BarnOwl version %s", OWL_VERSION_STRING);
+  owl_function_makemsg("BarnOwl version %s", version);
 }
 
 char *owl_command_aim(int argc, const char *const *argv, const char *buff)

@@ -35,7 +35,7 @@ typedef struct _owl_options {
 
 void usage(FILE *file)
 {
-  fprintf(file, "Barnowl version %s\n", OWL_VERSION_STRING);
+  fprintf(file, "Barnowl version %s\n", version);
   fprintf(file, "Usage: barnowl [-n] [-d] [-D] [-v] [-h] [-c <configfile>] [-s <confdir>] [-t <ttyname>]\n");
   fprintf(file, "  -n,--no-subs        don't load zephyr subscriptions\n");
   fprintf(file, "  -d,--debug          enable debugging\n");
@@ -79,7 +79,7 @@ void owl_parse_options(int argc, char *argv[], owl_options *opts) {
       opts->debug = 1;
       break;
     case 'v':
-      printf("This is BarnOwl version %s\n", OWL_VERSION_STRING);
+      printf("This is BarnOwl version %s\n", version);
       exit(0);
     case 'h':
       usage(stdout);
@@ -577,9 +577,9 @@ int main(int argc, char **argv, char **env)
 
   /* welcome message */
   owl_function_debugmsg("startup: creating splash message");
-  owl_function_adminmsg("",
+  char *welcome = g_strdup_printf(
     "-----------------------------------------------------------------------\n"
-    "Welcome to BarnOwl version " OWL_VERSION_STRING ".\n"
+    "Welcome to BarnOwl version %s.\n"
     "To see a quick introduction, type ':show quickstart'.                  \n"
     "Press 'h' for on-line help.                                            \n"
     "                                                                       \n"
@@ -587,8 +587,10 @@ int main(int argc, char **argv, char **env)
     "information.                                                     ^ ^   \n"
     "                                                                 OvO   \n"
     "Please report any bugs or suggestions to bug-barnowl@mit.edu    (   )  \n"
-    "-----------------------------------------------------------------m-m---\n"
-  );
+    "-----------------------------------------------------------------m-m---\n",
+    version);
+  owl_function_adminmsg("", welcome);
+  g_free(welcome);
 
   owl_function_debugmsg("startup: setting context interactive");
 
