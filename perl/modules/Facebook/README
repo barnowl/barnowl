@@ -13,10 +13,10 @@ SYNOPSIS
   ':facebook-auth $URL' where $URL is the URL you were redirected to.
 
   This token will persist across BarnOwls until you change your
-  Facebook password or you revoke permissions for Barnowl at:
+  Facebook password or you revoke permissions for BarnOwl at:
     http://www.facebook.com/settings/?tab=applications&app_id=235537266461636
 
-  (3) Start receiving wall updates in Barnowl!
+  (3) Start receiving wall updates in BarnOwl!
   You can post updates with the ":facebook" command.
 
 INFELICITIES

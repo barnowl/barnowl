@@ -320,7 +320,7 @@
  * Display context for pings -adehnert
  * Support --program-{prefix,suffix,transform}. -nelhage
  * Send instanced pings and give useful error messages -adehnert
- * Add <message,*,%me%> to default Barnowl subs. -adehnert
+ * Add <message,*,%me%> to default BarnOwl subs. -adehnert
  * Maintain instance when using shift-R on personals -adehnert
  * Improve handling of outgoing instanced personals -adehnert
  * Don't require personals to be -i personal. -geofft

@@ -35,11 +35,11 @@ typedef struct _owl_options {
 
 void usage(FILE *file)
 {
-  fprintf(file, "Barnowl version %s\n", version);
+  fprintf(file, "BarnOwl version %s\n", version);
   fprintf(file, "Usage: barnowl [-n] [-d] [-D] [-v] [-h] [-c <configfile>] [-s <confdir>] [-t <ttyname>]\n");
   fprintf(file, "  -n,--no-subs        don't load zephyr subscriptions\n");
   fprintf(file, "  -d,--debug          enable debugging\n");
-  fprintf(file, "  -v,--version        print the Barnowl version number and exit\n");
+  fprintf(file, "  -v,--version        print the BarnOwl version number and exit\n");
   fprintf(file, "  -h,--help           print this help message\n");
   fprintf(file, "  -s,--config-dir     specify an alternate config dir (default ~/.owl)\n");
   fprintf(file, "  -c,--config-file    specify an alternate config file (default ~/.owl/init.pl)\n");
