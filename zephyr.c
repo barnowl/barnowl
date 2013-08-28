@@ -151,7 +151,7 @@ void owl_zephyr_load_initial_subs(void) {
   /* load default subscriptions */
   ret_sd = owl_zephyr_loaddefaultsubs();
 
-  /* load Barnowl default subscriptions */
+  /* load BarnOwl default subscriptions */
   ret_bd = owl_zephyr_loadbarnowldefaultsubs();
 
   /* load subscriptions from subs file */
@@ -353,7 +353,7 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
 #endif
 }
 
-/* Load default Barnowl subscriptions
+/* Load default BarnOwl subscriptions
  *
  * Returns 0 on success.
  * Return -2 if there is a failure from zephyr to load the subscriptions.
@@ -362,7 +362,7 @@ int owl_zephyr_loadbarnowldefaultsubs(void)
 {
 #ifdef HAVE_LIBZEPHYR
   ZSubscription_t *subs;
-  int subSize = 10; /* Max Barnowl default subs we allow */
+  int subSize = 10; /* Max BarnOwl default subs we allow */
   int count, ret;
 
   subs = g_new(ZSubscription_t, subSize);
