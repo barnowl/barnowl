@@ -643,7 +643,7 @@ sub cmd_join {
     my $conn = shift @ARGV;
     my $chan = shift @ARGV or die("Usage: $cmd channel\n");
 
-    die "Channel name '$chan' contains a space.  As per RFC 2812, IRC channel names may not contain spaces.\n" unless index($channel, " ") == -1;
+    die "Channel name '$chan' contains a space.  As per RFC 2812, IRC channel names may not contain spaces.\n" unless index($chan, " ") == -1;
 
     $conn->conn->send_msg(join => $chan, @ARGV);
 
