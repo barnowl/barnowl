@@ -1312,7 +1312,7 @@ sub getServerFromJID {
     if ($packet)    # Got srv record.
     {
         my @answer = $packet->answer;
-        return $answer[0]{target}, $answer[0]{port};
+        return $answer[0]->target, $answer[0]->port if @answer;
     }
 
     return $jid->GetServer(), 5222;
