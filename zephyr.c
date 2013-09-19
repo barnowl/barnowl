@@ -1105,6 +1105,22 @@ void owl_zephyr_delbuddy(const char *name)
   g_free(filename);
 }
 
+#ifdef HAVE_LIBZEPHYR
+const char *owl_zephyr_get_charsetstr(const ZNotice_t *n)
+{
+#ifdef ZCHARSET_UTF_8
+  return ZCharsetToString(n->z_charset);
+#else
+  return "";
+#endif
+}
+#else
+const char *owl_zephyr_get_charsetstr(const void *n)
+{
+  return "";
+}
+#endif
+
 /* return auth string */
 #ifdef HAVE_LIBZEPHYR
 const char *owl_zephyr_get_authstr(const ZNotice_t *n)

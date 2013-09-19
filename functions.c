@@ -1471,6 +1471,7 @@ void owl_function_info(void)
       if (!owl_message_is_pseudo(m)) {
 	owl_fmtext_append_normal(&fm, "\n");
 	owl_fmtext_appendf_normal(&fm, "  Port      : %i\n", ntohs(n->z_port));
+	owl_fmtext_appendf_normal(&fm, "  Charset   : %s\n", owl_zephyr_get_charsetstr(n));
 	owl_fmtext_appendf_normal(&fm, "  Auth      : %s\n", owl_zephyr_get_authstr(n));
 
 	/* FIXME make these more descriptive */
