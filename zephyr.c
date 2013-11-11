@@ -1318,44 +1318,17 @@ const char *zuser_realm(const char *in)
  */
 CALLER_OWN char *owl_zephyr_smartstripped_user(const char *in)
 {
-  char *slash, *dot, *realm, *out;
+  int n = strcspn(in, "./");
+  char *realm = strchrnul(in, '@');
 
-  out = g_strdup(in);
-
-  /* bail immeaditly if we don't have to do any work */
-  slash = strchr(out, '/');
-  dot = strchr(out, '.');
-  if (!slash && !dot) {
-    return(out);
-  }
-
-  if (!strncasecmp(out, OWL_ZEPHYR_NOSTRIP_HOST, strlen(OWL_ZEPHYR_NOSTRIP_HOST)) ||
-      !strncasecmp(out, OWL_ZEPHYR_NOSTRIP_RCMD, strlen(OWL_ZEPHYR_NOSTRIP_RCMD)) ||
-      !strncasecmp(out, OWL_ZEPHYR_NOSTRIP_DAEMON5, strlen(OWL_ZEPHYR_NOSTRIP_DAEMON5)) ||
-      !strncasecmp(out, OWL_ZEPHYR_NOSTRIP_DAEMON4, strlen(OWL_ZEPHYR_NOSTRIP_DAEMON4))) {
-    return(out);
-  }
-
-  realm = strchr(out, '@');
-  if (!slash && dot && realm && (dot > realm)) {
-    /* There's no '/', and the first '.' is in the realm */
-    return(out);
-  }
-
-  /* remove the realm from out, but hold on to it */
-  if (realm) realm[0]='\0';
-
-  /* strip */
-  if (slash) slash[0] = '\0';  /* krb5 style user/instance */
-  else if (dot) dot[0] = '\0'; /* krb4 style user.instance */
-
-  /* reattach the realm if we had one */
-  if (realm) {
-    strcat(out, "@");
-    strcat(out, realm+1);
-  }
-
-  return(out);
+  if (in + n >= realm ||
+      g_str_has_prefix(in, OWL_ZEPHYR_NOSTRIP_HOST) ||
+      g_str_has_prefix(in, OWL_ZEPHYR_NOSTRIP_RCMD) ||
+      g_str_has_prefix(in, OWL_ZEPHYR_NOSTRIP_DAEMON5) ||
+      g_str_has_prefix(in, OWL_ZEPHYR_NOSTRIP_DAEMON4))
+    return g_strdup(in);
+  else
+    return g_strdup_printf("%.*s%s", n, in, realm);
 }
 
 /* Read the list of users in 'filename' as a .anyone file, and return as a
