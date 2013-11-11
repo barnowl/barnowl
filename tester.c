@@ -24,6 +24,7 @@ int owl_fmtext_regtest(void);
 int owl_smartfilter_regtest(void);
 int owl_history_regtest(void);
 int call_filter_regtest(void);
+int owl_smartstrip_regtest(void);
 
 extern void owl_perl_xs_init(pTHX);
 
@@ -115,6 +116,7 @@ int owl_regtest(void) {
   numfailures += owl_smartfilter_regtest();
   numfailures += owl_history_regtest();
   numfailures += call_filter_regtest();
+  numfailures += owl_smartstrip_regtest();
   if (numfailures) {
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
@@ -1015,5 +1017,40 @@ int call_filter_regtest(void)
   g_free(out); out = NULL;
 
   printf("# END testing call_filter (%d failures)\n", numfailed);
+  return numfailed;
+}
+
+int owl_smartstrip_regtest(void)
+{
+  int numfailed = 0;
+
+  printf("# BEGIN testing owl_zephyr_smartstripped_user\n");
+
+#define CHECK_SMARTSTRIP(in, expected)			\
+  do {							\
+    char *__value = owl_zephyr_smartstripped_user(in);	\
+    FAIL_UNLESS("owl_zephyr_smartstripped_user " in,	\
+		strcmp((expected), __value) == 0);	\
+    g_free(__value);					\
+  } while (0)
+
+  CHECK_SMARTSTRIP("foo", "foo");
+  CHECK_SMARTSTRIP("foo.bar", "foo");
+  CHECK_SMARTSTRIP("foo/bar", "foo");
+  CHECK_SMARTSTRIP("host/bar", "host/bar");
+  CHECK_SMARTSTRIP("rcmd.bar", "rcmd.bar");
+  CHECK_SMARTSTRIP("daemon/bar", "daemon/bar");
+  CHECK_SMARTSTRIP("daemon.bar", "daemon.bar");
+
+  CHECK_SMARTSTRIP("foo@ATHENA.MIT.EDU", "foo@ATHENA.MIT.EDU");
+  CHECK_SMARTSTRIP("foo.bar@ATHENA.MIT.EDU", "foo@ATHENA.MIT.EDU");
+  CHECK_SMARTSTRIP("foo/bar@ATHENA.MIT.EDU", "foo@ATHENA.MIT.EDU");
+  CHECK_SMARTSTRIP("host/bar@ATHENA.MIT.EDU", "host/bar@ATHENA.MIT.EDU");
+  CHECK_SMARTSTRIP("rcmd.bar@ATHENA.MIT.EDU", "rcmd.bar@ATHENA.MIT.EDU");
+  CHECK_SMARTSTRIP("daemon/bar@ATHENA.MIT.EDU", "daemon/bar@ATHENA.MIT.EDU");
+  CHECK_SMARTSTRIP("daemon.bar@ATHENA.MIT.EDU", "daemon.bar@ATHENA.MIT.EDU");
+
+  printf("# END testing owl_zephyr_smartstripped_user\n");
+
   return numfailed;
 }
