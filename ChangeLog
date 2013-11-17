@@ -1,4 +1,12 @@
 1.9
+ * Update Jabber module for Net::DNS changes -james2vegas@aim.com
+ * Update and make configurable the Zephyr default format -adehnert@mit.edu
+ * Fix a crash when zcrypt fails -andersk@mit.edu
+ * Fix building with OpenSSL before 0.9.8 -andersk@mit.edu
+ * Make :loadsubs reload instanced personals too -davidben@mit.edu
+ * Make Perl zephyr_zwrite call die() when it fails -jgross@mit.edu
+ * Tell gpg calls from zcrypt to ignore ~/.gnupg -andersk@mit.edu
+ * Replace outgoing zephyr default format with a small URL -geofft@mit.edu
  * Add getnumlines() to perl interface -asedeno@mit.edu
  * Include names of invalid filters on filter errors -adehnert@mit.edu
  * Don't incorrectly mark decryption failures as decrypted -davidben@mit.edu
