@@ -870,8 +870,7 @@ void owl_function_unsuball(void)
  */
 void owl_function_loadsubs(const char *file)
 {
-  int ret, ret2;
-  const char *foo;
+  int ret, ret2, ret3;
   char *path;
 
   if (file==NULL) {
@@ -883,21 +882,23 @@ void owl_function_loadsubs(const char *file)
   }
 
   /* for backwards compatibility for now */
-  ret2=owl_zephyr_loaddefaultsubs();
+  ret2 = owl_zephyr_loaddefaultsubs();
+  ret3 = owl_zephyr_loadbarnowldefaultsubs();
 
   if (!owl_context_is_interactive(owl_global_get_context(&g))) return;
 
-  foo=file?file:"file";
-  if (ret==0 && ret2==0) {
+  if (ret == 0 && ret2 == 0 && ret3 == 0) {
     if (!file) {
       owl_function_makemsg("Subscribed to messages.");
     } else {
       owl_function_makemsg("Subscribed to messages from %s", file);
     }
-  } else if (ret==-1) {
-    owl_function_error("Could not read %s", foo);
-  } else {
+  } else if (ret == -1) {
+    owl_function_error("Could not read %s", file ? file : "file");
+  } else if (ret2 == -1) {
     owl_function_error("Error subscribing to messages");
+  } else {
+    owl_function_error("Error subscribing to instanced personals");
   }
 }
 

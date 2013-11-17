@@ -765,6 +765,10 @@ int do_encrypt_aes(const char *keyfile, const char *in, int length, FILE *outfil
   const char *argv[] = {
     "gpg",
     "--symmetric",
+    "--no-options",
+    "--no-default-keyring",
+    "--keyring", "/dev/null",
+    "--secret-keyring", "/dev/null",
     "--batch",
     "--quiet",
     "--no-use-agent",
@@ -845,6 +849,10 @@ int do_decrypt_aes(const char *keyfile) {
   const char *argv[] = {
     "gpg",
     "--decrypt",
+    "--no-options",
+    "--no-default-keyring",
+    "--keyring", "/dev/null",
+    "--secret-keyring", "/dev/null",
     "--batch",
     "--no-use-agent",
     "--quiet",
@@ -857,6 +865,7 @@ int do_decrypt_aes(const char *keyfile) {
   if(!in) return FALSE;
 
   err = call_filter(argv, in, &out, &status);
+  free(in);
   if(err || status) {
     g_free(out);
     return FALSE;

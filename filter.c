@@ -123,8 +123,8 @@ owl_filterelement * owl_filter_parse_expression(int argc, const char *const *arg
   owl_filterelement * op1 = NULL, * op2 = NULL, *tmp;
 
   op1 = owl_filter_parse_primitive_expression(argc-i, argv+i, &skip);
-  i += skip;
   if(!op1) goto err;
+  i += skip;
 
   while(i < argc) {
     if(strcasecmp(argv[i], "and") &&

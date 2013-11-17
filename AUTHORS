@@ -2,21 +2,41 @@ BarnOwl was primarily written by Nelson Elhage and Alejandro Sedeno at
 the Massachusetts Institute of Technology.
 
 The following people have provided patches or other contributions:
-  Sam Hartman
   Alex Vandiver
-  Geoffrey Thomas
+  Kevin Chen
+  Arun Tharuvai
+  Sam Hartman
   Derrick Brashear
   David Glasser
-  Matthew Goldstein
-  Arun Tharuvai
-  Kevin Chen
   Eric Price
+  Matthew Goldstein
+  Geoffrey Thomas
+  Anders Kaseorg
+  Greg Price
+  Chris Lesniewski-Laas
+  Alex Dehnert
+  Edward Z. Yang
+  Karl Ramm
+  Evan Broder
+  David Benjamin
+  Cathy Zhang
+  Joshua Oreman
+  Leonid Grinberg
+  Kevin Riggle
+  Brian Sniffen
+  William Throwe
+  Jason Gross
+  Adam Glasgall
+  Tim Hill
+  DD Liu
+  Betsy Riley
+  Robert Jacobs
 
-BarnOwl is based on code from Owl, which was originally primarly
+BarnOwl is based on code from Owl, which was originally primarily
 written by James Kretchmar.  Erik Nygren also made substantial
-contributions and improvemnts to the program.
+contributions and improvements to the program.
 
-The following people provided patches and other techincal support for
+The following people provided patches and other technical support for
 Owl:
 
   Stephen Gildea
@@ -29,7 +49,7 @@ Owl:
   David Glasser
   Mark Eichin
 
-Mark Eichin is also maintaining the debian package of Owl.
+Mark Eichin is also maintaining the Debian package of Owl.
 
 The following people helped with beta testing the earliest versions of
 Owl:

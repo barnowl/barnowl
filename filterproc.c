@@ -80,6 +80,7 @@ int call_filter(const char *const *argv, const char *in, char **out, int *status
                                 NULL, NULL,
                                 &child_pid, &child_stdin, &child_stdout, NULL,
                                 NULL)) {
+    *out = NULL;
     return 1;
   }
 

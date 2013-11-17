@@ -92,6 +92,14 @@ running as, e.g. C<nelhage@ATHENA.MIT.EDU>
 Sends a zephyr programmatically. C<COMMAND> should be a C<zwrite>
 command line, and C<MESSAGE> is the zephyr body to send.
 
+=cut
+
+sub zephyr_zwrite {
+    my ($command, $message) = @_;
+    my $ret = BarnOwl::Internal::zephyr_zwrite($command, $message);
+    die "Error sending zephyr" unless $ret == 0;
+}
+
 =head2 ztext_stylestrip STRING
 
 Strips zephyr formatting from a string and returns the result

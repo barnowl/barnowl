@@ -28,7 +28,7 @@ static GSourceFuncs zephyr_event_funcs = {
 
 #define HM_SVC_FALLBACK		htons((unsigned short) 2104)
 
-static char *owl_zephyr_dotfile(const char *name, const char *input)
+static CALLER_OWN char *owl_zephyr_dotfile(const char *name, const char *input)
 {
   if (input != NULL)
     return g_strdup(input);
@@ -290,7 +290,6 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
   int count;
   struct stat statbuff;
 
-  subs = g_new(ZSubscription_t, subSize);
   subsfile = owl_zephyr_dotfile(".zephyr.subs", filename);
 
   if (stat(subsfile, &statbuff) != 0) {
@@ -306,6 +305,8 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
   g_free(subsfile);
   if (!file)
     return -1;
+
+  subs = g_new(ZSubscription_t, subSize);
   while (owl_getline(&buffer, file)) {
     if (buffer[0] == '#' || buffer[0] == '\n')
 	continue;
@@ -727,7 +728,7 @@ int send_zephyr(const char *opcode, const char *zsig, const char *class, const c
   }
   if (!owl_zwrite_recip_is_personal(recipient) && *owl_global_get_zsender(&g))
     notice.z_sender = zsender = long_zuser(owl_global_get_zsender(&g));
-  notice.z_default_format=zstr("Class $class, Instance $instance:\nTo: @bold($recipient) at $time $date\nFrom: @bold{$1 <$sender>}\n\n$2");
+  notice.z_default_format=zstr(ZEPHYR_DEFAULT_FORMAT);
   if (opcode) notice.z_opcode=zstr(opcode);
 
   notice.z_message_len=strlen(zsig)+1+strlen(message);
@@ -1022,6 +1023,7 @@ void owl_zephyr_addsub(const char *filename, const char *class, const char *inst
     }
   }
 
+  g_free(subsfile);
   g_free(line);
 #endif
 }
