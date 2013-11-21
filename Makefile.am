@@ -13,7 +13,8 @@ if ENABLE_ZCRYPT
 bin_PROGRAMS += zcrypt
 endif
 
-zcrypt_SOURCES = zcrypt.c filterproc.c version.c
+zcrypt_SOURCES = zcrypt.c filterproc.c
+nodist_zcrypt_SOURCES = version.c
 
 check_PROGRAMS = bin/tester
 dist_check_DATA = t
