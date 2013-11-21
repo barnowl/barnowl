@@ -21,13 +21,11 @@ config.h.in~
 config.log
 config.status
 configure
-core
 depcomp
 gmarshal_funcs.c
 gmarshal_funcs.h
 inc/
 install-sh
-jabber.log
 missing
 owl_prototypes.h
 owl_prototypes.h.new
