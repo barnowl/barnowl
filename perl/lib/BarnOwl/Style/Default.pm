@@ -128,8 +128,7 @@ sub chat_header {
 sub format_sender {
     my $self = shift;
     my $m = shift;
-    my $sender = $m->long_sender;
-    $sender =~ s/\n.*$//s;
+    my $sender = $self->humanize($m->long_sender, 1);
     if (BarnOwl::getvar('colorztext') eq 'on') {
       return "  (" . $sender . '@color[default]' . ")";
     } else {
