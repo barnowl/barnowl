@@ -22,7 +22,7 @@ owl_popexec *owl_popexec_new(const char *command)
     return NULL;
   }
 
-  pe = g_new(owl_popexec, 1);
+  pe = g_slice_new(owl_popexec);
   pe->winactive=0;
   pe->pid=0;
   pe->refcount=0;
@@ -178,6 +178,6 @@ void owl_popexec_unref(owl_popexec *pe)
   pe->refcount--;
   if (pe->refcount<=0) {
     owl_function_debugmsg("doing free of %p", pe);
-    g_free(pe);
+    g_slice_free(owl_popexec, pe);
   }
 }

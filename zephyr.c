@@ -124,7 +124,7 @@ gboolean owl_zephyr_finish_initialization(GIOChannel *source, GIOCondition condi
     owl_function_debugmsg("Loading %d deferred subs.", subs->nsubs);
     owl_zephyr_loadsubs_helper(subs->subs, subs->nsubs);
     deferred_subs = g_list_delete_link(deferred_subs, deferred_subs);
-    g_free(subs);
+    g_slice_free(owl_sub_list, subs);
   }
 
   /* zlog in if we need to */
@@ -260,7 +260,7 @@ int owl_zephyr_loadsubs_helper(ZSubscription_t subs[], int count)
 
     g_free(subs);
   } else {
-    owl_sub_list *s = g_new(owl_sub_list, 1);
+    owl_sub_list *s = g_slice_new(owl_sub_list);
     s->subs = subs;
     s->nsubs = count;
     deferred_subs = g_list_append(deferred_subs, s);
@@ -1412,7 +1412,7 @@ void owl_zephyr_process_pseudologin(ZNotice_t *n)
           ret = ZGetLocations(&location, &numlocs);
           if (ret == ZERR_NONE) {
             /* Send a PSEUDO LOGIN! */
-            m = g_new(owl_message, 1);
+            m = g_slice_new(owl_message);
             owl_message_create_pseudo_zlogin(m, 0, zald->user,
                                              location.host,
                                              location.time,
@@ -1425,7 +1425,7 @@ void owl_zephyr_process_pseudologin(ZNotice_t *n)
       } else if (numlocs == 0 && owl_zbuddylist_contains_user(zbl, zald->user)) {
         /* Send a PSEUDO LOGOUT! */
         if (notify) {
-          m = g_new(owl_message, 1);
+          m = g_slice_new(owl_message);
           owl_message_create_pseudo_zlogin(m, 1, zald->user, "", "", "");
           owl_global_messagequeue_addmsg(&g, m);
         }
@@ -1434,7 +1434,7 @@ void owl_zephyr_process_pseudologin(ZNotice_t *n)
       }
     }
     ZFreeALD(zald);
-    g_free(zald);
+    g_slice_free(ZAsyncLocateData_t, zald);
   }
 }
 #else
@@ -1501,7 +1501,7 @@ static int _owl_zephyr_process_events(void)
       }
 
       /* create the new message */
-      m=g_new(owl_message, 1);
+      m=g_slice_new(owl_message);
       owl_message_create_from_znotice(m, &notice);
 
       owl_global_messagequeue_addmsg(&g, m);

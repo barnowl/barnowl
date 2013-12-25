@@ -67,7 +67,7 @@ static void oe_window_resized(owl_window *w, owl_editwin *e);
 
 static CALLER_OWN owl_editwin *owl_editwin_allocate(void)
 {
-  owl_editwin *e = g_new0(owl_editwin, 1);
+  owl_editwin *e = g_slice_new0(owl_editwin);
   e->refcount = 1;
   return e;
 }
@@ -86,7 +86,7 @@ static void _owl_editwin_delete(owl_editwin *e)
   }
   oe_destroy_cbdata(e);
 
-  g_free(e);
+  g_slice_free(owl_editwin, e);
 }
 
 static inline void oe_set_index(owl_editwin *e, int index)
@@ -372,7 +372,7 @@ static void oe_restore_mark_only(owl_editwin *e, oe_excursion *x)
 /* External interface to oe_save_excursion */
 owl_editwin_excursion *owl_editwin_begin_excursion(owl_editwin *e)
 {
-  owl_editwin_excursion *x = g_new(owl_editwin_excursion, 1);
+  owl_editwin_excursion *x = g_slice_new(owl_editwin_excursion);
   oe_save_excursion(e, x);
   return x;
 }
@@ -380,7 +380,7 @@ owl_editwin_excursion *owl_editwin_begin_excursion(owl_editwin *e)
 void owl_editwin_end_excursion(owl_editwin *e, owl_editwin_excursion *x)
 {
   oe_restore_excursion(e, x);
-  g_free(x);
+  g_slice_free(owl_editwin_excursion, x);
 }
 
 static inline const char *oe_next_point(owl_editwin *e, const char *p)

@@ -187,7 +187,7 @@ CALLER_OWN owl_message *owl_perlconfig_hashref2message(SV *msg)
 
   hash = (HV*)SvRV(msg);
 
-  m = g_new(owl_message, 1);
+  m = g_slice_new(owl_message);
   owl_message_init(m);
 
   hv_iterinit(hash);

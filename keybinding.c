@@ -13,11 +13,11 @@ static int owl_keybinding_make_keys(owl_keybinding *kb, const char *keyseq);
 /* sets up a new keybinding for a command */
 CALLER_OWN owl_keybinding *owl_keybinding_new(const char *keyseq, const char *command, void (*function_fn)(void), const char *desc)
 {
-  owl_keybinding *kb = g_new(owl_keybinding, 1);
+  owl_keybinding *kb = g_slice_new(owl_keybinding);
 
   owl_function_debugmsg("owl_keybinding_init: creating binding for <%s> with desc: <%s>", keyseq, desc);
   if (command && function_fn) {
-    g_free(kb);
+    g_slice_free(owl_keybinding, kb);
     return NULL;
   } else if (command && !function_fn) {
     kb->type = OWL_KEYBINDING_COMMAND;
@@ -28,7 +28,7 @@ CALLER_OWN owl_keybinding *owl_keybinding_new(const char *keyseq, const char *co
   }
 
   if (owl_keybinding_make_keys(kb, keyseq) != 0) {
-    g_free(kb);
+    g_slice_free(owl_keybinding, kb);
     return NULL;
   }
 
@@ -69,7 +69,7 @@ void owl_keybinding_delete(owl_keybinding *kb)
   g_free(kb->keys);
   g_free(kb->desc);
   g_free(kb->command);
-  g_free(kb);
+  g_slice_free(owl_keybinding, kb);
 }
 
 /* executes a keybinding */

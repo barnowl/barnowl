@@ -9,7 +9,7 @@ CALLER_OWN owl_context *owl_context_new(int mode, void *data, const char *keymap
   owl_context *c;
   if (!(mode & OWL_CTX_MODE_BITS))
     mode |= OWL_CTX_INTERACTIVE;
-  c = g_new0(owl_context, 1);
+  c = g_slice_new0(owl_context);
   c->mode = mode;
   c->data = data;
   c->cursor = cursor ? g_object_ref(cursor) : NULL;
@@ -70,5 +70,5 @@ void owl_context_delete(owl_context *ctx)
   g_free(ctx->keymap);
   if (ctx->delete_cb)
     ctx->delete_cb(ctx);
-  g_free(ctx);
+  g_slice_free(owl_context, ctx);
 }

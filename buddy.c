@@ -71,5 +71,5 @@ void owl_buddy_cleanup(owl_buddy *b)
 void owl_buddy_delete(owl_buddy *b)
 {
   owl_buddy_cleanup(b);
-  g_free(b);
+  g_slice_free(owl_buddy, b);
 }

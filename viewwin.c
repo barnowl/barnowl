@@ -12,7 +12,7 @@ static void owl_viewwin_set_window(owl_viewwin *v, owl_window *w);
  */
 CALLER_OWN owl_viewwin *owl_viewwin_new_text(owl_window *win, const char *text)
 {
-  owl_viewwin *v = g_new0(owl_viewwin, 1);
+  owl_viewwin *v = g_slice_new0(owl_viewwin);
   owl_fmtext_init_null(&(v->fmtext));
   if (text) {
     owl_fmtext_append_normal(&(v->fmtext), text);
@@ -35,7 +35,7 @@ CALLER_OWN owl_viewwin *owl_viewwin_new_text(owl_window *win, const char *text)
 CALLER_OWN owl_viewwin *owl_viewwin_new_fmtext(owl_window *win, const owl_fmtext *fmtext)
 {
   char *text;
-  owl_viewwin *v = g_new0(owl_viewwin, 1);
+  owl_viewwin *v = g_slice_new0(owl_viewwin);
 
   owl_fmtext_copy(&(v->fmtext), fmtext);
   text = owl_fmtext_print_plain(fmtext);
@@ -423,5 +423,5 @@ void owl_viewwin_delete(owl_viewwin *v)
   g_object_unref(v->content);
   g_object_unref(v->status);
   owl_fmtext_cleanup(&(v->fmtext));
-  g_free(v);
+  g_slice_free(owl_viewwin, v);
 }

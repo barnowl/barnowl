@@ -2,7 +2,7 @@
 
 CALLER_OWN owl_messagelist *owl_messagelist_new(void)
 {
-  owl_messagelist *ml = g_new(owl_messagelist, 1);
+  owl_messagelist *ml = g_slice_new(owl_messagelist);
   ml->list = g_ptr_array_new();
   return ml;
 }
@@ -12,7 +12,7 @@ void owl_messagelist_delete(owl_messagelist *ml, bool free_messages)
   if (free_messages)
     g_ptr_array_foreach(ml->list, (GFunc)owl_message_delete, NULL);
   g_ptr_array_free(ml->list, true);
-  g_free(ml);
+  g_slice_free(owl_messagelist, ml);
 }
 
 int owl_messagelist_get_size(const owl_messagelist *ml)

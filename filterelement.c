@@ -327,11 +327,11 @@ void owl_filterelement_cleanup(owl_filterelement *fe)
   if (fe->field) g_free(fe->field);
   if (fe->left) {
     owl_filterelement_cleanup(fe->left);
-    g_free(fe->left);
+    g_slice_free(owl_filterelement, fe->left);
   }
   if (fe->right) {
     owl_filterelement_cleanup(fe->right);
-    g_free(fe->right);
+    g_slice_free(owl_filterelement, fe->right);
   }
   owl_regex_cleanup(&(fe->re));
 }
