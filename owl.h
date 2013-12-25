@@ -338,11 +338,6 @@ typedef struct _owl_zwrite {
   int noping;
 } owl_zwrite;
 
-typedef struct _owl_pair {
-  const char *key;
-  char *value;
-} owl_pair;
-
 struct _owl_fmtext_cache;
 
 typedef struct _owl_message {
