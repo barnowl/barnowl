@@ -38,7 +38,7 @@ void owl_message_init(owl_message *m)
 #endif
 
   owl_message_set_hostname(m, "");
-  m->attributes = g_ptr_array_new();
+  g_datalist_init(&m->attributes);
   
   /* save the time */
   m->time = time(NULL);
@@ -53,27 +53,8 @@ void owl_message_init(owl_message *m)
  */
 void owl_message_set_attribute(owl_message *m, const char *attrname, const char *attrvalue)
 {
-  int i;
-  owl_pair *p = NULL, *pair = NULL;
-
-  attrname = g_intern_string(attrname);
-
-  /* look for an existing pair with this key, */
-  for (i = 0; i < m->attributes->len; i++) {
-    p = m->attributes->pdata[i];
-    if (owl_pair_get_key(p) == attrname) {
-      g_free(owl_pair_get_value(p));
-      pair = p;
-      break;
-    }
-  }
-
-  if(pair ==  NULL) {
-    pair = g_slice_new(owl_pair);
-    owl_pair_create(pair, attrname, NULL);
-    g_ptr_array_add(m->attributes, pair);
-  }
-  owl_pair_set_value(pair, owl_validate_or_convert(attrvalue));
+  g_datalist_set_data_full(&m->attributes, attrname,
+			   owl_validate_or_convert(attrvalue), g_free);
 }
 
 /* return the value associated with the named attribute, or NULL if
@@ -81,61 +62,28 @@ void owl_message_set_attribute(owl_message *m, const char *attrname, const char 
  */
 const char *owl_message_get_attribute_value(const owl_message *m, const char *attrname)
 {
-  int i;
-  owl_pair *p;
-  GQuark quark;
-
-  quark = g_quark_try_string(attrname);
-  if (quark == 0)
-    /* don't bother inserting into string table */
-    return NULL;
-  attrname = g_quark_to_string(quark);
-
-  for (i = 0; i < m->attributes->len; i++) {
-    p = m->attributes->pdata[i];
-    if (owl_pair_get_key(p) == attrname) {
-      return(owl_pair_get_value(p));
-    }
-  }
-
-  /*
-  owl_function_debugmsg("No attribute %s found for message %i",
-			attrname,
-			owl_message_get_id(m));
-  */
-  return(NULL);
+  return g_datalist_get_data(&((owl_message *)m)->attributes, attrname);
 }
 
 /* We cheat and indent it for now, since we really want this for
  * the 'info' function.  Later there should just be a generic
  * function to indent fmtext.
  */
-void owl_message_attributes_tofmtext(const owl_message *m, owl_fmtext *fm) {
-  int i;
-  owl_pair *p;
+static void owl_message_attribute_tofmtext(GQuark key_id, gpointer data, gpointer fm)
+{
   char *buff, *tmpbuff;
 
+  tmpbuff = owl_text_indent(data, 19, false);
+  buff = g_strdup_printf("  %-15.15s: %s\n", g_quark_to_string(key_id), tmpbuff);
+  g_free(tmpbuff);
+  owl_fmtext_append_normal(fm, buff);
+  g_free(buff);
+}
+
+void owl_message_attributes_tofmtext(const owl_message *m, owl_fmtext *fm)
+{
   owl_fmtext_init_null(fm);
-
-  for (i = 0; i < m->attributes->len; i++) {
-    p = m->attributes->pdata[i];
-
-    buff = g_strdup(owl_pair_get_value(p));
-    if (buff) {
-      tmpbuff = owl_text_indent(buff, 19, false);
-      g_free(buff);
-      buff = g_strdup_printf("  %-15.15s: %s\n", owl_pair_get_key(p), tmpbuff);
-      g_free(tmpbuff);
-    }
-
-    if(buff == NULL) {
-      buff = g_strdup_printf("  %-15.15s: %s\n", owl_pair_get_key(p), "<error>");
-      if(buff == NULL)
-        buff=g_strdup("   <error>\n");
-    }
-    owl_fmtext_append_normal(fm, buff);
-    g_free(buff);
-  }
+  g_datalist_foreach(&((owl_message *)m)->attributes, owl_message_attribute_tofmtext, fm);
 }
 
 void owl_message_invalidate_format(owl_message *m)
@@ -1005,8 +953,6 @@ void owl_message_create_from_zwrite(owl_message *m, const owl_zwrite *z, const c
 
 void owl_message_cleanup(owl_message *m)
 {
-  int i;
-  owl_pair *p;
 #ifdef HAVE_LIBZEPHYR    
   if (m->has_notice) {
     ZFreeNotice(&(m->notice));
@@ -1015,13 +961,7 @@ void owl_message_cleanup(owl_message *m)
   if (m->timestr) g_free(m->timestr);
 
   /* free all the attributes */
-  for (i = 0; i < m->attributes->len; i++) {
-    p = m->attributes->pdata[i];
-    g_free(owl_pair_get_value(p));
-    g_slice_free(owl_pair, p);
-  }
-
-  g_ptr_array_free(m->attributes, true);
+  g_datalist_clear(&m->attributes);
  
   owl_message_invalidate_format(m);
 }

@@ -68,6 +68,12 @@ CALLER_OWN HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const void *))
   return ret;
 }
 
+static void owl_perlconfig_store_attribute(GQuark key_id, gpointer data, gpointer h)
+{
+  (void)hv_store(h, g_quark_to_string(key_id), strlen(data),
+                 owl_new_sv(data), 0);
+}
+
 CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
 {
   HV *h, *stash;
@@ -75,8 +81,6 @@ CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
   const char *type;
   char *ptr, *utype, *blessas;
   const char *f;
-  int i;
-  const owl_pair *pair;
   const owl_filter *wrap;
 
   if (!m) return &PL_sv_undef;
@@ -111,11 +115,7 @@ CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
     (void)hv_store(h, "fields", strlen("fields"), newRV_noinc((SV*)av_zfields), 0);
   }
 
-  for (i = 0; i < m->attributes->len; i++) {
-    pair = m->attributes->pdata[i];
-    (void)hv_store(h, owl_pair_get_key(pair), strlen(owl_pair_get_key(pair)),
-                   owl_new_sv(owl_pair_get_value(pair)),0);
-  }
+  g_datalist_foreach(&((owl_message *)m)->attributes, owl_perlconfig_store_attribute, h);
   
   MSG2H(h, type);
   MSG2H(h, direction);

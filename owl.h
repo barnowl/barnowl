@@ -355,7 +355,7 @@ typedef struct _owl_message {
   struct _owl_fmtext_cache * fmtext;
   int delete;
   const char *hostname;
-  GPtrArray *attributes;          /* this is a list of pairs */
+  GData *attributes;
   char *timestr;
   time_t time;
 } owl_message;
