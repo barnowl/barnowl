@@ -606,6 +606,21 @@ CALLER_OWN char *owl_strip_format_chars(const char *in)
   return r;
 }
 
+/* Check whether in is not valid UTF-8 or has format characters. */
+bool owl_needs_convert(const char *in)
+{
+  const char *p;
+  if (!g_utf8_validate(in, -1, NULL))
+    return true;
+  for (p = strchr(in, OWL_FMTEXT_UC_STARTBYTE_UTF8);
+       p != NULL;
+       p = strchr(p + 1, OWL_FMTEXT_UC_STARTBYTE_UTF8)) {
+    if (owl_fmtext_is_format_char(g_utf8_get_char(p)))
+      return true;
+  }
+  return false;
+}
+
 /* If in is not UTF-8, convert from ISO-8859-1. We may want to allow
  * the caller to specify an alternative in the future. We also strip
  * out characters in Unicode Plane 16, as we use that plane internally

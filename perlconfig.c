@@ -194,9 +194,7 @@ CALLER_OWN owl_message *owl_perlconfig_hashref2message(SV *msg)
   while((ent = hv_iternext(hash))) {
     key = hv_iterkey(ent, &len);
     val = SvPV_nolen(hv_iterval(hash, ent));
-    if(!strcmp(key, "type")) {
-      owl_message_set_type(m, val);
-    } else if(!strcmp(key, "direction")) {
+    if (!strcmp(key, "direction")) {
       owl_message_set_direction(m, owl_message_parse_direction(val));
     } else if(!strcmp(key, "private")) {
       SV * v = hv_iterval(hash, ent);
@@ -205,20 +203,18 @@ CALLER_OWN owl_message *owl_perlconfig_hashref2message(SV *msg)
       }
     } else if (!strcmp(key, "hostname")) {
       owl_message_set_hostname(m, val);
-    } else if (!strcmp(key, "zwriteline")) {
-      owl_message_set_zwriteline(m, val);
     } else if (!strcmp(key, "time")) {
       g_free(m->timestr);
       m->timestr = g_strdup(val);
       strptime(val, "%a %b %d %T %Y", &tm);
       m->time = mktime(&tm);
     } else {
-      owl_message_set_attribute(m, key, val);
+      owl_message_set_attribute(m, key, g_strdup(val), g_free);
     }
   }
   if(owl_message_is_type_admin(m)) {
     if(!owl_message_get_attribute_value(m, "adminheader"))
-      owl_message_set_attribute(m, "adminheader", "");
+      owl_message_set_attribute(m, "adminheader", "", NULL);
   }
   return m;
 }
