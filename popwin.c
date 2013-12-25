@@ -2,7 +2,7 @@
 
 CALLER_OWN owl_popwin *owl_popwin_new(void)
 {
-  owl_popwin *pw = g_new0(owl_popwin, 1);
+  owl_popwin *pw = g_slice_new0(owl_popwin);
 
   pw->border = owl_window_new(NULL);
   pw->content = owl_window_new(pw->border);
@@ -91,7 +91,7 @@ void owl_popwin_delete(owl_popwin *pw)
   g_object_unref(pw->border);
   g_object_unref(pw->content);
 
-  g_free(pw);
+  g_slice_free(owl_popwin, pw);
 }
 
 int owl_popwin_is_active(const owl_popwin *pw)

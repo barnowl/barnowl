@@ -552,11 +552,11 @@ static void owl_global_delete_filter_ent(void *data)
   owl_global_filter_ent *e = data;
   e->g->filterlist = g_list_remove(e->g->filterlist, e->f);
   owl_filter_delete(e->f);
-  g_free(e);
+  g_slice_free(owl_global_filter_ent, e);
 }
 
 void owl_global_add_filter(owl_global *g, owl_filter *f) {
-  owl_global_filter_ent *e = g_new(owl_global_filter_ent, 1);
+  owl_global_filter_ent *e = g_slice_new(owl_global_filter_ent);
   e->g = g;
   e->f = f;
 

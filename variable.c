@@ -626,7 +626,7 @@ void owl_variable_dict_add_variable(owl_vardict * vardict,
 }
 
 static owl_variable *owl_variable_newvar(int type, const char *name, const char *summary, const char *description, const char *validsettings) {
-  owl_variable *var = g_new0(owl_variable, 1);
+  owl_variable *var = g_slice_new0(owl_variable);
   var->type = type;
   var->name = g_strdup(name);
   var->summary = g_strdup(summary);
@@ -792,7 +792,7 @@ void owl_variable_delete(owl_variable *v)
   g_closure_unref(v->get_tostring_fn);
   g_closure_unref(v->set_fromstring_fn);
 
-  g_free(v);
+  g_slice_free(owl_variable, v);
 }
 
 

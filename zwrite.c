@@ -2,9 +2,9 @@
 
 CALLER_OWN owl_zwrite *owl_zwrite_new_from_line(const char *line)
 {
-  owl_zwrite *z = g_new(owl_zwrite, 1);
+  owl_zwrite *z = g_slice_new(owl_zwrite);
   if (owl_zwrite_create_from_line(z, line) != 0) {
-    g_free(z);
+    g_slice_free(owl_zwrite, z);
     return NULL;
   }
   return z;
@@ -12,9 +12,9 @@ CALLER_OWN owl_zwrite *owl_zwrite_new_from_line(const char *line)
 
 CALLER_OWN owl_zwrite *owl_zwrite_new(int argc, const char *const *argv)
 {
-  owl_zwrite *z = g_new(owl_zwrite, 1);
+  owl_zwrite *z = g_slice_new(owl_zwrite);
   if (owl_zwrite_create(z, argc, argv) != 0) {
-    g_free(z);
+    g_slice_free(owl_zwrite, z);
     return NULL;
   }
   return z;
@@ -355,7 +355,7 @@ bool owl_zwrite_is_personal(const owl_zwrite *z)
 void owl_zwrite_delete(owl_zwrite *z)
 {
   owl_zwrite_cleanup(z);
-  g_free(z);
+  g_slice_free(owl_zwrite, z);
 }
 
 void owl_zwrite_cleanup(owl_zwrite *z)

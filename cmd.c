@@ -34,16 +34,16 @@ const owl_cmd *owl_cmddict_find(const owl_cmddict *d, const char *name) {
 /* creates a new command alias */
 void owl_cmddict_add_alias(owl_cmddict *cd, const char *alias_from, const char *alias_to) {
   owl_cmd *cmd;
-  cmd = g_new(owl_cmd, 1);
+  cmd = g_slice_new(owl_cmd);
   owl_cmd_create_alias(cmd, alias_from, alias_to);
   owl_perlconfig_new_command(cmd->name);
   owl_dict_insert_element(cd, cmd->name, cmd, (void (*)(void *))owl_cmd_delete);
 }
 
 int owl_cmddict_add_cmd(owl_cmddict *cd, const owl_cmd * cmd) {
-  owl_cmd * newcmd = g_new(owl_cmd, 1);
+  owl_cmd * newcmd = g_slice_new(owl_cmd);
   if(owl_cmd_create_from_template(newcmd, cmd) < 0) {
-    g_free(newcmd);
+    g_slice_free(owl_cmd, newcmd);
     return -1;
   }
   owl_perlconfig_new_command(cmd->name);
@@ -140,7 +140,7 @@ void owl_cmd_cleanup(owl_cmd *cmd)
 void owl_cmd_delete(owl_cmd *cmd)
 {
   owl_cmd_cleanup(cmd);
-  g_free(cmd);
+  g_slice_free(owl_cmd, cmd);
 }
 
 int owl_cmd_is_context_valid(const owl_cmd *cmd, const owl_context *ctx) { 

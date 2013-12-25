@@ -5,7 +5,7 @@ static void owl_mainwin_resized(owl_window *w, void *user_data);
 
 CALLER_OWN owl_mainwin *owl_mainwin_new(owl_window *window)
 {
-  owl_mainwin *mw = g_new(owl_mainwin, 1);
+  owl_mainwin *mw = g_slice_new(owl_mainwin);
   mw->curtruncated=0;
   mw->lastdisplayed=-1;
   mw->window = g_object_ref(window);

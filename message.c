@@ -69,7 +69,7 @@ void owl_message_set_attribute(owl_message *m, const char *attrname, const char 
   }
 
   if(pair ==  NULL) {
-    pair = g_new(owl_pair, 1);
+    pair = g_slice_new(owl_pair);
     owl_pair_create(pair, attrname, NULL);
     g_ptr_array_add(m->attributes, pair);
   }
@@ -1018,7 +1018,7 @@ void owl_message_cleanup(owl_message *m)
   for (i = 0; i < m->attributes->len; i++) {
     p = m->attributes->pdata[i];
     g_free(owl_pair_get_value(p));
-    g_free(p);
+    g_slice_free(owl_pair, p);
   }
 
   g_ptr_array_free(m->attributes, true);
@@ -1029,5 +1029,5 @@ void owl_message_cleanup(owl_message *m)
 void owl_message_delete(owl_message *m)
 {
   owl_message_cleanup(m);
-  g_free(m);
+  g_slice_free(owl_message, m);
 }

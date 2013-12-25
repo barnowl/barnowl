@@ -40,13 +40,13 @@ static void _destroy_task(void *data)
   owl_task *t = data;
   if (t->destroy_cbdata)
     t->destroy_cbdata(t->cbdata);
-  g_free(t);
+  g_slice_free(owl_task, t);
 }
 
 void owl_select_post_task(void (*cb)(void*), void *cbdata, void (*destroy_cbdata)(void*), GMainContext *context)
 {
   GSource *source = g_idle_source_new();
-  owl_task *t = g_new0(owl_task, 1);
+  owl_task *t = g_slice_new0(owl_task);
   t->cb = cb;
   t->cbdata = cbdata;
   t->destroy_cbdata = destroy_cbdata;

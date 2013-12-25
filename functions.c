@@ -195,7 +195,7 @@ void owl_function_adminmsg(const char *header, const char *body)
 {
   owl_message *m;
 
-  m=g_new(owl_message, 1);
+  m=g_slice_new(owl_message);
   owl_message_create_admin(m, header, body);
   
   /* add it to the global list and current view */
@@ -217,7 +217,7 @@ void owl_function_add_outgoing_zephyrs(const owl_zwrite *z)
 {
   if (z->cc && owl_zwrite_is_personal(z)) {
     /* create the message */
-    owl_message *m = g_new(owl_message, 1);
+    owl_message *m = g_slice_new(owl_message);
     owl_message_create_from_zwrite(m, z, owl_zwrite_get_message(z), 0);
 
     owl_global_messagequeue_addmsg(&g, m);
@@ -230,7 +230,7 @@ void owl_function_add_outgoing_zephyrs(const owl_zwrite *z)
         continue;
 
       /* create the message */
-      m = g_new(owl_message, 1);
+      m = g_slice_new(owl_message);
       owl_message_create_from_zwrite(m, z, owl_zwrite_get_message(z), i);
 
       owl_global_messagequeue_addmsg(&g, m);
@@ -250,7 +250,7 @@ CALLER_OWN owl_message *owl_function_make_outgoing_aim(const char *body, const c
   /* error if we're not logged into aim */
   if (!owl_global_is_aimloggedin(&g)) return(NULL);
   
-  m=g_new(owl_message, 1);
+  m=g_slice_new(owl_message);
   owl_message_create_aim(m,
 			 owl_global_get_aim_screenname(&g),
 			 to,
@@ -269,7 +269,7 @@ CALLER_OWN owl_message *owl_function_make_outgoing_loopback(const char *body)
   owl_message *m;
 
   /* create the message */
-  m=g_new(owl_message, 1);
+  m=g_slice_new(owl_message);
   owl_message_create_loopback(m, body);
   owl_message_set_direction_out(m);
 
@@ -515,7 +515,7 @@ void owl_function_loopwrite(const char *msg)
 
   /* create a message and put it on the message queue.  This simulates
    * an incoming message */
-  min=g_new(owl_message, 1);
+  min=g_slice_new(owl_message);
   mout=owl_function_make_outgoing_loopback(msg);
 
   if (owl_global_is_displayoutgoing(&g)) {
@@ -3481,7 +3481,7 @@ void owl_function_zephyr_buddy_check(int notify)
   zaldptr = g_list_first(*zaldlist);
   while (zaldptr) {
     ZFreeALD(zaldptr->data);
-    g_free(zaldptr->data);
+    g_slice_free(ZAsyncLocateData_t, zaldptr->data);
     zaldptr = g_list_next(zaldptr);
   }
   g_list_free(*zaldlist);
@@ -3491,11 +3491,11 @@ void owl_function_zephyr_buddy_check(int notify)
   if (anyone != NULL) {
     for (i = 0; i < anyone->len; i++) {
       user = anyone->pdata[i];
-      zald = g_new(ZAsyncLocateData_t, 1);
+      zald = g_slice_new(ZAsyncLocateData_t);
       if (ZRequestLocations(zstr(user), zald, UNACKED, ZAUTH) == ZERR_NONE) {
         *zaldlist = g_list_append(*zaldlist, zald);
       } else {
-        g_free(zald);
+        g_slice_free(ZAsyncLocateData_t, zald);
       }
     }
     owl_ptr_array_free(anyone, g_free);

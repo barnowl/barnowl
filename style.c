@@ -102,5 +102,5 @@ void owl_style_cleanup(owl_style *s)
 void owl_style_delete(owl_style *s)
 {
   owl_style_cleanup(s);
-  g_free(s);
+  g_slice_free(owl_style, s);
 }

@@ -17,7 +17,7 @@ owl_filter *owl_filter_new(const char *name, int argc, const char *const *argv)
 {
   owl_filter *f;
 
-  f = g_new(owl_filter, 1);
+  f = g_slice_new(owl_filter);
 
   f->name=g_strdup(name);
   f->fgcolor=OWL_COLOR_DEFAULT;
@@ -68,7 +68,7 @@ static owl_filterelement * owl_filter_parse_primitive_expression(int argc, const
 
   if(!argc) return NULL;
 
-  fe = g_new(owl_filterelement, 1);
+  fe = g_slice_new(owl_filterelement);
   owl_filterelement_create(fe);
 
   if(!strcasecmp(argv[i], "(")) {
@@ -113,7 +113,7 @@ static owl_filterelement * owl_filter_parse_primitive_expression(int argc, const
   return fe;
 err:
   owl_filterelement_cleanup(fe);
-  g_free(fe);
+  g_slice_free(owl_filterelement, fe);
   return NULL;
 }
 
@@ -131,7 +131,7 @@ owl_filterelement * owl_filter_parse_expression(int argc, const char *const *arg
        strcasecmp(argv[i], "or")) break;
     op2 = owl_filter_parse_primitive_expression(argc-i-1, argv+i+1, &skip);
     if(!op2) goto err;
-    tmp = g_new(owl_filterelement, 1);
+    tmp = g_slice_new(owl_filterelement);
     if(!strcasecmp(argv[i], "and")) {
       owl_filterelement_create_and(tmp, op1, op2);
     } else {
@@ -151,7 +151,7 @@ owl_filterelement * owl_filter_parse_expression(int argc, const char *const *arg
 err:
   if(op1) {
     owl_filterelement_cleanup(op1);
-    g_free(op1);
+    g_slice_free(owl_filterelement, op1);
   }
   return NULL;
 }
@@ -261,9 +261,9 @@ void owl_filter_delete(owl_filter *f)
     return;
   if (f->root) {
     owl_filterelement_cleanup(f->root);
-    g_free(f->root);
+    g_slice_free(owl_filterelement, f->root);
   }
   if (f->name)
     g_free(f->name);
-  g_free(f);
+  g_slice_free(owl_filter, f);
 }

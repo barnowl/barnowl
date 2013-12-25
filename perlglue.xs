@@ -231,7 +231,7 @@ create_style(name, object)
 		owl_style *s;
      CODE:
 	{
-		s = g_new(owl_style, 1);
+		s = g_slice_new(owl_style);
 		owl_style_create_perl(s, name, newSVsv(object));
 		owl_global_add_style(&g, s);
 	}

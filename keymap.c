@@ -188,7 +188,7 @@ void owl_keyhandler_add_keymap(owl_keyhandler *kh, owl_keymap *km)
 owl_keymap *owl_keyhandler_create_and_add_keymap(owl_keyhandler *kh, const char *name, const char *desc, void (*default_fn)(owl_input), void (*prealways_fn)(owl_input), void (*postalways_fn)(owl_input))
 {
   owl_keymap *km;
-  km = g_new(owl_keymap, 1);
+  km = g_slice_new(owl_keymap);
   owl_keymap_init(km, name, desc, default_fn, prealways_fn, postalways_fn);
   owl_keyhandler_add_keymap(kh, km);
   return km;

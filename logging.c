@@ -176,14 +176,14 @@ static void owl_log_entry_free(void *data)
   if (msg) {
     g_free(msg->message);
     g_free(msg->filename);
-    g_free(msg);
+    g_slice_free(owl_log_entry, msg);
   }
 }
 
 void owl_log_enqueue_message(const char *buffer, const char *filename)
 {
   owl_log_entry *log_msg = NULL; 
-  log_msg = g_new(owl_log_entry,1);
+  log_msg = g_slice_new(owl_log_entry);
   log_msg->message = g_strdup(buffer);
   log_msg->filename = g_strdup(filename);
   owl_select_post_task(owl_log_write_entry, log_msg, 
@@ -265,7 +265,7 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
   /* create a present message so we can pass it to
    * owl_log_shouldlog_message(void)
    */
-  m = g_new(owl_message, 1);
+  m = g_slice_new(owl_message);
   /* recip_index = 0 because there can only be one recipient anyway */
   owl_message_create_from_zwrite(m, zw, text, 0);
   if (!owl_log_shouldlog_message(m)) {
