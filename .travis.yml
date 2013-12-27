@@ -16,5 +16,6 @@ install:
 # perl things
 # In lp:~barnowl/barnowl/packaging, we use apt-get.  Here, we use cpanm.
 #  - sudo apt-get install libanyevent-perl libclass-accessor-perl libextutils-depends-perl libglib-perl libmodule-install-perl libnet-twitter-lite-perl libpar-perl libperl-dev
-  - cpanm AnyEvent Class::Accessor ExtUtils::Depends Glib Module::Install Net::Twitter::Lite PAR
+  - cpanm AnyEvent Class::Accessor ExtUtils::Depends Module::Install Net::Twitter::Lite PAR
+  - cpanm Glib || cpanm Glib@1.302 # Glib@1.303 is broken, and is currently the latest
 script: "./autogen.sh && ./configure && make distcheck"
