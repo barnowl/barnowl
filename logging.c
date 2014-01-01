@@ -152,6 +152,11 @@ static void owl_log_error_main_thread(gpointer data)
   owl_function_error("%s", (const char*)data);
 }
 
+static void owl_log_adminmsg_main_thread(gpointer data)
+{
+  owl_function_adminmsg("Logging", (const char*)data);
+}
+
 static void G_GNUC_PRINTF(1, 2) owl_log_error(const char *fmt, ...)
 {
   va_list ap;
@@ -162,6 +167,19 @@ static void G_GNUC_PRINTF(1, 2) owl_log_error(const char *fmt, ...)
   va_end(ap);
 
   owl_select_post_task(owl_log_error_main_thread,
+                       data, g_free, g_main_context_default());
+}
+
+static void G_GNUC_PRINTF(1, 2) owl_log_adminmsg(const char *fmt, ...)
+{
+  va_list ap;
+  char *data;
+
+  va_start(ap, fmt);
+  data = g_strdup_vprintf(fmt, ap);
+  va_end(ap);
+
+  owl_select_post_task(owl_log_adminmsg_main_thread,
                        data, g_free, g_main_context_default());
 }
 
@@ -253,19 +271,26 @@ static void owl_log_write_deferred_entries(gpointer data)
   owl_log_entry *entry;
   bool drop_failed_logs = *(bool *)data;
   int ret;
+  bool logged_at_least_one_message = false;
+  bool all_succeeded = true;
 
   defer_logs = false;
   while (!g_queue_is_empty(deferred_entry_queue) && !defer_logs) {
+    logged_at_least_one_message = true;
     entry = (owl_log_entry*)g_queue_pop_head(deferred_entry_queue);
     if (drop_failed_logs) {
       owl_log_eventually_write_entry(entry);
     } else {
       ret = owl_log_try_write_entry(entry);
       if (ret != 0) {
+        all_succeeded = false;
         owl_log_file_error(entry, ret);
       }
     }
     owl_log_entry_free(entry);
+  }
+  if (all_succeeded && logged_at_least_one_message) {
+    owl_log_adminmsg("Logs have been flushed and logging has resumed.");
   }
 }
 
