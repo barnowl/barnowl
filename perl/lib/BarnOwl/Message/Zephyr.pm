@@ -8,7 +8,6 @@ use constant WEBZEPHYR_CLASS     => "webzephyr";
 use constant WEBZEPHYR_OPCODE    => "webzephyr";
 
 use base qw( BarnOwl::Message );
-use Unicode::Normalize qw( NFKC );
 
 sub strip_realm {
     my $sender = shift;
@@ -21,6 +20,14 @@ sub principal_realm {
     my $principal = shift;
     my ($user, $realm) = split(/@/,$principal);
     return $realm;
+}
+
+sub casefold_principal {
+    my $principal = shift;
+    # split the principal right after the final @, without eating any
+    # characters; this way, we always get at least '@' in $user
+    my ($user, $realm) = split(/(?<=@)(?=[^@]+$)/, $principal);
+    return lc($user) . uc($realm);
 }
 
 sub login_type {
@@ -260,12 +267,12 @@ sub log_filenames {
         } else {
             my $realm = '';
             $realm .= '@' . $m->realm if $m->realm ne BarnOwl::zephyr_getrealm();
-            return (lc(NFKC($m->class)) . $realm);
+            return (BarnOwl::compat_casefold($m->class) . uc($realm));
         }
     } else {
         push @filenames, $m->recipient;
     }
-    return map { lc(NFKC(BarnOwl::zephyr_smartstrip_user(strip_realm($_)))) } @filenames;
+    return map { casefold_principal(BarnOwl::zephyr_smartstrip_user(strip_realm($_))) } @filenames;
 }
 
 sub log_to_class_file {

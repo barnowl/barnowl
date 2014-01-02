@@ -642,6 +642,37 @@ CALLER_OWN char *owl_validate_utf8(const char *in)
   return out;
 }
 
+CALLER_OWN char *owl_util_compat_casefold(const char *str)
+{
+  /*
+   * Quoting Anders Kaseorg at https://github.com/barnowl/barnowl/pull/54#issuecomment-31452543:
+   *
+   * The Unicode specification calls this compatibility caseless matching, and
+   * the correct transformation actually has five calls:
+   * NFKC(toCasefold(NFKD(toCasefold(NFD(string))))) Zephyr’s current
+   * implementation incorrectly omits the innermost NFD, but that difference
+   * only matters for characters including U+0345 ◌ͅ COMBINING GREEK
+   * YPOGEGRAMMENI. I think we should just write the correct version and get
+   * Zephyr fixed.
+   *
+   * Neither of these operations should be called toNFKC_Casefold, because that
+   * has slightly different behavior regarding Default_Ignorable_Code_Point. I
+   * propose compat_casefold. And I guess if Jabber wants it too, we should
+   * move it to util.c.
+   */
+  char *tmp0 = g_utf8_normalize(str, -1, G_NORMALIZE_NFD);
+  char *tmp1 = g_utf8_casefold(tmp0, -1);
+  char *tmp2 = g_utf8_normalize(tmp1, -1, G_NORMALIZE_NFKD);
+  char *tmp3 = g_utf8_casefold(tmp2, -1);
+  char *out = g_utf8_normalize(tmp3, -1, G_NORMALIZE_NFKC);
+  g_free(tmp0);
+  g_free(tmp1);
+  g_free(tmp2);
+  g_free(tmp3);
+
+  return out;
+}
+
 /* This is based on _extract() and _isCJ() from perl's Text::WrapI18N */
 int owl_util_can_break_after(gunichar c)
 {

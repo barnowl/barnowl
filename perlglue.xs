@@ -412,6 +412,19 @@ get_variable_info(name)
 	OUTPUT:
 		RETVAL
 
+const utf8 *
+compat_casefold(in)
+	const char * in
+	PREINIT:
+		char *rv;
+	CODE:
+		rv = owl_util_compat_casefold(in);
+		RETVAL = rv;
+	OUTPUT:
+		RETVAL
+	CLEANUP:
+		g_free(rv);
+
 
 MODULE = BarnOwl		PACKAGE = BarnOwl::Zephyr
 
