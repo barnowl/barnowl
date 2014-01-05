@@ -87,7 +87,11 @@ sub _register_variables {
                            . "selected, only incoming messages are logged, if 'out'\n"
                            . "is selected only outgoing messages are logged.  If 'both'\n"
                            . "is selected both incoming and outgoing messages are\n"
-                           . "logged."
+                           . "logged.\n\n"
+                           . "Note that this variable applies to all messages. In\n"
+                           . "particular, if this variable is set to 'out', the\n"
+                           . "classlogging variable will have no effect, and no\n"
+                           . "class messages will be logged."
         });
 
     BarnOwl::new_variable_string('logbasepath',
