@@ -13,5 +13,7 @@ sub is_private {
 sub replycmd {return 'loopwrite';}
 sub replysendercmd {return 'loopwrite';}
 
+sub log_subfolder { return ''; }
+sub log_filenames { return ('loopback'); }
 
 1;
