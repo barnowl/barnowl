@@ -182,7 +182,11 @@ sub log_filenames {
         $filename = $m->pretty_recipient;
     }
     $filename = "unknown" if !defined($filename) || $filename eq '';
-    return ($filename);
+    if (BarnOwl::getvar('log-to-subdirectories') eq 'on') {
+        return ($filename);
+    } else {
+        return ($m->log_subfolder . ':' . $filename);
+    }
 }
 
 =head2 log_to_all_file MESSAGE
@@ -204,13 +208,22 @@ sub log_to_all_file {
 
 Returns the folder in which all messages of this class get logged.
 
-Defaults to C<log_base_path>/C<log_subfolder>.
+Defaults to C<log_base_path/log_subfolder> if C<log-to-subdirectories>
+is enabled, or to the C<logpath> BarnOwl variable if it is not.
+
+Most protocols should override C<log_subfolder> rather than
+C<log_path>, in order to properly take into account the value of
+C<log-to-subdirectories>.
 
 =cut
 
 sub log_path {
     my ($m) = @_;
-    return File::Spec->catfile($m->log_base_path, $m->log_subfolder);
+    if (BarnOwl::getvar('log-to-subdirectories') eq 'on') {
+        return File::Spec->catfile($m->log_base_path, $m->log_subfolder);
+    } else {
+        return BarnOwl::getvar('logpath');
+    }
 }
 
 =head2 log_base_path MESSAGE

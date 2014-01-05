@@ -119,6 +119,20 @@ sub _register_variables {
             description   => "Specifies a directory which must exist.\n"
                            . "Files will be created in the directory for each class."
         });
+
+    BarnOwl::new_variable_bool('log-to-subdirectories',
+        {
+            default     => 0,
+            summary     => "log each protocol to its own subdirectory of logbasepath",
+            description => "When this is enabled, BarnOwl will log each protocol to its own\n"
+                         . "subdirectory of logbasepath.  When this is disabled, BarnOwl will\n"
+                         . "instead log all non-zephyr non-loopback messages to the logpath,\n"
+                         . "and prefix each filename with what would otherwise be the subdirectory\n"
+                         . "name.\n\n"
+                         . "If you enable this, be sure that the relevant directories exist;\n"
+                         . "BarnOwl will not create them for you."
+        });
+
 }
 
 =head2 sanitize_filename BASE_PATH FILENAME
