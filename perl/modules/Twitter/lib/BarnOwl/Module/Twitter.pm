@@ -137,6 +137,7 @@ sub read_config {
         my $twitter_args = { username   => $cfg->{user},
                              password   => $cfg->{password},
                              source     => 'barnowl', 
+                             ssl        => 1,
                          };
         if (defined $cfg->{service}) {
             my $service = $cfg->{service};
