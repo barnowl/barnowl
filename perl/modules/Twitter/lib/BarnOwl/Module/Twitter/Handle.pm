@@ -428,6 +428,17 @@ sub twitter_retweet {
     $self->poll_twitter if $self->{cfg}->{poll_for_tweets};
 }
 
+sub twitter_favorite {
+    my $self = shift;
+    my $msg = shift;
+
+    if($msg->service ne $self->{cfg}->{service}) {
+        die("Cannot favorite a message from a different service.\n");
+    }
+    $self->twitter_command(create_favorite => $msg->{status_id});
+}
+
+
 sub twitter_follow {
     my $self = shift;
 

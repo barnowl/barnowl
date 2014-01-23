@@ -275,6 +275,17 @@ END_DESCRIPTION
     }
 );
 
+BarnOwl::new_command( 'twitter-favorite' => sub { cmd_twitter_favorite(@_) },
+    {
+    summary     => 'Favorite the current Twitter message',
+    usage       => 'twitter-favorite [ACCOUNT]',
+    description => <<END_DESCRIPTION
+Favorite the current Twitter message using ACCOUNT (defaults to the
+account that received the tweet).
+END_DESCRIPTION
+    }
+);
+
 BarnOwl::new_command( 'twitter-follow' => sub { cmd_twitter_follow(@_); },
     {
     summary     => 'Follow a user on Twitter',
@@ -356,6 +367,19 @@ sub cmd_twitter_retweet {
 
     $account = $m->account unless defined($account);
     find_account($account)->twitter_retweet($m);
+    return;
+}
+
+sub cmd_twitter_favorite {
+    my $cmd = shift;
+    my $account = shift;
+    my $m = BarnOwl::getcurmsg();
+    if(!$m || $m->type ne 'Twitter') {
+        die("$cmd must be used with a Twitter message selected.\n");
+    }
+
+    $account = $m->account unless defined($account);
+    find_account($account)->twitter_favorite($m);
     return;
 }
 
