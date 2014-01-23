@@ -370,9 +370,6 @@ sub twitter {
     if($msg =~ m{\Ad\s+([^\s])+(.*)}sm) {
         $self->twitter_direct($1, $2);
     } elsif(defined $self->{twitter}) {
-        if(length($msg) > 140) {
-            die("Twitter: Message over 140 characters long.\n");
-        }
         $self->twitter_command('update', {
             status => $msg,
             defined($reply_to) ? (in_reply_to_status_id => $reply_to) : ()
@@ -430,6 +427,17 @@ sub twitter_retweet {
     $self->twitter_command(retweet => $msg->{status_id});
     $self->poll_twitter if $self->{cfg}->{poll_for_tweets};
 }
+
+sub twitter_favorite {
+    my $self = shift;
+    my $msg = shift;
+
+    if($msg->service ne $self->{cfg}->{service}) {
+        die("Cannot favorite a message from a different service.\n");
+    }
+    $self->twitter_command(create_favorite => $msg->{status_id});
+}
+
 
 sub twitter_follow {
     my $self = shift;
