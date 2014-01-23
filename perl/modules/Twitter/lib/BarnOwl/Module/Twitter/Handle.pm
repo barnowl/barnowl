@@ -370,9 +370,6 @@ sub twitter {
     if($msg =~ m{\Ad\s+([^\s])+(.*)}sm) {
         $self->twitter_direct($1, $2);
     } elsif(defined $self->{twitter}) {
-        if(length($msg) > 140) {
-            die("Twitter: Message over 140 characters long.\n");
-        }
         $self->twitter_command('update', {
             status => $msg,
             defined($reply_to) ? (in_reply_to_status_id => $reply_to) : ()
