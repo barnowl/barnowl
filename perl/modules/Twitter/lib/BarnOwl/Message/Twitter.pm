@@ -35,7 +35,8 @@ sub replycmd {
     } elsif(exists($self->{status_id})) {
         return BarnOwl::quote('twitter-atreply', $self->sender, $self->{status_id}, $self->account);
     } else {
-        return BarnOwl::quote('twitter-atreply', $self->sender, $self->account);
+        # Give a dummy status ID
+        return BarnOwl::quote('twitter-atreply', $self->sender, '', $self->account);
     }
 }
 
