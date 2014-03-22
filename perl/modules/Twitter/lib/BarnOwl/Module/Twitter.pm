@@ -242,7 +242,7 @@ sub twitter {
 
 BarnOwl::new_command(twitter => \&cmd_twitter, {
     summary     => 'Update Twitter from BarnOwl',
-    usage       => 'twitter [ACCOUNT] [MESSAGE]',
+    usage       => 'twitter [ACCOUNT [MESSAGE]]',
     description => 'Update Twitter on ACCOUNT. If MESSAGE is provided, use it as your status.'
     . "\nIf no ACCOUNT is provided, update all services which have publishing enabled."
     . "\nOtherwise, prompt for a status message to use."
@@ -258,7 +258,7 @@ BarnOwl::new_command('twitter-direct' => \&cmd_twitter_direct, {
 BarnOwl::new_command( 'twitter-atreply' => sub { cmd_twitter_atreply(@_); },
     {
     summary     => 'Send a Twitter @ message',
-    usage       => 'twitter-atreply USER [ACCOUNT]',
+    usage       => 'twitter-atreply USER [ID [ACCOUNT]]',
     description => 'Send a Twitter @reply Message to USER on ACCOUNT (defaults to default_sender,' 
     . "\nor first service if no default is provided)"
     }
