@@ -21,7 +21,7 @@ sub long_sender {
     my $self = shift;
     $self->service =~ m#^\s*(.*?://.*?)/.*$#;
     my $service = $1 || $self->service;
-    my $long = $service . '/' . $self->sender;
+    my $long = $service . '/' . $self->sender . '/status/' . $self->{status_id};
     if ($self->retweeted_by) {
         $long = "(retweeted by " . $self->retweeted_by . ") $long";
     }
