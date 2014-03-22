@@ -32,11 +32,38 @@ sub replycmd {
     my $self = shift;
     if($self->is_private) {
         return $self->replysendercmd;
-    } elsif(exists($self->{status_id})) {
-        return BarnOwl::quote('twitter-atreply', $self->sender, $self->{status_id}, $self->account);
+    }
+    # Roughly, this is how Twitter's @-reply calculation works
+    # (based on a few experiments)
+    #
+    #   1. The person who wrote the tweet you are replying to is added.
+    #      This is the only time when your own name can show up in an
+    #      at-reply string.
+    #   2. Next, Twitter goes through the Tweet front to back, adding
+    #      mentioned usernames that have not already been added to the
+    #      string.
+    #
+    # In degenerate cases, the at-reply string might be longer than
+    # the max Tweet size; Twitter doesn't care.
+
+    # XXX A horrifying violation of encapsulation
+    # NB: names array includes @-signs.
+    my $account = BarnOwl::Module::Twitter::find_account_default($self->{account});
+    my @inside_names = grep($_ ne ("@" . $account->{cfg}->{user}),
+                            $self->{body} =~ /(?:^|\s)(@\w+)/g );
+    my @dup_names = ( ( "@" . $self->sender ), @inside_names );
+
+    # XXX Really should use List::MoreUtils qw(uniq).  This code snippet
+    # lifted from `perldoc -q duplicate`.
+    my %seen = ();
+    my @names = grep { ! $seen{ $_ }++ } @dup_names;
+    my $prefill = join(' ', @names) . ' '; # NB need trailing space
+
+    if(exists($self->{status_id})) {
+        return BarnOwl::quote('twitter-prefill', $prefill, $self->{status_id}, $self->account);
     } else {
         # Give a dummy status ID
-        return BarnOwl::quote('twitter-atreply', $self->sender, '', $self->account);
+        return BarnOwl::quote('twitter-prefill', $prefill, '', $self->account);
     }
 }
 
