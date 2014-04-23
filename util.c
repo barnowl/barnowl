@@ -467,13 +467,16 @@ int owl_util_file_deleteline(const char *filename, const char *line, int backup)
 
   if (fstat(fileno(old), &st) != 0) {
     owl_function_error("Cannot stat %s: %s", filename, strerror(errno));
+    fclose(old);
     return -1;
   }
 
   /* resolve symlinks, because link() fails on symlinks, at least on AFS */
   actual_filename = owl_util_recursive_resolve_link(filename);
-  if (actual_filename == NULL)
+  if (actual_filename == NULL) {
+    fclose(old);
     return -1; /* resolving the symlink failed, but we already logged this error */
+  }
 
   newfile = g_strdup_printf("%s.new", actual_filename);
   if ((new = fopen(newfile, "w")) == NULL) {
