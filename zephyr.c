@@ -282,29 +282,25 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
 {
 #ifdef HAVE_LIBZEPHYR
   FILE *file;
+  int fopen_errno;
   char *tmp, *start;
   char *buffer = NULL;
   char *subsfile;
   ZSubscription_t *subs;
   int subSize = 1024;
   int count;
-  struct stat statbuff;
 
   subsfile = owl_zephyr_dotfile(".zephyr.subs", filename);
 
-  if (stat(subsfile, &statbuff) != 0) {
-    g_free(subsfile);
-    if (error_on_nofile == 1)
+  count = 0;
+  file = fopen(subsfile, "r");
+  fopen_errno = errno;
+  g_free(subsfile);
+  if (!file) {
+    if (error_on_nofile == 1 || fopen_errno != ENOENT)
       return -1;
     return 0;
   }
-
-  ZResetAuthentication();
-  count = 0;
-  file = fopen(subsfile, "r");
-  g_free(subsfile);
-  if (!file)
-    return -1;
 
   subs = g_new(ZSubscription_t, subSize);
   while (owl_getline(&buffer, file)) {
@@ -347,6 +343,7 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
   if (buffer)
     g_free(buffer);
 
+  ZResetAuthentication();
   return owl_zephyr_loadsubs_helper(subs, count);
 #else
   return 0;
@@ -411,18 +408,10 @@ int owl_zephyr_loadloginsubs(const char *filename)
   char *subsfile;
   char *buffer = NULL;
   int count;
-  struct stat statbuff;
 
   subs = g_new(ZSubscription_t, numSubs);
   subsfile = owl_zephyr_dotfile(".anyone", filename);
 
-  if (stat(subsfile, &statbuff) == -1) {
-    g_free(subs);
-    g_free(subsfile);
-    return 0;
-  }
-
-  ZResetAuthentication();
   count = 0;
   file = fopen(subsfile, "r");
   g_free(subsfile);
@@ -444,10 +433,12 @@ int owl_zephyr_loadloginsubs(const char *filename)
     }
     fclose(file);
   } else {
+    g_free(subs);
     return 0;
   }
   g_free(buffer);
 
+  ZResetAuthentication();
   return owl_zephyr_loadsubs_helper(subs, count);
 #else
   return 0;

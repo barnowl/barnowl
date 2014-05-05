@@ -1226,7 +1226,6 @@ void G_GNUC_PRINTF(1, 2) owl_function_debugmsg(const char *fmt, ...)
   FILE *file;
   time_t now;
   va_list ap;
-  va_start(ap, fmt);
 
   if (!owl_global_is_debug_fast(&g))
     return;
@@ -1241,11 +1240,13 @@ void G_GNUC_PRINTF(1, 2) owl_function_debugmsg(const char *fmt, ...)
   fprintf(file, "[%d -  %s - %lds]: ",
           (int) getpid(), tmpbuff, now - owl_global_get_starttime(&g));
   g_free(tmpbuff);
+
+  va_start(ap, fmt);
   vfprintf(file, fmt, ap);
+  va_end(ap);
+
   putc('\n', file);
   fflush(file);
-
-  va_end(ap);
 }
 
 void owl_function_beep(void)

@@ -1037,14 +1037,7 @@ int owl_variable_bool_set_fromstring_default(owl_variable *v, const char *newval
 
 CALLER_OWN char *owl_variable_bool_get_tostring_default(const owl_variable *v, void *dummy)
 {
-  bool val = owl_variable_get_bool(v);
-  if (val == 0) {
-    return g_strdup("off");
-  } else if (val == 1) {
-    return g_strdup("on");
-  } else {
-    return g_strdup("<invalid>");
-  }
+  return g_strdup(owl_variable_get_bool(v) ? "on" : "off");
 }
 
 /* default functions for integers */
