@@ -7,7 +7,8 @@ our $VERSION=0.1;
 our $queue_id;
 our $last_event_id;
 our %cfg;
-our $max_retries = 5;
+our $max_retries = 1000;
+our $retry_timer;
 
 use AnyEvent;
 use AnyEvent::HTTP;
@@ -114,6 +115,17 @@ sub register {
     return;
 }
 
+sub parse_response {
+    my ($body, $headers) = @_;
+    if($headers->{Status} > 399) {
+	return 0;
+    }
+    my $response = decode_json($body);
+    if($response->{result} ne "success") {
+	return 0;
+    }
+    return $response;
+}
 sub do_poll {
     my $uri = URI->new($cfg{'api_url'} . "/events");
     $uri->query_form("queue_id" => $queue_id, 
@@ -122,20 +134,25 @@ sub do_poll {
     my $callback;
     $callback = sub {
 	my ($body, $headers) = @_;
-	if($headers->{Status} > 399) {
-	    warn "Failed to poll for events: $headers->{Reason}";
-	    BarnOwl::debug($body);
+	my $response = parse_response($body, $headers);
+	if(!$response) {
+	    warn "Failed to poll for events in do_poll: $headers->{Reason}";
 	    if($retry_count >= $max_retries) {
+		warn "Retry count exceeded in do_poll, giving up";
 		fail("do_poll: Giving up");
 	    } else {
+		warn "Retrying";
 		$retry_count++;	      
-		http_get($uri->as_string, 
-				   "headers" => { "Authorization" => authorization }, 
-				   $callback);
+		$retry_timer = AnyEvent->timer(after => 10, cb => sub { warn "retry number $retry_count"; 
+							 http_get($uri->as_string, 
+								  "headers" => { "Authorization" => authorization }, 
+								  $callback);
+							 return;
+				});
 		return;
 	    }
 	} else {
-	    event_cb($body, $headers);
+	    event_cb($response);
 	}
     };
     http_get($uri->as_string, "headers" => { "Authorization" => authorization }, $callback);
@@ -143,10 +160,9 @@ sub do_poll {
 }
 
 sub event_cb {
-    my ($body, $headers) = @_;
-    my $response = decode_json($body);
+    my $response = $_[0];
     if($response->{result} ne "success") {
-	fail("Failed to poll for events; error was $response->{msg}");
+	fail("event_cb: Failed to poll for events; error was $response->{msg}");
     } else {
 	for my $event (@{$response->{events}}) {
 	    if($event->{type} eq "message") {
@@ -164,6 +180,7 @@ sub event_cb {
 		    body => $msg->{content},
 		    zid => $msg->{id},
 		    sender_full_name => $msg->{sender_full_name});
+		$msghash{'body'} =~ s/\r//gm;
 		if($msg->{type} eq "private") {
 		    $msghash{private} = 1;
 		    my @raw_recipients = @{$msg->{display_recipient}};
