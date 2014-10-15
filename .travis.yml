@@ -1,3 +1,4 @@
+
 language: perl
 compiler:
   - clang
@@ -8,7 +9,7 @@ perl:
   - "5.14"
   - "5.16"
   - "5.18"
-  - "5.19"
+  - "5.20"
 install:
   - sudo apt-get update -q
 # we actually want debhelper >= 7, libperl-dev >= 5.10.1-8, libzephyr-dev >= 3.0~beta
