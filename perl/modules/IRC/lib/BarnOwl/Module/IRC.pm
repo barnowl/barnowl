@@ -562,6 +562,10 @@ sub cmd_disconnect {
                                "[" . $conn->alias . "] Reconnect cancelled");
         $conn->cancel_reconnect;
         delete $ircnets{$conn->alias};
+    } elsif (exists $ircnets{$conn->alias}) { # inconsistent state; no socket, but not yet deleted
+        BarnOwl::admin_message('IRC',
+                               "[" . $conn->alias . "] Attempt to disconnect from a socketless connection; deleting it");
+        delete $ircnets{$conn->alias};
     }
 }
 
