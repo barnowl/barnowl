@@ -436,15 +436,41 @@ sub on_connect {
     $self->connected("Connected to " . $self->alias . " as " . $self->nick)
 }
 
+sub rejoin_channels {
+    my $self = shift;
+    my @channels = @_;
+    # As reported in https://barnowl.mit.edu/ticket/274, if we reconnect to
+    # too many at once, the server rejects us.  Empirically, this is about
+    # 20-26, so we set the cap at 15, then delay further joins for 5 seconds.
+    my $MAX_RECONNECT_CHANNELS = 15;
+    my $DELAY = 5;
+    foreach my $c (@channels[ 0 .. $MAX_RECONNECT_CHANNELS ]) {
+        $self->conn->send_msg(join => $c);
+    }
+    if ($MAX_RECONNECT_CHANNELS < $#channels) {
+        my $remaining = $#channels - $MAX_RECONNECT_CHANNELS;
+        my $cur_alias = $self->alias;
+        BarnOwl::admin_message('IRC', "[$cur_alias] Delaying $remaining autorejoins for $DELAY seconds");
+        # if we don't assign the timer to anything, then it gets garbage
+        # collected, and never runs
+        $self->{autoconnect_channels_delay_timer} = BarnOwl::Timer->new({
+            name  => "IRC rejoin overflow timer ($remaining remaining)",
+            after => $DELAY,
+            cb    => sub {
+                rejoin_channels($self, @channels[ $MAX_RECONNECT_CHANNELS .. $#channels ]);
+            }
+        });
+    }
+}
+
+
 sub connected {
     my $self = shift;
     my $msg = shift;
     BarnOwl::admin_message("IRC", $msg);
     $self->cancel_reconnect;
     if ($self->autoconnect_channels) {
-        for my $c (@{$self->autoconnect_channels}) {
-            $self->conn->send_msg(join => $c);
-        }
+        rejoin_channels($self, @{$self->autoconnect_channels});
     }
     $self->conn->enable_ping(60, sub {
                                  $self->on_disconnect("Connection timed out.");
