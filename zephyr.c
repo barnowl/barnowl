@@ -1310,7 +1310,9 @@ const char *zuser_realm(const char *in)
 CALLER_OWN char *owl_zephyr_smartstripped_user(const char *in)
 {
   int n = strcspn(in, "./");
-  char *realm = strchrnul(in, '@');
+  const char *realm = strchr(in, '@');
+  if (realm == NULL)
+    realm = in + strlen(in);
 
   if (in + n >= realm ||
       g_str_has_prefix(in, OWL_ZEPHYR_NOSTRIP_HOST) ||
