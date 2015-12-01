@@ -26,9 +26,8 @@ addons:
     - libzephyr-dev
     - pkg-config
     - zip
-install:
 # perl things
 # In lp:~barnowl/barnowl/packaging, we use apt-get.  Here, we use cpanm.
 #  - sudo apt-get install libanyevent-perl libclass-accessor-perl libextutils-depends-perl libglib-perl libmodule-install-perl libnet-twitter-lite-perl libpar-perl libperl-dev
-  - cpanm AnyEvent Class::Accessor ExtUtils::Depends Glib Module::Install Net::Twitter::Lite PAR
+# It's taken care of by the default install script
 script: ./autogen.sh && ./configure && make distcheck
