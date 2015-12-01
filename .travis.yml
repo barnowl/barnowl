@@ -1,5 +1,5 @@
-
 language: perl
+sudo: false
 compiler:
   - clang
   - gcc
@@ -10,12 +10,25 @@ perl:
   - "5.16"
   - "5.18"
   - "5.20"
+addons:
+  apt:
+    # we actually want debhelper >= 7, libperl-dev >= 5.10.1-8, libzephyr-dev >= 3.0~beta
+    packages:
+    - autoconf
+    - autotools-dev
+    - debhelper
+    - dh-autoreconf
+    - libglib2.0-dev
+    - libkrb5-dev
+    - libncurses5-dev
+    - libncursesw5-dev
+    - libssl-dev
+    - libzephyr-dev
+    - pkg-config
+    - zip
 install:
-  - sudo apt-get update -q
-# we actually want debhelper >= 7, libperl-dev >= 5.10.1-8, libzephyr-dev >= 3.0~beta
-  - sudo apt-get install -q autoconf autotools-dev debhelper dh-autoreconf libglib2.0-dev libkrb5-dev libncurses5-dev libncursesw5-dev libssl-dev libzephyr-dev pkg-config zip
 # perl things
 # In lp:~barnowl/barnowl/packaging, we use apt-get.  Here, we use cpanm.
 #  - sudo apt-get install libanyevent-perl libclass-accessor-perl libextutils-depends-perl libglib-perl libmodule-install-perl libnet-twitter-lite-perl libpar-perl libperl-dev
   - cpanm AnyEvent Class::Accessor ExtUtils::Depends Glib Module::Install Net::Twitter::Lite PAR
-script: "./autogen.sh && ./configure && make distcheck"
+script: ./autogen.sh && ./configure && make distcheck
