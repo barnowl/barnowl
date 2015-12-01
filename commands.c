@@ -547,7 +547,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "Spaces must be present before and after parentheses.  If the\n"
 	      "optional color arguments are used they specifies the colors that\n"
 	      "messages matching this filter should be displayed in.\n\n"
-	      "SEE ALSO: view, viewclass, viewuser\n"),
+	      "SEE ALSO: smartfilter, smartnarrow, view, viewclass, viewuser\n"),
 
   OWLCMD_ARGS("colorview", owl_command_colorview, OWL_CTX_INTERACTIVE,
 	      "change the colors on the current filter",
@@ -584,7 +584,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "the filter of the current view. The -d option allows you to write a\n"
               "filter expression that will be dynamically created by BarnOwl and then\n"
               "applied as the view's filter\n"
-	      "SEE ALSO: filter, viewclass, viewuser\n"),
+	      "SEE ALSO: filter, smartfilter, smartnarrow, viewclass, viewuser\n"),
 
   OWLCMD_ARGS("smartnarrow", owl_command_smartnarrow, OWL_CTX_INTERACTIVE,
 	      "view only messages similar to the current message",
@@ -598,7 +598,8 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "If the curmsg is a class message and '-i' is specified\n"
 	      "    then narrow to the class and instance.\n"
 	      "If '-r' or '--related' is specified, behave as though the\n"
-              "    'narrow-related' variable was inverted."),
+              "    'narrow-related' variable was inverted.\n\n"
+              "SEE ALSO: filter, smartfilter, view, viewclass, viewuser\n"),
 
   OWLCMD_ARGS("smartfilter", owl_command_smartfilter, OWL_CTX_INTERACTIVE,
 	      "returns the name of a filter based on the current message",
@@ -609,7 +610,8 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "   message, the filter is to that instance.\n"
 	      "If the curmsg is a class message, the filter is that class.\n"
 	      "If the curmsg is a class message and '-i' is specified\n"
-	      "    the filter is to that class and instance.\n"),
+	      "    the filter is to that class and instance.\n\n"
+	      "SEE ALSO: filter, smartnarrow, view, viewclass, viewuser\n"),
 
   OWLCMD_ARGS("viewclass", owl_command_viewclass, OWL_CTX_INTERACTIVE,
 	      "view messages matching a particular class",
@@ -617,7 +619,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "The viewclass command will automatically create a filter\n"
 	      "matching the specified class and switch the current view\n"
 	      "to it.\n\n"
-	      "SEE ALSO: filter, view, viewuser\n"),
+	      "SEE ALSO: filter, smartfilter, smartnarrow, view, viewuser\n"),
   OWLCMD_ALIAS("vc", "viewclass"),
 
   OWLCMD_ARGS("viewuser", owl_command_viewuser, OWL_CTX_INTERACTIVE,
@@ -626,7 +628,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "The viewuser command will automatically create a filter\n"
 	      "matching the specified user and switch the current\n"
 	      "view to it.\n\n"
-	      "SEE ALSO: filter, view, viewclass\n"),
+	      "SEE ALSO: filter, smartfilter, smartnarrow, view, viewclass\n"),
   OWLCMD_ALIAS("vu", "viewuser"),
   OWLCMD_ALIAS("viewperson", "viewuser"),
   OWLCMD_ALIAS("vp", "viewuser"),
