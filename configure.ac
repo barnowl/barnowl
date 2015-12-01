@@ -191,6 +191,8 @@ dnl including cchar_t.  This should not be necessary with
 dnl _XOPEN_SOURCE=600, but some versions of ncurses
 dnl apparently still need it.
 AM_CFLAGS="$AM_CFLAGS -D_XOPEN_SOURCE_EXTENDED"
+dnl Define _GNU_SOURCE for strchrnul.
+AM_CFLAGS="$AM_CFLAGS -D_GNU_SOURCE"
 
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([LIBFAIM_CFLAGS])
