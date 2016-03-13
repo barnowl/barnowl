@@ -21,20 +21,6 @@ enum { /*noproto*/
     POP,
     JNMATCH, // next slot is where to go if the stack is not a match
     JNSAVED, // ""
-    MAX_OPS,
-};
-
-static const char *opname[MAX_OPS]= {
-    [NEXT] = "NEXT",
-    [TEXTC] = "TEXTC",
-    [LABELC] = "LABELC",
-    [UNSAVE] = "UNSAVE",
-    [EMIT] = "EMIT",
-    [CLEAR] = "CLEAR",
-    [PUSH] = "PUSH",
-    [POP] = "POP",
-    [JNMATCH] = "JNMATCH",
-    [JNSAVED] = "JNSAVED",
 };
 
 static const unsigned char machine[2][256][16] = {
@@ -141,17 +127,14 @@ ztext_env *ztext_tree(const char *s)
     ztext_stack *p;
     ztext_env *tree = ztext_env_new(g_strdup(""), 0);
     ztext_env *cur = tree;
-    int debug = 0;
 
     text[texti] = 0;
     save[savei] = 0;
 
     for(int i = 0; i <= len; i++) { /* <=: deliberately processing the '\0' */
-        if (debug) printf("'%s' %d %c\n", unctrl(s[i]), state, stack ? stack->close : '-');
         const unsigned char *line = machine[state][(unsigned)s[i]];
         next = -1;
         for (int ip = 0; next == -1; ip++) {
-            if (debug) printf(" %s \"%s\" \"%s\"\n", opname[line[ip]], text, save);
             switch (line[ip]) {
             case NEXT:
                 next = line[ip + 1];
@@ -241,83 +224,3 @@ char *ztext_strip(ztext_env *tree) {
 
     return s;
 }
-
-#ifdef notmain
-char *ztext_ztext(ztext_env *tree) {
-    char *s, *t;
-
-    if (tree->closer == '@' && tree->content == NULL)
-        return g_strdup("@@");
-
-    if (tree->opener) {
-        s = g_strdup_printf("%s%c", tree->label, tree->opener);
-    } else {
-        s = g_strdup("");
-    }
-
-    for (ztext_node *p = tree->content; p != NULL; p = p->next) {
-        t = s;
-        if (p->type== ZTEXT_NODE_STRING) {
-            s = g_strconcat(s, p->string, NULL);
-        } else if (p->type == ZTEXT_NODE_ENV) {
-            s = g_strconcat(s, ztext_ztext(p->env), NULL);
-        }
-        g_free(t);
-    }
-
-    if (tree->closer) {
-        t = s;
-        s = g_strdup_printf("%s%c", s, tree->closer);
-        g_free(t);
-    }
-
-    return s;
-}
-
-static char *ztext_str(ztext_env *tree) {
-    /* Unambiguous representation of the parse tree */
-    char *s, *t;
-
-    if (tree->opener) {
-        s = g_strdup_printf("{'%s%c'", tree->label, tree->opener);
-    } else {
-        s = g_strdup("{-");
-    }
-
-    for (ztext_node *p = tree->content; p != NULL; p = p->next) {
-        t = s;
-        if (p->type== ZTEXT_NODE_STRING) {
-            s = g_strdup_printf("%s |%s|", s, p->string);
-        } else if (p->type == ZTEXT_NODE_ENV) {
-            s = g_strconcat(s, " ", ztext_str(p->env), NULL);
-        }
-        g_free(t);
-    }
-
-    t = s;
-    if (tree->closer) {
-        s = g_strdup_printf("%s '%c'}", s, tree->closer);
-    } else {
-        s = g_strconcat(s, "}", NULL);
-    }
-    g_free(t);
-
-    return s;
-}
-
-int notmain(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("?%d\n", argc);
-        exit(1);
-    }
-    ztext_env *tree = ztext_tree(argv[1]);
-    char *s = ztext_ztext(tree);
-    printf("%s\n", s);
-    g_free(s);
-    s = ztext_str(tree);
-    printf("%s\n", s);
-    g_free(s);
-    ztext_env_free(tree);
-    return 0;
-}
-#endif
