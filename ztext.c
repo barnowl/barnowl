@@ -224,3 +224,72 @@ char *ztext_strip(ztext_env *tree) {
 
     return s;
 }
+
+static char *ztext_protect_string(const char *s)
+{
+    char buf[strlen(s)*4+1]; // worst case
+    int i = 0;
+    for(const char *p = s; *p; p++) {
+        switch (*p) {
+        case '}':
+            i += g_snprintf(&buf[i], sizeof(buf) - i, "@(%c)", *p);
+            break;
+        case ')':
+            i += g_snprintf(&buf[i], sizeof(buf) - i, "@<%c>", *p);
+            break;
+        case '>':
+            i += g_snprintf(&buf[i], sizeof(buf) - i, "@[%c]", *p);
+            break;
+        case ']':
+            i += g_snprintf(&buf[i], sizeof(buf) - i, "@{%c}", *p);
+            break;
+        default:
+            buf[i++] = *p;
+        }
+    }
+    buf[i] = 0;
+    return g_strdup(buf);
+}
+
+static char *ztext_protect_tree(ztext_env *tree) {
+    char *s, *t, *u;
+
+    if (tree->closer == '@' && tree->content == NULL)
+        return g_strdup("@@");
+
+    if (tree->opener) {
+        s = g_strdup_printf("%s%c", tree->label, tree->opener);
+    } else {
+        s = g_strdup("");
+    }
+
+    for (ztext_node *p = tree->content; p != NULL; p = p->next) {
+        t = s;
+        if (p->type == ZTEXT_NODE_STRING) {
+            u = ztext_protect_string(p->string);
+        } else if (p->type == ZTEXT_NODE_ENV) {
+            u = ztext_protect_tree(p->env);
+        } else {
+            assert(!"unknown node type");
+        }
+        s = g_strconcat(s, u, NULL);
+        g_free(u);
+        g_free(t);
+    }
+
+    if (tree->opener) {
+        t = s;
+        s = g_strdup_printf("%s%c", s, MATCH[(unsigned)tree->opener]);
+        g_free(t);
+    }
+
+    return s;
+}
+
+char *ztext_protect(const char *s)
+{
+    ztext_env *tree = ztext_tree(s);
+    char *p = ztext_protect_tree(tree);
+    ztext_env_free(tree);
+    return p;
+}

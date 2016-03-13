@@ -1218,6 +1218,21 @@ int ztext_test(void)
         CHECK_ZTEXT_RT(tango);
     }
 
+#define CHECK_ZTEXT_PROTECT(in, expected)                                     \
+    do {                                                                      \
+      s = ztext_protect(in);                                                  \
+      d = g_strdup_printf("ztext protect \"%s\" expected \"%s\" got \"%s\"",  \
+                          in, expected, s);                                   \
+      FAIL_UNLESS(d, !strcmp(s, expected));                                   \
+      g_free(d);                                                              \
+      g_free(s);                                                              \
+    } while (0)
+
+    CHECK_ZTEXT_PROTECT("", "");
+    CHECK_ZTEXT_PROTECT("foo", "foo");
+    CHECK_ZTEXT_PROTECT("fo}o", "fo@(})o");
+    CHECK_ZTEXT_PROTECT("@[foo", "@[foo]");
+    CHECK_ZTEXT_PROTECT("})>]", "@(})@<)>@[>]@{]}");
 
     return numfailed;
 }

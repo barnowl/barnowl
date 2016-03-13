@@ -109,6 +109,19 @@ ztext_stylestrip(ztext)
 		g_free(rv);
 
 const utf8 *
+ztext_protect(ztext)
+	const char *ztext
+	PREINIT:
+		char *rv = NULL;
+	CODE:
+		rv = ztext_protect(ztext);
+		RETVAL = rv;
+	OUTPUT:
+		RETVAL
+	CLEANUP:
+		g_free(rv);
+
+const utf8 *
 zephyr_smartstrip_user(in)
 	const char *in
 	PREINIT:

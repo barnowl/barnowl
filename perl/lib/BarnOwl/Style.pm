@@ -13,19 +13,7 @@ use BarnOwl::Style::OneLine;
 sub boldify
 {
     local $_ = shift;
-    if ( !(/\)/) ) {
-        return '@b(' . $_ . ')';
-    } elsif ( !(/\>/) ) {
-        return '@b<' . $_ . '>';
-    } elsif ( !(/\}/) ) {
-        return '@b{' . $_ . '}';
-    } elsif ( !(/\]/) ) {
-        return '@b[' . $_ . ']';
-    } else {
-        my $txt = "\@b($_";
-        $txt =~ s/\)/\)\@b\[\)\]\@b\(/g;
-        return $txt . ')';
-    }
+    return '@b{' . BarnOwl::ztext_protect($_) . '}'
 }
 
 sub style_command {

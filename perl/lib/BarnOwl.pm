@@ -108,6 +108,10 @@ sub zephyr_zwrite {
 
 Strips zephyr formatting from a string and returns the result
 
+=head2 ztext_protect STRING
+
+Massage zephyr formatting to make it not interfere with more zephyr formatting.
+
 =head2 zephyr_getsubs
 
 Returns the list of subscription triples <class,instance,recipient>,
