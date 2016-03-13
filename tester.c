@@ -1155,6 +1155,7 @@ int ztext_test(void)
                     "{- |foo| {'@bar{' |baz| {'@(' |bang}| ')'} '}'}}");
     CHECK_ZTEXT_STR("foo@bar{baz}", "{- |foo| {'@bar{' |baz| '}'}}");
     CHECK_ZTEXT_STR("@bloop", "{- |@bloop|}");
+    CHECK_ZTEXT_STR("@{)}@{>}", "{- {'@{' |)| '}'} {'@{' |>| '}'}}");
 
 #define CHECK_ZTEXT_STRIP(in, expected)                                      \
     do {                                                                     \
@@ -1178,6 +1179,7 @@ int ztext_test(void)
     CHECK_ZTEXT_STRIP("foo@bar{baz@(bang})}", "foobazbang}");
     CHECK_ZTEXT_STRIP("foo@bar{baz}", "foobaz");
     CHECK_ZTEXT_STRIP("@bloop", "@bloop");
+    CHECK_ZTEXT_STRIP("@{)}@{>}", ")>");
 
 #define CHECK_ZTEXT_RT(in)                                                \
     do {                                                                  \
@@ -1199,6 +1201,7 @@ int ztext_test(void)
     CHECK_ZTEXT_RT("foo@bar{baz@(bang})}");
     CHECK_ZTEXT_RT("foo@bar{baz}");
     CHECK_ZTEXT_RT("@bloop");
+    CHECK_ZTEXT_RT("@{)}@{>}");
 
     /* fuzzzzzz */
     srand48(getpid() + time(0));
