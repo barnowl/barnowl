@@ -55,7 +55,7 @@ AM_CPPFLAGS = \
 
 CODELIST_SRCS=message.c mainwin.c popwin.c zephyr.c messagelist.c \
      commands.c global.c text.c fmtext.c editwin.c \
-     util.c logging.c \
+     util.c logging.c ztext.c \
      perlconfig.c keys.c functions.c zwrite.c viewwin.c help.c filter.c \
      regex.c history.c view.c dict.c variable.c filterelement.c pair.c \
      keypress.c keymap.c keybinding.c cmd.c context.c \

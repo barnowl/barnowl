@@ -62,6 +62,7 @@ typedef struct _owl_fake_HV HV;
 #endif
 
 #include "window.h"
+#include "ztext.h"
 
 extern const char *version;
 
