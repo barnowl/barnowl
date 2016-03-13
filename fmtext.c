@@ -556,14 +556,16 @@ static void owl_fmtext_append_ztext_tree(owl_fmtext *f, ztext_env *tree, char at
   bool handled = false;
   const struct {
     const char *tag;
-    const char mask;
+    enum {SET,  MASK} mode;
+    const char val;
   } TAGS[] = {
-    {"", 0},
-    {"@", 0},
-    {"@bold", OWL_FMTEXT_ATTR_BOLD},
-    {"@b", OWL_FMTEXT_ATTR_BOLD},
-    {"@italic", OWL_FMTEXT_ATTR_UNDERLINE},
-    {"@i", OWL_FMTEXT_ATTR_UNDERLINE},
+    {"", MASK, 0},
+    {"@", MASK, 0},
+    {"@bold", MASK, OWL_FMTEXT_ATTR_BOLD},
+    {"@b", MASK, OWL_FMTEXT_ATTR_BOLD},
+    {"@italic", MASK, OWL_FMTEXT_ATTR_UNDERLINE},
+    {"@i", MASK, OWL_FMTEXT_ATTR_UNDERLINE},
+    {"@roman", SET, OWL_FMTEXT_ATTR_NONE},
     {NULL, 0},
   };
 
@@ -574,7 +576,11 @@ static void owl_fmtext_append_ztext_tree(owl_fmtext *f, ztext_env *tree, char at
 
   for (i = 0; TAGS[i].tag != NULL; i++) {
     if (!strcasecmp(tree->label, TAGS[i].tag)) {
-      attr |= TAGS[i].mask;
+      if (TAGS[i].mode == MASK) {
+        attr |= TAGS[i].val;
+      } else if (TAGS[i].mode == SET) {
+        attr = TAGS[i].val;
+      }
       handled = true;
       break;
     }
