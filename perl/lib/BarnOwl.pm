@@ -106,7 +106,11 @@ sub zephyr_zwrite {
 
 =head2 ztext_stylestrip STRING
 
-Strips zephyr formatting from a string and returns the result
+Strips zephyr formatting barnowl understands from a string and returns the result
+
+=head2 ztext_stylestrip_full STRING
+
+Strips all the zephyr formatting from a string an returns the reuslt
 
 =head2 ztext_protect STRING
 

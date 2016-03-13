@@ -212,14 +212,18 @@ char *ztext_strip(ztext_env *tree) {
 
     for (ztext_node *p = tree->content; p != NULL; p = p->next) {
         t = s;
-        if (p->type== ZTEXT_NODE_STRING) {
+        if (p->type == ZTEXT_NODE_STRING) {
             s = g_strconcat(s, p->string, NULL);
+            g_free(t);
         } else if (p->type == ZTEXT_NODE_ENV) {
-            u = ztext_strip(p->env);
-            s = g_strconcat(s, u, NULL);
-            g_free(u);
+            if (!(!strcasecmp(p->env->label, "@color") ||
+                  !strcasecmp(p->env->label, "@font"))) {
+                u = ztext_strip(p->env);
+                s = g_strconcat(s, u, NULL);
+                g_free(u);
+                g_free(t);
+            }
         }
-        g_free(t);
     }
 
     return s;

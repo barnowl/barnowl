@@ -1180,6 +1180,7 @@ int ztext_test(void)
     CHECK_ZTEXT_STRIP("foo@bar{baz}", "foobaz");
     CHECK_ZTEXT_STRIP("@bloop", "@bloop");
     CHECK_ZTEXT_STRIP("@{)}@{>}", ")>");
+    CHECK_ZTEXT_STRIP("@color(blue)@font(fixed)marzipan", "marzipan");
 
 #define CHECK_ZTEXT_RT(in)                                                \
     do {                                                                  \
