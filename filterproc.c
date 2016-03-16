@@ -1,81 +1,68 @@
 #include "filterproc.h"
 #include <sys/wait.h>
-#include <fcntl.h>
-#include <glib.h>
-#include <poll.h>
 #include <string.h>
-#include <unistd.h>
+#include <glib.h>
 
-/* Even in case of error, send_receive is responsible for closing wfd
- * (to EOF the child) and rfd (for consistency). */
-static int send_receive(int rfd, int wfd, const char *out, char **in)
+struct filter_data {
+  const char **in;
+  const char *in_end;
+  GString *out_str;
+  GMainLoop *loop;
+  int err;
+};
+
+static gboolean filter_stdin(GIOChannel *channel, GIOCondition condition, gpointer data_)
 {
-  GString *str = g_string_new("");
-  char buf[1024];
-  nfds_t nfds;
-  int err = 0;
-  struct pollfd fds[2];
+  struct filter_data *data = data_;
+  gboolean done = condition & (G_IO_ERR | G_IO_HUP);
 
-  fcntl(rfd, F_SETFL, O_NONBLOCK | fcntl(rfd, F_GETFL));
-  fcntl(wfd, F_SETFL, O_NONBLOCK | fcntl(wfd, F_GETFL));
-
-  fds[0].fd = rfd;
-  fds[0].events = POLLIN;
-  fds[1].fd = wfd;
-  fds[1].events = POLLOUT;
-
-  if(!out || !*out) {
-    /* Nothing to write. Close our end so the child doesn't hang waiting. */
-    close(wfd); wfd = -1;
-    out = NULL;
+  if (condition & G_IO_OUT) {
+    gsize n;
+    GIOStatus ret = g_io_channel_write_chars(channel, *data->in, data->in_end - *data->in, &n, NULL);
+    *data->in += n;
+    if (ret == G_IO_STATUS_ERROR)
+      data->err = 1;
+    if (ret == G_IO_STATUS_ERROR || *data->in == data->in_end)
+      done = TRUE;
   }
 
-  while(1) {
-    if(out && *out) {
-      nfds = 2;
-    } else {
-      nfds = 1;
-    }
-    err = poll(fds, nfds, -1);
-    if(err < 0) {
-      break;
-    }
-    if(out && *out) {
-      if(fds[1].revents & POLLOUT) {
-        err = write(wfd, out, strlen(out));
-        if(err > 0) {
-          out += err;
-        }
-        if(err < 0) {
-          out = NULL;
-        }
-      }
-      if(!out || !*out || fds[1].revents & (POLLERR | POLLHUP)) {
-        close(wfd); wfd = -1;
-        out = NULL;
-      }
-    }
-    if(fds[0].revents & POLLIN) {
-      err = read(rfd, buf, sizeof(buf));
-      if(err <= 0) {
-        break;
-      }
-      g_string_append_len(str, buf, err);
-    } else if(fds[0].revents & (POLLHUP | POLLERR)) {
-      err = 0;
-      break;
+  if (condition & G_IO_ERR)
+    data->err = 1;
+
+  if (done)
+    g_io_channel_shutdown(channel, TRUE, NULL);
+  return !done;
+}
+
+static gboolean filter_stdout(GIOChannel *channel, GIOCondition condition, gpointer data_)
+{
+  struct filter_data *data = data_;
+  gboolean done = condition & (G_IO_ERR | G_IO_HUP);
+
+  if (condition & (G_IO_IN | G_IO_HUP)) {
+    gchar *buf;
+    gsize n;
+    GIOStatus ret = g_io_channel_read_to_end(channel, &buf, &n, NULL);
+    g_string_append_len(data->out_str, buf, n);
+    g_free(buf);
+    if (ret == G_IO_STATUS_ERROR) {
+      data->err = 1;
+      done = TRUE;
     }
   }
 
-  if (wfd >= 0) close(wfd);
-  close(rfd);
-  *in = g_string_free(str, err < 0);
-  return err;
+  if (condition & G_IO_ERR)
+    data->err = 1;
+
+  if (done) {
+    g_io_channel_shutdown(channel, TRUE, NULL);
+    g_main_loop_quit(data->loop);
+  }
+  return !done;
 }
 
 int call_filter(const char *const *argv, const char *in, char **out, int *status)
 {
-  int err;
   GPid child_pid;
   int child_stdin, child_stdout;
 
@@ -88,9 +75,35 @@ int call_filter(const char *const *argv, const char *in, char **out, int *status
     return 1;
   }
 
-  err = send_receive(child_stdout, child_stdin, in, out);
-  if (err == 0) {
-    waitpid(child_pid, status, 0);
-  }
-  return err;
+  if (in == NULL) in = "";
+  GMainContext *context = g_main_context_new();
+  struct filter_data data = {&in, in + strlen(in), g_string_new(""), g_main_loop_new(context, FALSE), 0};
+
+  GIOChannel *channel = g_io_channel_unix_new(child_stdin);
+  g_io_channel_set_encoding(channel, NULL, NULL);
+  g_io_channel_set_flags(channel, g_io_channel_get_flags(channel) | G_IO_FLAG_NONBLOCK, NULL);
+  GSource *source = g_io_create_watch(channel, G_IO_OUT | G_IO_ERR | G_IO_HUP);
+  g_io_channel_unref(channel);
+  g_source_set_callback(source, (GSourceFunc)filter_stdin, &data, NULL);
+  g_source_attach(source, context);
+  g_source_unref(source);
+
+  channel = g_io_channel_unix_new(child_stdout);
+  g_io_channel_set_encoding(channel, NULL, NULL);
+  g_io_channel_set_flags(channel, g_io_channel_get_flags(channel) | G_IO_FLAG_NONBLOCK, NULL);
+  source = g_io_create_watch(channel, G_IO_IN | G_IO_ERR | G_IO_HUP);
+  g_io_channel_unref(channel);
+  g_source_set_callback(source, (GSourceFunc)filter_stdout, &data, NULL);
+  g_source_attach(source, context);
+  g_source_unref(source);
+
+  g_main_loop_run(data.loop);
+
+  g_main_loop_unref(data.loop);
+  g_main_context_unref(context);
+
+  waitpid(child_pid, status, 0);
+  g_spawn_close_pid(child_pid);
+  *out = g_string_free(data.out_str, data.err);
+  return data.err;
 }
