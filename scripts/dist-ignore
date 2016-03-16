@@ -1,0 +1,13 @@
+	\(.*/\)\?\.gitignore
+	\.mailmap
+	\.travis\.yml
+DIST_VERSION.mk
+\(.*/\)\?Makefile\.in
+aclocal\.m4
+compile
+config\.h\.in
+configure
+depcomp
+install-sh
+missing
+test-driver

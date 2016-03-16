@@ -1,19 +1,24 @@
 ACLOCAL_AMFLAGS = -I m4
 
 GIT_DESCRIPTION := $(if $(wildcard $(srcdir)/.git),$(shell cd $(srcdir) && git describe --match='barnowl-*' HEAD 2>/dev/null))
-VERSION = $(if $(GIT_DESCRIPTION),$(GIT_DESCRIPTION:barnowl-%=%),@VERSION@)
--include BUILD_VERSION.mk
+VERSION = $(if $(GIT_DESCRIPTION),$(GIT_DESCRIPTION:barnowl-%=%),$(DIST_VERSION))
+DIST_VERSION = @VERSION@
+-include $(srcdir)/DIST_VERSION.mk BUILD_VERSION.mk
 
 FORCE:
 BUILD_VERSION.mk: $(if $(filter-out $(BUILD_VERSION),$(VERSION)),FORCE)
 	echo 'BUILD_VERSION = $(VERSION)' > $@
+dist-hook:: $(if $(filter-out @VERSION@,$(VERSION)),dist-hook-version)
+dist-hook-version:
+	echo 'DIST_VERSION = $(VERSION)' > $(distdir)/DIST_VERSION.mk
 
 bin_PROGRAMS = bin/barnowl
 if ENABLE_ZCRYPT
 bin_PROGRAMS += zcrypt
 endif
 
-zcrypt_SOURCES = zcrypt.c filterproc.c version.c
+zcrypt_SOURCES = zcrypt.c filterproc.c
+nodist_zcrypt_SOURCES = version.c
 
 check_PROGRAMS = bin/tester
 dist_check_DATA = t
@@ -103,6 +108,7 @@ check-syntax: proto
 	$(COMPILE) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES)
 
 CLEANFILES = $(BUILT_SOURCES) $(GEN_C) $(noinst_SCRIPTS) $(check_SCRIPTS) BUILD_VERSION.mk
+MAINTAINERCLEANFILES = DIST_VERSION.mk
 EXTRA_DIST = \
     autogen.sh \
     barnowl-wrapper.in \

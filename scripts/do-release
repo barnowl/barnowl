@@ -1,4 +1,5 @@
-#!/bin/sh -e
+#!/bin/bash
+set -eu
 
 die() {
     echo "$@" >&2
@@ -54,6 +55,21 @@ if [ -n "$(git rev-list $head..origin/$head)" ]; then
     die "$head is not up to date. Aborting."
 fi
 
+[ -e Makefile.in ] || autoreconf -fvi
+[ -e config.status ] || ./configure
+make -j4 distcheck VERSION="$VERS"
+
+echo 'Checking distributed files against Git:'
+if comm -3 <(tar -tzf "$TAG.tar.gz" | grep -v '/$' | sed "s%^$TAG/%%" | sort) \
+    <(git ls-files | sort) | grep -vxf scripts/dist-ignore; then
+    echo
+    echo 'Error: Please fix Makefile.am and/or scripts/dist-ignore.'
+    exit 1
+fi
+echo 'ok'
+
+mv "$TAG.tar.gz" "$TGZ.tgz"
+
 if ! [ "$no_tag" ]; then
     if git cat-file -t "$TAG" > /dev/null 2>&1; then
         die "Error: Object $TAG already exists."
@@ -64,31 +80,7 @@ else
     TAG=HEAD
 fi
 
-exittrap() { :; }
-for sig in 1 2 13 15; do trap "exit $(($sig + 128))" $sig; done
-trap 'exittrap' EXIT
-
-TMPDIR=$(mktemp -d /tmp/barnowl.XXXXXX)
-
-exittrap() { rm -rf "$TMPDIR"; }
-
-git archive --format=tar --prefix="$TGZ/" "$TAG" | tar -x -C "$TMPDIR"
-
-CODIR=$(pwd)
-cd "$TMPDIR/$TGZ"
-[ "$git" ] && perl -i -pe 's{^(AC_INIT\(\[[^\]]+\],\s*)\[([^\]]+)\]}{${1}['$VERS']}' configure.ac
-autoreconf -fvi
-rm -r autom4te.cache/
-cd "$TMPDIR"
-tar czvf "$TGZ.tgz" "$TGZ"
-cd "$CODIR"
-
-mv "$TMPDIR/$TGZ.tgz" .
-rm -rf "$TMPDIR"
-
-exittrap() { :; }
-
-echo "Created release tarball for BarnOwl $VERS in $(pwd)"
+echo "Created release tarball for BarnOwl $VERS at $(pwd)/$TGZ.tgz"
 echo "Remember to bump OWL_VERSION_STRING for future development."
 
 COMMIT=$(git rev-parse "$TAG")
