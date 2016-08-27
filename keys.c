@@ -43,10 +43,12 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-O 3 C",     "edit:move-next-word", "");
   BIND_CMD("M-RIGHT",     "edit:move-next-word", "");
   BIND_CMD("M-[ 1 ; 3 D", "edit:move-next-word", "");
+  BIND_CMD("M-[ 1 ; 5 D", "edit:move-next-word", "");
   BIND_CMD("M-b",         "edit:move-prev-word", "");
   BIND_CMD("M-O 3 D",     "edit:move-prev-word", "");
   BIND_CMD("M-LEFT",      "edit:move-prev-word", "");
-  BIND_CMD("M-[ 1 ; 3 C", "edit:move-next-word", "");
+  BIND_CMD("M-[ 1 ; 3 C", "edit:move-prev-word", "");
+  BIND_CMD("M-[ 1 ; 5 C", "edit:move-prev-word", "");
 
   BIND_CMD("LEFT",        "edit:move-left", "");
   BIND_CMD("M-[ D",       "edit:move-left", "");
