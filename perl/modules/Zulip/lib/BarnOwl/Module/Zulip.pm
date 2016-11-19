@@ -9,9 +9,11 @@ our $last_event_id;
 our %cfg;
 our $max_retries = 1000;
 our $retry_timer;
+our $tls_ctx;
 
 use AnyEvent;
 use AnyEvent::HTTP;
+use AnyEvent::TLS;
 use JSON;
 use MIME::Base64;
 use URI;
@@ -32,12 +34,31 @@ sub fail {
 }
 
 
-our $conffile = BarnOwl::get_config_dir() . "/zulip";
+sub initialize {
+    my $conffile = BarnOwl::get_config_dir() . "/zulip";
 
-if (open(my $fh, "<", "$conffile")) {
-    read_config($fh);
-    close($fh);
+    if (open(my $fh, "<", "$conffile")) {
+	read_config($fh);
+	close($fh);
+    }
+    if ($cfg{'api_url'} =~ /^https/) {
+	if (exists $cfg{'ssl_key_file'}) {
+	    $tls_ctx = new AnyEvent::TLS(verify => $cfg{'ssl_verify'}, 
+					 sslv3 => 0, verify_peername => "http",
+					 ca_file => $cfg{'ssl_ca_file'},
+					 cert_file => $cfg{'ssl_cert_file'},
+					 key_file => $cfg{'ssl_key_file'});
+	} else {
+	    $tls_ctx = new AnyEvent::TLS(verify => $cfg{'ssl_verify'}, 
+					 sslv3 => 0, verify_peername => "http",
+					 ca_file => $cfg{'ssl_ca_file'});
+	}	    
+    } else {
+	# we still want it for a unique id
+	$tls_ctx = int(rand(1024));
+    }
 }
+
 
 sub authorization {
     return "Basic " . encode_base64($cfg{'user'} . ':' . $cfg{'apikey'}, "")
@@ -52,7 +73,7 @@ sub read_config {
         $raw_cfg = from_json($raw_cfg);
     };
     if($@) {
-        fail("Unable to parse $conffile: $@");
+        fail("Unable to parse config file: $@");
     }
 
     if(! exists $raw_cfg->{user}) {
@@ -73,6 +94,25 @@ sub read_config {
     }
     my $default_realm = $raw_cfg->{default_realm};
 
+    if( exists $raw_cfg->{ssl}) {
+	# mandatory parameters
+	if (! exists $raw_cfg->{ssl}->{ca_file}) {
+	    fail("SSL parameters specified, but no CA file set");
+	}
+	$cfg{'ssl_ca_file'} = $raw_cfg->{ssl}->{ca_file};
+	$cfg{'ssl_verify'} = 1;
+	# optional parameters
+	if ( (exists $raw_cfg->{ssl}->{cert_file}) && exists $raw_cfg->{ssl}->{key_file}) {
+	    $cfg{'ssl_cert_file'} = $raw_cfg->{ssl}->{cert_file};
+	    $cfg{'ssl_key_file'} = $raw_cfg->{ssl}->{key_file};
+	}  else {
+	    warn "SSL parameters specified, but no client credentials set.";
+	}
+    } else {
+	$cfg{'ssl_verify'} = 0;
+	warn "SSL parameters not specified. WILL NOT VERIFY SERVER CERTIFICATE";
+    }
+    
     $cfg{'user'} = $user;
     $cfg{'apikey'} = $apikey;
     $cfg{'api_url'} = $api_url;
@@ -93,8 +133,11 @@ sub register {
 	    } else {
 		$retry_count++;			      
 		http_post($cfg{'api_url'} . "/register", "",
-				    headers => { "Authorization" => authorization }, 
-				    $callback);
+			  session => $tls_ctx,
+			  sessionid => $tls_ctx,
+			  tls_ctx => $tls_ctx,
+			  headers => { "Authorization" => authorization }, 
+			  $callback);
 		return;
 	    }
 	} else {
@@ -111,7 +154,11 @@ sub register {
     };
     
     http_post($cfg{'api_url'} . "/register", "",
-	      headers => { "Authorization" => authorization }, $callback);
+	      headers => { "Authorization" => authorization }, 
+	      session => $tls_ctx,
+	      sessionid => $tls_ctx,
+	      tls_ctx => $tls_ctx,
+	      $callback);
     return;
 }
 
@@ -145,7 +192,10 @@ sub do_poll {
 		$retry_count++;	      
 		$retry_timer = AnyEvent->timer(after => 10, cb => sub { warn "retry number $retry_count"; 
 							 http_get($uri->as_string, 
-								  "headers" => { "Authorization" => authorization }, 
+								  "headers" => { "Authorization" => authorization },
+								  session => $tls_ctx,
+								  sessionid => $tls_ctx,
+								  tls_ctx => $tls_ctx, 
 								  $callback);
 							 return;
 				});
@@ -155,7 +205,10 @@ sub do_poll {
 	    event_cb($response);
 	}
     };
-    http_get($uri->as_string, "headers" => { "Authorization" => authorization }, $callback);
+    http_get($uri->as_string, "headers" => { "Authorization" => authorization }, 
+	     session => $tls_ctx,
+	     sessionid => $tls_ctx,
+	     tls_ctx => $tls_ctx,$callback);
     return;
 }
 
@@ -222,14 +275,17 @@ sub zulip {
     }
     my $url = $cfg{'api_url'} . "/messages";
     my $req = POST($url, \%params); 
-    http_post($url, $req->content, "headers" => {"Authorization" => authorization, "Content-Type" => "application/x-www-form-urlencoded"}, sub { 
-	my ($body, $headers) = @_;
-	if($headers->{Status} < 400) {
-	    BarnOwl::message("Zulipgram sent");
-	} else {
-	    BarnOwl::message("Error sending zulipgram: $headers->{Reason}!");
-	    BarnOwl::debug($body);
-	}});
+    http_post($url, $req->content, "headers" => {"Authorization" => authorization, "Content-Type" => "application/x-www-form-urlencoded"}, 
+	      session => $tls_ctx,
+	      sessionid => $tls_ctx,
+	      tls_ctx => $tls_ctx,sub { 
+		  my ($body, $headers) = @_;
+		  if($headers->{Status} < 400) {
+		      BarnOwl::message("Zulipgram sent");
+		  } else {
+		      BarnOwl::message("Error sending zulipgram: $headers->{Reason}!");
+		      BarnOwl::debug($body);
+		  }});
     return;
 }
 
@@ -294,5 +350,7 @@ BarnOwl::new_command('zulip:write' => sub { cmd_zulip_write(@_); },
 sub default_realm {
   return $cfg{'realm'};
 }
+
+initialize();
 
 1;
