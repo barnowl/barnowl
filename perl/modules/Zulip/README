@@ -1,0 +1,43 @@
+BarnOwl::Module::Zulip is a terminal client for the Zulip
+(https://zulip.org/) chat system. Zulip is influenced heavily by
+Zephyr and so BarnOwl is a pretty good match for it.
+
+PREREQUISITES
+
+- all the normal BarnOwl dependencies, including PAR and AnyEvent::HTTP
+- URI::Encode
+
+SETUP
+
+You'll need to get your personal API key from Zulip. You can find this
+on your "settings" page.
+
+To use BarnOwl::Module::Zulip, create a file called "zulip" in
+~/.owl. The contents of this file should be a JSON dictionary:
+
+{ "user": <the email address you use to log into Zulip>,
+  "apikey": <your personal API key>,
+  "api_url": <the API URL root for your Zulip instance. Should look something like 'https://chat.zulip.org/api/v1'. MUST NOT have a trailing / right now>,
+  "default_realm": <optionally, the domain name you expect most users on your realm to have usernames under. Convenience feature for letting you send personals with less typing>
+}
+
+If your Zulip instance uses HTTPS (as it should), it is optional (but *HIGHLY RECOMMENDED*) to specify an additional set of options in the dictionary:
+
+{ "user": <same as before>,
+  ...
+  "ssl": {
+           "ca_file": <path to your system's list of trusted root SSL certificates. It's /etc/ssl/certs/ca-certificates.crt on Ubuntu or Debian>
+	  }
+}
+
+If your Zulip instance requires SSL client credentials, specify the
+paths to the certificate and key as "cert_file" and "key_file",
+respectively, under "ssl".
+
+MISSING FEATURES:
+
+- subscription manipulation
+- backfilling from history
+- smartnarrow (needs to be ported from the Zephyr smartnarrow in C)
+- better handling of personals with multiple recipients
+- message edits (both making and displaying)
