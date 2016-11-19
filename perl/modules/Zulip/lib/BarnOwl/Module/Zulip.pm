@@ -289,6 +289,43 @@ sub zulip {
     return;
 }
 
+
+sub update_subs {
+    my ($add_list, $remove_list) = @_;
+    my @add_param = ();
+    my @remove_param = ();
+    for my $add (@$add_list) {
+	push @add_param, {name => $add};
+    }
+    my $url = $cfg{'api_url'} . "/users/me/subscriptions";
+    my %params = ("add" => encode_json(\@add_param), "delete" => encode_json($remove_list));
+    my $req = POST($url, \%params);
+    http_request('PATCH' => $url, "body" => $req->content, "headers" => {"Authorization" => authorization, "Content-Type" => "application/x-www-form-urlencoded"}, 
+	      session => $tls_ctx,
+	      sessionid => $tls_ctx,
+	      tls_ctx => $tls_ctx,sub { 
+		  my ($body, $headers) = @_;
+		  if($headers->{Status} < 400) {
+		      BarnOwl::message("Subscriptions updated");
+		  } else {
+		      BarnOwl::message("Error updating subscriptions: $headers->{Reason}!");
+		      BarnOwl::debug($body);
+		  }});
+    return;
+}
+
+sub cmd_zulip_sub {
+    my ($cmd, $stream) = @_;
+    update_subs([$stream], []);
+    
+}
+
+sub cmd_zulip_unsub {
+    my ($cmd, $stream) = @_;
+    update_subs([], [$stream]);
+    
+}
+
 sub cmd_zulip_login {
     register();
 }
@@ -346,6 +383,21 @@ BarnOwl::new_command('zulip:write' => sub { cmd_zulip_write(@_); },
 			 usage => "zulip:login [-c stream] [-i subject] [recipient(s)]",
 			 description => "Send a zulipgram to a stream, person, or set of people"
 		     });
+
+BarnOwl::new_command('zulip:subscribe' => sub { cmd_zulip_sub(@_); },
+		     {
+			 summary => "Subscribe to a Zulip stream",
+			 usage => "zulip:subscribe <stream name>",
+			 description => "Subscribe to a Zulip stream"
+		     });
+
+BarnOwl::new_command('zulip:unsubscribe' => sub { cmd_zulip_unsub(@_); },
+		     {
+			 summary => "Unsubscribe from a Zulip stream",
+			 usage => "zulip:unsubscribe <stream name>",
+			 description => "Unsubscribe to a Zulip stream"
+		     });
+
 
 sub default_realm {
   return $cfg{'realm'};
