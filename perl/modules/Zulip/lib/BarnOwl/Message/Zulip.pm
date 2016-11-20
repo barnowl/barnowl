@@ -44,6 +44,15 @@ sub opcode       { return shift->{"opcode"}; }
 sub long_sender        { return shift->{"sender_full_name"}; }
 sub zid { return shift->{zid}; }
 
+sub recipients {
+    my $self = shift;
+    if($self->is_private) {
+	return split / /, $self->recipient;
+    } else {
+	return "";
+    }
+}
+
 sub replycmd {
     my $self = shift;
     if ($self->is_private) {
@@ -94,6 +103,35 @@ sub replyprivate {
         @filtered_recipients = @recipients[0];
     }
     return BarnOwl::quote("zulip:write", @filtered_recipients);
+}
+    
+# This is intended to be a port of the Zephyr part of
+# owl_function_smartfilter from functions.c.
+sub smartfilter {
+    my ($self, $instance, $related) = @_;
+    my $filter;
+    my @filter;
+    my $quote_chars = '!+*.?\[\]\^\\${}()|';
+    if($self->is_private) {
+	my @recips = $self->recipients;
+	if(scalar(@recips) > 1) {
+	    BarnOwl::message("Smartnarrow for group personals not supported yet. Sorry :(");
+	    return "";
+	} else {
+	    my $person;
+	    if($self->direction eq "in") {
+		$person = $self->sender;
+	    } else {
+		$person = $self->recipient;
+	    }
+	    $filter = "zulip-user-$person";
+	    #	    $person =~ s/\./\\./
+	    $person =~ s/([$quote_chars])/\\$1/g;
+	    @filter = split / /, "( type ^Zulip\$ and filter personal and ( ( direction ^in\$ and sender ^${person}\$ ) or ( direction ^out\$ and recipient ^${person}\$ ) ) )";
+	    BarnOwl::command("filter", $filter, @filter);
+	    return $filter;
+	}
+    }
 }
 
 1;
