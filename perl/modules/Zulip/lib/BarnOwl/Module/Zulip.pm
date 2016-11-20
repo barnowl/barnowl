@@ -151,7 +151,7 @@ sub register {
             } else {
                 $last_event_id = $response->{last_event_id};
                 $queue_id = $response->{queue_id};
-                $presence_timer = AnyEvent->timer(after => 1, interval => 10, cb => sub {
+                $presence_timer = AnyEvent->timer(after => 1, interval => 60, cb => sub {
                     my $presence_url = $cfg{'api_url'} . "/users/me/presence";
                     my %presence_params = (status => "active", new_user_input => "true");
                     my $presence_body = POST($presence_url, \%presence_params)->content;
