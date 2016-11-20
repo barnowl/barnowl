@@ -41,4 +41,4 @@ MISSING FEATURES:
 - better handling of personals with multiple recipients
 - editing messages (barnowl will show message edits from other people)
 - syncing the curmsg pointer with the server
-- sending presence (so you don't get "missed message" emails)
+- sending presence more cleverly (right now it just sends a ping every minute regardless of how active you are)

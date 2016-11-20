@@ -11,6 +11,7 @@ our $max_retries = 1000;
 our $retry_timer;
 our $tls_ctx;
 our %msg_id_map;
+our $presence_timer;
 
 use AnyEvent;
 use AnyEvent::HTTP;
@@ -148,6 +149,23 @@ sub register {
             } else {
                 $last_event_id = $response->{last_event_id};
                 $queue_id = $response->{queue_id};
+                $presence_timer = AnyEvent->timer(after => 1, interval => 10, cb => sub {
+                    my $presence_url = $cfg{'api_url'} . "/users/me/presence";
+                    my %presence_params = (status => "active", new_user_input => "true");
+                    my $presence_body = POST($presence_url, \%presence_params)->content;
+                    http_post($presence_url, $presence_body, headers => { "Authorization" => authorization,
+                                                                          "Content-Type" => "application/x-www-form-urlencoded" },
+                              session => $tls_ctx,
+                              sessionid => $tls_ctx,
+                              tls_ctx => $tls_ctx,
+                              sub {
+                                  my ($body, $headers) = @_;
+                                  if($headers->{Status} > 399) {
+                                      warn("Error sending presence");
+                                      warn(encode_json($headers));
+                                      warn($body);
+                                  }});
+                    return;});
                 do_poll();
                 return;
             }
@@ -188,6 +206,7 @@ sub do_poll {
             if($retry_count >= $max_retries) {
                 warn "Retry count exceeded in do_poll, giving up";
                 fail("do_poll: Giving up");
+                $presence_timer->cancel;
             } else {
                 warn "Retrying";
                 $retry_count++;       
