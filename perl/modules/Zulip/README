@@ -36,7 +36,6 @@ respectively, under "ssl".
 
 MISSING FEATURES:
 
-- subscription manipulation
 - backfilling from history
 - smartnarrow (needs to be ported from the Zephyr smartnarrow in C)
 - better handling of personals with multiple recipients
