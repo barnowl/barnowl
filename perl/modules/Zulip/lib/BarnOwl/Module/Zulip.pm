@@ -470,6 +470,9 @@ BarnOwl::new_command('zulip:unsubscribe' => sub { cmd_zulip_unsub(@_); },
                          description => "Unsubscribe to a Zulip stream"
                      });
 
+sub user {
+  return $cfg{'user'};
+}
 
 sub default_realm {
   return $cfg{'realm'};
