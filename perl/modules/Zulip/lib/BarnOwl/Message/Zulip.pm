@@ -35,6 +35,7 @@ sub pretty_recipient {
 sub class       { return shift->{"class"}; }
 sub instance    { return shift->{"instance"}; }
 sub realm       { return shift->{"realm"}; }
+sub opcode       { return shift->{"opcode"}; }
 sub long_sender        { return shift->{"sender_full_name"}; }
 sub zid { return shift->{zid}; }
 

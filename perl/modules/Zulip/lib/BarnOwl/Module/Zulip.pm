@@ -10,6 +10,7 @@ our %cfg;
 our $max_retries = 1000;
 our $retry_timer;
 our $tls_ctx;
+our %msg_id_map;
 
 use AnyEvent;
 use AnyEvent::HTTP;
@@ -232,7 +233,8 @@ sub event_cb {
 		    location => "zulip",
 		    body => $msg->{content},
 		    zid => $msg->{id},
-		    sender_full_name => $msg->{sender_full_name});
+		    sender_full_name => $msg->{sender_full_name},
+		    opcode => "");
 		$msghash{'body'} =~ s/\r//gm;
 		if($msg->{type} eq "private") {
 		    $msghash{private} = 1;
@@ -255,7 +257,52 @@ sub event_cb {
 		    }
 		}
 		my $bomsg = BarnOwl::Message->new(%msghash);
-		BarnOwl::queue_message($bomsg);
+		# queue_message returns the message round-tripped
+		# through owl_message. In particular, this means it
+		# has a meaningful id.
+		my $rtmsg = BarnOwl::queue_message($bomsg);
+		# note that only base messages, not edits, end up in
+		# here. Tim promises me that we will never see an
+		# update to an update, so we shouldn't need to
+		# retrieve updated messages via this
+		$msg_id_map{$rtmsg->zid} = $rtmsg->id;
+	    } elsif($event->{type} eq "update_message") {
+		my $id = $event->{message_id};
+		if(!exists $msg_id_map{$id}) {
+		    BarnOwl::debug("Got update for unknown message $id, discarding");
+		} else {
+		    my $base_msg = BarnOwl::get_message_by_id($msg_id_map{$id});
+		    my %new_msghash = (
+			type => 'Zulip',
+			sender => $base_msg->sender,
+			recipient => $base_msg->recipient,
+			direction => $base_msg->direction,
+			class => $base_msg->class,
+			# instance needs to be potentially determined from new message
+			unix_time => $event->{edit_timestamp},
+			source => "zulip",
+			location => "zulip",
+			# content needs to be potentially determined from new message
+			zid => $base_msg->id,
+			sender_full_name => $base_msg->long_sender,
+			opcode => "EDIT");
+		    if (exists $$event{'subject'}) {
+			$new_msghash{'instance'} = $event->{subject};
+		    } else {
+			$new_msghash{'instance'} = $base_msg->instance;
+		    }
+		    if (exists $$event{'content'}) {
+			$new_msghash{'body'} = $event->{content};
+		    } else {
+			$new_msghash{'body'} = $base_msg->body;
+		    }
+		    my $bomsg = BarnOwl::Message->new(%new_msghash);
+		    BarnOwl::queue_message($bomsg);
+		}
+		
+	    } else {
+		BarnOwl::debug("Got unknown message");
+		BarnOwl::debug(encode_json($event));
 	    }
 	    $last_event_id = $event->{id};
 	    do_poll();

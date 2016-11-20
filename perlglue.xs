@@ -59,7 +59,7 @@ getcurmsg()
 		RETVAL = owl_perlconfig_curmessage2hashref();
 	OUTPUT:
 		RETVAL
-
+	
 int
 getnumcols()
 	CODE:
@@ -155,6 +155,25 @@ queue_message(msg)
 	OUTPUT:
 		RETVAL
 
+SV *
+get_message_by_id(id)
+    int id
+    PREINIT:
+	   owl_message *m;
+           owl_messagelist *ml;
+    CODE:
+    {
+	    ml = owl_global_get_msglist(&g);
+	    m = owl_messagelist_get_by_id(ml, id);
+	    if(!m) {
+		    croak("No message with id %d!", id);
+	    }
+	    RETVAL = owl_perlconfig_message2hashref(m);
+    }
+OUTPUT:
+        RETVAL
+
+		
 void
 admin_message(header, body)
 	const char *header

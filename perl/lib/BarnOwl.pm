@@ -8,7 +8,7 @@ our @EXPORT_OK = qw(command getcurmsg getnumcols getnumlines getidletime
                     register_idle_watcher unregister_idle_watcher
                     zephyr_getsender zephyr_getrealm zephyr_zwrite
                     zephyr_stylestrip zephyr_smartstrip_user zephyr_getsubs
-                    queue_message admin_message
+                    queue_message get_message_by_id admin_message
                     start_edit
                     start_question start_password start_edit_win
                     get_data_dir get_config_dir popless_text popless_ztext
