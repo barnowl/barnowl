@@ -291,7 +291,7 @@ sub zulip {
 
 
 sub update_subs {
-    my ($add_list, $remove_list) = @_;
+    my ($add_list, $remove_list, $cb) = @_;
     my @add_param = ();
     my @remove_param = ();
     for my $add (@$add_list) {
@@ -300,13 +300,15 @@ sub update_subs {
     my $url = $cfg{'api_url'} . "/users/me/subscriptions";
     my %params = ("add" => encode_json(\@add_param), "delete" => encode_json($remove_list));
     my $req = POST($url, \%params);
-    http_request('PATCH' => $url, "body" => $req->content, "headers" => {"Authorization" => authorization, "Content-Type" => "application/x-www-form-urlencoded"}, 
+    http_request('PATCH' => $url,
+		 "body" => $req->content,
+		 "headers" => {"Authorization" => authorization, "Content-Type" => "application/x-www-form-urlencoded"},
 	      session => $tls_ctx,
 	      sessionid => $tls_ctx,
 	      tls_ctx => $tls_ctx,sub { 
 		  my ($body, $headers) = @_;
 		  if($headers->{Status} < 400) {
-		      BarnOwl::message("Subscriptions updated");
+		      &$cb();
 		  } else {
 		      BarnOwl::message("Error updating subscriptions: $headers->{Reason}!");
 		      BarnOwl::debug($body);
@@ -316,13 +318,15 @@ sub update_subs {
 
 sub cmd_zulip_sub {
     my ($cmd, $stream) = @_;
-    update_subs([$stream], []);
+    update_subs([$stream], [], sub {
+	BarnOwl::message("Subscribed to $stream");});
     
 }
 
 sub cmd_zulip_unsub {
     my ($cmd, $stream) = @_;
-    update_subs([], [$stream]);
+    update_subs([], [$stream], sub {
+	BarnOwl::message("Unsubscribed from $stream");});
     
 }
 
