@@ -44,8 +44,8 @@ sub replycmd {
     if ($self->is_private) {
 	return $self->replysendercmd;
     } else {
-	return BarnOwl::quote("zulip:write", "-c", $self->class, 
-			      "-i", $self->instance);
+        return BarnOwl::quote("zulip:write", "-c", $self->class,
+                              "-i", $self->instance);
     }
 }
 
