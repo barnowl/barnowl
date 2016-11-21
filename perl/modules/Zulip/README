@@ -63,6 +63,7 @@ FEATURES:
   with the correct stream/topic/sender with the new text and opcode
   EDIT)
 
+
 MISSING/UNFINISHED FEATURES:
 
 - backfilling from history (this will be hard. barnowl currently only
@@ -87,6 +88,10 @@ MISSING/UNFINISHED FEATURES:
   roster/etc)
 
 - being able to invite people to invite-only streams
+
+- improved URL generation. We shouldn't have to warn people not to
+  have a trailing / in their api_url setting.
+
 
 FEATURES THAT SHOULD PROBABLY EXIST BUT THAT I DON'T REALLY CARE ABOUT
 MUCH
