@@ -384,6 +384,26 @@ sub update_subs {
     return;
 }
 
+sub get_subs {
+    my $url = $cfg{'api_url'} . "/users/me/subscriptions";
+    http_get($url, headers => { "Authorization" => authorization },
+             session => $tls_ctx, sessionid => $tls_ctx,
+             tls_ctx => $tls_ctx, sub {
+                 my ($body, $headers) = @_;
+                 if ($headers->{Status} > 399) {
+                     BarnOwl::message("Error retrieving subscription list: $headers->{Reason}");
+                     BarnOwl::debug($body);
+                 }
+                 my $data = decode_json($body);
+                 my @subs;
+                 for my $s (@{$data->{subscriptions}}) {
+                     push @subs, $s->{name};
+                 }
+                 BarnOwl::popless_text(join "\n", @subs);
+             });
+    return;
+}
+
 sub cmd_zulip_sub {
     my ($cmd, $stream) = @_;
     update_subs([$stream], [], sub {
@@ -396,6 +416,10 @@ sub cmd_zulip_unsub {
     update_subs([], [$stream], sub {
         BarnOwl::message("Unsubscribed from $stream");});
     
+}
+
+sub cmd_zulip_getsubs {
+    get_subs();
 }
 
 sub cmd_zulip_login {
@@ -469,6 +493,14 @@ BarnOwl::new_command('zulip:unsubscribe' => sub { cmd_zulip_unsub(@_); },
                          usage => "zulip:unsubscribe <stream name>",
                          description => "Unsubscribe to a Zulip stream"
                      });
+
+BarnOwl::new_command('zulip:getsubs' => sub { cmd_zulip_getsubs(@_); },
+                     {
+                         summary => "Display the list of subscribed Zulip streams",
+                         usage => "zulip:getsubs",
+                         description => "Display the list of Zulip streams you're subscribed to in a popup window"
+                     });
+
 
 sub user {
   return $cfg{'user'};
