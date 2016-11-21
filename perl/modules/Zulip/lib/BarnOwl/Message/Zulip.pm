@@ -169,15 +169,13 @@ sub smartfilter {
 	if($inst) {
 	    $filter .= "-instance-$instance";
 	}
-	$class = BarnOwl::quote(quote_for_filter($class));
+	$class = quote_for_filter($class);
 	# TK deal with filter already existing
-	my $filter_str = "";
-	$filter_str .= ($related ? "class ^(un)*${class}(\\.d)*\$" : "class ^${class}\$");
+	@filter = (($related ? ("class", "^(un)*${class}(\\.d)*\$") : ("class", "^${class}\$")));
 	if($inst) {
-	    $instance = BarnOwl::quote(quote_for_filter($instance));
-	    $filter_str .= ($related ? " and ( instance ^(un)*${instance}(\\.d)*\$ )" : " and ( instance ^${instance}\$ )");
+	    $instance = quote_for_filter($instance);
+	    push @filter, ($related ? (qw{ and ( instance }, "^(un)*${instance}(\\.d)*\$", ")") : (qw{ and ( instance }, "^${instance}\$", ")"));
 	}
-	@filter = split / /, $filter_str;
     }
     BarnOwl::command("filter", $filter, @filter);
     return $filter;
