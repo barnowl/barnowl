@@ -44,15 +44,6 @@ sub opcode       { return shift->{"opcode"}; }
 sub long_sender        { return shift->{"sender_full_name"}; }
 sub zid { return shift->{zid}; }
 
-sub recipients {
-    my $self = shift;
-    if($self->is_private) {
-	return split / /, $self->recipient;
-    } else {
-	return "";
-    }
-}
-
 sub replycmd {
     my $self = shift;
     if ($self->is_private) {
@@ -104,16 +95,44 @@ sub replyprivate {
     }
     return BarnOwl::quote("zulip:write", @filtered_recipients);
 }
-    
+
+# Strip layers of "un" and ".d" from names
+sub base_name {
+    my $name = shift;
+
+    while($name =~ /(^un)/) {
+	$name =~ s/(^un)//;
+    }
+    while($name =~ /\.d$/) {
+	$name =~ s/(\.d$)//g;
+    }
+    return $name;
+}
+
+sub baseclass {
+    my $self = shift;
+    return base_name($self->class);
+}
+
+sub baseinstance {
+    my $self = shift;
+    return base_name($self->instance);
+}
+
+sub quote_for_filter {
+    my $quote_chars = '!+*.?\[\]\^\\${}()|';
+    my $str = shift;
+    return ($str =~ s/[$quote_chars]/\\$1/gr);
+}
+
 # This is intended to be a port of the Zephyr part of
 # owl_function_smartfilter from functions.c.
 sub smartfilter {
-    my ($self, $instance, $related) = @_;
+    my ($self, $inst, $related) = @_;
     my $filter;
     my @filter;
-    my $quote_chars = '!+*.?\[\]\^\\${}()|';
     if($self->is_private) {
-	my @recips = $self->recipients;
+	my @recips = $self->private_recipient_list;
 	if(scalar(@recips) > 1) {
 	    BarnOwl::message("Smartnarrow for group personals not supported yet. Sorry :(");
 	    return "";
@@ -126,12 +145,42 @@ sub smartfilter {
 	    }
 	    $filter = "zulip-user-$person";
 	    #	    $person =~ s/\./\\./
-	    $person =~ s/([$quote_chars])/\\$1/g;
+	    $person =~ quote_for_filter($person);
 	    @filter = split / /, "( type ^Zulip\$ and filter personal and ( ( direction ^in\$ and sender ^${person}\$ ) or ( direction ^out\$ and recipient ^${person}\$ ) ) )";
-	    BarnOwl::command("filter", $filter, @filter);
-	    return $filter;
 	}
+    } else {
+	my $class;
+	my $instance;
+
+	if($related) {
+	    $class = $self->baseclass;
+	    if($inst) {
+		$instance = $self->baseinstance;
+	    }
+	    $filter = "related-";
+	} else {
+	    $class = $self->class;
+	    if($inst) {
+		$instance = $self->instance;
+	    }
+	    $filter = "";
+	}
+	$filter .= "class-$class";
+	if($inst) {
+	    $filter .= "-instance-$instance";
+	}
+	$class = BarnOwl::quote(quote_for_filter($class));
+	# TK deal with filter already existing
+	my $filter_str = "";
+	$filter_str .= ($related ? "class ^(un)*${class}(\\.d)*\$" : "class ^${class}\$");
+	if($inst) {
+	    $instance = BarnOwl::quote(quote_for_filter($instance));
+	    $filter_str .= ($related ? " and ( instance ^(un)*${instance}(\\.d)*\$ )" : " and ( instance ^${instance}\$ )");
+	}
+	@filter = split / /, $filter_str;
     }
+    BarnOwl::command("filter", $filter, @filter);
+    return $filter;
 }
 
 1;
