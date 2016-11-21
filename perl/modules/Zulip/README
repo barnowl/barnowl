@@ -2,10 +2,13 @@ BarnOwl::Module::Zulip is a terminal client for the Zulip
 (https://zulip.org/) chat system. Zulip is influenced heavily by
 Zephyr and so BarnOwl is a pretty good match for it.
 
+
 PREREQUISITES
 
 - all the normal BarnOwl dependencies, including PAR and AnyEvent::HTTP
+
 - URI::Encode
+
 
 SETUP
 
@@ -34,11 +37,88 @@ If your Zulip instance requires SSL client credentials, specify the
 paths to the certificate and key as "cert_file" and "key_file",
 respectively, under "ssl".
 
-MISSING FEATURES:
 
-- backfilling from history
-- smartnarrow (needs to be ported from the Zephyr smartnarrow in C)
-- better handling of personals with multiple recipients
-- editing messages (barnowl will show message edits from other people)
+USAGE
+
+When you start BarnOwl, you should run "zulip:login". Or put it at the
+end of ~/.owl/startup.
+
+
+FEATURES:
+
+- sending and receiving zulip stream and personal messages (including
+  with multiple recipients, mostly-functionally)
+
+- listing, adding, and removing subscriptions
+
+- minimal support for stream creation (if you try to sub to a stream
+  that doesn't exist, it'll _probably_ create a new one with whatever
+  your site's default settings are)
+
+- full filter language support (message attributes are mostly the same
+  as zephyr) including support for "punt" and mostly-functional
+  smartfilter.
+
+- support for displaying message edits (they show up as new messages
+  with the correct stream/topic/sender with the new text and opcode
+  EDIT)
+
+MISSING/UNFINISHED FEATURES:
+
+- backfilling from history (this will be hard. barnowl currently only
+  supports appending to the msglist from perl, and I think the msglist
+  is also an array, so that's potential badness)
+
+- smartnarrow robustness (has been ported from C, but almost certainly
+  still has weird corner cass)
+
+- better handling of personals with multiple recipients (I think Alex
+  implemented this, but more testing is never bad)
+
 - syncing the curmsg pointer with the server
-- sending presence more cleverly (right now it just sends a ping every minute regardless of how active you are)
+
+- sending presence more cleverly (right now it just sends a ping every
+  minute regardless of how active you are)
+
+- deleting messages is probably interestingly broken right now w/r/t
+  the hash of zid -> barnowl message id. make it work.
+
+- being able to view user presence (ala zlocate/aim buddy list/jabber
+  roster/etc)
+
+- being able to invite people to invite-only streams
+
+FEATURES THAT SHOULD PROBABLY EXIST BUT THAT I DON'T REALLY CARE ABOUT
+MUCH
+
+- editing messages
+
+- option to allow in-place update of edited messages instead of adding
+  a new message
+
+- being able to create a stream with options (e.g. invite-only) set
+
+- being able to edit attributes of streams (zephyr doesn't have 'em,
+  but zulip does)
+
+- being able to delete streams
+
+- being able to see a list of people subscribed to a given stream
+
+
+FEATURES THAT WOULD BE HILARIOUS
+
+- zcrypt support
+
+
+OTHER DEVELOPMENT WORK:
+
+- general robustness (e.g. if you try to zulip:login again after
+  do_poll has given up (because the server went away and didn't come
+  back in a reasonable time, it probably crashes hard.)
+
+- code cleanup (kill globals with fire, refactor long functions,
+  possibly break out some modules?)
+
+- get this merged into barnowl mainline, especially now that it has an
+  XS change (i.e. it's not just a drop-in PAR anymore)
