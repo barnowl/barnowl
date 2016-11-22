@@ -1,3 +1,5 @@
+-*- text -*-
+
 BarnOwl::Module::Zulip is a terminal client for the Zulip
 (https://zulip.org/) chat system. Zulip is influenced heavily by
 Zephyr and so BarnOwl is a pretty good match for it.
@@ -124,6 +126,9 @@ OTHER DEVELOPMENT WORK:
 
 - code cleanup (kill globals with fire, refactor long functions,
   possibly break out some modules?)
+
+- Probably break out AnyEvent::Zulip into a separate module that this
+  just uses
 
 - get this merged into barnowl mainline, especially now that it has an
   XS change (i.e. it's not just a drop-in PAR anymore)
