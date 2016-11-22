@@ -125,8 +125,11 @@ sub read_config {
 
 sub register {
     my $retry_count = 0;
-    BarnOwl::debug("In register");
     my $callback;
+
+    if(!exists $cfg{'api_url'}) {
+        die("Zulip not configured, cannot poll for events");
+    }
     $callback = sub {
         BarnOwl::debug("In register callback");
         my ($body, $headers) = @_;
