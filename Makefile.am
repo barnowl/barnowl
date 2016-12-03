@@ -121,6 +121,7 @@ EXTRA_DIST = \
     perlglue.xs \
     scripts \
     stubgen.pl \
-    typemap
+    typemap \
+    cpanfile
 
 SUBDIRS = compat libfaim perl
