@@ -1,3 +1,48 @@
+1.10rc1
+ * Numerous autotools/build machinery fixes -andersk@mit.edu
+ * Numerous code correctness and simplification/cleanup fixes -andersk@mit.edu
+ * Add and use a cpanfile documenting perl module dependencies -jgross@mit.edu
+ * Add Travis configuration -jgross@mit.edu
+ * Avoid strchrnul -andersk@mit.edu
+ * Numerous IRC fixes -jgross@mit.edu
+ * Improve smartnarrow and smartfilter documentation -jgross@mit.edu
+ * filterproc: Rewrite using GIOChannel -andersk@mit.edu
+ * Implement :twitter-favorite -nelhage@nelhage.com
+ * Kill the client-side tweet length check. -nelhage@nelhage.com
+ * squelch the Twitter legacy_list_api warnings -nelhage@nelhage.com
+ * Use SSL for Twitter by default -adehnert@mit.edu
+ * Humanize zsigs -andersk@mit.edu
+ * Show Zephyr charset in info popup -andersk@mit.edu
+ * Fix Jabber SRV record support (at one point fixed connecting via jabber to google talk or facebook) -james2vegas@aim.com
+ * fix cmd_join in BarnOwl/Module/IRC.pm -james2vegas@aim.com
+ * Add a ~/.owl/ircchannels file, persist channels -jgross@mit.edu
+ * Added hooks for user going idle or active. -jgross@mit.edu
+ * Support channel-or-user IRC commands, and setup irc-msg to use it. -ezyang@mit.edu
+ * Refactor perl calls through a single method -jgross@mit.edu
+ * Really support building Perl modules from a separate builddir -andersk@mit.edu
+ * Get rid of all our embedded copies of Module::Install -andersk@mit.edu
+ * Don't let new_variable_* overriding previously set values -rnjacobs@mit.edu
+ * Messages sent to 'class messages' are not personal -jgross@mit.edu
+ * Expose message_matches_filter to perl -jgross@mit.edu
+ * Fail fast on -c filsrv, which most people won't have permission to send to -rnjacobs@mit.edu
+ * zcrypt: Use getopt_long for argument parsing -andersk@mit.edu
+ * zcrypt: Accept -help and --version -andersk@mit.edu
+ * barnowl --help: Write to stdout and exit successfully -andersk@mit.edu
+ * Don't swallow errors in :unsuball -davidben@mit.edu
+ * Allow testing in a separate build directory -andersk@mit.edu
+ * Add support for arbitrary Perl subs for getters and setters for barnowl variables -glasgall@mit.edu
+ * owl_zephyr_loadsubs: Don’t leak memory on error opening ~/.zephyr.subs -andersk@mit.edu
+ * Make :loadsubs reload instanced personals too -davidben@mit.edu
+ * Fix some undefined behavior in filter.c, caught by clang scan-build -jgross@mit.edu
+ * Die on a failed zephyr_zwrite; don't silently ignore it -jgross@mit.edu
+ * Fix a memory leak in zcrypt.c, caught by clang scan-build -jgross@mit.edu
+ * zcrypt: Make gpg stop messing around in ~/.gnupg -andersk@mit.edu
+ * Fix display of pseudologins -davidben@mit.edu
+ * Unbundle random Facebook module libraries -davidben@mit.edu
+ * Replace deprecated GLib < 2.31.0 APIs -andersk@mit.edu
+ * Abstract g->interrupt_lock -andersk@mit.edu
+ * zephyr: Replace outgoing default format with a small URL -geofft@mit.edu
+
 1.9
  * Update Jabber module for Net::DNS changes -james2vegas@aim.com
  * Update and make configurable the Zephyr default format -adehnert@mit.edu
