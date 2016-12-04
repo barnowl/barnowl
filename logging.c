@@ -303,7 +303,7 @@ static void owl_log_write_deferred_entries(gpointer data)
     }
     owl_log_entry_free(entry);
   }
-  if (all_succeeded && logged_at_least_one_message) {
+  if (all_succeeded && logged_at_least_one_message && !defer_logs) {
     owl_log_adminmsg("Logs have been flushed and logging has resumed.");
   }
 }
