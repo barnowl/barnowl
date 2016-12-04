@@ -196,6 +196,11 @@ static void owl_log_deferred_enqueue_message(const char *buffer, const char *fil
   g_queue_push_tail(deferred_entry_queue, owl_log_new_entry(buffer, filename));
 }
 
+static void owl_log_deferred_enqueue_first_message(const char *buffer, const char *filename)
+{
+  g_queue_push_head(deferred_entry_queue, owl_log_new_entry(buffer, filename));
+}
+
 /* write out the entry if possible
  * return 0 on success, errno on failure to open
  */
@@ -258,7 +263,12 @@ static void owl_log_eventually_write_entry(gpointer data)
                     "resume logging, use the command :flush-logs.\n\n",
                     msg->filename,
                     g_strerror(ret));
-      owl_log_deferred_enqueue_message(msg->message, msg->filename);
+      /* If we were not in deferred logging mode, either the queue should be
+       * empty, or we are attempting to log a message that we just popped off
+       * the head of the queue.  Either way, we should enqueue this message as
+       * the first message in the queue, rather than the last, so that we
+       * preserve message ordering. */
+      owl_log_deferred_enqueue_first_message(msg->message, msg->filename);
     } else if (ret != 0) {
       owl_log_file_error(msg, ret);
     }
@@ -278,9 +288,13 @@ static void owl_log_write_deferred_entries(gpointer data)
   while (!g_queue_is_empty(deferred_entry_queue) && !defer_logs) {
     logged_at_least_one_message = true;
     entry = (owl_log_entry*)g_queue_pop_head(deferred_entry_queue);
-    if (drop_failed_logs) {
+    if (!drop_failed_logs) {
+      /* Attempt to write the log entry.  If it fails, re-queue the entry at
+       * the head of the queue. */
       owl_log_eventually_write_entry(entry);
     } else {
+      /* Attempt to write the log entry. If it fails, print an error message,
+       * drop the log, and keep going through the queue. */
       ret = owl_log_try_write_entry(entry);
       if (ret != 0) {
         all_succeeded = false;
