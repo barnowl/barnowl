@@ -1,3 +1,6 @@
+1.10
+ * No changes above what's already in 1.10rc1
+
 1.10rc1
  * Numerous autotools/build machinery fixes -andersk@mit.edu
  * Numerous code correctness and simplification/cleanup fixes -andersk@mit.edu
