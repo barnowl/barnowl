@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([BarnOwl],[1.10rc1],[bug-barnowl@mit.edu])
+AC_INIT([BarnOwl],[1.10],[bug-barnowl@mit.edu])
 AM_INIT_AUTOMAKE([1.7.0 foreign std-options -Wall -Wno-portability])
 AM_MAINTAINER_MODE([enable])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
