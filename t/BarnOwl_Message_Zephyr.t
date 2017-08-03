@@ -23,8 +23,8 @@ sub test_casefold_principal {
        combine_user_realm(lc($user), uc($realm)));
 }
 
-test_casefold_principal('');
-test_casefold_principal('FOO');
+test_casefold_principal('', '');
+test_casefold_principal('FOO', '');
 test_casefold_principal('FOO', 'athena.mit.edu');
 test_casefold_principal('FOO@BAR', 'athena.mit.edu');
 test_casefold_principal('', 'athena.mit.edu');

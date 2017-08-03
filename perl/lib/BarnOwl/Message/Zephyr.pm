@@ -27,7 +27,10 @@ sub casefold_principal {
     # split the principal right after the final @, without eating any
     # characters; this way, we always get at least '@' in $user
     my ($user, $realm) = split(/(?<=@)(?=[^@]+$)/, $principal);
-    return lc($user) . uc($realm);
+    $user = '' if !defined $user;
+    $user = lc($user);
+    $user = $user . uc($realm) if defined $realm;
+    return $user;
 }
 
 sub login_type {
