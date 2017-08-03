@@ -281,12 +281,12 @@ static void owl_log_write_deferred_entries(gpointer data)
   owl_log_entry *entry;
   bool drop_failed_logs = *(bool *)data;
   int ret;
-  bool logged_at_least_one_message = false;
+  int logged_message_count = 0;
   bool all_succeeded = true;
 
   defer_logs = false;
   while (!g_queue_is_empty(deferred_entry_queue) && !defer_logs) {
-    logged_at_least_one_message = true;
+    logged_message_count++;
     entry = (owl_log_entry*)g_queue_pop_head(deferred_entry_queue);
     if (!drop_failed_logs) {
       /* Attempt to write the log entry.  If it fails, re-queue the entry at
@@ -303,8 +303,13 @@ static void owl_log_write_deferred_entries(gpointer data)
     }
     owl_log_entry_free(entry);
   }
-  if (all_succeeded && logged_at_least_one_message && !defer_logs) {
+  if (all_succeeded && logged_message_count > 0 && !defer_logs) {
     owl_log_adminmsg("Logs have been flushed and logging has resumed.");
+  } else if (!all_succeeded && logged_message_count > 0 && !defer_logs) {
+    owl_log_adminmsg("Logs have been flushed or dropped and logging has resumed.");
+  } else if (logged_message_count > 0 && defer_logs) {
+    owl_log_error("Attempted to flush %d logs; %u deferred logs remain.",
+                  logged_message_count, g_queue_get_length(deferred_entry_queue));
   }
 }
 
