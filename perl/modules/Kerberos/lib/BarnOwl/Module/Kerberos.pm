@@ -89,7 +89,7 @@ sub do_renew {
         if ($status != 0) {
             BarnOwl::error($output);
         } else {
-            if (BarnOwl::getvar("aklog") == 'on') {
+            if (BarnOwl::getvar("aklog") eq 'on') {
                 my $status = system('aklog');
                 if ($status != 0) {
                     BarnOwl::error('Aklog Failed');
