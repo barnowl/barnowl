@@ -9,7 +9,7 @@ BarnOwl::Module::Kerberos
 
 =head1 DESCRIPTION
 
-This module allows someone to renew tickets withing barnowl
+This module allows someone to renew tickets within BarnOwl
 
 =cut
 
