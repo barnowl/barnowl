@@ -18,8 +18,6 @@ use AnyEvent;
 use AnyEvent::Handle;
 use IPC::Open3;
 
-use Data::Dumper;
-
 our $VERSION = 1.0;
 
 BarnOwl::new_variable_bool(
