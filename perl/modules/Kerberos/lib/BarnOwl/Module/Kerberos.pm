@@ -64,10 +64,7 @@ sub cmd_renew {
 
 my $hdlin;
 my $hdlerr;
-my $w;
-
-my $a_hdlerr;
-my $a;
+my $kinit_watcher;
 
 sub do_renew {
 
@@ -87,7 +84,7 @@ sub do_renew {
         $output .= $line;
                      });
     close $stdout;
-    $w = AnyEvent->child (pid => $pid, cb => sub {
+    $kinit_watcher = AnyEvent->child (pid => $pid, cb => sub {
         my ($pid, $status) = @_;
         if ($status != 0){
             BarnOwl::error($output);
