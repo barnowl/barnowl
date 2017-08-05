@@ -69,7 +69,7 @@ my $kinit_watcher;
 sub do_renew {
 
     my $password = shift;
-    my($stdin, $stdout, $stderr);
+    my ($stdin, $stdout, $stderr);
     use Symbol 'gensym'; $stderr = gensym;
     my $pid = open3($stdin, $stdout, $stderr, 'kinit', '-l7d') or die("Failed to run kinit");
 
@@ -79,20 +79,19 @@ sub do_renew {
     my $output = "";
 
     $hdlin->push_write($password .  "\n");
-    $hdlerr->push_read (line => sub {
+    $hdlerr->push_read(line => sub {
         my ($hdl, $line) = @_;
         $output .= $line;
                      });
     close $stdout;
     $kinit_watcher = AnyEvent->child (pid => $pid, cb => sub {
         my ($pid, $status) = @_;
-        if ($status != 0){
+        if ($status != 0) {
             BarnOwl::error($output);
-        }
-        else{
-            if(BarnOwl::getvar("aklog") == 'on'){
+        } else {
+            if (BarnOwl::getvar("aklog") == 'on') {
                 my $status = system('aklog');
-                if ($status != 0){
+                if ($status != 0) {
                     BarnOwl::error('Aklog Failed');
                 }
             }
