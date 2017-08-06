@@ -267,7 +267,8 @@ static void owl_log_file_error(owl_log_entry *msg, int errnum)
  * Otherwise, try to write this log message, and, if it fails with
  * EPERM, EACCES, or ETIMEDOUT, go into deferred logging mode and
  * queue an admin message.  If it fails with anything else, display an
- * error message, but do not go into deferred logging mode.
+ * error message, drop the log message, and do not go into deferred
+ * logging mode.
  *
  * N.B. This function is called only on the disk-writing thread. */
 static void owl_log_eventually_write_entry(gpointer data)
