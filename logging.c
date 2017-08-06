@@ -6,6 +6,10 @@ typedef struct _owl_log_entry { /* noproto */
   char *message;
 } owl_log_entry;
 
+typedef struct _owl_log_options { /* noproto */
+  bool drop_failed_logs;
+  bool display_initial_log_count;
+} owl_log_options;
 
 static GMainContext *log_context;
 static GMainLoop *log_loop;
@@ -301,23 +305,25 @@ static void owl_log_eventually_write_entry(gpointer data)
 static void owl_log_write_deferred_entries(gpointer data)
 {
   owl_log_entry *entry;
-  bool drop_failed_logs = *(bool *)data;
+  owl_log_options *opts = (owl_log_options *)data;
   int ret;
   int logged_message_count = 0;
   bool all_succeeded = true;
 
-  if (g_queue_is_empty(deferred_entry_queue)) {
-    owl_log_makemsg("There are no logs to flush.");
-  } else {
-    owl_log_makemsg("Attempting to flush %u logs...",
-                     g_queue_get_length(deferred_entry_queue));
+  if (opts->display_initial_log_count) {
+    if (g_queue_is_empty(deferred_entry_queue)) {
+      owl_log_makemsg("There are no logs to flush.");
+    } else {
+      owl_log_makemsg("Attempting to flush %u logs...",
+                      g_queue_get_length(deferred_entry_queue));
+    }
   }
 
   defer_logs = false;
   while (!g_queue_is_empty(deferred_entry_queue) && !defer_logs) {
     logged_message_count++;
     entry = (owl_log_entry*)g_queue_pop_head(deferred_entry_queue);
-    if (!drop_failed_logs) {
+    if (!opts->drop_failed_logs) {
       /* Attempt to write the log entry.  If it fails, re-queue the entry at
        * the head of the queue. */
       owl_log_eventually_write_entry(entry);
@@ -333,8 +339,10 @@ static void owl_log_write_deferred_entries(gpointer data)
     owl_log_entry_free(entry);
   }
   if (logged_message_count > 0) {
-    /* first clear the "attempting to flush" message from the status bar */
-    owl_log_makemsg("");
+    if (opts->display_initial_log_count) {
+      /* first clear the "attempting to flush" message from the status bar */
+      owl_log_makemsg("");
+    }
     if (!defer_logs) {
       if (all_succeeded) {
         owl_log_adminmsg("Flushed %d logs and resumed logging.",
@@ -350,10 +358,11 @@ static void owl_log_write_deferred_entries(gpointer data)
   }
 }
 
-void owl_log_flush_logs(bool drop_failed_logs)
+void owl_log_flush_logs(bool drop_failed_logs, bool quiet)
 {
-  bool *data = g_new(bool, 1);
-  *data = drop_failed_logs;
+  owl_log_options *data = g_new(owl_log_options, 1);
+  data->drop_failed_logs = drop_failed_logs;
+  data->display_initial_log_count = !quiet;
 
   owl_select_post_task(owl_log_write_deferred_entries,
                        data,
@@ -640,9 +649,11 @@ static void owl_log_quit_func(gpointer data)
 {
   /* flush the deferred logs queue, trying to write the
    * entries to the disk one last time.  Drop any failed
-   * entries */
-  bool bool_true = true;
-  owl_log_write_deferred_entries(&bool_true);
+   * entries, and be quiet about it. */
+  owl_log_options opts;
+  opts.drop_failed_logs = true;
+  opts.display_initial_log_count = false;
+  owl_log_write_deferred_entries(&opts);
 #if GLIB_CHECK_VERSION(2, 32, 0)
   g_queue_free_full(deferred_entry_queue, owl_log_entry_free);
 #else

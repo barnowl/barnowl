@@ -49,7 +49,7 @@ sub _register_variables {
                     $flush_logs_timer = BarnOwl::Timer->new({
                             name     => 'flush-logs interval timer',
                             interval => 60 * $flush_logs_interval,
-                            cb       => sub { BarnOwl::command("flush-logs"); }
+                            cb       => sub { BarnOwl::command("flush-logs", "-q"); }
                         });
                 }
             },
