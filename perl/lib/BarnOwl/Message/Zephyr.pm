@@ -144,6 +144,8 @@ sub zephyr_cc {
     return undef;
 }
 
+# Note: This is the cc-line without the recipient; it does not include
+# the sender.
 sub zephyr_cc_without_recipient {
     my $self = shift;
     my $recipient = lc(strip_realm($self->recipient));
