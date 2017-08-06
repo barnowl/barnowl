@@ -262,6 +262,7 @@ sub log_filenames {
     my ($m) = @_;
     my @filenames = ();
     if ($m->is_personal) {
+        # If this has CC's, add all but the "recipient" which we'll add below
         @filenames = $m->zephyr_cc_without_recipient;
     }
     if ($m->is_incoming) {
