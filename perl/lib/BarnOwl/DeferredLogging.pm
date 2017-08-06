@@ -31,6 +31,9 @@ $BarnOwl::Hooks::startup->add("BarnOwl::DeferredLogging::_register_variables");
 sub _register_variables {
     my $flush_logs_interval = -1;
     my $flush_logs_timer;
+    # N.B. We use new_variable_full rather than new_variable_int so
+    # that we can set a timer to flush logs when this value is
+    # changed.
     BarnOwl::new_variable_full('flush-logs-interval',
         {
             default        => 60,
