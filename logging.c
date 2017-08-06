@@ -10,7 +10,7 @@ typedef struct _owl_log_entry { /* noproto */
 static GMainContext *log_context;
 static GMainLoop *log_loop;
 static GThread *logging_thread;
-static bool defer_logs;
+static bool defer_logs; /* to be accessed only on the disk-writing thread */
 static GQueue *deferred_entry_queue;
 
 /* This is now the one function that should be called to log a
@@ -245,7 +245,9 @@ static void owl_log_file_error(owl_log_entry *msg, int ret)
  * Otherwise, try to write this log message, and, if it fails with
  * EPERM, EACCES, or ETIMEDOUT, go into deferred logging mode and
  * queue an admin message.  If it fails with anything else, display an
- * error message, but do not go into deferred logging mode. */
+ * error message, but do not go into deferred logging mode.
+ *
+ * N.B. This function is called only on the disk-writing thread. */
 static void owl_log_eventually_write_entry(gpointer data)
 {
   int ret;
@@ -275,7 +277,9 @@ static void owl_log_eventually_write_entry(gpointer data)
   }
 }
 
-/* tries to write the deferred log entries */
+/* tries to write the deferred log entries
+ *
+ * N.B. This function is called only on the disk-writing thread. */
 static void owl_log_write_deferred_entries(gpointer data)
 {
   owl_log_entry *entry;
