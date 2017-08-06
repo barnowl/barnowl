@@ -143,10 +143,10 @@ sub _register_variables {
 
 Sanitizes C<FILENAME> and concatenates it with C<BASE_PATH>.
 
-In any filename, C<"/"> and any control characters (characters which
-match C<[:cntrl:]> get replaced by underscores.  If the resulting
-filename is empty or equal to C<"."> or C<"..">, it is replaced with
-C<"weird">.
+In any filename, C<"/">, any control characters (characters which
+match C<[:cntrl:]>), and any initial C<"."> characters get replaced by
+underscores.  If the resulting filename is empty, it is replaced with
+C<"_EMPTY_">.
 
 =cut
 
@@ -154,9 +154,8 @@ sub sanitize_filename {
     my $base_path = BarnOwl::Internal::makepath(shift);
     my $filename = shift;
     $filename =~ s/[[:cntrl:]\/]/_/g;
-    if ($filename eq '' || $filename eq '.' || $filename eq '..') {
-        $filename = 'weird';
-    }
+    $filename =~ s/^\./_/g; # handle ., .., and hidden files
+    $filename = '_EMPTY_' if $filename eq '';
     # The original C code also removed characters less than '!' and
     # greater than or equal to '~', marked file names beginning with a
     # non-alphanumeric or non-ASCII character as 'weird', and rejected
