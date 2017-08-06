@@ -157,6 +157,11 @@ static void owl_log_adminmsg_main_thread(gpointer data)
   owl_function_adminmsg("Logging", (const char*)data);
 }
 
+static void owl_log_makemsg_main_thread(gpointer data)
+{
+  owl_function_makemsg((const char*)data);
+}
+
 static void G_GNUC_PRINTF(1, 2) owl_log_error(const char *fmt, ...)
 {
   va_list ap;
@@ -180,6 +185,19 @@ static void G_GNUC_PRINTF(1, 2) owl_log_adminmsg(const char *fmt, ...)
   va_end(ap);
 
   owl_select_post_task(owl_log_adminmsg_main_thread,
+                       data, g_free, g_main_context_default());
+}
+
+static void G_GNUC_PRINTF(1, 2) owl_log_makemsg(const char *fmt, ...)
+{
+  va_list ap;
+  char *data;
+
+  va_start(ap, fmt);
+  data = g_strdup_vprintf(fmt, ap);
+  va_end(ap);
+
+  owl_select_post_task(owl_log_makemsg_main_thread,
                        data, g_free, g_main_context_default());
 }
 
@@ -288,6 +306,13 @@ static void owl_log_write_deferred_entries(gpointer data)
   int logged_message_count = 0;
   bool all_succeeded = true;
 
+  if (g_queue_is_empty(deferred_entry_queue)) {
+    owl_log_makemsg("There are no logs to flush.");
+  } else {
+    owl_log_makemsg("Attempting to flush %u logs...",
+                     g_queue_get_length(deferred_entry_queue));
+  }
+
   defer_logs = false;
   while (!g_queue_is_empty(deferred_entry_queue) && !defer_logs) {
     logged_message_count++;
@@ -307,13 +332,21 @@ static void owl_log_write_deferred_entries(gpointer data)
     }
     owl_log_entry_free(entry);
   }
-  if (all_succeeded && logged_message_count > 0 && !defer_logs) {
-    owl_log_adminmsg("Logs have been flushed and logging has resumed.");
-  } else if (!all_succeeded && logged_message_count > 0 && !defer_logs) {
-    owl_log_adminmsg("Logs have been flushed or dropped and logging has resumed.");
-  } else if (logged_message_count > 0 && defer_logs) {
-    owl_log_error("Attempted to flush %d logs; %u deferred logs remain.",
-                  logged_message_count, g_queue_get_length(deferred_entry_queue));
+  if (logged_message_count > 0) {
+    /* first clear the "attempting to flush" message from the status bar */
+    owl_log_makemsg("");
+    if (!defer_logs) {
+      if (all_succeeded) {
+        owl_log_adminmsg("Flushed %d logs and resumed logging.",
+                         logged_message_count);
+      } else {
+        owl_log_adminmsg("Flushed or dropped %d logs and resumed logging.",
+                         logged_message_count);
+      }
+    } else {
+      owl_log_error("Attempted to flush %d logs; %u deferred logs remain.",
+                    logged_message_count, g_queue_get_length(deferred_entry_queue));
+    }
   }
 }
 
