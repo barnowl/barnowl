@@ -489,7 +489,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 
   OWLCMD_ARGS("flush-logs", owl_command_flushlogs, OWL_CTX_ANY,
               "flush the queue of messages waiting to be logged",
-              "flush-logs [-f | --force]",
+              "flush-logs [-f | --force] [-q | --quiet]",
               "If BarnOwl failed to log a file, this command tells\n"
               "BarnOwl to try logging the messages that have since\n"
               "come in, and to resume logging normally.\n"
@@ -500,7 +500,10 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
               "the next :flush-logs.  If the --force flag is passed,\n"
               "any messages on the queue which cannot successfully be\n"
               "logged are dropped, and BarnOwl will resume logging\n"
-              "normally."),
+              "normally.\n"
+              "\n"
+              "Unless --quiet is passed, a message is printed about\n"
+              "how many logs there are to flush."),
 
   OWLCMD_ARGS("load-subs", owl_command_loadsubs, OWL_CTX_ANY,
 	      "load subscriptions from a file",
@@ -1453,17 +1456,20 @@ void owl_command_unsuball(void)
 
 char *owl_command_flushlogs(int argc, const char *const *argv, const char *buff)
 {
-  if (argc == 1) {
-    owl_log_flush_logs(false);
-  } else if (argc == 2) {
-    if (!strcmp(argv[1], "-f") || !strcmp(argv[1], "--force")) {
-      owl_log_flush_logs(true);
+  bool force = false;
+  bool quiet = false;
+  int i;
+
+  for (i = 1; i < argc; i++) {
+    if (!strcmp(argv[i], "-f") || !strcmp(argv[i], "--force")) {
+      force = true;
+    } else if (!strcmp(argv[i], "-q") || !strcmp(argv[i], "--quiet")) {
+      quiet = true;
     } else {
-      owl_function_makemsg("Invalid flag to flush-logs: %s", argv[1]);
+      owl_function_makemsg("Invalid flag to flush-logs: %s", argv[i]);
     }
-  } else {
-    owl_function_makemsg("Wrong number of arguments for flush-logs.");
   }
+  owl_log_flush_logs(force, quiet);
   return NULL;
 }
 
