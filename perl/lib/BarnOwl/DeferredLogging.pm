@@ -42,7 +42,7 @@ sub _register_variables {
             get_tostring   => sub { "$flush_logs_interval" },
             set_fromstring => sub {
                 die "Expected integer" unless $_[0] =~ /^-?[0-9]+$/;
-                $flush_logs_interval = 0 + $_[0];
+                $flush_logs_interval = $_[0];
                 $flush_logs_timer->stop if defined $flush_logs_timer;
                 undef $flush_logs_timer;
                 if ($flush_logs_interval > 0) {
