@@ -66,7 +66,7 @@ sub _register_variables {
                          . "This is a completely separate mechanism from the other logging\n"
                          . "variables like logging, classlogging, loglogins, loggingdirection,\n"
                          . "etc.  If you want this variable to control all logging, make sure\n"
-                         . "all other logging variables are in their default state."
+                         . "all other logging variables are left off (the default)."
         });
 
     BarnOwl::new_variable_bool('loglogins',
@@ -74,7 +74,7 @@ sub _register_variables {
             default     => 0,
             summary     => 'enable logging of login notifications',
             description => "When this is enabled, BarnOwl will log login and logout notifications\n"
-                         . "for AIM, zephyr, or other protocols.  If disabled BarnOwl will not print\n"
+                         . "for AIM, zephyr, or other protocols.  If disabled BarnOwl will not log\n"
                          . "login or logout notifications."
         });
 
@@ -91,7 +91,8 @@ sub _register_variables {
                            . "Note that this variable applies to all messages. In\n"
                            . "particular, if this variable is set to 'out', the\n"
                            . "classlogging variable will have no effect, and no\n"
-                           . "class messages will be logged."
+                           . "class messages (which are always incoming) will be\n"
+                           . "logged."
         });
 
     BarnOwl::new_variable_string('logbasepath',
