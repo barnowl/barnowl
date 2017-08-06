@@ -256,10 +256,10 @@ static void owl_log_entry_free_gfunc(gpointer data, gpointer user_data)
 }
 #endif
 
-static void owl_log_file_error(owl_log_entry *msg, int ret)
+static void owl_log_file_error(owl_log_entry *msg, int errnum)
 {
   owl_log_error("Unable to open file for logging: %s (file %s)",
-                g_strerror(ret),
+                g_strerror(errnum),
                 msg->filename);
 }
 
