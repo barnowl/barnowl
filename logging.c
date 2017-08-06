@@ -10,7 +10,7 @@ typedef struct _owl_log_entry { /* noproto */
 static GMainContext *log_context;
 static GMainLoop *log_loop;
 static GThread *logging_thread;
-bool defer_logs;
+static bool defer_logs;
 static GQueue *deferred_entry_queue;
 
 /* This is now the one function that should be called to log a
