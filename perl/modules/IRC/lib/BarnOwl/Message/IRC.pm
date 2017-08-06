@@ -97,6 +97,10 @@ sub log_filenames {
     die "IRC should not be handling non-IRC messages" if lc($m->type) ne "irc";
     BarnOwl::error("IRC message without a network") if !defined($m->network) || $m->network eq '';
     my $filename = lc($m->network);
+    # Note: Channel names generally start with '#', which
+    # disambiguates channels from individuals; for example, personals
+    # will look like, e.g., "~/zlog/irc/freenode:john-doe", whereas
+    # channels will look like, e.g., "~/zlog/irc/freenode:#barnowl"
     if ($m->is_personal) {
         if ($m->is_incoming) {
             $filename .= ":" . $m->sender;
