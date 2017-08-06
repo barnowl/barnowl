@@ -33,7 +33,7 @@ sub _register_variables {
     my $flush_logs_timer;
     BarnOwl::new_variable_full('flush-logs-interval',
         {
-            default        => -1,
+            default        => 60,
             summary        => 'how often should logs be flushed, in minutes',
             description    => "If this is set to a positive value n, deferred logs \n"
                             . "are flushed every n minutes.  If set to a negative or \n"
