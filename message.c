@@ -29,6 +29,9 @@ static owl_fmtext_cache *owl_message_next_fmtext(void)
 
 void owl_message_init(owl_message *m)
 {
+  /* ctime_r requires a 26-byte buffer */
+  char timestr[26];
+
   m->id=owl_global_get_nextmsgid(&g);
   owl_message_set_direction_none(m);
   m->delete=0;
@@ -42,8 +45,8 @@ void owl_message_init(owl_message *m)
   
   /* save the time */
   m->time = time(NULL);
-  m->timestr = g_strdup(ctime(&m->time));
-  m->timestr[strlen(m->timestr)-1] = '\0';
+  ctime_r(&m->time, timestr);
+  m->timestr = g_strndup(timestr, strlen(timestr) - 1);
 
   m->fmtext = NULL;
 }
@@ -348,7 +351,8 @@ const char *owl_message_get_timestr(const owl_message *m)
 
 CALLER_OWN char *owl_message_format_time(const owl_message *m)
 {
-  return owl_util_format_time(localtime(&m->time));
+  struct tm tm;
+  return owl_util_format_time(localtime_r(&m->time, &tm));
 }
 
 void owl_message_set_type_admin(owl_message *m)
@@ -592,7 +596,7 @@ CALLER_OWN char *owl_message_get_cc(const owl_message *m)
 /* caller must free return value */
 CALLER_OWN GList *owl_message_get_cc_without_recipient(const owl_message *m)
 {
-  char *cc, *shortuser, *recip;
+  char *cc, *shortuser, *recip, *saveptr;
   const char *user;
   GList *out = NULL;
 
@@ -602,14 +606,14 @@ CALLER_OWN GList *owl_message_get_cc_without_recipient(const owl_message *m)
 
   recip = short_zuser(owl_message_get_recipient(m));
 
-  user = strtok(cc, " ");
+  user = strtok_r(cc, " ", &saveptr);
   while (user != NULL) {
     shortuser = short_zuser(user);
     if (strcasecmp(shortuser, recip) != 0) {
       out = g_list_prepend(out, g_strdup(user));
     }
     g_free(shortuser);
-    user = strtok(NULL, " ");
+    user = strtok_r(NULL, " ", &saveptr);
   }
 
   g_free(recip);
@@ -774,7 +778,8 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
 #else /* !ZNOTICE_SOCKADDR */
   struct hostent *hent;
 #endif /* ZNOTICE_SOCKADDR */
-  char *tmp, *tmp2;
+  /* ctime_r requires a 26-byte buffer */
+  char timestr[26], *tmp, *tmp2;
   int len;
 
   owl_message_init(m);
@@ -792,8 +797,8 @@ void owl_message_create_from_znotice(owl_message *m, const ZNotice_t *n)
   /* save the time, we need to nuke the string saved by message_init */
   if (m->timestr) g_free(m->timestr);
   m->time = n->z_time.tv_sec;
-  m->timestr = g_strdup(ctime(&m->time));
-  m->timestr[strlen(m->timestr)-1] = '\0';
+  ctime_r(&m->time, timestr);
+  m->timestr = g_strndup(timestr, strlen(timestr) - 1);
 
   /* set other info */
   owl_message_set_sender(m, n->z_sender);

@@ -283,7 +283,7 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
 #ifdef HAVE_LIBZEPHYR
   FILE *file;
   int fopen_errno;
-  char *tmp, *start;
+  char *tmp, *start, *saveptr;
   char *buffer = NULL;
   char *subsfile;
   ZSubscription_t *subs;
@@ -318,13 +318,13 @@ int owl_zephyr_loadsubs(const char *filename, int error_on_nofile)
     }
     
     /* add it to the list of subs */
-    if ((tmp = strtok(start, ",\n\r")) == NULL)
+    if ((tmp = strtok_r(start, ",\n\r", &saveptr)) == NULL)
       continue;
     subs[count].zsub_class = g_strdup(tmp);
-    if ((tmp=strtok(NULL, ",\n\r")) == NULL)
+    if ((tmp = strtok_r(NULL, ",\n\r", &saveptr)) == NULL)
       continue;
     subs[count].zsub_classinst = g_strdup(tmp);
-    if ((tmp = strtok(NULL, " \t\n\r")) == NULL)
+    if ((tmp = strtok_r(NULL, " \t\n\r", &saveptr)) == NULL)
       continue;
     subs[count].zsub_recipient = g_strdup(tmp);
 
