@@ -1055,7 +1055,7 @@ static int faimtest_parse_incoming_im_chan1(aim_session_t *sess, aim_conn_t *con
 			 wrapmsg,
 			 OWL_MESSAGE_DIRECTION_IN,
 			 0);
-  if (args->icbmflags & AIM_IMFLAGS_AWAY) owl_message_set_attribute(m, "isauto", "");
+  if (args->icbmflags & AIM_IMFLAGS_AWAY) owl_message_set_attribute(m, "isauto", "", NULL);
   owl_global_messagequeue_addmsg(&g, m);
   g_free(stripmsg);
   g_free(wrapmsg);

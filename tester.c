@@ -463,11 +463,11 @@ int owl_filter_regtest(void) {
   owl_message_init(&m);
   owl_message_set_type_zephyr(&m);
   owl_message_set_direction_in(&m);
-  owl_message_set_class(&m, "owl");
-  owl_message_set_instance(&m, "tester");
-  owl_message_set_sender(&m, "owl-user");
-  owl_message_set_recipient(&m, "joe");
-  owl_message_set_attribute(&m, "foo", "bar");
+  owl_message_set_attribute(&m, "class", "owl", NULL);
+  owl_message_set_attribute(&m, "instance", "tester", NULL);
+  owl_message_set_attribute(&m, "sender", "owl-user", NULL);
+  owl_message_set_attribute(&m, "recipient", "joe", NULL);
+  owl_message_set_attribute(&m, "foo", "bar", NULL);
 
 #define TEST_FILTER(f, e) do {                          \
     numtests++;                                         \

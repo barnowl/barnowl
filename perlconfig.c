@@ -68,6 +68,12 @@ CALLER_OWN HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const void *))
   return ret;
 }
 
+static void owl_perlconfig_store_attribute(GQuark key_id, gpointer data, gpointer h)
+{
+  const char *key = g_quark_to_string(key_id);
+  (void)hv_store(h, key, strlen(key), owl_new_sv(data), 0);
+}
+
 CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
 {
   HV *h, *stash;
@@ -75,8 +81,6 @@ CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
   const char *type;
   char *ptr, *utype, *blessas;
   const char *f;
-  int i;
-  const owl_pair *pair;
   const owl_filter *wrap;
 
   if (!m) return &PL_sv_undef;
@@ -111,11 +115,7 @@ CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
     (void)hv_store(h, "fields", strlen("fields"), newRV_noinc((SV*)av_zfields), 0);
   }
 
-  for (i = 0; i < m->attributes->len; i++) {
-    pair = m->attributes->pdata[i];
-    (void)hv_store(h, owl_pair_get_key(pair), strlen(owl_pair_get_key(pair)),
-                   owl_new_sv(owl_pair_get_value(pair)),0);
-  }
+  g_datalist_foreach(&((owl_message *)m)->attributes, owl_perlconfig_store_attribute, h);
   
   MSG2H(h, type);
   MSG2H(h, direction);
@@ -194,9 +194,7 @@ CALLER_OWN owl_message *owl_perlconfig_hashref2message(SV *msg)
   while((ent = hv_iternext(hash))) {
     key = hv_iterkey(ent, &len);
     val = SvPV_nolen(hv_iterval(hash, ent));
-    if(!strcmp(key, "type")) {
-      owl_message_set_type(m, val);
-    } else if(!strcmp(key, "direction")) {
+    if (!strcmp(key, "direction")) {
       owl_message_set_direction(m, owl_message_parse_direction(val));
     } else if(!strcmp(key, "private")) {
       SV * v = hv_iterval(hash, ent);
@@ -205,20 +203,18 @@ CALLER_OWN owl_message *owl_perlconfig_hashref2message(SV *msg)
       }
     } else if (!strcmp(key, "hostname")) {
       owl_message_set_hostname(m, val);
-    } else if (!strcmp(key, "zwriteline")) {
-      owl_message_set_zwriteline(m, val);
     } else if (!strcmp(key, "time")) {
       g_free(m->timestr);
       m->timestr = g_strdup(val);
       strptime(val, "%a %b %d %T %Y", &tm);
       m->time = mktime(&tm);
     } else {
-      owl_message_set_attribute(m, key, val);
+      owl_message_set_attribute(m, key, g_strdup(val), g_free);
     }
   }
   if(owl_message_is_type_admin(m)) {
     if(!owl_message_get_attribute_value(m, "adminheader"))
-      owl_message_set_attribute(m, "adminheader", "");
+      owl_message_set_attribute(m, "adminheader", "", NULL);
   }
   return m;
 }
