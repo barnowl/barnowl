@@ -74,7 +74,7 @@ sub _register_variables {
             default     => 0,
             summary     => 'enable logging of login notifications',
             description => "When this is enabled, BarnOwl will log login and logout notifications\n"
-                         . "for AIM, zephyr, or other protocols.  If disabled BarnOwl will not log\n"
+                         . "for zephyr or other protocols.  If disabled BarnOwl will not log\n"
                          . "login or logout notifications."
         });
 

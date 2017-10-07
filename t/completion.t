@@ -292,7 +292,7 @@ test_complete('( body static and body analysis and not false and class davidben 
               \&complete_filter_expr);
 
 test_complete('type ', '',
-              [qw[admin aim zephyr]],
+              [qw[admin zephyr]],
               \&complete_filter_expr);
 
 test_complete('direction ', '',

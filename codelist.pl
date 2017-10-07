@@ -17,8 +17,7 @@ foreach $file (@ARGV) {
 	    && !/^system/
 	    && !/^XS/
 	    && !/\/\*/
-	    && !/ZWRITEOPTIONS/
-	    && !/owlfaim_priv/)
+	    && !/ZWRITEOPTIONS/)
 	{
 
 	    s/\s+\{/\;/;

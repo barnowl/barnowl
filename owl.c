@@ -186,10 +186,6 @@ static int owl_process_message(owl_message *m) {
     if (owl_global_is_zaway(&g) && !owl_message_get_attribute_value(m, "isauto")) {
       if (owl_message_is_type_zephyr(m)) {
         owl_zephyr_zaway(m);
-      } else if (owl_message_is_type_aim(m)) {
-        if (owl_message_is_private(m)) {
-          owl_function_send_aimawymsg(owl_message_get_sender(m), owl_global_get_zaway_msg(&g));
-        }
       }
     }
 
@@ -503,7 +499,6 @@ int main(int argc, char **argv, char **env)
   owl_function_debugmsg("startup: first available debugging message");
   owl_global_set_startupargs(&g, argc_copy, argv_copy);
   g_strfreev(argv_copy);
-  owl_global_set_haveaim(&g);
 
   owl_register_signal_handlers();
 
@@ -563,10 +558,6 @@ int main(int argc, char **argv, char **env)
   owl_view_create(owl_global_get_current_view(&g), "main",
                   owl_global_get_filter(&g, "all"),
                   owl_global_get_style_by_name(&g, "default"));
-
-  /* AIM init */
-  owl_function_debugmsg("startup: doing AIM initialization");
-  owl_aim_init();
 
   /* execute the startup function in the configfile */
   owl_function_debugmsg("startup: executing perl startup, if applicable");

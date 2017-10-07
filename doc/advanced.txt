@@ -41,7 +41,7 @@ The message fields that can be used in a filter command include:
      opcode        zephyr opcode
      realm         zephyr realm
      body          message body
-     type          message type ('zephyr', 'aim', 'admin')
+     type          message type ('zephyr', 'admin')
      direction     either 'in' 'out' or 'none'\n"
      login         either 'login' 'logout' or 'none'\n" 
 
@@ -102,7 +102,7 @@ objects which have methods for accessing the attributes of the message.
 
 All owl::Message objects contain the following methods:
 
-    type      - returns the type of the message ("zephyr", "aim", "admin")
+    type      - returns the type of the message ("zephyr", "admin")
     direction - returns "in" or "out" for incoming or outgoing messages
     time      - returns a string of the time when the message showed up
     id	      - returns a unique id for the message
@@ -125,7 +125,7 @@ The following owl::Message methods are only applicable to
 various message types:
 
     header	- returns the admin message header line  (admin)
-    is_personal - returns true if this is a personal message (aim,zephyr)
+    is_personal - returns true if this is a personal message (zephyr)
     is_private  - returns true if this was a private message (zephyr)
     login_tty	- returns the login tty for login messages (zephyr)
     login_host  - returns the login host for login messages (zephyr)

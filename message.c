@@ -370,11 +370,6 @@ void owl_message_set_type_zephyr(owl_message *m)
   owl_message_set_attribute(m, "type", "zephyr");
 }
 
-void owl_message_set_type_aim(owl_message *m)
-{
-  owl_message_set_attribute(m, "type", "AIM");
-}
-
 void owl_message_set_type(owl_message *m, const char* type)
 {
   owl_message_set_attribute(m, "type", type);
@@ -394,11 +389,6 @@ int owl_message_is_type_admin(const owl_message *m)
 int owl_message_is_type_zephyr(const owl_message *m)
 {
   return owl_message_is_type(m, "zephyr");
-}
-
-int owl_message_is_type_aim(const owl_message *m)
-{
-  return owl_message_is_type(m, "aim");
 }
 
 int owl_message_is_type_loopback(const owl_message *m)
@@ -685,36 +675,6 @@ int owl_message_search(owl_message *m, const owl_regex *re)
   return owl_fmtext_search(&(m->fmtext->fmtext), re, 0) >= 0;
 }
 
-
-/* if loginout == -1 it's a logout message
- *                 0 it's not a login/logout message
- *                 1 it's a login message
- */
-void owl_message_create_aim(owl_message *m, const char *sender, const char *recipient, const char *text, int direction, int loginout)
-{
-  owl_message_init(m);
-  owl_message_set_body(m, text);
-  owl_message_set_sender(m, sender);
-  owl_message_set_recipient(m, recipient);
-  owl_message_set_type_aim(m);
-
-  if (direction==OWL_MESSAGE_DIRECTION_IN) {
-    owl_message_set_direction_in(m);
-  } else if (direction==OWL_MESSAGE_DIRECTION_OUT) {
-    owl_message_set_direction_out(m);
-  }
-
-  /* for now all messages that aren't loginout are private */
-  if (!loginout) {
-    owl_message_set_isprivate(m);
-  }
-
-  if (loginout==-1) {
-    owl_message_set_islogout(m);
-  } else if (loginout==1) {
-    owl_message_set_islogin(m);
-  }
-}
 
 void owl_message_create_admin(owl_message *m, const char *header, const char *text)
 {

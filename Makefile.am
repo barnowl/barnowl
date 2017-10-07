@@ -42,19 +42,18 @@ nodist_bin_barnowl_SOURCES = $(GEN_C) $(GEN_H)
 dist_man_MANS = doc/barnowl.1
 dist_doc_DATA = doc/intro.txt doc/advanced.txt
 
-bin_barnowl_LDADD = compat/libcompat.a libfaim/libfaim.a
+bin_barnowl_LDADD = compat/libcompat.a
 
 bin_tester_SOURCES = $(BASE_SRCS) \
      owl.h owl_perl.h \
      tester.c
 nodist_bin_tester_SOURCES = $(GEN_C) $(GEN_H)
 
-bin_tester_LDADD = compat/libcompat.a libfaim/libfaim.a
+bin_tester_LDADD = compat/libcompat.a
 
 TESTS=runtests.sh
 
 AM_CPPFLAGS = \
-           -I$(top_srcdir)/libfaim/ \
            -DDATADIR='"$(pkgdatadir)"' \
            -DBINDIR='"$(bindir)"'
 
@@ -64,7 +63,7 @@ CODELIST_SRCS=message.c mainwin.c popwin.c zephyr.c messagelist.c \
      perlconfig.c keys.c functions.c zwrite.c viewwin.c help.c filter.c \
      regex.c history.c view.c dict.c variable.c filterelement.c pair.c \
      keypress.c keymap.c keybinding.c cmd.c context.c \
-     aim.c buddy.c buddylist.c style.c errqueue.c \
+     style.c errqueue.c \
      zbuddylist.c popexec.c select.c wcwidth.c \
      mainpanel.c msgwin.c sepbar.c editcontext.c signal.c closures.c
 
@@ -124,4 +123,4 @@ EXTRA_DIST = \
     typemap \
     cpanfile
 
-SUBDIRS = compat libfaim perl
+SUBDIRS = compat perl

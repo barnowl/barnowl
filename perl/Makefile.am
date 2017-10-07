@@ -1,7 +1,6 @@
 SUBDIRS = modules
 nobase_dist_pkgdata_DATA = \
 	lib/BarnOwl.pm \
-	lib/BarnOwl/Complete/AIM.pm \
 	lib/BarnOwl/Complete/Client.pm \
 	lib/BarnOwl/Complete/Filter.pm \
 	lib/BarnOwl/Complete/Zephyr.pm \
@@ -16,7 +15,6 @@ nobase_dist_pkgdata_DATA = \
 	lib/BarnOwl/Logging.pm \
 	lib/BarnOwl/MainLoopCompatHook.pm \
 	lib/BarnOwl/Message.pm \
-	lib/BarnOwl/Message/AIM.pm \
 	lib/BarnOwl/Message/Admin.pm \
 	lib/BarnOwl/Message/Generic.pm \
 	lib/BarnOwl/Message/Loopback.pm \

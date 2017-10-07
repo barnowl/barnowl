@@ -160,7 +160,7 @@ void owl_variable_add_defaults(owl_vardict *vd)
   OWLVAR_BOOL( "ignorelogins" /* %OwlVarStub */, 0,
 	       "Enable printing of login notifications",
 	       "When this is enabled, BarnOwl will print login and logout notifications\n"
-	       "for AIM, zephyr, or other protocols.  If disabled BarnOwl will not print\n"
+	       "for zephyr or other protocols.  If disabled BarnOwl will not print\n"
 	       "login or logout notifications.\n");
 
   OWLVAR_ENUM_FULL( "disable-ctrl-d" /* %OwlVarStub:lockout_ctrld */, 1,
@@ -232,19 +232,6 @@ void owl_variable_add_defaults(owl_vardict *vd)
 		 OWL_DEFAULT_ZAWAYMSG,
 	         "default zaway message", "" );
 
-  OWLVAR_BOOL_FULL( "aaway" /* %OwlVarStub */, 0,
-		    "Set AIM away status",
-		    "",
-		    NULL, owl_variable_aaway_set, NULL);
-
-  OWLVAR_STRING( "aaway_msg" /* %OwlVarStub */, 
-		 OWL_DEFAULT_AAWAYMSG,
-	         "AIM away msg for responding when away", "" );
-
-  OWLVAR_STRING( "aaway_msg_default" /* %OwlVarStub */, 
-		 OWL_DEFAULT_AAWAYMSG,
-	         "default AIM away message", "" );
-
   OWLVAR_STRING( "view_home" /* %OwlVarStub */, "all",
 	         "home view to switch to after 'X' and 'V'", 
 		 "SEE ALSO: view, filter\n" );
@@ -287,14 +274,6 @@ void owl_variable_add_defaults(owl_vardict *vd)
                  "As a courtesy to recipients, it is recommended that outgoing\n"
                  "Zephyr messages be no wider than 70 columns.\n");
 
-  OWLVAR_INT( "aim_ignorelogin_timer" /* %OwlVarStub */, 15,
-	      "number of seconds after AIM login to ignore login messages",
-	      "This specifies the number of seconds to wait after an\n"
-	      "AIM login before allowing the receipt of AIM login notifications.\n"
-	      "By default this is set to 15.  If you would like to view login\n"
-	      "notifications of buddies as soon as you login, set it to 0 instead.");
-
-	      
   OWLVAR_INT_FULL( "typewinsize" /* %OwlVarStub:typwin_lines */, 
 		   OWL_TYPWIN_SIZE,
 		  "number of lines in the typing window", 
@@ -457,17 +436,6 @@ int owl_variable_typewinsize_set(owl_variable *v, int newval)
 int owl_variable_debug_set(owl_variable *v, bool newval)
 {
   g.debug = newval;
-  return owl_variable_bool_set_default(v, newval);
-}
-
-/* When 'aaway' is changed, need to notify the AIM server */
-int owl_variable_aaway_set(owl_variable *v, bool newval)
-{
-  if (newval) {
-    owl_aim_set_awaymsg(owl_global_get_aaway_msg(&g));
-  } else {
-    owl_aim_set_awaymsg("");
-  }
   return owl_variable_bool_set_default(v, newval);
 }
 

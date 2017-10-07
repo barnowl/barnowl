@@ -121,13 +121,6 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "-O opcode\n"
 	      "      Send to the specified opcode\n"),
 
-  OWLCMD_ARGS("aimwrite", owl_command_aimwrite, OWL_CTX_INTERACTIVE,
-	      "send an AIM message",
-	      "aimwrite <user> [-m <message...>]",
-	      "Send an aim message to a user.\n\n" 
-              "The following options are available:\n\n"
-              "-m    Specifies a message to send without prompting.\n"),
-
   OWLCMD_ARGS("loopwrite", owl_command_loopwrite, OWL_CTX_INTERACTIVE,
 	      "send a loopback message",
 	      "loopwrite",
@@ -233,25 +226,15 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "source <filename>",
 	      "Execute the BarnOwl commands in <filename>.\n"),
 
-  OWLCMD_ARGS("aim", owl_command_aim, OWL_CTX_INTERACTIVE,
-	      "AIM specific commands",
-	      "aim search <email>",
-	      ""),
-
   OWLCMD_ARGS("addbuddy", owl_command_addbuddy, OWL_CTX_INTERACTIVE,
 	      "add a buddy to a buddylist",
 	      "addbuddy <protocol> <screenname>",
-	      "Add the named buddy to your buddylist.  <protocol> can be aim or zephyr\n"),
+	      "Add the named buddy to your buddylist.  <protocol> must be zephyr\n"),
 
   OWLCMD_ARGS("delbuddy", owl_command_delbuddy, OWL_CTX_INTERACTIVE,
 	      "delete a buddy from a buddylist",
 	      "delbuddy <protocol> <screenname>",
-	      "Delete the named buddy from your buddylist.  <protocol> can be aim or zephyr\n"),
-
-  OWLCMD_ARGS("join", owl_command_join, OWL_CTX_INTERACTIVE,
-	      "join a chat group",
-	      "join aim <groupname> [exchange]",
-	      "Join the AIM chatroom with 'groupname'.\n"),
+	      "Delete the named buddy from your buddylist.  <protocol> must be zephyr\n"),
 
   OWLCMD_ARGS("smartzpunt", owl_command_smartzpunt, OWL_CTX_INTERACTIVE,
 	      "creates a zpunt based on the current message",
@@ -307,11 +290,6 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "List users logged in",
 	      "znol [-f file]",
 	      "Print a znol-style listing of users logged in"),
-
-  OWLCMD_VOID("alist", owl_command_alist, OWL_CTX_INTERACTIVE,
-	      "List AIM users logged in",
-	      "alist",
-	      "Print a listing of AIM users logged in"),
 
   OWLCMD_VOID("blist", owl_command_blist, OWL_CTX_INTERACTIVE,
 	      "List all buddies logged in",
@@ -469,14 +447,6 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "specified turn on zaway with that message, otherwise\n"
 	      "use the default.\n"),
 
-  OWLCMD_ARGS("aaway", owl_command_aaway, OWL_CTX_INTERACTIVE,
-	      "Set, enable or disable AIM away message",
-	      "aaway [ on | off | toggle ]\n"
-	      "aaway <message>",
-	      "Turn on or off the AIM away message.  If 'message' is\n"
-	      "specified turn on aaway with that message, otherwise\n"
-	      "use the default.\n"),
-
   OWLCMD_ARGS("away", owl_command_away, OWL_CTX_INTERACTIVE,
 	      "Set, enable or disable all away messages",
 	      "away [ on | off | toggle ]\n"
@@ -485,7 +455,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "'message' is specified turn them on with that message,\n"
 	      "otherwise use the default.\n"
 	      "\n"
-	      "SEE ALSO: aaway, zaway"),
+	      "SEE ALSO: zaway"),
 
   OWLCMD_ARGS("flush-logs", owl_command_flushlogs, OWL_CTX_ANY,
               "flush the queue of messages waiting to be logged",
@@ -547,7 +517,7 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
 	      "    realm      -  zephyr realm\n"
 	      "    body       -  message body\n"
 	      "    hostname   -  hostname of sending host\n"
-	      "    type       -  message type (zephyr, aim, admin)\n"
+	      "    type       -  message type (zephyr, admin)\n"
 	      "    direction  -  either 'in' 'out' or 'none'\n"
 	      "    login      -  either 'login' 'logout' or 'none'\n"
 	      "Also you may match on the validity of another filter:\n"
@@ -770,16 +740,6 @@ void owl_cmd_add_defaults(owl_cmddict *cd)
           "argument and makes it the default argument for future\n"
           "search commands, but does not move the cursor.  With\n"
           "no argument, it makes search highlighting inactive."),
-
-  OWLCMD_ARGS("aimlogin", owl_command_aimlogin, OWL_CTX_ANY,
-	      "login to an AIM account",
-	      "aimlogin <screenname> [<password>]\n",
-	      ""),
-
-  OWLCMD_ARGS("aimlogout", owl_command_aimlogout, OWL_CTX_ANY,
-	      "logout from AIM",
-	      "aimlogout\n",
-	      ""),
 
   OWLCMD_ARGS("error", owl_command_error, OWL_CTX_ANY,
               "Display an error message",
@@ -1107,18 +1067,13 @@ char *owl_command_zlist(int argc, const char *const *argv, const char *buff)
       return(NULL);
     }
   }
-  owl_function_buddylist(0, 1, file);
+  owl_function_buddylist(1, file);
   return(NULL);
-}
-
-void owl_command_alist(void)
-{
-  owl_function_buddylist(1, 0, NULL);
 }
 
 void owl_command_blist(void)
 {
-  owl_function_buddylist(1, 1, NULL);
+  owl_function_buddylist(1, NULL);
 }
 
 void owl_command_toggleoneline(void)
@@ -1136,26 +1091,6 @@ void owl_command_version(void)
   owl_function_makemsg("BarnOwl version %s", version);
 }
 
-char *owl_command_aim(int argc, const char *const *argv, const char *buff)
-{
-  if (argc<2) {
-    owl_function_makemsg("not enough arguments to aim command");
-    return(NULL);
-  }
-
-  if (!strcmp(argv[1], "search")) {
-    if (argc!=3) {
-      owl_function_makemsg("not enough arguments to aim search command");
-      return(NULL);
-    }
-    owl_aim_search(argv[2]);
-  } else {
-    owl_function_makemsg("unknown subcommand '%s' for aim command", argv[1]);
-    return(NULL);
-  }
-  return(NULL);
-}
-
 char *owl_command_addbuddy(int argc, const char *const *argv, const char *buff)
 {
   if (argc!=3) {
@@ -1163,22 +1098,11 @@ char *owl_command_addbuddy(int argc, const char *const *argv, const char *buff)
     return(NULL);
   }
 
-  if (!strcasecmp(argv[1], "aim")) {
-    if (!owl_global_is_aimloggedin(&g)) {
-      owl_function_makemsg("addbuddy: You must be logged into aim to use this command.");
-      return(NULL);
-    }
-    /*
-    owl_function_makemsg("This function is not yet operational.  Stay tuned.");
-    return(NULL);
-    */
-    owl_aim_addbuddy(argv[2]);
-    owl_function_makemsg("%s added as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
-  } else if (!strcasecmp(argv[1], "zephyr")) {
+  if (!strcasecmp(argv[1], "zephyr")) {
     owl_zephyr_addbuddy(argv[2]);
     owl_function_makemsg("%s added as zephyr buddy", argv[2]);
   } else {
-    owl_function_makemsg("addbuddy: currently the only supported protocols are 'zephyr' and 'aim'");
+    owl_function_makemsg("addbuddy: currently the only supported protocol is 'zephyr'");
   }
 
   return(NULL);
@@ -1191,44 +1115,13 @@ char *owl_command_delbuddy(int argc, const char *const *argv, const char *buff)
     return(NULL);
   }
 
-  if (!strcasecmp(argv[1], "aim")) {
-    if (!owl_global_is_aimloggedin(&g)) {
-      owl_function_makemsg("delbuddy: You must be logged into aim to use this command.");
-      return(NULL);
-    }
-    owl_aim_delbuddy(argv[2]);
-    owl_function_makemsg("%s deleted as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g));
-  } else if (!strcasecmp(argv[1], "zephyr")) {
+  if (!strcasecmp(argv[1], "zephyr")) {
     owl_zephyr_delbuddy(argv[2]);
     owl_function_makemsg("%s deleted as zephyr buddy", argv[2]);
   } else {
-    owl_function_makemsg("delbuddy: currently the only supported protocols are 'zephyr' and 'aim'");
+    owl_function_makemsg("delbuddy: currently the only supported protocol is 'zephyr'");
   }
 
-  return(NULL);
-}
-
-char *owl_command_join(int argc, const char *const *argv, const char *buff)
-{
-  if (argc!=3 && argc!=4) {
-    owl_function_makemsg("usage: join <protocol> <buddyname> [exchange]");
-    return(NULL);
-  }
-
-  if (!strcasecmp(argv[1], "aim")) {
-    if (!owl_global_is_aimloggedin(&g)) {
-      owl_function_makemsg("join aim: You must be logged into aim to use this command.");
-      return(NULL);
-    }
-    if (argc==3) {
-      owl_aim_chat_join(argv[2], 4);
-    } else {
-      owl_aim_chat_join(argv[2], atoi(argv[3]));
-    }
-    /* owl_function_makemsg("%s deleted as AIM buddy for %s", argv[2], owl_global_get_aim_screenname(&g)); */
-  } else {
-    owl_function_makemsg("join: currently the only supported protocol is 'aim'");
-  }
   return(NULL);
 }
 
@@ -1538,32 +1431,6 @@ char *owl_command_zaway(int argc, const char *const *argv, const char *buff)
 }
 
 
-char *owl_command_aaway(int argc, const char *const *argv, const char *buff)
-{
-  if ((argc==1) ||
-      ((argc==2) && !strcmp(argv[1], "on"))) {
-    owl_global_set_aaway_msg(&g, owl_global_get_aaway_msg_default(&g));
-    owl_function_aaway_on();
-    return NULL;
-  }
-
-  if (argc==2 && !strcmp(argv[1], "off")) {
-    owl_function_aaway_off();
-    return NULL;
-  }
-
-  if (argc==2 && !strcmp(argv[1], "toggle")) {
-    owl_function_aaway_toggle();
-    return NULL;
-  }
-
-  buff = skiptokens(buff, 1);
-  owl_global_set_aaway_msg(&g, buff);
-  owl_function_aaway_on();
-  return NULL;
-}
-
-
 char *owl_command_away(int argc, const char *const *argv, const char *buff)
 {
   bool away_off;
@@ -1572,7 +1439,6 @@ char *owl_command_away(int argc, const char *const *argv, const char *buff)
   if (argc == 1 ||
       (argc == 2 && !strcmp(argv[1], "on"))) {
     away_off = false;
-    owl_global_set_aaway_msg(&g, owl_global_get_aaway_msg_default(&g));
     owl_global_set_zaway_msg(&g, owl_global_get_zaway_msg_default(&g));
   } else if (argc == 2 && !strcmp(argv[1], "off")) {
     away_off = true;
@@ -1584,19 +1450,15 @@ char *owl_command_away(int argc, const char *const *argv, const char *buff)
   }
 
   if (away_off) {
-    owl_function_aaway_off();
     owl_function_zaway_off();
     owl_perlconfig_perl_call_norv("BarnOwl::Hooks::_away_off", 0, NULL);
     owl_function_makemsg("Away messages off.");
   } else if (message != NULL) {
-    owl_global_set_aaway_msg(&g, message);
     owl_global_set_zaway_msg(&g, message);
-    owl_function_aaway_on();
     owl_function_zaway_on();
     owl_perlconfig_perl_call_norv("BarnOwl::Hooks::_away_on", 1, &message);
     owl_function_makemsg("Away messages set (%s).", message);
   } else {
-    owl_function_aaway_on();
     owl_function_zaway_on();
     owl_perlconfig_perl_call_norv("BarnOwl::Hooks::_away_on", 0, NULL);
     owl_function_makemsg("Away messages set.");
@@ -2037,55 +1899,6 @@ char *owl_command_zwrite(int argc, const char *const *argv, const char *buff)
     owl_function_zwrite_setup(z);
   }
   return(NULL);
-}
-
-char *owl_command_aimwrite(int argc, const char *const *argv, const char *buff)
-{
-  char *message = NULL;
-  GString *recip = g_string_new("");
-  const char *const *myargv;
-  int myargc;
-  
-  if (!owl_global_is_aimloggedin(&g)) {
-    owl_function_error("You are not logged in to AIM.");
-    goto err;
-  }
-
-  /* Skip argv[0]. */
-  myargv = argv+1;
-  myargc = argc-1;
-  while (myargc) {
-    if (!strcmp(myargv[0], "-m")) {
-      if (myargc <= 1) {
-	owl_function_error("No message specified.");
-	goto err;
-      }
-      /* Once we have -m, gobble up everything else on the line */
-      myargv++;
-      myargc--;
-      message = g_strjoinv(" ", (char**)myargv);
-      break;
-    } else {
-      /* squish arguments together to make one screenname w/o spaces for now */
-      g_string_append(recip, myargv[0]);
-      myargv++;
-      myargc--;
-    }
-  }
-
-  if (recip->str[0] == '\0') {
-    owl_function_error("No recipient specified");
-    goto err;
-  }
-
-  if (message != NULL)
-    owl_function_aimwrite(recip->str, message, false);
-  else
-    owl_function_aimwrite_setup(recip->str);
- err:
-  g_string_free(recip, true);
-  g_free(message);
-  return NULL;
 }
 
 char *owl_command_loopwrite(int argc, const char *const *argv, const char *buff)
@@ -2650,36 +2463,6 @@ char *owl_command_setsearch(int argc, const char *const *argv, const char *buff)
   buffstart=skiptokens(buff, 1);
   owl_function_set_search(*buffstart ? buffstart : NULL);
   
-  return(NULL);
-}
-
-char *owl_command_aimlogin(int argc, const char *const *argv, const char *buff)
-{
-  if ((argc<2) || (argc>3)) {
-    owl_function_makemsg("Wrong number of arguments to aimlogin command");
-    return(NULL);
-  }
-
-  /* if we get two arguments, ask for the password */
-  if (argc==2) {
-    owl_editwin *e = owl_function_start_password("AIM Password: ");
-    owl_editwin_set_cbdata(e, g_strdup(argv[1]), g_free);
-    owl_editwin_set_callback(e, owl_callback_aimlogin);
-    return(NULL);
-  } else {
-    owl_function_aimlogin(argv[1], argv[2]);
-  }
-
-  /* this is a test */
-  return(NULL);
-}
-
-char *owl_command_aimlogout(int argc, const char *const *argv, const char *buff)
-{
-  /* clear the buddylist */
-  owl_buddylist_clear(owl_global_get_buddylist(&g));
-
-  owl_aim_logout();
   return(NULL);
 }
 
