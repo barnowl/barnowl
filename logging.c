@@ -29,7 +29,7 @@ static void owl_log_adminmsg_main_thread(gpointer data)
 
 static void owl_log_makemsg_main_thread(gpointer data)
 {
-  owl_function_makemsg((const char*)data);
+  owl_function_makemsg("%s", (const char*)data);
 }
 
 static void G_GNUC_PRINTF(1, 2) owl_log_error(const char *fmt, ...)
