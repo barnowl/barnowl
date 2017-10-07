@@ -5,7 +5,8 @@ use warnings;
 use Test::More qw(no_plan);
 
 use File::Basename;
-BEGIN {require (dirname($0) . "/mock.pl");};
+use File::Spec;
+BEGIN {require File::Spec->rel2abs("mock.pl", dirname($0));};
 
 use BarnOwl::Complete::Filter qw(complete_filter_expr);
 

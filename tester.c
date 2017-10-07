@@ -81,7 +81,7 @@ int main(int argc, char **argv, char **env)
     sv_setpv(get_sv("0", false), argv[1]);
     sv_setpv(get_sv("main::test_prog", TRUE), argv[1]);
 
-    eval_pv("do $main::test_prog; die($@) if($@)", true);
+    eval_pv("use File::Spec; do File::Spec->rel2abs($main::test_prog); die($@) if($@)", true);
   }
 
   status = 0;
