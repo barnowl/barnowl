@@ -70,8 +70,8 @@ CALLER_OWN HV *owl_new_hv(const owl_dict *d, SV *(*to_sv)(const void *))
 
 static void owl_perlconfig_store_attribute(GQuark key_id, gpointer data, gpointer h)
 {
-  (void)hv_store(h, g_quark_to_string(key_id), strlen(data),
-                 owl_new_sv(data), 0);
+  const char *key = g_quark_to_string(key_id);
+  (void)hv_store(h, key, strlen(key), owl_new_sv(data), 0);
 }
 
 CALLER_OWN SV *owl_perlconfig_message2hashref(const owl_message *m)
