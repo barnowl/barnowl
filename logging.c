@@ -104,21 +104,19 @@ static int owl_log_try_write_entry(owl_log_entry *msg)
   return 0;
 }
 
-static void owl_log_entry_free(void *data)
+static void owl_log_entry_delete(void *data)
 {
   owl_log_entry *msg = (owl_log_entry*)data;
-  if (msg) {
-    g_free(msg->message);
-    g_free(msg->filename);
-    g_slice_free(owl_log_entry, msg);
-  }
+  g_free(msg->message);
+  g_free(msg->filename);
+  g_slice_free(owl_log_entry, msg);
 }
 
 #if GLIB_CHECK_VERSION(2, 32, 0)
 #else
-static void owl_log_entry_free_gfunc(gpointer data, gpointer user_data)
+static void owl_log_entry_delete_gfunc(gpointer data, gpointer user_data)
 {
-  owl_log_entry_free(data);
+  owl_log_entry_delete(data);
 }
 #endif
 
@@ -203,7 +201,7 @@ static void owl_log_write_deferred_entries(gpointer data)
         owl_log_file_error(entry, ret);
       }
     }
-    owl_log_entry_free(entry);
+    owl_log_entry_delete(entry);
   }
   if (logged_message_count > 0) {
     if (opts->display_initial_log_count) {
@@ -241,7 +239,7 @@ void owl_log_enqueue_message(const char *buffer, const char *filename)
 {
   owl_log_entry *log_msg = owl_log_new_entry(buffer, filename);
   owl_select_post_task(owl_log_eventually_write_entry, log_msg,
-		       owl_log_entry_free, log_context);
+		       owl_log_entry_delete, log_context);
 }
 
 void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
@@ -295,9 +293,9 @@ static void owl_log_quit_func(gpointer data)
   opts.display_initial_log_count = false;
   owl_log_write_deferred_entries(&opts);
 #if GLIB_CHECK_VERSION(2, 32, 0)
-  g_queue_free_full(deferred_entry_queue, owl_log_entry_free);
+  g_queue_free_full(deferred_entry_queue, owl_log_entry_delete);
 #else
-  g_queue_foreach(deferred_entry_queue, owl_log_entry_free_gfunc, NULL);
+  g_queue_foreach(deferred_entry_queue, owl_log_entry_delete_gfunc, NULL);
   g_queue_free(deferred_entry_queue);
 #endif
 
