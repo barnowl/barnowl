@@ -210,6 +210,8 @@ CALLER_OWN owl_message *owl_perlconfig_hashref2message(SV *msg)
     } else if (!strcmp(key, "time")) {
       g_free(m->timestr);
       m->timestr = g_strdup(val);
+      // FIXME: Daylight saving time will be guessed wrongly one hour per year!
+      tm.tm_isdst = -1;
       strptime(val, "%a %b %d %T %Y", &tm);
       m->time = mktime(&tm);
     } else {
