@@ -84,8 +84,6 @@ int main(int argc, char **argv, char **env)
     eval_pv("use File::Spec; do File::Spec->rel2abs($main::test_prog); die($@) if($@)", true);
   }
 
-  status = 0;
-
   FREETMPS;
   LEAVE;
 
