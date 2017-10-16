@@ -437,8 +437,8 @@ sub cmd_zulip_write {
     my $type;
     my $to;
     my $ret = GetOptionsFromArray(\@_,
-                               "c:s" => \$stream,
-                               "i:s" => \$subject);
+                               "c=s" => \$stream,
+                               "i=s" => \$subject);
     unless($ret) {
         die("Usage: zulip:write [-c stream] [-i subject] [recipient] ...");
     }
