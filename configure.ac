@@ -180,8 +180,8 @@ AM_CONDITIONAL([ENABLE_ZCRYPT], [test "$HAVE_DES_STRING_TO_KEY" && dnl
                                  test "$HAVE_DES_ECB_ENCRYPT"])
 
 AM_CFLAGS="$AM_CFLAGS -D_XOPEN_SOURCE=600"
-dnl Define _BSD_SOURCE because zephyr needs caddr_t.
-AM_CFLAGS="$AM_CFLAGS -D_BSD_SOURCE"
+dnl Define _BSD_SOURCE/_DEFAULT_SOURCE because zephyr needs caddr_t.
+AM_CFLAGS="$AM_CFLAGS -D_BSD_SOURCE -D_DEFAULT_SOURCE"
 dnl Define __EXTENSIONS__ for strcasecmp on Solaris.
 AM_CFLAGS="$AM_CFLAGS -D__EXTENSIONS__"
 dnl Define _XOPEN_SOURCE_EXTENDED for some features in ncurses,
