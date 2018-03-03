@@ -1979,6 +1979,11 @@ bool owl_function_create_filter(int argc, const char *const *argv)
   owl_filter *f;
   const owl_view *v;
   int inuse = 0;
+  int i = 2;
+  int fgcolor = OWL_COLOR_DEFAULT;
+  bool set_fgcolor = false;
+  int bgcolor = OWL_COLOR_DEFAULT;
+  bool set_bgcolor = false;
 
   if (argc < 2) {
     owl_function_error("Wrong number of arguments to filter command");
@@ -1995,38 +2000,40 @@ bool owl_function_create_filter(int argc, const char *const *argv)
     return false;
   }
 
-  /* deal with the case of trying change the filter color */
-  if (argc==4 && !strcmp(argv[2], "-c")) {
-    f=owl_global_get_filter(&g, argv[1]);
-    if (!f) {
-      owl_function_error("The filter '%s' does not exist.", argv[1]);
-      return false;
+  /* set the color */
+  while (i + 2 <= argc && (!strcmp(argv[i], "-c") ||
+			   !strcmp(argv[i], "-b"))) {
+    int color = owl_util_string_to_color(argv[i + 1]);
+    if (color == OWL_COLOR_INVALID) {
+      owl_function_error("The color '%s' is not available.", argv[i + 1]);
+    } else if (argv[i][1] == 'c') {
+      fgcolor = color;
+      set_fgcolor = true;
+    } else {
+      bgcolor = color;
+      set_bgcolor = true;
     }
-    if (owl_util_string_to_color(argv[3])==OWL_COLOR_INVALID) {
-      owl_function_error("The color '%s' is not available.", argv[3]);
-      return false;
-    }
-    owl_filter_set_fgcolor(f, owl_util_string_to_color(argv[3]));
-    owl_mainwin_redisplay(owl_global_get_mainwin(&g));
-    return false;
+    i += 2;
   }
-  if (argc==4 && !strcmp(argv[2], "-b")) {
+
+  if (i > 2 && i == argc) {
     f=owl_global_get_filter(&g, argv[1]);
     if (!f) {
       owl_function_error("The filter '%s' does not exist.", argv[1]);
       return false;
     }
-    if (owl_util_string_to_color(argv[3])==OWL_COLOR_INVALID) {
-      owl_function_error("The color '%s' is not available.", argv[3]);
+    if (!set_fgcolor && !set_bgcolor)
       return false;
-    }
-    owl_filter_set_bgcolor(f, owl_util_string_to_color(argv[3]));
+    if (set_fgcolor)
+      owl_filter_set_fgcolor(f, fgcolor);
+    if (set_bgcolor)
+      owl_filter_set_bgcolor(f, bgcolor);
     owl_mainwin_redisplay(owl_global_get_mainwin(&g));
     return true;
   }
 
   /* create the filter and check for errors */
-  f = owl_filter_new(argv[1], argc-2, argv+2);
+  f = owl_filter_new_colored(argv[1], argc - i, argv + i, fgcolor, bgcolor);
   if (f == NULL) {
     owl_function_error("Invalid filter: %s", argv[1]);
     return false;

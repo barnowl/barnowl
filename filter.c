@@ -15,33 +15,18 @@ owl_filter *owl_filter_new_fromstring(const char *name, const char *string)
 
 owl_filter *owl_filter_new(const char *name, int argc, const char *const *argv)
 {
+  return owl_filter_new_colored(name, argc, argv, OWL_COLOR_DEFAULT, OWL_COLOR_DEFAULT);
+}
+
+owl_filter *owl_filter_new_colored(const char *name, int argc, const char *const *argv, int fgcolor, int bgcolor)
+{
   owl_filter *f;
 
   f = g_slice_new(owl_filter);
 
   f->name=g_strdup(name);
-  f->fgcolor=OWL_COLOR_DEFAULT;
-  f->bgcolor=OWL_COLOR_DEFAULT;
-
-  /* first take arguments that have to come first */
-  /* set the color */
-  while ( argc>=2 && ( !strcmp(argv[0], "-c") ||
-		       !strcmp(argv[0], "-b") ) ) {
-    if (owl_util_string_to_color(argv[1])==OWL_COLOR_INVALID) {
-      owl_function_error("The color '%s' is not available, using default.", argv[1]);
-    } else {
-      switch (argv[0][1]) {
-      case 'c':
-	f->fgcolor=owl_util_string_to_color(argv[1]);
-	break;
-      case 'b':
-	f->bgcolor=owl_util_string_to_color(argv[1]);
-	break;
-      }
-    }
-    argc-=2;
-    argv+=2;
-  }
+  f->fgcolor = fgcolor;
+  f->bgcolor = bgcolor;
 
   if (!(f->root = owl_filter_parse_expression(argc, argv, NULL))) {
     owl_filter_delete(f);
