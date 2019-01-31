@@ -20,11 +20,7 @@
 
 #include <config.h>
 
-#ifdef HAVE_KERBEROS_IV
-#include <kerberosIV/des.h>
-#else
 #include <openssl/des.h>
-#endif
 
 #include "filterproc.h"
 
@@ -99,14 +95,10 @@ cipher_pair ciphers[NCIPHER] = {
 };
 
 static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule *schedule) {
-#ifdef HAVE_KERBEROS_IV
   des_cblock key;
-#else
-  des_cblock _key, *key = &_key;
-#endif
 
-  des_string_to_key(keystring, key);
-  des_key_sched(key, *schedule);
+  des_string_to_key(keystring, &key);
+  des_key_sched(&key, *schedule);
 }
 
 void usage(FILE *file, const char *progname)

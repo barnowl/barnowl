@@ -53,35 +53,15 @@ AC_ARG_WITH([zephyr],
   [],
   [with_zephyr=check])
 
-AC_ARG_WITH([krb4],
-  AS_HELP_STRING([--with-krb4],
-                 [Build with kerberos IV]))
-
 AS_IF([test "x$with_zephyr" != xno],
-  [have_krb4=no
-
-   AS_IF([test "x$with_krb4" != "xno"],
-   [AC_MSG_CHECKING([for Kerberos IV])
-    AS_IF([krb5-config krb4 --libs >/dev/null 2>&1],
-      [AC_MSG_RESULT([yes])
-       have_krb4=yes
-       AC_DEFINE([HAVE_KERBEROS_IV], [1], [Define if you have kerberos IV])
-       AM_CFLAGS="${AM_CFLAGS} `krb5-config krb4 --cflags`"
-       LIBS="${LIBS} `krb5-config krb4 --libs`"
-      ],
-      [AC_MSG_RESULT([no])
-       AS_IF([test "x$with_krb4" = "xyes"],
-             [AC_MSG_ERROR([Kerberos IV requested but not found])])])])
-
-   AS_IF([test "x$have_krb4" != xyes],
-     [PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto],
-        [AM_CFLAGS="${AM_CFLAGS} ${LIBCRYPTO_CFLAGS}"
-         LIBS="${LIBS} ${LIBCRYPTO_LIBS}"
-        ],
-        [PKG_CHECK_MODULES([OPENSSL], [openssl],
-           [AM_CFLAGS="${AM_CFLAGS} ${OPENSSL_CFLAGS}"
-            LIBS="${LIBS} ${OPENSSL_LIBS}"
-           ])])])
+  [PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto],
+     [AM_CFLAGS="${AM_CFLAGS} ${LIBCRYPTO_CFLAGS}"
+      LIBS="${LIBS} ${LIBCRYPTO_LIBS}"
+     ],
+     [PKG_CHECK_MODULES([OPENSSL], [openssl],
+        [AM_CFLAGS="${AM_CFLAGS} ${OPENSSL_CFLAGS}"
+         LIBS="${LIBS} ${OPENSSL_LIBS}"
+        ])])
 
    AC_CHECK_LIB([zephyr], [ZGetSender],
    [LIBS="$LIBS -lzephyr"
