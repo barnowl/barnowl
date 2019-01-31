@@ -81,9 +81,9 @@ AS_IF([test "x$with_zephyr" != xno],
 
 AC_CHECK_FUNCS([use_default_colors])
 AC_CHECK_FUNCS([resizeterm], [], [AC_MSG_ERROR([No resizeterm found])])
-AC_CHECK_FUNCS([des_string_to_key DES_string_to_key], [HAVE_DES_STRING_TO_KEY=1])
-AC_CHECK_FUNCS([des_ecb_encrypt DES_ecb_encrypt], [HAVE_DES_ECB_ENCRYPT=1])
-AC_CHECK_FUNCS([des_key_sched DES_key_sched], [HAVE_DES_KEY_SCHED=1])
+AC_CHECK_FUNCS([DES_string_to_key], [HAVE_DES_STRING_TO_KEY=1])
+AC_CHECK_FUNCS([DES_ecb_encrypt], [HAVE_DES_ECB_ENCRYPT=1])
+AC_CHECK_FUNCS([DES_key_sched], [HAVE_DES_KEY_SCHED=1])
 
 dnl Checks for header files.
 AC_HEADER_STDC

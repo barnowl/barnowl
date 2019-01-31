@@ -94,11 +94,11 @@ cipher_pair ciphers[NCIPHER] = {
   [CIPHER_AES] = { do_encrypt_aes, do_decrypt_aes},
 };
 
-static void owl_zcrypt_string_to_schedule(char *keystring, des_key_schedule *schedule) {
-  des_cblock key;
+static void owl_zcrypt_string_to_schedule(char *keystring, DES_key_schedule *schedule) {
+  DES_cblock key;
 
-  des_string_to_key(keystring, &key);
-  des_key_sched(&key, *schedule);
+  DES_string_to_key(keystring, &key);
+  DES_key_sched(&key, schedule);
 }
 
 void usage(FILE *file, const char *progname)
@@ -719,7 +719,7 @@ int do_encrypt(int zephyr, const char *class, const char *instance,
 
 int do_encrypt_des(const char *keyfile, const char *in, int length, FILE *outfile)
 {
-  des_key_schedule schedule;
+  DES_key_schedule schedule;
   unsigned char input[8], output[8];
   const char *inptr;
   int num_blocks, last_block_size;
@@ -765,7 +765,7 @@ int do_encrypt_des(const char *keyfile, const char *in, int length, FILE *outfil
       memset(input + size, 0, 8 - size);
 
     /* Encrypt and output the block */
-    des_ecb_encrypt(&input, &output, schedule, TRUE);
+    DES_ecb_encrypt(&input, &output, &schedule, TRUE);
     block_to_ascii(output, outfile);
 
     if (size < 8)
@@ -904,7 +904,7 @@ int do_decrypt_aes(const char *keyfile) {
 }
 
 int do_decrypt_des(const char *keyfile) {
-  des_key_schedule schedule;
+  DES_key_schedule schedule;
   unsigned char input[8], output[8];
   char tmp[9];
   char *keystring;
@@ -914,7 +914,7 @@ int do_decrypt_des(const char *keyfile) {
     'tmp', which has the final byte zeroed, to ensure that we always
     have a NULL-terminated string we can call printf/strlen on.
 
-    We don't pass 'tmp' to des_ecb_encrypt directly, because it's
+    We don't pass 'tmp' to DES_ecb_encrypt directly, because it's
     prototyped as taking 'unsigned char[8]', and this avoids a stupid
     cast.
 
@@ -932,7 +932,7 @@ int do_decrypt_des(const char *keyfile) {
 
   while (read_ascii_block(input))
   {
-    des_ecb_encrypt(&input, &output, schedule, FALSE);
+    DES_ecb_encrypt(&input, &output, &schedule, FALSE);
     memcpy(tmp, output, 8);
     printf("%s", tmp);
   }
