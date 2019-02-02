@@ -789,8 +789,9 @@ int do_encrypt_aes(const char *keyfile, const char *in, int length, FILE *outfil
 {
   char *out;
   int err, status;
+  int tried_gpg1 = FALSE;
   const char *argv[] = {
-    "gpg",
+    "gpg1",
     "--symmetric",
     "--no-options",
     "--no-default-keyring",
@@ -804,7 +805,10 @@ int do_encrypt_aes(const char *keyfile, const char *in, int length, FILE *outfil
     "--passphrase-file", keyfile,
     NULL
   };
-  err = call_filter(argv, in, &out, &status);
+  while ((err = call_filter(argv, in, &out, &status)) && !out && !tried_gpg1) {
+    tried_gpg1 = TRUE;
+    argv[0] = "gpg";
+  }
   if(err || status) {
     g_free(out);
     return FALSE;
@@ -873,8 +877,9 @@ int do_decrypt(const char *keyfile, int cipher)
 int do_decrypt_aes(const char *keyfile) {
   char *in, *out;
   int length;
+  int tried_gpg1 = FALSE;
   const char *argv[] = {
-    "gpg",
+    "gpg1",
     "--decrypt",
     "--no-options",
     "--no-default-keyring",
@@ -891,7 +896,10 @@ int do_decrypt_aes(const char *keyfile) {
   in = slurp_stdin(TRUE, &length);
   if(!in) return FALSE;
 
-  err = call_filter(argv, in, &out, &status);
+  while ((err = call_filter(argv, in, &out, &status)) && !out && !tried_gpg1) {
+    tried_gpg1 = TRUE;
+    argv[0] = "gpg";
+  }
   free(in);
   if(err || status) {
     g_free(out);
