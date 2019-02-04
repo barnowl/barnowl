@@ -101,18 +101,18 @@ sub serialize {
     my ($this) = @_;
     my $s;
     for my $f (keys %$this) {
-	my $val = $this->{$f};
-	if (ref($val) eq "ARRAY") {
-	    for my $i (0..@$val-1) {
-		my $aval;
-		$aval = $val->[$i];
-		$aval =~ s/\n/\n$f.$i: /g;
-		$s .= "$f.$i: $aval\n";
-	    }
-	} else {
-	    $val =~ s/\n/\n$f: /g;
-	    $s .= "$f: $val\n";
-	}
+        my $val = $this->{$f};
+        if (ref($val) eq "ARRAY") {
+            for my $i (0..@$val-1) {
+                my $aval;
+                $aval = $val->[$i];
+                $aval =~ s/\n/\n$f.$i: /g;
+                $s .= "$f.$i: $aval\n";
+            }
+        } else {
+            $val =~ s/\n/\n$f: /g;
+            $s .= "$f: $val\n";
+        }
     }
     return $s;
 }
@@ -303,11 +303,11 @@ sub legacy_populate_global {
     $BarnOwl::login      = $m->login     ;
     $BarnOwl::auth       = $m->auth      ;
     if ($m->fields) {
-	@BarnOwl::fields = @{$m->fields};
-	@main::fields = @{$m->fields};
+        @BarnOwl::fields = @{$m->fields};
+        @main::fields = @{$m->fields};
     } else {
-	@BarnOwl::fields = undef;
-	@main::fields = undef;
+        @BarnOwl::fields = undef;
+        @main::fields = undef;
     }
 }
 
@@ -330,3 +330,7 @@ sub subcontext {""}
 
 
 1;
+
+# Local Variables:
+# indent-tabs-mode: nil
+# End:
