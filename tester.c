@@ -25,6 +25,7 @@ int owl_smartfilter_regtest(void);
 int owl_history_regtest(void);
 int call_filter_regtest(void);
 int owl_smartstrip_regtest(void);
+int ztext_test(void);
 
 extern void owl_perl_xs_init(pTHX);
 
@@ -115,6 +116,7 @@ int owl_regtest(void) {
   numfailures += owl_history_regtest();
   numfailures += call_filter_regtest();
   numfailures += owl_smartstrip_regtest();
+  numfailures += ztext_test();
   if (numfailures) {
       fprintf(stderr, "# *** WARNING: %d failures total\n", numfailures);
   }
@@ -1051,4 +1053,185 @@ int owl_smartstrip_regtest(void)
   printf("# END testing owl_zephyr_smartstripped_user\n");
 
   return numfailed;
+}
+
+static char *ztext_str(ztext_env *tree)
+{
+    /* Unambiguous representation of the parse tree */
+    char *s, *t, *u;
+
+    if (tree->opener) {
+        s = g_strdup_printf("{'%s%c'", tree->label, tree->opener);
+    } else {
+        s = g_strdup("{-");
+    }
+
+    for (ztext_node *p = tree->content; p != NULL; p = p->next) {
+        t = s;
+        if (p->type== ZTEXT_NODE_STRING) {
+            s = g_strdup_printf("%s |%s|", s, p->string);
+        } else if (p->type == ZTEXT_NODE_ENV) {
+            u = ztext_str(p->env);
+            s = g_strconcat(s, " ", u, NULL);
+            g_free(u);
+        }
+        g_free(t);
+    }
+
+    t = s;
+    if (tree->closer) {
+        s = g_strdup_printf("%s '%c'}", s, tree->closer);
+    } else {
+        s = g_strconcat(s, "}", NULL);
+    }
+    g_free(t);
+
+    return s;
+}
+
+char *ztext_ztext(ztext_env *tree)
+{
+    char *s, *t, *u;
+
+    if (tree->closer == '@' && tree->content == NULL)
+        return g_strdup("@@");
+
+    if (tree->opener) {
+        s = g_strdup_printf("%s%c", tree->label, tree->opener);
+    } else {
+        s = g_strdup("");
+    }
+
+    for (ztext_node *p = tree->content; p != NULL; p = p->next) {
+        t = s;
+        if (p->type == ZTEXT_NODE_STRING) {
+            s = g_strconcat(s, p->string, NULL);
+        } else if (p->type == ZTEXT_NODE_ENV) {
+            u = ztext_ztext(p->env);
+            s = g_strconcat(s, u, NULL);
+            g_free(u);
+        }
+        g_free(t);
+    }
+
+    if (tree->closer) {
+        t = s;
+        s = g_strdup_printf("%s%c", s, tree->closer);
+        g_free(t);
+    }
+
+    return s;
+}
+
+int ztext_test(void)
+{
+    int numfailed = 0;
+    char *s;
+    ztext_env *t;
+    char *d;
+
+#define CHECK_ZTEXT_STR(in, expected)                                         \
+    do {                                                                      \
+      t = ztext_tree(in);                                                     \
+      s = ztext_str(t);                                                       \
+      d = g_strdup_printf("ztext decode \"%s\" expected \"%s\" got \"%s\"",   \
+                          in, expected, s);                                   \
+      FAIL_UNLESS(d, !strcmp(s, expected));                                   \
+      ztext_env_free(t);                                                      \
+      g_free(d);                                                              \
+      g_free(s);                                                              \
+    } while (0)
+
+    CHECK_ZTEXT_STR("", "{-}");
+    CHECK_ZTEXT_STR("foo", "{- |foo|}");
+    CHECK_ZTEXT_STR("@{foo}", "{- {'@{' |foo| '}'}}");
+    CHECK_ZTEXT_STR("@bar{foo}", "{- {'@bar{' |foo| '}'}}");
+    CHECK_ZTEXT_STR("@bar{foo@bar}", "{- {'@bar{' |foo@bar| '}'}}");
+    CHECK_ZTEXT_STR("@bar{foo@@bar}", "{- {'@bar{' |foo| {'@@' '@'} |bar| '}'}}");
+    CHECK_ZTEXT_STR("@{foo@}bar}baz", "{- {'@{' |foo@| '}'} |bar}baz|}");
+    CHECK_ZTEXT_STR("foo@bar{baz@(bang})}",
+                    "{- |foo| {'@bar{' |baz| {'@(' |bang}| ')'} '}'}}");
+    CHECK_ZTEXT_STR("foo@bar{baz}", "{- |foo| {'@bar{' |baz| '}'}}");
+    CHECK_ZTEXT_STR("@bloop", "{- |@bloop|}");
+    CHECK_ZTEXT_STR("@{)}@{>}", "{- {'@{' |)| '}'} {'@{' |>| '}'}}");
+
+#define CHECK_ZTEXT_STRIP(in, expected)                                      \
+    do {                                                                     \
+      t = ztext_tree(in);                                                    \
+      s = ztext_strip(t);                                                    \
+      d = g_strdup_printf("ztext strip \"%s\" expected \"%s\" got \"%s\"",   \
+                          in, expected, s);                                  \
+      FAIL_UNLESS(d, !strcmp(s, expected));                                  \
+      ztext_env_free(t);                                                     \
+      g_free(d);                                                             \
+      g_free(s);                                                             \
+    } while (0)
+
+    CHECK_ZTEXT_STRIP("", "");
+    CHECK_ZTEXT_STRIP("foo", "foo");
+    CHECK_ZTEXT_STRIP("@{foo}", "foo");
+    CHECK_ZTEXT_STRIP("@bar{foo}", "foo");
+    CHECK_ZTEXT_STRIP("@bar{foo@bar}", "foo@bar");
+    CHECK_ZTEXT_STRIP("@bar{foo@@bar}", "foo@bar");
+    CHECK_ZTEXT_STRIP("@{foo@}bar}baz", "foo@bar}baz");
+    CHECK_ZTEXT_STRIP("foo@bar{baz@(bang})}", "foobazbang}");
+    CHECK_ZTEXT_STRIP("foo@bar{baz}", "foobaz");
+    CHECK_ZTEXT_STRIP("@bloop", "@bloop");
+    CHECK_ZTEXT_STRIP("@{)}@{>}", ")>");
+    CHECK_ZTEXT_STRIP("@color(blue)@font(fixed)marzipan", "marzipan");
+
+#define CHECK_ZTEXT_RT(in)                                                \
+    do {                                                                  \
+      t = ztext_tree(in);                                                 \
+      s = ztext_ztext(t);                                                 \
+      d = g_strdup_printf("ztext round-trip \"%s\" got \"%s\"", in, s);   \
+      FAIL_UNLESS(d, !strcmp(s, in));                                     \
+      ztext_env_free(t);                                                  \
+      g_free(s);                                                          \
+    } while (0)
+
+    CHECK_ZTEXT_RT("");
+    CHECK_ZTEXT_RT("foo");
+    CHECK_ZTEXT_RT("@{foo}");
+    CHECK_ZTEXT_RT("@bar{foo}");
+    CHECK_ZTEXT_RT("@bar{foo@bar}");
+    CHECK_ZTEXT_RT("@bar{foo@@bar}");
+    CHECK_ZTEXT_RT("@{foo@}bar}baz");
+    CHECK_ZTEXT_RT("foo@bar{baz@(bang})}");
+    CHECK_ZTEXT_RT("foo@bar{baz}");
+    CHECK_ZTEXT_RT("@bloop");
+    CHECK_ZTEXT_RT("@{)}@{>}");
+
+    /* fuzzzzzz */
+    srand48(getpid() + time(0));
+
+    char tango[32];
+    const char CHARS[] = "@abc ({<[]>})";
+
+    for(int i=0; i < 1000; i++) {
+        memset(tango, 0, sizeof(tango));
+        int l = lrand48() % sizeof(tango);
+        for (int j=0; j < l; j++) {
+            tango[j] = CHARS[lrand48() % (sizeof(CHARS) -1)];
+        }
+        CHECK_ZTEXT_RT(tango);
+    }
+
+#define CHECK_ZTEXT_PROTECT(in, expected)                                     \
+    do {                                                                      \
+      s = ztext_protect(in);                                                  \
+      d = g_strdup_printf("ztext protect \"%s\" expected \"%s\" got \"%s\"",  \
+                          in, expected, s);                                   \
+      FAIL_UNLESS(d, !strcmp(s, expected));                                   \
+      g_free(d);                                                              \
+      g_free(s);                                                              \
+    } while (0)
+
+    CHECK_ZTEXT_PROTECT("", "");
+    CHECK_ZTEXT_PROTECT("foo", "foo");
+    CHECK_ZTEXT_PROTECT("fo}o", "fo@(})o");
+    CHECK_ZTEXT_PROTECT("@[foo", "@[foo]");
+    CHECK_ZTEXT_PROTECT("})>]", "@(})@<)>@[>]@{]}");
+
+    return numfailed;
 }
