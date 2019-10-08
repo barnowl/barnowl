@@ -170,6 +170,20 @@ sub do_keep_alive_and_auto_away {
 
 our $showOffline = 0;
 
+sub blist_getBuddyStatus {
+    my $jid = shift;
+    my $buddy = shift;
+    my $roster = $conn->getRosterFromJID($jid);
+    my %jq  = $roster->query($buddy);
+    my $res = $roster->resource($buddy);
+    if ($res) {
+        my %rq = $roster->resourceQuery( $buddy, $res );
+        return $rq{show} ? $rq{show} : 'online';
+    } else {
+        return "unknown";
+    }
+}
+
 sub blist_listBuddy {
     my $roster = shift;
     my $buddy  = shift;
@@ -302,6 +316,13 @@ sub register_owl_commands() {
         {
             summary => "Show your Jabber roster.",
             usage   => "jlist"
+        }
+    );
+    BarnOwl::new_command(
+        jabber_get_buddy_status => \&cmd_jabber_get_buddy_status,
+        {
+            summary => "Get the status of a given buddy.",
+            usage   => "jabber_get_buddy_status [-a account] buddy"
         }
     );
     BarnOwl::new_command(
@@ -856,6 +877,32 @@ sub cmd_jaway {
     $p->SetShow($show eq "online" ? "" : $show) if $show;
     $p->SetStatus(join(' ', @ARGV)) if @ARGV;
     $conn->getConnectionFromJID($jid)->Send($p);
+}
+
+sub cmd_jabber_get_buddy_status {
+    my $cmd = shift;
+    local @ARGV = @_;
+    my $getopt = Getopt::Long::Parser->new;
+    my ($jid, $buddy);
+
+    $getopt->configure('no_getopt_compat');
+    $getopt->getoptions(
+        'account=s' => \$jid,
+    );
+    $jid ||= defaultJID();
+    if ($jid) {
+        $jid = resolveConnectedJID($jid);
+        return unless $jid;
+    }
+    else {
+        die("You must specify an account with -a <jid>\n");
+    }
+    $buddy = shift @ARGV;
+    if(!$buddy) {
+        die("You must specify a JID to get the status of.\n");
+    }
+    my $buddy_jid = resolveDestJID($buddy, $jid);
+    return blist_getBuddyStatus($jid, $buddy_jid);
 }
 
 
@@ -1490,7 +1537,19 @@ sub complete_jabberlogout {
     }
 }
 
+sub complete_jabber_get_buddy_status {
+    my $ctx = shift;
+    return complete_flags($ctx,
+                          [qw()],
+                          {
+                              "-a" => \&complete_account,
+                          },
+                          \&complete_user_or_muc
+        );
+}
+
 BarnOwl::Completion::register_completer(jwrite => sub { BarnOwl::Module::Jabber::complete_jwrite(@_) });
 BarnOwl::Completion::register_completer(jabberlogout => sub { BarnOwl::Module::Jabber::complete_jabberlogout(@_) });
+BarnOwl::Completion::register_completer(jabber_get_buddy_status => sub { BarnOwl::Module::Jabber::complete_jabber_get_buddy_status(@_) });
 
 1;
