@@ -289,6 +289,7 @@ sub poll_twitter {
             my $orig = $tweet->{retweeted_status};
             $orig = $tweet unless defined($orig);
 
+            my $url = $self->{cfg}->{service} . '/' . $orig->{user}{screen_name} . '/status/' . $tweet->{id};
             my $msg = BarnOwl::Message->new(
                 type      => 'Twitter',
                 sender    => $orig->{user}{screen_name},
@@ -298,6 +299,7 @@ sub poll_twitter {
                 location  => decode_entities($orig->{user}{location}||""),
                 body      => decode_entities($orig->{text}),
                 status_id => $tweet->{id},
+                url       => $url,
                 service   => $self->{cfg}->{service},
                 account   => $self->{cfg}->{account_nickname},
                 $tweet->{retweeted_status} ? (retweeted_by => $tweet->{user}{screen_name}) : ()

@@ -242,7 +242,7 @@ sub twitter {
 
 BarnOwl::new_command(twitter => \&cmd_twitter, {
     summary     => 'Update Twitter from BarnOwl',
-    usage       => 'twitter [ACCOUNT] [MESSAGE]',
+    usage       => 'twitter [ACCOUNT [MESSAGE]]',
     description => 'Update Twitter on ACCOUNT. If MESSAGE is provided, use it as your status.'
     . "\nIf no ACCOUNT is provided, update all services which have publishing enabled."
     . "\nOtherwise, prompt for a status message to use."
@@ -258,8 +258,17 @@ BarnOwl::new_command('twitter-direct' => \&cmd_twitter_direct, {
 BarnOwl::new_command( 'twitter-atreply' => sub { cmd_twitter_atreply(@_); },
     {
     summary     => 'Send a Twitter @ message',
-    usage       => 'twitter-atreply USER [ACCOUNT]',
+    usage       => 'twitter-atreply USER [ID [ACCOUNT]]',
     description => 'Send a Twitter @reply Message to USER on ACCOUNT (defaults to default_sender,' 
+    . "\nor first service if no default is provided)"
+    }
+);
+
+BarnOwl::new_command( 'twitter-prefill' => sub { cmd_twitter_prefill(@_); },
+    {
+    summary     => 'Send a Twitter message with prefilled text',
+    usage       => 'twitter-prefill PREFILL [ID [ACCOUNT]]',
+    description => 'Send a Twitter message with initial text PREFILL on ACCOUNT (defaults to default_sender,' 
     . "\nor first service if no default is provided)"
     }
 );
@@ -355,6 +364,30 @@ sub cmd_twitter_atreply {
     BarnOwl::start_edit_win("Reply to \@" . $user . ($account->nickname ? (" on " . $account->nickname) : ""),
                             sub { $account->twitter_atreply($user, $id, shift) });
     BarnOwl::Editwin::insert_text("\@$user ");
+}
+
+sub cmd_twitter_prefill {
+    my $cmd  = shift;
+    # prefill is responsible for spacing
+    my $prefill = shift || die("Usage: $cmd PREFILL [In-Reply-To ID]\n");
+    my $id   = shift;
+    my $account = find_account_default(shift);
+
+    my $msg = "What's happening?";
+    if ($id) {
+        # So, this isn't quite semantically correct, but it's close
+        # enough, and under the planned use-case, it will look identical.
+        $msg = "Reply to " . $prefill;
+    }
+    if ($account->nickname) {
+        # XXX formatting slightly suboptimal on What's happening message;
+        # and the behavior does not match up with 'twitter' anyhoo,
+        # which doesn't dispatch through account_find_default
+        $msg .= " on " . $account->nickname;
+    }
+    BarnOwl::start_edit_win($msg,
+                            sub { $account->twitter_atreply(undef, $id, shift) });
+    BarnOwl::Editwin::insert_text($prefill);
 }
 
 sub cmd_twitter_retweet {
