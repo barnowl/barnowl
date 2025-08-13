@@ -20,8 +20,14 @@ const char *owl_closure_init(void)
     sv_from_gvalue = dlsym(handle, "gperl_sv_from_value");
     perl_closure_new = dlsym(handle, "gperl_closure_new");
     /* ... */
-    res = dlerror();
-    dlclose(handle);
+    if (dlclose(handle) != 0
+        || gvalue_from_sv == NULL
+        || sv_from_gvalue == NULL
+        || perl_closure_new == NULL) {
+            res = dlerror();
+    } else {
+      res = NULL;
+    }
   }
   return res;
 }
