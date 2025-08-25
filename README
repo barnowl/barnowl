@@ -54,7 +54,7 @@ Digest::SHA
 
 The Twitter module requires:
 
-HTML::Entities
+HTML::Entities (provided by HTML::Parser)
 Net::Twitter::Lite
 
 The WordWrap module requires:
