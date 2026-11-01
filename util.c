@@ -661,15 +661,18 @@ CALLER_OWN char *owl_util_compat_casefold(const char *str)
    * move it to util.c.
    */
   char *tmp0 = g_utf8_normalize(str, -1, G_NORMALIZE_NFD);
-  char *tmp1 = g_utf8_casefold(tmp0, -1);
-  char *tmp2 = g_utf8_normalize(tmp1, -1, G_NORMALIZE_NFKD);
-  char *tmp3 = g_utf8_casefold(tmp2, -1);
-  char *out = g_utf8_normalize(tmp3, -1, G_NORMALIZE_NFKC);
+  char *tmp1 = tmp0 ? g_utf8_casefold(tmp0, -1) : NULL;
+  char *tmp2 = tmp1 ? g_utf8_normalize(tmp1, -1, G_NORMALIZE_NFKD) : NULL;
+  char *tmp3 = tmp2 ? g_utf8_casefold(tmp2, -1) : NULL;
+  /* str is not valid UTF-8 if any step gave NULL. */
+  char *out = tmp3 ? g_utf8_normalize(tmp3, -1, G_NORMALIZE_NFKC) : NULL;
   g_free(tmp0);
   g_free(tmp1);
   g_free(tmp2);
   g_free(tmp3);
 
+  if (out == NULL)
+    out = g_strdup("");
   return out;
 }
 

@@ -182,7 +182,10 @@ sub get_filenames {
     my ($m) = @_;
     my @filenames = $m->log_filenames;
     push @filenames, 'all' if $m->log_to_all_file;
-    return map { sanitize_filename($m->log_path, $_) } @filenames;
+    # Two names can sanitize to the same file (a CC of the sender, for
+    # example); log to each file once.
+    my %seen;
+    return grep { !$seen{$_}++ } map { sanitize_filename($m->log_path, $_) } @filenames;
 }
 
 =head2 should_log_message MESSAGE
