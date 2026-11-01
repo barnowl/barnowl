@@ -269,7 +269,8 @@ int owl_zwrite_create_and_send_from_line(const char *cmd, const char *msg)
   int rv;
   rv = owl_zwrite_create_from_line(&z, cmd);
   if (rv != 0) return rv;
-  owl_function_zwrite(&z, msg);
+  /* A -m on the zwrite line wins over MSG, as before owl_function_zwrite(). */
+  owl_function_zwrite(&z, owl_zwrite_is_message_set(&z) ? NULL : msg);
   owl_zwrite_cleanup(&z);
   return(0);
 }
