@@ -58,7 +58,7 @@ void owl_parse_options(int argc, char *argv[], owl_options *opts) {
     { "help",            0, 0, 'h' },
     { NULL, 0, NULL, 0}
   };
-  char c;
+  int c;
 
   while((c = getopt_long(argc, argv, "nc:t:s:dDvh",
                          long_options, NULL)) != -1) {
