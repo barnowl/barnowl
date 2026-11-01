@@ -286,6 +286,13 @@ sub log_to_class_file {
     return !$m->is_personal;
 }
 
+# BarnOwl 1.10 also appended every incoming personal zephyr to the "all" file
+# (outgoing ones always went there); keep logging it.
+sub log_to_all_file {
+    my ($m) = @_;
+    return $m->is_outgoing || $m->is_personal;
+}
+
 sub log_path {
     my ($m) = @_;
     if ($m->log_to_class_file) {
