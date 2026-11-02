@@ -38,6 +38,43 @@ sub maybe {
     return defined($x) ? $x : "";
 }
 
+=head3 escape_ztext STRING
+
+Method that makes STRING safe to place inside ztext.  A C<@> starts a
+ztext command and C<@@> is a literal C<@>, so without this a field
+chosen by the sender of a message (such as a zephyr instance of
+C<@b(x>) could change how the rest of the message is drawn.
+
+=cut
+
+sub escape_ztext {
+    my $self = shift;
+    my $s = shift;
+    $s = "" unless defined($s);
+    $s =~ s/\@/\@\@/g;
+    return $s;
+}
+
+=head3 bold_ztext STRING
+
+Method that wraps STRING, which must already be escaped, in C<@b>
+using the first of C<{}>, C<[]>, C<< <> >> and C<()> whose closing
+delimiter does not occur in it, so that a closing delimiter inside
+STRING cannot end the bold early.  If all four closing delimiters
+occur, STRING is returned without bold.
+
+=cut
+
+sub bold_ztext {
+    my $self = shift;
+    my $s = shift;
+    for my $pair (['{', '}'], ['[', ']'], ['<', '>'], ['(', ')']) {
+        my ($open, $close) = @$pair;
+        return '@b' . $open . $s . $close if index($s, $close) < 0;
+    }
+    return $s;
+}
+
 sub description {"Default style";}
 
 BarnOwl::create_style("default", "BarnOwl::Style::Default");
@@ -55,11 +92,11 @@ sub format_login {
     my $self = shift;
     my $m = shift;
     return sprintf(
-        '@b<%s%s> for @b(%s) (%s) %s',
+        '@b<%s%s> for %s (%s) %s',
         uc( $m->login ),
         $m->login_type,
-        $m->pretty_sender,
-        $m->login_extra,
+        $self->bold_ztext($self->escape_ztext($m->pretty_sender)),
+        $self->escape_ztext($m->login_extra),
         $self->format_time($m)
        );
 }
@@ -67,9 +104,10 @@ sub format_login {
 sub format_ping {
     my $self = shift;
     my $m = shift;
-    my $personal_context = $m->personal_context;
+    my $personal_context = $self->escape_ztext($m->personal_context);
     $personal_context = ' [' . $personal_context . ']' if $personal_context;
-    return "\@b(PING)" . $personal_context . " from \@b(" . $m->pretty_sender . ")";
+    return "\@b(PING)" . $personal_context . " from " .
+        $self->bold_ztext($self->escape_ztext($m->pretty_sender));
 }
 
 sub format_admin {
@@ -91,34 +129,37 @@ sub chat_header {
     my $header;
     if ( $m->is_personal ) {
         my $personal_context = $m->personal_context;
-        $personal_context = ' [' . $self->humanize($personal_context, 1) . ']' if $personal_context;
+        $personal_context = ' [' .
+            $self->humanize($self->escape_ztext($personal_context), 1) . ']'
+            if $personal_context;
 
         if ( $m->direction eq "out" ) {
-            $header = ucfirst $m->type . $personal_context . " sent to " . $m->pretty_recipient;
+            $header = ucfirst $m->type . $personal_context . " sent to " .
+                $self->escape_ztext($m->pretty_recipient);
         } else {
             $header = ucfirst $m->type . $personal_context . " from ";
             if(defined($m->auth) && ($m->auth ne "YES")) {
                 $header .= "UNAUTH: ";
             }
-            $header .= maybe($m->pretty_sender);
+            $header .= $self->escape_ztext(maybe($m->pretty_sender));
         }
     } else {
-        $header = $self->humanize($m->context, 1);
+        $header = $self->humanize($self->escape_ztext($m->context), 1);
         if(defined $m->subcontext) {
-            $header .= ' / ' . $self->humanize($m->subcontext, 1);
+            $header .= ' / ' . $self->humanize($self->escape_ztext($m->subcontext), 1);
         }
         $header .= ' / ';
         if(defined($m->auth) && ($m->auth ne "YES")) {
             $header .= "UNAUTH: ";
         }
-        $header .= '@b{' . maybe($m->pretty_sender) . '}';
+        $header .= $self->bold_ztext($self->escape_ztext(maybe($m->pretty_sender)));
         if (defined($m->realm) && $m->realm ne BarnOwl::zephyr_getrealm()) {
-            $header .= ' {' . $self->humanize($m->realm, 1) . '}';
+            $header .= ' {' . $self->humanize($self->escape_ztext($m->realm), 1) . '}';
         }
     }
 
     if($m->opcode) {
-        $header .= " [" . $self->humanize($m->opcode, 1) . "]";
+        $header .= " [" . $self->humanize($self->escape_ztext($m->opcode), 1) . "]";
     }
     $header .= "  " . $self->format_time($m);
     $header .= $self->format_sender($m);
@@ -128,7 +169,12 @@ sub chat_header {
 sub format_sender {
     my $self = shift;
     my $m = shift;
-    my $sender = $self->humanize($m->long_sender, 1);
+    my $sender = $m->long_sender;
+    # A zephyr's long_sender is its zsig, which is ztext on purpose (see
+    # ChangeLog: "the zsig now goes through ztext formatting").  The other
+    # protocols give a name or a URL, which is never meant to be ztext.
+    $sender = $self->escape_ztext($sender) unless $m->is_zephyr;
+    $sender = $self->humanize($sender, 1);
     if (BarnOwl::getvar('colorztext') eq 'on') {
       return "  (" . $sender . '@color[default]' . ")";
     } else {
