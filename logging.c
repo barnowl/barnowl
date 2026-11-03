@@ -253,7 +253,6 @@ void owl_log_outgoing_zephyr_error(const owl_zwrite *zw, const char *text)
 
 static gpointer owl_log_thread_func(gpointer data)
 {
-  log_context = g_main_context_new();
   log_loop = g_main_loop_new(log_context, FALSE);
   g_main_loop_run(log_loop);
   return NULL;
