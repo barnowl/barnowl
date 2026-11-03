@@ -126,7 +126,7 @@ int owl_regtest(void) {
 #define FAIL_UNLESS(desc,pred) do { int __pred = (pred);                \
     numtests++;                                                         \
     printf("%s %d %s", (__pred) ? "ok" : (numfailed++, "not ok"), numtests, desc); \
-    if(!(__pred)) printf("\t(%s:%d)", __FILE__, __LINE__); printf("%c", '\n'); } while(0)
+    if(!(__pred)) { printf("\t(%s:%d)", __FILE__, __LINE__); } printf("%c", '\n'); } while(0)
 
 
 int owl_util_regtest(void)
@@ -199,6 +199,21 @@ int owl_util_regtest(void)
   CHECK_STR_AND_FREE("wordwrap 12 (blank lines kept, spaces don't carry over)",
                      "aaaa bbbb\n\ncccccccccccccc",
                      owl_text_wordwrap("aaaa bbbb\n\ncccccccccccccc", 9));
+
+  FAIL_UNLESS("mk_wcwidth emoji U+1F600", mk_wcwidth(0x1F600) == 2);
+  FAIL_UNLESS("mk_wcwidth emoji U+1F389", mk_wcwidth(0x1F389) == 2);
+  FAIL_UNLESS("mk_wcwidth emoji U+231A", mk_wcwidth(0x231A) == 2);
+  FAIL_UNLESS("mk_wcwidth emoji U+1FA90", mk_wcwidth(0x1FA90) == 2);
+  CHECK_STR_AND_FREE("wordwrap 13 (emoji wrap by columns)",
+                     "😀😁\n😀😁",
+                     owl_text_wordwrap("😀😁 😀😁", 4));
+  CHECK_STR_AND_FREE("wordwrap 14 (22 emoji pairs wrap at 100 cols)",
+                     "😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 "
+                     "😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁\n"
+                     "😀😁 😀😁",
+                     owl_text_wordwrap("😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 "
+                                       "😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 "
+                                       "😀😁 😀😁", 100));
 
   FAIL_UNLESS("skiptokens 1",
               !strcmp("world", skiptokens("hello world", 1)));
