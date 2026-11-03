@@ -126,7 +126,7 @@ int owl_regtest(void) {
 #define FAIL_UNLESS(desc,pred) do { int __pred = (pred);                \
     numtests++;                                                         \
     printf("%s %d %s", (__pred) ? "ok" : (numfailed++, "not ok"), numtests, desc); \
-    if(!(__pred)) printf("\t(%s:%d)", __FILE__, __LINE__); printf("%c", '\n'); } while(0)
+    if(!(__pred)) { printf("\t(%s:%d)", __FILE__, __LINE__); } printf("%c", '\n'); } while(0)
 
 
 int owl_util_regtest(void)
@@ -166,6 +166,54 @@ int owl_util_regtest(void)
                      owl_text_expand_tabs("α\tααααααα!\t"));
   CHECK_STR_AND_FREE("expand_tabs 5", "Ａ      ＡＡＡ!!        ",
                      owl_text_expand_tabs("Ａ\tＡＡＡ!!\t"));
+
+  CHECK_STR_AND_FREE("wordwrap 1", "", owl_text_wordwrap("", 10));
+  CHECK_STR_AND_FREE("wordwrap 2 (ASCII wraps)", "the quick\nbrown fox\njumps",
+                     owl_text_wordwrap("the quick brown fox jumps", 10));
+  CHECK_STR_AND_FREE("wordwrap 3 (short line unchanged)", "the quick",
+                     owl_text_wordwrap("the quick", 10));
+  CHECK_STR_AND_FREE("wordwrap 4 (fits in columns, not in bytes)",
+                     "ααααα βββββ",
+                     owl_text_wordwrap("ααααα βββββ", 11));
+  CHECK_STR_AND_FREE("wordwrap 5 (UTF-8 wraps by columns)",
+                     "αααα ββββ\nγγγγ",
+                     owl_text_wordwrap("αααα ββββ γγγγ", 10));
+  CHECK_STR_AND_FREE("wordwrap 6 (wide chars fit in columns, not in bytes)",
+                     "你好 世界",
+                     owl_text_wordwrap("你好 世界", 10));
+  CHECK_STR_AND_FREE("wordwrap 7 (wide chars wrap by columns)",
+                     "你好世界\n你好世界",
+                     owl_text_wordwrap("你好世界 你好世界", 10));
+  CHECK_STR_AND_FREE("wordwrap 8 (no space to break at)",
+                     "supercalifragilisticexpialidocious",
+                     owl_text_wordwrap("supercalifragilisticexpialidocious", 10));
+  CHECK_STR_AND_FREE("wordwrap 9 (no space to break at, wide chars)",
+                     "你好世界你好世界你好世界",
+                     owl_text_wordwrap("你好世界你好世界你好世界", 10));
+  CHECK_STR_AND_FREE("wordwrap 10 (break before a long word)",
+                     "short\naveryveryverylongword",
+                     owl_text_wordwrap("short averyveryverylongword", 10));
+  CHECK_STR_AND_FREE("wordwrap 11 (newlines kept)",
+                     "aaaa bbbb\ncccc\ndddd eeee\nffff",
+                     owl_text_wordwrap("aaaa bbbb cccc\ndddd eeee ffff", 9));
+  CHECK_STR_AND_FREE("wordwrap 12 (blank lines kept, spaces don't carry over)",
+                     "aaaa bbbb\n\ncccccccccccccc",
+                     owl_text_wordwrap("aaaa bbbb\n\ncccccccccccccc", 9));
+
+  FAIL_UNLESS("mk_wcwidth emoji U+1F600", mk_wcwidth(0x1F600) == 2);
+  FAIL_UNLESS("mk_wcwidth emoji U+1F389", mk_wcwidth(0x1F389) == 2);
+  FAIL_UNLESS("mk_wcwidth emoji U+231A", mk_wcwidth(0x231A) == 2);
+  FAIL_UNLESS("mk_wcwidth emoji U+1FA90", mk_wcwidth(0x1FA90) == 2);
+  CHECK_STR_AND_FREE("wordwrap 13 (emoji wrap by columns)",
+                     "😀😁\n😀😁",
+                     owl_text_wordwrap("😀😁 😀😁", 4));
+  CHECK_STR_AND_FREE("wordwrap 14 (22 emoji pairs wrap at 100 cols)",
+                     "😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 "
+                     "😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁\n"
+                     "😀😁 😀😁",
+                     owl_text_wordwrap("😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 "
+                                       "😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 😀😁 "
+                                       "😀😁 😀😁", 100));
 
   FAIL_UNLESS("skiptokens 1",
               !strcmp("world", skiptokens("hello world", 1)));

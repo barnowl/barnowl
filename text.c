@@ -186,50 +186,45 @@ CALLER_OWN char *owl_text_expand_tabs(const char *in)
   return ret;
 }
 
-/* caller must free the return */
+/* Break lines longer than 'col' display columns at the last space
+ * seen, leaving a line alone if it has no space to break at. Existing
+ * newlines are kept. caller must free the return */
 CALLER_OWN char *owl_text_wordwrap(const char *in, int col)
 {
-  char *out;
-  int cur, lastspace, len, lastnewline;
+  char *out, *p, *lastspace = NULL;
+  int width = 0, spacewidth = 0;
 
-  out=g_strdup(in);
-  len=strlen(in);
-  cur=0;
-  lastspace=-1;
-  lastnewline=-1;
+  out = g_strdup(in);
+  /* We can't measure columns in a string that isn't UTF-8. */
+  if (!g_utf8_validate(out, -1, NULL))
+    return out;
 
-  while (cur<(len-1)) {
-    if (out[cur]==' ') {
-      lastspace=cur;
-      cur++;
-      continue;
-    } else if (out[cur]=='\n') {
-      lastnewline=cur;
-      cur++;
-      continue;
-    }
+  /* As always, the final character is not examined. */
+  for (p = out; *p && *g_utf8_next_char(p); p = g_utf8_next_char(p)) {
+    gunichar c = g_utf8_get_char(p);
+    int chwidth;
 
-    /* do we need to wrap? */
-    if ( (cur-(lastnewline+1)) > col ) {
-      if (lastspace==-1 ||
-	  (lastnewline>0 && (lastspace<=lastnewline))) {
-	/* we can't help, sorry */
-	cur++;
-	continue;
+    if (c == '\n') {
+      width = 0;
+      lastspace = NULL;
+    } else if (c == ' ') {
+      lastspace = p;
+      spacewidth = ++width;
+    } else {
+      /* do we need to wrap? */
+      if (width > col && lastspace) {
+        /* turn the last space into a newline */
+        *lastspace = '\n';
+        lastspace = NULL;
+        width -= spacewidth;
       }
-
-      /* turn the last space into a newline */
-      out[lastspace]='\n';
-      lastnewline=lastspace;
-      lastspace=-1;
-      cur++;
-      continue;
+      /* if there's no space, we can't help, sorry */
+      chwidth = mk_wcwidth(c);
+      if (chwidth > 0)
+        width += chwidth;
     }
-
-    cur++;
-    continue;
   }
-  return(out);
+  return out;
 }
 
 /* this modifies 'in' */
