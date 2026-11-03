@@ -26,6 +26,7 @@ nobase_dist_pkgdata_DATA = \
 	lib/BarnOwl/Style/Default.pm \
 	lib/BarnOwl/Style/Legacy.pm \
 	lib/BarnOwl/Style/OneLine.pm \
+	lib/BarnOwl/Style/Reflow.pm \
 	lib/BarnOwl/Timer.pm \
 	lib/BarnOwl/Zephyr.pm \
 	lib/Module/Install/BarnOwl.pm

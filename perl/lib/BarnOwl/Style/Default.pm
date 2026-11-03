@@ -142,7 +142,13 @@ sub indent_body
     my $m = shift;
 
     my $body = $m->body;
-    if ($m->{should_wordwrap}) {
+    if ($BarnOwl::Style::Reflow::WRAP_LONG_LINES
+        && length($body) <= $BarnOwl::Style::Reflow::MAX_TEXT) {
+      # Wrap only the lines that would be cut off; this also covers the
+      # messages the wordwrap filter matches, so nothing is wrapped twice.
+      $body = BarnOwl::Style::Reflow::reflow($body,
+                                             BarnOwl::Style::Reflow::wrap_width());
+    } elsif ($m->{should_wordwrap}) {
       $body = BarnOwl::wordwrap($body, BarnOwl::getnumcols()-9);
     }
     # replace newline followed by anything with
