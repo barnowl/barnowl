@@ -34,7 +34,7 @@ our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 use File::Spec;
 
 $BarnOwl::Hooks::newMessage->add("BarnOwl::Logging::log");
-$BarnOwl::Hooks::startup->add("BarnOwl::Logging::_register_variables");
+# BarnOwl::Logging::_register_variables is called by BarnOwl::Hooks::_startup.
 
 sub _register_variables {
     BarnOwl::new_variable_bool('logging',

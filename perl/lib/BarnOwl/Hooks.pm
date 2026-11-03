@@ -176,6 +176,10 @@ sub _load_owlconf {
 
 sub _startup {
     _load_perl_commands();
+    # The logging variables used to be built into the C client, so ~/.barnowlconf
+    # and modules may set them while they load; create them first.
+    BarnOwl::Logging::_register_variables();
+    BarnOwl::DeferredLogging::_register_variables();
     _load_owlconf();
 
     if(eval {require BarnOwl::ModuleLoader}) {
