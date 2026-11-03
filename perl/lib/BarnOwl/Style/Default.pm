@@ -95,8 +95,8 @@ sub format_login {
         '@b<%s%s> for %s (%s) %s',
         uc( $m->login ),
         $m->login_type,
-        $self->bold_ztext($self->escape_ztext($m->pretty_sender)),
-        $self->escape_ztext($m->login_extra),
+        $self->bold_ztext($self->humanize($self->escape_ztext($m->pretty_sender), 1)),
+        $self->humanize($self->escape_ztext(maybe($m->login_extra)), 1),
         $self->format_time($m)
        );
 }
@@ -105,9 +105,9 @@ sub format_ping {
     my $self = shift;
     my $m = shift;
     my $personal_context = $self->escape_ztext($m->personal_context);
-    $personal_context = ' [' . $personal_context . ']' if $personal_context;
+    $personal_context = ' [' . $self->humanize($personal_context, 1) . ']' if $personal_context;
     return "\@b(PING)" . $personal_context . " from " .
-        $self->bold_ztext($self->escape_ztext($m->pretty_sender));
+        $self->bold_ztext($self->humanize($self->escape_ztext($m->pretty_sender), 1));
 }
 
 sub format_admin {
@@ -135,13 +135,13 @@ sub chat_header {
 
         if ( $m->direction eq "out" ) {
             $header = ucfirst $m->type . $personal_context . " sent to " .
-                $self->escape_ztext($m->pretty_recipient);
+                $self->humanize($self->escape_ztext($m->pretty_recipient), 1);
         } else {
             $header = ucfirst $m->type . $personal_context . " from ";
             if(defined($m->auth) && ($m->auth ne "YES")) {
                 $header .= "UNAUTH: ";
             }
-            $header .= $self->escape_ztext(maybe($m->pretty_sender));
+            $header .= $self->humanize($self->escape_ztext(maybe($m->pretty_sender)), 1);
         }
     } else {
         $header = $self->humanize($self->escape_ztext($m->context), 1);
@@ -152,7 +152,7 @@ sub chat_header {
         if(defined($m->auth) && ($m->auth ne "YES")) {
             $header .= "UNAUTH: ";
         }
-        $header .= $self->bold_ztext($self->escape_ztext(maybe($m->pretty_sender)));
+        $header .= $self->bold_ztext($self->humanize($self->escape_ztext(maybe($m->pretty_sender)), 1));
         if (defined($m->realm) && $m->realm ne BarnOwl::zephyr_getrealm()) {
             $header .= ' {' . $self->humanize($self->escape_ztext($m->realm), 1) . '}';
         }

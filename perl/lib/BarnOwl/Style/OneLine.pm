@@ -21,24 +21,24 @@ sub maybe {
 sub format_login {
   my $self = shift;
   my $m = shift;
-  return $self->escape_ztext(sprintf(
+  return $self->humanize_short($self->escape_ztext(sprintf(
     BASE_FORMAT,
     '<',
     $m->type,
     uc( $m->login ),
-    $m->pretty_sender))
-    . $self->escape_ztext($m->login_extra ? "at ".$m->login_extra : '');
+    $m->pretty_sender)
+    . ($m->login_extra ? "at ".$m->login_extra : '')));
 }
 
 sub format_ping {
   my $self = shift;
   my $m = shift;
-  return $self->escape_ztext(sprintf(
+  return $self->humanize_short($self->escape_ztext(sprintf(
     BASE_FORMAT,
     '<',
     $m->type,
     'PING',
-    $m->pretty_sender));
+    $m->pretty_sender)));
 }
 
 sub format_chat
