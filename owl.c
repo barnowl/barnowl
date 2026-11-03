@@ -131,6 +131,7 @@ void owl_start_curses(void) {
   initscr();
   cbreak();
   noecho();
+  keypad(stdscr, TRUE);
 
   owl_start_color();
 }
@@ -299,7 +300,7 @@ gboolean owl_process_input(GIOChannel *source, GIOCondition condition, void *dat
     if (j.ch == ERR) return TRUE;
 
     j.uch = '\0';
-    if (j.ch >= KEY_MIN && j.ch <= KEY_MAX) {
+    if (j.ch >= KEY_MIN) {
       /* This is a curses control character. */
     }
     else if (j.ch > 0x7f && j.ch < 0xfe) {

@@ -143,6 +143,14 @@ CALLER_OWN char *owl_keypress_tostring(int j, int esc)
     }
   }
   if (!kb->str[0]) {
+#ifdef NCURSES_VERSION
+    const char *kname = keyname(j);
+    if (kname && kname[0]) {
+      g_string_append(kb, kname);
+    }
+#endif
+  }
+  if (!kb->str[0]) {
     if (j & OWL_META(0)) {
       g_string_append(kb, "M-");
       j &= ~OWL_META(0);
@@ -192,6 +200,18 @@ int owl_keypress_fromstring(const char *kb)
 	j = sm->kj;
       }
     }
+#ifdef NCURSES_VERSION
+    if (j == ERR) {
+      int k;
+      for (k = KEY_MAX + 1; k < 2048; k++) {
+        const char *name = keyname(k);
+        if (name && !strcmp(name, kb)) {
+          j = k;
+          break;
+        }
+      }
+    }
+#endif
   }
   if (j==ERR) return(ERR);
   if (isctrl) {

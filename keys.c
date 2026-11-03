@@ -42,13 +42,36 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
   BIND_CMD("M-f",         "edit:move-next-word", "");
   BIND_CMD("M-O 3 C",     "edit:move-next-word", "");
   BIND_CMD("M-RIGHT",     "edit:move-next-word", "");
-  BIND_CMD("M-[ 1 ; 3 D", "edit:move-next-word", "");
-  BIND_CMD("M-[ 1 ; 5 D", "edit:move-next-word", "");
+  BIND_CMD("M-[ 1 ; 3 C", "edit:move-next-word", "");
+  BIND_CMD("M-[ 1 ; 5 C", "edit:move-next-word", "");
   BIND_CMD("M-b",         "edit:move-prev-word", "");
   BIND_CMD("M-O 3 D",     "edit:move-prev-word", "");
   BIND_CMD("M-LEFT",      "edit:move-prev-word", "");
-  BIND_CMD("M-[ 1 ; 3 C", "edit:move-prev-word", "");
-  BIND_CMD("M-[ 1 ; 5 C", "edit:move-prev-word", "");
+  BIND_CMD("M-[ 1 ; 3 D", "edit:move-prev-word", "");
+  BIND_CMD("M-[ 1 ; 5 D", "edit:move-prev-word", "");
+#ifdef NCURSES_VERSION
+  {
+    static const struct {
+      const char *seq;
+      const char *cmd;
+    } extended_keys[] = {
+      { "\033[1;3C", "edit:move-next-word" },
+      { "\033[1;5C", "edit:move-next-word" },
+      { "\033[1;3D", "edit:move-prev-word" },
+      { "\033[1;5D", "edit:move-prev-word" },
+    };
+    size_t i;
+    for (i = 0; i < sizeof(extended_keys) / sizeof(extended_keys[0]); i++) {
+      int k = key_defined(extended_keys[i].seq);
+      if (k > 0) {
+        const char *kname = keyname(k);
+        if (kname) {
+          BIND_CMD(kname, extended_keys[i].cmd, "");
+        }
+      }
+    }
+  }
+#endif
 
   BIND_CMD("LEFT",        "edit:move-left", "");
   BIND_CMD("M-[ D",       "edit:move-left", "");
@@ -307,7 +330,6 @@ void owl_keys_setup_keymaps(owl_keyhandler *kh) {
 
   BIND_CMD("i",   "info",             "");
   BIND_CMD("l",   "blist",            "");
-  BIND_CMD("B",   "alist",            "");
   BIND_CMD("M",   "pop-message",      "");
   BIND_CMD("T",   "delete trash",     "mark all 'trash' messages for deletion");
 
