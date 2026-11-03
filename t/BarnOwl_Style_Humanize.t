@@ -176,7 +176,7 @@ is($style->humanize("a\x{2028}b", 1), "a\x{2028}b", 'oneline: line separator is 
 # What was already done is still done.
 is($style->humanize("a\x{01}b"), 'a@b(^A)b', 'control character');
 is($style->humanize("a\rb"), 'a@b(^M)b', 'carriage return');
-is($style->humanize("a\x{7F}b", 1), 'a@b(\\x{7f})b', 'delete, oneline');
+is($style->humanize("a\x{7F}b", 1), 'a@b(^?)b', 'delete, oneline');
 is($style->humanize("a\nb"), "a\nb", 'a newline is kept when not oneline');
 is($style->humanize("a\nb", 1), 'a@b(^J)b', 'a newline is a control character when oneline');
 is($style->humanize_short("a\x{01}b"), 'a?b', 'humanize_short on a control character');

@@ -224,7 +224,7 @@ sub humanize
 
     if ($c < ord(' ')) {
       return ('^' . chr($c + ord('@')));
-    } elsif ($c == 255) {
+    } elsif ($c == 127) {
       return ('^?');
     } else {
       return (sprintf('\\x{%x}', $c));
