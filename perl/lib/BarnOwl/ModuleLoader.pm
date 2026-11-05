@@ -3,14 +3,17 @@ use warnings;
 
 package BarnOwl::ModuleLoader;
 
-use PAR;
+# PAR is loaded only when a .par module is found. Loading it creates a cache
+# directory in the first writable temporary directory; where that fails (a
+# sandbox that cannot write /tmp, say), "use PAR" here would disable every
+# module, including the unpacked ones that never need PAR.
 
 our %modules;
 
 sub load_all {
     my $class = shift;
     $class->rescan_modules;
-    PAR::reload_libs();
+    PAR::reload_libs() if @PAR::PAR_INC;
 
     for my $mod (keys %modules) {
         if(!defined eval "use BarnOwl::Module::$mod") {
@@ -48,6 +51,14 @@ packed local module, if we added both, the system module would take priority.
 
 =cut
 
+sub _has_par {
+    my $dir = shift;
+    opendir(my $dh, $dir) or return 0;
+    my $found = grep { !/^\./ && /\.par$/ && -f "$dir/$_" } readdir($dh);
+    closedir($dh);
+    return $found;
+}
+
 sub rescan_modules {
     @PAR::PAR_INC = ();
 
@@ -56,6 +67,16 @@ sub rescan_modules {
     my @moddirs = ();
     push @moddirs, BarnOwl::get_config_dir() . "/modules";
     push @moddirs, BarnOwl::get_data_dir() . "/modules";
+
+    # Load PAR before the scan when there is a .par module, as "use PAR" did at compile
+    # time: its @INC hook must stay behind the unpacked module directories, which the scan
+    # puts in front of it.  (PAR may be loaded without its hook, if its import failed.)
+    my $par_ok = 1;
+    my $hooked = $INC{'PAR.pm'} && grep { ref($_) && $_ == \&PAR::find_par } @INC;
+    if (!$hooked && grep { _has_par($_) } @moddirs) {
+        $par_ok = eval { require PAR; PAR->import(); 1 };
+        BarnOwl::error("Unable to load PAR, so no .par module loads: \n$@\n") unless $par_ok;
+    }
 
     for my $dir (@moddirs) {
         # Strip defunct entries from @INC
@@ -77,9 +98,12 @@ sub rescan_modules {
         # Walk parfiles
         for my $f (grep /\.par$/, @ents) {
             if(-f "$dir/$f" && $f =~ /^(.+)\.par$/) {
-                next if $modules{$1};
+                next if $modules{$1} || !$par_ok;
 
-                PAR->import("$dir/$f");
+                if (!eval { PAR->import("$dir/$f"); 1 }) {
+                    BarnOwl::error("Unable to load module $1: \n$@\n");
+                    next;
+                }
                 $modules{$1} = 1;
             }
         }
