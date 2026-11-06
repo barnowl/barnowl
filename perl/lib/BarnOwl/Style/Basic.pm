@@ -2,9 +2,10 @@ use strict;
 use warnings;
 
 package BarnOwl::Style::Basic;
-use lib qw(BarnOwl::Style::Default);
+# Inherit format_message to dispatch
+use base qw(BarnOwl::Style::Default);
 
-sub description {"Compatability alias for the default style";}
+sub description {"Compatibility alias for the default style";}
 
 BarnOwl::create_style("basic", "BarnOwl::Style::Basic");
 
